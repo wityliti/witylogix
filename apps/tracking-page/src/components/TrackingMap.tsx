@@ -1,179 +1,117 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
-import type { Location } from '../types'
+import type { DeliveryAddress, DriverLocation } from '../types'
 
 interface TrackingMapProps {
-  deliveryLocation: { latitude: number; longitude: number }
-  driverLocation: Location | null
-  route: Location[]
-  pickupLocation: { latitude: number; longitude: number }
+  /** Delivery address — used as a label for the destination marker.
+   *  When the API provides geocoded coordinates in future these will be used directly. */
+  deliveryLocation: DeliveryAddress
+  /** Driver lat/lng from either the initial response or a socket update. Null when unavailable. */
+  driverLocation: DriverLocation | null
 }
 
-export function TrackingMap({
-  deliveryLocation,
-  driverLocation,
-  route,
-  pickupLocation,
-}: TrackingMapProps) {
-  const mapContainer = useRef<HTMLDivElement>(null)
-  const map = useRef<L.Map | null>(null)
-  const markerRef = useRef<{
+function makeDeliveryIcon(): L.DivIcon {
+  return L.divIcon({
+    html: `<div style="
+      width:34px;height:34px;background:#005bd3;border:3px solid white;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;font-size:16px;
+      box-shadow:0 3px 10px rgba(0,91,211,0.35);">📦</div>`,
+    iconSize: [34, 34],
+    className: 'delivery-marker',
+  })
+}
+
+function makeDriverIcon(): L.DivIcon {
+  return L.divIcon({
+    html: `<div style="
+      width:38px;height:38px;background:#005bd3;border:3px solid white;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;font-size:18px;
+      box-shadow:0 3px 12px rgba(0,91,211,0.45);">🚗</div>`,
+    iconSize: [38, 38],
+    className: 'driver-marker',
+  })
+}
+
+function addressLabel(addr: DeliveryAddress): string {
+  return [addr.line1, addr.city].filter(Boolean).join(', ')
+}
+
+export function TrackingMap({ deliveryLocation, driverLocation }: TrackingMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<L.Map | null>(null)
+  const markersRef = useRef<{
     driver?: L.Marker
     delivery?: L.Marker
-    pickup?: L.Marker
-    route?: L.Polyline
   }>({})
+  // Remember the last driver position so we don't geocode delivery twice
+  const lastDriverPos = useRef<{ lat: number; lng: number } | null>(null)
 
+  // Initialise map once
   useEffect(() => {
-    if (!mapContainer.current) return
+    if (!containerRef.current || mapRef.current) return
 
-    // Initialize map
-    if (!map.current) {
-      map.current = L.map(mapContainer.current).setView([40, -95], 4)
+    mapRef.current = L.map(containerRef.current).setView([20, 0], 2)
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      }).addTo(map.current)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(mapRef.current)
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove()
+        mapRef.current = null
+      }
     }
+  }, [])
 
-    // Add pickup marker
-    if (!markerRef.current.pickup) {
-      const pickupIcon = L.divIcon({
-        html: `<div style="
-          width: 32px;
-          height: 32px;
-          background-color: #008060;
-          border: 3px solid white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        ">📍</div>`,
-        iconSize: [32, 32],
-        className: 'pickup-marker',
-      })
+  // Update markers whenever driver location changes
+  useEffect(() => {
+    if (!mapRef.current) return
 
-      markerRef.current.pickup = L.marker(
-        [pickupLocation.latitude, pickupLocation.longitude],
-        { icon: pickupIcon }
-      )
-        .addTo(map.current)
-        .bindPopup('Pickup Location')
-    }
+    if (!driverLocation) return
 
-    // Add delivery marker
-    if (!markerRef.current.delivery) {
-      const deliveryIcon = L.divIcon({
-        html: `<div style="
-          width: 32px;
-          height: 32px;
-          background-color: #005bd3;
-          border: 3px solid white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        ">📦</div>`,
-        iconSize: [32, 32],
-        className: 'delivery-marker',
-      })
+    const driverLatLng: [number, number] = [driverLocation.latitude, driverLocation.longitude]
+    const isSameDriver =
+      lastDriverPos.current?.lat === driverLocation.latitude &&
+      lastDriverPos.current?.lng === driverLocation.longitude
 
-      markerRef.current.delivery = L.marker(
-        [deliveryLocation.latitude, deliveryLocation.longitude],
-        { icon: deliveryIcon }
-      )
-        .addTo(map.current)
-        .bindPopup('Delivery Location')
-    }
+    if (!isSameDriver) {
+      lastDriverPos.current = { lat: driverLocation.latitude, lng: driverLocation.longitude }
 
-    // Add/update driver marker
-    if (driverLocation) {
-      const driverIcon = L.divIcon({
-        html: `<div style="
-          width: 36px;
-          height: 36px;
-          background-color: #005bd3;
-          border: 3px solid white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-          animation: pulse 2s infinite;
-        ">🚗</div>
-        <style>
-          @keyframes pulse {
-            0%, 100% { box-shadow: 0 2px 8px rgba(0, 91, 211, 0.2); }
-            50% { box-shadow: 0 2px 16px rgba(0, 91, 211, 0.4); }
-          }
-        </style>`,
-        iconSize: [36, 36],
-        className: 'driver-marker',
-      })
-
-      if (markerRef.current.driver) {
-        markerRef.current.driver.setLatLng([
-          driverLocation.latitude,
-          driverLocation.longitude,
-        ])
+      if (markersRef.current.driver) {
+        markersRef.current.driver.setLatLng(driverLatLng)
       } else {
-        markerRef.current.driver = L.marker(
-          [driverLocation.latitude, driverLocation.longitude],
-          { icon: driverIcon }
-        )
-          .addTo(map.current!)
-          .bindPopup('Driver Location')
+        markersRef.current.driver = L.marker(driverLatLng, { icon: makeDriverIcon() })
+          .addTo(mapRef.current)
+          .bindPopup('Driver location')
       }
     }
 
-    // Add/update route polyline
-    if (route.length > 0) {
-      const routeCoordinates = route.map((loc) => [
-        loc.latitude,
-        loc.longitude,
-      ] as [number, number])
-
-      if (markerRef.current.route) {
-        markerRef.current.route.setLatLngs(routeCoordinates)
-      } else {
-        markerRef.current.route = L.polyline(routeCoordinates, {
-          color: '#005bd3',
-          weight: 3,
-          opacity: 0.7,
-          dashArray: '5, 5',
-        }).addTo(map.current!)
-      }
+    // Place delivery marker near driver if no geocode available — use a slight offset
+    // so both pins are visible. When real coords land, replace this with them.
+    if (!markersRef.current.delivery) {
+      const approxDelivery: [number, number] = [
+        driverLocation.latitude + 0.01,
+        driverLocation.longitude + 0.01,
+      ]
+      markersRef.current.delivery = L.marker(approxDelivery, { icon: makeDeliveryIcon() })
+        .addTo(mapRef.current)
+        .bindPopup(`Delivery: ${addressLabel(deliveryLocation)}`)
     }
 
-    // Fit bounds to show all markers
-    if (map.current) {
-      const group = new L.FeatureGroup([
-        markerRef.current.pickup,
-        markerRef.current.delivery,
-        markerRef.current.driver,
-      ].filter(Boolean) as L.Layer[])
-
-      if (group.getLayers().length > 0) {
-        map.current.fitBounds(group.getBounds(), { padding: [50, 50] })
-      }
+    // Fit bounds to show both markers
+    const layers: L.Layer[] = Object.values(markersRef.current).filter(Boolean)
+    if (layers.length > 0) {
+      const group = new L.FeatureGroup(layers)
+      mapRef.current.fitBounds(group.getBounds(), { padding: [60, 60], maxZoom: 16 })
     }
-  }, [deliveryLocation, driverLocation, route, pickupLocation])
+  }, [driverLocation, deliveryLocation])
 
   return (
     <div
-      ref={mapContainer}
-      style={{
-        width: '100%',
-        height: '100%',
-        minHeight: '400px',
-      }}
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', minHeight: '300px' }}
     />
   )
 }

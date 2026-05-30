@@ -7,29 +7,28 @@ const BRAND_GREEN = '#008060'
 const BG_COLOR = '#f6f6f7'
 
 interface DeliveryPreferencesPageProps {
-  shipmentId: string
+  /** Public tracking token — used as the key for the preferences PATCH endpoint */
+  trackingToken: string
   onBack: () => void
 }
 
-type Preferences = DeliveryPreferences & {
-  deliveryMethod: 'door' | 'signature' | 'neighbor'
-  rescheduleTimeWindow: 'morning' | 'afternoon' | 'evening' | 'anytime'
+interface FormState {
+  instructions: string
+  dropoffNote: string
+  contactPref: 'call' | 'sms' | 'whatsapp'
+  rescheduleDate: string
 }
 
 export function DeliveryPreferencesPage({
-  shipmentId,
+  trackingToken,
   onBack,
 }: DeliveryPreferencesPageProps) {
-  const [preferences, setPreferences] = useState<Preferences>({
-    deliveryMethod: 'door',
+  const [form, setForm] = useState<FormState>({
     instructions: '',
-    rescheduleTimeWindow: 'anytime',
+    dropoffNote: '',
+    contactPref: 'sms',
     rescheduleDate: '',
-    safePlace: '',
-    phoneNumber: '',
-    redirectAddress: undefined,
   })
-  const [enableRedirect, setEnableRedirect] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -43,48 +42,39 @@ export function DeliveryPreferencesPage({
 
   // Restore previously saved preferences from sessionStorage
   useEffect(() => {
-    const stored = sessionStorage.getItem(`prefs_${shipmentId}`)
+    const stored = sessionStorage.getItem(`prefs_${trackingToken}`)
     if (stored) {
       try {
-        const parsed = JSON.parse(stored)
-        setPreferences((prev) => ({ ...prev, ...parsed }))
-        if (parsed.redirectAddress) setEnableRedirect(true)
+        const parsed: Partial<FormState> = JSON.parse(stored)
+        setForm((prev) => ({ ...prev, ...parsed }))
       } catch {
         // ignore parse errors
       }
     }
-  }, [shipmentId])
+  }, [trackingToken])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    if (preferences.deliveryMethod === 'signature' && !preferences.phoneNumber?.trim()) {
-      setError('Phone number is required for signature delivery')
-      return
-    }
-
     const payload: DeliveryPreferences = {
-      deliveryMethod: preferences.deliveryMethod,
-      instructions: preferences.instructions || undefined,
-      safePlace: preferences.safePlace || undefined,
-      phoneNumber: preferences.phoneNumber || undefined,
-      rescheduleDate: preferences.rescheduleDate || undefined,
-      rescheduleTimeWindow: preferences.rescheduleDate ? preferences.rescheduleTimeWindow : undefined,
-      redirectAddress:
-        enableRedirect && preferences.redirectAddress?.line1
-          ? preferences.redirectAddress
-          : undefined,
+      instructions: form.instructions.trim() || undefined,
+      dropoffNote: form.dropoffNote.trim() || undefined,
+      contactPref: form.contactPref,
+      rescheduledTo: form.rescheduleDate
+        ? new Date(form.rescheduleDate + 'T09:00:00').toISOString()
+        : undefined,
     }
 
     setSaving(true)
     try {
-      await updateDeliveryPreferences(shipmentId, payload)
-      sessionStorage.setItem(`prefs_${shipmentId}`, JSON.stringify(payload))
+      await updateDeliveryPreferences(trackingToken, payload)
+      sessionStorage.setItem(`prefs_${trackingToken}`, JSON.stringify(form))
       setSaved(true)
       setTimeout(() => setSaved(false), 4000)
-    } catch (err: any) {
-      setError(err.message || 'Failed to save preferences')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save preferences'
+      setError(message)
     } finally {
       setSaving(false)
     }
@@ -98,6 +88,7 @@ export function DeliveryPreferencesPage({
     fontSize: '14px',
     color: '#1f2937',
     boxSizing: 'border-box',
+    backgroundColor: 'white',
   }
 
   return (
@@ -162,80 +153,79 @@ export function DeliveryPreferencesPage({
           gap: '24px',
         }}
       >
-        {/* Delivery Method */}
-        <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '12px' }}>
-            Delivery Method
-          </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {([
-              { value: 'door', label: 'Leave at Door', desc: 'Leave package at front door' },
-              { value: 'signature', label: 'Require Signature', desc: 'Signature required upon delivery' },
-              { value: 'neighbor', label: 'Leave with Neighbour', desc: 'Driver may leave with neighbour' },
-            ] as const).map((option) => (
-              <label
-                key={option.value}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  backgroundColor: preferences.deliveryMethod === option.value ? '#f0f9ff' : 'transparent',
-                  border: preferences.deliveryMethod === option.value ? `2px solid ${BRAND_BLUE}` : '1px solid #e5e7eb',
-                  cursor: 'pointer',
-                }}
-              >
-                <input
-                  type="radio"
-                  name="delivery-method"
-                  value={option.value}
-                  checked={preferences.deliveryMethod === option.value}
-                  onChange={(e) =>
-                    setPreferences({ ...preferences, deliveryMethod: e.target.value as Preferences['deliveryMethod'] })
-                  }
-                  style={{ cursor: 'pointer', marginTop: '2px', accentColor: BRAND_BLUE }}
-                />
-                <div>
-                  <p style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0' }}>{option.label}</p>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0 0' }}>{option.desc}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
-
-        {/* Safe Place */}
-        <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
-            Safe Place Instructions <span style={{ color: '#9ca3af', fontWeight: '400' }}>(Optional)</span>
-          </label>
-          <input
-            type="text"
-            value={preferences.safePlace ?? ''}
-            onChange={(e) => setPreferences({ ...preferences, safePlace: e.target.value })}
-            placeholder="e.g. Leave under the welcome mat"
-            style={inputStyle}
-          />
-        </div>
-
-        {/* Additional Instructions */}
+        {/* Driver Instructions */}
         <div>
           <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
             Driver Instructions <span style={{ color: '#9ca3af', fontWeight: '400' }}>(Optional)</span>
           </label>
           <textarea
-            value={preferences.instructions ?? ''}
-            onChange={(e) => setPreferences({ ...preferences, instructions: e.target.value })}
+            value={form.instructions}
+            onChange={(e) => setForm({ ...form, instructions: e.target.value })}
             placeholder="e.g. Ring doorbell twice. Please don't leave at side gate."
-            maxLength={200}
+            maxLength={500}
             style={{ ...inputStyle, minHeight: '90px', resize: 'vertical', fontFamily: 'sans-serif' }}
           />
           <p style={{ fontSize: '12px', color: '#6b7280', margin: '6px 0 0 0' }}>
-            {(preferences.instructions ?? '').length}/200 characters
+            {form.instructions.length}/500 characters
           </p>
+        </div>
+
+        {/* Drop-off Note */}
+        <div>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
+            Drop-off Note <span style={{ color: '#9ca3af', fontWeight: '400' }}>(Optional)</span>
+          </label>
+          <input
+            type="text"
+            value={form.dropoffNote}
+            onChange={(e) => setForm({ ...form, dropoffNote: e.target.value })}
+            placeholder="e.g. Leave under the welcome mat"
+            maxLength={500}
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
+
+        {/* Contact Preference */}
+        <div>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '12px' }}>
+            Preferred Contact Method
+          </label>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {([
+              { value: 'sms', label: 'SMS' },
+              { value: 'call', label: 'Phone Call' },
+              { value: 'whatsapp', label: 'WhatsApp' },
+            ] as const).map((opt) => (
+              <label
+                key={opt.value}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  border: form.contactPref === opt.value ? `2px solid ${BRAND_BLUE}` : '1px solid #e5e7eb',
+                  backgroundColor: form.contactPref === opt.value ? '#f0f9ff' : 'white',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: form.contactPref === opt.value ? BRAND_BLUE : '#374151',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="contact-pref"
+                  value={opt.value}
+                  checked={form.contactPref === opt.value}
+                  onChange={() => setForm({ ...form, contactPref: opt.value })}
+                  style={{ accentColor: BRAND_BLUE }}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
         </div>
 
         <div style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
@@ -246,148 +236,19 @@ export function DeliveryPreferencesPage({
             Reschedule Delivery <span style={{ color: '#9ca3af', fontWeight: '400' }}>(Optional)</span>
           </label>
           <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 12px 0' }}>
-            Request a different date and time window
+            Request a different delivery date
           </p>
-          <div style={{ display: 'flex', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
-            <input
-              type="date"
-              value={preferences.rescheduleDate ?? ''}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => setPreferences({ ...preferences, rescheduleDate: e.target.value })}
-              style={{ ...inputStyle, flex: 1 }}
-            />
-            <select
-              value={preferences.rescheduleTimeWindow}
-              onChange={(e) =>
-                setPreferences({
-                  ...preferences,
-                  rescheduleTimeWindow: e.target.value as Preferences['rescheduleTimeWindow'],
-                })
-              }
-              style={{ ...inputStyle, flex: 1, cursor: 'pointer' }}
-              disabled={!preferences.rescheduleDate}
-            >
-              <option value="anytime">Anytime</option>
-              <option value="morning">Morning (8am – 12pm)</option>
-              <option value="afternoon">Afternoon (12pm – 5pm)</option>
-              <option value="evening">Evening (5pm – 9pm)</option>
-            </select>
-          </div>
-        </div>
-
-        <div style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
-
-        {/* Redirect Address */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <div>
-              <p style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0' }}>
-                Redirect to Alternative Address
-              </p>
-              <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0 0' }}>
-                Must be within the delivery zone
-              </p>
-            </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={enableRedirect}
-                onChange={(e) => {
-                  setEnableRedirect(e.target.checked)
-                  if (!e.target.checked) {
-                    setPreferences({ ...preferences, redirectAddress: undefined })
-                  }
-                }}
-                style={{ accentColor: BRAND_BLUE, width: '16px', height: '16px' }}
-              />
-              <span style={{ fontSize: '13px', color: '#374151' }}>Enable</span>
-            </label>
-          </div>
-
-          {enableRedirect && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <input
-                type="text"
-                value={preferences.redirectAddress?.line1 ?? ''}
-                onChange={(e) =>
-                  setPreferences({
-                    ...preferences,
-                    redirectAddress: {
-                      line1: e.target.value,
-                      city: preferences.redirectAddress?.city ?? '',
-                      postalCode: preferences.redirectAddress?.postalCode ?? '',
-                    },
-                  })
-                }
-                placeholder="Street address"
-                style={inputStyle}
-                required={enableRedirect}
-              />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <input
-                  type="text"
-                  value={preferences.redirectAddress?.city ?? ''}
-                  onChange={(e) =>
-                    setPreferences({
-                      ...preferences,
-                      redirectAddress: {
-                        line1: preferences.redirectAddress?.line1 ?? '',
-                        city: e.target.value,
-                        postalCode: preferences.redirectAddress?.postalCode ?? '',
-                      },
-                    })
-                  }
-                  placeholder="City"
-                  style={{ ...inputStyle, flex: 1 }}
-                  required={enableRedirect}
-                />
-                <input
-                  type="text"
-                  value={preferences.redirectAddress?.postalCode ?? ''}
-                  onChange={(e) =>
-                    setPreferences({
-                      ...preferences,
-                      redirectAddress: {
-                        line1: preferences.redirectAddress?.line1 ?? '',
-                        city: preferences.redirectAddress?.city ?? '',
-                        postalCode: e.target.value,
-                      },
-                    })
-                  }
-                  placeholder="Postal code"
-                  style={{ ...inputStyle, flex: 1 }}
-                  required={enableRedirect}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
-
-        {/* Phone Number */}
-        <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
-            Phone Number for Driver Contact
-            {preferences.deliveryMethod === 'signature' && <span style={{ color: '#dc2626' }}> *</span>}
-          </label>
           <input
-            type="tel"
-            value={preferences.phoneNumber ?? ''}
-            onChange={(e) => {
-              setPreferences({ ...preferences, phoneNumber: e.target.value })
-              setError('')
-            }}
-            placeholder="(555) 123-4567"
-            style={{ ...inputStyle, border: error.includes('Phone') ? '2px solid #dc2626' : '1px solid #e5e7eb' }}
+            type="date"
+            value={form.rescheduleDate}
+            min={new Date().toISOString().slice(0, 10)}
+            onChange={(e) => setForm({ ...form, rescheduleDate: e.target.value })}
+            style={inputStyle}
           />
-          {error.includes('Phone') && (
-            <p style={{ fontSize: '12px', color: '#dc2626', margin: '6px 0 0 0' }}>{error}</p>
-          )}
         </div>
 
-        {/* Generic error */}
-        {error && !error.includes('Phone') && (
+        {/* Error */}
+        {error && (
           <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '12px', fontSize: '13px', color: '#dc2626' }}>
             {error}
           </div>
@@ -396,7 +257,7 @@ export function DeliveryPreferencesPage({
         {/* Success */}
         {saved && (
           <div style={{ backgroundColor: '#ecfdf5', border: `1px solid ${BRAND_GREEN}`, borderRadius: '8px', padding: '12px', fontSize: '13px', color: BRAND_GREEN, fontWeight: '500' }}>
-            ✓ Preferences saved — the driver has been notified
+            Preferences saved — the driver has been notified
           </div>
         )}
 
@@ -433,14 +294,13 @@ export function DeliveryPreferencesPage({
         }}
       >
         <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', margin: '0 0 12px 0' }}>
-          💡 How It Works
+          How It Works
         </h3>
-        <ul style={{ fontSize: '13px', color: '#6b7280', margin: '0', paddingLeft: '20px', lineHeight: '1.6' }}>
+        <ul style={{ fontSize: '13px', color: '#6b7280', margin: '0', paddingLeft: '20px', lineHeight: '1.7' }}>
           <li>Changes are sent directly to your driver</li>
-          <li>You'll receive an email/SMS confirmation</li>
+          <li>You will receive an SMS/email confirmation</li>
           <li>Rescheduling is subject to driver availability</li>
-          <li>Address redirects must be within the delivery zone</li>
-          <li>Changes can no longer be made within 30 minutes of estimated delivery</li>
+          <li>Preferences cannot be updated once the driver has arrived</li>
         </ul>
       </div>
     </div>
