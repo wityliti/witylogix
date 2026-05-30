@@ -15,10 +15,7 @@ so `turbo typecheck` skips it. Core integration code has never been type-checked
 in CI and has accumulated large type debt.
 
 **Baseline (real `tsc -p packages/core/tsconfig.json`, deps built):**
-- Source (non-test) errors: **2102** → **821** (as of 2026-05-30)
-  - integration **category** provider files: **0** ✅ (was ~1,500)
-  - `src/index.ts` top-level barrel ambiguous re-exports: **144** (TS2308 — item 2)
-  - non-integration core modules (fleet/sso/returns/etc.): **676** (out of original scope — item 14)
+- Source (non-test) errors: **2102** → currently **2048**
 - Test-file errors: ~1659 (mostly vitest-globals config noise — TS2582)
 
 > ⚠️ The "Not implemented" throws in base *adapter* classes
@@ -36,29 +33,22 @@ pnpm exec tsc -p packages/core/tsconfig.json --noEmit 2>&1 \
 
 ## Plan (one PR per row, base `staging`)
 
-> **All integration provider categories are type-clean (0 errors) and merged to `staging`.**
-> Remaining sprint work is non-provider: the top-level barrel, the unrelated core
-> modules, and wiring CI to lock the gain. The recurring routine should now pick up
-> rows 2, 14, 3, then 13 (in that order).
-
 | # | Scope | Status |
 |---|-------|--------|
-| 0 | **Foundation**: broken relative imports; declare used deps (express/pino/bullmq) | ✅ #221 |
-| 1 | Native/missing deps decision: sharp, bcrypt, argon2, qrcode, mongodb (POD photo/QR, password hashing, mongo migration) | ⬜ (deferred — needs native-dep + security decision) |
-| 4 | **ecommerce** (shopify/woocommerce/magento/bigcommerce/etsy/ebay/amazon/square) 196→0 | ✅ #222 |
-| 6 | couriers + shipping 44→0 | ✅ #223 |
-| 8 | maps / traffic / routing 66→0 | ✅ #224 |
-| 7 | messaging / email / chat / collaboration 180→0 | ✅ #225 |
-| 5 | payments 43→0 | ✅ #226 |
-| 12 | gateway / registry / oauth / webhooks / migration / credentials wiring 28→0 | ✅ #227 |
-| 10 | telematics / eld / fuel-fleet / freight / supply-chain 287→0 | ✅ #228 |
-| 11 | healthcare / field-service / esignatures / analytics 120→0 | ✅ #229 |
-| 9 | crm / erp / accounting / pos 197→0 | ✅ #230 |
-| — | remaining categories: platform-bridge/google/push/health/lastmile/docs/woocommerce/realtime 73→0 | ✅ #231 |
-| 2 | **Barrel dedup**: `src/index.ts` ambiguous re-exports (**144× TS2308**) — explicit named re-exports for clashing types (RateLimitInfo, SyncOptions/Status/Metrics/State, ETAResult, Coordinates, …) | ⬜ NEXT |
-| 14 | **Non-integration core** type errors (**676**): fleet, auth/sso-providers, returns, demand-prediction, etc. — out of original scope but blocks CI wiring | ⬜ |
+| 0 | **Foundation**: fix broken relative imports; declare used deps (express/pino/bullmq) | 🟡 in progress (PR sprint/WIT-450) |
+| 1 | Native/missing deps decision: sharp, bcrypt, argon2, qrcode, mongodb (POD photo/QR, password hashing, mongo migration) | ⬜ |
+| 2 | Barrel dedup: `src/index.ts` ambiguous re-exports (150× TS2308) | ⬜ |
 | 3 | Test config: vitest globals so `tsc` recognises describe/it (≈339× TS2582) | ⬜ |
-| 13 | **Final**: add `typecheck` script to core + wire into CI (lock the gain). Blocked on rows 2, 14, 3 reaching 0. | ⬜ |
+| 4 | **ecommerce** providers (shopify / woocommerce / magento / bigcommerce) | ⬜ |
+| 5 | payments providers | ⬜ |
+| 6 | couriers + shipping providers | ⬜ |
+| 7 | messaging / email / chat / collaboration | ⬜ |
+| 8 | maps / traffic / routing | ⬜ |
+| 9 | crm / erp / accounting / pos | ⬜ |
+| 10 | telematics / eld / fuel-fleet / freight / supply-chain | ⬜ |
+| 11 | healthcare / field-service / esignatures / analytics | ⬜ |
+| 12 | gateway / registry / resolver / metering / oauth / webhooks wiring | ⬜ |
+| 13 | **Final**: add `typecheck` script to core + wire into CI (lock the gain) | ⬜ |
 
 ## Per-category error counts (top source-error files, 2026-05-30)
 
