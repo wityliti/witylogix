@@ -116,7 +116,7 @@ export class PowerfleetClient implements ITelematicsAdapter {
    * @param config - Telematics configuration with API key
    */
   constructor(config: TelematicsConfig) {
-    if (config.provider !== "powerfleet" && config.credentials && typeof config.credentials === "object") {
+    if (!config.credentials || typeof config.credentials !== "object") {
       throw new Error("Invalid Powerfleet configuration");
     }
 
@@ -126,7 +126,8 @@ export class PowerfleetClient implements ITelematicsAdapter {
     this.rateLimiter = new RateLimiter(config.rateLimit ?? 10);
     this.circuitBreaker = new CircuitBreaker({
       failureThreshold: 5,
-      resetTimeoutMs: 60000,
+      successThreshold: 2,
+      timeout: 60000,
     });
 
     this.logger = console;
@@ -260,9 +261,8 @@ export class PowerfleetClient implements ITelematicsAdapter {
   async getFuelReadingByVehicleId(vehicleId: string): Promise<NormalizedFuelReading> {
     return {
       externalVehicleId: vehicleId,
-      gallons: 0,
-      liters: 0,
       fuelLevel: 0,
+      fuelUnit: "gallons",
       timestamp: new Date(),
     };
   }
@@ -416,6 +416,43 @@ export class PowerfleetClient implements ITelematicsAdapter {
     } catch {
       return false;
     }
+  }
+
+  // ITelematicsAdapter interface implementation
+
+  async authenticate(): Promise<void> {
+    await this.healthCheck();
+  }
+
+  async getVehiclePosition(vehicleId: string): Promise<NormalizedPosition> {
+    return this.getPositionByVehicleId(vehicleId);
+  }
+
+  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+    return this.getDiagnosticsByVehicleId(vehicleId);
+  }
+
+  async getDriverBehaviorEvents(
+    driverId: string,
+    dateRange: { startDate: Date; endDate: Date },
+  ): Promise<NormalizedBehaviorEvent[]> {
+    return this.getBehaviorEvents({ startDate: dateRange.startDate, endDate: dateRange.endDate });
+  }
+
+  async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
+    return this.getFuelReadingByVehicleId(vehicleId);
+  }
+
+  async subscribeToEvents(
+    webhookUrl: string,
+    eventTypes: string[],
+  ): Promise<WebhookSubscription> {
+    await this.subscribeWebhook({ webhookId: "", url: webhookUrl, events: eventTypes, createdAt: new Date() });
+    return { webhookId: `powerfleet-${Date.now()}`, url: webhookUrl, events: eventTypes, createdAt: new Date() };
+  }
+
+  async unsubscribeFromEvents(webhookId: string): Promise<void> {
+    return this.unsubscribeWebhook(webhookId);
   }
 
   /**

@@ -48,7 +48,7 @@ export class ExtensivClient extends SupplyChainAdapter {
         const result = await fetch(`${this.config.baseUrl}/api/v2.0/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         return result.ok;
       });
@@ -73,7 +73,7 @@ export class ExtensivClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2.0/warehouses/${warehouseId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get warehouse: ${response.statusText}`);
         const data = (await response.json()) as { WarehouseId?: string; [key: string]: any };
@@ -111,7 +111,7 @@ export class ExtensivClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2.0/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list warehouses: ${response.statusText}`);
         const data = (await response.json()) as { Warehouses?: any[] };
@@ -161,7 +161,7 @@ export class ExtensivClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -199,7 +199,7 @@ export class ExtensivClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update warehouse: ${response.statusText}`);
       });
@@ -225,7 +225,7 @@ export class ExtensivClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v2.0/warehouses/${warehouseId}/inventory/${sku}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to get inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -268,7 +268,7 @@ export class ExtensivClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v2.0/warehouses/${warehouseId}/inventory?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list inventory: ${response.statusText}`);
         const data = (await response.json()) as { Items?: any[] };
@@ -330,7 +330,7 @@ export class ExtensivClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v2.0/warehouses/${warehouseId}/inventory-adjustments`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to adjust inventory: ${response.statusText}`);
       });
@@ -366,7 +366,7 @@ export class ExtensivClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v2.0/warehouses/${warehouseId}/inventory-transfers`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to move inventory: ${response.statusText}`);
       });
@@ -525,7 +525,7 @@ export class ExtensivClient extends SupplyChainAdapter {
           client_id: this.config.apiKey || '',
           client_secret: this.config.clientSecret || '',
         }).toString(),
-        timeout: this.config.timeout,
+        signal: AbortSignal.timeout(this.config.timeout ?? 30000),
       });
 
       if (!response.ok) throw new Error('OAuth2 authentication failed');

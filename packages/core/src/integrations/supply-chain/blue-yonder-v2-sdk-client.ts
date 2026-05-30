@@ -320,7 +320,7 @@ export class BlueYonderV2SDKClient {
         const error = new Error(
           `API request failed: ${response.status} ${response.statusText}`
         );
-        (error as Record<string, unknown>).statusCode = response.status;
+        (error as unknown as Record<string, unknown>).statusCode = response.status;
         throw error;
       }
 

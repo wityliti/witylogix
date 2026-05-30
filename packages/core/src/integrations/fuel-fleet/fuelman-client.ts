@@ -9,6 +9,7 @@
 const nodeFetch = globalThis.fetch;
 
 import { FuelFleetAdapter } from "./fuel-fleet-adapter";
+import { FuelCardProduct } from "./types";
 import type {
   FuelFleetConfig,
   FuelCard,
@@ -494,7 +495,7 @@ export class FuelmanClient extends FuelFleetAdapter {
    * @returns Export URL
    */
   async exportTransactionData(criteria: Record<string, unknown>): Promise<Record<string, unknown>> {
-    const result = await this.apiRequest(
+    const result = await this.apiRequest<Record<string, unknown>>(
       "/api/v2/export/transactions",
       "POST",
       criteria
@@ -512,7 +513,7 @@ export class FuelmanClient extends FuelFleetAdapter {
   private mapFuelmanCardToFuelCard(response: FuelmanCardResponse): FuelCard {
     return {
       cardId: response.id,
-      product: "fuelman" as const,
+      product: FuelCardProduct.FUELMAN,
       cardNumber: response.cardNumber,
       last4: response.lastFour,
       cardholderName: response.driverName,

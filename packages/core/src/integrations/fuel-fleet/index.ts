@@ -19,11 +19,6 @@ export type {
   CardAssignment,
   FraudAlert,
   PurchaseLimit,
-  FuelCardProduct,
-  FuelCardStatus,
-  TransactionStatus,
-  FraudAlertSeverity,
-  FraudAlertType,
 } from "./types";
 
 export {

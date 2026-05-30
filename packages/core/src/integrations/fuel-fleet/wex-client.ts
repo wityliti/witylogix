@@ -9,6 +9,7 @@
 const nodeFetch = globalThis.fetch;
 
 import { FuelFleetAdapter } from "./fuel-fleet-adapter";
+import { FuelCardProduct } from "./types";
 import type {
   FuelFleetConfig,
   FuelCard,
@@ -498,7 +499,7 @@ export class WEXClient extends FuelFleetAdapter {
    * @returns Alert data
    */
   async getRealTimeAlerts(cardId: string): Promise<Record<string, unknown>> {
-    const alerts = await this.apiRequest(
+    const alerts = await this.apiRequest<Record<string, unknown>>(
       `/api/v1/cards/${cardId}/alerts/realtime`
     );
 
@@ -521,7 +522,7 @@ export class WEXClient extends FuelFleetAdapter {
     });
 
     const endpoint = `/api/v1/analytics?${params.toString()}`;
-    const analytics = await this.apiRequest(endpoint);
+    const analytics = await this.apiRequest<Record<string, unknown>>(endpoint);
 
     return analytics;
   }
@@ -535,7 +536,7 @@ export class WEXClient extends FuelFleetAdapter {
   private mapWEXCardToFuelCard(response: WEXCardResponse): FuelCard {
     return {
       cardId: response.cardId,
-      product: "wex_fleet" as const,
+      product: FuelCardProduct.WEX_FLEET,
       cardNumber: response.cardNumber,
       last4: response.last4,
       cardholderName: response.cardholderName,

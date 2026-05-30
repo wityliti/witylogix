@@ -292,6 +292,12 @@ export class LytxDriveCamClient extends ELDAdapter {
       })
     );
 
+    const mapLytxSeverity = (s: string): "warning" | "error" | "critical" => {
+      if (s === "critical") return "critical";
+      if (s === "high" || s === "error") return "error";
+      return "warning";
+    };
+
     return events.map((e) => ({
       id: e.eventId,
       accountId: this.config.accountId || "",
@@ -299,7 +305,7 @@ export class LytxDriveCamClient extends ELDAdapter {
       vehicleId: e.vehicleId || "",
       violationType: this.mapEventTypeToViolation(e.eventType),
       description: e.description || e.eventType,
-      severity: e.severity,
+      severity: mapLytxSeverity(e.severity),
       detectedAt: new Date(e.timestamp),
       violationTimeRange: {
         start: new Date(e.timestamp),
@@ -666,7 +672,7 @@ export class LytxDriveCamClient extends ELDAdapter {
       throw new Error(`Lytx API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**

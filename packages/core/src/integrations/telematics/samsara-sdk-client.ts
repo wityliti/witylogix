@@ -489,7 +489,12 @@ export class SamsaraSdkClient implements TelematicsProvider {
       }>;
     };
 
-    return data.data || [];
+    return (data.data || []).map((d) => ({
+      id: d.id,
+      name: d.name,
+      status: d.status ?? "unknown",
+      vehicleId: d.vehicleId,
+    }));
   }
 
   /**

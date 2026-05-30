@@ -49,7 +49,7 @@ export class KorberClient extends SupplyChainAdapter {
         const result = await fetch(`${this.config.baseUrl}/api/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         return result.ok;
       });
@@ -70,7 +70,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/warehouses/${warehouseId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -107,7 +107,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list warehouses: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -155,7 +155,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -196,7 +196,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update warehouse: ${response.statusText}`);
       });
@@ -219,7 +219,7 @@ export class KorberClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/warehouses/${warehouseId}/inventory/${sku}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to get inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -264,7 +264,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/warehouses/${warehouseId}/inventory?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list inventory: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -326,7 +326,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/warehouses/${warehouseId}/inventory-adjustments`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to adjust inventory: ${response.statusText}`);
       });
@@ -363,7 +363,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/warehouses/${warehouseId}/inventory-moves`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to move inventory: ${response.statusText}`);
       });
@@ -387,7 +387,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/inbound-shipments/${shipmentId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get inbound shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -423,7 +423,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/inbound-shipments?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok)
           throw new Error(`Failed to list inbound shipments: ${response.statusText}`);
@@ -465,7 +465,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create inbound shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -505,7 +505,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/inbound-shipments/${shipmentId}/receive`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to receive shipment: ${response.statusText}`);
       });
@@ -539,7 +539,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/inbound-shipments/${shipmentId}/quality-check`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to confirm QC: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -574,7 +574,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/orders/${orderId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -613,7 +613,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/orders?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list orders: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -656,7 +656,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -696,7 +696,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update order: ${response.statusText}`);
       });
@@ -723,7 +723,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to cancel order: ${response.statusText}`);
       });
@@ -746,7 +746,7 @@ export class KorberClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/fulfillment-requests/${fulfillmentId}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok)
           throw new Error(`Failed to get fulfillment request: ${response.statusText}`);
@@ -790,7 +790,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to allocate order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -830,7 +830,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/fulfillment-requests/${fulfillmentId}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok)
           throw new Error(`Failed to update fulfillment: ${response.statusText}`);
@@ -855,7 +855,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/waves/${waveId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get wave: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -891,7 +891,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/waves?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list waves: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -937,7 +937,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create wave: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -972,7 +972,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to release wave: ${response.statusText}`);
       });
@@ -999,7 +999,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to complete wave: ${response.statusText}`);
       });
@@ -1023,7 +1023,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/pick-tasks/${taskId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get pick task: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1057,7 +1057,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/pick-tasks?waveId=${waveId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list pick tasks: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -1099,7 +1099,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update pick task: ${response.statusText}`);
       });
@@ -1123,7 +1123,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/pack-stations/${stationId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get pack station: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1154,7 +1154,7 @@ export class KorberClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/pack-stations?warehouseId=${warehouseId}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list pack stations: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -1201,7 +1201,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to confirm shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1238,7 +1238,7 @@ export class KorberClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/warehouses/${warehouseId}/locations/${binLocation}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to get location: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1267,7 +1267,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/warehouses/${warehouseId}/zones`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list zones: ${response.statusText}`);
         const data = (await response.json()) as { data?: Array<{ zone: string }> };
@@ -1304,7 +1304,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to configure zone: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1329,7 +1329,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/purchase-orders/${poId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get PO: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1365,7 +1365,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/purchase-orders?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list POs: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -1411,7 +1411,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create PO: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1445,7 +1445,7 @@ export class KorberClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/transfer-orders/${toId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get transfer order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1480,7 +1480,7 @@ export class KorberClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/transfer-orders?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list transfer orders: ${response.statusText}`);
         const data = (await response.json()) as { data?: any[] };
@@ -1525,7 +1525,7 @@ export class KorberClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create transfer order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1560,7 +1560,7 @@ export class KorberClient extends SupplyChainAdapter {
           client_id: this.config.apiKey || '',
           client_secret: this.config.clientSecret || '',
         }).toString(),
-        timeout: this.config.timeout,
+        signal: AbortSignal.timeout(this.config.timeout ?? 30000),
       });
 
       if (!response.ok) {

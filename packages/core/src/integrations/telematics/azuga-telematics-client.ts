@@ -156,7 +156,8 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
     this.rateLimiter = new RateLimiter(config.rateLimit ?? 10);
     this.circuitBreaker = new CircuitBreaker({
       failureThreshold: 5,
-      resetTimeoutMs: 60000,
+      successThreshold: 2,
+      timeout: 60000,
     });
 
     this.logger = console;
@@ -262,7 +263,11 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
       return response.data.map((diag) => ({
         externalVehicleId: diag.vehicleId.toString(),
         engineRunning: false,
-        faultCodes: diag.dtc,
+        faultCodes: diag.dtc.map((dtc) => ({
+          code: dtc.code,
+          description: dtc.description,
+          severity: "warning" as const,
+        })),
         timestamp: new Date(diag.timestamp),
       }));
     } catch (error) {
@@ -284,7 +289,11 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
       return {
         externalVehicleId: vehicleId,
         engineRunning: false,
-        faultCodes: response.dtc,
+        faultCodes: response.dtc.map((dtc) => ({
+          code: dtc.code,
+          description: dtc.description,
+          severity: "warning" as const,
+        })),
         timestamp: new Date(response.timestamp),
       };
     } catch (error) {
@@ -449,6 +458,43 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
     }
   }
 
+  // ITelematicsAdapter interface implementation
+
+  async authenticate(): Promise<void> {
+    await this.healthCheck();
+  }
+
+  async getVehiclePosition(vehicleId: string): Promise<NormalizedPosition> {
+    return this.getPositionByVehicleId(vehicleId);
+  }
+
+  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+    return this.getDiagnosticsByVehicleId(vehicleId);
+  }
+
+  async getDriverBehaviorEvents(
+    driverId: string,
+    dateRange: { startDate: Date; endDate: Date },
+  ): Promise<NormalizedBehaviorEvent[]> {
+    return this.getBehaviorEvents({ startDate: dateRange.startDate, endDate: dateRange.endDate });
+  }
+
+  async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
+    return this.getFuelReadingByVehicleId(vehicleId);
+  }
+
+  async subscribeToEvents(
+    webhookUrl: string,
+    eventTypes: string[],
+  ): Promise<WebhookSubscription> {
+    await this.subscribeWebhook({ webhookId: "", url: webhookUrl, events: eventTypes, createdAt: new Date() });
+    return { webhookId: `azuga-${Date.now()}`, url: webhookUrl, events: eventTypes, createdAt: new Date() };
+  }
+
+  async unsubscribeFromEvents(webhookId: string): Promise<void> {
+    return this.unsubscribeWebhook(webhookId);
+  }
+
   /**
    * Validate connection
    */
@@ -515,11 +561,10 @@ export class AzugaTelematicsClient implements ITelematicsAdapter {
   private normalizeFuelReading(reading: AzugaFuelReading): NormalizedFuelReading {
     return {
       externalVehicleId: reading.vehicleId.toString(),
-      gallons: reading.fuelInGallons || 0,
-      liters: reading.fuelInLiters || 0,
       fuelLevel: reading.fuelLevel,
+      fuelUnit: "gallons",
+      fuelCapacity: reading.fuelInGallons,
       timestamp: new Date(reading.timestamp),
-      mpg: reading.mpg,
     };
   }
 

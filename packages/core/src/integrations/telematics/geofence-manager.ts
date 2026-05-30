@@ -196,7 +196,7 @@ export class GeofenceManager {
       throw new Error(`Geofence ${id} not found`);
     }
 
-    const updated = { ...geofence, ...updates, id: geofence.id, updatedAt: new Date() };
+    const updated = { ...geofence, ...updates, id: geofence.id, updatedAt: new Date() } as Geofence;
     this.geofences.set(id, updated);
     return updated;
   }

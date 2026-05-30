@@ -251,7 +251,7 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns Created truck posting
    */
   async postTruck(truck: Record<string, unknown>): Promise<Record<string, unknown>> {
-    const response = await this.apiRequest(
+    const response = await this.apiRequest<Record<string, unknown>>(
       "/api/trucks",
       "POST",
       truck
@@ -404,7 +404,7 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns Carrier monitoring data
    */
   async monitorCarrier(carrierId: string): Promise<Record<string, unknown>> {
-    const monitoring = await this.apiRequest(
+    const monitoring = await this.apiRequest<Record<string, unknown>>(
       `/api/carriers/${carrierId}/monitoring`
     );
 
@@ -479,7 +479,7 @@ export class DirectFreightClient extends FreightAdapter {
     carrierId: string,
     fleetData: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
-    const fleet = await this.apiRequest(
+    const fleet = await this.apiRequest<Record<string, unknown>>(
       `/api/carriers/${carrierId}/fleet`,
       "POST",
       fleetData
@@ -495,7 +495,7 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns Fleet data
    */
   async getFleet(carrierId: string): Promise<Record<string, unknown>> {
-    const fleet = await this.apiRequest(
+    const fleet = await this.apiRequest<Record<string, unknown>>(
       `/api/carriers/${carrierId}/fleet`
     );
 

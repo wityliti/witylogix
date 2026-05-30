@@ -240,7 +240,7 @@ export class LoadBoard123Client extends FreightAdapter {
    * @returns Created truck posting
    */
   async postTruck(truck: Record<string, unknown>): Promise<Record<string, unknown>> {
-    const response = await this.apiRequest(
+    const response = await this.apiRequest<Record<string, unknown>>(
       "/api/v1/trucks",
       "POST",
       truck
@@ -391,7 +391,7 @@ export class LoadBoard123Client extends FreightAdapter {
    * @returns Carrier monitoring data
    */
   async monitorCarrier(carrierId: string): Promise<Record<string, unknown>> {
-    const monitoring = await this.apiRequest(
+    const monitoring = await this.apiRequest<Record<string, unknown>>(
       `/api/v1/carriers/${carrierId}/monitoring`
     );
 
@@ -440,7 +440,7 @@ export class LoadBoard123Client extends FreightAdapter {
     origin: string,
     destination: string
   ): Promise<Record<string, unknown>> {
-    const routing = await this.apiRequest(
+    const routing = await this.apiRequest<Record<string, unknown>>(
       `/api/v1/routing?origin=${origin}&destination=${destination}`
     );
 
