@@ -15,6 +15,11 @@
  *   GET    /customers               List customers across stores
  *   GET    /customers/:id           Get customer detail
  *   GET    /dashboard               Platform metrics
+ *   GET    /activity                Platform-wide activity feed (cross-store)
+ *   GET    /queues                  BullMQ queue stats + DLQ
+ *   GET    /queues/:name/jobs       Jobs for a specific queue
+ *   GET    /system                  System health metrics
+ *   GET    /integrations            Integration health across all stores
  *   POST   /impersonate/:userId     Start impersonation session (rate-limited, Redis-tracked)
  *   POST   /impersonate/:userId/revoke  Revoke active impersonation session by JTI
  */
@@ -22,6 +27,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z, ZodError } from "zod";
 import { randomUUID } from "crypto";
+import os from "os";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
@@ -31,10 +37,10 @@ import {
   getOptimizationQueue,
   getWebhookQueue,
   getMaintenanceQueue,
-  getIntegrationQueue,
   getGeofenceQueue,
   getFailedDeliveryQueue,
   getWCWebhookQueue,
+  getIntegrationQueue,
 } from "../lib/queue.js";
 import {
   NotFoundError,
@@ -674,88 +680,305 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     };
   });
 
-  // ── GET /system/health ─────────────────────────────────────────
-  // Real system metrics from Node.js os module + Prisma connectivity check.
+  // ── GET /activity (Platform-wide activity feed) ─────────────────
 
-  fastify.get("/system/health", async (request: FastifyRequest, reply: FastifyReply) => {
-    const os = await import("os");
-    const startTime = process.hrtime.bigint();
+  fastify.get("/activity", async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = request.query as Record<string, string>;
+    const page = Math.max(1, Number(query.page || 1));
+    const limit = Math.min(100, Math.max(1, Number(query.limit || 50)));
+    const skip = (page - 1) * limit;
 
-    const [dbOk, dbLatencyMs] = await (async () => {
-      try {
-        const t0 = Date.now();
-        await prisma.$queryRaw`SELECT 1`;
-        return [true, Date.now() - t0] as [boolean, number];
-      } catch {
-        return [false, -1] as [boolean, number];
-      }
-    })();
+    const [logs, total] = await Promise.all([
+      (prisma.activityLog as any).findMany({
+        orderBy: { timestamp: "desc" },
+        skip,
+        take: limit,
+        include: { shop: { select: { id: true, name: true } } },
+      }),
+      (prisma.activityLog as any).count(),
+    ]);
 
-    const redisSvc = await (async () => {
-      try {
-        const redis = await getRedis();
-        const t0 = Date.now();
-        await redis.ping();
-        return { ok: true, latency: Date.now() - t0 };
-      } catch {
-        return { ok: false, latency: -1 };
-      }
-    })();
+    const actorIds = [...new Set(logs.filter((l: any) => l.actorId).map((l: any) => l.actorId as string))];
+    const users = actorIds.length > 0
+      ? await prisma.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, email: true } })
+      : [];
+    const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
 
-    const apiLatency = Number(process.hrtime.bigint() - startTime) / 1e6;
-    const memTotal = os.totalmem();
-    const memFree = os.freemem();
-    const memUsagePct = Math.round(((memTotal - memFree) / memTotal) * 100);
+    const typeMap: Record<string, string> = {
+      order: "order_created",
+      route: "route_planned",
+      shipment: "order_created",
+      driver: "order_created",
+      setting: "setting_changed",
+      user: "permission_changed",
+      payment: "payment",
+    };
 
-    const cpuLoad = os.loadavg()[0];
-    const cpuCount = os.cpus().length;
-    const cpuUsagePct = Math.min(100, Math.round((cpuLoad / cpuCount) * 100));
+    return {
+      data: logs.map((log: any) => {
+        const actor = log.actorId ? userMap[log.actorId] : null;
+        const initials = actor?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || log.actorType.slice(0, 2).toUpperCase();
+        return {
+          id: log.id,
+          userId: log.actorId || "system",
+          userName: actor?.name || log.actorType,
+          userEmail: actor?.email || "",
+          userAvatar: initials,
+          type: typeMap[log.entityType] || "order_created",
+          action: `${log.action} on ${log.entityType}`,
+          timestamp: (log.timestamp as Date).toISOString(),
+          metadata: typeof log.metadata === "object" ? log.metadata : {},
+          shopName: log.shop?.name,
+        };
+      }),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  });
 
-    const now = new Date().toISOString();
+  // ── GET /queues (BullMQ queue stats + DLQ) ──────────────────────
+
+  fastify.get("/queues", async (request: FastifyRequest, reply: FastifyReply) => {
+    const allQueues = [
+      getNotificationQueue(),
+      getOptimizationQueue(),
+      getWebhookQueue(),
+      getMaintenanceQueue(),
+      getGeofenceQueue(),
+      getFailedDeliveryQueue(),
+      getWCWebhookQueue(),
+      getIntegrationQueue(),
+    ];
+
+    const stats = await Promise.all(
+      allQueues.map(async (queue) => {
+        const [active, waiting, completed, failed, delayed] = await Promise.all([
+          queue.getActiveCount(),
+          queue.getWaitingCount(),
+          queue.getCompletedCount(),
+          queue.getFailedCount(),
+          queue.getDelayedCount(),
+        ]);
+        const isPaused = await queue.isPaused();
+        const processed = completed + failed;
+        const errorRate = processed > 0 ? Number(((failed / processed) * 100).toFixed(2)) : 0;
+        return { name: queue.name, active, waiting, completed, failed, delayed, paused: isPaused, throughputPerMin: 0, avgProcessingTimeMs: 0, errorRate };
+      }),
+    );
+
+    const dlqItems = await Promise.all(
+      allQueues.map(async (queue) => {
+        const failedJobs = await queue.getFailed(0, 19);
+        return failedJobs.map((job: any) => ({
+          jobId: String(job.id || ""),
+          jobName: job.name,
+          queue: queue.name,
+          failedReason: job.failedReason || "Unknown error",
+          category: "processing_error",
+          failedAt: job.finishedOn ? new Date(job.finishedOn).toISOString() : new Date().toISOString(),
+        }));
+      }),
+    );
+
+    return { data: { queues: stats, dlq: dlqItems.flat() } };
+  });
+
+  // ── GET /queues/:name/jobs (Jobs for a specific queue) ──────────
+
+  fastify.get("/queues/:name/jobs", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { name } = request.params as { name: string };
+    const query = request.query as Record<string, string>;
+    const status = (query.status || "active") as "active" | "waiting" | "completed" | "failed" | "delayed";
+
+    const allQueues = [
+      getNotificationQueue(), getOptimizationQueue(), getWebhookQueue(),
+      getMaintenanceQueue(), getGeofenceQueue(), getFailedDeliveryQueue(),
+      getWCWebhookQueue(), getIntegrationQueue(),
+    ];
+
+    const queue = allQueues.find((q) => q.name === name);
+    if (!queue) {
+      throw new NotFoundError("Queue", name);
+    }
+
+    const methodMap: Record<string, () => Promise<any[]>> = {
+      active: () => queue.getActive(0, 49),
+      waiting: () => queue.getWaiting(0, 49),
+      completed: () => queue.getCompleted(0, 49),
+      failed: () => queue.getFailed(0, 49),
+      delayed: () => queue.getDelayed(0, 49),
+    };
+
+    const getJobs = methodMap[status] || methodMap.active;
+    const jobs = await getJobs();
+
+    return {
+      data: jobs.map((job: any) => ({
+        id: String(job.id || ""),
+        name: job.name,
+        status,
+        progress: typeof job.progress === "number" ? job.progress : 0,
+        attempts: job.attemptsMade || 0,
+        maxAttempts: job.opts?.attempts || 3,
+        createdAt: job.timestamp ? new Date(job.timestamp).toISOString() : new Date().toISOString(),
+        processedAt: job.processedOn ? new Date(job.processedOn).toISOString() : undefined,
+      })),
+    };
+  });
+
+  // ── GET /system (System health metrics) ─────────────────────────
+
+  fastify.get("/system", async (request: FastifyRequest, reply: FastifyReply) => {
+    const redis = getRedis();
+    const now = Date.now();
+    const redisStart = Date.now();
+    let redisLatencyMs = 0;
+    let redisOk = true;
+    try {
+      await redis.ping();
+      redisLatencyMs = Date.now() - redisStart;
+    } catch {
+      redisOk = false;
+    }
+
+    let dbLatencyMs = 0;
+    let dbOk = true;
+    try {
+      const dbStart = Date.now();
+      await prisma.$queryRaw`SELECT 1`;
+      dbLatencyMs = Date.now() - dbStart;
+    } catch {
+      dbOk = false;
+    }
+
+    const mem = process.memoryUsage();
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const memUsagePct = Math.round(((totalMem - freeMem) / totalMem) * 100);
+    const cpuUsagePct = Math.round(os.loadavg()[0] * 10);
+
+    const services = [
+      {
+        name: "API Server",
+        status: "healthy" as const,
+        uptime24h: 100,
+        uptime7d: 100,
+        uptime30d: 100,
+        responseTime: Date.now() - now,
+        lastChecked: new Date().toISOString(),
+      },
+      {
+        name: "PostgreSQL",
+        status: (dbOk ? "healthy" : "critical") as "healthy" | "degraded" | "critical",
+        uptime24h: dbOk ? 100 : 0,
+        uptime7d: dbOk ? 100 : 0,
+        uptime30d: dbOk ? 100 : 0,
+        responseTime: dbLatencyMs,
+        lastChecked: new Date().toISOString(),
+      },
+      {
+        name: "Redis Cache",
+        status: (redisOk ? "healthy" : "critical") as "healthy" | "degraded" | "critical",
+        uptime24h: redisOk ? 100 : 0,
+        uptime7d: redisOk ? 100 : 0,
+        uptime30d: redisOk ? 100 : 0,
+        responseTime: redisLatencyMs,
+        lastChecked: new Date().toISOString(),
+      },
+    ];
 
     return {
       data: {
-        services: [
-          {
-            name: "API Server",
-            status: "healthy" as const,
-            uptime24h: 99.9,
-            uptime7d: 99.8,
-            uptime30d: 99.5,
-            responseTime: Math.round(apiLatency),
-            lastChecked: now,
-          },
-          {
-            name: "PostgreSQL",
-            status: dbOk ? "healthy" as const : "critical" as const,
-            uptime24h: dbOk ? 99.9 : 0,
-            uptime7d: dbOk ? 99.8 : 0,
-            uptime30d: dbOk ? 99.5 : 0,
-            responseTime: dbOk ? dbLatencyMs : -1,
-            lastChecked: now,
-          },
-          {
-            name: "Redis Cache",
-            status: redisSvc.ok ? "healthy" as const : "degraded" as const,
-            uptime24h: redisSvc.ok ? 99.9 : 50,
-            uptime7d: redisSvc.ok ? 99.8 : 50,
-            uptime30d: redisSvc.ok ? 99.5 : 50,
-            responseTime: redisSvc.ok ? redisSvc.latency : -1,
-            lastChecked: now,
-          },
-        ],
+        services,
         metrics: {
           memoryUsage: memUsagePct,
-          cpuUsage: cpuUsagePct,
+          cpuUsage: Math.min(cpuUsagePct, 100),
           activeConnections: 0,
-          deploymentVersion: process.env.npm_package_version ?? "4.x",
-          deploymentTime: new Date(Date.now() - process.uptime() * 1000).toISOString(),
+          heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+          rssMb: Math.round(mem.rss / 1024 / 1024),
+          deploymentVersion: process.env.npm_package_version || "unknown",
+          deploymentTime: new Date().toISOString(),
+          uptimeSeconds: Math.round(process.uptime()),
           nodeVersion: process.version,
           platform: process.platform,
-          uptimeSeconds: Math.round(process.uptime()),
         },
       },
     };
+  });
+
+  // ── GET /integrations (Integration health across all stores) ─────
+
+  fastify.get("/integrations", async (request: FastifyRequest, reply: FastifyReply) => {
+    const integrations = await (prisma.integration as any).findMany({
+      orderBy: { updatedAt: "desc" },
+      include: {
+        app: { select: { name: true, category: true, subcategory: true, logoUrl: true } },
+        shop: { select: { id: true, name: true } },
+      },
+    });
+
+    const categoryMap: Record<string, string> = {
+      PAYMENTS: "payment",
+      SHIPPING: "shipping",
+      ANALYTICS: "analytics",
+      MESSAGING: "notification",
+      INVENTORY: "inventory",
+      ERP: "inventory",
+      CRM: "analytics",
+    };
+
+    return {
+      data: integrations.map((integration: any) => ({
+        id: integration.id,
+        name: integration.app?.name || integration.appSlug,
+        category: categoryMap[integration.app?.category || ""] || "inventory",
+        status: integration.healthStatus === "HEALTHY" ? "connected" : integration.healthStatus === "ERROR" ? "error" : "disconnected",
+        lastSyncTime: integration.lastSyncAt ? new Date(integration.lastSyncAt).toISOString() : null,
+        successRate: 99,
+        errorCount: 0,
+        totalSyncs: 0,
+        shopName: integration.shop?.name,
+        errors: [],
+      })),
+      pagination: { total: integrations.length },
+    };
+  });
+
+  // ── GET /test-stats (Latest vitest JSON report) ────────────────
+  // Reads from test-results.json written by `vitest --reporter=json`.
+  // Returns null when no report file exists (e.g. first deployment).
+
+  fastify.get("/test-stats", async (_req, reply) => {
+    const { readFile } = await import("fs/promises");
+    const { resolve } = await import("path");
+    const reportPath = resolve(process.cwd(), "../../test-results.json");
+    try {
+      const raw = await readFile(reportPath, "utf-8");
+      const report = JSON.parse(raw);
+      const testResults = report.testResults ?? [];
+      const allTests: any[] = testResults.flatMap((f: any) => f.assertionResults ?? []);
+      const passed = allTests.filter((t: any) => t.status === "passed").length;
+      const failed = allTests.filter((t: any) => t.status === "failed").length;
+      const skipped = allTests.filter((t: any) => t.status === "pending" || t.status === "skipped").length;
+      const duration = Math.round((report.startTime ? (Date.now() - report.startTime) / 1000 : 0));
+      const coverageSummary = report.coverageMap ?? null;
+      return reply.send({
+        data: {
+          stats: { total: allTests.length, passed, failed, skipped, duration },
+          testResults: testResults.map((f: any) => ({
+            file: f.testFilePath ?? f.name,
+            status: f.status,
+            duration: Math.round((f.endTime - f.startTime) / 1000),
+            tests: (f.assertionResults ?? []).length,
+            passed: (f.assertionResults ?? []).filter((t: any) => t.status === "passed").length,
+            failed: (f.assertionResults ?? []).filter((t: any) => t.status === "failed").length,
+          })),
+          hasCoverage: !!coverageSummary,
+          generatedAt: new Date().toISOString(),
+        },
+      });
+    } catch {
+      return reply.send({ data: null });
+    }
   });
 
   // ── POST /impersonate/:userId (Start impersonation) ────────────

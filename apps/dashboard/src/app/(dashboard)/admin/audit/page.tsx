@@ -51,6 +51,7 @@ interface AuditResponse {
   };
 }
 
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 const ACTION_META: Record<AuditAction, { label: string; color: string; icon: typeof Plus }> = {
@@ -127,7 +128,7 @@ export default function AuditTrailPage() {
   const { data, loading, refetch } = useApiQuery<AuditResponse>(`/api/v4/audit?${qs}`);
 
   const entries: AuditEntry[] = data?.data ?? [];
-  const pagination = data?.pagination ?? { page: 1, limit: PAGE_SIZE, total: 0, pages: 1 };
+  const pagination = data?.pagination ?? { page: 1, limit: PAGE_SIZE, total: 0, pages: 0 };
 
   const filtered = useMemo(() => {
     if (!search.trim()) return entries;

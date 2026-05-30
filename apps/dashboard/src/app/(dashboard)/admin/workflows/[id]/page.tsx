@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "../../../../../components/ui/card";
 import { StatCard } from "../../../../../components/ui/stat-card";
 import { Badge } from "../../../../../components/ui/badge";
 import { Button } from "../../../../../components/ui/button";
+import { LoadingSkeleton } from "../../../../../components/ui/loading-skeleton";
+import { ErrorState } from "../../../../../components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
   CheckCircle2,
   AlertCircle,
-  Clock,
   Loader2,
   RotateCcw,
   Square,
@@ -19,16 +20,9 @@ import {
   ChevronUp,
   Calendar,
   User,
-  Hash,
 } from "lucide-react";
 import { useApiQuery } from '@/hooks/use-api';
-import { useParams } from 'next/navigation';
-import { LoadingSkeleton } from '../../../../../components/ui/loading-skeleton';
-import { ErrorState } from '../../../../../components/ui/error-state';
-
-/* ═══════════════════════════════════════════════════════════
-   WORKFLOW EXECUTION DETAIL PAGE — Monitor step-by-step execution
-   ═══════════════════════════════════════════════════════════ */
+import { api } from '@/lib/api';
 
 interface WorkflowStep {
   id: string;
@@ -44,40 +38,23 @@ interface WorkflowStep {
 }
 
 interface WorkflowExecutionDetail {
-  id: string;
   executionId: string;
   workflowName: string;
   status: "running" | "completed" | "failed" | "compensating";
-  totalSteps: number;
-  completedSteps: number;
-  failedSteps: number;
   startedAt: string;
   completedAt?: string;
-  totalDuration: string;
-  steps: WorkflowStep[];
+  durationMs?: number;
   input: Record<string, any>;
-  context: Record<string, string>;
-  createdBy: string;
-  retryCount: number;
+  output?: Record<string, any>;
+  error?: Record<string, any>;
+  steps: WorkflowStep[];
+  metadata?: Record<string, any>;
+  createdAt: string;
 }
 
-const EMPTY_EXECUTION: WorkflowExecutionDetail = {
-  id: "",
-  executionId: "",
-  workflowName: "",
-  status: "running",
-  totalSteps: 0,
-  completedSteps: 0,
-  failedSteps: 0,
-  startedAt: "",
-  totalDuration: "",
-  createdBy: "",
-  retryCount: 0,
-  input: {},
-  context: {},
-  steps: [],
-};
-
+interface ExecutionResponse {
+  data: WorkflowExecutionDetail;
+}
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -98,29 +75,29 @@ const getStatusBadgeVariant = (
   status: "running" | "completed" | "failed" | "compensating"
 ): "info" | "success" | "danger" | "warning" => {
   switch (status) {
-    case "running":
-      return "info";
-    case "completed":
-      return "success";
-    case "failed":
-      return "danger";
-    case "compensating":
-      return "warning";
-    default:
-      return "default" as any;
+    case "running": return "info";
+    case "completed": return "success";
+    case "failed": return "danger";
+    case "compensating": return "warning";
+    default: return "default" as any;
   }
 };
 
 const formatDateTime = (isoStr: string): string => {
-  const date = new Date(isoStr);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+  return new Date(isoStr).toLocaleDateString("en-US", {
+    month: "short", day: "numeric", year: "numeric",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
   });
+};
+
+const formatDuration = (ms?: number): string => {
+  if (!ms) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}m ${rem}s`;
 };
 
 function JsonViewer({ data }: { data: Record<string, any> }) {
@@ -134,115 +111,77 @@ function JsonViewer({ data }: { data: Record<string, any> }) {
 function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
 
+  if (steps.length === 0) {
+    return (
+      <p className="text-sm text-gray-400 text-center py-6">
+        No step details available for this execution.
+      </p>
+    );
+  }
+
   return (
     <div className="relative pl-6">
-      {/* Vertical line */}
       <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-[#1e1e2e]" />
-
       {steps.map((step, idx) => (
-        <div
-          key={step.id}
-          className={cn("relative", idx < steps.length - 1 ? "mb-5" : "")}
-        >
-          {/* Timeline dot */}
+        <div key={step.id} className={cn("relative", idx < steps.length - 1 ? "mb-5" : "")}>
           <div className="absolute -left-5 top-2 w-4.5 h-4.5 rounded-full bg-[#0a0a0f] border-4 border-[#1e1e2e] flex items-center justify-center">
             <div
               className="w-2 h-2 rounded-full"
               style={{
                 background:
-                  step.status === "completed"
-                    ? "#10b981"
-                    : step.status === "failed"
-                    ? "#ef4444"
-                    : step.status === "running"
-                    ? "#3b82f6"
-                    : "#f59e0b",
+                  step.status === "completed" ? "#10b981" :
+                  step.status === "failed" ? "#ef4444" :
+                  step.status === "running" ? "#3b82f6" : "#f59e0b",
               }}
             />
           </div>
 
-          {/* Step card */}
           <Card
             onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
             className="cursor-pointer transition-all bg-[#12121a] border border-[#1e1e2e]"
             style={{
               borderColor: expandedStep === step.id ? "#3b82f6" : undefined,
-              background:
-                expandedStep === step.id ? "#1a1a2e" : "#12121a",
+              background: expandedStep === step.id ? "#1a1a2e" : "#12121a",
             }}
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(step.status)}
-                </div>
+                {getStatusIcon(step.status)}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-gray-400 font-semibold">
-                      Step {step.number}
-                    </span>
-                    <h4 className="m-0 text-sm font-semibold text-white">
-                      {step.name}
-                    </h4>
-                    <Badge
-                      variant={
-                        step.status === "completed"
-                          ? "success"
-                          : step.status === "failed"
-                          ? "danger"
-                          : step.status === "running"
-                          ? "info"
-                          : "warning"
-                      }
-                    >
+                    <span className="text-xs text-gray-400 font-semibold">Step {step.number}</span>
+                    <h4 className="m-0 text-sm font-semibold text-white">{step.name}</h4>
+                    <Badge variant={step.status === "completed" ? "success" : step.status === "failed" ? "danger" : step.status === "running" ? "info" : "warning"}>
                       {step.status}
                     </Badge>
                   </div>
-                  <span className="text-xs text-gray-400">
-                    Duration: {step.duration}
-                  </span>
+                  <span className="text-xs text-gray-400">Duration: {step.duration}</span>
                 </div>
               </div>
-
               <div className="flex items-center gap-2">
-                {expandedStep === step.id ? (
-                  <ChevronUp size={18} className="text-gray-400"  />
-                ) : (
-                  <ChevronDown size={18} className="text-gray-400"  />
-                )}
+                {expandedStep === step.id ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
               </div>
             </div>
 
-            {/* Expanded content */}
             {expandedStep === step.id && (
               <div className="mt-4 pt-4 border-t border-[#1e1e2e]">
                 {step.input && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">
-                      Input
-                    </h5>
+                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Input</h5>
                     <JsonViewer data={step.input} />
                   </div>
                 )}
-
                 {step.output && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">
-                      Output
-                    </h5>
+                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Output</h5>
                     <JsonViewer data={step.output} />
                   </div>
                 )}
-
                 {step.error && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-red-500 uppercase mb-2 tracking-wider">
-                      Error Details
-                    </h5>
+                    <h5 className="text-xs font-semibold text-red-500 uppercase mb-2 tracking-wider">Error Details</h5>
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                      <p className="m-0 mb-2 text-red-500 text-sm font-medium">
-                        {step.error.message}
-                      </p>
+                      <p className="m-0 mb-2 text-red-500 text-sm font-medium">{step.error.message}</p>
                       {step.error.stack && (
                         <pre className="m-0 text-xs text-gray-400 font-mono overflow-auto whitespace-pre-wrap break-words">
                           {step.error.stack}
@@ -251,15 +190,10 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                     </div>
                   </div>
                 )}
-
                 {step.compensationStatus && (
                   <div>
-                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">
-                      Compensation Status
-                    </h5>
-                    <Badge
-                      variant={step.compensationStatus === "completed" ? "success" : step.compensationStatus === "failed" ? "danger" : "warning"}
-                    >
+                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Compensation Status</h5>
+                    <Badge variant={step.compensationStatus === "completed" ? "success" : step.compensationStatus === "failed" ? "danger" : "warning"}>
                       {step.compensationStatus}
                     </Badge>
                   </div>
@@ -312,193 +246,151 @@ function normalizeExecution(raw: any): WorkflowExecutionDetail {
 export default function WorkflowExecutionDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const execId = params.id as string;
-  const { data: raw, loading, error, refetch } = useApiQuery<any>(`/api/v4/workflow/executions/${execId}`);
+  const id = params?.id as string;
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 size={24} className="animate-spin text-blue-500" /></div>;
-  if (error) return <div className="p-6 text-red-400">Error: {error.message}</div>;
-  if (!raw) return null;
+  const { data, loading, error, refetch } = useApiQuery<ExecutionResponse>(
+    id ? `/api/v4/workflow/executions/${id}` : null
+  );
 
-  const execution = normalizeExecution(raw);
+  const execution = data?.data;
+
+  const [cancelling, setCancelling] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+
+  const handleCancel = async () => {
+    if (!execution || cancelling) return;
+    setCancelling(true);
+    try {
+      await api.post(`/api/v4/workflow/executions/${id}/cancel`, {});
+      refetch();
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!execution || retrying) return;
+    setRetrying(true);
+    try {
+      refetch();
+    } finally {
+      setRetrying(false);
+    }
+  };
+
+  if (loading) return <LoadingSkeleton />;
+  if (error || !execution) return <ErrorState message={error?.message ?? 'Execution not found'} onRetry={refetch} />;
+
+  const steps = execution.steps ?? [];
+  const completedSteps = steps.filter(s => s.status === 'completed').length;
+  const failedSteps = steps.filter(s => s.status === 'failed').length;
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen">
-      {/* Header */}
       <div className="flex items-center justify-between p-5 px-6 border-b border-[#1e1e2e] bg-[#12121a] backdrop-blur-sm sticky top-0 z-40">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/admin/workflows")}
-            className="flex items-center gap-1"
-          >
+          <Button variant="ghost" size="sm" onClick={() => router.push("/admin/workflows")} className="flex items-center gap-1">
             <ChevronLeft size={18} />
             Back
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-white m-0 tracking-tight">
-              {execution.workflowName}
-            </h1>
-            <p className="text-sm text-gray-400 m-0 mt-0.5">
-              {execution.executionId}
-            </p>
+            <h1 className="text-xl font-bold text-white m-0 tracking-tight">{execution.workflowName}</h1>
+            <p className="text-sm text-gray-400 m-0 mt-0.5">{execution.executionId}</p>
           </div>
           <Badge variant={getStatusBadgeVariant(execution.status)}>{execution.status.toUpperCase()}</Badge>
         </div>
 
         <div className="flex gap-2">
           {execution.status === "running" && (
-            <>
-              <Button variant="secondary" size="sm">
-                <Square size={16} />
-                Cancel
-              </Button>
-            </>
+            <Button variant="secondary" size="sm" onClick={handleCancel} disabled={cancelling}>
+              <Square size={16} />
+              {cancelling ? "Cancelling…" : "Cancel"}
+            </Button>
           )}
           {(execution.status === "failed" || execution.status === "completed") && (
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={handleRetry} disabled={retrying}>
               <RotateCcw size={16} />
-              Retry Workflow
+              {retrying ? "Retrying…" : "Retry Workflow"}
             </Button>
           )}
         </div>
       </div>
 
       <div className="p-6">
-        {/* Stats Cards */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
-          <StatCard
-            label="Total Steps"
-            value={execution.totalSteps}
-            accentColor="#3b82f6"
-            index={0}
-          />
-          <StatCard
-            label="Completed"
-            value={execution.completedSteps}
-            accentColor="#10b981"
-            index={1}
-          />
-          <StatCard
-            label="Failed"
-            value={execution.failedSteps}
-            accentColor="#ef4444"
-            index={2}
-          />
-          <StatCard
-            label="Duration"
-            value={execution.totalDuration}
-            accentColor="#3b82f6"
-            index={3}
-          />
+          <StatCard label="Total Steps" value={steps.length} accentColor="#3b82f6" index={0} />
+          <StatCard label="Completed" value={completedSteps} accentColor="#10b981" index={1} />
+          <StatCard label="Failed" value={failedSteps} accentColor="#ef4444" index={2} />
+          <StatCard label="Duration" value={formatDuration(execution.durationMs)} accentColor="#3b82f6" index={3} />
         </div>
 
-        {/* Step Timeline */}
         <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
             <CardTitle className="text-white">Step Timeline</CardTitle>
           </CardHeader>
           <CardContent>
-            <StepTimeline steps={execution.steps} />
+            <StepTimeline steps={steps} />
           </CardContent>
         </Card>
 
-        {/* Execution Metadata */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 mb-6">
-          {/* Input Data */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardHeader>
-              <CardTitle className="text-white">Input Data</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <JsonViewer data={execution.input} />
-            </CardContent>
-          </Card>
+          {execution.input && (
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <CardHeader><CardTitle className="text-white">Input Data</CardTitle></CardHeader>
+              <CardContent><JsonViewer data={execution.input as Record<string, any>} /></CardContent>
+            </Card>
+          )}
 
-          {/* Execution Context */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardHeader>
-              <CardTitle className="text-white">Execution Context</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-3">
-                {Object.entries(execution.context).map(([key, value]) => (
-                  <div key={key} className="flex gap-2">
-                    <span className="text-xs font-semibold text-gray-400 min-w-20 uppercase tracking-wider">
-                      {key}
-                    </span>
-                    <span className="text-sm text-white font-mono">
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {execution.metadata && (
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <CardHeader><CardTitle className="text-white">Execution Context</CardTitle></CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-3">
+                  {Object.entries(execution.metadata).map(([key, value]) => (
+                    <div key={key} className="flex gap-2">
+                      <span className="text-xs font-semibold text-gray-400 min-w-20 uppercase tracking-wider">{key}</span>
+                      <span className="text-sm text-white font-mono">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Timestamps */}
           <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardHeader>
-              <CardTitle className="text-white">Timeline</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-white">Timeline</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar size={14} className="text-gray-400" />
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Started
-                    </span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Started</span>
                   </div>
-                  <span className="text-sm text-white block ml-5">
-                    {formatDateTime(execution.startedAt)}
-                  </span>
+                  <span className="text-sm text-white block ml-5">{formatDateTime(execution.startedAt)}</span>
                 </div>
                 {execution.completedAt && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <CheckCircle2 size={14} className="text-emerald-500" />
-                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Completed
-                      </span>
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Completed</span>
                     </div>
-                    <span className="text-sm text-white block ml-5">
-                      {formatDateTime(execution.completedAt)}
-                    </span>
+                    <span className="text-sm text-white block ml-5">{formatDateTime(execution.completedAt)}</span>
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <User size={14} className="text-gray-400" />
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Created By
-                    </span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Created</span>
                   </div>
-                  <span className="text-sm text-white block ml-5 capitalize">
-                    {execution.createdBy}
-                  </span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <RotateCcw size={14} className="text-gray-400" />
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Retry Count
-                    </span>
-                  </div>
-                  <span className="text-sm text-white block ml-5">
-                    {execution.retryCount}
-                  </span>
+                  <span className="text-sm text-white block ml-5">{formatDateTime(execution.createdAt)}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Error Details Card (if failed) */}
-        {execution.status === "failed" && execution.steps.some((s) => s.error) && (
-          <Card
-            className="border-l-4 border-l-red-500 mb-6"
-          >
+        {execution.status === "failed" && execution.error && (
+          <Card className="border-l-4 border-l-red-500 mb-6">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <AlertCircle size={20} className="text-red-500" />
@@ -506,30 +398,30 @@ export default function WorkflowExecutionDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              {execution.steps
-                .filter((s) => s.error)
-                .map((step) => (
-                  <div key={step.id} className="mb-3">
-                    <p className="m-0 mb-1 text-red-500 text-sm font-semibold">
-                      Step {step.number}: {step.name}
-                    </p>
-                    <p className="m-0 text-gray-400 text-sm">
-                      {step.error?.message}
-                    </p>
-                  </div>
-                ))}
+              <JsonViewer data={execution.error as Record<string, any>} />
+            </CardContent>
+          </Card>
+        )}
+
+        {execution.status === "failed" && steps.some(s => s.error) && (
+          <Card className="border-l-4 border-l-red-500 mb-6">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <AlertCircle size={20} className="text-red-500" />
+                <CardTitle>Step Errors</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {steps.filter(s => s.error).map(step => (
+                <div key={step.id} className="mb-3">
+                  <p className="m-0 mb-1 text-red-500 text-sm font-semibold">Step {step.number}: {step.name}</p>
+                  <p className="m-0 text-gray-400 text-sm">{step.error?.message}</p>
+                </div>
+              ))}
             </CardContent>
           </Card>
         )}
       </div>
-
-      {/* Spin animation for loader */}
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }
