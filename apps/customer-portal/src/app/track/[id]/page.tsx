@@ -1,369 +1,318 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Share2, MapPin, Clock } from 'lucide-react';
+import { use } from 'react';
+import { format } from 'date-fns';
+import { MapPin, Clock, Phone, MessageCircle, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { useDeliveryTracking } from '@/hooks/use-delivery-tracking';
-import { LiveMap } from '@/components/live-map';
-import { ETACountdown } from '@/components/eta-countdown';
-import { DeliveryStatusTimeline } from '@/components/delivery-status-timeline';
-import { DriverInfoCard } from '@/components/driver-info-card';
-import { BottomSheet } from '@/components/bottom-sheet';
-import type { DeliveryTracking, DeliveryStepDetail } from '@/types';
+import { PageLoader, ErrorMessage } from '@/components/loading-skeleton';
+import { ManageDeliveryPanel } from '@/components/manage-delivery-panel';
+import { useQuery } from '@/lib/use-api';
+import type { ApiTrackingResponse, ApiTimeSlot } from '@/lib/portal-api';
+import { ROUTES, getStatusLabel } from '@/lib/portal-api';
+import type { ContactPref } from '@/components/manage-delivery-panel';
 
-// Mock data - replace with real API calls
-const mockDeliveryData: Record<string, DeliveryTracking> = {
-  'ORD-2024-001': {
-    orderId: 'ORD-2024-001',
-    driverId: 'DRV-123',
-    driver: {
-      id: 'DRV-123',
-      name: 'John Martinez',
-      phone: '+1-555-0123',
-      email: 'john@example.com',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
-      vehicle: {
-        type: 'Van',
-        plate: 'ABC-1234',
-        color: 'Blue',
-      },
-      rating: 4.8,
-    },
-    driverPosition: {
-      latitude: 40.7128,
-      longitude: -74.0060,
-      bearing: 45,
-      speed: 35,
-      timestamp: new Date(),
-    },
-    deliveryStatus: 'out-for-delivery' as const,
-    eta: new Date(Date.now() + 12 * 60000), // 12 minutes from now
-    route: [
-      { latitude: 40.7128, longitude: -74.0060, bearing: 45, speed: 35, timestamp: new Date() },
-      { latitude: 40.7140, longitude: -74.0068, bearing: 45, speed: 35, timestamp: new Date() },
-      { latitude: 40.7152, longitude: -74.0076, bearing: 45, speed: 35, timestamp: new Date() },
-    ],
-    destinationLatitude: 40.7164,
-    destinationLongitude: -74.0084,
-    isConnected: true,
-    lastUpdated: new Date(),
-  },
-};
+// ─── Response envelopes ───────────────────────────────────────
 
-export default function TrackingPage() {
-  const params = useParams();
-  const router = useRouter();
-  const orderId = params.id as string;
+interface TrackingEnvelope {
+  data: ApiTrackingResponse;
+}
 
-  const [deliveryData] = useState<DeliveryTracking | null>(
-    mockDeliveryData[orderId] || null
+interface SlotsEnvelope {
+  data: ApiTimeSlot[];
+}
+
+// ─── Step display ─────────────────────────────────────────────
+
+const STATUS_STEPS = [
+  { status: 'PENDING', label: 'Order Placed', icon: '📦' },
+  { status: 'ACCEPTED', label: 'Confirmed', icon: '✅' },
+  { status: 'ASSIGNED', label: 'Driver Assigned', icon: '👤' },
+  { status: 'PICKED_UP', label: 'Picked Up', icon: '🚚' },
+  { status: 'OUT_FOR_DELIVERY', label: 'Out for Delivery', icon: '🗺️' },
+  { status: 'ARRIVED', label: 'Driver Arrived', icon: '📍' },
+  { status: 'DELIVERED', label: 'Delivered', icon: '🎉' },
+];
+
+const STATUS_ORDER = STATUS_STEPS.map((s) => s.status);
+
+function getStepStatus(
+  stepStatus: string,
+  currentStatus: string,
+): 'complete' | 'current' | 'pending' {
+  const stepIdx = STATUS_ORDER.indexOf(stepStatus);
+  const currentIdx = STATUS_ORDER.indexOf(currentStatus);
+  if (currentIdx < 0) return 'pending';
+  if (stepIdx < currentIdx) return 'complete';
+  if (stepIdx === currentIdx) return 'current';
+  return 'pending';
+}
+
+// ─── Component ────────────────────────────────────────────────
+
+export default function TrackDeliveryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: trackingToken } = use(params);
+
+  const { data: trackingEnvelope, loading, error, refetch } = useQuery<TrackingEnvelope>(
+    ROUTES.TRACKING_BY_TOKEN(trackingToken),
   );
-  const [showDetailsSheet, setShowDetailsSheet] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [routeProgress, setRouteProgress] = useState(0);
 
-  const { driverPosition, deliveryStatus, eta, etaConfidence, etaDeltaMinutes, isAIPredicted, isConnected } = useDeliveryTracking({
-    orderId,
-    token: 'mock-token',
-  });
+  const { data: slotsEnvelope } = useQuery<SlotsEnvelope>(
+    trackingEnvelope ? ROUTES.TRACKING_SLOTS(trackingToken) : null,
+  );
 
-  // Use mock data or hook data
-  const activeData = deliveryData && {
-    ...deliveryData,
-    driverPosition: driverPosition || deliveryData.driverPosition,
-    deliveryStatus: deliveryStatus || deliveryData.deliveryStatus,
-    eta: eta || deliveryData.eta,
-    isConnected,
-  };
+  const tracking = trackingEnvelope?.data;
+  const slots = slotsEnvelope?.data ?? [];
 
-  // Detect mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  if (loading) return <PageLoader />;
 
-  // Calculate route progress
-  useEffect(() => {
-    if (activeData) {
-      const now = Date.now();
-      const createdTime = new Date('2024-03-11T14:00:00').getTime();
-      const etaTime = activeData.eta.getTime();
-      const elapsedPercent = Math.max(
-        0,
-        Math.min(100, ((now - createdTime) / (etaTime - createdTime)) * 100)
-      );
-      setRouteProgress(Math.round(elapsedPercent));
-    }
-  }, [activeData]);
-
-  if (!activeData) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center h-screen animate-fade-in">
-        <div className="text-center">
-          <p className="text-wl-text-secondary mb-4">Delivery not found</p>
-          <button
-            onClick={() => router.back()}
-            className="btn btn-primary"
-          >
-            Go Back
-          </button>
+      <div className="page-container">
+        <ErrorMessage
+          message={
+            error.message.includes('404')
+              ? 'Tracking information not found. Please check your tracking token.'
+              : error.message
+          }
+          onRetry={refetch}
+        />
+        <div className="mt-4">
+          <Link href="/track" className="btn btn-ghost">
+            ← Try another token
+          </Link>
         </div>
       </div>
     );
   }
 
-  const statusSteps: DeliveryStepDetail[] = [
-    {
-      step: 'ordered',
-      status: 'completed',
-      timestamp: new Date(Date.now() - 45 * 60000),
-      details: 'Your order was placed',
-    },
-    {
-      step: 'confirmed',
-      status: 'completed',
-      timestamp: new Date(Date.now() - 40 * 60000),
-      details: 'Order confirmed by store',
-      expandedInfo: {
-        driverAssigned: 'John Martinez',
-      },
-    },
-    {
-      step: 'dispatched',
-      status: 'completed',
-      timestamp: new Date(Date.now() - 20 * 60000),
-      details: 'Driver started delivery route',
-      expandedInfo: {
-        estimatedTime: activeData.eta,
-      },
-    },
-    {
-      step: 'out-for-delivery',
-      status: 'current',
-      timestamp: new Date(Date.now() - 5 * 60000),
-      details: activeData.driver.name + ' is on the way',
-    },
-    {
-      step: 'nearby',
-      status: 'pending',
-      details: 'Driver will arrive soon',
-    },
-    {
-      step: 'delivered',
-      status: 'pending',
-      details: 'Order will be marked as delivered',
-    },
-  ];
+  if (!tracking) return null;
+
+  const isDelivered = tracking.status === 'DELIVERED';
+  const isFailed = ['FAILED', 'CANCELLED', 'RETURNED'].includes(tracking.status);
 
   return (
-    <div className="h-screen flex flex-col lg:flex-row overflow-hidden bg-wl-bg-root">
-      {/* Desktop: Full-width map with sidebar */}
-      {!isMobile && (
-        <>
-          {/* Map Section */}
-          <div className="flex-1 relative">
-            <LiveMap
-              driverPosition={activeData.driverPosition}
-              destinationLat={activeData.destinationLatitude}
-              destinationLng={activeData.destinationLongitude}
-              route={activeData.route}
-              isConnected={activeData.isConnected}
-            />
+    <div className="page-container animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title">Live Tracking</h1>
+        <p className="page-subtitle">
+          Order{' '}
+          <span className="mono">
+            {tracking.externalOrderNumber ?? `#${tracking.id.slice(-8).toUpperCase()}`}
+          </span>
+        </p>
+      </div>
 
-            {/* Share Button */}
-            <button
-              onClick={() => {
-                const url = `${window.location.origin}/track/${orderId}`;
-                navigator.clipboard.writeText(url);
-                alert('Tracking link copied to clipboard!');
-              }}
-              className={cn(
-                'absolute top-6 right-6 z-10',
-                'btn btn-secondary backdrop-blur-sm',
-                'flex items-center gap-2 shadow-md'
-              )}
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </button>
-          </div>
-
-          {/* Sidebar */}
-          <div className={cn(
-            'w-96 flex flex-col border-l border-wl-border-subtle',
-            'bg-wl-bg-root overflow-y-auto'
-          )}>
-            <div className="p-6 space-y-6 animate-fade-in">
-              {/* ETA Section */}
-              <div className="section-card">
-                <ETACountdown
-                  eta={activeData.eta}
-                  routeProgress={routeProgress}
-                  lastUpdated={activeData.lastUpdated}
-                  etaConfidence={etaConfidence}
-                  etaDeltaMinutes={etaDeltaMinutes}
-                  isAIPredicted={isAIPredicted}
-                />
-              </div>
-
-              {/* Driver Info */}
-              <div className="section-card">
-                <DriverInfoCard
-                  driver={activeData.driver}
-                  isConnected={activeData.isConnected}
-                />
-              </div>
-
-              {/* Order Items */}
-              <div className="section-card space-y-3">
-                <h3 className="font-semibold text-wl-text-primary">Delivery Items</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <span className="text-sm text-wl-text-secondary">2x Fresh Vegetables Bundle</span>
-                    <span className="text-sm font-medium text-wl-text-primary mono">$24.99</span>
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-sm text-wl-text-secondary">1x Organic Milk (1L)</span>
-                    <span className="text-sm font-medium text-wl-text-primary mono">$5.99</span>
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <span className="text-sm text-wl-text-secondary">1x Whole Wheat Bread</span>
-                    <span className="text-sm font-medium text-wl-text-primary mono">$3.49</span>
-                  </div>
-                  <div className="pt-2 border-t border-wl-border-subtle">
-                    <div className="flex justify-between">
-                      <span className="font-semibold text-wl-text-primary">Total</span>
-                      <span className="font-semibold text-wl-text-primary mono">$34.47</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Special Instructions */}
-              <div className={cn(
-                'section-card flex gap-3',
-                'bg-wl-bg-elevated'
-              )}>
-                <MapPin className="w-4 h-4 text-wl-info-500 flex-shrink-0 mt-1" />
-                <p className="text-sm text-wl-text-secondary">
-                  <span className="font-medium">Delivery Note:</span> Please leave package at front door if no one answers. Thank you!
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main panel */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Status Hero */}
+          <div
+            className={cn(
+              'section-card',
+              isDelivered && 'border-wl-success-500/50',
+              isFailed && 'border-wl-error-500/50',
+            )}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-1">
+                  Current Status
+                </p>
+                <p className="text-2xl font-bold text-wl-text-primary">
+                  {getStatusLabel(tracking.status)}
                 </p>
               </div>
+              {isDelivered && (
+                <CheckCircle2 size={40} className="text-wl-success-500" />
+              )}
+            </div>
 
-              {/* Timeline */}
-              <div className="section-card">
-                <h3 className="font-semibold text-wl-text-primary mb-4">Delivery Status</h3>
-                <DeliveryStatusTimeline steps={statusSteps} />
+            {/* ETA */}
+            {tracking.estimatedArrival && !isDelivered && (
+              <div className="flex items-center gap-2 text-sm text-wl-text-secondary mt-2">
+                <Clock size={14} className="text-wl-primary-500" />
+                <span>
+                  Estimated arrival:{' '}
+                  <strong className="text-wl-text-primary">
+                    {format(new Date(tracking.estimatedArrival), 'PPp')}
+                  </strong>
+                </span>
+              </div>
+            )}
+
+            {/* Delivery address */}
+            <div className="flex items-start gap-2 mt-3 text-sm text-wl-text-secondary">
+              <MapPin size={14} className="mt-0.5 flex-shrink-0 text-wl-text-tertiary" />
+              <span>
+                {tracking.addressLine1}, {tracking.city}
+                {tracking.province ? `, ${tracking.province}` : ''}{' '}
+                {tracking.postalCode}
+              </span>
+            </div>
+          </div>
+
+          {/* Progress steps */}
+          <div className="section-card">
+            <h2 className="font-semibold text-wl-text-primary mb-5">Delivery Progress</h2>
+            <div className="relative">
+              {/* Vertical connector */}
+              <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-wl-border-subtle" />
+
+              <div className="flex flex-col gap-5">
+                {STATUS_STEPS.filter((s) => !isFailed || s.status !== 'DELIVERED').map((step) => {
+                  const stepState = getStepStatus(step.status, tracking.status);
+                  return (
+                    <div key={step.status} className="relative flex items-center gap-4">
+                      <div
+                        className={cn(
+                          'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10 text-sm',
+                          stepState === 'complete' &&
+                            'bg-wl-success-500/20 border-2 border-wl-success-500 text-wl-success-500',
+                          stepState === 'current' &&
+                            'bg-wl-primary-500 border-2 border-wl-primary-500 text-white animate-pulse',
+                          stepState === 'pending' &&
+                            'bg-wl-bg-elevated border-2 border-wl-border-subtle text-wl-text-tertiary',
+                        )}
+                      >
+                        {stepState === 'complete' ? '✓' : step.icon}
+                      </div>
+                      <div>
+                        <p
+                          className={cn(
+                            'text-sm font-medium',
+                            stepState === 'current' && 'text-wl-primary-400',
+                            stepState === 'complete' && 'text-wl-text-primary',
+                            stepState === 'pending' && 'text-wl-text-tertiary',
+                          )}
+                        >
+                          {step.label}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
-        </>
-      )}
 
-      {/* Mobile: Map full screen with bottom sheet */}
-      {isMobile && (
-        <>
-          <div className="flex-1 relative">
-            <LiveMap
-              driverPosition={activeData.driverPosition}
-              destinationLat={activeData.destinationLatitude}
-              destinationLng={activeData.destinationLongitude}
-              route={activeData.route}
-              isConnected={activeData.isConnected}
+          {/* Proof of delivery */}
+          {isDelivered && tracking.proofOfDelivery && (
+            <div className="section-card">
+              <h2 className="font-semibold text-wl-text-primary mb-4">Proof of Delivery</h2>
+              {tracking.proofOfDelivery.photoUrls.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  {tracking.proofOfDelivery.photoUrls.map((url, i) => (
+                    <a
+                      key={i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-lg overflow-hidden border border-wl-border-subtle"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`Delivery photo ${i + 1}`}
+                        className="w-full h-28 object-cover"
+                      />
+                    </a>
+                  ))}
+                </div>
+              )}
+              {tracking.proofOfDelivery.recipientName && (
+                <p className="text-sm text-wl-text-secondary">
+                  Signed by:{' '}
+                  <span className="font-medium">{tracking.proofOfDelivery.recipientName}</span>
+                </p>
+              )}
+              {tracking.proofOfDelivery.deliveredAt && (
+                <p className="text-xs text-wl-text-tertiary mt-1">
+                  At {format(new Date(tracking.proofOfDelivery.deliveredAt), 'PPp')}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Manage delivery panel (from existing component — already calls real API) */}
+          {!isDelivered && !isFailed && (
+            <ManageDeliveryPanel
+              trackingToken={trackingToken}
+              deliveryStatus={tracking.status}
+              initialPreferences={
+                tracking.deliveryPreferences
+                  ? {
+                      ...tracking.deliveryPreferences,
+                      contactPref: (tracking.deliveryPreferences.contactPref as ContactPref | null) ?? null,
+                    }
+                  : undefined
+              }
+              availableSlots={slots.map((s) => ({
+                id: s.id,
+                name: s.name,
+                startTime: s.startTime,
+                endTime: s.endTime,
+                daysOfWeek: s.daysOfWeek,
+              }))}
+              slotsLocked={['OUT_FOR_DELIVERY', 'ARRIVED'].includes(tracking.status)}
             />
+          )}
+        </div>
 
-            {/* Mobile Top Button Bar */}
-            <div className={cn(
-              'absolute top-4 left-4 right-4 z-10',
-              'flex gap-3'
-            )}>
-              <button
-                onClick={() => setShowDetailsSheet(true)}
-                className={cn(
-                  'flex-1 btn btn-secondary backdrop-blur-sm shadow-md',
-                  'flex items-center justify-center gap-2'
-                )}
-              >
-                <Clock className="w-4 h-4" />
-                Details
-              </button>
-
-              <button
-                onClick={() => {
-                  const url = `${window.location.origin}/track/${orderId}`;
-                  navigator.clipboard.writeText(url);
-                  alert('Link copied!');
-                }}
-                className="btn btn-secondary backdrop-blur-sm shadow-md"
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile Bottom Sheet */}
-          <BottomSheet
-            isOpen={showDetailsSheet}
-            onClose={() => setShowDetailsSheet(false)}
-            title="Delivery Details"
-            snapPoints={[120, 280, 500]}
-          >
-            <div className="space-y-6 pb-6">
-              {/* ETA Section */}
-              <div className="section-card">
-                <ETACountdown
-                  eta={activeData.eta}
-                  routeProgress={routeProgress}
-                  lastUpdated={activeData.lastUpdated}
-                  etaConfidence={etaConfidence}
-                  etaDeltaMinutes={etaDeltaMinutes}
-                  isAIPredicted={isAIPredicted}
-                />
-              </div>
-
-              {/* Driver Info */}
-              <div className="section-card">
-                <DriverInfoCard
-                  driver={activeData.driver}
-                  isConnected={activeData.isConnected}
-                />
-              </div>
-
-              {/* Order Items */}
-              <div className="section-card space-y-3">
-                <h3 className="font-semibold text-wl-text-primary">Items</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-wl-text-secondary">2x Vegetables Bundle</span>
-                    <span className="font-medium mono">$24.99</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-wl-text-secondary">1x Milk (1L)</span>
-                    <span className="font-medium mono">$5.99</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-wl-text-secondary">1x Bread</span>
-                    <span className="font-medium mono">$3.49</span>
-                  </div>
-                  <div className="pt-2 border-t border-wl-border-subtle flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span className="mono">$34.47</span>
-                  </div>
+        {/* Sidebar */}
+        <div className="flex flex-col gap-6">
+          {/* Driver info */}
+          {tracking.driver && (
+            <div className="section-card">
+              <h3 className="font-semibold text-wl-text-primary mb-4">Your Driver</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-wl-bg-elevated flex items-center justify-center text-xl font-bold text-wl-primary-400">
+                  {tracking.driver.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold text-wl-text-primary">{tracking.driver.name}</p>
+                  {tracking.driver.vehicleType && (
+                    <p className="text-xs text-wl-text-secondary">{tracking.driver.vehicleType}</p>
+                  )}
                 </div>
               </div>
-
-              {/* Timeline */}
-              <div className="section-card">
-                <h3 className="font-semibold text-wl-text-primary mb-3">Status</h3>
-                <DeliveryStatusTimeline steps={statusSteps} />
-              </div>
+              {/* Driver contact — phone is intentionally not exposed by the tracking endpoint per API design */}
+              <p className="text-xs text-wl-text-tertiary">
+                Use the Manage Delivery panel below to set your contact preference.
+              </p>
             </div>
-          </BottomSheet>
-        </>
-      )}
+          )}
+
+          {/* Time slot */}
+          {tracking.timeSlot && (
+            <div className="section-card">
+              <p className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-1">
+                Scheduled Slot
+              </p>
+              <p className="font-semibold text-wl-text-primary">{tracking.timeSlot.name}</p>
+              <p className="text-sm text-wl-text-secondary">
+                {tracking.timeSlot.startTime} – {tracking.timeSlot.endTime}
+              </p>
+            </div>
+          )}
+
+          {/* Recipient */}
+          <div className="section-card">
+            <p className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-1">
+              Delivering To
+            </p>
+            <p className="font-semibold text-wl-text-primary">{tracking.customerName}</p>
+            <p className="text-sm text-wl-text-secondary mt-1">
+              {tracking.addressLine1}, {tracking.city}
+            </p>
+          </div>
+
+          {/* Nav back */}
+          <Link href="/orders" className="btn btn-ghost w-full">
+            ← Back to Orders
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

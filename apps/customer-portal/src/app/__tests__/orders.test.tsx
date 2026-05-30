@@ -3,132 +3,141 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import OrdersPage from '../orders/page';
 
+// Note: vi.mock is hoisted — keep mock data inline inside the factory
+vi.mock('@/lib/use-api', () => ({
+  useQuery: vi.fn().mockReturnValue({
+    data: {
+      data: [
+        {
+          id: 'order-1',
+          externalOrderNumber: 'ORD-2024-001',
+          status: 'OUT_FOR_DELIVERY',
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          deliveryDate: new Date().toISOString(),
+          estimatedArrival: null,
+          actualDelivery: null,
+          customerName: 'John Doe',
+          customerEmail: null,
+          customerPhone: null,
+          addressLine1: '123 Main St',
+          addressLine2: null,
+          city: 'San Francisco',
+          province: 'CA',
+          postalCode: '94105',
+          country: 'USA',
+          totalPrice: 149.99,
+          trackingToken: 'token-1',
+          driver: null,
+          timeSlot: null,
+          proofOfDelivery: null,
+          lineItems: [{ id: '1', title: 'Premium Headphones', quantity: 1, price: 149.99 }],
+        },
+        {
+          id: 'order-2',
+          externalOrderNumber: 'ORD-2024-002',
+          status: 'DELIVERED',
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          deliveryDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          estimatedArrival: null,
+          actualDelivery: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          customerName: 'John Doe',
+          customerEmail: null,
+          customerPhone: null,
+          addressLine1: '456 Oak Ave',
+          addressLine2: null,
+          city: 'New York',
+          province: 'NY',
+          postalCode: '10001',
+          country: 'USA',
+          totalPrice: 49.99,
+          trackingToken: null,
+          driver: null,
+          timeSlot: null,
+          proofOfDelivery: null,
+          lineItems: [{ id: '2', title: 'Phone Case', quantity: 1, price: 19.99 }],
+        },
+      ],
+      pagination: { total: 2, page: 1, limit: 50, totalPages: 1 },
+    },
+    loading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+  useMutation: vi.fn().mockReturnValue({
+    mutate: vi.fn(),
+    loading: false,
+    error: null,
+    success: false,
+    reset: vi.fn(),
+  }),
+}));
+
 vi.mock('date-fns', async () => {
   const actual = await vi.importActual<typeof import('date-fns')>('date-fns');
   return { ...actual };
 });
 
 describe('OrdersPage', () => {
-  it('renders page title "Orders"', () => {
+  it('renders page title "My Orders"', () => {
     render(<OrdersPage />);
-    expect(screen.getByText('Orders')).toBeInTheDocument();
+    expect(screen.getByText('My Orders')).toBeInTheDocument();
   });
 
-  it('renders page subtitle', () => {
+  it('shows total order count in subtitle', () => {
     render(<OrdersPage />);
-    expect(screen.getByText('Manage and track all your deliveries')).toBeInTheDocument();
+    expect(screen.getByText(/2 orders total/i)).toBeInTheDocument();
   });
 
   it('shows search input', () => {
     render(<OrdersPage />);
     expect(
-      screen.getByPlaceholderText('Search by order number, address, or item...')
+      screen.getByPlaceholderText('Search by order number, item, or city…'),
     ).toBeInTheDocument();
   });
 
   it('shows filter buttons for all statuses', () => {
     render(<OrdersPage />);
-    // Filter buttons are <button> elements
-    const filterButtons = screen.getAllByRole('button');
-    const filterLabels = filterButtons.map((btn) => btn.textContent?.trim());
-
-    expect(filterLabels).toContain('All Orders');
-    expect(filterLabels).toContain('Pending');
-    expect(filterLabels).toContain('Confirmed');
-    expect(filterLabels).toContain('Out for Delivery');
-    expect(filterLabels).toContain('Delivered');
-    expect(filterLabels).toContain('Cancelled');
+    expect(screen.getByText('All')).toBeInTheDocument();
+    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getByText('Cancelled')).toBeInTheDocument();
   });
 
-  it('shows result count for all orders', () => {
+  it('shows order numbers from API data', () => {
     render(<OrdersPage />);
-    // "Showing 5 of 5 orders" - the count spans contain "5"
-    const countText = screen.getByText(/Showing/);
-    expect(countText).toHaveTextContent('Showing 5 of 5 orders');
+    expect(screen.getByText('ORD-2024-001')).toBeInTheDocument();
+    expect(screen.getByText('ORD-2024-002')).toBeInTheDocument();
   });
 
-  it('filters orders when a status filter is clicked', async () => {
+  it('filters orders when active filter is clicked', async () => {
     const user = userEvent.setup();
     render(<OrdersPage />);
 
-    // Click "Pending" filter button (the one inside the filter pill area)
-    const pendingButtons = screen.getAllByText('Pending');
-    // The filter button is the <button> element
-    const filterButton = pendingButtons.find((el) => el.tagName === 'BUTTON')!;
-    await user.click(filterButton);
+    const activeButton = screen.getByRole('button', { name: 'Active' });
+    await user.click(activeButton);
 
-    // Should show only the pending order (ORD-2024-004)
-    expect(screen.getByText('ORD-2024-004')).toBeInTheDocument();
-    expect(screen.queryByText('ORD-2024-001')).not.toBeInTheDocument();
+    // Only active orders should show
+    expect(screen.getByText('ORD-2024-001')).toBeInTheDocument();
     expect(screen.queryByText('ORD-2024-002')).not.toBeInTheDocument();
-    expect(screen.queryByText('ORD-2024-003')).not.toBeInTheDocument();
   });
 
   it('search filters by order number', async () => {
     const user = userEvent.setup();
     render(<OrdersPage />);
 
-    const searchInput = screen.getByPlaceholderText(
-      'Search by order number, address, or item...'
-    );
-    await user.type(searchInput, 'ORD-2024-003');
+    const searchInput = screen.getByPlaceholderText('Search by order number, item, or city…');
+    await user.type(searchInput, '001');
 
-    expect(screen.getByText('ORD-2024-003')).toBeInTheDocument();
-    expect(screen.queryByText('ORD-2024-001')).not.toBeInTheDocument();
-  });
-
-  it('shows empty state when no matches', async () => {
-    const user = userEvent.setup();
-    render(<OrdersPage />);
-
-    const searchInput = screen.getByPlaceholderText(
-      'Search by order number, address, or item...'
-    );
-    await user.type(searchInput, 'NONEXISTENT-ORDER');
-
-    expect(
-      screen.getByText('No orders found matching your criteria')
-    ).toBeInTheDocument();
-  });
-
-  it('shows "Clear filters" button in empty state', async () => {
-    const user = userEvent.setup();
-    render(<OrdersPage />);
-
-    const searchInput = screen.getByPlaceholderText(
-      'Search by order number, address, or item...'
-    );
-    await user.type(searchInput, 'NONEXISTENT-ORDER');
-
-    expect(screen.getByText('Clear filters')).toBeInTheDocument();
-  });
-
-  it('clear filters works and restores all orders', async () => {
-    const user = userEvent.setup();
-    render(<OrdersPage />);
-
-    const searchInput = screen.getByPlaceholderText(
-      'Search by order number, address, or item...'
-    );
-    await user.type(searchInput, 'NONEXISTENT-ORDER');
-
-    expect(
-      screen.getByText('No orders found matching your criteria')
-    ).toBeInTheDocument();
-
-    await user.click(screen.getByText('Clear filters'));
-
-    // All orders should be visible again
     expect(screen.getByText('ORD-2024-001')).toBeInTheDocument();
-    expect(screen.getByText('ORD-2024-002')).toBeInTheDocument();
-    expect(screen.getByText('ORD-2024-003')).toBeInTheDocument();
-    expect(screen.getByText('ORD-2024-004')).toBeInTheDocument();
-    expect(screen.getByText('ORD-2024-005')).toBeInTheDocument();
+    expect(screen.queryByText('ORD-2024-002')).not.toBeInTheDocument();
   });
 
-  it('shows sort dropdown with Newest First and Oldest First', () => {
+  it('shows empty state when search has no matches', async () => {
+    const user = userEvent.setup();
     render(<OrdersPage />);
-    expect(screen.getByText('Newest First')).toBeInTheDocument();
-    expect(screen.getByText('Oldest First')).toBeInTheDocument();
+
+    const searchInput = screen.getByPlaceholderText('Search by order number, item, or city…');
+    await user.type(searchInput, 'ZZZNOTFOUND999');
+
+    expect(screen.getByText('No orders found')).toBeInTheDocument();
   });
 });

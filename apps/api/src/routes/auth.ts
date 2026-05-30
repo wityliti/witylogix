@@ -748,6 +748,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
           id: true,
           name: true,
           email: true,
+          phone: true,
           role: true,
           isActive: true,
         },
@@ -762,11 +763,67 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
           id: user.id,
           name: user.name,
           email: user.email,
+          phone: user.phone,
           role: user.role,
           type: "user" as const,
           shopId: auth.shopId,
           orgId: auth.orgId,
           orgRole: auth.orgRole,
+        },
+      };
+    },
+  );
+
+  // PATCH /me - Update authenticated user's own profile (name, phone)
+  // Auth: Required — Bearer token in Authorization header
+  // Body: { name?: string, phone?: string | null }
+  // Returns: updated user data
+  // Errors: 401 (unauthenticated), 422 (validation error)
+
+  const updateMeSchema = z.object({
+    name: z.string().min(1).max(200).optional(),
+    phone: z.string().max(30).nullable().optional(),
+  });
+
+  fastify.patch(
+    "/me",
+    { preHandler: [requireAuth, tenantContext] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const auth = (request as any).auth;
+      if (!auth?.userId) {
+        throw new UnauthorizedError("Only user accounts can update their profile here");
+      }
+
+      let body: z.infer<typeof updateMeSchema>;
+      try {
+        body = updateMeSchema.parse(request.body);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Invalid input";
+        throw new ValidationError(msg);
+      }
+
+      const db = (request as any).tenantDb;
+
+      const updatedUser = await db.user.update({
+        where: { id: auth.userId },
+        data: {
+          ...(body.name !== undefined && { name: body.name }),
+          ...(body.phone !== undefined && { phone: body.phone }),
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+        },
+      });
+
+      return {
+        data: {
+          ...updatedUser,
+          type: "user" as const,
+          shopId: auth.shopId,
         },
       };
     },
