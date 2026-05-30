@@ -93,7 +93,7 @@ export class TextMagicClient extends MessagingAdapter {
         text: message.body,
         ...(message.from && { from: message.from }),
         ...(message.scheduleFor && { sendingDateTime: Math.floor(message.scheduleFor.getTime() / 1000) }),
-        ...(message.metadata?.clientRef && { reference: message.metadata.clientRef }),
+        ...(message.metadata?.clientRef ? { reference: message.metadata.clientRef } : {}),
       };
 
       const response = (await this.makeRequest("POST", "/messages", payload)) as Record<string, unknown>;
@@ -359,9 +359,9 @@ export class TextMagicClient extends MessagingAdapter {
   }
 
   /**
-   * Get template by ID.
+   * Get TextMagic template by numeric ID.
    */
-  async getTemplate(templateId: number): Promise<Record<string, unknown>> {
+  async getTextMagicTemplate(templateId: number): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
       return this.makeRequest("GET", `/templates/${templateId}`) as Promise<Record<string, unknown>>;
     });

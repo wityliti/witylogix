@@ -942,23 +942,23 @@ export class SlackClient extends CollaborationAdapter {
         body: formData,
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as { ok: boolean; error?: string; file?: Record<string, unknown> };
 
       if (!result.ok) {
         throw new Error(result.error || 'Failed to upload file');
       }
 
-      const slackFile = result.file;
+      const slackFile = result.file as Record<string, unknown>;
       return {
-        id: slackFile.id,
-        name: slackFile.name,
-        type: 'file',
-        size: slackFile.size,
+        id: slackFile.id as string,
+        name: slackFile.name as string,
+        type: 'file' as const,
+        size: slackFile.size as number,
         mimeType: file.mimeType,
-        url: slackFile.permalink,
-        uploadedAt: new Date(slackFile.created * 1000),
-        uploadedBy: slackFile.user,
-        externalId: slackFile.id,
+        url: slackFile.permalink as string,
+        uploadedAt: new Date((slackFile.created as number) * 1000),
+        uploadedBy: slackFile.user as string,
+        externalId: slackFile.id as string,
       };
     } catch (error) {
       throw new Error(`Failed to upload file: ${error}`);

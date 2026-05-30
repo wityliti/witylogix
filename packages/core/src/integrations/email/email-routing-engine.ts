@@ -117,7 +117,7 @@ export class EmailRoutingEngine {
         if (!pattern.test(toEmail)) return false;
       }
 
-      if (rule.emailType && message.priority !== rule.emailType) {
+      if (rule.emailType && (message.priority as string | undefined) !== rule.emailType) {
         return false;
       }
 
