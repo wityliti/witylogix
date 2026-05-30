@@ -628,6 +628,8 @@ export interface PaginationParams {
   limit?: number;
   offset?: number;
   pageSize?: number;
+  /** Cursor for cursor-based pagination (e.g. Jobber GraphQL after-cursor). */
+  cursor?: string;
 }
 
 export interface PaginatedResult<T> {

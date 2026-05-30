@@ -24,6 +24,7 @@ import type {
   AnalyticsExportFormat,
   HealthCheckResult,
   DataSource,
+  DataType,
   FilterDefinition,
 } from './types.js';
 
@@ -85,7 +86,7 @@ interface LookerQuery {
 interface LookerQueryResult {
   query_id: string;
   data: Record<string, unknown>[];
-  fields: Array<{ name: string; type: string }>;
+  fields: Array<{ name: string; type: DataType }>;
 }
 
 interface LookerScheduledPlan {
@@ -124,7 +125,7 @@ interface LookerUser {
  * Supports OAuth2 client credentials authentication.
  */
 export class LookerClient extends AnalyticsAdapter {
-  private accessToken: string | null = null;
+  private accessToken: string = '';
   private tokenExpiresAt: number = 0;
 
   constructor(config: AnalyticsConfig) {
@@ -326,7 +327,7 @@ export class LookerClient extends AnalyticsAdapter {
    * @param dashboardId Dashboard identifier
    * @returns Dashboard definition
    */
-  async getDashboard(dashboardId: string): Promise<LookerDashboard> {
+  private async _fetchLookerDashboard(dashboardId: string): Promise<LookerDashboard> {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
@@ -452,7 +453,7 @@ export class LookerClient extends AnalyticsAdapter {
       data: Array.isArray(results) ? results : [],
       fields: query.dimensions.concat(query.measures).map((field: string) => ({
         name: field,
-        type: 'string',
+        type: 'string' as const,
       })),
     };
   }
@@ -619,7 +620,7 @@ export class LookerClient extends AnalyticsAdapter {
    * Protected method: Get dashboard implementation for Looker.
    */
   protected async _getDashboardImpl(dashboardId: string): Promise<DashboardDefinition> {
-    const lookerDashboard: LookerDashboard = await this.getDashboard(dashboardId);
+    const lookerDashboard: LookerDashboard = await this._fetchLookerDashboard(dashboardId);
 
     return {
       id: lookerDashboard.id,

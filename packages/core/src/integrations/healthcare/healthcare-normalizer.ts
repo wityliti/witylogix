@@ -215,7 +215,7 @@ export function translateCode(
 /**
  * Unit conversion factors (base SI units).
  */
-const unitConversions: Record<string, Record<string, number>> = {
+const unitConversions: Record<string, Record<string, number | ((v: number) => number)>> = {
   // Weight
   kg: { kg: 1, lb: 2.20462, g: 1000 },
   lb: { kg: 0.453592, lb: 1, g: 453.592 },

@@ -113,7 +113,7 @@ interface GA4ReportResponse {
  * Supports service account and OAuth2 authentication.
  */
 export class GoogleAnalyticsClient extends AnalyticsAdapter {
-  private accessToken: string | null = null;
+  private accessToken: string = '';
   private tokenExpiresAt: number = 0;
   private propertyId: string = '';
 
@@ -588,8 +588,8 @@ export class GoogleAnalyticsClient extends AnalyticsAdapter {
     return {
       executionId: query.id,
       columns: [
-        ...request.dimensions.map((d: any) => ({ name: d.name, type: 'string' })),
-        ...request.metrics.map((m: any) => ({ name: m.name, type: 'number' })),
+        ...request.dimensions.map((d: any) => ({ name: d.name, type: 'string' as const })),
+        ...request.metrics.map((m: any) => ({ name: m.name, type: 'number' as const })),
       ],
       rows: result.data.rows.map((row: any) => {
         const obj: Record<string, unknown> = {};

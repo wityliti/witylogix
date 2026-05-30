@@ -101,9 +101,9 @@ interface QlikSession {
  * Supports API key and OAuth2 M2M authentication.
  */
 export class QlikClient extends AnalyticsAdapter {
-  private accessToken: string | null = null;
+  private accessToken: string = '';
   private tokenExpiresAt: number = 0;
-  private apiKeyToken: string | null = null;
+  private apiKeyToken: string = '';
 
   constructor(config: AnalyticsConfig) {
     super(config);

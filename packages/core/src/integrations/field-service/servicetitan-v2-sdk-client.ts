@@ -34,12 +34,11 @@ import type {
   OAuth2Token,
   WebhookConfig,
   WebhookEvent,
-  RateLimitError,
-  APIError,
   JobReport,
   TechnicianMetrics,
   CustomerRetention,
 } from './field-service-sdk-types.js';
+import { RateLimitError, APIError } from './field-service-sdk-types.js';
 
 interface ServiceTitanConfig {
   appKey: string;
@@ -82,7 +81,7 @@ export class ServiceTitanV2Client {
       ...config,
       apiUrl: config.apiUrl || 'https://api.servicetitan.com',
     };
-    this.apiUrl = this.config.apiUrl;
+    this.apiUrl = this.config.apiUrl ?? 'https://api.servicetitan.com';
   }
 
   /**

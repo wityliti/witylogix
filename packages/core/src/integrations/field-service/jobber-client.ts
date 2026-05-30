@@ -7,6 +7,7 @@
 import { AbstractFieldServiceAdapter } from './field-service-adapter.js';
 import type {
   Job,
+  JobStatus,
   WorkOrder,
   Technician,
   Estimate,
@@ -379,7 +380,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
 
       const variables = {
         first: params?.limit || 50,
-        after: params?.pageToken,
+        after: params?.cursor,
       };
 
       const result = await this.graphqlRequest(query, variables);
@@ -451,7 +452,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   async updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
       const job = await this.updateJob(workOrderId, {
-        status: updates.status,
+        status: updates.status as JobStatus | undefined,
         description: updates.description,
       });
 
@@ -546,7 +547,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
 
       const variables = {
         first: params?.limit || 50,
-        after: params?.pageToken,
+        after: params?.cursor,
       };
 
       const result = await this.graphqlRequest(query, variables);
@@ -743,7 +744,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
 
       const variables = {
         first: params?.limit || 50,
-        after: params?.pageToken,
+        after: params?.cursor,
       };
 
       const result = await this.graphqlRequest(query, variables);
@@ -918,7 +919,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
 
       const variables = {
         first: params?.limit || 50,
-        after: params?.pageToken,
+        after: params?.cursor,
       };
 
       const result = await this.graphqlRequest(query, variables);
@@ -1104,7 +1105,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
 
       const variables = {
         first: params?.limit || 50,
-        after: params?.pageToken,
+        after: params?.cursor,
       };
 
       const result = await this.graphqlRequest(query, variables);
@@ -1370,7 +1371,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       status: (data.status.toLowerCase() as any) || 'draft',
       issueDate: new Date(data.issueDate),
       expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
-      lineItems: data.lineItems || [],
+      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
       subtotal: data.total * 0.9,
       total: data.total,
       notes: data.notes,
@@ -1392,7 +1393,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       status: (data.status.toLowerCase() as any) || 'draft',
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
-      lineItems: data.lineItems || [],
+      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
       subtotal: data.total * 0.9,
       total: data.total,
       amountPaid: data.amountPaid,

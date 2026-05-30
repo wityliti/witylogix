@@ -325,7 +325,7 @@ export class AllscriptsClient extends HealthcareAdapter {
       patientId: result.patientId || "",
       title: result.description || "Document",
       content: result.content || "",
-      contentType: format === "pdf" ? "application/pdf" : format === "xml" ? "application/xml" : "application/json",
+      contentType: format === "pdf" ? "application/pdf" : format === "xml" ? "application/xml" : "text/plain",
       createdAt: result.createdDate,
       metadata: result,
     };

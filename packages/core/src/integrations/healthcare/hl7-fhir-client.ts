@@ -212,13 +212,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
     }
 
     if (params._include) {
-      params._include.forEach((inc) => {
-        query._include = query._include
-          ? Array.isArray(query._include)
-            ? [...query._include, inc]
-            : [query._include, inc]
-          : inc;
-      });
+      const includes: string[] = [];
+      params._include.forEach((inc) => includes.push(inc));
+      query._include = includes.length === 1 ? includes[0]! : includes;
     }
 
     const result = (await this.request("GET", `/${resourceType}`, { query })) as FHIRSearchResult<T>;
@@ -353,8 +349,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
     sourceSystem: CodeSystem,
     sourceCode: string,
     targetSystem: CodeSystem
-  ): Promise<TerminologyMapping | null> {
-    return this.getTerminologyMapping(sourceSystem, sourceCode, targetSystem);
+  ): Promise<string | null> {
+    const mapping = await this.getTerminologyMapping(sourceSystem, sourceCode, targetSystem);
+    return mapping?.targetCode ?? null;
   }
 
   async getTerminologyMapping(
@@ -527,7 +524,8 @@ export class HL7FHIRClient extends HealthcareAdapter {
       dateTime: consent.validFrom,
     };
 
-    return this.create<ConsentRecord>("Consent" as any, resource as any);
+    const result = await this.create<FHIRResource>("Consent", resource as Omit<FHIRResource, "id">);
+    return result as unknown as ConsentRecord;
   }
 
   async revokeConsent(consentId: string): Promise<ConsentRecord> {

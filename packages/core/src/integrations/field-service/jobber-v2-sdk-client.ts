@@ -29,8 +29,8 @@ import type {
   PaginatedResponse,
   GraphQLRequest,
   GraphQLResponse,
-  APIError,
 } from './field-service-sdk-types.js';
+import { APIError } from './field-service-sdk-types.js';
 
 interface JobberConfig {
   accessToken: string;
