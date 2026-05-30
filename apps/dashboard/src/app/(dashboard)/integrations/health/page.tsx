@@ -273,7 +273,7 @@ export default function IntegrationHealthPage() {
               <Card
                 key={integration.id}
                 className={cn(
-                  "hover:border-wl-border-default transition-colors",
+                  "hover:border-[#1e1e2e] transition-colors",
                   integration.status === "healthy" && "border-emerald-500/20",
                   integration.status === "degraded" && "border-amber-500/20",
                   integration.status === "down" && "border-red-500/20"
@@ -341,7 +341,7 @@ export default function IntegrationHealthPage() {
                   </div>
 
                   {/* Progress bar for uptime */}
-                  <div className={cn("w-full h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden")}>
+                  <div className={cn("w-full h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden")}>
                     <div
                       className={cn(
                         "h-full transition-all",
