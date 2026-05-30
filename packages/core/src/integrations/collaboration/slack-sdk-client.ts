@@ -121,7 +121,6 @@ export interface SlackUser {
     status_text_canonical?: string;
     team?: string;
     avatar_hash?: string;
-    phone?: string;
   };
   is_admin: boolean;
   is_owner: boolean;
@@ -528,7 +527,7 @@ export class SlackSDKClient {
       description?: string;
     },
   ): Promise<SlackChannel> {
-    const response = await this.callApi('conversations.create', {
+    const response = await this.callApi<{ channel: SlackChannel }>('conversations.create', {
       name,
       is_private: options?.is_private ?? false,
       topic: options?.description,
@@ -558,7 +557,7 @@ export class SlackSDKClient {
    * @returns Channel information
    */
   async getConversationInfo(channelId: string): Promise<SlackChannel> {
-    const response = await this.callApi('conversations.info', { channel: channelId });
+    const response = await this.callApi<{ channel: SlackChannel }>('conversations.info', { channel: channelId });
     return response.channel;
   }
 
@@ -788,7 +787,7 @@ export class SlackSDKClient {
    * @param userId - User ID
    */
   async getUserInfo(userId: string): Promise<SlackUser> {
-    const response = await this.callApi('users.info', { user: userId });
+    const response = await this.callApi<{ user: SlackUser }>('users.info', { user: userId });
     return response.user;
   }
 
@@ -948,7 +947,7 @@ export class SlackSDKClient {
    * Call Slack API with rate limiting and error handling
    * @internal
    */
-  private async callApi(method: string, params: Record<string, unknown>): Promise<unknown> {
+  private async callApi<T = unknown>(method: string, params: Record<string, unknown>): Promise<T> {
     await this.applyRateLimit(method);
 
     const body = new URLSearchParams();
@@ -973,7 +972,7 @@ export class SlackSDKClient {
       throw new Error(`Slack API error: ${data.error || 'Unknown error'}`);
     }
 
-    return data;
+    return data as unknown as T;
   }
 
   /**
@@ -1007,4 +1006,4 @@ export class SlackSDKClient {
   }
 }
 
-export type { SlackOAuth2Token, SlackMessage, SlackChannel, SlackUser, SlackFile, SlackEvent };
+// SlackOAuth2Token, SlackMessage, SlackChannel, SlackUser, SlackFile, SlackEvent are exported via their declarations above.

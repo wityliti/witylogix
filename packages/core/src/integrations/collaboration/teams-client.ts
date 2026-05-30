@@ -224,13 +224,14 @@ export class TeamsClient extends CollaborationAdapter {
     }
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
+      const error = await response.json().catch(() => ({})) as Record<string, unknown>;
+      const errorObj = error?.error as Record<string, unknown> | undefined;
       throw new Error(
-        error?.error?.message || `Graph API error: ${response.statusText}`
+        (errorObj?.message as string | undefined) || `Graph API error: ${response.statusText}`
       );
     }
 
-    return response.json().catch(() => ({}));
+    return (response.json() as Promise<unknown>).catch(() => ({}));
   }
 
   /**
@@ -256,15 +257,15 @@ export class TeamsClient extends CollaborationAdapter {
       body: params,
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as Record<string, unknown>;
 
     if (data.access_token) {
-      this.accessToken = data.access_token;
+      this.accessToken = data.access_token as string;
       this.tokenExpiresAt =
-        Date.now() + (data.expires_in || 3600) * 1000;
+        Date.now() + ((data.expires_in as number) || 3600) * 1000;
 
       if (data.refresh_token) {
-        this.refreshToken = data.refresh_token;
+        this.refreshToken = data.refresh_token as string;
       }
     } else {
       throw new Error('Failed to refresh access token');

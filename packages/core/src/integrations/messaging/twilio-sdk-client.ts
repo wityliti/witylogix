@@ -88,7 +88,7 @@ export class TwilioClient {
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       const errorCode = (error.code as number) || response.status;
-      const errorMessage = error.message || response.statusText;
+      const errorMessage = (error.message as string | undefined) || response.statusText;
       throw new TwilioError(errorMessage, errorCode, data);
     }
 

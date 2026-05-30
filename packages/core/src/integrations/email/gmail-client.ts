@@ -351,6 +351,7 @@ export class GmailClient extends EmailAdapter {
     // Gmail doesn't have template storage; store as draft with template markers
     const message: EmailMessage = {
       from: this.config.fromAddress || "",
+      to: { email: this.config.fromAddress || "" },
       subject: `[TEMPLATE] ${template.name}`,
       htmlBody: template.htmlBody,
       textBody: template.textBody,

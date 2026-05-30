@@ -165,7 +165,7 @@ export type TeamsAdaptiveCard = {
     | { type: 'TextBlock'; text: string; weight?: 'default' | 'lighter' | 'bolder'; size?: string }
     | { type: 'Container'; items: unknown[] }
     | { type: 'Image'; url: string; size?: 'small' | 'medium' | 'large' | 'stretch' }
-    | { type: 'Action'; type: string; title: string }
+    | { type: 'ActionSet'; title: string }
   >;
   actions?: Array<{
     type: 'Action.OpenUrl' | 'Action.Submit' | 'Action.ShowCard';
@@ -813,7 +813,7 @@ export class TeamsSDKClient {
       throw new Error(`File upload failed: ${response.statusText}`);
     }
 
-    return response.json();
+    return response.json() as Promise<TeamsAttachment>;
   }
 
   /**
@@ -919,7 +919,7 @@ export class TeamsSDKClient {
     }
 
     const payload = JSON.parse(body) as unknown;
-    return teamsChangeNotificationSchema.parse(payload);
+    return teamsChangeNotificationSchema.parse(payload) as unknown as TeamsChangeNotification;
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -930,13 +930,13 @@ export class TeamsSDKClient {
    * Call Graph API with automatic token refresh
    * @internal
    */
-  private async callApi(
+  private async callApi<T = unknown>(
     endpoint: string,
     options?: {
       method?: string;
       body?: string;
     },
-  ): Promise<unknown> {
+  ): Promise<T> {
     if (!this.accessToken) {
       throw new Error('No access token available');
     }
@@ -962,20 +962,10 @@ export class TeamsSDKClient {
       throw new Error(`Graph API error (${response.status}): ${JSON.stringify(errorData)}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 }
 
-export type {
-  TeamsOAuth2Token,
-  TeamsTeam,
-  TeamsChannel,
-  TeamsMessage,
-  TeamsChat,
-  TeamsUser,
-  TeamsAttachment,
-  TeamsReaction,
-  TeamsPresence,
-  TeamsSubscription,
-  TeamsChangeNotification,
-};
+// TeamsOAuth2Token, TeamsTeam, TeamsChannel, TeamsMessage, TeamsChat, TeamsUser,
+// TeamsAttachment, TeamsReaction, TeamsPresence, TeamsSubscription, TeamsChangeNotification
+// are exported via their interface/type declarations above.

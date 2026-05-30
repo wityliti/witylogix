@@ -112,13 +112,14 @@ export class VonageClient extends MessagingAdapter {
         text: message.body,
         type: message.type || "text",
         // Vonage-specific options
-        ...(message.metadata?.clientRef && { client_ref: message.metadata.clientRef }),
+        ...(message.metadata?.clientRef ? { client_ref: message.metadata.clientRef } : {}),
       };
 
       const response = await this.makeRequest("POST", "/sms/json", undefined, JSON.stringify(payload));
+      const messages = response.messages as Array<Record<string, unknown>> | undefined;
 
-      if (response.messages && Array.isArray(response.messages) && response.messages.length > 0) {
-        const msgResponse = response.messages[0];
+      if (messages && messages.length > 0) {
+        const msgResponse = messages[0];
         if (msgResponse.status === "0") {
           this.trackDelivery(messageId, "sent");
           return {
@@ -137,7 +138,7 @@ export class VonageClient extends MessagingAdapter {
       return {
         success: false,
         messageId,
-        error: `Vonage API error: ${response.messages?.[0]?.["error-text"] || "Unknown error"}`,
+        error: `Vonage API error: ${(messages?.[0]?.["error-text"] as string | undefined) || "Unknown error"}`,
         timestamp: new Date(),
       };
     });
@@ -178,13 +179,16 @@ export class VonageClient extends MessagingAdapter {
         };
       }
 
-      return {
-        success: false,
-        messageId,
-        error: `MMS send failed: ${response.error?.message || "Unknown error"}`,
-        errorCode: response.error?.code as string | undefined,
-        timestamp: new Date(),
-      };
+      {
+        const errorObj = response.error as Record<string, unknown> | undefined;
+        return {
+          success: false,
+          messageId,
+          error: `MMS send failed: ${(errorObj?.message as string | undefined) || "Unknown error"}`,
+          errorCode: errorObj?.code as string | undefined,
+          timestamp: new Date(),
+        };
+      }
     });
   }
 
@@ -229,13 +233,16 @@ export class VonageClient extends MessagingAdapter {
         };
       }
 
-      return {
-        success: false,
-        messageId,
-        error: `WhatsApp send failed: ${response.error?.message || "Unknown error"}`,
-        errorCode: response.error?.code as string | undefined,
-        timestamp: new Date(),
-      };
+      {
+        const errorObj = response.error as Record<string, unknown> | undefined;
+        return {
+          success: false,
+          messageId,
+          error: `WhatsApp send failed: ${(errorObj?.message as string | undefined) || "Unknown error"}`,
+          errorCode: errorObj?.code as string | undefined,
+          timestamp: new Date(),
+        };
+      }
     });
   }
 
