@@ -21,8 +21,8 @@
 
 import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 import { EventEmitter } from 'events';
-import type { CryptoService } from '../encryption/crypto.js';
-import type { AuditLogger } from '../audit/logger.js';
+import type { CryptoService } from '../../encryption/crypto.js';
+import type { AuditLogger } from '../../audit/logger.js';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
