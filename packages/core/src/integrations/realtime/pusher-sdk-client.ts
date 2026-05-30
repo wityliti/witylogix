@@ -288,7 +288,7 @@ export class PusherSDKClient {
       path += `?info=${encodeURIComponent(info)}`;
     }
 
-    const response = (await this.makeRequest('GET', path)) as PusherChannel;
+    const response = (await this.makeRequest('GET', path)) as unknown as PusherChannel;
 
     return {
       name: response.name,
@@ -413,7 +413,7 @@ export class PusherSDKClient {
     const options: RequestInit = {
       method,
       headers,
-      timeout: this.timeout,
+      signal: AbortSignal.timeout(this.timeout),
     };
 
     if (bodyStr) {

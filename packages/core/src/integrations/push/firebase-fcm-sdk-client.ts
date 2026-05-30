@@ -24,6 +24,10 @@ import type {
   FcmBatchSendResponse,
   FcmTopicManagement,
   FcmDeviceGroup,
+  FcmNotification,
+  FcmAndroidConfig,
+  FcmApnsConfig,
+  FcmWebConfig,
 } from "./push-types.js";
 
 interface FcmServiceAccountKey {
@@ -51,11 +55,11 @@ interface FcmSendRequest {
 
 interface FcmMulticastRequest {
   registration_tokens: string[];
-  notification?: Record<string, unknown>;
+  notification?: FcmNotification;
   data?: Record<string, string>;
-  android?: Record<string, unknown>;
-  apns?: Record<string, unknown>;
-  webpush?: Record<string, unknown>;
+  android?: FcmAndroidConfig;
+  apns?: FcmApnsConfig;
+  webpush?: FcmWebConfig;
 }
 
 /**
@@ -101,7 +105,7 @@ export class FirebaseFcmClient {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = (await response.json()) as { error_description?: string };
       throw new Error(`FCM token refresh failed: ${error.error_description}`);
     }
 
@@ -158,7 +162,7 @@ export class FirebaseFcmClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: Record<string, unknown>
+    body?: object
   ): Promise<T> {
     const token = await this.getAccessToken();
     const url = `${this.baseUrl}/${this.projectId}${endpoint}`;

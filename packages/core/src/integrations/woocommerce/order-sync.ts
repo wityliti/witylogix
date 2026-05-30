@@ -200,8 +200,9 @@ export class OrderSyncService {
    */
   static buildMetaData(
     metaFields: Record<string, unknown>,
-  ): Array<{ key: string; value: string | Record<string, unknown> }> {
-    return Object.entries(metaFields).map(([key, value]) => ({
+  ): Array<{ id: number; key: string; value: string | Record<string, unknown> }> {
+    return Object.entries(metaFields).map(([key, value], index) => ({
+      id: index,
       key,
       value: typeof value === "string" ? value : (value as Record<string, unknown>),
     }));

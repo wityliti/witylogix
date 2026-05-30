@@ -10,6 +10,7 @@ import type {
   ProviderHealth,
   SLAReport,
   LatencyBucket,
+  LatencyTimeWindow,
   ErrorTrendData,
   DegradationEvent,
   Alert,
@@ -261,9 +262,9 @@ export class HealthAPIHandler {
   async getLatencyAnalysis(
     providerId: string,
     endpoint: string,
-    window: 'latencyWindow' = '1hr'
+    window: LatencyTimeWindow = '1hr'
   ): Promise<LatencyAnalysisResponse> {
-    const bucket = this.latencyHistogram.getLatencyBucket(providerId, endpoint, window as any);
+    const bucket = this.latencyHistogram.getLatencyBucket(providerId, endpoint, window);
     const slowRequests = this.latencyHistogram.identifySlowRequests(providerId);
 
     return {
