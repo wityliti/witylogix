@@ -14,8 +14,7 @@
  */
 
 import { createHmac, timingSafeEqual } from "crypto";
-import { prisma } from "@witylogix/db";
-import type { Prisma } from "@witylogix/db";
+import { prisma, Prisma } from "@witylogix/db";
 import {
   type OnfleetWebhookPayload,
   type StuartWebhookPayload,
@@ -29,6 +28,40 @@ import {
 } from "./types.js";
 import type { DeliveryStatus as DeliveryStatusType } from "../types.js";
 import { DeliveryStatus } from "../types.js";
+
+// ─── STATUS MAPPING ──────────────────────────────────────────────────────────
+
+/**
+ * Prisma DB-level delivery status values (uppercase string literals from the
+ * generated enum). Defined locally so we don't depend on internal Prisma
+ * namespace members that are not re-exported by @witylogix/db.
+ */
+type PrismaDbDeliveryStatus =
+  | "PENDING"
+  | "PICKED_UP"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "FAILED"
+  | "CANCELLED"
+  | "RETURNED";
+
+/**
+ * Map the application-layer DeliveryStatus (lowercase values) to the Prisma
+ * DB enum value (uppercase). The two enums mirror the same states but use
+ * different string casing.
+ */
+function toPrismaDeliveryStatus(status: DeliveryStatusType): PrismaDbDeliveryStatus {
+  const map: Record<DeliveryStatusType, PrismaDbDeliveryStatus> = {
+    pending: "PENDING",
+    picked_up: "PICKED_UP",
+    in_transit: "IN_TRANSIT",
+    delivered: "DELIVERED",
+    failed: "FAILED",
+    cancelled: "CANCELLED",
+    returned: "RETURNED",
+  };
+  return map[status];
+}
 
 // ─── SIGNATURE VERIFICATION ──────────────────────────────────────────────
 
@@ -381,7 +414,7 @@ export async function processWebhook(
         deliveryId = delivery.id;
 
         // Map normalized status back to database enum
-        const dbStatus = normalizedEvent.status as Prisma.DeliveryStatus;
+        const dbStatus = toPrismaDeliveryStatus(normalizedEvent.status);
 
         await prisma.courierDelivery.update({
           where: { id: delivery.id },
@@ -396,15 +429,15 @@ export async function processWebhook(
                   longitude: normalizedEvent.driver.location.longitude,
                   updatedAt: normalizedEvent.driver.location.timestamp.toISOString(),
                 }
-              : null,
+              : Prisma.DbNull,
             proofOfDelivery: normalizedEvent.proofOfDelivery
               ? {
                   timestamp: normalizedEvent.proofOfDelivery.timestamp.toISOString(),
-                  recipientName: normalizedEvent.proofOfDelivery.recipientName,
-                  signature: normalizedEvent.proofOfDelivery.signature,
-                  photo: normalizedEvent.proofOfDelivery.photo,
+                  recipientName: normalizedEvent.proofOfDelivery.recipientName ?? null,
+                  signature: normalizedEvent.proofOfDelivery.signature ?? null,
+                  photo: normalizedEvent.proofOfDelivery.photo ?? null,
                 }
-              : null,
+              : Prisma.DbNull,
             deliveredAt:
               normalizedEvent.status === DeliveryStatus.DELIVERED
                 ? normalizedEvent.timestamp
@@ -512,15 +545,20 @@ function emitDeliveryEvent(
   console.log(`[Webhook] Emitted event: ${eventName} for delivery ${deliveryId}`);
 }
 
+/** Type for a single webhook log row (includes all scalar fields from the model). */
+type CourierWebhookLogRow = Awaited<
+  ReturnType<typeof prisma.courierWebhookLog.findUniqueOrThrow>
+>;
+
 /**
  * Get webhook log by ID for auditing
  */
 export async function getWebhookLog(
   webhookLogId: string
-): Promise<(Prisma.CourierWebhookLogGetPayload<{}> & { partnerId: string }) | null> {
-  return (await prisma.courierWebhookLog.findUnique({
+): Promise<CourierWebhookLogRow | null> {
+  return prisma.courierWebhookLog.findUnique({
     where: { id: webhookLogId },
-  })) as (Prisma.CourierWebhookLogGetPayload<{}> & { partnerId: string }) | null;
+  });
 }
 
 /**
@@ -530,13 +568,13 @@ export async function getPartnerWebhookLogs(
   partnerId: string,
   limit: number = 50,
   offset: number = 0
-): Promise<Array<Prisma.CourierWebhookLogGetPayload<{}> & { partnerId: string }>> {
-  return (await prisma.courierWebhookLog.findMany({
+): Promise<CourierWebhookLogRow[]> {
+  return prisma.courierWebhookLog.findMany({
     where: { partnerId },
     orderBy: { receivedAt: "desc" },
     take: limit,
     skip: offset,
-  })) as Array<Prisma.CourierWebhookLogGetPayload<{}> & { partnerId: string }>;
+  });
 }
 
 /**
@@ -574,12 +612,30 @@ export async function retryFailedWebhooks(
     try {
       // Re-process webhook
       const payload = JSON.stringify(log.payload);
-      const signature = log.headers?.["x-signature"] as string | undefined;
-      const secret = log.headers?.["x-secret"] as string | undefined;
+      const headersObj: Record<string, unknown> | null =
+        log.headers !== null &&
+        typeof log.headers === "object" &&
+        !Array.isArray(log.headers)
+          ? (log.headers as Record<string, unknown>)
+          : null;
+      const signature =
+        typeof headersObj?.["x-signature"] === "string"
+          ? headersObj["x-signature"]
+          : undefined;
+      const secret =
+        typeof headersObj?.["x-secret"] === "string"
+          ? headersObj["x-secret"]
+          : undefined;
 
-      if (signature && secret) {
+      // Load partner to get provider type
+      const partner = await prisma.courierPartner.findUnique({
+        where: { id: log.partnerId },
+        select: { provider: true },
+      });
+
+      if (signature && secret && partner) {
         const result = await processWebhook(
-          log.partner.provider as "onfleet" | "stuart" | "uber_direct",
+          partner.provider as "onfleet" | "stuart" | "uber_direct",
           payload,
           signature,
           secret,

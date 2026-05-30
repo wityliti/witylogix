@@ -156,7 +156,7 @@ export enum UberDirectDeliveryStatus {
 /**
  * Webhook signature verification result
  */
-export interface WebhookVerificationResult {
+export interface CourierWebhookVerificationResult {
   /** Whether signature verification passed */
   isValid: boolean;
 
@@ -275,7 +275,7 @@ export interface NormalizedDeliveryEvent {
   timestamp: Date;
 
   /** Raw provider payload for auditing */
-  rawPayload: Record<string, unknown>;
+  rawPayload: OnfleetWebhookPayload | StuartWebhookPayload | UberDirectWebhookPayload;
 
   /** Additional metadata */
   metadata?: {
