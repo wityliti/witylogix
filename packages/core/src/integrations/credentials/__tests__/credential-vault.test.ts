@@ -23,8 +23,8 @@ import type {
   ICredentialPersistence,
   VaultConfig,
 } from '../credential-vault.js';
-import type { CryptoService } from '../../encryption/crypto.js';
-import type { AuditLogger } from '../../audit/logger.js';
+import type { CryptoService } from '../../../encryption/crypto.js';
+import type { AuditLogger } from '../../../audit/logger.js';
 
 // ─── Mock Implementations ────────────────────────────────────────
 
