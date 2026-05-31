@@ -12,6 +12,13 @@ import { StopListEditor, RouteSummary, RouteOptimizerControls } from '@/componen
 import { useRoutePlanner } from '@/hooks/use-route-planner';
 import { useApiList } from '@/hooks/use-api';
 
+interface ApiDriver {
+  id: string;
+  name: string;
+  status: string;
+  vehicleType: string;
+}
+
 type StepType = 'stops' | 'constraints' | 'optimize' | 'review' | 'dispatch';
 
 const STEPS: { id: StepType; label: string; description: string }[] = [
@@ -51,6 +58,9 @@ export default function RoutePlanningPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Real drivers from API
+  const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
+
   const currentStepIdx = STEPS.findIndex((s) => s.id === state.currentStep);
 
   const handleNextStep = async () => {
@@ -69,9 +79,9 @@ export default function RoutePlanningPage() {
     setIsSaving(true);
     setSaveError(null);
     try {
-      await saveRoute();
-      // Navigate back to routes list
-      window.location.href = '/routes';
+      const result = await saveRoute();
+      // Navigate to the new route's detail page
+      window.location.href = result?.id ? `/routes/${result.id}` : '/routes';
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save route');
       setIsSaving(false);
@@ -293,10 +303,11 @@ export default function RoutePlanningPage() {
                       )}
                     >
                       <option value="">Any driver</option>
-                      <option value="drv-1">Carlos Martinez</option>
-                      <option value="drv-2">Sofia Lindberg</option>
-                      <option value="drv-3">Ahmed Khalil</option>
-                      <option value="drv-4">Priya Patel</option>
+                      {drivers.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name} ({d.vehicleType})
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -389,10 +400,13 @@ export default function RoutePlanningPage() {
                       )}
                     >
                       <option value="">Select a driver...</option>
-                      <option value="drv-1">Carlos Martinez (Van)</option>
-                      <option value="drv-2">Sofia Lindberg (Car)</option>
-                      <option value="drv-3">Ahmed Khalil (Motorcycle)</option>
-                      <option value="drv-4">Priya Patel (Car)</option>
+                      {drivers
+                        .filter((d) => d.status === 'AVAILABLE' || d.status === 'OFFLINE')
+                        .map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} ({d.vehicleType})
+                          </option>
+                        ))}
                     </select>
                   </div>
 
