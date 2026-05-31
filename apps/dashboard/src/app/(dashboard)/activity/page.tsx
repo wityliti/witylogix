@@ -289,7 +289,7 @@ export default function ActivityPage() {
             </div>
 
             {/* Filters */}
-            <EventFilters filters={filters} setFilters={setFilters} users={userList} />
+            <EventFilters filters={filters} setFilters={setFilters} users={uniqueUsers} />
 
             {(filters.types.length > 0 || filters.severities.length > 0 || filters.startDate || filters.endDate || filters.userId) && (
               <div className="flex flex-wrap items-center gap-2">

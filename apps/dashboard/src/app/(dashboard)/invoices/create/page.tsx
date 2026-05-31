@@ -64,6 +64,9 @@ export default function CreateInvoicePage() {
 
   const { items: customerItems, loading: customersLoading } = useApiList<Customer>('/api/v4/customers');
 
+  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
+  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
+
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
@@ -109,14 +112,14 @@ export default function CreateInvoicePage() {
 
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return customerItems;
+    if (!customerSearch) return realCustomers;
     const search = customerSearch.toLowerCase();
-    return customerItems.filter(
+    return realCustomers.filter(
       (c) =>
         c.name.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search)
     );
-  }, [customerSearch, customerItems]);
+  }, [customerSearch, realCustomers]);
 
   // Calculate totals
   const subtotal = useMemo(() => {
@@ -718,7 +721,9 @@ export default function CreateInvoicePage() {
             />
 
             {customersLoading ? (
-              <LoadingSkeleton />
+              <p className="text-center py-6 text-gray-400">
+                Loading customers...
+              </p>
             ) : filteredCustomers.length === 0 ? (
               <p className="text-center py-6 text-gray-400">
                 No customers found

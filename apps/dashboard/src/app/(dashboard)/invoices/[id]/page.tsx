@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Download,
   Send,
@@ -19,10 +19,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
-import { useApiQuery } from "@/hooks/use-api";
-import { api } from "@/lib/api";
-import { useToast } from "@/components/ui/toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled" | "finalized" | "voided";
 
@@ -74,48 +77,86 @@ interface Invoice {
   terms?: string;
 }
 
-function normalizeApiInvoice(raw: any): Invoice {
-  const inv = raw?.invoice ?? raw;
+// Shape returned by mapDbInvoice in invoice-service.ts
+interface RawApiInvoiceLineItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+interface RawApiInvoicePayment {
+  id: string;
+  amount: number;
+  method: string;
+  reference?: string;
+  paidAt: string;
+  createdAt: string;
+}
+
+interface RawApiInvoice {
+  id: string;
+  invoiceNumber: string;
+  customerId: string;
+  status: string;
+  subtotal: number;
+  discountTotal: number;
+  taxTotal: number;
+  total: number;
+  currency: string;
+  issuedAt: string;
+  dueAt: string;
+  paidAt: string | null;
+  voidedAt: string | null;
+  notes?: string;
+  terms?: string;
+  lineItems: RawApiInvoiceLineItem[];
+  payments: RawApiInvoicePayment[];
+}
+
+function normalizeStatus(raw: string): InvoiceStatus {
+  if (raw === "voided") return "cancelled";
+  const allowed: InvoiceStatus[] = ["draft", "sent", "paid", "overdue", "cancelled", "finalized", "voided"];
+  return (allowed.includes(raw as InvoiceStatus) ? raw : "draft") as InvoiceStatus;
+}
+
+function normalizeInvoice(raw: RawApiInvoice): Invoice {
   return {
-    id: inv.id,
-    number: inv.invoiceNumber ?? `INV-${inv.id?.substring(0, 8) ?? ""}`,
-    customerId: inv.customerId ?? "",
-    customerName: inv.customerName ?? `Customer ${(inv.customerId ?? "").substring(0, 8)}`,
-    customerEmail: inv.customerEmail ?? "",
-    customerAddress: inv.customerAddress ?? "",
-    amount: Number(inv.subtotal ?? 0),
-    taxAmount: Number(inv.taxTotal ?? 0),
-    discountAmount: Number(inv.discountTotal ?? 0),
-    subtotal: Number(inv.subtotal ?? 0),
-    total: Number(inv.total ?? 0),
-    status: ((inv.status ?? "draft") as string).toLowerCase() as InvoiceStatus,
-    createdDate: new Date(inv.issuedAt ?? inv.createdAt ?? Date.now()),
-    sentDate: inv.sentAt ? new Date(inv.sentAt) : null,
-    dueDate: new Date(inv.dueAt ?? Date.now() + 30 * 24 * 60 * 60 * 1000),
-    paidDate: inv.paidAt ? new Date(inv.paidAt) : null,
-    lineItems: (inv.lineItems ?? []).map((item: any) => ({
-      id: item.id,
-      description: item.description ?? "",
-      quantity: Number(item.quantity ?? 1),
-      rate: Number(item.unitPrice ?? item.rate ?? 0),
-      amount: Number(item.amount ?? 0),
+    id: raw.id,
+    number: raw.invoiceNumber,
+    customerId: raw.customerId,
+    customerName: raw.customerId,
+    customerEmail: "",
+    customerAddress: "",
+    amount: raw.subtotal,
+    taxAmount: raw.taxTotal,
+    discountAmount: raw.discountTotal,
+    subtotal: raw.subtotal,
+    total: raw.total,
+    status: normalizeStatus(raw.status),
+    createdDate: new Date(raw.issuedAt),
+    sentDate: null,
+    dueDate: new Date(raw.dueAt),
+    paidDate: raw.paidAt ? new Date(raw.paidAt) : null,
+    notes: raw.notes,
+    terms: raw.terms,
+    lineItems: raw.lineItems.map((li) => ({
+      id: li.id,
+      description: li.description,
+      quantity: li.quantity,
+      rate: li.unitPrice,
+      amount: li.amount,
       tax: 0,
     })),
-    payments: (inv.payments ?? []).map((pmt: any) => ({
-      id: pmt.id,
-      date: new Date(pmt.paidAt ?? pmt.createdAt ?? Date.now()),
-      amount: Number(pmt.amount ?? 0),
-      method: (pmt.method ?? "bank_transfer") as Payment["method"],
-      reference: pmt.reference ?? "",
+    payments: raw.payments.map((p) => ({
+      id: p.id,
+      date: new Date(p.paidAt),
+      amount: p.amount,
+      method: p.method,
+      reference: p.reference ?? "",
     })),
-    activity: (inv.activity ?? []).map((act: any) => ({
-      id: act.id ?? String(Math.random()),
-      type: (act.type ?? "created") as ActivityLog["type"],
-      timestamp: new Date(act.timestamp ?? act.createdAt ?? Date.now()),
-      description: act.description ?? "",
-    })),
-    notes: inv.notes ?? undefined,
-    terms: inv.terms ?? undefined,
+    activity: [],
   };
 }
 
@@ -123,12 +164,22 @@ const getStatusBadgeVariant = (
   status: InvoiceStatus
 ): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
   switch (status) {
-    case "paid": return "success";
-    case "sent": return "info";
-    case "draft": return "default";
-    case "overdue": return "danger";
-    case "cancelled": return "warning";
-    default: return "default";
+    case "paid":
+      return "success";
+    case "sent":
+      return "info";
+    case "draft":
+      return "default";
+    case "overdue":
+      return "danger";
+    case "cancelled":
+      return "warning";
+    case "finalized":
+      return "primary";
+    case "voided":
+      return "warning";
+    default:
+      return "default";
   }
 };
 
@@ -149,14 +200,17 @@ export default function InvoiceDetailPage() {
   const invoiceId = params.id as string;
   const { addToast } = useToast();
 
-  const { data: rawInvoice, loading, error } = useApiQuery<any>(`/api/v4/invoices/${invoiceId}`);
-  const [localOverrides, setLocalOverrides] = useState<Partial<Invoice>>({});
+  const { data: rawInvoice, loading, error, refetch } = useApiQuery<RawApiInvoice>(
+    `/api/v4/invoices/${invoiceId}`,
+  );
 
-  const invoice = useMemo<Invoice | null>(() => {
-    if (!rawInvoice) return null;
-    const base = normalizeApiInvoice(rawInvoice);
-    return { ...base, ...localOverrides };
-  }, [rawInvoice, localOverrides]);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+
+  useEffect(() => {
+    if (rawInvoice) {
+      setInvoice(normalizeInvoice(rawInvoice));
+    }
+  }, [rawInvoice]);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isVoiding, setIsVoiding] = useState(false);
@@ -179,7 +233,8 @@ export default function InvoiceDetailPage() {
   }, [isOverdue, invoice]);
 
   const amountPaid = useMemo(() => {
-    return (invoice?.payments ?? []).reduce((sum, p) => sum + p.amount, 0);
+    if (!invoice) return 0;
+    return invoice.payments.reduce((sum, p) => sum + p.amount, 0);
   }, [invoice]);
 
   const remainingBalance = useMemo(() => {
@@ -219,8 +274,16 @@ export default function InvoiceDetailPage() {
     setIsSending(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send`, {});
-      setLocalOverrides((prev) => ({ ...prev, status: "sent", sentDate: new Date() }));
-      addToast({ type: "success", title: "Invoice sent", message: `Invoice ${invoice.number} sent to customer.` });
+      setInvoice((prev) => prev ? ({
+        ...prev,
+        status: "sent",
+        sentDate: new Date(),
+      }) : prev);
+      addToast({
+        type: 'success',
+        title: 'Invoice sent',
+        message: `Invoice ${invoice?.number ?? ''} has been sent to the customer.`,
+      });
     } catch (err) {
       addToast({ type: "error", title: "Send failed", message: err instanceof Error ? err.message : "Failed to send invoice." });
     } finally {
@@ -232,9 +295,39 @@ export default function InvoiceDetailPage() {
     if (isMarkingPaid || !invoice) return;
     setIsMarkingPaid(true);
     try {
-      await api.post(`/api/v4/invoices/${invoiceId}/mark-paid`, {});
-      setLocalOverrides((prev) => ({ ...prev, status: "paid", paidDate: new Date() }));
-      addToast({ type: "success", title: "Invoice marked as paid", message: "Invoice status updated to Paid." });
+      await api.post(`/api/v4/invoices/${invoiceId}/payment`, {
+        amount: invoice.total,
+        method: 'bank_transfer',
+      });
+      setInvoice((prev) => prev ? ({
+        ...prev,
+        status: "paid",
+        paidDate: new Date(),
+        payments: [
+          ...prev.payments,
+          {
+            id: `pay-${Date.now()}`,
+            date: new Date(),
+            amount: prev.total,
+            method: "bank_transfer",
+            reference: "MAN-" + Date.now(),
+          },
+        ],
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "paid" as const,
+            timestamp: new Date(),
+            description: "Invoice marked as paid",
+          },
+        ],
+      }) : prev);
+      addToast({
+        type: 'success',
+        title: 'Invoice marked as paid',
+        message: 'The invoice status has been updated to Paid.',
+      });
     } catch (err) {
       addToast({ type: "error", title: "Failed to mark as paid", message: err instanceof Error ? err.message : "Could not update invoice." });
     } finally {
@@ -246,8 +339,20 @@ export default function InvoiceDetailPage() {
     if (isVoiding || !invoice) return;
     setIsVoiding(true);
     try {
-      await api.post(`/api/v4/invoices/${invoiceId}/void`, {});
-      setLocalOverrides((prev) => ({ ...prev, status: "cancelled" }));
+      await api.post(`/api/v4/invoices/${invoiceId}/void`, { reason: 'Voided by user' });
+      setInvoice((prev) => prev ? ({
+        ...prev,
+        status: "cancelled",
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "created" as const,
+            timestamp: new Date(),
+            description: "Invoice voided",
+          },
+        ],
+      }) : prev);
       setShowDeleteConfirm(false);
       addToast({ type: "success", title: "Invoice voided", message: "The invoice has been voided." });
     } catch (err) {
@@ -255,14 +360,30 @@ export default function InvoiceDetailPage() {
     } finally {
       setIsVoiding(false);
     }
-  }, [invoiceId, isVoiding, addToast, refetch]);
+  }, [invoiceId, invoice, isVoiding, addToast]);
 
   const handleSendReminder = useCallback(async () => {
     if (isSendingReminder || !invoice) return;
     setIsSendingReminder(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send-reminder`, {});
-      addToast({ type: "success", title: "Reminder sent", message: `Reminder sent to ${invoice.customerEmail || "customer"}.` });
+      setInvoice((prev) => prev ? ({
+        ...prev,
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "reminder_sent" as const,
+            timestamp: new Date(),
+            description: "Reminder email sent to customer",
+          },
+        ],
+      }) : prev);
+      addToast({
+        type: 'success',
+        title: 'Reminder sent',
+        message: 'Payment reminder has been sent to the customer.',
+      });
     } catch (err) {
       addToast({ type: "error", title: "Reminder failed", message: err instanceof Error ? err.message : "Failed to send reminder." });
     } finally {
@@ -270,25 +391,9 @@ export default function InvoiceDetailPage() {
     }
   }, [invoiceId, invoice, isSendingReminder, addToast]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
-        <Skeleton className="h-16 w-full rounded-lg" />
-        <div className="grid grid-cols-3 gap-6">
-          <div className="col-span-2 space-y-6">
-            <Skeleton className="h-48 w-full rounded-lg" />
-            <Skeleton className="h-64 w-full rounded-lg" />
-          </div>
-          <div className="space-y-6">
-            <Skeleton className="h-40 w-full rounded-lg" />
-            <Skeleton className="h-48 w-full rounded-lg" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !invoice) {
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (!invoice) {
     return (
       <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
         <div className="flex items-center gap-4">
@@ -297,10 +402,9 @@ export default function InvoiceDetailPage() {
             Back
           </Button>
         </div>
-        <Card className="p-8 text-center bg-[#12121a] border border-[#1e1e2e]">
-          <p className="text-red-400 mb-4">{error?.message ?? "Invoice not found"}</p>
-          <Button variant="secondary" onClick={() => router.back()}>Go Back</Button>
-        </Card>
+        <div className="text-center py-20 text-gray-400">
+          <p className="text-lg">Invoice not found.</p>
+        </div>
       </div>
     );
   }
@@ -365,11 +469,18 @@ export default function InvoiceDetailPage() {
               <div>
                 <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4">Bill To</h3>
                 <div className="flex flex-col gap-1">
-                  <p className="font-semibold text-white">{invoice.customerName}</p>
-                  {invoice.customerEmail && <p className="text-sm text-gray-400">{invoice.customerEmail}</p>}
-                  {invoice.customerAddress && <p className="text-sm text-gray-400">{invoice.customerAddress}</p>}
-                  {!invoice.customerEmail && !invoice.customerAddress && invoice.customerId && (
-                    <p className="text-xs text-gray-500">Customer ID: {invoice.customerId.substring(0, 8)}</p>
+                  <p className="font-semibold text-white">
+                    {invoice.customerName}
+                  </p>
+                  {invoice.customerEmail && (
+                    <p className="text-sm text-gray-400">
+                      {invoice.customerEmail}
+                    </p>
+                  )}
+                  {invoice.customerAddress && (
+                    <p className="text-sm text-gray-400">
+                      {invoice.customerAddress}
+                    </p>
                   )}
                 </div>
               </div>
@@ -437,6 +548,18 @@ export default function InvoiceDetailPage() {
                       <span className="text-white">Total</span>
                       <span className="text-blue-500">${invoice.total.toFixed(2)}</span>
                     </div>
+                  )}
+                  <div className="flex justify-between mb-2 border-t border-[#1e1e2e] pt-2">
+                    <span className="text-gray-400">Tax</span>
+                    <span className="text-white">
+                      ${invoice.taxAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold border-t-2 border-[#1e1e2e] pt-3 mt-3">
+                    <span className="text-white">Total</span>
+                    <span className="text-blue-500">
+                      ${invoice.total.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -496,8 +619,14 @@ export default function InvoiceDetailPage() {
                       <p className="text-sm font-medium text-white">${payment.amount.toFixed(2)}</p>
                       <span className="text-xs text-gray-400">{payment.date.toLocaleDateString()}</span>
                     </div>
-                    <p className="text-xs text-gray-400">{payment.method.replace("_", " ")}</p>
-                    {payment.reference && <p className="text-xs font-mono text-gray-400">Ref: {payment.reference}</p>}
+                    <p className="text-xs text-gray-400">
+                      {payment.method.replace("_", " ")}
+                    </p>
+                    {payment.reference && (
+                      <p className="text-xs font-mono text-gray-400">
+                        Ref: {payment.reference}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -506,17 +635,22 @@ export default function InvoiceDetailPage() {
 
           {/* Activity Log */}
           {invoice.activity.length > 0 && (
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
-              <h3 className="font-semibold text-white mb-4">Activity Log</h3>
+            <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+              <h3 className="font-semibold text-white mb-4">
+                Activity Log
+              </h3>
               <div className="space-y-3">
                 {invoice.activity.map((activity) => (
-                  <div key={activity.id} className="flex gap-3 pb-3 last:pb-0 border-b border-[#1e1e2e] last:border-b-0">
-                    <div className="text-gray-400 mt-1">{getActivityIcon(activity.type)}</div>
+                  <div
+                    key={activity.id}
+                    className="flex gap-3 pb-3 last:pb-0 border-b border-[#1e1e2e] last:border-b-0"
+                  >
+                    <div className="text-gray-400 mt-1">
+                      {getActivityIcon(activity.type)}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-gray-400">
-                        {activity.description} —{" "}
-                        {activity.timestamp.toLocaleDateString()} at{" "}
-                        {activity.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {getActivityDescription(activity)}
                       </p>
                     </div>
                   </div>
