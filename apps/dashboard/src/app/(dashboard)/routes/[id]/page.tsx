@@ -101,7 +101,7 @@ const STOP_STATUS_BADGE: Record<StopStatus, 'default' | 'info' | 'success' | 'wa
 };
 
 const STOP_STATUS_ICON: Record<StopStatus, React.ReactNode> = {
-  PENDING: <Clock className="w-3.5 h-3.5 text-wl-text-secondary" />,
+  PENDING: <Clock className="w-3.5 h-3.5 text-gray-400" />,
   EN_ROUTE: <Navigation className="w-3.5 h-3.5 text-blue-400" />,
   ARRIVED: <MapPin className="w-3.5 h-3.5 text-blue-400" />,
   COMPLETED: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />,
@@ -136,7 +136,7 @@ const DEFAULT_CENTER: [number, number] = [0, 20];
 
 function RouteDetailSkeleton() {
   return (
-    <div className="p-6 bg-wl-bg-root min-h-screen">
+    <div className="p-6 bg-[#0a0a0f] min-h-screen">
       <div className="flex items-center gap-3 mb-6">
         <Skeleton className="w-8 h-8 rounded" />
         <Skeleton className="w-48 h-7 rounded" />
@@ -144,7 +144,7 @@ function RouteDetailSkeleton() {
       </div>
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
+          <div key={i} className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-4">
             <Skeleton className="w-24 h-3 rounded mb-2" />
             <Skeleton className="w-16 h-8 rounded" />
           </div>
@@ -190,7 +190,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
         'rounded-lg border transition-all cursor-pointer',
         isSelected
           ? 'border-blue-500 bg-blue-500/5'
-          : 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong',
+          : 'border-[#1e1e2e] bg-[#12121a] hover:border-[#2a2a3e]',
       )}
       onClick={onSelect}
     >
@@ -205,7 +205,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
                 ? 'bg-red-500 text-white'
                 : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-wl-bg-overlay text-gray-300',
+                  : 'bg-[#1e1e2e] text-gray-300',
           )}
         >
           {stop.status === 'COMPLETED' ? (
@@ -224,13 +224,13 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
             <div className="flex-shrink-0">{STOP_STATUS_ICON[stop.status]}</div>
           </div>
           {stop.address && (
-            <p className="text-xs text-wl-text-secondary truncate">{stop.address}</p>
+            <p className="text-xs text-gray-400 truncate">{stop.address}</p>
           )}
         </div>
 
         {/* ETA */}
         <div className="text-right flex-shrink-0">
-          <div className="text-xs text-wl-text-secondary">{formatTime(stop.estimatedArrival)}</div>
+          <div className="text-xs text-gray-400">{formatTime(stop.estimatedArrival)}</div>
           <Badge variant={STOP_STATUS_BADGE[stop.status]} className="text-xs mt-1">
             {stop.status.replace('_', ' ')}
           </Badge>
@@ -250,8 +250,8 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
 
       {/* Expanded details */}
       {expanded && (
-        <div className="px-3 pb-3 border-t border-wl-border-default pt-2">
-          <div className="grid grid-cols-2 gap-2 text-xs text-wl-text-secondary mb-2">
+        <div className="px-3 pb-3 border-t border-[#1e1e2e] pt-2">
+          <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 mb-2">
             {stop.timeWindowStart && (
               <div>
                 <span className="text-gray-500">Window:</span>{' '}
@@ -274,7 +274,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
             </div>
           </div>
           {stop.notes && (
-            <p className="text-xs text-wl-text-secondary italic mb-2">{stop.notes}</p>
+            <p className="text-xs text-gray-400 italic mb-2">{stop.notes}</p>
           )}
           {stop.status === 'PENDING' || stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED' ? (
             <Button
@@ -348,13 +348,13 @@ export default function RouteDetailPage() {
   if (loading) return <RouteDetailSkeleton />;
   if (error)
     return (
-      <div className="min-h-screen bg-wl-bg-root p-6">
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
         <ErrorState message={error.message} onRetry={refetch} />
       </div>
     );
   if (!route)
     return (
-      <div className="min-h-screen bg-wl-bg-root p-6 text-center text-wl-text-secondary pt-20">
+      <div className="min-h-screen bg-[#0a0a0f] p-6 text-center text-gray-400 pt-20">
         Route not found.
       </div>
     );
@@ -374,12 +374,12 @@ export default function RouteDetailPage() {
   };
 
   return (
-    <div className="p-6 bg-wl-bg-root min-h-screen">
+    <div className="p-6 bg-[#0a0a0f] min-h-screen">
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <button
           onClick={() => router.push('/routes')}
-          className="text-wl-text-secondary hover:text-white transition-colors p-1.5 rounded-md hover:bg-wl-bg-surface"
+          className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-md hover:bg-[#12121a]"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -428,13 +428,13 @@ export default function RouteDetailPage() {
 
       {/* ── KPI Row ─────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Stops</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-4">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Stops</div>
           <div className="text-2xl font-bold text-blue-500">
             {completedStops}/{totalStops}
           </div>
           {/* Progress bar */}
-          <div className="mt-2 h-1 bg-wl-bg-overlay rounded-full overflow-hidden">
+          <div className="mt-2 h-1 bg-[#1e1e2e] rounded-full overflow-hidden">
             <div
               className="h-1 bg-blue-500 rounded-full transition-all"
               style={{ width: `${progressPct}%` }}
@@ -442,22 +442,22 @@ export default function RouteDetailPage() {
           </div>
         </div>
 
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Distance</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-4">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Distance</div>
           <div className="text-2xl font-bold text-emerald-400">
             {route.totalDistance ? `${Number(route.totalDistance).toFixed(1)} km` : '—'}
           </div>
         </div>
 
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Duration</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-4">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Duration</div>
           <div className="text-2xl font-bold text-amber-400">
             {route.totalDuration ? formatDuration(Math.round(route.totalDuration / 60)) : '—'}
           </div>
         </div>
 
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Progress</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-4">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Progress</div>
           <div className="text-2xl font-bold text-purple-400">{progressPct}%</div>
         </div>
       </div>
@@ -466,7 +466,7 @@ export default function RouteDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         {/* Map Panel */}
         <div className="flex flex-col gap-4">
-          <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl overflow-hidden h-[520px] relative">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl overflow-hidden h-[520px] relative">
             {hasMapData ? (
               <WLMap
                 center={mapCenter}
@@ -501,9 +501,9 @@ export default function RouteDetailPage() {
             )}
 
             {/* Route summary overlay */}
-            <div className="absolute bottom-4 right-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg px-4 py-3 text-xs">
+            <div className="absolute bottom-4 right-4 bg-[#0a0a0f]/90 backdrop-blur-sm border border-[#1e1e2e] rounded-lg px-4 py-3 text-xs">
               <div className="font-semibold text-white mb-2">Route Summary</div>
-              <div className="space-y-1 text-wl-text-secondary">
+              <div className="space-y-1 text-gray-400">
                 <div className="flex justify-between gap-6">
                   <span>Completed</span>
                   <span className="text-emerald-400 font-medium">{completedStops}</span>
@@ -525,7 +525,7 @@ export default function RouteDetailPage() {
           </div>
 
           {/* Stop sequence list */}
-          <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-4">
             <div className="text-sm font-semibold text-white mb-3">Stop Sequence</div>
             <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
               {route.stops.length === 0 ? (
@@ -551,7 +551,7 @@ export default function RouteDetailPage() {
         {/* Right Sidebar */}
         <div className="flex flex-col gap-4">
           {/* Driver Card */}
-          <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-4">
             <div className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <User className="w-4 h-4 text-blue-400" />
               Driver
@@ -559,7 +559,7 @@ export default function RouteDetailPage() {
             {route.driver ? (
               <div className="space-y-2 text-sm">
                 <div className="text-white font-medium">{route.driver.name}</div>
-                <div className="text-wl-text-secondary text-xs space-y-1">
+                <div className="text-gray-400 text-xs space-y-1">
                   <div className="flex justify-between">
                     <span>Phone</span>
                     <span className="text-white">{route.driver.phone}</span>
@@ -593,7 +593,7 @@ export default function RouteDetailPage() {
           </div>
 
           {/* Route Timeline */}
-          <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4 flex-1">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-4 flex-1">
             <div className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-400" />
               Timeline
@@ -608,18 +608,18 @@ export default function RouteDetailPage() {
                       ? 'bg-red-500'
                       : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
                         ? 'bg-blue-500'
-                        : 'bg-wl-bg-elevated';
+                        : 'bg-[#2a2a3e]';
 
                 return (
                   <div key={stop.id} className="relative pb-4">
                     {/* Vertical line */}
                     {!isLast && (
-                      <div className="absolute left-[-13px] top-5 bottom-0 w-px bg-wl-bg-overlay" />
+                      <div className="absolute left-[-13px] top-5 bottom-0 w-px bg-[#1e1e2e]" />
                     )}
                     {/* Dot */}
                     <div
                       className={cn(
-                        'absolute left-[-17px] top-1 w-4 h-4 rounded-full border-2 border-wl-bg-root flex items-center justify-center',
+                        'absolute left-[-17px] top-1 w-4 h-4 rounded-full border-2 border-[#0a0a0f] flex items-center justify-center',
                         dotColor,
                       )}
                     />
@@ -663,7 +663,7 @@ export default function RouteDetailPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-4">
             <div className="text-sm font-semibold text-white mb-3">Quick Actions</div>
             <div className="flex flex-col gap-2">
               {route.status === 'IN_PROGRESS' && (
