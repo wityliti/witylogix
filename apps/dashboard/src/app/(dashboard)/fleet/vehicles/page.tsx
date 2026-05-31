@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,24 +8,9 @@ import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Truck, Plus, Eye, Search, ChevronLeft, ChevronRight, RefreshCw, MapPin, Fuel, LayoutList, Map } from 'lucide-react';
+import { Truck, Plus, Eye, Search, ChevronLeft, ChevronRight, RefreshCw, MapPin, Gauge, Fuel } from 'lucide-react';
 import { useApiList } from '@/hooks/use-api';
 import dynamic from 'next/dynamic';
-
-const FleetVehiclesMapView = dynamic(
-  () => import('./components/fleet-vehicles-map-view'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full rounded-xl bg-wl-bg-elevated border border-wl-border-default flex items-center justify-center" style={{ height: 560 }}>
-        <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-wl-border-default border-t-wl-primary-400 animate-spin mx-auto mb-3" />
-          <p className="text-sm text-wl-text-tertiary">Loading map…</p>
-        </div>
-      </div>
-    ),
-  },
-);
 
 /* ═══════════════════════════════════════════════════════════════
    VEHICLE INVENTORY PAGE — Paginated list with status filter
@@ -54,7 +39,6 @@ interface FleetVehicle {
 }
 
 type StatusFilter = 'ALL' | 'ACTIVE' | 'IDLE' | 'OFFLINE' | 'MAINTENANCE';
-type ViewMode = 'list' | 'map';
 
 const STATUS_CONFIGS: Record<string, {
   variant: 'success' | 'warning' | 'danger' | 'info' | 'default';
@@ -95,10 +79,9 @@ function FuelBar({ level }: { level: number | null | undefined }) {
 export default function VehiclesPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [localSearch, setLocalSearch] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const { items: vehicles, pagination, loading, error, refetch, setPage } =
-    useApiList<FleetVehicle>('/api/v4/fleet/vehicles', { limit: 100 });
+    useApiList<FleetVehicle>('/api/v4/fleet/vehicles', { limit: 20 });
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -131,33 +114,6 @@ export default function VehiclesPage() {
             <Button variant="ghost" size="sm" onClick={() => void refetch()}>
               <RefreshCw className="w-4 h-4" />
             </Button>
-            {/* List / Map toggle */}
-            <div className="flex items-center rounded-lg border border-wl-border-subtle bg-wl-bg-elevated overflow-hidden">
-              <button
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
-                  viewMode === 'list'
-                    ? 'bg-wl-bg-overlay text-wl-text-primary'
-                    : 'text-wl-text-tertiary hover:text-wl-text-secondary',
-                )}
-              >
-                <LayoutList className="w-3.5 h-3.5" />
-                List
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
-                  viewMode === 'map'
-                    ? 'bg-wl-bg-overlay text-wl-text-primary'
-                    : 'text-wl-text-tertiary hover:text-wl-text-secondary',
-                )}
-              >
-                <Map className="w-3.5 h-3.5" />
-                Map
-              </button>
-            </div>
             <Button variant="primary" size="md">
               <Plus className="w-4 h-4 mr-1.5" />
               Add Vehicle
@@ -205,13 +161,7 @@ export default function VehiclesPage() {
         </div>
       </div>
 
-      {/* Map view */}
-      {viewMode === 'map' && (
-        <FleetVehiclesMapView vehicles={filtered} />
-      )}
-
       {/* Table */}
-      {viewMode === 'list' && (
       <Card className="overflow-hidden p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
@@ -373,7 +323,6 @@ export default function VehiclesPage() {
           </div>
         )}
       </Card>
-      )}
     </>
   );
 }
