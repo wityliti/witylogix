@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { api } from '@/lib/api';
+import { useApiList } from '@/hooks/use-api';
 import { useToast } from '@/components/ui/toast';
 import { useApiList } from '@/hooks/use-api';
 
@@ -24,6 +25,8 @@ type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | 
 interface Customer {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   address: string;
 }
@@ -36,12 +39,16 @@ interface LineItem {
   taxable: boolean;
 }
 
-function normalizeCustomer(raw: any): Customer {
+function normalizeCustomer(raw: Record<string, unknown>): Customer {
+  const firstName = String(raw.firstName || '');
+  const lastName = String(raw.lastName || '');
   return {
-    id: raw.id ?? "",
-    name: raw.name ?? raw.companyName ?? "",
-    email: raw.email ?? raw.contactEmail ?? "",
-    address: raw.address ?? raw.billingAddress ?? "",
+    id: String(raw.id),
+    name: [firstName, lastName].filter(Boolean).join(' ') || String(raw.email || raw.id),
+    firstName,
+    lastName,
+    email: String(raw.email || ''),
+    address: String(raw.addressLine1 || raw.address || ''),
   };
 }
 
@@ -50,6 +57,9 @@ export default function CreateInvoicePage() {
   const { addToast } = useToast();
   const { items: rawCustomers } = useApiList<any>("/api/v4/customers");
   const allCustomers = rawCustomers.map(normalizeCustomer);
+
+  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
+  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -74,14 +84,14 @@ export default function CreateInvoicePage() {
   const [isSending, setIsSending] = useState(false);
 
   const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return allCustomers;
+    if (!customerSearch) return realCustomers;
     const search = customerSearch.toLowerCase();
-    return allCustomers.filter(
+    return realCustomers.filter(
       (c) =>
         c.name.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search)
     );
-  }, [customerSearch, allCustomers]);
+  }, [customerSearch, realCustomers]);
 
   // Calculate totals
   const subtotal = useMemo(() => {
@@ -682,7 +692,11 @@ export default function CreateInvoicePage() {
               icon={null}
             />
 
-            {filteredCustomers.length === 0 ? (
+            {customersLoading ? (
+              <p className="text-center py-6 text-gray-400">
+                Loading customers...
+              </p>
+            ) : filteredCustomers.length === 0 ? (
               <p className="text-center py-6 text-gray-400">
                 No customers found
               </p>

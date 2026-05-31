@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   AlertCircle,
   Download,
@@ -58,6 +58,19 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
+  const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
+
+  const uniqueUsers = useMemo(() => {
+    const seen = new Set<string>();
+    const users: { id: string; name: string }[] = [];
+    for (const e of apiEvents) {
+      if (e.user && !seen.has(e.user.id)) {
+        seen.add(e.user.id);
+        users.push({ id: e.user.id, name: e.user.name });
+      }
+    }
+    return users;
+  }, [apiEvents]);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -262,7 +275,8 @@ export default function ActivityPage() {
               )}
             </div>
 
-            <EventFilters filters={filters} setFilters={setFilters} />
+            {/* Filters */}
+            <EventFilters filters={filters} setFilters={setFilters} users={uniqueUsers} />
 
             {(filters.types.length > 0 || filters.severities.length > 0 || filters.startDate || filters.endDate || filters.userId) && (
               <div className="flex flex-wrap items-center gap-2">

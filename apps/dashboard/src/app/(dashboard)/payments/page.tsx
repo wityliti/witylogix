@@ -42,6 +42,25 @@ interface MonthlyRevenue {
   payments: number;
 }
 
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function buildMonthlyRevenue(payments: Payment[]): MonthlyRevenue[] {
+  const map = new Map<string, MonthlyRevenue>();
+  for (const p of payments) {
+    if (p.status !== 'completed') continue;
+    const d = new Date(p.date);
+    const key = MONTH_ABBR[d.getMonth()];
+    const existing = map.get(key);
+    if (existing) {
+      existing.revenue += p.amount;
+      existing.payments += 1;
+    } else {
+      map.set(key, { month: key, revenue: p.amount, payments: 1 });
+    }
+  }
+  return Array.from(map.values());
+}
+
 const getStatusBadgeVariant = (
   status: PaymentStatus
 ): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
@@ -237,6 +256,8 @@ export default function PaymentsPage() {
     return sorted;
   }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy, payments]);
 
+  const monthlyRevenue = useMemo(() => buildMonthlyRevenue(payments), [payments]);
+
   // Calculate summary stats
   const stats = useMemo(() => {
     const completed = payments.filter((p) => p.status === 'completed');
@@ -405,15 +426,21 @@ export default function PaymentsPage() {
           <TrendingUp className="w-5 h-5" />
           Monthly Revenue
         </h2>
-        {monthlyRevenue.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-500">
-            <TrendingUp className="w-8 h-8 mb-2 opacity-40" />
-            <p className="text-sm">No completed payments yet</p>
-          </div>
-        ) : (
-          <>
-            <div className="h-80 flex items-end justify-center">
-              <RevenueChart data={monthlyRevenue} />
+        <div className="h-80 flex items-end justify-center">
+          <RevenueChart data={monthlyRevenue} />
+        </div>
+        <div className="mt-6 grid grid-cols-3 gap-4">
+          {monthlyRevenue.map((item) => (
+            <div key={item.month} className="text-center">
+              <p className="text-sm text-gray-400 mb-1">
+                {item.month}
+              </p>
+              <p className="text-lg font-bold text-white">
+                ${item.revenue.toLocaleString()}
+              </p>
+              <p className="text-xs text-gray-400">
+                {item.payments} payments
+              </p>
             </div>
             <div className="mt-6 grid grid-cols-3 gap-4">
               {monthlyRevenue.map((item) => (

@@ -98,6 +98,7 @@ const listInvoicesSchema = z.object({
   toDate: z.coerce.date().optional(),
   minAmount: z.coerce.number().optional(),
   maxAmount: z.coerce.number().optional(),
+  page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   offset: z.coerce.number().int().nonnegative().default(0),
 });
@@ -195,6 +196,8 @@ async function invoicesRoutes(fastify: FastifyInstance): Promise<void> {
     const { tenantId } = request;
     const query = listInvoicesSchema.parse(request.query);
 
+    const offset = query.page > 1 ? (query.page - 1) * query.limit : query.offset;
+
     const result = await invoiceService.listInvoices(
       tenantId,
       {
@@ -205,15 +208,17 @@ async function invoicesRoutes(fastify: FastifyInstance): Promise<void> {
         minAmount: query.minAmount,
         maxAmount: query.maxAmount,
       },
-      { limit: query.limit, offset: query.offset },
+      { limit: query.limit, offset },
     );
 
+    const page = Math.floor(offset / query.limit) + 1;
     return reply.send({
-      invoices: result.invoices,
+      data: result.invoices,
       pagination: {
+        page,
         limit: query.limit,
-        offset: query.offset,
         total: result.total,
+        totalPages: Math.ceil(result.total / query.limit),
       },
     });
   });
@@ -246,7 +251,7 @@ async function invoicesRoutes(fastify: FastifyInstance): Promise<void> {
 
     try {
       const invoice = await invoiceService.getInvoice(id, tenantId);
-      return reply.send({ invoice });
+      return reply.send({ data: invoice });
     } catch (error) {
       if (error instanceof Error && error.message.includes('not found')) {
         throw new NotFoundError('Invoice', id);
