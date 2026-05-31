@@ -73,7 +73,7 @@ const DRIVER_STATUS_BADGE: Record<
 
 function AssignPageSkeleton() {
   return (
-    <div className="p-6 bg-wl-bg-root min-h-screen">
+    <div className="p-6 bg-[#0a0a0f] min-h-screen">
       <div className="flex items-center gap-3 mb-6">
         <Skeleton className="w-8 h-8 rounded" />
         <Skeleton className="w-48 h-7 rounded" />
@@ -113,15 +113,15 @@ function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCar
         isSelected
           ? 'border-blue-500 bg-blue-500/5'
           : canAssign
-            ? 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong'
-            : 'border-wl-border-default bg-wl-bg-sunken opacity-60 cursor-not-allowed',
+            ? 'border-[#1e1e2e] bg-[#12121a] hover:border-[#2a2a3e]'
+            : 'border-[#1e1e2e] bg-[#0f0f18] opacity-60 cursor-not-allowed',
       )}
       onClick={() => canAssign && onSelect()}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-wl-bg-overlay flex items-center justify-center flex-shrink-0">
-            <User className="w-5 h-5 text-wl-text-secondary" />
+          <div className="w-10 h-10 rounded-full bg-[#1e1e2e] flex items-center justify-center flex-shrink-0">
+            <User className="w-5 h-5 text-gray-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -135,7 +135,7 @@ function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCar
                 {driver.status.replace('_', ' ')}
               </Badge>
             </div>
-            <div className="flex gap-4 mt-1 text-xs text-wl-text-secondary flex-wrap">
+            <div className="flex gap-4 mt-1 text-xs text-gray-400 flex-wrap">
               <span className="flex items-center gap-1">
                 <Truck className="w-3 h-3" />
                 {driver.vehicleType}
@@ -213,7 +213,7 @@ export default function RouteAssignPage() {
 
   if (!route) {
     return (
-      <div className="p-6 min-h-screen bg-wl-bg-root text-center text-wl-text-secondary pt-20">
+      <div className="p-6 min-h-screen bg-[#0a0a0f] text-center text-gray-400 pt-20">
         Route not found.
       </div>
     );
@@ -229,12 +229,12 @@ export default function RouteAssignPage() {
   const selectedDriver = drivers.find((d) => d.id === selectedDriverId);
 
   return (
-    <div className="p-6 min-h-screen bg-wl-bg-root">
+    <div className="p-6 min-h-screen bg-[#0a0a0f]">
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Link
           href={`/routes/${id}`}
-          className="text-wl-text-secondary hover:text-wl-text-primary transition-colors p-1.5 rounded-md hover:bg-wl-bg-surface"
+          className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-md hover:bg-[#12121a]"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
@@ -242,7 +242,7 @@ export default function RouteAssignPage() {
           <h1 className="text-xl font-bold text-white">
             Assign Driver — {route.name ?? `Route ${new Date(route.date).toLocaleDateString()}`}
           </h1>
-          <p className="text-sm text-wl-text-secondary mt-0.5">
+          <p className="text-sm text-gray-400 mt-0.5">
             {route.stops.length} stops ·{' '}
             {route.totalDistance ? `${Number(route.totalDistance).toFixed(1)} km` : 'Distance TBD'}
           </p>
@@ -260,14 +260,14 @@ export default function RouteAssignPage() {
               placeholder="Search drivers by name, vehicle, or plate..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-wl-bg-surface border-wl-border-default text-wl-text-primary"
+              className="pl-9 bg-[#12121a] border-[#1e1e2e] text-white"
             />
           </div>
 
           {/* Available Drivers */}
           {availableDrivers.length > 0 && (
             <div className="mb-6">
-              <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                 Available ({availableDrivers.length})
               </div>
               <div className="flex flex-col gap-3">
@@ -291,7 +291,7 @@ export default function RouteAssignPage() {
           {/* Unavailable Drivers */}
           {unavailableDrivers.length > 0 && (
             <div>
-              <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                 Unavailable ({unavailableDrivers.length})
               </div>
               <div className="flex flex-col gap-3">
@@ -309,7 +309,7 @@ export default function RouteAssignPage() {
           )}
 
           {filteredDrivers.length === 0 && (
-            <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-8 text-center text-wl-text-tertiary">
+            <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-8 text-center text-gray-500">
               <User className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p>No drivers found matching your search.</p>
             </div>
@@ -319,8 +319,8 @@ export default function RouteAssignPage() {
         {/* Sidebar: Route info + confirmation */}
         <div className="flex flex-col gap-4">
           {/* Current Assignment */}
-          <Card className="bg-wl-bg-surface border border-wl-border-default">
-            <CardHeader className="pb-3 border-b border-wl-border-default">
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <CardHeader className="pb-3 border-b border-[#1e1e2e]">
               <CardTitle className="text-sm text-white">Current Assignment</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
@@ -331,7 +331,7 @@ export default function RouteAssignPage() {
                   </div>
                   <div>
                     <div className="text-sm font-medium text-white">{route.driver.name}</div>
-                    <div className="text-xs text-wl-text-secondary">{route.driver.vehicleType}</div>
+                    <div className="text-xs text-gray-400">{route.driver.vehicleType}</div>
                   </div>
                 </div>
               ) : (
@@ -341,8 +341,8 @@ export default function RouteAssignPage() {
           </Card>
 
           {/* Route Stops Preview */}
-          <Card className="bg-wl-bg-surface border border-wl-border-default flex-1">
-            <CardHeader className="pb-3 border-b border-wl-border-default">
+          <Card className="bg-[#12121a] border border-[#1e1e2e] flex-1">
+            <CardHeader className="pb-3 border-b border-[#1e1e2e]">
               <CardTitle className="text-sm text-white flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-blue-400" />
                 Route Stops ({route.stops.length})
@@ -355,7 +355,7 @@ export default function RouteAssignPage() {
                 <div className="flex flex-col gap-2">
                   {route.stops.map((stop) => (
                     <div key={stop.id} className="flex items-start gap-2 text-xs">
-                      <div className="w-5 h-5 rounded-full bg-wl-bg-overlay flex items-center justify-center text-wl-text-secondary font-bold flex-shrink-0 mt-0.5">
+                      <div className="w-5 h-5 rounded-full bg-[#1e1e2e] flex items-center justify-center text-gray-400 font-bold flex-shrink-0 mt-0.5">
                         {stop.sequence + 1}
                       </div>
                       <div>
@@ -376,15 +376,15 @@ export default function RouteAssignPage() {
           </Card>
 
           {/* ETA Preview */}
-          <Card className="bg-wl-bg-surface border border-wl-border-default">
-            <CardHeader className="pb-3 border-b border-wl-border-default">
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <CardHeader className="pb-3 border-b border-[#1e1e2e]">
               <CardTitle className="text-sm text-white flex items-center gap-2">
                 <Clock className="w-4 h-4 text-amber-400" />
                 Estimated Impact
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-              <div className="text-xs text-wl-text-secondary space-y-1">
+              <div className="text-xs text-gray-400 space-y-1">
                 <div className="flex justify-between">
                   <span>Stops</span>
                   <span className="text-white">{route.stops.length}</span>
@@ -406,7 +406,7 @@ export default function RouteAssignPage() {
                   </div>
                 )}
                 {selectedDriver && (
-                  <div className="flex justify-between pt-2 border-t border-wl-border-default">
+                  <div className="flex justify-between pt-2 border-t border-[#1e1e2e]">
                     <span>Selected Driver</span>
                     <span className="text-blue-400">{selectedDriver.name}</span>
                   </div>
