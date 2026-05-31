@@ -42,114 +42,24 @@ interface MonthlyRevenue {
   payments: number;
 }
 
-const MOCK_PAYMENTS: Payment[] = [
-  {
-    id: "pay-001",
-    invoiceNumber: "INV-2024-001",
-    customerName: "Acme Corp",
-    amount: 2750.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-10",
-    reference: "TXN-20240210-12345",
-  },
-  {
-    id: "pay-002",
-    invoiceNumber: "INV-2024-005",
-    customerName: "Delta Logistics",
-    amount: 4500.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-01-28",
-    reference: "TXN-20240128-67890",
-  },
-  {
-    id: "pay-003",
-    invoiceNumber: "INV-2024-008",
-    customerName: "Gamma Ltd",
-    amount: 1450.0,
-    method: "card",
-    status: "completed",
-    date: "2024-02-18",
-    reference: "CARD-20240218-11111",
-  },
-  {
-    id: "pay-004",
-    invoiceNumber: "INV-2024-003",
-    customerName: "Gamma Ltd",
-    amount: 3200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-05",
-    reference: "TXN-20240305-22222",
-  },
-  {
-    id: "pay-005",
-    invoiceNumber: "INV-2024-002",
-    customerName: "Beta Inc",
-    amount: 1850.5,
-    method: "check",
-    status: "pending",
-    date: "2024-03-08",
-    reference: "CHK-20240308-33333",
-  },
-  {
-    id: "pay-006",
-    invoiceNumber: "INV-2024-007",
-    customerName: "Beta Inc",
-    amount: 3050.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-25",
-    reference: "TXN-20240225-44444",
-  },
-  {
-    id: "pay-007",
-    invoiceNumber: "INV-2024-004",
-    customerName: "Acme Corp",
-    amount: 1600.0,
-    method: "card",
-    status: "failed",
-    date: "2024-02-28",
-    reference: "CARD-20240228-55555",
-  },
-  {
-    id: "pay-008",
-    invoiceNumber: "INV-2024-006",
-    customerName: "Echo Distribution",
-    amount: 2200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-10",
-    reference: "TXN-20240310-66666",
-  },
-  {
-    id: "pay-009",
-    invoiceNumber: "INV-2024-009",
-    customerName: "Acme Corp",
-    amount: 5200.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-03-01",
-    reference: "TXN-20240301-77777",
-  },
-  {
-    id: "pay-010",
-    invoiceNumber: "INV-2024-010",
-    customerName: "Delta Logistics",
-    amount: 3800.0,
-    method: "card",
-    status: "completed",
-    date: "2024-03-02",
-    reference: "CARD-20240302-88888",
-  },
-];
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-const MONTHLY_REVENUE: MonthlyRevenue[] = [
-  { month: "Jan", revenue: 12500, payments: 5 },
-  { month: "Feb", revenue: 18900, payments: 8 },
-  { month: "Mar", revenue: 15600, payments: 6 },
-];
+function buildMonthlyRevenue(payments: Payment[]): MonthlyRevenue[] {
+  const map = new Map<string, MonthlyRevenue>();
+  for (const p of payments) {
+    if (p.status !== 'completed') continue;
+    const d = new Date(p.date);
+    const key = MONTH_ABBR[d.getMonth()];
+    const existing = map.get(key);
+    if (existing) {
+      existing.revenue += p.amount;
+      existing.payments += 1;
+    } else {
+      map.set(key, { month: key, revenue: p.amount, payments: 1 });
+    }
+  }
+  return Array.from(map.values());
+}
 
 const getStatusBadgeVariant = (
   status: PaymentStatus
@@ -324,6 +234,8 @@ export default function PaymentsPage() {
     return sorted;
   }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy, payments]);
 
+  const monthlyRevenue = useMemo(() => buildMonthlyRevenue(payments), [payments]);
+
   // Calculate summary stats
   const stats = useMemo(() => {
     const completed = payments.filter((p) => p.status === 'completed');
@@ -452,10 +364,10 @@ export default function PaymentsPage() {
           Monthly Revenue
         </h2>
         <div className="h-80 flex items-end justify-center">
-          <RevenueChart data={MONTHLY_REVENUE} />
+          <RevenueChart data={monthlyRevenue} />
         </div>
         <div className="mt-6 grid grid-cols-3 gap-4">
-          {MONTHLY_REVENUE.map((item) => (
+          {monthlyRevenue.map((item) => (
             <div key={item.month} className="text-center">
               <p className="text-sm text-gray-400 mb-1">
                 {item.month}

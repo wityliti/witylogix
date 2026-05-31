@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -48,13 +48,6 @@ export interface ActivityEvent {
   metadata?: Record<string, any>;
 }
 
-// Mock data generator (for now - will be replaced with API data)
-const generateMockEvents = (): ActivityEvent[] => {
-  const now = new Date();
-  const events: ActivityEvent[] = [];
-  return events;
-};
-
 export default function ActivityPage() {
   const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,6 +61,18 @@ export default function ActivityPage() {
     userId: null as string | null,
   });
   const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
+
+  const uniqueUsers = useMemo(() => {
+    const seen = new Set<string>();
+    const users: { id: string; name: string }[] = [];
+    for (const e of apiEvents) {
+      if (e.user && !seen.has(e.user.id)) {
+        seen.add(e.user.id);
+        users.push({ id: e.user.id, name: e.user.name });
+      }
+    }
+    return users;
+  }, [apiEvents]);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -329,7 +334,7 @@ export default function ActivityPage() {
             </div>
 
             {/* Filters */}
-            <EventFilters filters={filters} setFilters={setFilters} />
+            <EventFilters filters={filters} setFilters={setFilters} users={uniqueUsers} />
 
             {/* Active filters display */}
             {(filters.types.length > 0 ||
