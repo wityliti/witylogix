@@ -3,7 +3,9 @@
  *
  * Endpoints:
  *   GET    /orders                   - List unassigned orders for dispatch queue
- *   GET    /drivers                  - List available drivers for dispatch
+ *   GET    /drivers                  - List available drivers for dispatch (with lat/lng)
+ *   GET    /active-orders            - Active in-transit orders with delivery coords
+ *   GET    /stats                    - Live dispatch stats
  *   GET    /ai-suggest/:orderId      - AI driver suggestion for an order
  *   POST   /assign                   - Assign an order to a driver
  */
