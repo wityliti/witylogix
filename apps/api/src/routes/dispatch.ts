@@ -3,7 +3,9 @@
  *
  * Endpoints:
  *   GET    /orders                   - List unassigned orders for dispatch queue
- *   GET    /drivers                  - List available drivers for dispatch
+ *   GET    /drivers                  - List available drivers for dispatch (with lat/lng)
+ *   GET    /active-orders            - Active in-transit orders with delivery coords
+ *   GET    /stats                    - Live dispatch stats
  *   GET    /ai-suggest/:orderId      - AI driver suggestion for an order
  *   POST   /assign                   - Assign an order to a driver
  */
@@ -61,6 +63,7 @@ async function dispatchRoutes(fastify: FastifyInstance): Promise<void> {
           itemCount: true,
           totalWeight: true,
           deliveryDate: true,
+          deliveryLocation: true,
           createdAt: true,
           notes: true,
         },
@@ -76,6 +79,7 @@ async function dispatchRoutes(fastify: FastifyInstance): Promise<void> {
       const windowBase = o.deliveryDate ? new Date(o.deliveryDate) : new Date(Date.now() + 2 * 3600000);
       const windowStart = windowBase.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
       const windowEnd = new Date(windowBase.getTime() + 3 * 3600000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const delivLoc = o.deliveryLocation as { latitude?: number; longitude?: number } | null;
       return {
         id: o.id,
         orderNumber: o.externalOrderNumber ? `#${o.externalOrderNumber}` : `#${o.id.slice(0, 6).toUpperCase()}`,
@@ -87,6 +91,8 @@ async function dispatchRoutes(fastify: FastifyInstance): Promise<void> {
         totalWeight: o.totalWeight ? Number(o.totalWeight) : null,
         status: o.status,
         deliveryWindow: { start: windowStart, end: windowEnd },
+        lat: delivLoc?.latitude ?? null,
+        lng: delivLoc?.longitude ?? null,
       };
     });
 
@@ -139,21 +145,69 @@ async function dispatchRoutes(fastify: FastifyInstance): Promise<void> {
       OFFLINE: 'offline',
     };
 
-    const mapped = drivers.map((d) => ({
-      id: d.id,
-      name: d.name,
-      phone: d.phone,
-      status: statusMap[d.status] ?? 'available',
-      vehicleType: d.vehicleType.toLowerCase(),
-      vehiclePlate: d.vehiclePlate,
-      activeDeliveries: d._count.orders,
-      location: d.currentLocation ? (d.currentLocation as any)?.address ?? 'En Route' : 'Hub',
-    }));
+    const mapped = drivers.map((d) => {
+      const loc = d.currentLocation as { latitude?: number; longitude?: number; address?: string } | null;
+      return {
+        id: d.id,
+        name: d.name,
+        phone: d.phone,
+        status: statusMap[d.status] ?? 'available',
+        vehicleType: d.vehicleType.toLowerCase(),
+        vehiclePlate: d.vehiclePlate,
+        activeDeliveries: d._count.orders,
+        location: loc?.address ?? (loc?.latitude != null ? 'En Route' : 'Hub'),
+        lat: loc?.latitude ?? null,
+        lng: loc?.longitude ?? null,
+      };
+    });
 
     return {
       data: mapped,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
+  });
+
+  // ── GET ACTIVE / IN-TRANSIT ORDERS (with delivery coords) ─
+
+  fastify.get('/active-orders', async (request: FastifyRequest, _reply: FastifyReply) => {
+    const orders = await request.tenantDb.order.findMany({
+      where: {
+        status: { in: ['ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY'] as const },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        externalOrderNumber: true,
+        customerName: true,
+        addressLine1: true,
+        city: true,
+        status: true,
+        deliveryLocation: true,
+        driverId: true,
+        estimatedArrival: true,
+        driver: { select: { id: true, name: true } },
+      },
+    });
+
+    const mapped = orders.map((o) => {
+      const loc = o.deliveryLocation as { latitude?: number; longitude?: number } | null;
+      const address = [o.addressLine1, o.city].filter(Boolean).join(', ');
+      return {
+        id: o.id,
+        orderNumber: o.externalOrderNumber ? `#${o.externalOrderNumber}` : `#${o.id.slice(0, 6).toUpperCase()}`,
+        customerName: o.customerName ?? 'Unknown Customer',
+        address: address || 'Address not available',
+        status: o.status,
+        driverId: o.driverId,
+        driverName: o.driver?.name ?? null,
+        estimatedArrival: o.estimatedArrival?.toISOString() ?? null,
+        lat: loc?.latitude ?? null,
+        lng: loc?.longitude ?? null,
+      };
+    });
+
+    return { data: mapped };
   });
 
   // ── GET DISPATCH STATS ────────────────────────────────────
