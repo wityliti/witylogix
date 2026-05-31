@@ -557,6 +557,63 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
 
     return { data: logs };
   });
+
+  // ── DRIVER LOCATION FOR SHIPMENT ────────────────────────────
+  // Returns the current driver GPS position for a shipment.
+  // The driver.currentLocation column stores { lat, lng } as JSON
+  // (PostGIS migration is tracked separately).
+
+  fastify.get("/:id/driver-location", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const shipment = await request.tenantDb.shipment.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        driverId: true,
+        driver: {
+          select: {
+            id: true,
+            name: true,
+            currentLocation: true,
+            lastLocationAt: true,
+            heading: true,
+          },
+        },
+      },
+    });
+
+    if (!shipment) throw new NotFoundError("Shipment", id);
+
+    if (!shipment.driverId || !shipment.driver) {
+      return { data: null };
+    }
+
+    const rawLocation = shipment.driver.currentLocation as
+      | { lat: number; lng: number }
+      | null;
+
+    if (
+      !rawLocation ||
+      typeof rawLocation.lat !== "number" ||
+      typeof rawLocation.lng !== "number"
+    ) {
+      return { data: null };
+    }
+
+    return {
+      data: {
+        driverId: shipment.driver.id,
+        driverName: shipment.driver.name,
+        latitude: rawLocation.lat,
+        longitude: rawLocation.lng,
+        heading: shipment.driver.heading ?? null,
+        updatedAt: shipment.driver.lastLocationAt ?? null,
+        shipmentStatus: shipment.status,
+      },
+    };
+  });
 }
 
 export default shipmentsRoutes;
