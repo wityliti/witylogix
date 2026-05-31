@@ -160,30 +160,33 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Settings (8 mock signals — 16 pages total)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Settings Overview | `/settings` | 0 | ✅ |
-| General | `/settings/general` | 0 | ✅ |
-| Team | `/settings/team` | 0 | ✅ |
-| Profile | `/settings/profile` | 0 | ✅ |
-| Organization | `/settings/organization` | 0 | ✅ |
-| Notifications | `/settings/notifications` | 0 | ✅ |
-| Notifications Config | `/settings/notifications-config` | 0 | ✅ |
-| Notification Templates | `/settings/notifications/templates` | 0 | ✅ |
-| Notification Template Detail | `/settings/notifications/templates/[id]` | 0 | ✅ |
-| Notifications WhatsApp | `/settings/notifications/whatsapp` | 0 | ✅ |
-| Auth Providers | `/settings/auth-providers` | 2 | ⬜ |
-| Payments | `/settings/payments` | 3 | ⬜ |
-| Billing | `/settings/billing` | 2 | ⬜ |
-| Carriers | `/settings/carriers` | 0 | ✅ |
-| API Keys | `/settings/api-keys` | 0 | ✅ |
-| Accounting | `/settings/accounting` | 0 | ✅ |
-| Branding | `/settings/branding` | 0 | ✅ |
-| Maps | `/settings/maps` | 0 | ⚙️ |
-| Preferences | `/settings/preferences` | 0 | ✅ |
-| Webhooks | `/settings/webhooks` | 1 | ⬜ |
-| Webhooks Test | `/settings/webhooks/test` | 0 | ✅ |
+## Settings (8 → 0 mock signals) ✅ WIT-504
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Settings Overview | `/settings` | 0 | 0 | ✅ |
+| General | `/settings/general` | 0 | 0 | ✅ |
+| Team | `/settings/team` | 0 | 0 | ✅ |
+| Profile | `/settings/profile` | 0 | 0 | ✅ |
+| Organization | `/settings/organization` | 0 | 0 | ✅ |
+| Notifications | `/settings/notifications` | 0 | 0 | ✅ |
+| Notifications Config | `/settings/notifications-config` | 0 | 0 | ✅ |
+| Notification Templates | `/settings/notifications/templates` | 0 | 0 | ✅ |
+| Notification Template Detail | `/settings/notifications/templates/[id]` | 0 | 0 | ✅ |
+| Notifications WhatsApp | `/settings/notifications/whatsapp` | 0 | 0 | ✅ |
+| Auth Providers | `/settings/auth-providers` | 2 | 0 | ✅ |
+| Payments | `/settings/payments` | 3 | 0 | ✅ |
+| Billing | `/settings/billing` | 2 | 0 | ✅ |
+| Carriers | `/settings/carriers` | 0 | 0 | ✅ |
+| API Keys | `/settings/api-keys` | 0 | 0 | ✅ |
+| Accounting | `/settings/accounting` | 0 | 0 | ✅ |
+| Branding | `/settings/branding` | 0 | 0 | ✅ |
+| Maps | `/settings/maps` | 0 | 0 | ⚙️ |
+| Preferences | `/settings/preferences` | 0 | 0 | ✅ |
+| Webhooks | `/settings/webhooks` | 1 | 0 | ✅ |
+| Webhooks Test | `/settings/webhooks/test` | 0 | 0 | ✅ |
+
+**New endpoints**: `GET /api/v4/billing`, `GET /api/v4/billing/address`, `PUT /api/v4/billing/address`, `GET /api/v4/payments/gateways`, `PATCH /api/v4/payments/gateways/:id/default`, `DELETE /api/v4/payments/gateways/:id`
+**Fixed routes**: `GET /api/v4/auth-providers` (Prisma field names), `GET /api/v4/webhook-deliveries` (undefined db + field names + status mapping)
 
 ---
 
@@ -314,6 +317,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-501 | `feat/WIT-501-dashboard-admin-production` | Admin (all pages) | 14 pages | GET /admin/activity, /admin/queues, /admin/queues/:name/jobs, /admin/system, /admin/integrations, /admin/test-stats | 105→0 | pending |
 | WIT-502 | `feat/WIT-502-dashboard-eld-production` | ELD (overview + DVIR) | `eld/page.tsx`, `eld/dvir/page.tsx` | 10 new ELD endpoints + 4 Prisma models | 9→0 | pending |
 | WIT-503 | `feat/WIT-503-dashboard-integrations-production` | Integrations (connected, routing, health) | 3 pages | 8 new /integrations/* endpoints | 11→0 | #TBD |
+| WIT-504 | `feat/WIT-504-dashboard-settings-production` | Settings (auth-providers, billing, payments, webhooks) | 4 pages | 6 new + 2 fixed endpoints | 8→0 | #239 |
 
 ---
 
@@ -328,7 +332,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | 5 | Integrations (connected provider, routing) | 11→0 ✅ | Medium |
 | 6 | Healthcare records | 6 | Low |
 | 7 | Invoices (detail + create) | 5 | Low |
-| 8 | Settings (auth-providers, payments, billing, webhooks) | 8 | Low |
+| 8 | Settings (auth-providers, payments, billing, webhooks) | 8→0 ✅ | Low |
 | 9 | Returns, Products sync | 6 | Low |
 | 10 | Supply-chain | 3 | Low |
 | 11 | Activity feed | 2 | Low |
