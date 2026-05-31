@@ -296,7 +296,7 @@ export default function EtaAccuracyPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {reportLoading || !overall ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 animate-pulse">
+              <div key={i} className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 animate-pulse">
                 <div className="h-3 w-24 rounded bg-white/[0.06] mb-3" />
                 <div className="h-8 w-20 rounded bg-white/[0.08]" />
               </div>
