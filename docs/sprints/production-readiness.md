@@ -16,6 +16,18 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
+## Sprint Log
+
+| Sprint | Branch | Sections | Signals Eliminated | Date |
+|--------|--------|----------|--------------------|------|
+| WIT-501 | feat/WIT-501-admin-production | Admin (105) | 105 | 2026-05 |
+| WIT-502 | feat/WIT-502-eld-production | ELD (9) | 9 | 2026-05 |
+| WIT-503 | feat/WIT-503-integrations-production | Integrations (11) | 11 | 2026-05 |
+| WIT-504 | feat/WIT-504-settings-production | Settings (8) | 8 | 2026-05 |
+| WIT-505 | feat/WIT-505-dashboard-invoices-payments-production | Activity (2), Order Board (1), Invoices (5), Payments (1) | 9 | 2026-05-31 |
+
+---
+
 ## Auth (0 mock signals)
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
@@ -30,9 +42,9 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 ## Home / Dashboard Overview (3 → 0 mock signals)
 | Page | Route | Mock Before | Mock After | Status | PR |
 |------|-------|------------|-----------|--------|----|
-| Dashboard Home | `/home` | 3 | 0 | 🔄 WIT-462 | #TBD |
-| Activity Feed | `/activity` | 2 | — | ⬜ | — |
-| Realtime Activity | `/activity/realtime` | 0 | — | ⬜ | — |
+| Dashboard Home | `/home` | 3 | 0 | ✅ WIT-462 | — |
+| Activity Feed | `/activity` | 2 | 0 | ✅ WIT-505 | — |
+| Realtime Activity | `/activity/realtime` | 0 | 0 | ✅ | — |
 
 **Endpoints used**: `GET /api/v4/dashboard/stats`, `GET /api/v4/orders?limit=5`, `GET /api/v4/drivers?limit=8`
 
@@ -43,7 +55,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 |------|-------|------------|-----------|--------|
 | Order List | `/orders` | 0 | 0 | ✅ |
 | Order Detail | `/orders/[id]` | 2 | — | ⬜ |
-| Order Board | `/orders/board` | 1 | — | ⬜ |
+| Order Board | `/orders/board` | 1 | 0 | ✅ WIT-505 |
 | Order Import | `/orders/import` | 3 | — | ⬜ |
 | Order Create | `/orders/create` | 0 | — | ⬜ |
 | Order Bulk | `/orders/bulk` | 0 | — | ⬜ |
@@ -139,24 +151,29 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Invoices / Finance (5 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Invoice List | `/invoices` | 0 | ✅ |
-| Invoice Detail | `/invoices/[id]` | 2 | ⬜ |
-| Invoice Create | `/invoices/create` | 3 | ⬜ |
-| Finance Overview | `/finance` | 0 | ✅ |
-| COD | `/finance/cod` | 0 | ✅ |
-| Finance Invoices | `/finance/invoices` | 0 | ✅ |
-| Reconciliation | `/finance/reconciliation` | 0 | ✅ |
+## Invoices / Finance (5 → 0 mock signals) ✅ WIT-505
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Invoice List | `/invoices` | 0 | 0 | ✅ |
+| Invoice Detail | `/invoices/[id]` | 2 | 0 | ✅ WIT-505 |
+| Invoice Create | `/invoices/create` | 3 | 0 | ✅ WIT-505 |
+| Finance Overview | `/finance` | 0 | 0 | ✅ |
+| COD | `/finance/cod` | 0 | 0 | ✅ |
+| Finance Invoices | `/finance/invoices` | 0 | 0 | ✅ |
+| Reconciliation | `/finance/reconciliation` | 0 | 0 | ✅ |
+
+**WIT-505 endpoints**: `GET /api/v4/invoices/:id` (fixed response shape: `{ data }` + `mapDbInvoice` normalization), `GET /api/v4/customers?limit=100` (invoice create autocomplete)
+**Backend note**: `InvoiceService` uses `(this.prisma.invoice as any)` — billing Invoice model fields mismatched; frontend now shows proper `ErrorState` on API failures
 
 ---
 
-## Billing / Payments (1 mock signal)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Billing | `/billing` | 0 | ✅ |
-| Payments | `/payments` | 1 | ⬜ |
+## Billing / Payments (1 → 0 mock signals) ✅ WIT-505
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Billing | `/billing` | 0 | 0 | ✅ |
+| Payments | `/payments` | 1 | 0 | ✅ WIT-505 |
+
+**WIT-505 changes**: Removed dead `MOCK_PAYMENTS` array; replaced hardcoded `MONTHLY_REVENUE` constant with `buildMonthlyRevenue(payments)` computed dynamically from real API data
 
 ---
 
@@ -230,12 +247,14 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Activity / Events (2 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Activity | `/activity` | 2 | ⬜ |
-| Realtime | `/activity/realtime` | 0 | ✅ |
-| Events | `/events` | 0 | ✅ |
+## Activity / Events (2 → 0 mock signals) ✅ WIT-505
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Activity | `/activity` | 2 | 0 | ✅ WIT-505 |
+| Realtime | `/activity/realtime` | 0 | 0 | ✅ |
+| Events | `/events` | 0 | 0 | ✅ |
+
+**WIT-505 changes**: Removed `generateMockEvents` (dead code); removed `SAMPLE_USERS` from event-filters component (now receives `users` prop computed from real event data via `uniqueUsers` useMemo)
 
 ---
 
