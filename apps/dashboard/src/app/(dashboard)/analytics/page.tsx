@@ -17,46 +17,87 @@ import {
   Activity,
   Zap,
   RefreshCw,
-  MapPin,
-  AlertTriangle,
+  AlertCircle,
 } from 'lucide-react';
 
-// ── Types ──────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────
 
-interface OverviewMetrics {
+interface AnalyticsMetrics {
   totalOrders: number;
   totalDeliveries: number;
   activeDrivers: number;
   avgDeliveryTime: number;
   onTimeRate: number;
+  customerSatisfaction: number;
   revenue: number;
   failedDeliveries: number;
 }
 
-interface HourlyPoint { hour: number; orders: number; deliveries: number; }
-interface WeeklyPoint { day: string; orders: number; deliveries: number; revenue: number; }
-interface ZonePoint { name: string; orders: number; pct: number; trend: number; }
-interface DriverPoint { name: string; deliveries: number; onTime: number; rating: number; }
-
-interface AnalyticsOverview {
-  metrics: OverviewMetrics;
-  hourly: HourlyPoint[];
-  weekly: WeeklyPoint[];
-  topZones: ZonePoint[];
-  topDrivers: DriverPoint[];
+interface HourlyPoint {
+  hour: number;
+  orders: number;
+  deliveries: number;
 }
 
-// ── Dynamic zone map (no SSR — Leaflet needs browser) ─────────
-const ZoneMap = dynamic(() => import('./components/zone-analytics-map'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full bg-[#0d0d14] rounded-xl animate-pulse flex items-center justify-center">
-      <MapPin className="w-6 h-6 text-white/20" />
-    </div>
-  ),
-});
+interface WeeklyPoint {
+  day: string;
+  orders: number;
+  deliveries: number;
+  revenue: number;
+}
 
-// ── MetricTile ─────────────────────────────────────────────────
+interface ZonePerf {
+  name: string;
+  orders: number;
+  pct: number;
+  trend: number;
+}
+
+interface DriverPerf {
+  name: string;
+  deliveries: number;
+  onTime: number;
+  rating: number;
+}
+
+interface AnalyticsOverview {
+  metrics: AnalyticsMetrics;
+  hourly: HourlyPoint[];
+  weekly: WeeklyPoint[];
+  topZones: ZonePerf[];
+  topDrivers: DriverPerf[];
+}
+
+// ── Loading Skeleton ───────────────────────────────────────────────
+
+function MetricSkeleton() {
+  return (
+    <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 animate-pulse">
+      <div className="flex items-start justify-between mb-3">
+        <div className="h-3 w-24 rounded bg-white/[0.06]" />
+        <div className="w-8 h-8 rounded-lg bg-white/[0.06]" />
+      </div>
+      <div className="h-8 w-32 rounded bg-white/[0.08] mb-3" />
+      <div className="h-3 w-20 rounded bg-white/[0.04]" />
+    </div>
+  );
+}
+
+function ChartSkeleton({ height = 'h-24' }: { height?: string }) {
+  return (
+    <div className={cn('flex items-end gap-[3px]', height)}>
+      {Array.from({ length: 24 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex-1 rounded-t-sm bg-white/[0.04] animate-pulse"
+          style={{ height: `${20 + (i % 5) * 15}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Reusable Components ────────────────────────────────────────────
 
 function MetricTile({
   label, value, suffix, trend, icon: Icon, accent, loading = false,
@@ -101,7 +142,17 @@ function MetricTile({
   );
 }
 
-function MiniBarChart({ data, color, maxVal }: { data: HourlyPoint[]; color: string; maxVal: number; }) {
+function MiniBarChart({
+  data,
+  dataKey,
+  color,
+  maxVal,
+}: {
+  data: HourlyPoint[];
+  dataKey: keyof HourlyPoint;
+  color: string;
+  maxVal: number;
+}) {
   return (
     <div className="flex items-end gap-[3px] h-24">
       {data.map((d, i) => {
@@ -123,11 +174,16 @@ function WeeklyChart({ data }: { data: WeeklyPoint[] }) {
   const maxOrders = Math.max(...data.map((d) => d.orders), 1);
   return (
     <div className="flex items-end gap-3 h-32 px-2">
-      {data.map((d) => (
-        <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
-          <div className="w-full flex gap-1 items-end" style={{ height: '100px' }}>
-            <div className="flex-1 rounded-t-sm bg-blue-500/60" style={{ height: `${(d.orders / maxOrders) * 100}%` }} />
-            <div className="flex-1 rounded-t-sm bg-emerald-500/50" style={{ height: `${(d.deliveries / maxOrders) * 100}%` }} />
+      {data.map((d) => {
+        const h = (d.orders / maxOrders) * 100;
+        const dh = (d.deliveries / maxOrders) * 100;
+        return (
+          <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
+            <div className="w-full flex gap-1 items-end" style={{ height: '100px' }}>
+              <div className="flex-1 rounded-t-sm bg-blue-500/60" style={{ height: `${h}%` }} />
+              <div className="flex-1 rounded-t-sm bg-emerald-500/50" style={{ height: `${dh}%` }} />
+            </div>
+            <span className="text-[10px] text-white/30 font-medium">{d.day}</span>
           </div>
           <span className="text-[10px] text-white/30 font-medium">{d.day}</span>
         </div>
@@ -136,30 +192,33 @@ function WeeklyChart({ data }: { data: WeeklyPoint[] }) {
   );
 }
 
-// ── Page ───────────────────────────────────────────────────────
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <BarChart3 className="w-8 h-8 text-white/10 mb-2" />
+      <p className="text-sm text-white/25">{label}</p>
+    </div>
+  );
+}
+
+// ── Page Component ─────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('7d');
   const [showMap, setShowMap] = useState(false);
 
-  const { data, loading, error, refetch } = useApiQuery<AnalyticsOverview>(
-    `/api/v4/analytics/overview?range=${timeRange}`
+  const { data, loading, error } = useApiQuery<AnalyticsOverview>(
+    `/api/v4/analytics/overview?range=${timeRange}`,
   );
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <ErrorState message={error?.message ?? 'Failed to load analytics'} onRetry={refetch} />
-      </div>
-    );
-  }
 
   const metrics = data?.metrics;
   const hourly = data?.hourly ?? [];
   const weekly = data?.weekly ?? [];
   const topZones = data?.topZones ?? [];
   const topDrivers = data?.topDrivers ?? [];
-  const maxHourly = Math.max(...hourly.map((h) => Math.max(h.orders, h.deliveries)), 1);
+  const maxHourly = hourly.length > 0
+    ? Math.max(...hourly.map((h) => Math.max(h.orders, h.deliveries)), 1)
+    : 1;
 
   return (
     <div className="min-h-screen">
@@ -196,6 +255,13 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="mx-6 lg:mx-8 mb-4 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-950/20 px-4 py-3 text-sm text-red-400">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          Failed to load analytics data. Please try again.
+        </div>
+      )}
+
       <div className="px-6 lg:px-8 pb-8 space-y-5">
         {/* Zone Map Panel */}
         {showMap && (
@@ -221,30 +287,58 @@ export default function AnalyticsPage() {
 
         {/* Primary KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricTile label="Total Orders" value={loading ? '—' : (metrics?.totalOrders ?? 0).toLocaleString()} icon={Package} accent="#818cf8" loading={loading} />
-          <MetricTile label="Deliveries" value={loading ? '—' : (metrics?.totalDeliveries ?? 0).toLocaleString()} icon={Truck} accent="#34d399" loading={loading} />
-          <MetricTile label="Active Drivers" value={loading ? '—' : (metrics?.activeDrivers ?? 0)} icon={Users} accent="#60a5fa" loading={loading} />
-          <MetricTile label="Avg Delivery" value={loading ? '—' : (metrics?.avgDeliveryTime ?? 0)} suffix="min" icon={Clock} accent="#fbbf24" loading={loading} />
+          {loading || !metrics ? (
+            Array.from({ length: 4 }).map((_, i) => <MetricSkeleton key={i} />)
+          ) : (
+            <>
+              <MetricTile
+                label="Total Orders"
+                value={metrics.totalOrders.toLocaleString()}
+                icon={Package}
+                accent="#818cf8"
+                delay={0}
+              />
+              <MetricTile
+                label="Deliveries"
+                value={metrics.totalDeliveries.toLocaleString()}
+                icon={Truck}
+                accent="#34d399"
+                delay={50}
+              />
+              <MetricTile
+                label="Active Drivers"
+                value={metrics.activeDrivers}
+                icon={Users}
+                accent="#60a5fa"
+                delay={100}
+              />
+              <MetricTile
+                label="Avg Delivery"
+                value={metrics.avgDeliveryTime}
+                suffix="min"
+                icon={Clock}
+                accent="#fbbf24"
+                delay={150}
+              />
+            </>
+          )}
         </div>
 
-        {/* Secondary KPIs */}
+        {/* Secondary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricTile label="On-Time Rate" value={loading ? '—' : (metrics?.onTimeRate ?? 0)} suffix="%" icon={Zap} accent="#a78bfa" loading={loading} />
-          <MetricTile label="Revenue" value={loading ? '—' : `$${((metrics?.revenue ?? 0) / 1000).toFixed(0)}k`} icon={BarChart3} accent="#2dd4bf" loading={loading} />
-          <MetricTile label="Failed Deliveries" value={loading ? '—' : (metrics?.failedDeliveries ?? 0)} icon={RefreshCw} accent="#f87171" loading={loading} />
-          <MetricTile
-            label="Completion Rate"
-            value={loading ? '—' : metrics && metrics.totalOrders > 0
-              ? `${((metrics.totalDeliveries / metrics.totalOrders) * 100).toFixed(1)}`
-              : '0'}
-            suffix="%"
-            icon={Activity}
-            accent="#f472b6"
-            loading={loading}
-          />
+          {loading || !metrics ? (
+            Array.from({ length: 4 }).map((_, i) => <MetricSkeleton key={i} />)
+          ) : (
+            <>
+              <MetricTile label="On-Time Rate" value={metrics.onTimeRate} suffix="%" icon={Zap} accent="#a78bfa" />
+              <MetricTile label="Customer Rating" value={metrics.customerSatisfaction} suffix="/5" icon={Activity} accent="#f472b6" />
+              <MetricTile label="Revenue" value={`$${(metrics.revenue / 1000).toFixed(0)}k`} icon={BarChart3} accent="#2dd4bf" />
+              <MetricTile label="Failed Deliveries" value={metrics.failedDeliveries} icon={RefreshCw} accent="#f87171" />
+            </>
+          )}
         </div>
 
-        {/* Charts */}
+        {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-4">
@@ -255,15 +349,11 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {loading ? (
-              <div className="flex items-end gap-[3px] h-24">
-                {Array.from({ length: 24 }).map((_, i) => (
-                  <div key={i} className="flex-1 rounded-t-sm bg-white/[0.04] animate-pulse" style={{ height: `${20 + Math.sin(i) * 15 + 30}%` }} />
-                ))}
-              </div>
+              <ChartSkeleton />
             ) : hourly.length === 0 ? (
-              <div className="h-24 flex items-center justify-center text-white/20 text-sm">No data</div>
+              <EmptyState label="No hourly data for this period" />
             ) : (
-              <MiniBarChart data={hourly} color="#6366f1" maxVal={maxHourly} />
+              <MiniBarChart data={hourly} dataKey="orders" color="#6366f1" maxVal={maxHourly} />
             )}
             <div className="flex justify-between mt-2 text-[10px] text-white/20 px-0.5">
               <span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span>
@@ -279,19 +369,9 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {loading ? (
-              <div className="flex items-end gap-3 h-32 px-2">
-                {Array.from({ length: 7 }).map((_, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                    <div className="w-full flex gap-1 items-end" style={{ height: '100px' }}>
-                      <Skeleton variant="rect" className="flex-1" style={{ height: `${40 + i * 8}%` }} />
-                      <Skeleton variant="rect" className="flex-1" style={{ height: `${30 + i * 7}%` }} />
-                    </div>
-                    <Skeleton variant="text" className="h-2 w-6" />
-                  </div>
-                ))}
-              </div>
+              <ChartSkeleton height="h-32" />
             ) : weekly.length === 0 ? (
-              <div className="h-32 flex items-center justify-center text-white/20 text-sm">No data</div>
+              <EmptyState label="No weekly data for this period" />
             ) : (
               <WeeklyChart data={weekly} />
             )}
@@ -302,33 +382,21 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Top zones */}
           <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-white/60">Top Delivery Areas</h3>
-              <button
-                onClick={() => setShowMap(true)}
-                className="text-[11px] text-indigo-400/60 hover:text-indigo-400 transition-colors flex items-center gap-1"
-              >
-                <MapPin className="w-3 h-3" /> View map
-              </button>
-            </div>
+            <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Top Delivery Zones</h3>
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <Skeleton variant="text" className="h-3 w-4" />
+                  <div key={i} className="flex items-center gap-3 animate-pulse">
+                    <div className="h-3 w-4 rounded bg-white/[0.06]" />
                     <div className="flex-1 space-y-1">
-                      <Skeleton variant="text" className="h-3 w-32" />
-                      <Skeleton variant="rect" className="h-1.5 w-full" />
+                      <div className="h-3 w-32 rounded bg-white/[0.06]" />
+                      <div className="h-1.5 rounded-full bg-white/[0.04]" />
                     </div>
-                    <Skeleton variant="text" className="h-3 w-10" />
                   </div>
                 ))}
               </div>
             ) : topZones.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8">
-                <AlertTriangle className="w-8 h-8 text-white/10 mb-2" />
-                <p className="text-sm text-white/30">No zone data for this period</p>
-              </div>
+              <EmptyState label="No zone data for this period" />
             ) : (
               <div className="space-y-3">
                 {topZones.map((zone, i) => (
@@ -340,17 +408,25 @@ export default function AnalyticsPage() {
                         <span className="text-xs font-mono text-white/40">{zone.orders}</span>
                       </div>
                       <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all"
-                          style={{ width: `${zone.pct}%`, background: 'linear-gradient(90deg,#818cf8,#6366f1)', opacity: 1 - i * 0.12 }} />
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${zone.pct}%`,
+                            background: `linear-gradient(90deg, #818cf8, #6366f1)`,
+                            opacity: 1 - i * 0.12,
+                          }}
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 min-w-[40px] justify-end">
-                      {zone.trend > 0 ? <TrendingUp className="w-3 h-3 text-emerald-400" /> : zone.trend < 0 ? <TrendingDown className="w-3 h-3 text-red-400" /> : null}
-                      {zone.trend !== 0 && (
-                        <span className={cn('text-[11px] font-mono', zone.trend >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                          {zone.trend > 0 ? '+' : ''}{zone.trend}%
-                        </span>
+                    <div className="flex items-center gap-1">
+                      {zone.trend >= 0 ? (
+                        <ArrowUpRight className="w-3 h-3 text-emerald-400" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3 text-red-400" />
                       )}
+                      <span className={cn("text-[11px] font-mono", zone.trend >= 0 ? "text-emerald-400" : "text-red-400")}>
+                        {zone.trend > 0 ? '+' : ''}{zone.trend}%
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -360,54 +436,51 @@ export default function AnalyticsPage() {
 
           {/* Driver leaderboard */}
           <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
-            <h3 className="text-sm font-semibold text-white/60 mb-4">Driver Leaderboard</h3>
+            <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Driver Leaderboard</h3>
             {loading ? (
               <div className="space-y-2.5">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5">
-                    <Skeleton variant="circle" className="w-7 h-7" />
-                    <Skeleton variant="text" className="flex-1 h-4" />
-                    <div className="flex gap-4">
-                      <Skeleton variant="text" className="h-4 w-8" />
-                      <Skeleton variant="text" className="h-4 w-10" />
-                    </div>
+                  <div key={i} className="flex items-center gap-3 animate-pulse">
+                    <div className="w-7 h-7 rounded-full bg-white/[0.06]" />
+                    <div className="flex-1 h-3 rounded bg-white/[0.06]" />
+                    <div className="h-3 w-20 rounded bg-white/[0.04]" />
                   </div>
                 ))}
               </div>
             ) : topDrivers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8">
-                <Users className="w-8 h-8 text-white/10 mb-2" />
-                <p className="text-sm text-white/30">No driver data for this period</p>
-              </div>
+              <EmptyState label="No driver data for this period" />
             ) : (
               <div className="space-y-2.5">
                 {topDrivers.map((driver, i) => (
-                  <div key={driver.name} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.02] transition-colors">
-                    <div className={cn('w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
-                      i === 0 ? 'bg-amber-500/20 text-amber-400' :
-                      i === 1 ? 'bg-gray-400/20 text-gray-300' :
-                      i === 2 ? 'bg-orange-600/20 text-orange-400' :
-                      'bg-white/[0.05] text-white/30')}>
+                  <div
+                    key={driver.name}
+                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.02] transition-colors"
+                  >
+                    <div className={cn(
+                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
+                      i === 0 ? "bg-amber-500/20 text-amber-400" :
+                      i === 1 ? "bg-gray-400/20 text-gray-300" :
+                      i === 2 ? "bg-orange-600/20 text-orange-400" :
+                      "bg-white/[0.05] text-white/30"
+                    )}>
                       {i + 1}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white/70 truncate">{driver.name}</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
+                    <div className="text-right flex items-center gap-4">
+                      <div>
                         <p className="text-xs font-mono text-white/50">{driver.deliveries}</p>
                         <p className="text-[10px] text-white/20">deliveries</p>
                       </div>
-                      <div className="text-right">
+                      <div>
                         <p className="text-xs font-mono text-emerald-400">{driver.onTime}%</p>
                         <p className="text-[10px] text-white/20">on-time</p>
                       </div>
-                      {driver.rating > 0 && (
-                        <div className="flex items-center gap-0.5">
-                          <span className="text-xs font-mono text-amber-400">{driver.rating}</span>
-                          <span className="text-amber-400 text-[10px]">★</span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-0.5">
+                        <span className="text-xs font-mono text-amber-400">{driver.rating}</span>
+                        <span className="text-amber-400 text-[10px]">&#9733;</span>
+                      </div>
                     </div>
                   </div>
                 ))}

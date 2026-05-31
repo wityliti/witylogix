@@ -236,8 +236,6 @@ export default function EtaAccuracyPage() {
   const isHealthy = healthData?.healthy ?? true;
   const maxImportance = Math.max(...features.map((f) => f.importance), 0.001);
 
-  // Build per-model rows: prefer accuracy report's by_model (richer metrics);
-  // fall back to /model-performance data when report not yet loaded.
   const byModelEntries: Array<[string, CalibrationMetrics]> =
     report && Object.keys(report.by_model).length > 0
       ? Object.entries(report.by_model)
@@ -299,41 +297,52 @@ export default function EtaAccuracyPage() {
       <div className="px-6 lg:px-8 pb-8 space-y-5">
         {/* KPI tiles — overall accuracy report */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard
-            label="Mean Absolute Error"
-            value={overall ? overall.mae.toFixed(1) : '—'}
-            suffix="min"
-            icon={Clock}
-            accent="#818cf8"
-            sub={overall ? `RMSE ${overall.rmse.toFixed(1)} min · P90 ${overall.p90_error.toFixed(1)} min` : undefined}
-          />
-          <MetricCard
-            label="Accuracy (±5 min)"
-            value={overall ? overall.accuracy_percentage.toFixed(1) : '—'}
-            suffix={overall ? '%' : undefined}
-            icon={Target}
-            accent="#34d399"
-            sub={overall ? `${overall.sample_count.toLocaleString()} predictions` : 'No data yet'}
-          />
-          <MetricCard
-            label="MAPE"
-            value={overall ? overall.mape.toFixed(1) : '—'}
-            suffix={overall ? '%' : undefined}
-            icon={Zap}
-            accent="#60a5fa"
-            sub={overall ? `P50 error ${overall.p50_error.toFixed(1)} min` : undefined}
-          />
-          <MetricCard
-            label="Degradation Alerts"
-            value={report ? report.degradation_alerts.length : '—'}
-            icon={BarChart3}
-            accent={report && report.degradation_alerts.length > 0 ? '#f87171' : '#34d399'}
-            sub={
-              !report ? 'No report data' :
-              report.degradation_alerts.length > 0 ? 'Model drift detected' :
-              `${period} window — all clear`
-            }
-          />
+          {reportLoading || !overall ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 animate-pulse">
+                <div className="h-3 w-24 rounded bg-white/[0.06] mb-3" />
+                <div className="h-8 w-20 rounded bg-white/[0.08]" />
+              </div>
+            ))
+          ) : (
+            <>
+              <MetricCard
+                label="Mean Absolute Error"
+                value={overall.mae.toFixed(1)}
+                suffix="min"
+                icon={Clock}
+                accent="#818cf8"
+                sub={`RMSE ${overall.rmse.toFixed(1)} min · P90 ${overall.p90_error.toFixed(1)} min`}
+              />
+              <MetricCard
+                label="Accuracy (±5 min)"
+                value={overall.accuracy_percentage.toFixed(1)}
+                suffix="%"
+                icon={Target}
+                accent="#34d399"
+                sub={`${overall.sample_count.toLocaleString()} predictions`}
+              />
+              <MetricCard
+                label="MAPE"
+                value={overall.mape.toFixed(1)}
+                suffix="%"
+                icon={Zap}
+                accent="#60a5fa"
+                sub={`P50 error ${overall.p50_error.toFixed(1)} min`}
+              />
+              <MetricCard
+                label="Degradation Alerts"
+                value={report?.degradation_alerts.length ?? 0}
+                icon={BarChart3}
+                accent={(report?.degradation_alerts.length ?? 0) > 0 ? '#f87171' : '#34d399'}
+                sub={
+                  (report?.degradation_alerts.length ?? 0) > 0
+                    ? 'Model drift detected'
+                    : `${period} window — all clear`
+                }
+              />
+            </>
+          )}
         </div>
 
         {/* Degradation alerts */}
@@ -378,6 +387,10 @@ export default function EtaAccuracyPage() {
                   <div key={i} className="h-4 bg-white/[0.04] rounded animate-pulse" />
                 ))}
               </div>
+            ) : features.length === 0 ? (
+              <p className="text-sm text-white/25 text-center py-6">
+                Feature importance data unavailable
+              </p>
             ) : (
               <div className="space-y-3">
                 {features.map((f) => (
@@ -468,6 +481,10 @@ export default function EtaAccuracyPage() {
                 <div key={i} className="h-10 bg-white/[0.04] rounded animate-pulse" />
               ))}
             </div>
+          ) : subModelEntries.length === 0 ? (
+            <p className="text-sm text-white/25 text-center py-6">
+              No model data available
+            </p>
           ) : (
             <div className="space-y-1">
               {subModelEntries.map(([name, m]) => (

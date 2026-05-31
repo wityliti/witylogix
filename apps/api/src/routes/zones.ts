@@ -2,7 +2,8 @@
  * Delivery Zones — PostGIS polygon management.
  *
  * Routes:
- *   GET    /              List all zones for the tenant
+ *   GET    /              List all zones for the tenant; add ?format=geojson for FeatureCollection
+ *   GET    /overlays      Zone-level stats + heatmap + hub markers (for map overlays)
  *   GET    /:id           Get zone details
  *   POST   /              Create zone with polygon boundary
  *   PATCH  /:id           Update zone (name, rates, boundary)
@@ -25,8 +26,14 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── LIST ZONES ────────────────────────────────────────────
 
+  const listQuerySchema = z.object({
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(200).default(50),
+    format: z.enum(["json", "geojson"]).default("json"),
+  });
+
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { page, limit } = paginationSchema.parse(request.query);
+    const { page, limit, format } = listQuerySchema.parse(request.query);
 
     const [zones, total] = await Promise.all([
       request.tenantDb.deliveryZone.findMany({
@@ -53,6 +60,33 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.deliveryZone.count(),
     ]);
 
+    if (format === "geojson") {
+      const features = zones.map((zone) => {
+        const boundary = zone.boundary as Record<string, unknown> | null;
+        const geometry = boundary && boundary.type
+          ? boundary
+          : { type: "Polygon", coordinates: [] };
+        return {
+          type: "Feature" as const,
+          geometry,
+          properties: {
+            id: zone.id,
+            name: zone.name,
+            isActive: zone.isActive,
+            priority: zone.priority,
+            baseRate: Number(zone.baseRate),
+            perKmRate: Number(zone.perKmRate),
+            minOrder: Number(zone.minOrder),
+            freeAbove: zone.freeAbove ? Number(zone.freeAbove) : null,
+          },
+        };
+      });
+      return {
+        type: "FeatureCollection",
+        features,
+      };
+    }
+
     const data = zones.map((zone) => ({
       ...zone,
       boundary: zone.boundary || null,
@@ -62,6 +96,137 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
       data,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
+  });
+
+  // ── OVERLAYS ──────────────────────────────────────────────
+  // Returns per-zone live stats (openOrders, drivers, health) + heatmap + hubs.
+
+  const overlaysQuerySchema = z.object({
+    window: z.enum(["1h", "24h", "7d"]).default("24h"),
+  });
+
+  fastify.get("/overlays", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { window } = overlaysQuerySchema.parse(request.query);
+
+    const windowMs = window === "1h" ? 60 * 60 * 1000
+      : window === "24h" ? 24 * 60 * 60 * 1000
+      : 7 * 24 * 60 * 60 * 1000;
+    const since = new Date(Date.now() - windowMs);
+
+    const [zones, recentOrders, activeDrivers, shops] = await Promise.all([
+      request.tenantDb.deliveryZone.findMany({
+        where: { shopId: request.shopId, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          timeSlots: {
+            select: { id: true },
+          },
+        },
+      }),
+      request.tenantDb.order.findMany({
+        where: {
+          shopId: request.shopId,
+          createdAt: { gte: since },
+        },
+        select: {
+          timeSlotId: true,
+          status: true,
+          actualDelivery: true,
+          deliveryDate: true,
+          deliveryLocation: true,
+        },
+      }),
+      request.tenantDb.driver.findMany({
+        where: { shopId: request.shopId, isActive: true },
+        select: { id: true, status: true },
+      }),
+      request.tenantDb.shop.findMany({
+        where: { id: request.shopId },
+        select: { id: true, name: true, metadata: true },
+      }),
+    ]);
+
+    // Build a map of timeSlotId → zoneId
+    const slotToZone = new Map<string, string>();
+    for (const zone of zones) {
+      for (const ts of zone.timeSlots) {
+        slotToZone.set(ts.id, zone.id);
+      }
+    }
+
+    // Per-zone order counters
+    const zoneOrderCount = new Map<string, { open: number; delivered: number; onTime: number }>();
+    for (const zone of zones) {
+      zoneOrderCount.set(zone.id, { open: 0, delivered: 0, onTime: 0 });
+    }
+
+    // Heatmap points from delivery locations
+    const heatmapPoints: Array<{ lng: number; lat: number; count: number }> = [];
+
+    for (const order of recentOrders) {
+      const zoneId = order.timeSlotId ? slotToZone.get(order.timeSlotId) : undefined;
+      if (zoneId) {
+        const counters = zoneOrderCount.get(zoneId);
+        if (counters) {
+          const isOpen = ["PENDING", "CONFIRMED", "ASSIGNED", "IN_TRANSIT"].includes(order.status);
+          const isDelivered = order.status === "DELIVERED";
+          if (isOpen) counters.open += 1;
+          if (isDelivered) {
+            counters.delivered += 1;
+            if (order.actualDelivery && order.deliveryDate && order.actualDelivery <= order.deliveryDate) {
+              counters.onTime += 1;
+            }
+          }
+        }
+      }
+
+      // Add to heatmap if we have a location
+      const loc = order.deliveryLocation as { lat?: number; lng?: number; coordinates?: number[] } | null;
+      if (loc) {
+        const lat = loc.lat ?? loc.coordinates?.[1];
+        const lng = loc.lng ?? loc.coordinates?.[0];
+        if (lat && lng) {
+          heatmapPoints.push({ lat, lng, count: 1 });
+        }
+      }
+    }
+
+    const onlineDriverCount = activeDrivers.filter((d) =>
+      ["AVAILABLE", "ON_DELIVERY", "ON_ROUTE"].includes(d.status)
+    ).length;
+    const driversPerZone = zones.length > 0 ? Math.floor(onlineDriverCount / zones.length) : 0;
+
+    const zoneStats = zones.map((zone) => {
+      const counters = zoneOrderCount.get(zone.id) ?? { open: 0, delivered: 0, onTime: 0 };
+      const slaPct = counters.delivered > 0
+        ? Math.round((counters.onTime / counters.delivered) * 100)
+        : 100;
+      const health: "good" | "watch" | "slipping" =
+        slaPct >= 90 ? "good" : slaPct >= 75 ? "watch" : "slipping";
+      return {
+        id: zone.id,
+        openOrders: counters.open,
+        drivers: driversPerZone,
+        slaPct,
+        health,
+      };
+    });
+
+    const hubs = shops.map((shop) => {
+      const meta = shop.metadata as Record<string, unknown> | null;
+      const lat = (meta?.lat as number) ?? 0;
+      const lng = (meta?.lng as number) ?? 0;
+      return {
+        id: shop.id,
+        name: shop.name,
+        lat,
+        lng,
+        type: "hub" as const,
+      };
+    }).filter((h) => h.lat !== 0 && h.lng !== 0);
+
+    return { zones: zoneStats, heatmap: heatmapPoints, hubs };
   });
 
   // ── GET ZONE ──────────────────────────────────────────────

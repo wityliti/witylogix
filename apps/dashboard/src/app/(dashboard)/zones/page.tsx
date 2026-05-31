@@ -14,7 +14,6 @@ import { OverlayControls, type OverlayState } from '@/components/zones/overlay-c
 import { ZoneSearch } from '@/components/zones/zone-search';
 import { KpiStrip } from '@/components/zones/kpi-strip';
 import { ZoneInspector } from '@/components/zones/zone-inspector';
-import { LegacyNotice } from '@/components/zones/legacy-notice';
 import { track } from '@/lib/track';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
 import { useZoneOverlays } from '@/hooks/use-zone-overlays';
@@ -66,7 +65,6 @@ function EmptyZones() {
 }
 
 export default function ZonesPage() {
-  if (process.env.NEXT_PUBLIC_FEATURE_ZONES_MAP !== '1') return <LegacyNotice />;
   const router = useRouter();
   const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
   const { data: geojson, refetch: refetchZones } = useZonesGeoJson();
