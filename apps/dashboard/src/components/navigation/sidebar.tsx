@@ -136,14 +136,14 @@ function NavChildItem({ child, isActive }: NavChildItemProps) {
         "rounded-md text-xs font-medium no-underline",
         "transition-all duration-150",
         isActive
-          ? "text-wl-primary-500 bg-wl-primary-500/[0.08]"
+          ? "text-[#f5a623] bg-[rgba(245,166,35,0.08)]"
           : "text-wl-text-tertiary hover:text-wl-text-secondary hover:bg-white/[0.03]"
       )}
     >
       <span
         className={cn(
           "w-1 h-1 rounded-full flex-shrink-0",
-          isActive ? "bg-wl-primary-500" : "bg-wl-text-tertiary/40"
+          isActive ? "bg-[#f5a623]" : "bg-wl-text-tertiary/40"
         )}
         aria-hidden="true"
       />
@@ -193,7 +193,7 @@ function NavItemRow({
             "relative",
             collapsed ? "justify-center" : "justify-between",
             isHighlighted
-              ? "text-wl-primary-500 bg-wl-primary-500/10 border border-wl-primary-500/[0.15] shadow-[0_0_12px_rgba(245,166,35,0.08)]"
+              ? "text-[#f5a623] bg-[rgba(245,166,35,0.10)] border border-[rgba(245,166,35,0.15)] shadow-[0_0_12px_rgba(245,166,35,0.08)]"
               : "text-wl-text-secondary border border-transparent hover:text-wl-text-primary hover:bg-white/[0.04]"
           )}
         >
@@ -214,7 +214,7 @@ function NavItemRow({
               className={cn(
                 "absolute left-0 top-1/2 -translate-y-1/2",
                 "w-[3px] h-5 rounded-r-full",
-                "bg-wl-primary-500 shadow-[0_0_8px_rgba(245,166,35,0.6)]"
+                "bg-[#f5a623] shadow-[0_0_8px_rgba(245,166,35,0.6)]"
               )}
               aria-hidden="true"
             />
@@ -254,7 +254,7 @@ function NavItemRow({
         "relative",
         collapsed ? "justify-center" : "justify-between",
         isItemActive
-          ? "text-wl-primary-500 bg-wl-primary-500/10 border border-wl-primary-500/[0.15] shadow-[0_0_12px_rgba(245,166,35,0.08)]"
+          ? "text-[#f5a623] bg-[rgba(245,166,35,0.10)] border border-[rgba(245,166,35,0.15)] shadow-[0_0_12px_rgba(245,166,35,0.08)]"
           : "text-wl-text-secondary border border-transparent hover:text-wl-text-primary hover:bg-white/[0.04]"
       )}
     >
@@ -275,7 +275,7 @@ function NavItemRow({
           className={cn(
             "absolute left-0 top-1/2 -translate-y-1/2",
             "w-[3px] h-5 rounded-r-full",
-            "bg-wl-primary-500 shadow-[0_0_8px_rgba(245,166,35,0.6)]"
+            "bg-[#f5a623] shadow-[0_0_8px_rgba(245,166,35,0.6)]"
           )}
           aria-hidden="true"
         />
