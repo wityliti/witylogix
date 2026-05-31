@@ -1,14 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
-import type { FleetMapProps, VehiclePosition } from "./types";
-import { VehicleStatusBadge } from "./vehicle-status-badge";
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
+import { WLMap } from '@/components/map/wl-map';
+import { VehicleMarkerLayer, type VehicleMapMarker } from '@/components/map/vehicle-marker-layer';
+import { VehicleStatusBadge } from './vehicle-status-badge';
+import type { FleetMapProps, VehiclePosition } from './types';
 
 /**
- * Vehicle Tracker Map Component
- * Canvas-based real-time vehicle position map with direction arrows
- * Shows vehicle markers with status colors and click popups
+ * VehicleTrackerMap — live vehicle map using the keyless WLMap foundation.
+ *
+ * Renders all vehicle positions as status-colored markers on a CARTO basemap.
+ * No API key required (falls back to free CARTO raster tiles).
+ * Clicking a marker shows a popup with vehicle details.
  */
 export function VehicleTrackerMap({
   vehicles,
@@ -21,386 +25,182 @@ export function VehicleTrackerMap({
   selectedVehicleId,
   className,
 }: FleetMapProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height });
-  const [mapCenter, setMapCenter] = useState(center);
-  const [mapZoom, setMapZoom] = useState(zoom);
   const [selectedVehicle, setSelectedVehicle] = useState<VehiclePosition | null>(null);
-  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
   const [refreshing, setRefreshing] = useState(false);
-  const animationRef = useRef<number | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([center.lng, center.lat]);
+  const [mapZoom, setMapZoom] = useState(zoom);
 
-  // Update canvas size on container resize
+  // Compute auto-fit center from vehicles if no explicit center
+  const computedCenter = useCallback((): [number, number] => {
+    const withPos = vehicles.filter((v) => v.latitude !== 0 || v.longitude !== 0);
+    if (withPos.length === 0) return mapCenter;
+    const avgLat = withPos.reduce((s, v) => s + v.latitude, 0) / withPos.length;
+    const avgLng = withPos.reduce((s, v) => s + v.longitude, 0) / withPos.length;
+    return [avgLng, avgLat];
+  // Only compute on vehicles change, not on every mapCenter change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicles]);
+
+  // Fit to vehicles when data first loads
+  const hasFitRef = useRef(false);
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    if (hasFitRef.current) return;
+    const withPos = vehicles.filter((v) => v.latitude !== 0 || v.longitude !== 0);
+    if (withPos.length === 0) return;
+    hasFitRef.current = true;
+    setMapCenter(computedCenter());
+    setMapZoom(vehicles.length === 1 ? 12 : 6);
+  }, [vehicles, computedCenter]);
 
-    const resizeObserver = new ResizeObserver(() => {
-      const { width } = container.getBoundingClientRect();
-      setCanvasSize({ width: Math.max(width, 400), height });
-    });
+  // Map markers — convert VehiclePosition → VehicleMapMarker
+  const markers: VehicleMapMarker[] = vehicles.map((v) => ({
+    id: v.id,
+    name: v.name,
+    licensePlate: undefined,
+    latitude: v.latitude,
+    longitude: v.longitude,
+    speed: v.speed,
+    heading: v.heading,
+    // Normalize lowercase status to uppercase for the marker layer
+    status: v.status === 'moving' ? 'ACTIVE'
+      : v.status === 'idle' ? 'IDLE'
+      : v.status === 'stopped' ? 'IDLE'
+      : v.status === 'offline' ? 'OFFLINE'
+      : v.status === 'maintenance' ? 'MAINTENANCE'
+      : 'INACTIVE',
+    lastUpdate: v.lastUpdate,
+    fuelLevel: v.fuelLevel,
+  }));
 
-    resizeObserver.observe(container);
-    setCanvasSize({ width: container.clientWidth, height });
-
-    return () => resizeObserver.disconnect();
-  }, [height]);
-
-  // Convert lat/lng to canvas coordinates
-  const latLngToCanvasCoords = useCallback(
-    (lat: number, lng: number): { x: number; y: number } => {
-      const latRange = 5;
-      const lngRange = 8;
-
-      const normalizedX = (lng - mapCenter.lng + lngRange / 2) / lngRange;
-      const normalizedY = (mapCenter.lat - lat + latRange / 2) / latRange;
-
-      return {
-        x: normalizedX * canvasSize.width,
-        y: normalizedY * canvasSize.height,
-      };
+  const handleVehicleClick = useCallback(
+    (marker: VehicleMapMarker) => {
+      const vehicle = vehicles.find((v) => v.id === marker.id) ?? null;
+      setSelectedVehicle(vehicle);
+      if (vehicle) onVehicleClick?.(vehicle);
     },
-    [mapCenter, canvasSize]
+    [vehicles, onVehicleClick],
   );
 
-  // Get vehicle color based on status
-  const getVehicleColor = (status: string): string => {
-    switch (status) {
-      case "moving":
-        return "#10b981"; // green
-      case "idle":
-        return "#f59e0b"; // yellow
-      case "stopped":
-        return "#ef4444"; // red
-      case "offline":
-        return "#6b7280"; // gray
-      case "maintenance":
-        return "#0ea5e9"; // blue
-      default:
-        return "#6b7280";
-    }
-  };
-
-  // Draw map on canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Set canvas size
-    canvas.width = canvasSize.width;
-    canvas.height = canvasSize.height;
-
-    // Clear canvas
-    ctx.fillStyle = "rgba(15, 23, 42, 0.5)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw grid
-    ctx.strokeStyle = "rgba(75, 85, 99, 0.3)";
-    ctx.lineWidth = 1;
-    const gridSpacing = 50;
-
-    for (let x = 0; x < canvas.width; x += gridSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
-      ctx.stroke();
-    }
-
-    for (let y = 0; y < canvas.height; y += gridSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
-      ctx.stroke();
-    }
-
-    // Draw center crosshair
-    ctx.strokeStyle = "rgba(96, 165, 250, 0.2)";
-    ctx.lineWidth = 1;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    ctx.beginPath();
-    ctx.moveTo(centerX - 20, centerY);
-    ctx.lineTo(centerX + 20, centerY);
-    ctx.moveTo(centerX, centerY - 20);
-    ctx.lineTo(centerX, centerY + 20);
-    ctx.stroke();
-
-    // Draw vehicles
-    vehicles.forEach((vehicle) => {
-      const { x, y } = latLngToCanvasCoords(vehicle.latitude, vehicle.longitude);
-
-      if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) return;
-
-      // Draw vehicle circle
-      const isSelected = vehicle.id === selectedVehicleId || vehicle.id === selectedVehicle?.id;
-      const radius = isSelected ? 12 : 8;
-      const color = getVehicleColor(vehicle.status);
-
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Draw selection highlight
-      if (isSelected) {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      // Draw direction arrow
-      if (vehicle.status === "moving" && vehicle.heading !== undefined) {
-        const arrowLength = 15;
-        const headingRad = (vehicle.heading * Math.PI) / 180;
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(
-          x + arrowLength * Math.cos(headingRad),
-          y + arrowLength * Math.sin(headingRad)
-        );
-        ctx.stroke();
-
-        // Arrow head
-        const arrowHeadSize = 5;
-        const angle1 = headingRad + (135 * Math.PI) / 180;
-        const angle2 = headingRad - (135 * Math.PI) / 180;
-
-        ctx.beginPath();
-        ctx.moveTo(
-          x + arrowLength * Math.cos(headingRad),
-          y + arrowLength * Math.sin(headingRad)
-        );
-        ctx.lineTo(
-          x + arrowLength * Math.cos(headingRad) + arrowHeadSize * Math.cos(angle1),
-          y + arrowLength * Math.sin(headingRad) + arrowHeadSize * Math.sin(angle1)
-        );
-        ctx.moveTo(
-          x + arrowLength * Math.cos(headingRad),
-          y + arrowLength * Math.sin(headingRad)
-        );
-        ctx.lineTo(
-          x + arrowLength * Math.cos(headingRad) + arrowHeadSize * Math.cos(angle2),
-          y + arrowLength * Math.sin(headingRad) + arrowHeadSize * Math.sin(angle2)
-        );
-        ctx.stroke();
-      }
-
-      // Draw vehicle label
-      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-      ctx.font = "11px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(vehicle.name, x, y + 25);
-
-      // Draw speed if moving
-      if (vehicle.status === "moving" && vehicle.speed > 0) {
-        ctx.fillStyle = "rgba(16, 185, 129, 0.8)";
-        ctx.font = "10px sans-serif";
-        ctx.fillText(`${Math.round(vehicle.speed)} km/h`, x, y + 37);
-      }
-    });
-
-    // Draw zoom info
-    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-    ctx.font = "11px sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText(`Zoom: ${mapZoom}x`, 10, 20);
-    ctx.fillText(`Vehicles: ${vehicles.length}`, 10, 35);
-  }, [vehicles, canvasSize, mapCenter, mapZoom, selectedVehicleId, selectedVehicle, latLngToCanvasCoords]);
-
-  // Handle canvas click for vehicle selection
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    // Check which vehicle was clicked
-    let clicked = false;
-    for (const vehicle of vehicles) {
-      const { x: vx, y: vy } = latLngToCanvasCoords(vehicle.latitude, vehicle.longitude);
-      const distance = Math.sqrt((x - vx) ** 2 + (y - vy) ** 2);
-
-      if (distance < 15) {
-        setSelectedVehicle(vehicle);
-        setPopupPos({ x, y });
-        onVehicleClick?.(vehicle);
-        clicked = true;
-        break;
-      }
-    }
-
-    if (!clicked) {
-      setSelectedVehicle(null);
-    }
-  };
-
-  // Zoom controls
-  const handleZoom = (direction: "in" | "out") => {
-    setMapZoom((prev) => {
-      const newZoom = direction === "in" ? prev + 1 : Math.max(1, prev - 1);
-      return Math.min(Math.max(newZoom, 1), 12);
-    });
-  };
-
-  // Center on selected vehicle
-  const handleCenterOnVehicle = () => {
-    if (selectedVehicle) {
-      setMapCenter({ lat: selectedVehicle.latitude, lng: selectedVehicle.longitude });
-    }
-  };
-
-  // Auto-refresh indicator
+  // Auto-refresh pulse indicator
   useEffect(() => {
     if (!autoRefresh) return;
-
     const interval = setInterval(() => {
       setRefreshing(true);
-      setTimeout(() => setRefreshing(false), 200);
+      const t = setTimeout(() => setRefreshing(false), 300);
+      return () => clearTimeout(t);
     }, refreshInterval);
-
     return () => clearInterval(interval);
   }, [autoRefresh, refreshInterval]);
 
+  const activeSelectedId = selectedVehicleId ?? selectedVehicle?.id;
+
   return (
-    <div ref={containerRef} className={cn("relative bg-wl-bg-surface rounded-lg overflow-hidden", className)}>
-      {/* Canvas */}
-      <canvas
-        ref={canvasRef}
-        onClick={handleCanvasClick}
-        style={{ height, display: "block", width: "100%", cursor: "crosshair" }}
-        className="bg-gradient-to-b from-wl-bg-elevated to-wl-bg-surface"
-      />
+    <div
+      className={cn('relative rounded-lg overflow-hidden', className)}
+      style={{ height }}
+    >
+      {/* Keyless WLMap — no API key required */}
+      <WLMap
+        center={mapCenter}
+        zoom={mapZoom}
+        onViewportChange={(vp) => {
+          setMapCenter(vp.center);
+          setMapZoom(vp.zoom);
+        }}
+        className="h-full w-full"
+      >
+        <VehicleMarkerLayer
+          vehicles={markers}
+          selectedVehicleId={activeSelectedId}
+          onVehicleClick={handleVehicleClick}
+        />
+      </WLMap>
 
-      {/* Controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
-        <button
-          onClick={() => handleZoom("in")}
-          className="w-9 h-9 rounded-md bg-wl-bg-elevated border border-wl-border-default hover:bg-wl-bg-overlay transition-colors flex items-center justify-center text-wl-text-secondary hover:text-wl-text-primary text-sm font-bold"
-        >
-          +
-        </button>
-        <button
-          onClick={() => handleZoom("out")}
-          className="w-9 h-9 rounded-md bg-wl-bg-elevated border border-wl-border-default hover:bg-wl-bg-overlay transition-colors flex items-center justify-center text-wl-text-secondary hover:text-wl-text-primary text-sm font-bold"
-        >
-          −
-        </button>
-      </div>
-
-      {/* Auto-refresh indicator */}
+      {/* Live indicator */}
       {autoRefresh && (
-        <div className="absolute top-4 left-4 flex items-center gap-2 text-xs text-wl-text-secondary z-10">
-          <div
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-wl-bg-elevated/90 backdrop-blur-sm px-2.5 py-1.5 rounded-md border border-wl-border-subtle z-10 pointer-events-none">
+          <span
             className={cn(
-              "w-2 h-2 rounded-full bg-wl-success-400 transition-all",
-              refreshing && "scale-150"
+              'w-1.5 h-1.5 rounded-full bg-wl-success-400 transition-transform duration-150',
+              refreshing && 'scale-150',
             )}
           />
-          <span>Live</span>
+          <span className="text-[11px] font-medium text-wl-text-secondary">Live</span>
         </div>
       )}
 
+      {/* Vehicle count badge */}
+      <div className="absolute top-3 right-3 bg-wl-bg-elevated/90 backdrop-blur-sm px-2.5 py-1.5 rounded-md border border-wl-border-subtle z-10 pointer-events-none">
+        <span className="text-[11px] font-medium text-wl-text-secondary">
+          {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+
       {/* Vehicle popup */}
       {selectedVehicle && (
-        <div
-          className="absolute bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-lg p-3 z-20 min-w-max"
-          style={{
-            left: `${Math.min(popupPos.x, canvasSize.width - 250)}px`,
-            top: `${Math.min(popupPos.y, canvasSize.height - 200)}px`,
-          }}
-        >
-          <div className="flex justify-between items-start gap-3 mb-2">
-            <div>
-              <p className="font-semibold text-wl-text-primary text-sm">{selectedVehicle.name}</p>
-              {selectedVehicle.driver && (
-                <p className="text-xs text-wl-text-secondary">{selectedVehicle.driver}</p>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-72">
+          <div className="bg-wl-bg-elevated border border-wl-border-default rounded-xl shadow-2xl p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="font-semibold text-wl-text-primary text-sm leading-tight">{selectedVehicle.name}</p>
+                {selectedVehicle.driver && (
+                  <p className="text-xs text-wl-text-tertiary mt-0.5">{selectedVehicle.driver}</p>
+                )}
+              </div>
+              <button
+                onClick={() => setSelectedVehicle(null)}
+                className="text-wl-text-tertiary hover:text-wl-text-primary transition-colors ml-2 shrink-0"
+                aria-label="Close"
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-wl-bg-sunken rounded-lg p-2">
+                <p className="text-[10px] text-wl-text-tertiary uppercase tracking-wide mb-0.5">Speed</p>
+                <p className="text-sm font-semibold text-wl-text-primary">{Math.round(selectedVehicle.speed)} km/h</p>
+              </div>
+              <div className="bg-wl-bg-sunken rounded-lg p-2">
+                <p className="text-[10px] text-wl-text-tertiary uppercase tracking-wide mb-0.5">Heading</p>
+                <p className="text-sm font-semibold text-wl-text-primary">{selectedVehicle.heading}°</p>
+              </div>
+              {selectedVehicle.fuelLevel !== undefined && (
+                <div className="bg-wl-bg-sunken rounded-lg p-2">
+                  <p className="text-[10px] text-wl-text-tertiary uppercase tracking-wide mb-0.5">Fuel</p>
+                  <p className="text-sm font-semibold text-wl-text-primary">{selectedVehicle.fuelLevel}%</p>
+                </div>
               )}
-            </div>
-            <button
-              onClick={() => setSelectedVehicle(null)}
-              className="text-wl-text-secondary hover:text-wl-text-primary transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-2 mb-3">
-            <div className="flex justify-between gap-2 text-xs">
-              <span className="text-wl-text-secondary">Speed:</span>
-              <span className="text-wl-text-primary font-medium">
-                {selectedVehicle.speed} km/h
-              </span>
-            </div>
-            <div className="flex justify-between gap-2 text-xs">
-              <span className="text-wl-text-secondary">Heading:</span>
-              <span className="text-wl-text-primary font-medium">
-                {selectedVehicle.heading}°
-              </span>
-            </div>
-            {selectedVehicle.fuelLevel !== undefined && (
-              <div className="flex justify-between gap-2 text-xs">
-                <span className="text-wl-text-secondary">Fuel:</span>
-                <span className="text-wl-text-primary font-medium">
-                  {selectedVehicle.fuelLevel}%
-                </span>
+              <div className="bg-wl-bg-sunken rounded-lg p-2">
+                <p className="text-[10px] text-wl-text-tertiary uppercase tracking-wide mb-0.5">Updated</p>
+                <p className="text-sm font-semibold text-wl-text-primary">
+                  {new Date(selectedVehicle.lastUpdate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
               </div>
-            )}
-            {selectedVehicle.temperature !== undefined && (
-              <div className="flex justify-between gap-2 text-xs">
-                <span className="text-wl-text-secondary">Temp:</span>
-                <span className="text-wl-text-primary font-medium">
-                  {selectedVehicle.temperature}°C
-                </span>
-              </div>
-            )}
-            <div className="flex justify-between gap-2 text-xs">
-              <span className="text-wl-text-secondary">Last Update:</span>
-              <span className="text-wl-text-primary font-medium">
-                {new Date(selectedVehicle.lastUpdate).toLocaleTimeString()}
-              </span>
             </div>
-          </div>
 
-          <div className="flex gap-2">
-            <VehicleStatusBadge status={selectedVehicle.status} className="flex-1" />
-            <button
-              onClick={handleCenterOnVehicle}
-              className="px-2 py-1 rounded text-xs bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30 hover:bg-wl-primary-500/30 transition-colors"
-            >
-              Center
-            </button>
+            <VehicleStatusBadge status={selectedVehicle.status} className="w-full justify-center" />
           </div>
         </div>
       )}
 
       {/* Empty state */}
       {vehicles.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-wl-text-secondary">
-          <svg
-            className="w-16 h-16 mb-3 opacity-30"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
-          <p className="text-sm">No vehicles to display</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-wl-bg-sunken/50 backdrop-blur-sm z-10">
+          <div className="p-4 rounded-2xl bg-wl-bg-elevated border border-wl-border-subtle text-center max-w-xs">
+            <div className="w-12 h-12 rounded-full bg-wl-bg-overlay flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-wl-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h6l2-2zm0 0h2a2 2 0 002-2v-4l-3-4H13" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-wl-text-secondary">No vehicles to display</p>
+            <p className="text-xs text-wl-text-tertiary mt-1">Vehicles with GPS data will appear here</p>
+          </div>
         </div>
       )}
     </div>
