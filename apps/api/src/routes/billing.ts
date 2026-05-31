@@ -155,28 +155,26 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
     ];
 
     return reply.send({
-      data: {
-        plan: plan.charAt(0) + plan.slice(1).toLowerCase(),
-        planTier: plan,
-        monthlyPrice: planFeatures.monthlyPrice,
-        renewalDate: billingPeriodEnd,
-        billingPeriodStart,
-        billingPeriodEnd,
-        usageMetrics,
-        billingAddress,
-        invoices: invoices.map((inv) => ({
-          id: inv.id,
-          date: inv.createdAt,
-          period: new Date(inv.createdAt).toLocaleString("default", {
-            month: "long",
-            year: "numeric",
-          }),
-          amount: Number(inv.amount) / 100,
-          currency: inv.currency,
-          status: inv.status === "completed" ? "paid" : inv.status,
-          downloadUrl: `/api/v4/billing/invoices/${inv.id}/pdf`,
-        })),
-      },
+      plan: plan.charAt(0) + plan.slice(1).toLowerCase(),
+      planTier: plan,
+      monthlyPrice: planFeatures.monthlyPrice,
+      renewalDate: billingPeriodEnd,
+      billingPeriodStart,
+      billingPeriodEnd,
+      usageMetrics,
+      billingAddress,
+      invoices: invoices.map((inv) => ({
+        id: inv.id,
+        date: inv.createdAt,
+        period: new Date(inv.createdAt).toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        }),
+        amount: Number(inv.amount) / 100,
+        currency: inv.currency,
+        status: inv.status === "completed" ? "paid" : inv.status,
+        downloadUrl: `/api/v4/billing/invoices/${inv.id}/pdf`,
+      })),
     });
   });
 
