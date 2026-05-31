@@ -191,6 +191,112 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
     }
   });
 
+  // ── GET VEHICLE LOCATIONS (for map) ───────────────────────
+  // Returns lightweight location data for all vehicles — used to plot markers
+  // on the fleet live map without loading full vehicle records.
+
+  fastify.get('/locations', async (request: FastifyRequest, _reply: FastifyReply) => {
+    try {
+      const tenantId = (request as any).tenantId as string;
+
+      const vehicles = await (prisma as any).fleetVehicle.findMany({
+        where: { tenantId, status: { not: 'DELETED' } },
+        select: {
+          id: true,
+          name: true,
+          licensePlate: true,
+          make: true,
+          model: true,
+          status: true,
+          lastPosition: true,
+          lastFuelLevel: true,
+        },
+      });
+
+      const locations = vehicles
+        .filter((v: any) => v.lastPosition != null)
+        .map((v: any) => {
+          const pos = v.lastPosition as {
+            latitude?: number;
+            longitude?: number;
+            speed?: number;
+            heading?: number;
+            timestamp?: string;
+          };
+          return {
+            id: v.id,
+            name: v.name || `${v.make ?? ''} ${v.model ?? ''}`.trim() || v.licensePlate,
+            licensePlate: v.licensePlate,
+            status: (v.status as string).toUpperCase(),
+            latitude: pos.latitude ?? 0,
+            longitude: pos.longitude ?? 0,
+            speed: pos.speed ?? 0,
+            heading: pos.heading ?? 0,
+            lastUpdate: pos.timestamp ?? new Date().toISOString(),
+            fuelLevel: v.lastFuelLevel != null ? Number(v.lastFuelLevel) : undefined,
+          };
+        });
+
+      return { data: locations };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch vehicle locations: ${errorMessage}`);
+    }
+  });
+
+  // ── GET VEHICLE TELEMETRY HISTORY ─────────────────────────
+  // Returns recent telemetry logs for a specific vehicle (position + stats).
+  // Used by the vehicle detail page to show live position and recent data.
+
+  fastify.get('/:id/telemetry', async (request: FastifyRequest, _reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const tenantId = (request as any).tenantId as string;
+
+    try {
+      const vehicle = await (prisma as any).fleetVehicle.findFirst({
+        where: { id, tenantId },
+        select: {
+          id: true,
+          lastPosition: true,
+          lastFuelLevel: true,
+          lastDiagnosticAt: true,
+          lastDiagnosticData: true,
+        },
+      });
+
+      if (!vehicle) {
+        return _reply.status(404).send({ error: 'Vehicle not found' });
+      }
+
+      // Recent position telemetry logs
+      const logs = await (prisma as any).vehicleTelemetryLog.findMany({
+        where: { vehicleId: id, tenantId, type: 'position' },
+        orderBy: { timestamp: 'desc' },
+        take: 20,
+        select: { id: true, data: true, timestamp: true },
+      });
+
+      const positions = logs.map((log: any) => ({
+        ...(log.data as object),
+        timestamp: log.timestamp,
+      }));
+
+      return {
+        data: {
+          vehicleId: id,
+          currentPosition: vehicle.lastPosition,
+          currentFuelLevel: vehicle.lastFuelLevel != null ? Number(vehicle.lastFuelLevel) : null,
+          recentPositions: positions,
+          diagnosticData: vehicle.lastDiagnosticData,
+          lastDiagnosticAt: vehicle.lastDiagnosticAt,
+        },
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch vehicle telemetry: ${errorMessage}`);
+    }
+  });
+
   // ── LIST VEHICLES ──────────────────────────────────────────
 
   const listFleetVehicles = async (request: FastifyRequest, _reply: FastifyReply) => {
