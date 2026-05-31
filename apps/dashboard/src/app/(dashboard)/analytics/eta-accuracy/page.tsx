@@ -89,53 +89,6 @@ interface EtaHealthResponse {
   };
 }
 
-// ── Demo data ─────────────────────────────────────────────────────
-
-const mkDemo = (mae: number): CalibrationMetrics => ({
-  mae,
-  rmse: mae * 1.45,
-  mape: mae * 2.1,
-  p50_error: mae * 0.9,
-  p90_error: mae * 2.7,
-  sample_count: 1840,
-  accuracy_percentage: Math.max(60, 95 - mae * 2),
-});
-
-const DEMO_METRICS: ModelPerformanceMetrics[] = [
-  { modelName: 'time_of_day',           metrics: mkDemo(4.2), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
-  { modelName: 'distance_decay',         metrics: mkDemo(5.8), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
-  { modelName: 'historical_similarity',  metrics: mkDemo(3.9), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
-  { modelName: 'traffic',                metrics: mkDemo(6.4), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
-  { modelName: 'weather',                metrics: mkDemo(7.1), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
-  { modelName: 'ensemble',               metrics: mkDemo(3.1), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
-];
-
-const DEMO_FEATURES: FeatureEntry[] = [
-  { feature: 'historical_avg_minutes',  importance: 0.31 },
-  { feature: 'distance_km',             importance: 0.24 },
-  { feature: 'traffic_multiplier',      importance: 0.17 },
-  { feature: 'num_stops_remaining',     importance: 0.11 },
-  { feature: 'weather_intensity',       importance: 0.08 },
-  { feature: 'driver_experience_years', importance: 0.05 },
-  { feature: 'hour_of_day',             importance: 0.04 },
-];
-
-const DEMO_REPORT: AccuracyReport = {
-  period_start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  period_end:   new Date().toISOString(),
-  overall_metrics: mkDemo(3.1),
-  by_model: {
-    ensemble:              mkDemo(3.1),
-    time_of_day:           mkDemo(4.2),
-    distance_decay:        mkDemo(5.8),
-    historical_similarity: mkDemo(3.9),
-    traffic:               mkDemo(6.4),
-    weather:               mkDemo(7.1),
-  },
-  by_zone:            {},
-  by_hour:            {},
-  degradation_alerts: [],
-};
 
 // ── Subcomponents ─────────────────────────────────────────────────
 
@@ -276,21 +229,19 @@ export default function EtaAccuracyPage() {
   const { data: healthData } =
     useApiQuery<EtaHealthResponse>('/api/v4/ai/eta-v2/health');
 
-  const metrics  = perfData?.metrics  ?? DEMO_METRICS;
-  const features = featData?.features ?? DEMO_FEATURES;
-  const report   = reportData?.report ?? DEMO_REPORT;
-  const overall  = report.overall_metrics;
+  const metrics  = perfData?.metrics  ?? [];
+  const features = featData?.features ?? [];
+  const report   = reportData?.report ?? null;
+  const overall  = report?.overall_metrics ?? null;
   const isHealthy = healthData?.healthy ?? true;
   const maxImportance = Math.max(...features.map((f) => f.importance), 0.001);
 
-  // Build per-model rows: prefer accuracy report's by_model (richer metrics);
-  // fall back to /model-performance data when report not yet loaded.
   const byModelEntries: Array<[string, CalibrationMetrics]> =
-    Object.keys(report.by_model).length > 0
+    report && Object.keys(report.by_model).length > 0
       ? Object.entries(report.by_model)
       : metrics.map((m) => [m.modelName, m.metrics]);
 
-  const ensembleMetrics = report.by_model['ensemble'] ?? metrics.find((m) => m.modelName === 'ensemble')?.metrics;
+  const ensembleMetrics = report?.by_model['ensemble'] ?? metrics.find((m) => m.modelName === 'ensemble')?.metrics;
   const subModelEntries = byModelEntries.filter(([name]) => name !== 'ensemble');
 
   return (
@@ -346,45 +297,56 @@ export default function EtaAccuracyPage() {
       <div className="px-6 lg:px-8 pb-8 space-y-5">
         {/* KPI tiles — overall accuracy report */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricCard
-            label="Mean Absolute Error"
-            value={overall.mae.toFixed(1)}
-            suffix="min"
-            icon={Clock}
-            accent="#818cf8"
-            sub={`RMSE ${overall.rmse.toFixed(1)} min · P90 ${overall.p90_error.toFixed(1)} min`}
-          />
-          <MetricCard
-            label="Accuracy (±5 min)"
-            value={overall.accuracy_percentage.toFixed(1)}
-            suffix="%"
-            icon={Target}
-            accent="#34d399"
-            sub={`${overall.sample_count.toLocaleString()} predictions`}
-          />
-          <MetricCard
-            label="MAPE"
-            value={overall.mape.toFixed(1)}
-            suffix="%"
-            icon={Zap}
-            accent="#60a5fa"
-            sub={`P50 error ${overall.p50_error.toFixed(1)} min`}
-          />
-          <MetricCard
-            label="Degradation Alerts"
-            value={report.degradation_alerts.length}
-            icon={BarChart3}
-            accent={report.degradation_alerts.length > 0 ? '#f87171' : '#34d399'}
-            sub={
-              report.degradation_alerts.length > 0
-                ? 'Model drift detected'
-                : `${period} window — all clear`
-            }
-          />
+          {reportLoading || !overall ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 animate-pulse">
+                <div className="h-3 w-24 rounded bg-white/[0.06] mb-3" />
+                <div className="h-8 w-20 rounded bg-white/[0.08]" />
+              </div>
+            ))
+          ) : (
+            <>
+              <MetricCard
+                label="Mean Absolute Error"
+                value={overall.mae.toFixed(1)}
+                suffix="min"
+                icon={Clock}
+                accent="#818cf8"
+                sub={`RMSE ${overall.rmse.toFixed(1)} min · P90 ${overall.p90_error.toFixed(1)} min`}
+              />
+              <MetricCard
+                label="Accuracy (±5 min)"
+                value={overall.accuracy_percentage.toFixed(1)}
+                suffix="%"
+                icon={Target}
+                accent="#34d399"
+                sub={`${overall.sample_count.toLocaleString()} predictions`}
+              />
+              <MetricCard
+                label="MAPE"
+                value={overall.mape.toFixed(1)}
+                suffix="%"
+                icon={Zap}
+                accent="#60a5fa"
+                sub={`P50 error ${overall.p50_error.toFixed(1)} min`}
+              />
+              <MetricCard
+                label="Degradation Alerts"
+                value={report?.degradation_alerts.length ?? 0}
+                icon={BarChart3}
+                accent={(report?.degradation_alerts.length ?? 0) > 0 ? '#f87171' : '#34d399'}
+                sub={
+                  (report?.degradation_alerts.length ?? 0) > 0
+                    ? 'Model drift detected'
+                    : `${period} window — all clear`
+                }
+              />
+            </>
+          )}
         </div>
 
         {/* Degradation alerts */}
-        {report.degradation_alerts.length > 0 && (
+        {report && report.degradation_alerts.length > 0 && (
           <div className="rounded-xl bg-amber-500/[0.06] border border-amber-500/20 p-5">
             <h3 className="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
@@ -425,6 +387,10 @@ export default function EtaAccuracyPage() {
                   <div key={i} className="h-4 bg-white/[0.04] rounded animate-pulse" />
                 ))}
               </div>
+            ) : features.length === 0 ? (
+              <p className="text-sm text-white/25 text-center py-6">
+                Feature importance data unavailable
+              </p>
             ) : (
               <div className="space-y-3">
                 {features.map((f) => (
@@ -451,7 +417,7 @@ export default function EtaAccuracyPage() {
                   <div key={i} className="h-10 bg-white/[0.04] rounded animate-pulse" />
                 ))}
               </div>
-            ) : Object.keys(report.by_zone).length > 0 ? (
+            ) : report && Object.keys(report.by_zone).length > 0 ? (
               <div className="space-y-3">
                 {Object.entries(report.by_zone)
                   .sort(([, a], [, b]) => a.mae - b.mae)
@@ -515,6 +481,10 @@ export default function EtaAccuracyPage() {
                 <div key={i} className="h-10 bg-white/[0.04] rounded animate-pulse" />
               ))}
             </div>
+          ) : subModelEntries.length === 0 ? (
+            <p className="text-sm text-white/25 text-center py-6">
+              No model data available
+            </p>
           ) : (
             <div className="space-y-1">
               {subModelEntries.map(([name, m]) => (
