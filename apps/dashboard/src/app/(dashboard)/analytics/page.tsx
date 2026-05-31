@@ -17,34 +17,87 @@ import {
   Activity,
   Zap,
   RefreshCw,
-  MapPin,
-  BarChart2,
+  AlertCircle,
 } from 'lucide-react';
 
-const AnalyticsHeatmapView = dynamic(
-  () => import('./components/analytics-heatmap-view'),
-  { ssr: false, loading: () => <div className="h-[560px] rounded-2xl bg-wl-bg-surface animate-pulse" /> }
-);
+// ── Types ──────────────────────────────────────────────────────────
 
-// ── Types matching the real /api/v4/analytics/overview response ─
-interface AnalyticsOverview {
-  metrics: {
-    totalOrders: number;
-    totalDeliveries: number;
-    activeDrivers: number;
-    avgDeliveryTime: number;
-    onTimeRate: number;
-    customerSatisfaction: number;
-    revenue: number;
-    failedDeliveries: number;
-  };
-  hourly: Array<{ hour: number; orders: number; deliveries: number }>;
-  weekly: Array<{ day: string; orders: number; deliveries: number; revenue: number }>;
-  topZones: Array<{ name: string; orders: number; pct: number; trend: number }>;
-  topDrivers: Array<{ name: string; deliveries: number; onTime: number; rating: number }>;
+interface AnalyticsMetrics {
+  totalOrders: number;
+  totalDeliveries: number;
+  activeDrivers: number;
+  avgDeliveryTime: number;
+  onTimeRate: number;
+  customerSatisfaction: number;
+  revenue: number;
+  failedDeliveries: number;
 }
 
-// ── Reusable Components ────────────────────────────────────────
+interface HourlyPoint {
+  hour: number;
+  orders: number;
+  deliveries: number;
+}
+
+interface WeeklyPoint {
+  day: string;
+  orders: number;
+  deliveries: number;
+  revenue: number;
+}
+
+interface ZonePerf {
+  name: string;
+  orders: number;
+  pct: number;
+  trend: number;
+}
+
+interface DriverPerf {
+  name: string;
+  deliveries: number;
+  onTime: number;
+  rating: number;
+}
+
+interface AnalyticsOverview {
+  metrics: AnalyticsMetrics;
+  hourly: HourlyPoint[];
+  weekly: WeeklyPoint[];
+  topZones: ZonePerf[];
+  topDrivers: DriverPerf[];
+}
+
+// ── Loading Skeleton ───────────────────────────────────────────────
+
+function MetricSkeleton() {
+  return (
+    <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 animate-pulse">
+      <div className="flex items-start justify-between mb-3">
+        <div className="h-3 w-24 rounded bg-white/[0.06]" />
+        <div className="w-8 h-8 rounded-lg bg-white/[0.06]" />
+      </div>
+      <div className="h-8 w-32 rounded bg-white/[0.08] mb-3" />
+      <div className="h-3 w-20 rounded bg-white/[0.04]" />
+    </div>
+  );
+}
+
+function ChartSkeleton({ height = 'h-24' }: { height?: string }) {
+  return (
+    <div className={cn('flex items-end gap-[3px]', height)}>
+      {Array.from({ length: 24 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex-1 rounded-t-sm bg-white/[0.04] animate-pulse"
+          style={{ height: `${20 + (i % 5) * 15}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Reusable Components ────────────────────────────────────────────
 
 function MetricTile({
   label, value, suffix, trend, trendLabel, icon: Icon, accent, delay = 0,
@@ -98,23 +151,16 @@ function MetricTile({
   );
 }
 
-function MetricSkeleton() {
-  return (
-    <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 animate-pulse">
-      <div className="flex items-start justify-between mb-3">
-        <div className="h-3 w-24 rounded bg-white/[0.06]" />
-        <div className="w-8 h-8 rounded-lg bg-white/[0.04]" />
-      </div>
-      <div className="h-8 w-20 rounded bg-white/[0.06] mb-2.5" />
-      <div className="h-3 w-16 rounded bg-white/[0.04]" />
-    </div>
-  );
-}
-
 function MiniBarChart({
-  data, dataKey, color, maxVal,
+  data,
+  dataKey,
+  color,
+  maxVal,
 }: {
-  data: Array<{ hour: number; [key: string]: number }>; dataKey: string; color: string; maxVal: number;
+  data: HourlyPoint[];
+  dataKey: keyof HourlyPoint;
+  color: string;
+  maxVal: number;
 }) {
   return (
     <div className="flex items-end gap-[3px] h-24">
@@ -158,35 +204,33 @@ function WeeklyChart({ data }: { data: AnalyticsOverview['weekly'] }) {
   );
 }
 
-function EmptyChart({ label }: { label: string }) {
+function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center h-24 gap-2">
-      <BarChart3 className="w-6 h-6 text-white/10" />
-      <p className="text-xs text-white/20">{label}</p>
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <BarChart3 className="w-8 h-8 text-white/10 mb-2" />
+      <p className="text-sm text-white/25">{label}</p>
     </div>
   );
 }
 
-// ── Page Component ─────────────────────────────────────────────
+// ── Page Component ─────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('7d');
   const [viewMode, setViewMode] = useState<'charts' | 'heatmap'>('charts');
 
-  const { data, loading, error, refetch } = useApiQuery<AnalyticsOverview>(`/api/v4/analytics/overview?range=${timeRange}`);
-  const { data: heatmapData, loading: heatmapLoading } = useDeliveryHeatmap();
+  const { data, loading, error } = useApiQuery<AnalyticsOverview>(
+    `/api/v4/analytics/overview?range=${timeRange}`,
+  );
 
   const metrics = data?.metrics;
   const hourly  = data?.hourly ?? [];
   const weekly  = data?.weekly ?? [];
   const topZones   = data?.topZones ?? [];
   const topDrivers = data?.topDrivers ?? [];
-
   const maxHourly = hourly.length > 0
     ? Math.max(...hourly.map((h) => Math.max(h.orders, h.deliveries)), 1)
     : 1;
-
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen">
@@ -246,17 +290,13 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {viewMode === 'heatmap' && (
-        <div className="px-6 lg:px-8 pb-8">
-          <AnalyticsHeatmapView
-            points={(heatmapData as any)?.data?.points ?? []}
-            loading={heatmapLoading}
-            total={(heatmapData as any)?.data?.total ?? 0}
-          />
+      {error && (
+        <div className="mx-6 lg:mx-8 mb-4 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-950/20 px-4 py-3 text-sm text-red-400">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          Failed to load analytics data. Please try again.
         </div>
       )}
 
-      {viewMode === 'charts' && (
       <div className="px-6 lg:px-8 pb-8 space-y-5">
         {/* KPI Grid */}
         {loading ? (
@@ -293,6 +333,59 @@ export default function AnalyticsPage() {
           </div>
         )}
 
+        {/* Primary KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {loading || !metrics ? (
+            Array.from({ length: 4 }).map((_, i) => <MetricSkeleton key={i} />)
+          ) : (
+            <>
+              <MetricTile
+                label="Total Orders"
+                value={metrics.totalOrders.toLocaleString()}
+                icon={Package}
+                accent="#818cf8"
+                delay={0}
+              />
+              <MetricTile
+                label="Deliveries"
+                value={metrics.totalDeliveries.toLocaleString()}
+                icon={Truck}
+                accent="#34d399"
+                delay={50}
+              />
+              <MetricTile
+                label="Active Drivers"
+                value={metrics.activeDrivers}
+                icon={Users}
+                accent="#60a5fa"
+                delay={100}
+              />
+              <MetricTile
+                label="Avg Delivery"
+                value={metrics.avgDeliveryTime}
+                suffix="min"
+                icon={Clock}
+                accent="#fbbf24"
+                delay={150}
+              />
+            </>
+          )}
+        </div>
+
+        {/* Secondary metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {loading || !metrics ? (
+            Array.from({ length: 4 }).map((_, i) => <MetricSkeleton key={i} />)
+          ) : (
+            <>
+              <MetricTile label="On-Time Rate" value={metrics.onTimeRate} suffix="%" icon={Zap} accent="#a78bfa" />
+              <MetricTile label="Customer Rating" value={metrics.customerSatisfaction} suffix="/5" icon={Activity} accent="#f472b6" />
+              <MetricTile label="Revenue" value={`$${(metrics.revenue / 1000).toFixed(0)}k`} icon={BarChart3} accent="#2dd4bf" />
+              <MetricTile label="Failed Deliveries" value={metrics.failedDeliveries} icon={RefreshCw} accent="#f87171" />
+            </>
+          )}
+        </div>
+
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
@@ -304,16 +397,11 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {loading ? (
-              <div className="h-24 rounded-lg bg-white/[0.03] animate-pulse" />
-            ) : hourly.length > 0 ? (
-              <>
-                <MiniBarChart data={hourly} dataKey="orders" color="#6366f1" maxVal={maxHourly} />
-                <div className="flex justify-between mt-2 text-[10px] text-white/20 px-0.5">
-                  <span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span>
-                </div>
-              </>
+              <ChartSkeleton />
+            ) : hourly.length === 0 ? (
+              <EmptyState label="No hourly data for this period" />
             ) : (
-              <EmptyChart label="No order data for this period" />
+              <MiniBarChart data={hourly} dataKey="orders" color="#6366f1" maxVal={maxHourly} />
             )}
           </div>
 
@@ -326,8 +414,10 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {loading ? (
-              <div className="h-32 rounded-lg bg-white/[0.03] animate-pulse" />
-            ) : weekly.length > 0 ? (
+              <ChartSkeleton height="h-32" />
+            ) : weekly.length === 0 ? (
+              <EmptyState label="No weekly data for this period" />
+            ) : (
               <WeeklyChart data={weekly} />
             ) : (
               <EmptyChart label="No weekly data available" />
@@ -337,12 +427,24 @@ export default function AnalyticsPage() {
 
         {/* Bottom row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Top Zones */}
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
+          {/* Top zones */}
+          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Top Delivery Zones</h3>
             {loading ? (
-              <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-8 rounded-lg bg-white/[0.03] animate-pulse" />)}</div>
-            ) : topZones.length > 0 ? (
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 animate-pulse">
+                    <div className="h-3 w-4 rounded bg-white/[0.06]" />
+                    <div className="flex-1 space-y-1">
+                      <div className="h-3 w-32 rounded bg-white/[0.06]" />
+                      <div className="h-1.5 rounded-full bg-white/[0.04]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : topZones.length === 0 ? (
+              <EmptyState label="No zone data for this period" />
+            ) : (
               <div className="space-y-3">
                 {topZones.map((zone, i) => (
                   <div key={zone.name} className="flex items-center gap-3">
@@ -354,23 +456,25 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full"
-                          style={{ width: `${zone.pct}%`, background: `linear-gradient(90deg, #818cf8, #6366f1)`, opacity: 1 - i * 0.12 }}
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${zone.pct}%`,
+                            background: `linear-gradient(90deg, #818cf8, #6366f1)`,
+                            opacity: 1 - i * 0.12,
+                          }}
                         />
                       </div>
                     </div>
-                    {zone.trend !== 0 && (
-                      <div className="flex items-center gap-1">
-                        {zone.trend >= 0 ? (
-                          <ArrowUpRight className="w-3 h-3 text-emerald-400" />
-                        ) : (
-                          <TrendingDown className="w-3 h-3 text-red-400" />
-                        )}
-                        <span className={cn('text-[11px] font-mono', zone.trend >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                          {zone.trend > 0 ? '+' : ''}{zone.trend}%
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {zone.trend >= 0 ? (
+                        <ArrowUpRight className="w-3 h-3 text-emerald-400" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3 text-red-400" />
+                      )}
+                      <span className={cn("text-[11px] font-mono", zone.trend >= 0 ? "text-emerald-400" : "text-red-400")}>
+                        {zone.trend > 0 ? '+' : ''}{zone.trend}%
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -382,21 +486,34 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          {/* Driver Leaderboard */}
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
+          {/* Driver leaderboard */}
+          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Driver Leaderboard</h3>
             {loading ? (
-              <div className="space-y-2.5">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-10 rounded-lg bg-white/[0.03] animate-pulse" />)}</div>
-            ) : topDrivers.length > 0 ? (
+              <div className="space-y-2.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 animate-pulse">
+                    <div className="w-7 h-7 rounded-full bg-white/[0.06]" />
+                    <div className="flex-1 h-3 rounded bg-white/[0.06]" />
+                    <div className="h-3 w-20 rounded bg-white/[0.04]" />
+                  </div>
+                ))}
+              </div>
+            ) : topDrivers.length === 0 ? (
+              <EmptyState label="No driver data for this period" />
+            ) : (
               <div className="space-y-2.5">
                 {topDrivers.map((driver, i) => (
-                  <div key={driver.name} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.02] transition-colors">
+                  <div
+                    key={driver.name}
+                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.02] transition-colors"
+                  >
                     <div className={cn(
-                      'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
-                      i === 0 ? 'bg-amber-500/20 text-amber-400' :
-                      i === 1 ? 'bg-gray-400/20 text-gray-300' :
-                      i === 2 ? 'bg-orange-600/20 text-orange-400' :
-                      'bg-white/[0.05] text-white/30'
+                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
+                      i === 0 ? "bg-amber-500/20 text-amber-400" :
+                      i === 1 ? "bg-gray-400/20 text-gray-300" :
+                      i === 2 ? "bg-orange-600/20 text-orange-400" :
+                      "bg-white/[0.05] text-white/30"
                     )}>
                       {i + 1}
                     </div>
@@ -412,12 +529,10 @@ export default function AnalyticsPage() {
                         <p className="text-xs font-mono text-emerald-400">{driver.onTime}%</p>
                         <p className="text-[10px] text-white/20">on-time</p>
                       </div>
-                      {driver.rating > 0 && (
-                        <div className="flex items-center gap-0.5">
-                          <span className="text-xs font-mono text-amber-400">{driver.rating}</span>
-                          <span className="text-amber-400 text-[10px]">&#9733;</span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-0.5">
+                        <span className="text-xs font-mono text-amber-400">{driver.rating}</span>
+                        <span className="text-amber-400 text-[10px]">&#9733;</span>
+                      </div>
                     </div>
                   </div>
                 ))}

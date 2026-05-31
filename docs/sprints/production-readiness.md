@@ -129,14 +129,16 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Analytics (0 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Analytics Overview | `/analytics` | 0 | ✅ |
-| Dashboards | `/analytics/dashboards` | 0 | ✅ |
-| ETA Accuracy | `/analytics/eta-accuracy` | 0 | ✅ |
-| Reports | `/analytics/reports` | 0 | ✅ |
-| Route Performance | `/analytics/route-performance` | 0 | ✅ |
+## Analytics (10 → 0 mock signals) ✅ WIT-512
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Analytics Overview | `/analytics` | DEMO_METRICS, DEMO_HOURLY, DEMO_WEEKLY, DEMO_TOP_ZONES, DEMO_DRIVERS_PERF (5 consts) | 0 | ✅ |
+| Dashboards | `/analytics/dashboards` | 0 | 0 | ✅ |
+| ETA Accuracy | `/analytics/eta-accuracy` | DEMO_METRICS, DEMO_FEATURES, DEMO_REPORT, mkDemo (4 consts) | 0 | ✅ |
+| Reports | `/analytics/reports` | 0 | 0 | ✅ |
+| Route Performance | `/analytics/route-performance` | 0 | 0 | ✅ |
+
+**Endpoints used**: `GET /api/v4/analytics/overview?range=`, `GET /api/v4/ai/eta-v2/model-performance`, `/feature-importance`, `/accuracy-report`, `/health`
 
 ---
 
@@ -321,7 +323,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Collaboration | `/collaboration` | ✅ |
 | POS | `/pos` | ✅ |
 | Locations | `/locations` | ✅ |
-| Zones | `/zones` | ✅ |
+| Zones | `/zones` | ✅ (WIT-512: feature-flag removed, map always shown) |
 | Profile | `/profile` | ✅ |
 | Stores | `/stores` | ✅ |
 | Partners | `/partners` | ✅ |
@@ -337,6 +339,9 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-502 | `feat/WIT-502-dashboard-eld-production` | ELD (overview + DVIR) | `eld/page.tsx`, `eld/dvir/page.tsx` | 10 new ELD endpoints + 4 Prisma models | 9→0 | pending |
 | WIT-503 | `feat/WIT-503-dashboard-integrations-production` | Integrations (connected, routing, health) | 3 pages | 8 new /integrations/* endpoints | 11→0 | #TBD |
 | WIT-504 | `feat/WIT-504-dashboard-settings-production` | Settings (auth-providers, billing, payments, webhooks) | 4 pages | 6 new + 2 fixed endpoints | 8→0 | #239 |
+| WIT-505 | `feat/WIT-505-dashboard-invoices-payments-production` | Invoices, Payments, Activity, Order Board | 5 pages | Fix invoice response shape | 9→0 | #246 (open) |
+| WIT-511 | `feat/WIT-511-dashboard-navigation-ia` | Navigation (174 routes) | sidebar + config | — | 0 page signals | #247 (open) |
+| WIT-512 | `feat/WIT-512-dashboard-analytics-zones` | Analytics overview, ETA accuracy, Zones map | 3 pages | `GET /api/v4/zones?format=geojson` (new), `GET /api/v4/zones/overlays` (new) | 10→0 | open |
 
 ---
 
