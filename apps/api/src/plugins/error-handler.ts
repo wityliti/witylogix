@@ -49,8 +49,14 @@ async function errorHandlerPlugin(fastify: FastifyInstance): Promise<void> {
         });
       }
 
-      // JWT errors from @fastify/jwt
-      if (error.message?.includes("jwt") || error.message?.includes("token")) {
+      // JWT errors from @fastify/jwt. Match on the library's error CODE, not a
+      // substring of the message — otherwise unrelated errors that merely mention
+      // "token" (e.g. a Prisma error whose context includes a "refresh token"
+      // comment) get masked as a 401 auth failure, hiding the real bug.
+      if (
+        typeof (error as FastifyError).code === "string" &&
+        (error as FastifyError).code.startsWith("FST_JWT")
+      ) {
         request.log.warn({ err: error }, "Auth error");
         return reply.status(401).send({
           statusCode: 401,
