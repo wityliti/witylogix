@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { WLMap } from '@/components/map/wl-map';
+import { RoutePolylineLayer } from '@/components/map/route-polyline-layer';
+import { RouteStopMarkersLayer, type StopMarker } from '@/components/map/route-stop-markers-layer';
+import { MapPin } from 'lucide-react';
 
 interface Stop {
   id: string;
@@ -47,6 +51,8 @@ interface ApiOrder {
   priority?: string;
   status?: string;
 }
+
+const DEFAULT_CENTER: [number, number] = [0, 20];
 
 export default function CreateRoutePage() {
   const [step, setStep] = useState(1);
@@ -150,6 +156,12 @@ export default function CreateRoutePage() {
 
   const estimatedDistance = formData.stops.length * 3.5;
   const estimatedDuration = formData.stops.length * 15 + 30;
+
+  // Build map data from stops that have lat/lng embedded in address (from order data)
+  // Orders with deliveryLocation JSON will be the source of truth for coordinates.
+  // For the create flow, we don't have geocoords from API, so the map shows a no-data state.
+  const previewStopMarkers = useMemo<StopMarker[]>(() => [], []);
+  const previewPolyline: Array<[number, number]> = [];
 
   const canProceed =
     step === 1
@@ -388,58 +400,55 @@ export default function CreateRoutePage() {
 
           {step === 3 && (
             <div className="max-w-4xl">
-              <div className="w-full h-96 bg-[#12121a] border border-[#1e1e2e] rounded-lg flex items-center justify-center mb-6 relative overflow-hidden">
-                <svg
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 800 400"
-                  className="absolute top-0 left-0"
-                >
-                  {formData.stops.length > 1 && (
-                    <polyline
-                      points={formData.stops
-                        .map((_, idx) => {
-                          const x = 50 + (idx / (formData.stops.length - 1)) * 700;
-                          const y = 150 + Math.sin(idx * 0.5) * 50;
-                          return `${x},${y}`;
-                        })
-                        .join(" ")}
-                      fill="none"
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      opacity="0.5"
+              <div className="w-full h-96 rounded-lg mb-6 overflow-hidden relative border border-[#1e1e2e]">
+                {previewStopMarkers.length > 0 ? (
+                  <WLMap
+                    center={DEFAULT_CENTER}
+                    zoom={12}
+                    className="w-full h-full"
+                    interactive
+                  >
+                    {previewPolyline.length >= 2 && (
+                      <RoutePolylineLayer
+                        coordinates={previewPolyline}
+                        variant="planned"
+                        fitBounds
+                        fitPadding={60}
+                      />
+                    )}
+                    <RouteStopMarkersLayer
+                      stops={previewStopMarkers}
+                      fitBounds
+                      fitPadding={60}
                     />
-                  )}
-
-                  {formData.stops.map((stop, idx) => {
-                    const x = 50 + (idx / Math.max(formData.stops.length - 1, 1)) * 700;
-                    const y = 150 + Math.sin(idx * 0.5) * 50;
-                    return (
-                      <g key={stop.id}>
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r="12"
-                          fill={getPriorityColor(stop.priority)}
-                          opacity="0.8"
-                        />
-                        <text
-                          x={x}
-                          y={y}
-                          textAnchor="middle"
-                          dy="0.3em"
-                          fontSize="10"
-                          fontWeight="bold"
-                          fill="white"
-                        >
-                          {idx + 1}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-                <div className="absolute bottom-4 right-4 text-xs text-gray-400">
-                  Map Preview - {formData.stops.length} stops
+                  </WLMap>
+                ) : (
+                  <div className="w-full h-full bg-[#12121a] flex flex-col items-center justify-center text-gray-500 gap-3">
+                    <MapPin className="w-10 h-10 opacity-20" />
+                    <div className="text-sm font-medium">Map Preview</div>
+                    <div className="text-xs text-gray-600 text-center max-w-xs">
+                      {formData.stops.length === 0
+                        ? 'Add stops in step 2 to see them on the map.'
+                        : `${formData.stops.length} stop${formData.stops.length > 1 ? 's' : ''} added. The map will show coordinates once orders have delivery location data.`}
+                    </div>
+                    {/* Fallback: numbered stop list as visual indicator */}
+                    {formData.stops.length > 0 && (
+                      <div className="flex gap-2 mt-2 flex-wrap justify-center max-w-md">
+                        {formData.stops.map((stop, idx) => (
+                          <div
+                            key={stop.id}
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                            style={{ backgroundColor: getPriorityColor(stop.priority) }}
+                          >
+                            {idx + 1}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="absolute bottom-3 right-3 bg-[#0a0a0f]/80 backdrop-blur-sm text-xs text-gray-400 px-2 py-1 rounded border border-[#1e1e2e]">
+                  {formData.stops.length} stop{formData.stops.length !== 1 ? 's' : ''}
                 </div>
               </div>
 

@@ -1,12 +1,39 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { X, Plus, Upload, GripVertical } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { X, Plus, Upload, GripVertical, MapPin, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Stop, Priority } from '@/hooks/use-route-planner';
+
+interface NominatimResult {
+  place_id: string;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
+
+/**
+ * Search addresses via Nominatim (OpenStreetMap) — free, keyless geocoding.
+ * Rate limit: 1 request/second per the usage policy.
+ */
+async function searchAddresses(query: string): Promise<NominatimResult[]> {
+  if (!query || query.length < 3) return [];
+  try {
+    const encoded = encodeURIComponent(query);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=5&addressdetails=1`,
+      { headers: { 'Accept-Language': 'en' } },
+    );
+    if (!res.ok) return [];
+    const data: NominatimResult[] = await res.json();
+    return data;
+  } catch {
+    return [];
+  }
+}
 
 interface StopListEditorProps {
   stops: Stop[];
@@ -44,40 +71,49 @@ export function StopListEditor({
   onImportCSV,
 }: StopListEditorProps) {
   const [newAddress, setNewAddress] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Mock autocomplete suggestions
-  const mockSuggestions = [
-    '123 Main Street, New York, NY',
-    '456 Park Avenue, New York, NY',
-    '789 5th Avenue, New York, NY',
-    '321 Broadway, New York, NY',
-    '654 Madison Avenue, New York, NY',
-  ];
-
-  const handleAddressChange = (value: string) => {
+  // Debounced address search via Nominatim (keyless OpenStreetMap geocoding)
+  const handleAddressChange = useCallback((value: string) => {
     setNewAddress(value);
-    if (value.length > 2) {
-      setSuggestions(
-        mockSuggestions.filter((s) =>
-          s.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  };
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
 
-  const handleSelectSuggestion = (address: string) => {
+    if (value.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    searchTimerRef.current = setTimeout(async () => {
+      const results = await searchAddresses(value);
+      setSuggestions(results);
+      setShowSuggestions(results.length > 0);
+      setIsSearching(false);
+    }, 500); // 500 ms debounce to respect Nominatim rate limit
+  }, []);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, []);
+
+  const handleSelectSuggestion = (result: NominatimResult) => {
     setNewAddress('');
     setSuggestions([]);
     setShowSuggestions(false);
     onAddStop({
-      address,
+      address: result.display_name,
+      latitude: parseFloat(result.lat),
+      longitude: parseFloat(result.lon),
       priority: 'normal',
       notes: '',
     });
@@ -143,36 +179,44 @@ export function StopListEditor({
 
           {/* Address Input with Autocomplete */}
           <div className="relative">
-            <input
-              type="text"
-              placeholder="Search for an address..."
-              value={newAddress}
-              onChange={(e) => handleAddressChange(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className={cn(
-                'w-full px-4 py-2 rounded-md text-sm',
-                'bg-wl-bg-surface text-wl-text-primary',
-                'border border-wl-border-default',
-                'placeholder-wl-text-tertiary',
-                'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
-                'transition-colors'
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search for an address (powered by OpenStreetMap)..."
+                value={newAddress}
+                onChange={(e) => handleAddressChange(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className={cn(
+                  'w-full px-4 py-2 rounded-md text-sm pr-8',
+                  'bg-wl-bg-surface text-wl-text-primary',
+                  'border border-wl-border-default',
+                  'placeholder-wl-text-tertiary',
+                  'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                  'transition-colors'
+                )}
+              />
+              {isSearching && (
+                <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-tertiary animate-spin" />
               )}
-            />
+            </div>
 
-            {/* Autocomplete Suggestions */}
+            {/* Autocomplete Suggestions from Nominatim */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-wl-bg-elevated border border-wl-border-default rounded-md shadow-lg z-10">
-                {suggestions.map((suggestion, idx) => (
+                {suggestions.map((result, idx) => (
                   <button
-                    key={idx}
-                    onClick={() => handleSelectSuggestion(suggestion)}
+                    key={result.place_id}
+                    onClick={() => handleSelectSuggestion(result)}
                     className={cn(
                       'w-full px-4 py-2 text-sm text-left text-wl-text-primary',
                       'hover:bg-wl-bg-overlay transition-colors',
-                      idx === 0 ? 'border-b border-wl-border-default' : ''
+                      idx < suggestions.length - 1 ? 'border-b border-wl-border-default' : ''
                     )}
                   >
-                    📍 {suggestion}
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-wl-text-tertiary flex-shrink-0 mt-0.5" />
+                      <span className="truncate">{result.display_name}</span>
+                    </div>
                   </button>
                 ))}
               </div>

@@ -89,8 +89,36 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
         request.tenantDb.route.count({ where }),
       ]);
 
+      // Map to the shape expected by the dashboard RouteItem interface
+      const mapped = routes.map((r) => ({
+        id: r.id,
+        name: r.name ?? `Route ${r.date.toISOString().slice(0, 10)}`,
+        stopsCount: r._count.stops,
+        totalDistance: r.totalDistance ? Number(r.totalDistance) : 0,
+        totalDuration: r.totalDuration ?? 0,
+        assignedDriver: r.driver?.name ?? null,
+        driverId: r.driverId ?? null,
+        // Map DB RouteStatus to the dashboard display statuses
+        status: ((): "draft" | "scheduled" | "active" | "completed" | "cancelled" => {
+          switch (r.status) {
+            case "DRAFT": return "draft";
+            case "OPTIMIZED": return "draft";
+            case "ASSIGNED": return "scheduled";
+            case "IN_PROGRESS": return "active";
+            case "COMPLETED": return "completed";
+            case "CANCELLED": return "cancelled";
+            default: return "draft";
+          }
+        })(),
+        rawStatus: r.status,
+        lastUsed: r.updatedAt.toISOString(),
+        isTemplate: false,
+        createdAt: r.createdAt.toISOString(),
+        date: r.date.toISOString(),
+      }));
+
       return {
-        data: routes,
+        data: mapped,
         pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
       };
     } catch (err) {
@@ -113,7 +141,17 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
       const route = await request.tenantDb.route.findUnique({
         where: { id },
         include: {
-          driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
+          driver: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              vehicleType: true,
+              vehiclePlate: true,
+              status: true,
+              currentLocation: true,
+            },
+          },
           stops: {
             orderBy: { sequence: "asc" },
             include: {
@@ -124,7 +162,60 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       if (!route) throw new NotFoundError("Route", id);
-      return { data: route };
+
+      // Fetch orders associated with stops to get lat/lng coordinates.
+      // Orders store their delivery coordinates in the deliveryLocation JSON field.
+      const orderIds = route.stops
+        .map((s) => s.orderId)
+        .filter((oid): oid is string => oid !== null);
+
+      const orders =
+        orderIds.length > 0
+          ? await request.tenantDb.order.findMany({
+              where: { id: { in: orderIds } },
+              select: {
+                id: true,
+                customerName: true,
+                addressLine1: true,
+                city: true,
+                deliveryLocation: true,
+                externalOrderNumber: true,
+              },
+            })
+          : [];
+
+      const orderById = new Map(orders.map((o) => [o.id, o]));
+
+      // Enrich stops with coordinates and customer info from their linked order
+      const enrichedStops = route.stops.map((stop) => {
+        const order = stop.orderId ? orderById.get(stop.orderId) : undefined;
+        const loc = order?.deliveryLocation as
+          | { lat?: number; latitude?: number; lng?: number; longitude?: number }
+          | null
+          | undefined;
+
+        const lat = loc?.lat ?? loc?.latitude ?? null;
+        const lng = loc?.lng ?? loc?.longitude ?? null;
+        const address = order
+          ? [order.addressLine1, order.city].filter(Boolean).join(", ")
+          : null;
+
+        return {
+          ...stop,
+          latitude: lat,
+          longitude: lng,
+          address,
+          customerName: order?.customerName ?? null,
+          orderNumber: order?.externalOrderNumber ?? null,
+        };
+      });
+
+      return {
+        data: {
+          ...route,
+          stops: enrichedStops,
+        },
+      };
     } catch (err) {
       throw err;
     }
@@ -199,6 +290,68 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
         where: { id },
         data: body,
       });
+
+      return { data: updated };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
+  });
+
+  // ── ASSIGN DRIVER ─────────────────────────────────────────
+  //  POST /:id/assign — assign or re-assign a driver to a route, update all
+  //  existing stops to the same driverId, and transition the route status to
+  //  ASSIGNED when a driver is set.
+
+  const assignDriverSchema = z.object({
+    driverId: z.string().uuid(),
+  });
+
+  fastify.post("/:id/assign", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+
+      const { id } = request.params as { id: string };
+      const { driverId } = assignDriverSchema.parse(request.body);
+
+      const route = await request.tenantDb.route.findUnique({
+        where: { id },
+        include: { driver: { select: { id: true, name: true } } },
+      });
+      if (!route) throw new NotFoundError("Route", id);
+
+      // Verify driver exists in this tenant
+      const driver = await request.tenantDb.driver.findFirst({
+        where: {
+          id: driverId,
+          OR: [{ shopId: request.shopId }, { orgId: request.shopId }],
+        },
+        select: { id: true, name: true, vehicleType: true },
+      });
+      if (!driver) throw new NotFoundError("Driver", driverId);
+
+      const [updated] = await request.tenantDb.$transaction([
+        request.tenantDb.route.update({
+          where: { id },
+          data: {
+            driverId,
+            status: route.status === "DRAFT" || route.status === "OPTIMIZED" ? "ASSIGNED" : route.status,
+          },
+          include: {
+            driver: { select: { id: true, name: true, vehicleType: true } },
+            _count: { select: { stops: true } },
+          },
+        }),
+        request.tenantDb.routeStop.updateMany({
+          where: { routeId: id, status: { in: ["PENDING", "EN_ROUTE"] } },
+          data: { driverId },
+        }),
+      ]);
 
       return { data: updated };
     } catch (err) {
