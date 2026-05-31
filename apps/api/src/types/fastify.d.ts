@@ -30,6 +30,13 @@ export interface AuthContext {
   role: "SUPER_ADMIN" | "ADMIN" | "DISPATCHER" | "VIEWER" | "DRIVER";
   orgRole?: "OWNER" | "ADMIN" | "MEMBER"; // Org-level role (if in org context)
   shopDomain?: string;
+  /**
+   * OAuth-granted scopes, present only when the request is authenticated via a
+   * third-party app installation access token (ADR-010 claims-based auth).
+   * First-party user/session auth leaves this undefined and is treated as
+   * having full scope access (gated instead by role/orgRole).
+   */
+  scopes?: string[];
 }
 
 /**
