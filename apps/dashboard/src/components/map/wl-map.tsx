@@ -6,7 +6,11 @@ import { buildMapStyle } from '@/styles/wl-map-style';
 import { WLMapContext } from './wl-map-context';
 
 export interface WLMapProps {
-  maptilerKey: string;
+  /**
+   * Optional MapTiler key. Defaults to `NEXT_PUBLIC_MAPTILER_KEY`; when neither
+   * is set, the map renders with free, keyless CARTO basemaps (see buildMapStyle).
+   */
+  maptilerKey?: string;
   center: [number, number];
   zoom?: number;
   interactive?: boolean;
@@ -17,7 +21,7 @@ export interface WLMapProps {
 }
 
 export function WLMap({
-  maptilerKey,
+  maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY,
   center,
   zoom = 12,
   interactive = true,
