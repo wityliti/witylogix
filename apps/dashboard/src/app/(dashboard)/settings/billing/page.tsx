@@ -1,6 +1,8 @@
 'use client';
 
-import { useApiQuery, useApiList } from '@/hooks/use-api';
+import { useState } from 'react';
+import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -19,46 +21,78 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Invoice {
+interface BillingInvoice {
   id: string;
   date: string;
   period: string;
   amount: number;
-  status: 'paid' | 'pending' | 'overdue';
+  currency: string;
+  status: 'paid' | 'pending' | 'failed' | 'completed';
   downloadUrl: string;
 }
 
-interface SubscriptionSummary {
+interface UsageMetric {
+  name: string;
+  current: number;
+  limit: number;
+  percentage: number;
+  unit: string;
+}
+
+interface BillingAddress {
+  fullName?: string;
+  company?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+}
+
+interface BillingData {
   plan: string;
-  status: string;
-  nextBillingDate: string | null;
-  limits: {
-    shipments: { used: number; limit: number };
-    drivers: { used: number; limit: number };
-    apiCalls: { used: number; limit: number };
-    notifications: { used: number; limit: number };
-  };
+  planTier: string;
+  monthlyPrice: number;
+  renewalDate: string;
+  billingPeriodStart: string;
+  billingPeriodEnd: string;
+  usageMetrics: UsageMetric[];
+  billingAddress: BillingAddress | null;
+  invoices: BillingInvoice[];
 }
 
 export default function BillingPage() {
-  const { data: subscription, loading: subLoading, error: subError, refetch: refetchSub } = useApiQuery<SubscriptionSummary>('/api/v4/billing/subscription');
-  const { items: invoices, loading: invLoading, error: invError, refetch: refetchInv } = useApiList<Invoice>('/api/v4/billing/invoices');
+  const { data: billing, loading, error, refetch } = useApiQuery<BillingData>('/api/v4/billing');
 
-  const loading = subLoading || invLoading;
-  const error = subError || invError;
-  const refetch = () => { refetchSub(); refetchInv(); };
+  const [addressForm, setAddressForm] = useState<BillingAddress | null>(null);
+  const [savingAddress, setSavingAddress] = useState(false);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const usageMetrics = subscription ? [
-    { name: "Shipments", current: subscription.limits.shipments.used, limit: subscription.limits.shipments.limit, percentage: Math.round((subscription.limits.shipments.used / (subscription.limits.shipments.limit || 1)) * 100), unit: "deliveries" },
-    { name: "Drivers", current: subscription.limits.drivers.used, limit: subscription.limits.drivers.limit, percentage: Math.round((subscription.limits.drivers.used / (subscription.limits.drivers.limit || 1)) * 100), unit: "active" },
-    { name: "API Calls", current: subscription.limits.apiCalls.used, limit: subscription.limits.apiCalls.limit, percentage: Math.round((subscription.limits.apiCalls.used / (subscription.limits.apiCalls.limit || 1)) * 100), unit: "requests" },
-  ] : [];
+  const addr = addressForm ?? billing?.billingAddress ?? {};
+  const invoices = billing?.invoices ?? [];
+  const usageMetrics = billing?.usageMetrics ?? [];
 
-  const planName = subscription?.plan ?? "—";
-  const renewalDate = subscription?.nextBillingDate ? new Date(subscription.nextBillingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : "—";
+  const handleAddressSave = async () => {
+    setSavingAddress(true);
+    try {
+      await api.put('/api/v4/billing/address', addr);
+      setAddressForm(null);
+      refetch();
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  const invoiceStatusVariant = (status: string) => {
+    if (status === 'paid' || status === 'completed') return 'success';
+    if (status === 'pending') return 'warning';
+    return 'danger';
+  };
+
+  const invoiceStatusLabel = (status: string) =>
+    status === 'completed' ? 'Paid' : status.charAt(0).toUpperCase() + status.slice(1);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -68,12 +102,8 @@ export default function BillingPage() {
       />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Back Button */}
         <Link href="/settings">
-          <Button
-            variant="ghost"
-            className="mb-8 text-gray-400 hover:text-white"
-          >
+          <Button variant="ghost" className="mb-8 text-gray-400 hover:text-white">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
           </Button>
@@ -84,39 +114,29 @@ export default function BillingPage() {
           <CardContent className="pt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">
-                  Current Plan
-                </p>
-                <h3 className="text-3xl font-bold text-white mt-2">
-                  {planName}
-                </h3>
-                <p className="text-gray-400 mt-2">
-                  {subscription?.status ? `Status: ${subscription.status}` : "—"}
-                </p>
+                <p className="text-sm font-medium text-gray-500 uppercase">Current Plan</p>
+                <h3 className="text-3xl font-bold text-white mt-2">{billing?.plan ?? '—'}</h3>
+                <p className="text-gray-400 mt-2">Professional logistics platform</p>
               </div>
-
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">
-                  Monthly Cost
-                </p>
+                <p className="text-sm font-medium text-gray-500 uppercase">Monthly Cost</p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  {invoices[0] ? `$${invoices[0].amount.toFixed(2)}` : "—"}
+                  {billing?.monthlyPrice != null
+                    ? billing.monthlyPrice === 0
+                      ? 'Free'
+                      : `$${billing.monthlyPrice.toFixed(2)}`
+                    : '—'}
                 </h3>
-                <p className="text-gray-400 mt-2">
-                  Most recent charge
-                </p>
+                <p className="text-gray-400 mt-2">Billed on 1st of each month</p>
               </div>
-
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">
-                  Renewal Date
-                </p>
+                <p className="text-sm font-medium text-gray-500 uppercase">Next Renewal</p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  {renewalDate}
+                  {billing?.renewalDate
+                    ? new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : '—'}
                 </h3>
-                <p className="text-gray-400 mt-2">
-                  Next billing cycle
-                </p>
+                <p className="text-gray-400 mt-2">Next billing cycle</p>
               </div>
             </div>
 
@@ -125,16 +145,10 @@ export default function BillingPage() {
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
               </Button>
-              <Button
-                variant="secondary"
-                className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
-              >
+              <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]">
                 Downgrade Plan
               </Button>
-              <Button
-                variant="ghost"
-                className="text-red-400"
-              >
+              <Button variant="ghost" className="text-red-400">
                 Cancel Subscription
               </Button>
             </div>
@@ -142,38 +156,38 @@ export default function BillingPage() {
         </Card>
 
         {/* Usage Metrics */}
-        <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <TrendingUp className="w-5 h-5" />
-              Usage This Month
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {usageMetrics.map((metric) => (
-              <div key={metric.name}>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-white">
-                    {metric.name}
-                  </p>
-                  <span className="text-sm text-gray-500">
-                    {metric.current.toLocaleString()} / {metric.limit.toLocaleString()}{" "}
-                    {metric.unit}
-                  </span>
+        {usageMetrics.length > 0 && (
+          <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <TrendingUp className="w-5 h-5" />
+                Usage This Month
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {usageMetrics.map((metric) => (
+                <div key={metric.name}>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium text-white">{metric.name}</p>
+                    <span className="text-sm text-gray-500">
+                      {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                    <div
+                      className={cn(
+                        'h-2 rounded-full transition-all',
+                        metric.percentage >= 90 ? 'bg-red-500' : metric.percentage >= 70 ? 'bg-amber-500' : 'bg-blue-500',
+                      )}
+                      style={{ width: `${metric.percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{metric.percentage.toFixed(1)}% of limit used</p>
                 </div>
-                <div className="w-full bg-[#1a1a2e] rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all"
-                    style={{ width: `${metric.percentage}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {metric.percentage}% of limit used
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Payment Method */}
         <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
@@ -184,44 +198,13 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {paymentMethod ? (
-              <div className="bg-[#1a1a2e] rounded-lg p-6 mb-6 border border-[#1e1e2e]">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-8 bg-gradient-to-br from-[#1434CB] to-[#0066FF] rounded flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">{(paymentMethod.brand ?? 'CARD').toUpperCase()}</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-white">
-                        {paymentMethod.brand ?? 'Card'} ending in {paymentMethod.last4 ?? '****'}
-                      </p>
-                      {paymentMethod.expiryMonth && paymentMethod.expiryYear && (
-                        <p className="text-sm text-gray-500">
-                          Expires {String(paymentMethod.expiryMonth).padStart(2, '0')}/{String(paymentMethod.expiryYear).slice(-2)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <Badge variant="success" className="bg-emerald-500">
-                    {paymentMethod.status ?? 'Active'}
-                  </Badge>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#0a0a0f]">Update</Button>
-                  <Button variant="ghost" className="text-red-400">Remove</Button>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-[#1a1a2e] rounded-lg p-6 mb-6 border border-dashed border-[#1e1e2e] text-center">
-                <CreditCard className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                <p className="text-gray-400 text-sm">No payment method on file</p>
-              </div>
-            )}
-
-            <Button
-              variant="secondary"
-              className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
-            >
+            <div className="text-sm text-gray-400 mb-4">
+              Payment method management requires Stripe integration.{' '}
+              <Link href="/settings/payments" className="text-blue-400 hover:underline">
+                Configure payment gateways →
+              </Link>
+            </div>
+            <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]">
               Add Payment Method
             </Button>
           </CardContent>
@@ -236,80 +219,76 @@ export default function BillingPage() {
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Full Name
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">Full Name</label>
                   <input
                     type="text"
-                    defaultValue={billingAddress?.name ?? ''}
-                    placeholder="Full name"
+                    value={addr.fullName ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,fullName: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Full name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Company
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">Company</label>
                   <input
                     type="text"
-                    defaultValue={billingAddress?.company ?? ''}
-                    placeholder="Company name"
+                    value={addr.company ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,company: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Company name"
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Address
-                </label>
+                <label className="block text-sm font-medium text-white mb-2">Address</label>
                 <input
                   type="text"
-                  defaultValue={billingAddress?.address ?? ''}
-                  placeholder="Street address"
+                  value={addr.address ?? ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,address: e.target.value })}
                   className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Street address"
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    City
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">City</label>
                   <input
                     type="text"
-                    defaultValue={billingAddress?.city ?? ''}
+                    value={addr.city ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,city: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="City"
-                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    State
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">State</label>
                   <input
                     type="text"
-                    defaultValue={billingAddress?.state ?? ''}
+                    value={addr.state ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,state: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="State"
-                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Postal Code
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">Postal Code</label>
                   <input
                     type="text"
-                    defaultValue={billingAddress?.postalCode ?? ''}
-                    placeholder="Postal code"
+                    value={addr.postalCode ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,postalCode: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Postal code"
                   />
                 </div>
               </div>
             </div>
-
-            <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
-              Update Billing Address
+            <Button
+              variant="primary"
+              className="bg-blue-500 hover:bg-blue-600"
+              onClick={handleAddressSave}
+              disabled={savingAddress}
+            >
+              {savingAddress ? 'Saving…' : 'Update Billing Address'}
             </Button>
           </CardContent>
         </Card>
@@ -323,74 +302,51 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {invoices.length === 0 && (
-              <p className="text-gray-400 text-sm text-center py-8">No invoices yet.</p>
-            )}
-            <div className="space-y-2">
-              {invoices.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-6">No invoices yet</p>
-              ) : null}
-              {invoices.map((invoice) => (
-                <div
-                  key={invoice.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
-                >
-                  <div className="flex-1">
-                    <p className="font-medium text-white">
-                      {invoice.period}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(invoice.date).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="font-medium text-white">
-                        ${invoice.amount.toFixed(2)}
+            {invoices.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">No invoices yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {invoices.map((invoice) => (
+                  <div
+                    key={invoice.id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-white">{invoice.period}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(invoice.date).toLocaleDateString()}
                       </p>
-                      <Badge
-                        variant={
-                          invoice.status === "paid"
-                            ? "success"
-                            : invoice.status === "pending"
-                              ? "warning"
-                              : "danger"
-                        }
-                        className={
-                          invoice.status === "paid"
-                            ? "bg-emerald-500 text-white"
-                            : ""
-                        }
-                      >
-                        {invoice.status.charAt(0).toUpperCase() +
-                          invoice.status.slice(1)}
-                      </Badge>
                     </div>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-blue-400 hover:bg-[#1a1a2e]"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Download</span>
-                    </Button>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p className="font-medium text-white">${invoice.amount.toFixed(2)}</p>
+                        <Badge variant={invoiceStatusVariant(invoice.status)}>
+                          {invoiceStatusLabel(invoice.status)}
+                        </Badge>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-blue-400 hover:bg-[#1a1a2e]">
+                        <Download className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Download</span>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Auto-renewal Notice */}
-        <div className="mt-8 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 flex gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-gray-400">
-            Your subscription will automatically renew on{" "}
-            <strong>{renewalDate}</strong>. You can cancel anytime before the renewal date.
+        {billing?.renewalDate && (
+          <div className="mt-8 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 flex gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-gray-400">
+              Your subscription will automatically renew on{' '}
+              <strong>{new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>.
+              You can cancel anytime before the renewal date.
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
