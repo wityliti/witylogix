@@ -1,28 +1,55 @@
 'use client';
-
-import { useMemo } from 'react';
-import type { WLMapMarker } from './wl-map';
-
 /**
- * Compute whether a set of markers needs bounds-fitting and return
- * a stable center + zoom fallback for empty sets.
+ * useFitBounds — auto-fits the WLMap viewport to a set of [lng, lat] coordinates.
+ * Call it once the map is ready.  Re-runs when the coords array reference changes.
  */
-export function useFitBounds(markers: WLMapMarker[]): {
-  center: [number, number];
-  zoom: number;
-  shouldFit: boolean;
-} {
-  return useMemo(() => {
-    if (markers.length === 0) {
-      return { center: [40.7128, -74.006], zoom: 10, shouldFit: false };
-    }
-    if (markers.length === 1) {
-      return { center: [markers[0].lat, markers[0].lng], zoom: 13, shouldFit: false };
-    }
-    const lats = markers.map((m) => m.lat);
-    const lngs = markers.map((m) => m.lng);
-    const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
-    const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
-    return { center: [centerLat, centerLng], zoom: 10, shouldFit: true };
-  }, [markers]);
+
+import { useEffect } from 'react';
+import type { Map as MapLibreMap, LngLatBoundsLike } from 'maplibre-gl';
+
+interface Coord {
+  lng: number;
+  lat: number;
+}
+
+export function fitBounds(map: MapLibreMap, coords: Coord[], padding = 80): void {
+  if (coords.length === 0) return;
+
+  if (coords.length === 1) {
+    map.flyTo({ center: [coords[0].lng, coords[0].lat], zoom: 14, duration: 800 });
+    return;
+  }
+
+  let minLng = Infinity;
+  let maxLng = -Infinity;
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+
+  for (const c of coords) {
+    if (c.lng < minLng) minLng = c.lng;
+    if (c.lng > maxLng) maxLng = c.lng;
+    if (c.lat < minLat) minLat = c.lat;
+    if (c.lat > maxLat) maxLat = c.lat;
+  }
+
+  const bounds: LngLatBoundsLike = [
+    [minLng, minLat],
+    [maxLng, maxLat],
+  ];
+
+  map.fitBounds(bounds, { padding, duration: 800, maxZoom: 15 });
+}
+
+export function useFitBounds(
+  map: MapLibreMap | null,
+  coords: Coord[],
+  padding = 80,
+): void {
+  useEffect(() => {
+    if (!map || coords.length === 0) return;
+    const run = () => fitBounds(map, coords, padding);
+    if (map.isStyleLoaded()) run();
+    else map.on('load', run);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, coords, padding]);
 }

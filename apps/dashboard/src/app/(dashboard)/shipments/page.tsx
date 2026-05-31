@@ -1,65 +1,41 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { Skeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 import { useApiList } from "@/hooks/use-api";
+import {
+  statusVariant,
+  type Shipment,
+  type ShipmentStatus,
+  type DeliveryMethod,
+} from "@/components/shipments/shipment-utils";
+import dynamic from "next/dynamic";
 
-type ShipmentStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "READY_FOR_PICKUP"
-  | "PICKED_UP"
-  | "IN_TRANSIT"
-  | "OUT_FOR_DELIVERY"
-  | "ARRIVED"
-  | "DELIVERED"
-  | "FAILED"
-  | "RETURNED"
-  | "CANCELLED";
+// ── Dynamic map import (avoids SSR issues with maplibre-gl) ─────────────────
+const ShipmentsMapView = dynamic(
+  () => import("@/components/shipments/shipments-map-view"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full bg-[#12121a] rounded-xl border border-[#1e1e2e] animate-pulse flex items-center justify-center">
+        <p className="text-sm text-gray-500">Loading map…</p>
+      </div>
+    ),
+  },
+);
 
-type DeliveryMethod =
-  | "LOCAL_DELIVERY"
-  | "STORE_PICKUP"
-  | "STANDARD_SHIPPING"
-  | "EXPRESS_SHIPPING"
-  | "SAME_DAY";
-
-interface Shipment {
-  id: string;
-  shipmentNumber: string;
-  orderId: string;
-  status: ShipmentStatus;
-  deliveryMethod: DeliveryMethod;
-  recipientName: string | null;
-  recipientPhone: string | null;
-  recipientEmail: string | null;
-  addressLine1: string | null;
-  city: string | null;
-  province: string | null;
-  postalCode: string | null;
-  driver: { id: string; name: string; phone: string } | null;
-  location: { id: string; name: string; city: string } | null;
-  weight: number | null;
-  itemCount: number;
-  shippingCost: number | null;
-  codAmount: number | null;
-  trackingNumber: string | null;
-  notes: string | null;
-  tags: string[];
-  createdAt: string;
-  estimatedArrival: string | null;
-  order: { id: string; shopifyOrderNumber: string | null } | null;
-}
+// ── Constants ────────────────────────────────────────────────────────────────
 
 const STATUS_FILTERS: { key: ShipmentStatus | "ALL"; label: string }[] = [
-  { key: "ALL", label: "All Shipments" },
+  { key: "ALL", label: "All" },
   { key: "PENDING", label: "Pending" },
   { key: "PROCESSING", label: "Processing" },
   { key: "PICKED_UP", label: "Picked Up" },
@@ -74,59 +50,189 @@ const DELIVERY_METHODS: {
   label: string;
   icon: string;
 }[] = [
-  { key: "ALL", label: "All Methods", icon: "📦" },
-  { key: "SAME_DAY", label: "Same Day", icon: "⚡" },
-  { key: "EXPRESS_SHIPPING", label: "Express", icon: "🚀" },
-  { key: "STANDARD_SHIPPING", label: "Standard", icon: "📬" },
-  { key: "LOCAL_DELIVERY", label: "Local", icon: "🚗" },
-  { key: "STORE_PICKUP", label: "Pickup", icon: "🏪" },
+  { key: "ALL", label: "All Methods", icon: "P" },
+  { key: "SAME_DAY", label: "Same Day", icon: "S" },
+  { key: "EXPRESS_SHIPPING", label: "Express", icon: "E" },
+  { key: "STANDARD_SHIPPING", label: "Standard", icon: "T" },
+  { key: "LOCAL_DELIVERY", label: "Local", icon: "L" },
+  { key: "STORE_PICKUP", label: "Pickup", icon: "K" },
 ];
 
-const statusVariant = (
-  s: string,
-): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
-  const map: Record<
-    string,
-    "success" | "warning" | "danger" | "info" | "primary" | "default"
-  > = {
-    DELIVERED: "success",
-    ARRIVED: "success",
-    OUT_FOR_DELIVERY: "primary",
-    IN_TRANSIT: "primary",
-    PICKED_UP: "primary",
-    PROCESSING: "info",
-    READY_FOR_PICKUP: "info",
-    PENDING: "warning",
-    FAILED: "danger",
-    RETURNED: "danger",
-    CANCELLED: "default",
-  };
-  return map[s] ?? "default";
+const DELIVERY_METHOD_ICONS: Record<DeliveryMethod, string> = {
+  SAME_DAY: "⚡",
+  EXPRESS_SHIPPING: "🚀",
+  STANDARD_SHIPPING: "📬",
+  LOCAL_DELIVERY: "🚗",
+  STORE_PICKUP: "🏪",
 };
 
-const deliveryMethodIcon = (method: DeliveryMethod): string => {
-  const map: Record<DeliveryMethod, string> = {
-    SAME_DAY: "⚡",
-    EXPRESS_SHIPPING: "🚀",
-    STANDARD_SHIPPING: "📬",
-    LOCAL_DELIVERY: "🚗",
-    STORE_PICKUP: "🏪",
-  };
-  return map[method] ?? "📦";
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const statusProgression: ShipmentStatus[] = [
-  "PENDING",
-  "PROCESSING",
-  "READY_FOR_PICKUP",
-  "PICKED_UP",
-  "IN_TRANSIT",
-  "OUT_FOR_DELIVERY",
-  "ARRIVED",
-  "DELIVERED",
-];
+function deliveryMethodIcon(method: DeliveryMethod): string {
+  return DELIVERY_METHOD_ICONS[method] ?? "📦";
+}
+
+// ── Loading skeleton ───────────────────────────────────────────────────────
+
+function ShipmentsTableSkeleton() {
+  return (
+    <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden p-0">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr>
+              {[
+                "Tracking#",
+                "Shipment#",
+                "Recipient",
+                "Status",
+                "Method",
+                "Driver/Location",
+                "Items",
+                "Cost",
+                "ETA",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-[#1e1e2e] bg-[#1a1a2e] sticky top-0 whitespace-nowrap"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <tr key={i} className="border-b border-[#1e1e2e]">
+                {Array.from({ length: 9 }).map((_, j) => (
+                  <td key={j} className="p-4">
+                    <Skeleton variant="text" className="h-4" />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
+
+// ── Map Legend ─────────────────────────────────────────────────────────────
+
+function MapLegend() {
+  const items = [
+    { label: "Pending / Processing", colorClass: "bg-blue-400" },
+    { label: "Picked Up / In Transit", colorClass: "bg-amber-400" },
+    { label: "Out for Delivery / Arrived", colorClass: "bg-emerald-400" },
+    { label: "Delivered", colorClass: "bg-emerald-500" },
+    { label: "Failed / Cancelled", colorClass: "bg-red-500" },
+  ];
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+        Map Legend
+      </p>
+      {items.map((item) => (
+        <div key={item.label} className="flex items-center gap-2">
+          <div
+            className={cn(
+              "w-3 h-3 rounded-full flex-shrink-0",
+              item.colorClass,
+            )}
+          />
+          <span className="text-xs text-gray-400">{item.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Map sidebar shipment card ──────────────────────────────────────────────
+
+interface MapShipmentCardProps {
+  shipment: Shipment;
+  onClose: () => void;
+  onView: () => void;
+}
+
+function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
+  return (
+    <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <CardContent className="p-5 space-y-4">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <div className="font-mono font-bold text-blue-400 text-sm">
+              {shipment.trackingNumber ?? shipment.shipmentNumber}
+            </div>
+            <div className="text-xs text-gray-500 mt-0.5">
+              {shipment.shipmentNumber}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-white transition-colors flex-shrink-0 text-lg"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <Badge variant={statusVariant(shipment.status)}>
+          {shipment.status.replace(/_/g, " ")}
+        </Badge>
+
+        <div className="space-y-3">
+          <div>
+            <div className="text-xs text-gray-500 mb-0.5">Recipient</div>
+            <div className="text-sm font-semibold text-white">
+              {shipment.recipientName ?? "—"}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-gray-500 mb-0.5">Delivery Address</div>
+            <div className="text-xs text-gray-400 leading-snug">
+              {[shipment.addressLine1, shipment.city, shipment.province]
+                .filter(Boolean)
+                .join(", ")}
+            </div>
+          </div>
+
+          {shipment.driver?.name && (
+            <div>
+              <div className="text-xs text-gray-500 mb-0.5">Driver</div>
+              <div className="text-xs text-gray-300">{shipment.driver.name}</div>
+            </div>
+          )}
+
+          {shipment.estimatedArrival && (
+            <div>
+              <div className="text-xs text-gray-500 mb-0.5">ETA</div>
+              <div className="text-xs text-blue-400 font-mono">
+                {formatRelativeTime(shipment.estimatedArrival)}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Button
+          variant="primary"
+          size="sm"
+          className="w-full"
+          onClick={onView}
+        >
+          View Full Details
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────
 
 export default function ShipmentsPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<ShipmentStatus | "ALL">(
     "ALL",
   );
@@ -134,9 +240,11 @@ export default function ShipmentsPage() {
     "ALL",
   );
   const [search, setSearch] = useState("");
-  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(
     null,
   );
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const {
     items: shipments,
@@ -145,9 +253,9 @@ export default function ShipmentsPage() {
     refetch,
     pagination,
     setPage,
-    setSearch: setApiSearch,
   } = useApiList<Shipment>("/api/v4/shipments", { limit: 50 });
 
+  // Client-side filter on top of server-fetched batch
   const filtered = useMemo(() => {
     return shipments.filter((s) => {
       if (statusFilter !== "ALL" && s.status !== statusFilter) return false;
@@ -155,9 +263,11 @@ export default function ShipmentsPage() {
         return false;
       if (search) {
         const q = search.toLowerCase();
+        const orderNum =
+          s.order?.externalOrderNumber ?? s.order?.shopifyOrderNumber;
         return (
           s.shipmentNumber.toLowerCase().includes(q) ||
-          (s.order?.shopifyOrderNumber?.toLowerCase().includes(q) ?? false) ||
+          (orderNum?.toLowerCase().includes(q) ?? false) ||
           (s.recipientName?.toLowerCase().includes(q) ?? false) ||
           (s.addressLine1?.toLowerCase().includes(q) ?? false) ||
           (s.city?.toLowerCase().includes(q) ?? false) ||
@@ -167,6 +277,18 @@ export default function ShipmentsPage() {
       return true;
     });
   }, [shipments, statusFilter, methodFilter, search]);
+
+  // Only shipments with valid coords can appear on the map
+  const mappableShipments = useMemo(
+    () =>
+      filtered.filter(
+        (s) =>
+          s.deliveryLocation != null &&
+          typeof s.deliveryLocation.lat === "number" &&
+          typeof s.deliveryLocation.lng === "number",
+      ),
+    [filtered],
+  );
 
   const stats = useMemo(() => {
     const total = pagination.total;
@@ -180,15 +302,23 @@ export default function ShipmentsPage() {
     const failed = shipments.filter((s) => s.status === "FAILED").length;
     const revenue =
       Math.round(
-        shipments.reduce((sum, s) => sum + (Number(s.shippingCost) || 0), 0) *
-          100,
+        shipments.reduce(
+          (sum, s) => sum + (Number(s.shippingCost) || 0),
+          0,
+        ) * 100,
       ) / 100;
-
     return { total, inTransit, delivered, failed, revenue };
   }, [shipments, pagination.total]);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  const handleShipmentClick = (id: string) => {
+    setSelectedShipmentId((prev) => (prev === id ? null : id));
+  };
 
   return (
     <>
@@ -196,9 +326,48 @@ export default function ShipmentsPage() {
         title="Shipments"
         subtitle={`${stats.total} total · ${stats.inTransit} in transit`}
         actions={
-          <Button variant="primary" size="md">
-            + New Shipment
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* List / Map toggle */}
+            <div className="flex items-center rounded-lg border border-[#1e1e2e] overflow-hidden bg-[#12121a]">
+              <button
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-semibold transition-all",
+                  viewMode === "list"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-400 hover:text-white",
+                )}
+              >
+                List
+              </button>
+              <button
+                onClick={() => setViewMode("map")}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-semibold transition-all flex items-center gap-1",
+                  viewMode === "map"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-400 hover:text-white",
+                )}
+              >
+                Map
+                {mappableShipments.length > 0 && (
+                  <span
+                    className={cn(
+                      "text-[10px] px-1.5 rounded-full leading-tight py-0.5",
+                      viewMode === "map"
+                        ? "bg-white/25 text-white"
+                        : "bg-blue-500/20 text-blue-400",
+                    )}
+                  >
+                    {mappableShipments.length}
+                  </span>
+                )}
+              </button>
+            </div>
+            <Button variant="primary" size="md">
+              + New Shipment
+            </Button>
+          </div>
         }
       />
 
@@ -242,7 +411,7 @@ export default function ShipmentsPage() {
           <div className="flex-1 min-w-80 max-w-96">
             <input
               type="text"
-              placeholder="Search shipments, tracking, recipient..."
+              placeholder="Search shipments, tracking, recipient…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
@@ -254,7 +423,7 @@ export default function ShipmentsPage() {
             />
           </div>
 
-          <div className="flex gap-4 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             {STATUS_FILTERS.map((f) => {
               const count =
                 f.key === "ALL"
@@ -280,12 +449,20 @@ export default function ShipmentsPage() {
         </div>
 
         {/* Delivery Method Tabs */}
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           {DELIVERY_METHODS.map((m) => {
             const count =
               m.key === "ALL"
                 ? shipments.length
                 : shipments.filter((s) => s.deliveryMethod === m.key).length;
+            const iconMap: Record<string, string> = {
+              ALL: "📦",
+              SAME_DAY: "⚡",
+              EXPRESS_SHIPPING: "🚀",
+              STANDARD_SHIPPING: "📬",
+              LOCAL_DELIVERY: "🚗",
+              STORE_PICKUP: "🏪",
+            };
             return (
               <button
                 key={m.key}
@@ -297,7 +474,7 @@ export default function ShipmentsPage() {
                     : "bg-transparent text-gray-400 border-[#1e1e2e] hover:border-[#2a2a3e]",
                 )}
               >
-                <span>{m.icon}</span>
+                <span>{iconMap[m.key]}</span>
                 {m.label}
                 <span className="text-xs opacity-70">({count})</span>
               </button>
@@ -305,403 +482,262 @@ export default function ShipmentsPage() {
           })}
         </div>
 
-        {/* Shipments Table + Detail */}
-        <div
-          className={cn(
-            "grid gap-5",
-            selectedShipment ? "grid-cols-[1fr_400px]" : "grid-cols-1",
-          )}
-        >
-          {/* Shipments Table */}
-          <Card
-            className={cn(
-              "bg-[#12121a] border-[#1e1e2e] overflow-hidden p-0",
-            )}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr>
-                    {[
-                      "Tracking#",
-                      "Shipment#",
-                      "Recipient",
-                      "Status",
-                      "Method",
-                      "Driver/Location",
-                      "Items",
-                      "Cost",
-                      "ETA",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className={cn(
-                          "text-left p-4 text-xs font-semibold text-gray-400",
-                          "uppercase tracking-wider border-b border-[#1e1e2e]",
-                          "bg-[#1a1a2e] sticky top-0 whitespace-nowrap",
-                        )}
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((shipment) => (
-                    <tr
-                      key={shipment.id}
-                      onClick={() =>
-                        setSelectedShipment(
-                          selectedShipment?.id === shipment.id
-                            ? null
-                            : shipment,
-                        )
-                      }
-                      className={cn(
-                        "border-b border-[#1e1e2e] cursor-pointer transition-all",
-                        selectedShipment?.id === shipment.id
-                          ? "bg-amber-500/10"
-                          : "hover:bg-[#1a1a2e]",
-                      )}
-                    >
-                      {/* Tracking Number */}
-                      <td className="p-4 font-mono font-semibold text-blue-400 text-xs whitespace-nowrap">
-                        {shipment.trackingNumber ?? "—"}
-                        {shipment.tags.length > 0 && (
-                          <div className="flex gap-1 mt-1">
-                            {shipment.tags.map((t) => (
-                              <span
-                                key={t}
-                                className={cn(
-                                  "text-[9px] px-1 py-0.5 rounded font-semibold uppercase tracking-tighter",
-                                  t === "priority"
-                                    ? "bg-red-500/20 text-red-400"
-                                    : t === "express"
-                                      ? "bg-amber-500/20 text-amber-400"
-                                      : "bg-blue-500/20 text-blue-400",
-                                )}
-                              >
-                                {t}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </td>
+        {/* Error State */}
+        {error && <ErrorState message={error.message} onRetry={refetch} />}
 
-                      {/* Shipment Number */}
-                      <td className="p-4 font-mono font-medium text-white">
-                        {shipment.shipmentNumber}
-                      </td>
-
-                      {/* Recipient Name */}
-                      <td className="p-4 text-white font-medium max-w-40 truncate">
-                        {shipment.recipientName ?? "—"}
-                      </td>
-
-                      {/* Status */}
-                      <td className="p-4">
-                        <Badge variant={statusVariant(shipment.status)}>
-                          {shipment.status.replace(/_/g, " ")}
-                        </Badge>
-                      </td>
-
-                      {/* Method */}
-                      <td className="p-4 text-gray-400 text-sm whitespace-nowrap">
-                        <span className="mr-1">
-                          {deliveryMethodIcon(shipment.deliveryMethod)}
-                        </span>
-                        {shipment.deliveryMethod.replace(/_/g, " ")}
-                      </td>
-
-                      {/* Driver/Location */}
-                      <td
-                        className={cn(
-                          "p-4 text-xs whitespace-nowrap",
-                          shipment.driver?.name || shipment.location?.name
-                            ? "text-gray-400"
-                            : "text-gray-500 italic",
-                        )}
-                      >
-                        {shipment.driver?.name ??
-                          shipment.location?.name ??
-                          "—"}
-                      </td>
-
-                      {/* Items */}
-                      <td className="p-4 font-mono text-xs text-gray-400 text-center">
-                        {shipment.itemCount}
-                      </td>
-
-                      {/* Cost */}
-                      <td className="p-4 font-mono font-semibold text-white">
-                        {shipment.shippingCost
-                          ? formatCurrency(Number(shipment.shippingCost))
-                          : "—"}
-                      </td>
-
-                      {/* ETA */}
-                      <td
-                        className={cn(
-                          "p-4 font-mono text-xs",
-                          shipment.estimatedArrival &&
-                            new Date(shipment.estimatedArrival) > new Date()
-                            ? "text-blue-400"
-                            : "text-gray-500",
-                        )}
-                      >
-                        {shipment.estimatedArrival
-                          ? formatRelativeTime(shipment.estimatedArrival)
-                          : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={9}
-                        className="p-8 text-center text-gray-500 text-sm"
-                      >
-                        No shipments found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-
-          {/* Shipment Detail Panel */}
-          {selectedShipment && (
-            <Card
-              className={cn(
-                "bg-[#12121a] border-[#1e1e2e] sticky top-24 max-h-[calc(100vh-var(--wl-header-height)-var(--wl-space-12))] overflow-y-auto",
-              )}
-            >
-              <CardContent className="space-y-4 pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-lg font-bold font-mono text-blue-400">
-                      {selectedShipment.trackingNumber ??
-                        selectedShipment.shipmentNumber}
-                    </span>
+        {/* ── MAP VIEW ─────────────────────────────────────── */}
+        {!error && viewMode === "map" && (
+          <>
+            {loading ? (
+              <div className="h-[560px] bg-[#12121a] rounded-xl border border-[#1e1e2e] animate-pulse flex items-center justify-center">
+                <p className="text-sm text-gray-500">Loading map…</p>
+              </div>
+            ) : mappableShipments.length === 0 ? (
+              <Card className="bg-[#12121a] border-[#1e1e2e]">
+                <CardContent className="h-[480px] flex items-center justify-center">
+                  <div className="text-center space-y-2">
+                    <div className="text-3xl">🗺️</div>
+                    <p className="text-sm font-semibold text-gray-400">
+                      No mappable shipments
+                    </p>
+                    <p className="text-xs text-gray-600 max-w-xs">
+                      {filtered.length === 0
+                        ? "No shipments match the current filters."
+                        : `${filtered.length} shipment(s) matched but none have delivery coordinates.`}
+                    </p>
                   </div>
-                  <button
-                    onClick={() => setSelectedShipment(null)}
-                    className="bg-none border-none text-gray-400 cursor-pointer text-lg font-sans hover:text-white transition-colors"
-                  >
-                    ✕
-                  </button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+                <div className="h-[560px]">
+                  <ShipmentsMapView
+                    shipments={mappableShipments}
+                    selectedId={selectedShipmentId}
+                    onShipmentClick={handleShipmentClick}
+                  />
                 </div>
-
-                <Badge
-                  variant={statusVariant(selectedShipment.status)}
-                  className="inline-block"
-                >
-                  {selectedShipment.status.replace(/_/g, " ")}
-                </Badge>
-
-                <div className="flex flex-col gap-4">
-                  {/* Recipient Info */}
-                  <div>
-                    <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
-                      Recipient
-                    </div>
-                    <div className="text-base font-semibold text-white">
-                      {selectedShipment.recipientName ?? "—"}
-                    </div>
-                    {selectedShipment.recipientEmail && (
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {selectedShipment.recipientEmail}
-                      </div>
-                    )}
-                    {selectedShipment.recipientPhone && (
-                      <div className="text-xs text-gray-400 font-mono">
-                        {selectedShipment.recipientPhone}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="h-px bg-[#1e1e2e]" />
-
-                  {/* Delivery Details */}
-                  <div>
-                    <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
-                      Delivery Address
-                    </div>
-                    <div className="text-sm text-gray-400 mb-1 leading-snug">
-                      {selectedShipment.addressLine1}
-                      <br />
-                      {selectedShipment.city}, {selectedShipment.province}{" "}
-                      {selectedShipment.postalCode}
-                    </div>
-                    <div className="flex items-center gap-1 text-sm mt-2 text-gray-300">
-                      <span>
-                        {deliveryMethodIcon(selectedShipment.deliveryMethod)}
-                      </span>
-                      {selectedShipment.deliveryMethod.replace(/_/g, " ")}
-                    </div>
-                    {(selectedShipment.driver?.name ||
-                      selectedShipment.location?.name) && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        {selectedShipment.driver?.name &&
-                          `Driver: ${selectedShipment.driver.name}`}
-                        {selectedShipment.location?.name &&
-                          `Location: ${selectedShipment.location.name}`}
-                      </div>
-                    )}
-                    {selectedShipment.estimatedArrival && (
-                      <div className="text-xs text-gray-400 mt-2">
-                        ETA:{" "}
-                        {formatRelativeTime(selectedShipment.estimatedArrival)}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="h-px bg-[#1e1e2e]" />
-
-                  {/* Status Timeline */}
-                  <div>
-                    <div className="text-xs font-semibold text-gray-400 uppercase mb-3">
-                      Progress
-                    </div>
-                    <div className="flex flex-col gap-0">
-                      {statusProgression.map((step, idx) => {
-                        const isCompleted =
-                          statusProgression.indexOf(
-                            selectedShipment.status,
-                          ) >= idx;
-                        const isCurrent = selectedShipment.status === step;
-                        return (
-                          <div key={step} className="flex gap-2">
-                            <div className="flex flex-col items-center">
-                              <div
-                                className={cn(
-                                  "w-3 h-3 rounded-full flex-shrink-0",
-                                  isCompleted
-                                    ? isCurrent
-                                      ? "bg-blue-500"
-                                      : "bg-emerald-400"
-                                    : "bg-[#1e1e2e]",
-                                )}
-                              />
-                              {idx < statusProgression.length - 1 && (
-                                <div
-                                  className={cn(
-                                    "w-0.5 h-6",
-                                    isCompleted
-                                      ? "bg-emerald-400"
-                                      : "bg-[#1e1e2e]",
-                                  )}
-                                />
-                              )}
-                            </div>
-                            <div
-                              className={cn(
-                                "text-xs py-0.5",
-                                isCompleted ? "text-white" : "text-gray-500",
-                                isCurrent ? "font-semibold" : "font-medium",
-                              )}
-                            >
-                              {step.replace(/_/g, " ")}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-[#1e1e2e]" />
-
-                  {/* Shipment Info */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <div className="text-xs text-gray-500">Items</div>
-                      <div className="text-base font-bold font-mono text-white">
-                        {selectedShipment.itemCount}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Weight</div>
-                      <div className="text-base font-bold font-mono text-gray-400">
-                        {selectedShipment.weight
-                          ? `${selectedShipment.weight} kg`
-                          : "—"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Shipping Cost</div>
-                      <div className="text-base font-bold font-mono text-emerald-400">
-                        {selectedShipment.shippingCost
-                          ? formatCurrency(Number(selectedShipment.shippingCost))
-                          : "—"}
-                      </div>
-                    </div>
-                    {selectedShipment.codAmount && (
-                      <div className="col-span-3">
-                        <div className="text-xs text-gray-500">COD Amount</div>
-                        <div className="text-base font-bold font-mono text-amber-400">
-                          {formatCurrency(Number(selectedShipment.codAmount))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Notes */}
-                  {selectedShipment.notes && (
-                    <>
-                      <div className="h-px bg-[#1e1e2e]" />
+                {/* Map sidebar */}
+                <div className="h-[560px] overflow-y-auto space-y-3">
+                  {selectedShipmentId ? (
+                    (() => {
+                      const s = mappableShipments.find(
+                        (x) => x.id === selectedShipmentId,
+                      );
+                      if (!s) return null;
+                      return (
+                        <MapShipmentCard
+                          shipment={s}
+                          onClose={() => setSelectedShipmentId(null)}
+                          onView={() => router.push(`/shipments/${s.id}`)}
+                        />
+                      );
+                    })()
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
                       <div>
-                        <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
-                          Notes
-                        </div>
-                        <div className="text-xs text-gray-400 italic">
-                          {selectedShipment.notes}
-                        </div>
+                        <p className="text-sm font-semibold text-gray-400 mb-1">
+                          {mappableShipments.length} shipments on map
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Click a marker to see details
+                        </p>
                       </div>
-                    </>
+                      <MapLegend />
+                    </div>
                   )}
-
-                  {/* Actions */}
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button variant="primary" size="sm" className="flex-1">
-                      Assign Driver
-                    </Button>
-                    <Button variant="secondary" size="sm" className="flex-1">
-                      Edit Details
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      View Tracking
-                    </Button>
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              </div>
+            )}
+          </>
+        )}
 
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-4">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={pagination.page <= 1}
-              onClick={() => setPage(pagination.page - 1)}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-gray-400 self-center">
-              Page {pagination.page} of {pagination.totalPages}
-            </span>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={pagination.page >= pagination.totalPages}
-              onClick={() => setPage(pagination.page + 1)}
-            >
-              Next
-            </Button>
-          </div>
+        {/* ── LIST VIEW ────────────────────────────────────── */}
+        {!error && viewMode === "list" && (
+          <>
+            {loading ? (
+              <ShipmentsTableSkeleton />
+            ) : (
+              <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr>
+                        {[
+                          "Tracking#",
+                          "Shipment#",
+                          "Recipient",
+                          "Status",
+                          "Method",
+                          "Driver/Location",
+                          "Items",
+                          "Cost",
+                          "ETA",
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className={cn(
+                              "text-left p-4 text-xs font-semibold text-gray-400",
+                              "uppercase tracking-wider border-b border-[#1e1e2e]",
+                              "bg-[#1a1a2e] sticky top-0 whitespace-nowrap",
+                            )}
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((shipment) => (
+                        <tr
+                          key={shipment.id}
+                          onClick={() =>
+                            router.push(`/shipments/${shipment.id}`)
+                          }
+                          className="border-b border-[#1e1e2e] cursor-pointer transition-all hover:bg-[#1a1a2e]"
+                        >
+                          {/* Tracking Number */}
+                          <td className="p-4 font-mono font-semibold text-blue-400 text-xs whitespace-nowrap">
+                            {shipment.trackingNumber ?? "—"}
+                            {shipment.tags.length > 0 && (
+                              <div className="flex gap-1 mt-1">
+                                {shipment.tags.map((t) => (
+                                  <span
+                                    key={t}
+                                    className={cn(
+                                      "text-[9px] px-1 py-0.5 rounded font-semibold uppercase tracking-tighter",
+                                      t === "priority"
+                                        ? "bg-red-500/20 text-red-400"
+                                        : t === "express"
+                                          ? "bg-amber-500/20 text-amber-400"
+                                          : "bg-blue-500/20 text-blue-400",
+                                    )}
+                                  >
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="p-4 font-mono font-medium text-white">
+                            {shipment.shipmentNumber}
+                          </td>
+
+                          <td className="p-4 text-white font-medium max-w-40 truncate">
+                            {shipment.recipientName ?? "—"}
+                          </td>
+
+                          <td className="p-4">
+                            <Badge variant={statusVariant(shipment.status)}>
+                              {shipment.status.replace(/_/g, " ")}
+                            </Badge>
+                          </td>
+
+                          <td className="p-4 text-gray-400 text-sm whitespace-nowrap">
+                            <span className="mr-1">
+                              {deliveryMethodIcon(shipment.deliveryMethod)}
+                            </span>
+                            {shipment.deliveryMethod.replace(/_/g, " ")}
+                          </td>
+
+                          <td
+                            className={cn(
+                              "p-4 text-xs whitespace-nowrap",
+                              shipment.driver?.name || shipment.location?.name
+                                ? "text-gray-400"
+                                : "text-gray-500 italic",
+                            )}
+                          >
+                            {shipment.driver?.name ??
+                              shipment.location?.name ??
+                              "—"}
+                          </td>
+
+                          <td className="p-4 font-mono text-xs text-gray-400 text-center">
+                            {shipment.itemCount}
+                          </td>
+
+                          <td className="p-4 font-mono font-semibold text-white">
+                            {shipment.shippingCost
+                              ? formatCurrency(Number(shipment.shippingCost))
+                              : "—"}
+                          </td>
+
+                          <td
+                            className={cn(
+                              "p-4 font-mono text-xs",
+                              shipment.estimatedArrival &&
+                                new Date(shipment.estimatedArrival) >
+                                  new Date()
+                                ? "text-blue-400"
+                                : "text-gray-500",
+                            )}
+                          >
+                            {shipment.estimatedArrival
+                              ? formatRelativeTime(shipment.estimatedArrival)
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                      {filtered.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={9}
+                            className="p-12 text-center text-gray-500 text-sm"
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <span className="text-2xl">📦</span>
+                              <span>No shipments found</span>
+                              {(statusFilter !== "ALL" ||
+                                methodFilter !== "ALL" ||
+                                search) && (
+                                <button
+                                  onClick={() => {
+                                    setStatusFilter("ALL");
+                                    setMethodFilter("ALL");
+                                    setSearch("");
+                                  }}
+                                  className="text-xs text-blue-400 hover:underline mt-1"
+                                >
+                                  Clear filters
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={pagination.page <= 1}
+                  onClick={() => setPage(pagination.page - 1)}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-400 self-center">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => setPage(pagination.page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </>
