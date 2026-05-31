@@ -42,6 +42,13 @@ interface DriverOption {
   isActive?: boolean;
 }
 
+interface ApiDriver {
+  id: string;
+  name: string;
+  status: string;
+  vehicleType: string;
+}
+
 type StepType = 'stops' | 'constraints' | 'optimize' | 'review' | 'dispatch';
 
 const STEPS: { id: StepType; label: string; description: string }[] = [
@@ -89,6 +96,9 @@ export default function RoutePlanningPage() {
   const { items: drivers } = useApiList<DriverOption>('/api/v4/drivers', { limit: 100 });
   const activeDrivers = drivers.filter((d) => d.isActive !== false);
 
+  // Real drivers from API
+  const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
+
   const currentStepIdx = STEPS.findIndex((s) => s.id === state.currentStep);
 
   // Build map data from optimized result's stop sequence
@@ -127,6 +137,7 @@ export default function RoutePlanningPage() {
     setSaveError(null);
     try {
       const result = await saveRoute();
+      // Navigate to the new route's detail page
       window.location.href = result?.id ? `/routes/${result.id}` : '/routes';
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save route');
@@ -536,9 +547,9 @@ export default function RoutePlanningPage() {
                       )}
                     >
                       <option value="">Any driver</option>
-                      {activeDrivers.map((d) => (
+                      {drivers.map((d) => (
                         <option key={d.id} value={d.id}>
-                          {d.name}{d.vehicleType ? ` (${d.vehicleType})` : ''}
+                          {d.name} ({d.vehicleType})
                         </option>
                       ))}
                     </select>
@@ -610,11 +621,13 @@ export default function RoutePlanningPage() {
                       )}
                     >
                       <option value="">Select a driver...</option>
-                      {activeDrivers.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name}{d.vehicleType ? ` (${d.vehicleType})` : ''}
-                        </option>
-                      ))}
+                      {drivers
+                        .filter((d) => d.status === 'AVAILABLE' || d.status === 'OFFLINE')
+                        .map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} ({d.vehicleType})
+                          </option>
+                        ))}
                     </select>
                   </div>
 
