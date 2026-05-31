@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -19,75 +21,78 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Invoice {
+interface BillingInvoice {
   id: string;
   date: string;
   period: string;
   amount: number;
-  status: 'paid' | 'pending' | 'overdue';
+  currency: string;
+  status: 'paid' | 'pending' | 'failed' | 'completed';
   downloadUrl: string;
 }
 
+interface UsageMetric {
+  name: string;
+  current: number;
+  limit: number;
+  percentage: number;
+  unit: string;
+}
+
+interface BillingAddress {
+  fullName?: string;
+  company?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+}
+
 interface BillingData {
-  invoices: Invoice[];
-  usageMetrics: Array<{
-    name: string;
-    current: number;
-    limit: number;
-    percentage: number;
-    unit: string;
-  }>;
   plan: string;
+  planTier: string;
   monthlyPrice: number;
   renewalDate: string;
+  billingPeriodStart: string;
+  billingPeriodEnd: string;
+  usageMetrics: UsageMetric[];
+  billingAddress: BillingAddress | null;
+  invoices: BillingInvoice[];
 }
 
 export default function BillingPage() {
-  const { data: billingData, loading, error, refetch } = useApiQuery<BillingData>('/api/v4/billing');
+  const { data: billing, loading, error, refetch } = useApiQuery<BillingData>('/api/v4/billing');
+
+  const [addressForm, setAddressForm] = useState<BillingAddress | null>(null);
+  const [savingAddress, setSavingAddress] = useState(false);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const mockInvoices: Invoice[] = billingData?.invoices ?? [
-  {
-    id: "inv-2026-03",
-    date: "2026-03-01",
-    period: "March 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-03.pdf",
-  },
-  {
-    id: "inv-2026-02",
-    date: "2026-02-01",
-    period: "February 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-02.pdf",
-  },
-  {
-    id: "inv-2026-01",
-    date: "2026-01-01",
-    period: "January 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-01.pdf",
-  },
-  {
-    id: "inv-2025-12",
-    date: "2025-12-01",
-    period: "December 2025",
-    amount: 399.99,
-    status: "paid",
-    downloadUrl: "/invoices/2025-12.pdf",
-  },
-];
+  const addr = addressForm ?? billing?.billingAddress ?? {};
+  const invoices = billing?.invoices ?? [];
+  const usageMetrics = billing?.usageMetrics ?? [];
 
-  const usageMetrics = billingData?.usageMetrics ?? [
-    { name: "API Requests", current: 450000, limit: 500000, percentage: 90, unit: "requests" },
-    { name: "Webhooks", current: 1200, limit: 2000, percentage: 60, unit: "calls" },
-    { name: "Storage", current: 4.5, limit: 100, percentage: 4.5, unit: "GB" },
-  ];
+  const handleAddressSave = async () => {
+    setSavingAddress(true);
+    try {
+      await api.put('/api/v4/billing/address', addr);
+      setAddressForm(null);
+      refetch();
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  const invoiceStatusVariant = (status: string) => {
+    if (status === 'paid' || status === 'completed') return 'success';
+    if (status === 'pending') return 'warning';
+    return 'danger';
+  };
+
+  const invoiceStatusLabel = (status: string) =>
+    status === 'completed' ? 'Paid' : status.charAt(0).toUpperCase() + status.slice(1);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -97,12 +102,8 @@ export default function BillingPage() {
       />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Back Button */}
         <Link href="/settings">
-          <Button
-            variant="ghost"
-            className="mb-8 text-gray-400 hover:text-white"
-          >
+          <Button variant="ghost" className="mb-8 text-gray-400 hover:text-white">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
           </Button>
@@ -113,39 +114,29 @@ export default function BillingPage() {
           <CardContent className="pt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">
-                  Current Plan
-                </p>
-                <h3 className="text-3xl font-bold text-white mt-2">
-                  Pro
-                </h3>
-                <p className="text-gray-400 mt-2">
-                  Professional tier for growing businesses
-                </p>
+                <p className="text-sm font-medium text-gray-500 uppercase">Current Plan</p>
+                <h3 className="text-3xl font-bold text-white mt-2">{billing?.plan ?? '—'}</h3>
+                <p className="text-gray-400 mt-2">Professional logistics platform</p>
               </div>
-
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">
-                  Monthly Cost
-                </p>
+                <p className="text-sm font-medium text-gray-500 uppercase">Monthly Cost</p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  $499.99
+                  {billing?.monthlyPrice != null
+                    ? billing.monthlyPrice === 0
+                      ? 'Free'
+                      : `$${billing.monthlyPrice.toFixed(2)}`
+                    : '—'}
                 </h3>
-                <p className="text-gray-400 mt-2">
-                  Billed on 1st of each month
-                </p>
+                <p className="text-gray-400 mt-2">Billed on 1st of each month</p>
               </div>
-
               <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">
-                  Renewal Date
-                </p>
+                <p className="text-sm font-medium text-gray-500 uppercase">Next Renewal</p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  April 1
+                  {billing?.renewalDate
+                    ? new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : '—'}
                 </h3>
-                <p className="text-gray-400 mt-2">
-                  Next billing cycle
-                </p>
+                <p className="text-gray-400 mt-2">Next billing cycle</p>
               </div>
             </div>
 
@@ -154,16 +145,10 @@ export default function BillingPage() {
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
               </Button>
-              <Button
-                variant="secondary"
-                className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
-              >
+              <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]">
                 Downgrade Plan
               </Button>
-              <Button
-                variant="ghost"
-                className="text-red-400"
-              >
+              <Button variant="ghost" className="text-red-400">
                 Cancel Subscription
               </Button>
             </div>
@@ -171,38 +156,38 @@ export default function BillingPage() {
         </Card>
 
         {/* Usage Metrics */}
-        <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <TrendingUp className="w-5 h-5" />
-              Usage This Month
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {usageMetrics.map((metric) => (
-              <div key={metric.name}>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-white">
-                    {metric.name}
-                  </p>
-                  <span className="text-sm text-gray-500">
-                    {metric.current.toLocaleString()} / {metric.limit.toLocaleString()}{" "}
-                    {metric.unit}
-                  </span>
+        {usageMetrics.length > 0 && (
+          <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <TrendingUp className="w-5 h-5" />
+                Usage This Month
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {usageMetrics.map((metric) => (
+                <div key={metric.name}>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium text-white">{metric.name}</p>
+                    <span className="text-sm text-gray-500">
+                      {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                    <div
+                      className={cn(
+                        'h-2 rounded-full transition-all',
+                        metric.percentage >= 90 ? 'bg-red-500' : metric.percentage >= 70 ? 'bg-amber-500' : 'bg-blue-500',
+                      )}
+                      style={{ width: `${metric.percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{metric.percentage.toFixed(1)}% of limit used</p>
                 </div>
-                <div className="w-full bg-[#1a1a2e] rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all"
-                    style={{ width: `${metric.percentage}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {metric.percentage}% of limit used
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Payment Method */}
         <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
@@ -213,45 +198,13 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-[#1a1a2e] rounded-lg p-6 mb-6 border border-[#1e1e2e]">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-8 bg-gradient-to-br from-[#1434CB] to-[#0066FF] rounded flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">VISA</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-white">
-                      Visa ending in 4242
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Expires 12/27
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="success" className="bg-emerald-500">
-                  Active
-                </Badge>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  className="border-[#1e1e2e] text-white hover:bg-[#0a0a0f]"
-                >
-                  Update
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="text-red-400"
-                >
-                  Remove
-                </Button>
-              </div>
+            <div className="text-sm text-gray-400 mb-4">
+              Payment method management requires Stripe integration.{' '}
+              <Link href="/settings/payments" className="text-blue-400 hover:underline">
+                Configure payment gateways →
+              </Link>
             </div>
-
-            <Button
-              variant="secondary"
-              className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
-            >
+            <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]">
               Add Payment Method
             </Button>
           </CardContent>
@@ -266,74 +219,76 @@ export default function BillingPage() {
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Full Name
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">Full Name</label>
                   <input
                     type="text"
-                    defaultValue="Sarah Johnson"
+                    value={addr.fullName ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,fullName: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Full name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Company
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">Company</label>
                   <input
                     type="text"
-                    defaultValue="Witylogix Inc."
+                    value={addr.company ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,company: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Company name"
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Address
-                </label>
+                <label className="block text-sm font-medium text-white mb-2">Address</label>
                 <input
                   type="text"
-                  defaultValue="123 Logistics Boulevard, Suite 456"
+                  value={addr.address ?? ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,address: e.target.value })}
                   className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Street address"
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    City
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">City</label>
                   <input
                     type="text"
-                    defaultValue="San Francisco"
+                    value={addr.city ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,city: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="City"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    State
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">State</label>
                   <input
                     type="text"
-                    defaultValue="CA"
+                    value={addr.state ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,state: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="State"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Postal Code
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">Postal Code</label>
                   <input
                     type="text"
-                    defaultValue="94105"
+                    value={addr.postalCode ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,postalCode: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Postal code"
                   />
                 </div>
               </div>
             </div>
-
-            <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
-              Update Billing Address
+            <Button
+              variant="primary"
+              className="bg-blue-500 hover:bg-blue-600"
+              onClick={handleAddressSave}
+              disabled={savingAddress}
+            >
+              {savingAddress ? 'Saving…' : 'Update Billing Address'}
             </Button>
           </CardContent>
         </Card>
@@ -347,69 +302,51 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {mockInvoices.map((invoice) => (
-                <div
-                  key={invoice.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
-                >
-                  <div className="flex-1">
-                    <p className="font-medium text-white">
-                      {invoice.period}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(invoice.date).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="font-medium text-white">
-                        ${invoice.amount.toFixed(2)}
+            {invoices.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">No invoices yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {invoices.map((invoice) => (
+                  <div
+                    key={invoice.id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-white">{invoice.period}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(invoice.date).toLocaleDateString()}
                       </p>
-                      <Badge
-                        variant={
-                          invoice.status === "paid"
-                            ? "success"
-                            : invoice.status === "pending"
-                              ? "warning"
-                              : "danger"
-                        }
-                        className={
-                          invoice.status === "paid"
-                            ? "bg-emerald-500 text-white"
-                            : ""
-                        }
-                      >
-                        {invoice.status.charAt(0).toUpperCase() +
-                          invoice.status.slice(1)}
-                      </Badge>
                     </div>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-blue-400 hover:bg-[#1a1a2e]"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Download</span>
-                    </Button>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p className="font-medium text-white">${invoice.amount.toFixed(2)}</p>
+                        <Badge variant={invoiceStatusVariant(invoice.status)}>
+                          {invoiceStatusLabel(invoice.status)}
+                        </Badge>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-blue-400 hover:bg-[#1a1a2e]">
+                        <Download className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Download</span>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Auto-renewal Notice */}
-        <div className="mt-8 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 flex gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-gray-400">
-            Your subscription will automatically renew on{" "}
-            <strong>April 1, 2026</strong> at $499.99. You can cancel anytime
-            before the renewal date.
+        {billing?.renewalDate && (
+          <div className="mt-8 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 flex gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-gray-400">
+              Your subscription will automatically renew on{' '}
+              <strong>{new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>.
+              You can cancel anytime before the renewal date.
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

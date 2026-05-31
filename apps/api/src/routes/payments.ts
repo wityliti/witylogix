@@ -31,6 +31,113 @@ export default async function paymentRoutes(
   fastify.addHook("preHandler", requireAuth);
   fastify.addHook("preHandler", tenantContext);
 
+  // GET /gateways — List payment methods configured as gateway configs
+  fastify.get("/gateways", async (request: any, reply: FastifyReply) => {
+    const methods = await request.tenantDb.paymentMethod.findMany({
+      where: { shopId: request.shopId, isActive: true },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        type: true,
+        isDefault: true,
+        displayName: true,
+        gatewayId: true,
+        lastDigits: true,
+        expiryDate: true,
+        metadata: true,
+        createdAt: true,
+      },
+    });
+
+    // COD is always available as a gateway option
+    const hasCod = methods.some((m: any) => m.type === "cod");
+    const gateways = [
+      ...methods.map((m: any) => ({
+        id: m.id,
+        name: m.displayName,
+        code: m.type,
+        status: "connected" as const,
+        isDefault: m.isDefault,
+        isProduction: true,
+        icon: getGatewayIcon(m.type),
+        supportedMethods: getSupportedMethods(m.type),
+        transactionFeePercent: getGatewayFee(m.type).percent,
+        fixedFeeInCents: getGatewayFee(m.type).fixed,
+        healthScore: 100,
+        config: m.lastDigits
+          ? { lastDigits: m.lastDigits, expiryDate: m.expiryDate ?? undefined }
+          : undefined,
+      })),
+      ...(!hasCod
+        ? [
+            {
+              id: "cod-default",
+              name: "Cash on Delivery",
+              code: "cod" as const,
+              status: "connected" as const,
+              isDefault: false,
+              isProduction: true,
+              icon: "💰",
+              supportedMethods: ["cash"],
+              transactionFeePercent: 0,
+              fixedFeeInCents: 0,
+              healthScore: 100,
+              config: undefined,
+            },
+          ]
+        : []),
+    ];
+
+    return reply.send({ data: gateways });
+  });
+
+  // PATCH /gateways/:id/default — Set a payment method as default gateway
+  fastify.patch("/gateways/:id/default", async (request: any, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const shopId = request.shopId;
+
+    const existing = await request.tenantDb.paymentMethod.findFirst({
+      where: { id, shopId },
+    });
+    if (!existing) {
+      return reply.code(404).send({ error: "Payment method not found" });
+    }
+
+    // Unset all defaults, set the new one
+    await request.tenantDb.$transaction([
+      request.tenantDb.paymentMethod.updateMany({
+        where: { shopId },
+        data: { isDefault: false },
+      }),
+      request.tenantDb.paymentMethod.update({
+        where: { id },
+        data: { isDefault: true },
+      }),
+    ]);
+
+    return reply.send({ data: { id, isDefault: true } });
+  });
+
+  // DELETE /gateways/:id — Remove a payment method / gateway
+  fastify.delete("/gateways/:id", async (request: any, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const shopId = request.shopId;
+
+    const existing = await request.tenantDb.paymentMethod.findFirst({
+      where: { id, shopId },
+    });
+    if (!existing) {
+      return reply.code(404).send({ error: "Payment method not found" });
+    }
+
+    await request.tenantDb.paymentMethod.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    return reply.send({ data: { id, deleted: true } });
+  });
+
   // GET / — List payments (paginated) with filters
   fastify.get<{ Querystring: PaymentQueryParams }>(
     "/",
@@ -591,4 +698,46 @@ export default async function paymentRoutes(
       });
     },
   );
+}
+
+function getGatewayIcon(type: string): string {
+  const icons: Record<string, string> = {
+    credit_card: "💳",
+    debit_card: "💳",
+    cod: "💰",
+    bank_transfer: "🏦",
+    wallet: "👛",
+    stripe: "💳",
+    paypal: "🅿️",
+    square: "◻️",
+  };
+  return icons[type] ?? "💳";
+}
+
+function getSupportedMethods(type: string): string[] {
+  const methods: Record<string, string[]> = {
+    credit_card: ["card", "apple_pay", "google_pay"],
+    debit_card: ["card"],
+    cod: ["cash"],
+    bank_transfer: ["bank_transfer"],
+    wallet: ["wallet"],
+    stripe: ["card", "apple_pay", "google_pay", "bank_transfer"],
+    paypal: ["paypal", "card"],
+    square: ["card", "apple_pay", "google_pay"],
+  };
+  return methods[type] ?? ["card"];
+}
+
+function getGatewayFee(type: string): { percent: number; fixed: number } {
+  const fees: Record<string, { percent: number; fixed: number }> = {
+    credit_card: { percent: 2.9, fixed: 30 },
+    debit_card: { percent: 2.6, fixed: 0 },
+    cod: { percent: 0, fixed: 0 },
+    bank_transfer: { percent: 0.8, fixed: 25 },
+    wallet: { percent: 1.5, fixed: 0 },
+    stripe: { percent: 2.9, fixed: 30 },
+    paypal: { percent: 2.9, fixed: 30 },
+    square: { percent: 2.6, fixed: 0 },
+  };
+  return fees[type] ?? { percent: 2.9, fixed: 30 };
 }

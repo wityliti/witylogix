@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -36,7 +37,7 @@ import {
 interface GatewayConfig {
   id: string;
   name: string;
-  code: 'stripe' | 'paypal' | 'square' | 'cod';
+  code: string;
   status: 'connected' | 'disconnected';
   isDefault: boolean;
   isProduction: boolean;
@@ -49,140 +50,75 @@ interface GatewayConfig {
     accessToken?: string;
     locationId?: string;
     publicKey?: string;
+    lastDigits?: string;
+    expiryDate?: string;
   };
   healthScore?: number;
   monthlyVolume?: number;
 }
 
 export default function PaymentSettingsPage() {
-  const { items: gateways, loading, error, refetch } = useApiList<GatewayConfig>('/api/v4/payments/gateways');
-  const { execute: setDefault } = useApiMutation('PATCH', '/api/v4/payments/gateways/:id/default');
-  const { execute: disconnect } = useApiMutation('DELETE', '/api/v4/payments/gateways/:id');
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const mockGatewayConfigs: GatewayConfig[] = gateways.length > 0 ? gateways : [
-    {
-    id: 'stripe-prod',
-    name: 'Stripe',
-    code: 'stripe',
-    status: 'connected',
-    isDefault: true,
-    isProduction: true,
-    icon: '💳',
-    supportedMethods: ['card', 'apple_pay', 'google_pay', 'bank_transfer'],
-    transactionFeePercent: 2.9,
-    fixedFeeInCents: 30,
-    config: {
-      publicKey: 'pk_live_abc123***',
-    },
-    healthScore: 100,
-    monthlyVolume: 25000000,
-  },
-  {
-    id: 'paypal-prod',
-    name: 'PayPal',
-    code: 'paypal',
-    status: 'connected',
-    isDefault: false,
-    isProduction: true,
-    icon: '🅿️',
-    supportedMethods: ['paypal', 'card'],
-    transactionFeePercent: 2.9,
-    fixedFeeInCents: 30,
-    config: {
-      clientId: 'AXyz123***',
-    },
-    healthScore: 98,
-    monthlyVolume: 12000000,
-  },
-  {
-    id: 'square-prod',
-    name: 'Square',
-    code: 'square',
-    status: 'connected',
-    isDefault: false,
-    isProduction: true,
-    icon: '◻️',
-    supportedMethods: ['card', 'apple_pay', 'google_pay'],
-    transactionFeePercent: 2.6,
-    fixedFeeInCents: 0,
-    config: {
-      accessToken: 'sq_live_***',
-      locationId: 'L123ABC***',
-    },
-    healthScore: 100,
-    monthlyVolume: 8500000,
-  },
-  {
-    id: 'cod-live',
-    name: 'Cash on Delivery',
-    code: 'cod',
-    status: 'connected',
-    isDefault: false,
-    isProduction: true,
-    icon: '💰',
-    supportedMethods: ['cash'],
-    transactionFeePercent: 0,
-    fixedFeeInCents: 0,
-    healthScore: 100,
-    monthlyVolume: 5000000,
-  },
-];
-
-  const transactionFeesComparison = [
-    { gateway: 'Stripe', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
-    { gateway: 'PayPal', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
-    { gateway: 'Square', percent: 2.6, fixed: 0, for100: 260, for1000: 2600 },
-  ];
+  const { data, loading, error, refetch } = useApiQuery<{ data: GatewayConfig[] }>('/api/v4/payments/gateways');
 
   const [activeTab, setActiveTab] = useState('overview');
   const [isTestPaymentLoading, setIsTestPaymentLoading] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
-  const handleSetDefault = async (gatewayCode: string): Promise<void> => {
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const gateways: GatewayConfig[] = data?.data ?? [];
+
+  const handleSetDefault = async (id: string): Promise<void> => {
     try {
-      await setDefault({ code: gatewayCode });
+      await api.patch(`/api/v4/payments/gateways/${id}/default`, {});
       refetch();
-    } catch (error) {
-      console.error('Failed to set default gateway:', error);
+    } catch {
+      // Error surfaced by refetch
     }
   };
 
   const handleDisconnect = async (id: string): Promise<void> => {
     try {
-      await disconnect({ id });
+      await api.delete(`/api/v4/payments/gateways/${id}`);
       refetch();
-    } catch (error) {
-      console.error('Failed to disconnect gateway:', error);
+    } catch {
+      // Error surfaced by refetch
     }
   };
 
-  const handleTestPayment = async (gatewayCode: string): Promise<void> => {
+  const handleTestPayment = async (code: string): Promise<void> => {
     setIsTestPaymentLoading(true);
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert(`Test payment initiated with ${gatewayCode.toUpperCase()}`);
-    } catch (error) {
-      console.error('Test payment failed:', error);
-      alert('Test payment failed');
+      await api.post('/api/v4/payments', {
+        paymentType: 'TEST',
+        paymentMethod: code.toUpperCase(),
+        amount: 100,
+        currency: 'USD',
+        metadata: { test: true },
+      });
     } finally {
       setIsTestPaymentLoading(false);
     }
   };
 
   const toggleSecretVisibility = (id: string): void => {
-    setShowSecrets((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setShowSecrets((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const copyToClipboard = (text: string): void => {
     navigator.clipboard.writeText(text);
   };
+
+  const transactionFeesComparison = gateways
+    .filter((g) => g.transactionFeePercent > 0 || g.fixedFeeInCents > 0)
+    .map((g) => ({
+      gateway: g.name,
+      percent: g.transactionFeePercent,
+      fixed: g.fixedFeeInCents,
+      for100: Math.round(100 * g.transactionFeePercent + g.fixedFeeInCents),
+      for1000: Math.round(1000 * g.transactionFeePercent + g.fixedFeeInCents),
+    }));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
@@ -204,161 +140,136 @@ export default function PaymentSettingsPage() {
           className="mb-8"
         />
 
-          {activeTab === 'overview' && <div className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              {mockGatewayConfigs.map((gateway) => (
-                <Card
-                  key={gateway.id}
-                  className={cn(
-                    'border-2 transition-all bg-[#12121a]',
-                    gateway.isDefault
-                      ? 'border-blue-500 bg-blue-500/5'
-                      : 'border-[#1e1e2e]',
-                  )}
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-4xl">{gateway.icon}</span>
-                        <div>
-                          <CardTitle>{gateway.name}</CardTitle>
-                          <CardDescription className="text-xs mt-1">
-                            {gateway.code.toUpperCase()}
-                          </CardDescription>
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            {gateways.length === 0 ? (
+              <Card className="border-dashed border-2 border-[#1e1e2e] bg-[#12121a]">
+                <CardContent className="flex items-center justify-center py-16">
+                  <div className="text-center">
+                    <DollarSign className="w-10 h-10 mx-auto text-gray-600 mb-4" />
+                    <p className="text-sm font-medium text-white mb-2">No payment gateways configured</p>
+                    <p className="text-xs text-gray-400 mb-4">
+                      Cash on Delivery is always available. Add a payment method to unlock card processing.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                {gateways.map((gateway) => (
+                  <Card
+                    key={gateway.id}
+                    className={cn(
+                      'border-2 transition-all bg-[#12121a]',
+                      gateway.isDefault ? 'border-blue-500 bg-blue-500/5' : 'border-[#1e1e2e]',
+                    )}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-4xl">{gateway.icon}</span>
+                          <div>
+                            <CardTitle>{gateway.name}</CardTitle>
+                            <CardDescription className="text-xs mt-1">{gateway.code.toUpperCase()}</CardDescription>
+                          </div>
                         </div>
-                      </div>
-                      {gateway.isDefault && (
-                        <Badge
-                          variant="primary"
-                          className="bg-blue-500 text-white"
-                        >
-                          DEFAULT
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">
-                        Status
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {gateway.status === 'connected' ? (
-                          <>
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                            <span className="text-sm font-medium text-green-600">
-                              Connected
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="w-4 h-4 text-red-500" />
-                            <span className="text-sm font-medium text-red-600">
-                              Disconnected
-                            </span>
-                          </>
+                        {gateway.isDefault && (
+                          <Badge variant="primary" className="bg-blue-500 text-white">DEFAULT</Badge>
                         )}
                       </div>
-                    </div>
+                    </CardHeader>
 
-                    <div>
-                      <span className="text-sm text-gray-400 block mb-2">
-                        Supported Methods
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {gateway.supportedMethods.map((method) => (
-                          <Badge
-                            key={method}
-                            variant="default"
-                            className="text-xs capitalize bg-[#1a1a2e]"
-                          >
-                            {method.replace('_', ' ')}
-                          </Badge>
-                        ))}
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">Status</span>
+                        <div className="flex items-center gap-2">
+                          {gateway.status === 'connected' ? (
+                            <>
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                              <span className="text-sm font-medium text-green-600">Connected</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="w-4 h-4 text-red-500" />
+                              <span className="text-sm font-medium text-red-600">Disconnected</span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-sm text-gray-400 block mb-2">Supported Methods</span>
+                        <div className="flex flex-wrap gap-1">
+                          {gateway.supportedMethods.map((method) => (
+                            <Badge key={method} variant="default" className="text-xs capitalize bg-[#1a1a2e]">
+                              {method.replace('_', ' ')}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
                       {gateway.healthScore !== undefined && (
-                        <div className="bg-[#1a1a2e] rounded-lg p-3">
-                          <span className="text-xs text-gray-400">
-                            Health Score
-                          </span>
-                          <p className="text-lg font-semibold text-blue-500 mt-1">
-                            {gateway.healthScore}%
-                          </p>
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="bg-[#1a1a2e] rounded-lg p-3">
+                            <span className="text-xs text-gray-400">Health Score</span>
+                            <p className="text-lg font-semibold text-blue-500 mt-1">{gateway.healthScore}%</p>
+                          </div>
                         </div>
                       )}
+                    </CardContent>
 
-                      {gateway.monthlyVolume !== undefined && (
-                        <div className="bg-[#1a1a2e] rounded-lg p-3">
-                          <span className="text-xs text-gray-400">
-                            Monthly Volume
-                          </span>
-                          <p className="text-lg font-semibold text-blue-500 mt-1">
-                            ${(gateway.monthlyVolume / 100000).toFixed(0)}K
-                          </p>
-                        </div>
+                    <CardFooter className="flex gap-2">
+                      {gateway.status === 'connected' && !gateway.isDefault && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleSetDefault(gateway.id)}
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Set as Default
+                        </Button>
                       )}
-                    </div>
-                  </CardContent>
 
-                  <CardFooter className="flex gap-2">
-                    {gateway.status === 'connected' && !gateway.isDefault && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleSetDefault(gateway.code)}
-                      >
-                        <Zap className="w-4 h-4 mr-2" />
-                        Set as Default
-                      </Button>
-                    )}
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleTestPayment(gateway.code)}
-                      disabled={
-                        gateway.status === 'disconnected' || isTestPaymentLoading
-                      }
-                    >
-                      {isTestPaymentLoading ? (
-                        <Loader className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <TestTube className="w-4 h-4 mr-2" />
-                      )}
-                      Test
-                    </Button>
-
-                    {gateway.status === 'connected' && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="flex-1 text-red-600 hover:text-red-700"
-                        onClick={() => handleDisconnect(gateway.id)}
+                        className="flex-1"
+                        onClick={() => handleTestPayment(gateway.code)}
+                        disabled={gateway.status === 'disconnected' || isTestPaymentLoading}
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Disconnect
+                        {isTestPaymentLoading ? (
+                          <Loader className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <TestTube className="w-4 h-4 mr-2" />
+                        )}
+                        Test
                       </Button>
-                    )}
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+
+                      {gateway.status === 'connected' && gateway.code !== 'cod' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex-1 text-red-600 hover:text-red-700"
+                          onClick={() => handleDisconnect(gateway.id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove
+                        </Button>
+                      )}
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
 
             <Card className="border-dashed border-2 border-[#1e1e2e] bg-[#12121a]">
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Plus className="w-8 h-8 mx-auto text-gray-400 mb-3" />
-                  <p className="text-sm font-medium text-white mb-2">
-                    Add Payment Gateway
-                  </p>
+                  <p className="text-sm font-medium text-white mb-2">Add Payment Gateway</p>
                   <p className="text-xs text-gray-400 mb-4">
-                    Connect another payment processor
+                    Connect Stripe, PayPal, or Square. Requires API keys in environment configuration.
                   </p>
                   <Button variant="primary" size="sm">
                     <Plus className="w-4 h-4 mr-2" />
@@ -367,227 +278,130 @@ export default function PaymentSettingsPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>}
+          </div>
+        )}
 
-          {activeTab === 'configuration' && <div className="space-y-6">
-            {mockGatewayConfigs
-              .filter((g) => g.status === 'connected')
-              .map((gateway) => (
-                <Card key={gateway.id}>
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{gateway.icon}</span>
-                      <div>
-                        <CardTitle>{gateway.name} Configuration</CardTitle>
-                        <CardDescription>
-                          API keys and credentials
-                        </CardDescription>
+        {activeTab === 'configuration' && (
+          <div className="space-y-6">
+            {gateways.filter((g) => g.status === 'connected').length === 0 ? (
+              <Card className="bg-[#12121a] border border-[#1e1e2e]">
+                <CardContent className="py-12 text-center text-gray-400">
+                  No connected gateways to configure.
+                </CardContent>
+              </Card>
+            ) : (
+              gateways
+                .filter((g) => g.status === 'connected')
+                .map((gateway) => (
+                  <Card key={gateway.id}>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{gateway.icon}</span>
+                        <div>
+                          <CardTitle>{gateway.name} Configuration</CardTitle>
+                          <CardDescription>API keys and credentials</CardDescription>
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
+                    </CardHeader>
 
-                  <CardContent className="space-y-4">
-                    {gateway.code === 'stripe' && (
-                      <>
+                    <CardContent className="space-y-4">
+                      {gateway.config?.lastDigits && (
                         <div>
-                          <label className="block text-sm font-medium text-white mb-2">
-                            Public Key
-                          </label>
-                          <div className="flex gap-2">
-                            <Input
-                              type="text"
-                              value={gateway.config?.publicKey || ''}
-                              readOnly
-                              className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
-                            />
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() =>
-                                copyToClipboard(gateway.config?.publicKey || '')
-                              }
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {gateway.code === 'paypal' && (
-                      <>
-                        <div>
-                          <label className="block text-sm font-medium text-white mb-2">
-                            Client ID
-                          </label>
-                          <div className="flex gap-2">
-                            <Input
-                              type={showSecrets[gateway.id] ? 'text' : 'password'}
-                              value={gateway.config?.clientId || ''}
-                              readOnly
-                              className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
-                            />
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => toggleSecretVisibility(gateway.id)}
-                            >
-                              {showSecrets[gateway.id] ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() =>
-                                copyToClipboard(gateway.config?.clientId || '')
-                              }
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {gateway.code === 'square' && (
-                      <>
-                        <div>
-                          <label className="block text-sm font-medium text-white mb-2">
-                            Access Token
-                          </label>
-                          <div className="flex gap-2">
-                            <Input
-                              type={showSecrets[gateway.id] ? 'text' : 'password'}
-                              value={gateway.config?.accessToken || ''}
-                              readOnly
-                              className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
-                            />
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => toggleSecretVisibility(gateway.id)}
-                            >
-                              {showSecrets[gateway.id] ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-white mb-2">
-                            Location ID
-                          </label>
+                          <label className="block text-sm font-medium text-white mb-2">Card Details</label>
                           <Input
                             type="text"
-                            value={gateway.config?.locationId || ''}
+                            value={`**** **** **** ${gateway.config.lastDigits}${gateway.config.expiryDate ? ` (exp: ${gateway.config.expiryDate})` : ''}`}
                             readOnly
                             className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                           />
                         </div>
-                      </>
-                    )}
+                      )}
 
-                    <div className="pt-4 border-t border-[#1e1e2e]">
-                      <p className="text-xs text-gray-400">
-                        <Shield className="w-3 h-3 inline mr-1" />
-                        Credentials are encrypted and never displayed in full
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-          </div>}
+                      {gateway.code === 'cod' && (
+                        <div className="p-4 bg-[#1a1a2e] rounded-lg">
+                          <p className="text-sm text-gray-400">
+                            Cash on Delivery requires no API credentials. Collect payment upon delivery.
+                          </p>
+                        </div>
+                      )}
 
-          {activeTab === 'fees' && <div className="space-y-6">
+                      {!gateway.config?.lastDigits && gateway.code !== 'cod' && (
+                        <div className="p-4 bg-[#1a1a2e] rounded-lg">
+                          <p className="text-sm text-gray-400">
+                            <Shield className="w-3 h-3 inline mr-1" />
+                            Credentials are configured via environment variables and never stored in plain text.
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+            )}
+          </div>
+        )}
+
+        {activeTab === 'fees' && (
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Transaction Fee Comparison</CardTitle>
-                <CardDescription>
-                  Estimated fees for different transaction amounts
-                </CardDescription>
+                <CardDescription>Estimated fees for your configured payment methods</CardDescription>
               </CardHeader>
 
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#1e1e2e]">
-                        <th className="text-left py-3 px-4 font-medium text-white">
-                          Gateway
-                        </th>
-                        <th className="text-right py-3 px-4 font-medium text-white">
-                          Rate
-                        </th>
-                        <th className="text-right py-3 px-4 font-medium text-white">
-                          Fee on $100
-                        </th>
-                        <th className="text-right py-3 px-4 font-medium text-white">
-                          Fee on $1,000
-                        </th>
-                        <th className="text-right py-3 px-4 font-medium text-white">
-                          Savings vs Highest
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactionFeesComparison.map((row, i) => {
-                        const maxFee100 = Math.max(
-                          ...transactionFeesComparison.map((r) => r.for100),
-                        );
-                        const savings100 = maxFee100 - row.for100;
-
-                        return (
-                          <tr
-                            key={i}
-                            className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition"
-                          >
-                            <td className="py-3 px-4">
-                              <span className="font-medium text-white">
-                                {row.gateway}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-right text-white">
-                              {row.percent}% + ${(row.fixed / 100).toFixed(2)}
-                            </td>
-                            <td className="py-3 px-4 text-right text-white">
-                              ${(row.for100 / 100).toFixed(2)}
-                            </td>
-                            <td className="py-3 px-4 text-right text-white">
-                              ${(row.for1000 / 100).toFixed(2)}
-                            </td>
-                            <td className="py-3 px-4 text-right">
-                              {savings100 > 0 ? (
-                                <span className="text-emerald-500 font-medium">
-                                  +${(savings100 / 100).toFixed(2)}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400">
-                                  —
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                {transactionFeesComparison.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-8">
+                    No fee data available. Configure payment gateways to see fee comparison.
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#1e1e2e]">
+                          <th className="text-left py-3 px-4 font-medium text-white">Gateway</th>
+                          <th className="text-right py-3 px-4 font-medium text-white">Rate</th>
+                          <th className="text-right py-3 px-4 font-medium text-white">Fee on $100</th>
+                          <th className="text-right py-3 px-4 font-medium text-white">Fee on $1,000</th>
+                          <th className="text-right py-3 px-4 font-medium text-white">Savings vs Highest</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactionFeesComparison.map((row, i) => {
+                          const maxFee100 = Math.max(...transactionFeesComparison.map((r) => r.for100));
+                          const savings100 = maxFee100 - row.for100;
+                          return (
+                            <tr key={i} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition">
+                              <td className="py-3 px-4"><span className="font-medium text-white">{row.gateway}</span></td>
+                              <td className="py-3 px-4 text-right text-white">
+                                {row.percent}% + ${(row.fixed / 100).toFixed(2)}
+                              </td>
+                              <td className="py-3 px-4 text-right text-white">${(row.for100 / 100).toFixed(2)}</td>
+                              <td className="py-3 px-4 text-right text-white">${(row.for1000 / 100).toFixed(2)}</td>
+                              <td className="py-3 px-4 text-right">
+                                {savings100 > 0 ? (
+                                  <span className="text-emerald-500 font-medium">+${(savings100 / 100).toFixed(2)}</span>
+                                ) : (
+                                  <span className="text-gray-400">—</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
                 <div className="mt-6 p-4 bg-[#1a1a2e] rounded-lg">
                   <p className="text-xs text-gray-400">
                     <DollarSign className="w-3 h-3 inline mr-2" />
-                    Fees shown are estimates. Actual fees may vary based on
-                    payment method, region, and volume discounts.
+                    Fees shown are estimates. Actual fees may vary based on payment method, region, and volume discounts.
                   </p>
                 </div>
               </CardContent>
             </Card>
-          </div>}
+          </div>
+        )}
       </div>
     </div>
   );
