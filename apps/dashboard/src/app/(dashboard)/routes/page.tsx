@@ -18,11 +18,14 @@ interface RouteItem {
   stopsCount: number;
   totalDistance: number;
   totalDuration: number;
-  assignedDriver?: string;
-  status: 'draft' | 'scheduled' | 'active' | 'completed';
+  assignedDriver?: string | null;
+  driverId?: string | null;
+  status: 'draft' | 'scheduled' | 'active' | 'completed' | 'cancelled';
+  rawStatus?: string;
   lastUsed: string;
   isTemplate: boolean;
   createdAt: string;
+  date: string;
 }
 
 
@@ -37,6 +40,7 @@ const statusVariant = (
     scheduled: 'info',
     active: 'success',
     completed: 'primary',
+    cancelled: 'danger',
   };
   return map[s] ?? 'default';
 };
@@ -47,6 +51,7 @@ const statusLabel = (s: string): string => {
     scheduled: 'Scheduled',
     active: 'Active',
     completed: 'Completed',
+    cancelled: 'Cancelled',
   };
   return map[s] ?? s;
 };
@@ -88,7 +93,8 @@ export default function RoutesPage() {
     ).length;
     const templates = routes.filter((r) => r.isTemplate).length;
     const completed = routes.filter((r) => r.status === 'completed').length;
-    return { total, active, templates, completed };
+    const cancelled = routes.filter((r) => r.status === 'cancelled').length;
+    return { total, active, templates, completed, cancelled };
   }, [routes]);
 
   if (loading && routes.length === 0) return <LoadingSkeleton />;
