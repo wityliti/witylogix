@@ -38,6 +38,8 @@ export default function RecordsPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
+  const records = apiRecords;
+
   const recordTypes = ['ALL', 'PROGRESS_NOTE', 'LAB_RESULT', 'IMAGING_REPORT', 'PRESCRIPTION', 'DISCHARGE_SUMMARY'];
   const filteredRecords = recordTypeFilter === 'ALL' ? records : records.filter((r) => r.type === recordTypeFilter);
   const selectedRecord = records.find((r) => r.id === selectedRecordId);
@@ -133,6 +135,13 @@ export default function RecordsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {filteredRecords.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <FileText className="text-gray-600 mb-4" size={40} />
+              <p className="text-gray-400 font-medium mb-1">No clinical records found</p>
+              <p className="text-gray-500 text-sm">Import records or adjust your filter to see results.</p>
+            </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -182,6 +191,7 @@ export default function RecordsPage() {
               </tbody>
             </table>
           </div>
+          )}
         </CardContent>
       </Card>
 

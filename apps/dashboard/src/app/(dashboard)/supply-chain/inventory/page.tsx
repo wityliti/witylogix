@@ -15,6 +15,8 @@ interface SearchFilters {
   abcClass: string;
 }
 
+const WAREHOUSES = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
+
 const ABC_CLASSES = [
   { value: 'all', label: 'All Classes' },
   { value: 'A', label: 'Class A - High Value' },
@@ -85,14 +87,8 @@ interface ReorderAlert {
 
 export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
-  const { items: stockGauges, loading: gaugesLoading } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
-  const { items: reorderAlerts, loading: alertsLoading } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
-
-  const warehouses = useMemo(
-    () => ['All', ...Array.from(new Set(inventory.map((i) => i.warehouse).filter(Boolean)))],
-    [inventory],
-  );
-
+  const { items: stockGauges } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
+  const { items: reorderAlerts } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
   const [filters, setFilters] = useState<SearchFilters>({
     searchTerm: '',
     warehouse: 'All',

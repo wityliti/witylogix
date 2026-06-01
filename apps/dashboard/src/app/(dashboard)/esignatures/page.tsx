@@ -243,9 +243,9 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
 export default function ESignaturesPage() {
   const { items: envelopes, loading: envelopesLoading } = useEnvelopes();
   const { data: analytics, loading: analyticsLoading } = useEsigAnalytics();
-  const { items: templates } = useTemplates();
+  const { items: signingTemplates } = useTemplates();
 
-  const templateUsage = templates.map((t) => ({ name: t.name, count: t.usageCount }));
+  const templateData = signingTemplates.map((t: { name: string; usageCount: number }) => ({ name: t.name, count: t.usageCount }));
 
   const kpiCards: KPICard[] = [
     {
@@ -307,7 +307,7 @@ export default function ESignaturesPage() {
           <CompletionRateChart rate={analytics?.completionRate || 0} />
         </div>
         <div>
-          <TemplateUsageCard templates={templateUsage} />
+          <TemplateUsageCard templates={templateData} />
         </div>
       </div>
 
@@ -348,7 +348,7 @@ export default function ESignaturesPage() {
               Active Templates
             </p>
             <p className={cn("text-2xl font-bold text-white")}>
-              {templates.length}
+              {signingTemplates.filter((t: { isActive: boolean }) => t.isActive).length}
             </p>
             <p className={cn("text-xs text-gray-400 mt-2")}>
               Ready to use

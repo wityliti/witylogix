@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useOrders, useWaves, useBatches } from '@/hooks/use-supply-chain';
+import { useOrders, useFulfillment } from '@/hooks/use-supply-chain';
 import { useApiList } from '@/hooks/use-api';
 
 interface FilterOptions {
@@ -27,15 +27,6 @@ interface RawReturn {
   };
 }
 
-function mapReturnStatus(status: string): 'pending-approval' | 'approved' | 'restocked' {
-  switch (status.toUpperCase()) {
-    case 'APPROVED':
-    case 'RECEIVED':
-    case 'INSPECTED': return 'approved';
-    case 'REFUNDED': return 'restocked';
-    default: return 'pending-approval';
-  }
-}
 
 const PRIORITY_OPTIONS = ['All', 'Standard', 'Expedited', 'Backorder'];
 const WAREHOUSE_OPTIONS = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
@@ -43,10 +34,10 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 
 export default function OrdersPage() {
   const orders = useOrders();
-  const { items: waves, loading: wavesLoading } = useWaves();
-  const { items: batches, loading: batchesLoading } = useBatches();
-  const { items: rawReturns, loading: returnsLoading } = useApiList<RawReturn>('/api/v4/returns');
-
+  const fulfillment = useFulfillment();
+  const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: returnQueue } = useApiList<ReturnItem>('/api/v4/returns');
   const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
     priority: 'all',
@@ -247,26 +238,20 @@ export default function OrdersPage() {
             <Button variant="primary">Create Wave</Button>
           </div>
 
-          {wavesLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-28 rounded-lg bg-white/[0.03] animate-pulse" />
-              ))}
-            </div>
-          ) : waves.length === 0 ? (
-            <Card><CardContent className="pt-10 pb-10 text-center text-gray-400">No wave plans in the last 14 days.</CardContent></Card>
-          ) : (
-            waves.map((wave) => (
-              <Card key={wave.waveId}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-base">{wave.waveId}</CardTitle>
-                      <p className="text-xs text-gray-400 mt-1">{new Date(wave.createdDate).toLocaleString()}</p>
-                    </div>
-                    <Badge variant={wave.status === 'completed' ? 'success' : wave.status === 'picking' ? 'info' : 'warning'}>
-                      {wave.status}
-                    </Badge>
+          {wavePlans.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No wave plans found. Create a wave to start batch fulfillment.</div>
+          ) : null}
+          {wavePlans.map((wave) => (
+            <Card key={wave.waveId}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-base">
+                      {wave.waveId}
+                    </CardTitle>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(wave.createdDate).toLocaleString()}
+                    </p>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -299,26 +284,25 @@ export default function OrdersPage() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Batch Picking Tasks</h3>
 
-          {batchesLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-28 rounded-lg bg-white/[0.03] animate-pulse" />
-              ))}
-            </div>
-          ) : batches.length === 0 ? (
-            <Card><CardContent className="pt-10 pb-10 text-center text-gray-400">No active batch picking tasks.</CardContent></Card>
-          ) : (
-            batches.map((batch) => (
-              <Card key={batch.batchId}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">{batch.batchId}</h4>
-                      <p className="text-xs text-gray-400 mt-1">{batch.location}</p>
-                    </div>
-                    <Badge variant={batch.status === 'completed' ? 'success' : batch.status === 'in-progress' ? 'info' : 'warning'}>
-                      {batch.status}
-                    </Badge>
+          {batchPicking.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No batch picking tasks found.</div>
+          ) : null}
+          {batchPicking.map((batch) => (
+            <Card key={batch.batchId}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">
+                      {batch.batchId}
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {batch.location}
+                    </p>
+                    {batch.assignedTo && (
+                      <p className="text-xs text-gray-300 mt-1">
+                        Assigned to: {batch.assignedTo}
+                      </p>
+                    )}
                   </div>
                   <div className="mb-3">
                     <div className="flex items-center justify-between mb-2">
@@ -347,36 +331,19 @@ export default function OrdersPage() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Returns Queue</h3>
 
-          {returnsLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-24 rounded-lg bg-white/[0.03] animate-pulse" />
-              ))}
-            </div>
-          ) : rawReturns.length === 0 ? (
-            <Card><CardContent className="pt-10 pb-10 text-center text-gray-400">No pending returns in the queue.</CardContent></Card>
-          ) : (
-            rawReturns.map((r) => {
-              const status = mapReturnStatus(r.status);
-              return (
-                <Card key={r.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="text-sm font-semibold text-white">
-                          {r.order?.externalOrderNumber ?? r.id}
-                        </h4>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {r.order?.customerName ?? r.order?.customerEmail ?? 'Unknown'}
-                        </p>
-                        <p className="text-xs text-gray-300 mt-1">Reason: {r.reason}</p>
-                      </div>
-                      <Badge variant={status === 'restocked' ? 'success' : status === 'approved' ? 'info' : 'warning'}>
-                        {status.replace(/-/g, ' ')}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-400 mb-3">
-                      Submitted: {new Date(r.createdAt).toLocaleString()}
+          {returnQueue.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No returns in queue.</div>
+          ) : null}
+          {returnQueue.map((returnItem) => (
+            <Card key={returnItem.id}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">
+                      {returnItem.orderNumber}
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {returnItem.customerName}
                     </p>
                     {status === 'pending-approval' && (
                       <div className="flex gap-2">

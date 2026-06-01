@@ -104,7 +104,35 @@ export default function FieldServicePage() {
 
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
 
-  // All hooks before early returns
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const schedule: ScheduleItem[] = [];
+  const technicians: Technician[] = [];
+
+  const completedOrders = allOrders.filter(o => o.status === 'completed');
+  const activeOrders = allOrders.filter(o => ['in_progress', 'dispatched'].includes(o.status));
+  const pendingOrders = allOrders.filter(o => ['created', 'scheduled'].includes(o.status));
+
+  const completionRate = allOrders.length > 0
+    ? Math.round((completedOrders.length / allOrders.length) * 100)
+    : 0;
+
+  const overview = {
+    totalTechnicians: technicians.length,
+    activeJobs: activeOrders.length,
+    completionRate,
+    techniciansInField: activeOrders.length,
+    avgResponseTime: 0,
+  };
+  const slaMetrics = {
+    onTimePercentage: completionRate,
+    overdueCount: pendingOrders.length,
+    totalJobs: allOrders.length,
+    avgCompletionTime: 0,
+  };
+
+  // Filter pending/unassigned jobs for queue
   const jobQueue = useMemo(
     () =>
       rawOrders

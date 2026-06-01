@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, GripVertical, Edit2, Trash2, Image as ImageIcon, Search } from "lucide-react";
 import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 
@@ -286,10 +287,16 @@ export default function CollectionsPage() {
                                       <Button
                                         variant="danger"
                                         size="sm"
-                                        disabled={removingProductId === product.id}
-                                        onClick={() => handleRemoveProduct(collection.id, product.id)}
+                                        onClick={() =>
+                                          api
+                                            .delete(`/api/v4/collections/${collection.id}/products`, {
+                                              body: JSON.stringify({ productIds: [product.id] }),
+                                            } as RequestInit)
+                                            .then(() => refetch())
+                                            .catch(console.error)
+                                        }
                                       >
-                                        {removingProductId === product.id ? 'Removing…' : 'Remove'}
+                                        Remove
                                       </Button>
                                     </div>
                                   ))}
