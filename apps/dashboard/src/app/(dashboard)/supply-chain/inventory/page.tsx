@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useApiList } from '@/hooks/use-api';
 import { LoadingSkeleton, ErrorState } from '@/components/ui/loading';
+import { useStockGauges, useReorderAlerts } from '@/hooks/use-supply-chain';
 
 interface SearchFilters {
   searchTerm: string;
@@ -14,9 +15,6 @@ interface SearchFilters {
   status: string;
   abcClass: string;
 }
-
-// Mock data
-const WAREHOUSES = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
 
 const ABC_CLASSES = [
   { value: 'all', label: 'All Classes' },
@@ -88,6 +86,8 @@ interface ReorderAlert {
 
 export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
+  const { items: stockGauges } = useStockGauges();
+  const { items: reorderAlerts } = useReorderAlerts();
   const [filters, setFilters] = useState<SearchFilters>({
     searchTerm: '',
     warehouse: 'All',
@@ -97,9 +97,11 @@ export default function InventoryPage() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [showTransferForm, setShowTransferForm] = useState(false);
 
-  // Mock data for stock gauges and alerts (would come from API in production)
-  const stockGauges: StockGauge[] = [];
-  const reorderAlerts: ReorderAlert[] = [];
+  // Derive unique warehouses from loaded inventory
+  const warehouses = useMemo(
+    () => ['All', ...Array.from(new Set(inventory.map((i) => i.warehouse).filter(Boolean)))],
+    [inventory],
+  );
 
   // Filter inventory
   const filteredInventory = inventory.filter((item) => {
@@ -300,7 +302,7 @@ export default function InventoryPage() {
                 }
                 className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
               >
-                {WAREHOUSES.map((wh) => (
+                {warehouses.map((wh) => (
                   <option key={wh} value={wh}>
                     {wh}
                   </option>

@@ -31,49 +31,16 @@ const recordTypeVariants: Record<string, 'success' | 'info' | 'warning' | 'dange
 };
 
 export default function RecordsPage() {
-  const { items: apiRecords, loading, error, refetch } = useApiList<HealthRecord>('/api/v4/orders?type=healthcare&view=records');
+  const { items: records, loading, error, refetch } = useApiList<HealthRecord>('/api/v4/healthcare/records');
   const [recordTypeFilter, setRecordTypeFilter] = useState<string>('ALL');
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const mockRecords: HealthRecord[] = apiRecords.length > 0 ? apiRecords : [
-    {
-      id: "rec-001",
-      type: "PROGRESS_NOTE",
-      title: "Follow-up Visit - Hypertension Management",
-      patientName: "Robert Johnson",
-      author: "Dr. Sarah Johnson",
-      date: "2026-03-10T14:30:00Z",
-      summary: "Patient reports good compliance with antihypertensive medications. Blood pressure readings stable at home.",
-      isSigned: true,
-    },
-    {
-      id: "rec-002",
-      type: "LAB_RESULT",
-      title: "Complete Blood Count (CBC)",
-      patientName: "Sarah Williams",
-      author: "Lab - A. Williams",
-      date: "2026-03-09T08:45:00Z",
-      summary: "All values within normal range. No abnormalities detected.",
-      isSigned: true,
-    },
-    {
-      id: "rec-003",
-      type: "IMAGING_REPORT",
-      title: "Chest X-Ray - PA and Lateral",
-      patientName: "Michael Brown",
-      author: "Dr. John Martinez",
-      date: "2026-03-08T11:20:00Z",
-      summary: "Frontal and lateral chest radiographs show normal cardiopulmonary silhouette.",
-      isSigned: true,
-    },
-  ];
-
   const recordTypes = ['ALL', 'PROGRESS_NOTE', 'LAB_RESULT', 'IMAGING_REPORT', 'PRESCRIPTION', 'DISCHARGE_SUMMARY'];
-  const filteredRecords = recordTypeFilter === 'ALL' ? mockRecords : mockRecords.filter((r) => r.type === recordTypeFilter);
-  const selectedRecord = mockRecords.find((r) => r.id === selectedRecordId);
+  const filteredRecords = recordTypeFilter === 'ALL' ? records : records.filter((r) => r.type === recordTypeFilter);
+  const selectedRecord = records.find((r) => r.id === selectedRecordId);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6">
@@ -103,7 +70,7 @@ export default function RecordsPage() {
               <span className="text-gray-400 text-sm font-medium">Total Records</span>
               <FileText className="text-blue-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-white">{mockRecords.length}</p>
+            <p className="text-3xl font-bold text-white">{records.length}</p>
             <p className="text-gray-400 text-xs mt-2">All documents</p>
           </CardContent>
         </Card>
@@ -114,7 +81,7 @@ export default function RecordsPage() {
               <span className="text-gray-400 text-sm font-medium">Signed Records</span>
               <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">{mockRecords.filter(r => r.isSigned).length}</p>
+            <p className="text-3xl font-bold text-white">{records.filter(r => r.isSigned).length}</p>
             <p className="text-gray-400 text-xs mt-2">Completed</p>
           </CardContent>
         </Card>
@@ -125,7 +92,7 @@ export default function RecordsPage() {
               <span className="text-gray-400 text-sm font-medium">Unsigned</span>
               <div className="w-5 h-5 rounded-full bg-amber-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">{mockRecords.filter(r => !r.isSigned).length}</p>
+            <p className="text-3xl font-bold text-white">{records.filter(r => !r.isSigned).length}</p>
             <p className="text-gray-400 text-xs mt-2">Pending review</p>
           </CardContent>
         </Card>
@@ -179,6 +146,13 @@ export default function RecordsPage() {
                 </tr>
               </thead>
               <tbody>
+                {filteredRecords.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-gray-400 text-sm">
+                      No clinical records found
+                    </td>
+                  </tr>
+                )}
                 {filteredRecords.map((record) => (
                   <tr
                     key={record.id}

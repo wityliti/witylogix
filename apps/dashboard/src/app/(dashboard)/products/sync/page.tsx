@@ -19,6 +19,9 @@ import {
   useSyncSchedule,
   useProductPreview,
 } from "@/hooks/use-product-sync";
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   AlertCircle,
   Check,
@@ -50,56 +53,78 @@ interface ConnectedPlatform {
   }>;
 }
 
-const MOCK_PLATFORMS: ConnectedPlatform[] = [
-  {
-    id: 'shopify-main',
-    name: 'Main Store',
-    platform: 'Shopify',
-    status: 'synced',
-    lastSyncAt: new Date(Date.now() - 5 * 60000).toISOString(),
-    productCount: 1245,
-    fields: [
-      { id: 'sf-id', name: 'ID', type: 'string', required: true, sampleValue: 'gid://shopify/Product/12345' },
-      { id: 'sf-title', name: 'Title', type: 'string', required: true, sampleValue: 'Premium Cardboard Box' },
-      { id: 'sf-type', name: 'Product Type', type: 'string', required: false, sampleValue: 'Packaging' },
-      { id: 'sf-vendor', name: 'Vendor', type: 'string', required: false, sampleValue: 'PackPro Inc' },
-      { id: 'sf-price', name: 'Price', type: 'number', required: false, sampleValue: '24.99' },
-      { id: 'sf-weight', name: 'Weight (lbs)', type: 'number', required: false, sampleValue: '0.5' },
-      { id: 'sf-inventory', name: 'Inventory Count', type: 'number', required: true, sampleValue: '500' },
-      { id: 'sf-status', name: 'Status', type: 'string', required: false, sampleValue: 'active' },
-    ],
-  },
-  {
-    id: 'wix-store',
-    name: 'Wix Store',
-    platform: 'Wix',
-    status: 'pending',
-    lastSyncAt: null,
+// Static platform field schemas (platform API specs — not test data).
+const PLATFORM_FIELD_SCHEMAS: Record<string, SyncField[]> = {
+  shopify: [
+    { id: 'sf-id', name: 'ID', type: 'string', required: true, sampleValue: 'gid://shopify/Product/12345' },
+    { id: 'sf-title', name: 'Title', type: 'string', required: true, sampleValue: 'Premium Box' },
+    { id: 'sf-type', name: 'Product Type', type: 'string', required: false, sampleValue: 'Packaging' },
+    { id: 'sf-vendor', name: 'Vendor', type: 'string', required: false, sampleValue: 'PackPro Inc' },
+    { id: 'sf-price', name: 'Price', type: 'number', required: false, sampleValue: '24.99' },
+    { id: 'sf-weight', name: 'Weight (lbs)', type: 'number', required: false, sampleValue: '0.5' },
+    { id: 'sf-inventory', name: 'Inventory Count', type: 'number', required: true, sampleValue: '500' },
+    { id: 'sf-status', name: 'Status', type: 'string', required: false, sampleValue: 'active' },
+  ],
+  woocommerce: [
+    { id: 'wc-id', name: 'Product ID', type: 'string', required: true, sampleValue: '1001' },
+    { id: 'wc-name', name: 'Name', type: 'string', required: true, sampleValue: 'Standard Box' },
+    { id: 'wc-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'BOX-001' },
+    { id: 'wc-price', name: 'Regular Price', type: 'number', required: false, sampleValue: '19.99' },
+    { id: 'wc-stock', name: 'Stock Quantity', type: 'number', required: true, sampleValue: '250' },
+    { id: 'wc-status', name: 'Status', type: 'string', required: false, sampleValue: 'publish' },
+  ],
+  amazon: [
+    { id: 'az-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'PACK-001' },
+    { id: 'az-asin', name: 'ASIN', type: 'string', required: true, sampleValue: 'B0C3X5Y8Z1' },
+    { id: 'az-name', name: 'Product Name', type: 'string', required: true, sampleValue: 'Eco Shipping Box' },
+    { id: 'az-price', name: 'Price', type: 'number', required: true, sampleValue: '22.50' },
+    { id: 'az-fba-qty', name: 'FBA Quantity', type: 'number', required: true, sampleValue: '150' },
+  ],
+  bigcommerce: [
+    { id: 'bc-id', name: 'ID', type: 'string', required: true },
+    { id: 'bc-name', name: 'Name', type: 'string', required: true },
+    { id: 'bc-sku', name: 'SKU', type: 'string', required: true },
+    { id: 'bc-price', name: 'Price', type: 'number', required: false },
+    { id: 'bc-inventory', name: 'Inventory Level', type: 'number', required: true },
+  ],
+};
+
+function defaultFields(slug: string): SyncField[] {
+  const key = slug.toLowerCase().split('-')[0];
+  return PLATFORM_FIELD_SCHEMAS[key] ?? [
+    { id: `${slug}-id`, name: 'Product ID', type: 'string', required: true },
+    { id: `${slug}-name`, name: 'Product Name', type: 'string', required: true },
+    { id: `${slug}-sku`, name: 'SKU', type: 'string', required: false },
+    { id: `${slug}-price`, name: 'Price', type: 'number', required: false },
+    { id: `${slug}-qty`, name: 'Quantity', type: 'number', required: true },
+  ];
+}
+
+interface IntegrationConnection {
+  id: string;
+  providerName: string;
+  status: string;
+  lastSyncTime: string | null;
+  category: string;
+}
+
+function toConnectedPlatform(conn: IntegrationConnection): ConnectedPlatform {
+  const syncStatus: ConnectedPlatform['status'] = (
+    conn.status === 'connected' ? 'synced'
+    : conn.status === 'error' ? 'error'
+    : conn.status === 'pending' ? 'pending'
+    : 'pending'
+  );
+  return {
+    id: conn.id,
+    name: conn.providerName,
+    platform: conn.providerName,
+    status: syncStatus,
+    lastSyncAt: conn.lastSyncTime,
     productCount: 0,
-    fields: [
-      { id: 'wx-id', name: 'Product ID', type: 'string', required: true, sampleValue: 'WX-98765' },
-      { id: 'wx-name', name: 'Product Name', type: 'string', required: true, sampleValue: 'Standard Box' },
-      { id: 'wx-category', name: 'Category', type: 'string', required: false, sampleValue: 'Boxes' },
-      { id: 'wx-price', name: 'Sale Price', type: 'number', required: false, sampleValue: '19.99' },
-      { id: 'wx-qty', name: 'Quantity', type: 'number', required: true, sampleValue: '250' },
-    ],
-  },
-  {
-    id: 'amazon-seller',
-    name: 'Amazon Seller Central',
-    platform: 'Amazon',
-    status: 'error',
-    lastSyncAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-    productCount: 342,
-    fields: [
-      { id: 'az-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'PACK-001' },
-      { id: 'az-asin', name: 'ASIN', type: 'string', required: true, sampleValue: 'B0C3X5Y8Z1' },
-      { id: 'az-name', name: 'Product Name', type: 'string', required: true, sampleValue: 'Eco Shipping Box' },
-      { id: 'az-price', name: 'Price', type: 'number', required: true, sampleValue: '22.50' },
-      { id: 'az-fba-qty', name: 'FBA Quantity', type: 'number', required: true, sampleValue: '150' },
-    ],
-  },
-];
+    fields: defaultFields(conn.id),
+  };
+}
 
 type FieldType = 'string' | 'number' | 'boolean' | 'date';
 interface SyncField {
@@ -123,13 +148,24 @@ const WITYLOGIX_FIELDS: SyncField[] = [
 ];
 
 export default function ProductSyncPage() {
-  const [selectedPlatformId, setSelectedPlatformId] = useState<string>('shopify-main');
+  const { items: connections, loading: connectionsLoading, error: connectionsError, refetch: refetchConnections } =
+    useApiList<IntegrationConnection>('/api/v4/integrations/connections');
+
+  const platforms = useMemo(
+    () => connections.filter((c) => c.category === 'ecommerce' || c.category === 'marketplace').map(toConnectedPlatform),
+    [connections],
+  );
+
+  const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'mapping' | 'schedule' | 'preview'>('mapping');
   const [testSyncInProgress, setTestSyncInProgress] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [showTemplateInput, setShowTemplateInput] = useState(false);
 
-  const selectedPlatform = MOCK_PLATFORMS.find((p) => p.id === selectedPlatformId);
+  // Auto-select first platform when loaded
+  const effectivePlatformId = selectedPlatformId ?? platforms[0]?.id ?? null;
+
+  const selectedPlatform = platforms.find((p) => p.id === effectivePlatformId) ?? null;
   const {
     mappings,
     addMapping,
@@ -137,16 +173,16 @@ export default function ProductSyncPage() {
     updateTransformer,
     autoMapFields,
     saveMappings,
-  } = useFieldMappings(selectedPlatformId);
+  } = useFieldMappings(effectivePlatformId ?? '');
 
   const {
     schedule,
     setSchedule,
-  } = useSyncSchedule(selectedPlatformId);
+  } = useSyncSchedule(effectivePlatformId ?? '');
 
   const {
     previewProduct,
-  } = useProductPreview(selectedPlatformId, mappings);
+  } = useProductPreview(effectivePlatformId ?? '', mappings);
 
   const unmappedRequired = useMemo(() => {
     if (!selectedPlatform) return [];
@@ -191,6 +227,24 @@ export default function ProductSyncPage() {
     pending: <Clock className="w-4 h-4" />,
   };
 
+  if (connectionsLoading) {
+    return (
+      <div className="space-y-6">
+        <Header title="Product Catalog Sync" subtitle="Loading connected platforms…" />
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  if (connectionsError) {
+    return (
+      <div className="space-y-6">
+        <Header title="Product Catalog Sync" subtitle="Error loading connections" />
+        <ErrorState error={connectionsError} onRetry={refetchConnections} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Header
@@ -204,8 +258,18 @@ export default function ProductSyncPage() {
           <CardTitle>Connected Platforms</CardTitle>
         </CardHeader>
         <CardContent>
+          {platforms.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <p className="font-medium mb-1">No e-commerce platforms connected</p>
+              <p className="text-sm">
+                Connect a platform (Shopify, WooCommerce, Amazon…) via{' '}
+                <a href="/integrations/marketplace" className="text-blue-400 hover:underline">Integrations</a>{' '}
+                to configure product sync.
+              </p>
+            </div>
+          ) : (
           <div className="grid gap-3">
-            {MOCK_PLATFORMS.map((platform) => (
+            {platforms.map((platform) => (
               <button
                 key={platform.id}
                 onClick={() => setSelectedPlatformId(platform.id)}
@@ -262,6 +326,7 @@ export default function ProductSyncPage() {
               </button>
             ))}
           </div>
+          )}
         </CardContent>
       </Card>
 

@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useReturns, Return } from '@/hooks/use-returns';
-import { Plus, ChevronRight } from 'lucide-react';
+import { Plus, ChevronRight, PackageOpen } from 'lucide-react';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 /* ═══════════════════════════════════════════════════════════
    RETURNS MANAGEMENT PAGE — RMA lifecycle with status pipeline
@@ -35,75 +37,6 @@ const normalizeStatus = (status: string): ReturnStatus => {
   return 'requested';
 };
 
-// Mock returns data for development
-const MOCK_RETURNS: Return[] = [
-  {
-    id: "RET-2024-001",
-    orderId: "ORD-2024-115",
-    customerId: "CUST-001",
-    customerName: "John Smith",
-    customerEmail: "john.smith@email.com",
-    status: "requested",
-    reason: "Product arrived damaged",
-    items: [{ id: "I-1", name: "Blue Wireless Headphones", quantity: 1, condition: "damaged" }],
-    refundAmount: 89.99,
-    createdAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
-    notes: "Customer reports broken cable connector",
-    timeline: [],
-  },
-  {
-    id: "RET-2024-002",
-    orderId: "ORD-2024-114",
-    customerId: "CUST-002",
-    customerName: "Sarah Johnson",
-    customerEmail: "sarah.j@email.com",
-    status: "approved",
-    reason: "Wrong size",
-    items: [{ id: "I-2", name: "Wool Winter Jacket (L)", quantity: 1, condition: "good" }],
-    refundAmount: 159.99,
-    createdAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
-    approvedAt: new Date(Date.now() - 4 * 24 * 3600000).toISOString(),
-    notes: "Customer ordered size L but needed M",
-    timeline: [],
-  },
-  {
-    id: "RET-2024-003",
-    orderId: "ORD-2024-113",
-    customerId: "CUST-003",
-    customerName: "Emily Davis",
-    customerEmail: "emily.davis@email.com",
-    status: "received",
-    reason: "Defective unit",
-    items: [{ id: "I-3", name: "Portable Phone Charger 20K", quantity: 2, condition: "defective" }],
-    refundAmount: 119.98,
-    createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString(),
-    approvedAt: new Date(Date.now() - 6 * 24 * 3600000).toISOString(),
-    receivedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
-    notes: "Units won't charge. Package received on 3/17.",
-    timeline: [],
-  },
-  {
-    id: "RET-2024-004",
-    orderId: "ORD-2024-112",
-    customerId: "CUST-004",
-    customerName: "Michael Brown",
-    customerEmail: "m.brown@email.com",
-    status: "refunded",
-    reason: "Changed mind",
-    items: [{ id: "I-4", name: "Gaming Mouse RGB", quantity: 1, condition: "good" }],
-    refundAmount: 74.99,
-    createdAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
-    approvedAt: new Date(Date.now() - 9 * 24 * 3600000).toISOString(),
-    receivedAt: new Date(Date.now() - 3 * 24 * 3600000).toISOString(),
-    refundedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
-    notes: "Quick return and refund processed",
-    timeline: [],
-  },
-];
 
 const StatusPipeline = ({ returns }: { returns: Return[] }) => {
   const statuses: ReturnStatus[] = ['requested', 'approved', 'shipped_back', 'received', 'inspected', 'refunded'];
@@ -235,15 +168,31 @@ const ReturnsTable = ({ returns }: { returns: Return[] }) => {
 };
 
 export default function ReturnsPage() {
-  const { items: apiReturns } = useReturns();
-  const returnsData = apiReturns.length > 0 ? apiReturns : MOCK_RETURNS;
+  const { items, loading, error, refetch } = useReturns();
+
+  if (loading) {
+    return (
+      <>
+        <Header title="Returns & RMA" subtitle="Loading…" />
+        <div className="p-6"><LoadingSkeleton /></div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header title="Returns & RMA" subtitle="Error loading returns" />
+        <div className="p-6"><ErrorState error={error} onRetry={refetch} /></div>
+      </>
+    );
+  }
 
   return (
     <>
-      {/* Header */}
       <Header
         title="Returns & RMA"
-        subtitle={`${returnsData.length} active returns`}
+        subtitle={`${items.length} active return${items.length !== 1 ? 's' : ''}`}
         actions={
           <Button variant="primary" size="md">
             <Plus className="w-4 h-4" />
@@ -252,11 +201,19 @@ export default function ReturnsPage() {
         }
       />
 
-      {/* Status pipeline */}
-      <StatusPipeline returns={returnsData} />
+      <StatusPipeline returns={items} />
 
-      {/* Returns table */}
-      <ReturnsTable returns={returnsData} />
+      {items.length === 0 ? (
+        <div className="bg-[#13131a] border border-white/[0.08] rounded-xl p-16 text-center">
+          <PackageOpen className="w-12 h-12 text-wl-text-tertiary mx-auto mb-4" />
+          <p className="text-wl-text-primary font-medium text-lg mb-2">No returns yet</p>
+          <p className="text-wl-text-secondary text-sm">
+            Returns and RMA requests will appear here once customers initiate them.
+          </p>
+        </div>
+      ) : (
+        <ReturnsTable returns={items} />
+      )}
     </>
   );
 }
