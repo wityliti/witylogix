@@ -59,26 +59,8 @@ interface LeaderboardResponse {
   timestamp: string;
 }
 
-interface DispatchDriver {
-  id: string;
-  name: string;
-  status: string;
-  lat?: number | null;
-  lng?: number | null;
-}
-
 function toScoringPeriod(p: Period) {
   return p === '24h' ? 'daily' : p === '7d' ? 'weekly' : 'monthly';
-}
-
-function tierToStatus(tier: LeaderboardEntry['tier']): DriverMarker['status'] {
-  switch (tier) {
-    case 'platinum': return 'available';
-    case 'gold':     return 'busy';
-    case 'silver':   return 'break';
-    case 'bronze':   return 'offline';
-    default:         return 'offline';
-  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -261,8 +243,7 @@ export default function DriverInsightsPage() {
         )}
 
         {/* Leaderboard table */}
-        {view === 'list' && (
-        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
+        <div className="rounded-xl bg-[#111118] border border-white/[0.06] overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide">Performance Leaderboard</h3>
             <div className="flex items-center gap-1">
