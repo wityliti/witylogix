@@ -16,7 +16,6 @@ import { z } from 'zod';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
 import {
-  calculateRouteEfficiency,
   calculateDriverScore,
   calculateDriverScoreBatch,
   predictDeliveryWindow,
@@ -29,6 +28,8 @@ import {
   type DriverMetrics,
   type DeliveryContext,
 } from '@witylogix/core/ai-analytics';
+import { getLeaderboard, type ScoringPeriod } from '@witylogix/core/driver-scoring';
+import { prisma } from '@witylogix/db';
 
 // ─── Zod Schemas ────────────────────────────────────────────
 
@@ -130,60 +131,59 @@ export default async function aiAnalyticsRoutes(
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { routeId } = request.params as { routeId: string };
+        const db = (request as any).tenantDb;
 
-        // In production, fetch from database
-        const mockRoute = {
-          routeId,
-          plannedDistance: 45000, // 45km
-          plannedDuration: 120, // 120 minutes
-          plannedStops: [
-            {
-              id: 'stop_1',
-              lat: 40.7128,
-              lng: -74.006,
-              plannedArrivalTime: 1000,
-              plannedDuration: 5,
-              actualArrivalTime: 1050,
-              actualDuration: 7,
-              orderId: 'ord_1',
-              type: 'delivery' as const,
-            },
-            {
-              id: 'stop_2',
-              lat: 40.7480,
-              lng: -73.9862,
-              plannedArrivalTime: 2000,
-              plannedDuration: 5,
-              actualArrivalTime: 2100,
-              actualDuration: 8,
-              orderId: 'ord_2',
-              type: 'delivery' as const,
-            },
-          ],
-          gpsTrace: [
-            { lat: 40.7128, lng: -74.006, timestamp: 1000, speedKmh: 30 },
-            { lat: 40.715, lng: -73.995, timestamp: 2000, speedKmh: 35 },
-            { lat: 40.7480, lng: -73.9862, timestamp: 3000, speedKmh: 25 },
-          ],
-        };
+        const route = await db.route.findUnique({
+          where: { id: routeId },
+          include: { stops: { orderBy: { sequence: 'asc' } } },
+        });
 
-        const efficiency = calculateRouteEfficiency(
-          mockRoute.routeId,
-          {
-            plannedDistance: mockRoute.plannedDistance,
-            plannedDuration: mockRoute.plannedDuration,
-            plannedStops: mockRoute.plannedStops as Stop[],
-          } as PlannedRouteSegment,
-          mockRoute.gpsTrace as RouteDataPoint[],
-        );
+        if (!route) return reply.code(404).send({ error: 'Route not found' });
+
+        const plannedDistance = route.totalDistance ? Number(route.totalDistance) * 1000 : 45000;
+        const plannedDuration = route.totalDuration ?? 120;
+
+        let actualDuration = plannedDuration;
+        if (route.startedAt && route.completedAt) {
+          actualDuration = (route.completedAt.getTime() - route.startedAt.getTime()) / 60000;
+        }
+
+        const completedStops = route.stops.filter((s: any) => s.actualArrival != null);
+        const onTimeStops = completedStops.filter((s: any) => {
+          if (!s.estimatedArrival || !s.actualArrival) return false;
+          return s.actualArrival <= new Date(s.estimatedArrival.getTime() + 15 * 60000);
+        });
+
+        const timeEfficiency = Math.min(1, plannedDuration / Math.max(actualDuration, 1));
+        const stopEfficiency = completedStops.length > 0
+          ? onTimeStops.length / completedStops.length
+          : 1;
+        const normalizedScore = Math.min(100, Math.round((timeEfficiency * 0.6 + stopEfficiency * 0.4) * 100));
 
         return reply.code(200).send({
-          data: efficiency,
+          data: {
+            score: normalizedScore,
+            percentileRank: 50,
+            breakdown: {
+              distanceEfficiency: 1,
+              timeEfficiency,
+              stopEfficiency,
+              idleTimeRatio: 0,
+              deviationCount: 0,
+            },
+            metrics: {
+              actualDistance: plannedDistance,
+              plannedDistance,
+              actualDuration,
+              plannedDuration,
+              idleTime: 0,
+              deviations: 0,
+            },
+          },
           routeId,
           timestamp: new Date().toISOString(),
         });
-      } catch (error) {
-        fastify.log.error(error);
+      } catch {
         return reply.code(500).send({ error: 'Failed to calculate efficiency' });
       }
     },
@@ -409,74 +409,25 @@ export default async function aiAnalyticsRoutes(
    * Get driver leaderboard
    */
   fastify.get<{
-    Querystring: { period?: '24h' | '7d' | '30d'; zoneId?: string };
+    Querystring: { period?: '24h' | '7d' | '30d' };
   }>(
     '/leaderboard',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const period = (request.query as { period?: '24h' | '7d' | '30d'; zoneId?: string }).period || '7d';
-        const zoneId = (request.query as { period?: '24h' | '7d' | '30d'; zoneId?: string }).zoneId;
+        const period = (request.query as { period?: '24h' | '7d' | '30d' }).period ?? '7d';
+        const scoringPeriod: ScoringPeriod = period === '24h' ? 'daily' : period === '7d' ? 'weekly' : 'monthly';
 
-        // Mock multiple drivers
-        const driverIds = ['driver_1', 'driver_2', 'driver_3', 'driver_4', 'driver_5'];
-        const driverMetricsArray = driverIds.map((driverId) => ({
-          metrics: {
-            driverId,
-            dateRange: {
-              start: Date.now() - 7 * 24 * 60 * 60 * 1000,
-              end: Date.now(),
-            },
-            deliveries: {
-              totalCount: 45 + Math.floor(Math.random() * 20),
-              onTimeCount: 38 + Math.floor(Math.random() * 10),
-              firstAttemptSuccessCount: 42 + Math.floor(Math.random() * 5),
-            },
-            ratings: {
-              average: 4.2 + Math.random(),
-              count: 42,
-            },
-            routeEfficiency: {
-              average: 80 + Math.random() * 15,
-              count: 45,
-            },
-            speedCompliance: {
-              percentWithinLimit: 85 + Math.random() * 15,
-              averageExcessKmh: 2 + Math.random() * 3,
-            },
-            zoneId: zoneId || 'zone_1',
-          } as DriverMetrics,
-          historicalScores: [75, 78, 80, 82, 85],
-        }));
-
-        const result = calculateDriverScoreBatch(driverMetricsArray);
-
-        // Convert to leaderboard format
-        const leaderboard = result.scores
-          .map((score, idx) => ({
-            rank: idx + 1,
-            driverId: score.driverId,
-            driverName: `Driver ${idx + 1}`,
-            compositeScore: score.compositeScore,
-            onTimePercent: score.breakdown.onTimeDeliveryRate,
-            routeEfficiencyAvg: score.breakdown.routeEfficiencyAverage,
-            customerRatingAvg: score.breakdown.customerRatingAverage,
-            deliverySuccessPercent: score.breakdown.deliverySuccessRate,
-            badge: score.badges[0],
-            trend: score.trendAnalysis.direction,
-            trendPercent: score.trendAnalysis.changePercent,
-          }))
-          .sort((a, b) => b.compositeScore - a.compositeScore);
+        const entries = await getLeaderboard(request.tenantId ?? '', scoringPeriod, 20, prisma);
 
         return reply.code(200).send({
           data: {
             period,
-            entries: leaderboard,
+            entries,
             generatedAt: Date.now(),
           },
           timestamp: new Date().toISOString(),
         });
-      } catch (error) {
-        fastify.log.error(error);
+      } catch {
         return reply.code(500).send({ error: 'Failed to get leaderboard' });
       }
     },

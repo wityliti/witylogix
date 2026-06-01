@@ -76,56 +76,7 @@ interface HistoryResponse {
   history: HistoryEntry[];
 }
 
-// ── Demo data ────────────────────────────────────────────────────
 
-const DEMO_SCORE_RESPONSE: DriverScoreResponse = {
-  score: {
-    driverId: 'demo',
-    compositeScore: 91.4,
-    breakdown: {
-      onTimeScore: 94.2,
-      customerRatingScore: 96.0,
-      podComplianceScore: 88.5,
-      routeEfficiencyScore: 87.1,
-      reliabilityScore: 91.2,
-    },
-    tier: 'platinum',
-    rank: 1,
-    trend: 'up',
-    previousScore: 89.2,
-    calculatedAt: new Date().toISOString(),
-  },
-  driver: {
-    id: 'demo',
-    name: 'Marcus Chen',
-    email: 'marcus.chen@fleet.witylogix.io',
-    phone: '+1 (555) 012-3456',
-    vehicleType: 'Van',
-    joinedAt: '2024-03-15T00:00:00Z',
-  },
-  metrics: {
-    totalDeliveries: 1840,
-    onTimeCount: 1789,
-    lateCount: 51,
-    avgDeliveryMinutes: 28,
-    customerRatingSum: 9016,
-    customerRatingCount: 1840,
-    podComplianceCount: 1828,
-    podMissedCount: 12,
-    incidentCount: 2,
-  },
-};
-
-const DEMO_HISTORY: HistoryEntry[] = [
-  { period: 'Week 1', compositeScore: 82.1, tier: 'gold' },
-  { period: 'Week 2', compositeScore: 84.7, tier: 'gold' },
-  { period: 'Week 3', compositeScore: 86.2, tier: 'gold' },
-  { period: 'Week 4', compositeScore: 88.0, tier: 'gold' },
-  { period: 'Week 5', compositeScore: 87.5, tier: 'gold' },
-  { period: 'Week 6', compositeScore: 89.2, tier: 'platinum' },
-  { period: 'Week 7', compositeScore: 90.1, tier: 'platinum' },
-  { period: 'Week 8', compositeScore: 91.4, tier: 'platinum' },
-];
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -225,17 +176,49 @@ export default function DriverDetailPage() {
   const params = useParams();
   const driverId = params.id as string;
 
-  const { data: scoreData, loading: scoreLoading, refetch } = useApiQuery<DriverScoreResponse>(
+  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreResponse>(
     `/api/v4/driver-scoring/${driverId}`,
   );
 
-  const { data: historyData, loading: historyLoading } = useApiQuery<HistoryResponse>(
+  const { data: historyData } = useApiQuery<HistoryResponse>(
     `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
   );
 
-  const scoreRes = scoreData ?? DEMO_SCORE_RESPONSE;
-  const history = historyData?.history ?? DEMO_HISTORY;
-  const { score, driver, metrics } = scoreRes;
+  const history = historyData?.history ?? [];
+
+  if (scoreLoading) {
+    return (
+      <div className="min-h-screen px-6 lg:px-8 pt-8 space-y-4">
+        <div className="h-8 w-32 bg-white/[0.04] rounded animate-pulse" />
+        <div className="h-24 bg-white/[0.04] rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-28 bg-white/[0.04] rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (scoreError || !scoreData) {
+    return (
+      <div className="min-h-screen px-6 lg:px-8 pt-8">
+        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 mb-6">
+          <ArrowLeft className="w-4 h-4" />All Drivers
+        </Link>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <ShieldCheck className="w-10 h-10 text-white/10" />
+          <p className="text-sm font-medium text-white/30">Driver not found or score unavailable</p>
+          <p className="text-xs text-white/20">{scoreError?.message ?? 'No scoring data for this driver'}</p>
+          <button onClick={refetch} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 mt-2">
+            <RefreshCw className="w-3.5 h-3.5" />Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { score, driver, metrics } = scoreData;
   const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
 
   const avgRating = metrics.customerRatingCount > 0
@@ -269,7 +252,7 @@ export default function DriverDetailPage() {
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-white/90 tracking-tight">
-                  {scoreLoading ? '…' : driver.name}
+                  {driver.name}
                 </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
@@ -354,8 +337,10 @@ export default function DriverDetailPage() {
                 <h3 className="text-sm font-semibold text-white/60 tracking-wide">Score History</h3>
                 <span className="text-[11px] text-white/20 font-mono">8-week trend</span>
               </div>
-              {historyLoading ? (
-                <div className="h-24 bg-white/[0.03] rounded animate-pulse" />
+              {history.length === 0 ? (
+                <div className="h-24 flex items-center justify-center text-xs text-white/20">
+                  No history data yet
+                </div>
               ) : (
                 <HistoryChart history={history} />
               )}
