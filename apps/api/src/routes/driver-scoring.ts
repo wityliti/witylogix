@@ -52,7 +52,7 @@ async function driverScoringRoutes(fastify: FastifyInstance): Promise<void> {
 
     try {
       // Get leaderboard from scoring engine
-      const leaderboard = await getLeaderboard(
+      const entries = await getLeaderboard(
         request.tenantId,
         period as ScoringPeriod,
         limit,
@@ -60,12 +60,12 @@ prisma
       );
 
       return {
-        data: leaderboard.entries,
+        data: entries,
         meta: {
-          period: leaderboard.period,
-          totalDrivers: leaderboard.totalDrivers,
-          generatedAt: leaderboard.generatedAt,
-          tenantId: leaderboard.tenantId,
+          period,
+          totalDrivers: entries.length,
+          generatedAt: new Date(),
+          tenantId: request.tenantId,
         },
       };
     } catch (error) {

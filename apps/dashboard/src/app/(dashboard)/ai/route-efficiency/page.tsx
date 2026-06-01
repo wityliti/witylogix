@@ -145,24 +145,23 @@ export default function RouteEfficiencyPage() {
     '/api/v4/routes?status=COMPLETED&limit=20',
   );
 
-  const routes = routesData.filter((r) =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
+  const routes = (routesData ?? []).filter((r) =>
+    r.name?.toLowerCase().includes(search.toLowerCase()) ||
     r.driverName?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const firstRouteId = routesData[0]?.id ?? '';
-  const activeId = selectedRouteId || firstRouteId;
+  const activeRouteId = selectedRouteId || routes[0]?.id;
 
   const { data: efficiencyData, loading: efficiencyLoading } = useApiQuery<RouteEfficiencyResponse>(
-    activeId ? `/api/v4/ai/analytics/route-efficiency/${activeId}` : null!,
+    activeRouteId ? `/api/v4/ai/analytics/route-efficiency/${activeRouteId}` : null!,
   );
 
   const score: RouteEfficiencyScore | null = efficiencyData?.data ?? null;
-  const accent = score ? scoreAccent(score.score) : '#60a5fa';
-  const selectedRoute = routes.find((r) => r.id === activeId) ?? routes[0] ?? null;
+  const accent = score ? scoreAccent(score.score) : '#818cf8';
+  const selectedRoute = routes.find((r) => r.id === activeRouteId);
 
-  const distDiff = score ? (score.metrics.actualDistance - score.metrics.plannedDistance) : 0;
-  const timeDiff = score ? (score.metrics.actualDuration - score.metrics.plannedDuration) : 0;
+  const distDiff = score ? score.metrics.actualDistance - score.metrics.plannedDistance : 0;
+  const timeDiff = score ? score.metrics.actualDuration - score.metrics.plannedDuration : 0;
 
   return (
     <div className="min-h-screen">
@@ -208,6 +207,12 @@ export default function RouteEfficiencyPage() {
                       <div key={i} className="h-16 bg-white/[0.03] rounded animate-pulse" />
                     ))}
                   </div>
+                ) : routes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-4">
+                    <Route className="w-8 h-8 text-white/10" />
+                    <p className="text-sm text-white/25">No completed routes</p>
+                    <p className="text-xs text-white/15">Efficiency scores appear once routes are completed</p>
+                  </div>
                 ) : (
                   routes.map((route) => (
                     <button
@@ -215,20 +220,18 @@ export default function RouteEfficiencyPage() {
                       onClick={() => setSelectedRouteId(route.id)}
                       className={cn(
                         'w-full text-left px-4 py-3.5 border-b border-white/[0.03] last:border-0 transition-colors',
-                        selectedRouteId === route.id
+                        activeRouteId === route.id
                           ? 'bg-blue-500/10 border-l-2 border-l-blue-500'
                           : 'hover:bg-white/[0.02]',
                       )}
                     >
-                      <p className={cn('text-sm font-medium', selectedRouteId === route.id ? 'text-white/90' : 'text-white/60')}>
-                        {route.name}
+                      <p className={cn('text-sm font-medium', activeRouteId === route.id ? 'text-white/90' : 'text-white/60')}>
+                        {route.name ?? route.id.slice(0, 12)}
                       </p>
                       <div className="flex items-center gap-3 mt-1 text-[11px] text-white/25">
-                        <span>{route.driverName}</span>
-                        <span>·</span>
-                        <span>{route.stopCount} stops</span>
-                        <span>·</span>
-                        <span>{route.date}</span>
+                        {route.driverName && <span>{route.driverName}</span>}
+                        {route.stopCount != null && <><span>·</span><span>{route.stopCount} stops</span></>}
+                        {route.date && <><span>·</span><span>{route.date}</span></>}
                       </div>
                     </button>
                   ))
@@ -239,9 +242,24 @@ export default function RouteEfficiencyPage() {
 
           {/* Right: score panel */}
           <div className="space-y-4">
-            {efficiencyLoading ? (
+            {!activeRouteId ? (
+              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
+                <div className="text-center">
+                  <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                  <p className="text-sm text-white/30">Select a route to see its efficiency score</p>
+                </div>
+              </div>
+            ) : efficiencyLoading ? (
               <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 animate-pulse" />
-            ) : score ? (
+            ) : !score ? (
+              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
+                <div className="text-center">
+                  <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                  <p className="text-sm text-white/30">Score unavailable for this route</p>
+                  <p className="text-xs text-white/15 mt-1">Route may not have timing data</p>
+                </div>
+              </div>
+            ) : (
               <>
                 {/* Score card */}
                 <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-6">

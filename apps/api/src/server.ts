@@ -315,7 +315,6 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/ai/copilot.js"), { prefix: "/api/v4/ai/copilot" });
   await safeRegister(import("./routes/ai/analytics.js"), { prefix: "/api/v4/ai/analytics" });
   await safeRegister(import("./routes/ai/slots.js"), { prefix: "/api/v4/ai/slots" });
-  await safeRegister(import("./routes/eld.js"), { prefix: "/api/v4/eld" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 

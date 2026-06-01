@@ -14,7 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useApiMutation, useApiList } from '@/hooks/use-api';
+import { useApiQuery, useApiList } from '@/hooks/use-api';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -47,6 +47,11 @@ interface RecommendResponse {
   timestamp: string;
 }
 
+interface Zone {
+  id: string;
+  name: string;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 function scoreGrade(score: number) {
@@ -75,35 +80,22 @@ export default function SlotAIPage() {
   const [customerId, setCustomerId] = useState('');
   const [zoneId, setZoneId] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [queryUrl, setQueryUrl] = useState<string | null>(null);
 
-  const { items: zones, loading: zonesLoading } = useApiList<Zone>('/api/v4/zones');
+  const { items: zones, loading: zonesLoading } = useApiList<Zone>('/api/v4/zones?limit=50');
 
-  useEffect(() => {
-    if (zones.length > 0 && !zoneId) {
-      setZoneId(zones[0].id);
-    }
-  }, [zones, zoneId]);
+  const activeZoneId = zoneId || zones[0]?.id || '';
 
-  const { data, loading, execute } = useApiMutation<RecommendResponse>(
-    'POST',
-    '/api/v4/ai/slots/recommend',
-  );
+  const { data, loading } = useApiQuery<RecommendResponse>(queryUrl);
 
   const slots: ScoredSlot[] = data?.recommendations ?? [];
 
-  const handleSearch = async () => {
-    setHasSearched(true);
-    try {
-      await execute({
-        customerId: customerId || undefined,
-        zoneId,
-        date: new Date(date).toISOString(),
-        maxSlots: 5,
-      });
-    } catch {
-      // error displayed via empty state
-    }
+  const handleSearch = () => {
+    if (!customerId.trim()) return;
+    const dateIso = encodeURIComponent(new Date(date + 'T00:00:00.000Z').toISOString());
+    setQueryUrl(
+      `/api/v4/ai/slots/recommend?customerId=${encodeURIComponent(customerId.trim())}&zoneId=${encodeURIComponent(activeZoneId)}&date=${dateIso}&maxSlots=5`,
+    );
   };
 
   return (
@@ -142,7 +134,7 @@ export default function SlotAIPage() {
             <div>
               <label className="block text-xs text-white/30 mb-1.5">Delivery Zone</label>
               <select
-                value={zoneId}
+                value={activeZoneId}
                 onChange={(e) => setZoneId(e.target.value)}
                 disabled={zonesLoading}
                 className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
@@ -150,7 +142,7 @@ export default function SlotAIPage() {
                 {zonesLoading ? (
                   <option>Loading zones…</option>
                 ) : zones.length === 0 ? (
-                  <option value="">No zones available</option>
+                  <option value="">No zones configured</option>
                 ) : (
                   zones.map((z) => (
                     <option key={z.id} value={z.id}>{z.name}</option>
@@ -186,10 +178,23 @@ export default function SlotAIPage() {
         </div>
 
         {/* Results */}
-        {!hasSearched ? (
+        {!queryUrl ? (
           <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
-            <p className="text-sm text-white/25">Enter a zone and date above to preview AI slot recommendations</p>
+            <p className="text-sm text-white/25">Enter a customer ID and click "Get Recommendations"</p>
+            <p className="text-xs text-white/15 mt-1">Customer ID is required to personalise slot scoring</p>
+          </div>
+        ) : loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : slots.length === 0 ? (
+          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
+            <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
+            <p className="text-sm text-white/25">No slot recommendations available</p>
+            <p className="text-xs text-white/15 mt-1">Try a different zone or date</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -203,19 +208,7 @@ export default function SlotAIPage() {
               </div>
             )}
 
-            {loading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : slots.length === 0 ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
-                <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                <p className="text-sm text-white/25">No slot recommendations available for this zone and date</p>
-              </div>
-            ) : (
-              slots.map((slot, idx) => {
+            {slots.map((slot, idx) => {
                 const isTop = idx === 0;
                 const grade = scoreGrade(slot.score);
                 const driverPct = slot.driverAvailability.total > 0
@@ -308,13 +301,12 @@ export default function SlotAIPage() {
                     </div>
                   </div>
                 );
-              })
-            )}
+              })}
           </div>
         )}
 
         {/* Info footer */}
-        {hasSearched && slots.length > 0 && (
+        {queryUrl && slots.length > 0 && (
           <p className="text-[11px] text-white/20 text-center">
             Recommendations scored by demand forecast · driver availability · customer preferences · historical success rates
           </p>

@@ -78,7 +78,9 @@ interface DriverProfile {
   _count: { orders: number };
 }
 
-// ── Tier style config ────────────────────────────────────────
+
+
+// ── Helpers ──────────────────────────────────────────────────────
 
 const TIER_STYLE: Record<string, { bg: string; text: string; border: string; label: string }> = {
   platinum: { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-400/30', label: 'Platinum' },
@@ -192,14 +194,50 @@ export default function DriverDetailPage() {
   const params = useParams();
   const driverId = params.id as string;
 
-  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } =
-    useApiQuery<DriverScoreData>(`/api/v4/driver-scoring/${driverId}`);
+  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreResponse>(
+    `/api/v4/driver-scoring/${driverId}`,
+  );
 
-  const { data: historyItems, loading: historyLoading } =
-    useApiQuery<HistoryEntry[]>(`/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`);
+  const { data: historyData } = useApiQuery<HistoryResponse>(
+    `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
+  );
 
-  const { data: profileData } =
-    useApiQuery<DriverProfile>(`/api/v4/drivers/${driverId}`);
+  const history = historyData?.history ?? [];
+
+  if (scoreLoading) {
+    return (
+      <div className="min-h-screen px-6 lg:px-8 pt-8 space-y-4">
+        <div className="h-8 w-32 bg-white/[0.04] rounded animate-pulse" />
+        <div className="h-24 bg-white/[0.04] rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-28 bg-white/[0.04] rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (scoreError || !scoreData) {
+    return (
+      <div className="min-h-screen px-6 lg:px-8 pt-8">
+        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 mb-6">
+          <ArrowLeft className="w-4 h-4" />All Drivers
+        </Link>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <ShieldCheck className="w-10 h-10 text-white/10" />
+          <p className="text-sm font-medium text-white/30">Driver not found or score unavailable</p>
+          <p className="text-xs text-white/20">{scoreError?.message ?? 'No scoring data for this driver'}</p>
+          <button onClick={refetch} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 mt-2">
+            <RefreshCw className="w-3.5 h-3.5" />Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { score, driver, metrics } = scoreData;
+  const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
 
   if (scoreLoading) return <PageSkeleton />;
 
@@ -247,7 +285,9 @@ export default function DriverDetailPage() {
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-bold text-white/90 tracking-tight">{scoreData.driverName}</h1>
+                <h1 className="text-2xl font-bold text-white/90 tracking-tight">
+                  {driver.name}
+                </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
                 </span>
@@ -337,8 +377,10 @@ export default function DriverDetailPage() {
                 <h3 className="text-sm font-semibold text-white/60 tracking-wide">Score History</h3>
                 <span className="text-[11px] text-white/20 font-mono">weekly · 56d</span>
               </div>
-              {historyLoading ? (
-                <div className="h-24 bg-white/[0.03] rounded animate-pulse" />
+              {history.length === 0 ? (
+                <div className="h-24 flex items-center justify-center text-xs text-white/20">
+                  No history data yet
+                </div>
               ) : (
                 <HistoryChart history={history} />
               )}
