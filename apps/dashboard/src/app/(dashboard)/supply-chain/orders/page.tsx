@@ -40,12 +40,6 @@ export default function OrdersPage() {
   const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
   const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
   const { items: returnQueue } = useApiList<ReturnItem>('/api/v4/returns');
-  const { items: warehouseItems } = useApiList<{ name: string }>('/api/v4/supply-chain/warehouses');
-
-  const warehouseOptions = useMemo(
-    () => ['All', ...warehouseItems.map((w) => w.name)],
-    [warehouseItems],
-  );
   const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
     priority: 'all',
