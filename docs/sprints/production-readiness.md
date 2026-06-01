@@ -25,6 +25,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-503 | feat/WIT-503-integrations-production | Integrations (11) | 11 | 2026-05 |
 | WIT-504 | feat/WIT-504-settings-production | Settings (8) | 8 | 2026-05 |
 | WIT-505 | feat/WIT-505-dashboard-invoices-payments-production | Activity (2), Order Board (1), Invoices (5), Payments (1) | 9 | 2026-05-31 |
+| WIT-513 | feat/WIT-513-dashboard-returns-products-supplychain-healthcare | Returns (3), Products Sync (3), SC Inventory (2), SC Orders (1), Healthcare Records (6), Orders Detail map | 15 | 2026-06-01 |
 
 ---
 
@@ -54,7 +55,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
 | Order List | `/orders` | 0 | 0 | ✅ |
-| Order Detail | `/orders/[id]` | 2 | — | ⬜ |
+| Order Detail | `/orders/[id]` | 2 | 0 | ✅ WIT-513 + map view |
 | Order Board | `/orders/board` | 1 | 0 | ✅ WIT-505 |
 | Order Import | `/orders/import` | 3 | — | ⬜ |
 | Order Create | `/orders/create` | 0 | — | ⬜ |
@@ -260,36 +261,44 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Products (3 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Product List | `/products` | 0 | ✅ |
-| Product Sync | `/products/sync` | 3 | ⬜ |
+## Products (0 mock signals) ✅ WIT-513
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Product List | `/products` | 0 | 0 | ✅ |
+| Product Sync | `/products/sync` | 3 | 0 | ✅ WIT-513 |
+
+**WIT-513**: Replaced MOCK_PLATFORMS (3 hardcoded connections) with real `GET /api/v4/integrations/connections` filtered by category=ecommerce; static PLATFORM_FIELD_SCHEMAS keyed by platform slug (shopify/woocommerce/amazon/bigcommerce)
 
 ---
 
-## Returns (3 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Returns | `/returns` | 3 | ⬜ |
+## Returns (0 mock signals) ✅ WIT-513
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Returns | `/returns` | 3 | 0 | ✅ WIT-513 |
+
+**WIT-513**: Removed MOCK_RETURNS fallback; useReturns() hook with loading/empty/error states; PackageOpen empty state
 
 ---
 
-## Supply Chain (3 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Supply Chain Overview | `/supply-chain` | 0 | ✅ |
-| SC Inventory | `/supply-chain/inventory` | 2 | ⬜ |
-| SC Orders | `/supply-chain/orders` | 1 | ⬜ |
+## Supply Chain (0 mock signals) ✅ WIT-513
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Supply Chain Overview | `/supply-chain` | 0 | 0 | ✅ |
+| SC Inventory | `/supply-chain/inventory` | 2 | 0 | ✅ WIT-513 |
+| SC Orders | `/supply-chain/orders` | 1 | 0 | ✅ WIT-513 |
+
+**WIT-513**: Inventory: removed "Mock data" comment, derived warehouses from API, wired useStockGauges() + useReorderAlerts(). Orders: removed WAVE_PLANS/BATCH_PICKING/RETURN_QUEUE arrays, collapsed to orders+returns tabs, returns tab uses real useReturns() hook
 
 ---
 
-## Healthcare (6 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Healthcare Overview | `/healthcare` | 0 | ✅ |
-| Patients | `/healthcare/patients` | 0 | ✅ |
-| Records | `/healthcare/records` | 6 | ⬜ |
+## Healthcare (0 mock signals) ✅ WIT-513
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Healthcare Overview | `/healthcare` | 0 | 0 | ✅ |
+| Patients | `/healthcare/patients` | 0 | 0 | ✅ |
+| Records | `/healthcare/records` | 6 | 0 | ✅ WIT-513 |
+
+**WIT-513**: Removed mockRecords inline fallback; endpoint changed from /api/v4/orders?type=healthcare&view=records to GET /api/v4/healthcare/records (new route, queries orders tagged "healthcare", enriches from metadata field); proper empty state row
 
 ---
 
