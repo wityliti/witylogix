@@ -75,29 +75,35 @@ export default function FieldServicePage() {
 
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
 
-  const loading = statsLoading || schedLoading || jobsLoading;
-  const anyError = statsError || schedError || jobsError;
-
   if (loading) return <LoadingSkeleton />;
-  if (anyError) {
-    return (
-      <ErrorState
-        message={(statsError ?? schedError ?? jobsError)?.message ?? 'Failed to load field service data'}
-        onRetry={() => { refetchStats(); refetchSched(); refetchJobs(); }}
-      />
-    );
-  }
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const schedule = scheduleData ?? [];
-  const technicians = Array.from(
-    new Map(schedule.map((s) => [s.technicianId, { id: s.technicianId, name: s.technicianName }])).values()
-  ).filter((t) => t.id);
+  const schedule: ScheduleItem[] = [];
+  const technicians: Technician[] = [];
 
-  const filteredSchedule = useMemo(
-    () => (selectedTech ? schedule.filter((s) => s.technicianId === selectedTech) : schedule),
-    [schedule, selectedTech]
-  );
+  const completedOrders = allOrders.filter(o => o.status === 'completed');
+  const activeOrders = allOrders.filter(o => ['in_progress', 'dispatched'].includes(o.status));
+  const pendingOrders = allOrders.filter(o => ['created', 'scheduled'].includes(o.status));
 
+  const completionRate = allOrders.length > 0
+    ? Math.round((completedOrders.length / allOrders.length) * 100)
+    : 0;
+
+  const overview = {
+    totalTechnicians: technicians.length,
+    activeJobs: activeOrders.length,
+    completionRate,
+    techniciansInField: activeOrders.length,
+    avgResponseTime: 0,
+  };
+  const slaMetrics = {
+    onTimePercentage: completionRate,
+    overdueCount: pendingOrders.length,
+    totalJobs: allOrders.length,
+    avgCompletionTime: 0,
+  };
+
+  // Filter pending/unassigned jobs for queue
   const jobQueue = useMemo(
     () => allJobs.filter((o) => ['created', 'scheduled'].includes(o.status)).slice(0, 5),
     [allJobs]
