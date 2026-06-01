@@ -52,10 +52,10 @@ function getPeriodDays(period: Period): number {
 
 function MapLegend() {
   const items = [
-    { color: "var(--wl-success-500)", label: "On-Time" },
-    { color: "var(--wl-error-500)",   label: "Late" },
-    { color: "var(--wl-warning-500)", label: "In Flight" },
-    { color: "var(--wl-text-tertiary)", label: "Failed" },
+    { color: "#10b981", label: "On-Time" },
+    { color: "#ef4444", label: "Late" },
+    { color: "#f59e0b", label: "In Flight" },
+    { color: "#6b7280", label: "Failed" },
   ];
   return (
     <div className="absolute bottom-4 left-4 z-10 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-3 flex items-center gap-4">
@@ -126,21 +126,25 @@ export default function RoutePerformancePage() {
     {
       label: "On-Time Rate",
       value: summary?.onTimePercentage != null ? `${summary.onTimePercentage.toFixed(1)}%` : "—",
+      change: { value: 0, label: "vs planned" },
       accentColor: "var(--wl-success-400)",
     },
     {
       label: "Avg Delivery Time",
       value: summary?.avgDeliveryTime != null ? `${summary.avgDeliveryTime}m` : "—",
+      change: { value: 0, label: "vs planned" },
       accentColor: "var(--wl-info-400)",
     },
     {
       label: "CO₂ Saved",
       value: summary?.co2Savings != null ? `${summary.co2Savings}kg` : "—",
+      change: { value: 0, label: "vs baseline" },
       accentColor: "var(--wl-success-500)",
     },
     {
       label: "SLA Compliance",
       value: summary?.slaCompliance != null ? `${summary.slaCompliance.toFixed(1)}%` : "—",
+      change: { value: 0, label: "vs target" },
       accentColor: "var(--wl-primary-400)",
     },
   ];
