@@ -25,6 +25,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-503 | feat/WIT-503-integrations-production | Integrations (11) | 11 | 2026-05 |
 | WIT-504 | feat/WIT-504-settings-production | Settings (8) | 8 | 2026-05 |
 | WIT-505 | feat/WIT-505-dashboard-invoices-payments-production | Activity (2), Order Board (1), Invoices (5), Payments (1) | 9 | 2026-05-31 |
+| WIT-512 | feat/WIT-512-dashboard-analytics-production | Analytics overview (DEMO→real), Returns (MOCK_RETURNS→0), API route-performance (Math.random→Prisma), Map: DeliveryPerformanceLayer + route-performance Map tab | 7 + API | 2026-06-01 |
 
 ---
 
@@ -129,16 +130,23 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Analytics (10 → 0 mock signals) ✅ WIT-512
+## Analytics (14 → 0 mock signals) ✅ WIT-512
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
-| Analytics Overview | `/analytics` | DEMO_METRICS, DEMO_HOURLY, DEMO_WEEKLY, DEMO_TOP_ZONES, DEMO_DRIVERS_PERF (5 consts) | 0 | ✅ |
+| Analytics Overview | `/analytics` | DEMO_METRICS, DEMO_HOURLY, DEMO_WEEKLY, DEMO_TOP_ZONES, DEMO_DRIVERS_PERF (5 consts) | 0 | ✅ WIT-512 |
 | Dashboards | `/analytics/dashboards` | 0 | 0 | ✅ |
-| ETA Accuracy | `/analytics/eta-accuracy` | DEMO_METRICS, DEMO_FEATURES, DEMO_REPORT, mkDemo (4 consts) | 0 | ✅ |
+| ETA Accuracy | `/analytics/eta-accuracy` | DEMO_METRICS, DEMO_FEATURES, DEMO_REPORT, mkDemo (4 consts) | 0 | ✅ WIT-512 |
 | Reports | `/analytics/reports` | 0 | 0 | ✅ |
-| Route Performance | `/analytics/route-performance` | 0 | 0 | ✅ |
+| Route Performance | `/analytics/route-performance` | 0 (API all Math.random()) | 0 + Map view | ✅ WIT-512 |
 
-**Endpoints used**: `GET /api/v4/analytics/overview?range=`, `GET /api/v4/ai/eta-v2/model-performance`, `/feature-importance`, `/accuracy-report`, `/health`
+**WIT-512 changes**:
+- `analytics/page.tsx`: Removed `DEMO_METRICS`, `DEMO_HOURLY`, `DEMO_WEEKLY`, `DEMO_TOP_ZONES`, `DEMO_DRIVERS_PERF` fallbacks; replaced with loading skeletons + empty states
+- `analytics/eta-accuracy/page.tsx`: Removed `DEMO_METRICS`, `DEMO_FEATURES`, `DEMO_REPORT`, `mkDemo` fallbacks; real AI endpoint data
+- `analytics/route-performance.ts` (API): Replaced all `Math.random()` mock generators with real Prisma queries across all 6 endpoints + new `/geo` endpoint
+- `analytics/route-performance/page.tsx`: Added Charts/Map view toggle; Map view renders `DeliveryPerformanceLayer` (green=on-time, red=late, amber=in-flight) with cluster support
+- New map layer: `components/map/delivery-performance-layer.tsx` — clustered delivery pins coloured by on-time status
+
+**Endpoints used/fixed**: `GET /api/v4/analytics/overview?range=`, `/api/v4/ai/eta-v2/model-performance`, `/feature-importance`, `/accuracy-report`, `/health`, `GET /api/v4/analytics/route-performance` (real routes), `/planned-vs-actual`, `/drivers`, `/efficiency`, `/co2`, `/sla-compliance`, `/geo`
 
 ---
 
@@ -268,10 +276,12 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Returns (3 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Returns | `/returns` | 3 | ⬜ |
+## Returns (3 → 0 mock signals) ✅ WIT-512
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Returns | `/returns` | 3 | 0 | ✅ WIT-512 |
+
+**WIT-512 changes**: Removed `MOCK_RETURNS` fallback array (4 hardcoded returns); page now shows `LoadingSkeleton` while loading, `ErrorState` on error, proper empty state with CTA when API returns 0 results
 
 ---
 

@@ -11,18 +11,8 @@ import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useReturns, useReturnStats, type Return } from '@/hooks/use-returns';
-import {
-  Plus,
-  ChevronRight,
-  RotateCcw,
-  Map,
-  LayoutList,
-  DollarSign,
-  CheckCircle,
-  XCircle,
-  Package,
-} from 'lucide-react';
+import { useReturns, Return } from '@/hooks/use-returns';
+import { Plus, ChevronRight, RotateCcw } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    RETURNS MANAGEMENT PAGE — RMA lifecycle with status pipeline
@@ -41,24 +31,18 @@ const ReturnsMapView = dynamic(() => import('./components/returns-map-view'), {
   ),
 });
 
-// ── Status helpers ────────────────────────────────────────────────────────────
-
-type NormStatus = 'pending' | 'approved' | 'rejected' | 'received' | 'inspected' | 'refunded';
-
-const STATUS_CONFIG: Record<NormStatus, { badge: 'default' | 'info' | 'primary' | 'danger' | 'warning' | 'success'; label: string }> = {
-  pending:   { badge: 'info',    label: 'Pending'   },
-  approved:  { badge: 'primary', label: 'Approved'  },
-  rejected:  { badge: 'danger',  label: 'Rejected'  },
-  received:  { badge: 'warning', label: 'Received'  },
-  inspected: { badge: 'warning', label: 'Inspected' },
-  refunded:  { badge: 'success', label: 'Refunded'  },
+const statusConfig: Record<ReturnStatus, { badge: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'; label: string }> = {
+  requested:   { badge: 'info',    label: 'Requested'    },
+  approved:    { badge: 'primary', label: 'Approved'     },
+  shipped_back:{ badge: 'primary', label: 'Shipped Back' },
+  received:    { badge: 'warning', label: 'Received'     },
+  inspected:   { badge: 'warning', label: 'Inspected'    },
+  refunded:    { badge: 'success', label: 'Refunded'     },
 };
 
-const PIPELINE_STATUSES: NormStatus[] = ['pending', 'approved', 'received', 'inspected', 'refunded'];
-
-function normalize(status: string): NormStatus {
-  const s = status?.toLowerCase?.() ?? '';
-  if (s === 'rejected') return 'rejected';
+const normalizeStatus = (status: string): ReturnStatus => {
+  const s = status.toLowerCase();
+  if (s === 'requested' || s === 'initiated' || s === 'pending') return 'requested';
   if (s === 'approved') return 'approved';
   if (s === 'received' || s === 'picked_up' || s === 'in_transit') return 'received';
   if (s === 'inspected') return 'inspected';
@@ -69,44 +53,30 @@ function normalize(status: string): NormStatus {
 const StatusPipeline = ({ returns }: { returns: Return[] }) => {
   const statuses: ReturnStatus[] = ['requested', 'approved', 'shipped_back', 'received', 'inspected', 'refunded'];
 
-function fmtCurrency(n: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
-}
-
-// ── Status Pipeline Strip ─────────────────────────────────────────────────────
-
-function StatusPipelineStrip({ returns }: { returns: Return[] }) {
-  const countByStatus = useMemo(() => {
-    const acc: Record<NormStatus, number> = { pending: 0, approved: 0, rejected: 0, received: 0, inspected: 0, refunded: 0 };
-    returns.forEach((r) => { acc[normalize(r.status as string)]++; });
+  const countByStatus = statuses.reduce((acc, status) => {
+    acc[status] = returns.filter((r) => normalizeStatus(r.status as string) === status).length;
     return acc;
-  }, [returns]);
+  }, {} as Record<ReturnStatus, number>);
 
   return (
-    <Card className="mb-6">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          {PIPELINE_STATUSES.map((status, idx) => (
-            <div key={status} className="flex items-center gap-2 flex-shrink-0">
-              <div className="px-4 py-2.5 rounded-lg border border-wl-border-subtle bg-wl-bg-elevated text-center min-w-[90px]">
-                <div className="text-[10px] font-semibold text-wl-text-tertiary uppercase tracking-wider mb-1">
-                  {status.replace(/_/g, ' ')}
-                </div>
-                <div className="text-xl font-bold text-wl-text-primary font-mono">
-                  {countByStatus[status]}
+    <Card className="mb-8">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 overflow-x-auto pb-2">
+          {statuses.map((status, idx) => (
+            <div key={status} className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex flex-col items-center gap-2">
+                <div className="px-4 py-2 rounded-lg border border-white/[0.08] text-center">
+                  <div className="text-xs font-medium text-wl-text-secondary uppercase tracking-wider">
+                    {status.replace(/_/g, ' ')}
+                  </div>
+                  <div className="text-lg font-semibold text-wl-text-primary mt-1">{countByStatus[status]}</div>
                 </div>
               </div>
-              {idx < PIPELINE_STATUSES.length - 1 && (
+              {idx < statuses.length - 1 && (
                 <ChevronRight className="w-4 h-4 text-wl-border-default flex-shrink-0" />
               )}
             </div>
           ))}
-          <div className="flex items-center gap-2 flex-shrink-0 ml-4 pl-4 border-l border-wl-border-subtle">
-            <div className="px-4 py-2.5 rounded-lg border border-wl-error-500/20 bg-wl-error-500/5 text-center min-w-[80px]">
-              <div className="text-[10px] font-semibold text-wl-error-400 uppercase tracking-wider mb-1">Rejected</div>
-              <div className="text-xl font-bold text-wl-error-400 font-mono">{countByStatus.rejected}</div>
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>
@@ -118,11 +88,11 @@ function StatusPipelineStrip({ returns }: { returns: Return[] }) {
 function ReturnsTable({ returns, onView }: { returns: Return[]; onView: (id: string) => void }) {
   if (returns.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-xl border border-wl-border-subtle bg-wl-bg-elevated">
-        <RotateCcw className="w-10 h-10 text-wl-text-tertiary" />
+      <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-xl border border-white/[0.08] bg-[#13131a]">
+        <RotateCcw className="w-10 h-10 text-white/10" />
         <div className="text-center">
-          <p className="text-sm font-medium text-wl-text-secondary">No returns yet</p>
-          <p className="text-xs text-wl-text-tertiary mt-1">Customer return requests will appear here</p>
+          <p className="text-sm font-medium text-white/40">No returns yet</p>
+          <p className="text-xs text-white/20 mt-1">Customer return requests will appear here</p>
         </div>
         <Button variant="primary" size="sm">
           <Plus className="w-4 h-4" />
@@ -133,30 +103,19 @@ function ReturnsTable({ returns, onView }: { returns: Return[]; onView: (id: str
   }
 
   return (
-    <div className="bg-wl-bg-surface border border-wl-border-subtle rounded-xl overflow-hidden">
-      {/* Header row */}
-      <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 border-b border-wl-border-subtle bg-wl-bg-elevated">
-        {['Return ID', 'Order', 'Customer', 'Reason', 'Status', 'Refund', 'Date', 'Actions'].map((h, i) => (
-          <div
-            key={h}
-            className={cn(
-              'text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider',
-              i === 0 ? 'col-span-1' :
-              i === 1 ? 'col-span-1' :
-              i === 2 ? 'col-span-2' :
-              i === 3 ? 'col-span-2' :
-              i === 4 ? 'col-span-1' :
-              i === 5 ? 'col-span-1 text-right' :
-              i === 6 ? 'col-span-1' :
-              'col-span-3',
-            )}
-          >
-            {h}
-          </div>
-        ))}
+    <div className="bg-[#13131a] border border-white/[0.08] rounded-xl overflow-hidden">
+      <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.08] bg-white/[0.02]">
+        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Return #</div>
+        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Order #</div>
+        <div className="col-span-2 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Customer</div>
+        <div className="col-span-2 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Reason</div>
+        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Status</div>
+        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Refund</div>
+        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Date</div>
+        <div className="col-span-2 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Actions</div>
       </div>
 
-      <div className="divide-y divide-wl-border-subtle">
+      <div className="divide-y divide-white/[0.05]">
         {returns.map((ret) => {
           const status = normalize(ret.status as string);
           const cfg = STATUS_CONFIG[status];
@@ -164,28 +123,19 @@ function ReturnsTable({ returns, onView }: { returns: Return[]; onView: (id: str
           const amount = ret.refundAmount ?? ret.totalRefundAmount ?? 0;
 
           return (
-            <div
-              key={ret.id}
-              className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-wl-bg-elevated/60 transition-colors cursor-pointer"
-              onClick={() => onView(ret.id)}
-              role="row"
-              aria-label={`Return from ${ret.customerName}`}
-            >
-              {/* Return ID */}
+            <div key={ret.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
+              <div className="md:hidden col-span-1 text-sm font-semibold text-wl-text-primary">{ret.id}</div>
+
               <div className="col-span-1">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Return ID</div>
-                <div className="text-sm font-mono font-medium text-wl-primary">
-                  {ret.id.slice(0, 8).toUpperCase()}
-                </div>
+                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Return #</div>
+                <div className="text-sm font-medium text-wl-primary-400">{ret.id.slice(0, 8)}</div>
               </div>
 
-              {/* Order */}
               <div className="col-span-1">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Order</div>
-                <div className="text-sm font-mono text-wl-text-secondary">{ret.orderId.slice(0, 8)}</div>
+                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Order #</div>
+                <div className="text-sm text-wl-text-secondary font-mono">{ret.orderId.slice(0, 8)}</div>
               </div>
 
-              {/* Customer */}
               <div className="col-span-2">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Customer</div>
                 <div className="text-sm text-wl-text-primary font-medium">{ret.customerName}</div>
@@ -194,37 +144,31 @@ function ReturnsTable({ returns, onView }: { returns: Return[]; onView: (id: str
                 )}
               </div>
 
-              {/* Reason */}
               <div className="col-span-2">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Reason</div>
                 <div className="text-sm text-wl-text-secondary capitalize">{ret.reason?.replace(/_/g, ' ') ?? '—'}</div>
               </div>
 
-              {/* Status */}
               <div className="col-span-1">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Status</div>
                 <Badge variant={cfg.badge}>{cfg.label}</Badge>
               </div>
 
-              {/* Refund */}
-              <div className="col-span-1 text-right">
+              <div className="col-span-1">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Refund</div>
                 <div className="text-sm font-semibold font-mono text-wl-success-400">
                   {amount > 0 ? fmtCurrency(amount) : '—'}
                 </div>
               </div>
 
-              {/* Date */}
               <div className="col-span-1">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Date</div>
                 <div className="text-sm text-wl-text-secondary">{date}</div>
               </div>
 
-              {/* Actions */}
-              <div className="col-span-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
-                <Button variant="secondary" size="sm" className="flex-1" onClick={() => onView(ret.id)}>
-                  View
-                </Button>
+              <div className="col-span-2 flex gap-2">
+                <Button variant="ghost" size="sm" className="flex-1">View</Button>
+                <Button variant="secondary" size="sm" className="flex-1">Edit</Button>
               </div>
             </div>
           );
@@ -242,11 +186,14 @@ export default function ReturnsPage() {
   const { items: apiReturns } = useReturns();
   const returnsData = apiReturns;
 
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   return (
     <>
       <Header
         title="Returns & RMA"
-        subtitle={`${totalCount} total return${totalCount !== 1 ? 's' : ''}`}
+        subtitle={`${returns.length} active return${returns.length !== 1 ? 's' : ''}`}
         actions={
           <div className="flex items-center gap-2">
             {/* View toggle */}
@@ -288,75 +235,8 @@ export default function ReturnsPage() {
         }
       />
 
-      {/* ── Stat cards ───────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <StatCard
-          label="Total Returns"
-          value={totalCount}
-          icon={<RotateCcw className="w-5 h-5" />}
-          accentColor="var(--wl-primary-500)"
-        />
-        <StatCard
-          label="Pending Approval"
-          value={pendingCount}
-          icon={<Package className="w-5 h-5" />}
-          accentColor="var(--wl-warning-500)"
-        />
-        <StatCard
-          label="Refunded"
-          value={refundedCount}
-          icon={<CheckCircle className="w-5 h-5" />}
-          accentColor="var(--wl-success-500)"
-        />
-        <StatCard
-          label="Total Refunded"
-          value={fmtCurrency(totalRefunded)}
-          icon={<DollarSign className="w-5 h-5" />}
-          accentColor="var(--wl-success-400)"
-        />
-      </div>
-
-      {/* ── Status pipeline ──────────────────────────────────── */}
-      <StatusPipelineStrip returns={returns} />
-
-      {/* ── Status filter ─────────────────────────────────────── */}
-      {viewMode === 'list' && (
-        <div className="flex gap-2 flex-wrap mb-4">
-          {['all', 'pending', 'approved', 'received', 'inspected', 'refunded', 'rejected'].map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
-                statusFilter === s
-                  ? 'bg-wl-primary text-white border-wl-primary'
-                  : 'bg-wl-bg-elevated text-wl-text-secondary border-wl-border-subtle hover:text-wl-text-primary',
-              )}
-            >
-              {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-              {s !== 'all' && (
-                <span className="ml-1.5 opacity-60">
-                  ({returns.filter((r) => normalize(r.status as string) === s).length})
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* ── Content ──────────────────────────────────────────── */}
-      {viewMode === 'map' ? (
-        <div className="space-y-3">
-          <ReturnsMapView returns={returns} onSelect={(id) => router.push(`/returns/${id}`)} />
-          {returnsWithCoords.length === 0 && (
-            <p className="text-center text-sm text-wl-text-tertiary py-3">
-              No returns have delivery coordinates. Coordinates come from the associated order's shipment.
-            </p>
-          )}
-        </div>
-      ) : (
-        <ReturnsTable returns={filtered} onView={(id) => router.push(`/returns/${id}`)} />
-      )}
+      <StatusPipeline returns={returns} />
+      <ReturnsTable returns={returns} />
     </>
   );
 }
