@@ -179,8 +179,6 @@ export default function RouteEfficiencyPage() {
     '/api/v4/routes?status=COMPLETED&limit=20',
   );
 
-  if (routesError) return <ErrorState message={routesError.message} onRetry={refetchRoutes} />;
-
   const routes = (routesData ?? []).filter((r) =>
     r.name?.toLowerCase().includes(search.toLowerCase()) ||
     r.driverName?.toLowerCase().includes(search.toLowerCase()),
@@ -192,30 +190,9 @@ export default function RouteEfficiencyPage() {
     activeRouteId ? `/api/v4/ai/analytics/route-efficiency/${activeRouteId}` : null!,
   );
 
-  const { data: routeDetail } = useApiQuery<RouteDetail>(
-    activeRouteId && scoreView === 'map' ? `/api/v4/routes/${activeRouteId}` : null!,
-  );
-
   const score: RouteEfficiencyScore | null = efficiencyData?.data ?? null;
   const accent = score ? scoreAccent(score.score) : '#818cf8';
   const selectedRoute = routes.find((r) => r.id === activeRouteId);
-
-  const mapCoords: Array<[number, number]> = (routeDetail?.stops ?? [])
-    .filter((s) => s.latitude != null && s.longitude != null)
-    .sort((a, b) => a.sequence - b.sequence)
-    .map((s) => [s.longitude!, s.latitude!]);
-
-  const mapStops: StopMarker[] = (routeDetail?.stops ?? [])
-    .filter((s) => s.latitude != null && s.longitude != null)
-    .map((s) => ({
-      id: s.id,
-      sequence: s.sequence,
-      lng: s.longitude!,
-      lat: s.latitude!,
-      status: (s.status as StopMarker['status']) ?? 'PENDING',
-      address: s.address,
-      customerName: s.customerName,
-    }));
 
   const distDiff = score ? score.metrics.actualDistance - score.metrics.plannedDistance : 0;
   const timeDiff = score ? score.metrics.actualDuration - score.metrics.plannedDuration : 0;
@@ -299,63 +276,17 @@ export default function RouteEfficiencyPage() {
 
           {/* Right: score panel */}
           <div className="space-y-4">
-            {activeRouteId && (
-              <div className="flex items-center justify-end">
-                <div className="flex items-center rounded-lg border border-white/[0.08] overflow-hidden">
-                  <button
-                    onClick={() => setScoreView('score')}
-                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'score' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
-                  >
-                    <BarChart3 className="w-3.5 h-3.5" />
-                    Score
-                  </button>
-                  <button
-                    onClick={() => setScoreView('map')}
-                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'map' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
-                  >
-                    <Map className="w-3.5 h-3.5" />
-                    Map
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {scoreView === 'map' && activeRouteId && (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
-                <div className="px-5 py-3 border-b border-white/[0.05]">
-                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{selectedRoute?.name ?? 'Route'} — Stop Map</p>
-                </div>
-                {mapCoords.length < 2 ? (
-                  <div className="flex flex-col items-center justify-center h-80 gap-3">
-                    <MapPin className="w-10 h-10 text-white/10" />
-                    <p className="text-sm text-white/30">No stop coordinates available</p>
-                    <p className="text-xs text-white/15">Stops appear once delivery locations have GPS coordinates</p>
-                  </div>
-                ) : (
-                  <div className="h-80">
-                    <WLMap center={[0, 20]} zoom={2} className="h-full w-full">
-                      <RoutePolylineLayer coordinates={mapCoords} variant="planned" fitBounds />
-                      <RouteStopMarkersLayer stops={mapStops} />
-                    </WLMap>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {!activeRouteId && (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
+            {!activeRouteId ? (
+              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
                 <div className="text-center">
                   <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
                   <p className="text-sm text-white/30">Select a route to see its efficiency score</p>
                 </div>
               </div>
-            )}
-
-            {scoreView === 'score' && activeRouteId && (
-              efficiencyLoading ? (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 animate-pulse" />
+            ) : efficiencyLoading ? (
+              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 animate-pulse" />
             ) : !score ? (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
+              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
                 <div className="text-center">
                   <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
                   <p className="text-sm text-white/30">Score unavailable for this route</p>
