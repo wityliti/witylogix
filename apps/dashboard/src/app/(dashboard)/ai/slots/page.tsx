@@ -86,7 +86,7 @@ export default function SlotAIPage() {
 
   const activeZoneId = zoneId || zones[0]?.id || '';
 
-  const { data, loading, error: recommendError, refetch: refetchSlots } = useApiQuery<RecommendResponse>(queryUrl);
+  const { data, loading } = useApiQuery<RecommendResponse>(queryUrl);
 
   const slots: ScoredSlot[] = data?.recommendations ?? [];
 
@@ -179,30 +179,19 @@ export default function SlotAIPage() {
 
         {/* Results */}
         {!queryUrl ? (
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-12 text-center">
+          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
             <p className="text-sm text-white/25">Enter a customer ID and click "Get Recommendations"</p>
             <p className="text-xs text-white/15 mt-1">Customer ID is required to personalise slot scoring</p>
           </div>
-        ) : recommendError ? (
-          <div className="rounded-xl bg-red-500/5 border border-red-500/20 p-8 text-center">
-            <AlertCircle className="w-8 h-8 text-red-400/60 mx-auto mb-3" />
-            <p className="text-sm text-white/50">{recommendError.message}</p>
-            <button
-              onClick={refetchSlots}
-              className="mt-4 text-xs text-red-400/70 hover:text-red-400 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
         ) : loading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-28 bg-wl-bg-surface border border-white/[0.06] rounded-xl animate-pulse" />
+              <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
             ))}
           </div>
         ) : slots.length === 0 ? (
-          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-12 text-center">
+          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
             <p className="text-sm text-white/25">No slot recommendations available</p>
             <p className="text-xs text-white/15 mt-1">Try a different zone or date</p>

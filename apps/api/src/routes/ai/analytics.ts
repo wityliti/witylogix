@@ -16,6 +16,8 @@ import { z } from 'zod';
 import { requireAuth } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
 import {
+  calculateDriverScore,
+  calculateDriverScoreBatch,
   predictDeliveryWindow,
   detectAnomalies,
   calculateCO2,
@@ -23,7 +25,7 @@ import {
   type Stop,
   type DeliveryContext,
 } from '@witylogix/core/ai-analytics';
-import { getLeaderboard, aggregateAllDrivers, type ScoringPeriod } from '@witylogix/core/driver-scoring';
+import { getLeaderboard, type ScoringPeriod } from '@witylogix/core/driver-scoring';
 import { prisma } from '@witylogix/db';
 
 // ─── Zod Schemas ────────────────────────────────────────────
