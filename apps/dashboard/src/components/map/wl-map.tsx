@@ -1,139 +1,216 @@
 'use client';
 
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LMap = any;
-
-// Global registry so child layer components can access the Leaflet map instance
-const MAP_REGISTRY: Map<string, LMap> = new Map();
-
-export function getMapById(id: string): LMap | undefined {
-  return MAP_REGISTRY.get(id);
-}
-
-// CARTO dark matter tiles — free, no API key required
-const CARTO_DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+// CARTO free basemap tiles — no API key required
+const CARTO_DARK = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const CARTO_LIGHT = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 const CARTO_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-let leafletPromise: Promise<typeof import('leaflet')> | null = null;
+export interface WLMapMarker {
+  id: string;
+  lat: number;
+  lng: number;
+  color?: string;
+  label?: string;
+  popup?: string;
+  icon?: 'pin' | 'circle' | 'truck' | 'driver';
+}
 
-export function getLeaflet(): Promise<typeof import('leaflet')> {
-  if (!leafletPromise) {
-    leafletPromise = import('leaflet');
-  }
-  return leafletPromise;
+export interface WLMapPolyline {
+  id: string;
+  coords: [number, number][];
+  color?: string;
+  weight?: number;
+  opacity?: number;
 }
 
 export interface WLMapProps {
-  /** Initial map center [lat, lng] */
-  center?: [number, number];
-  /** Initial zoom level */
-  zoom?: number;
   className?: string;
-  /** Overlay UI elements (not map layers — those go via useWLMap) */
-  children?: ReactNode;
-  /** Called with the map ID once the Leaflet map is ready */
-  onReady?: (mapId: string) => void;
+  style?: React.CSSProperties;
+  center?: [number, number];
+  zoom?: number;
+  markers?: WLMapMarker[];
+  polylines?: WLMapPolyline[];
+  theme?: 'dark' | 'light';
+  onMarkerClick?: (id: string) => void;
+  fitBounds?: boolean;
+  selectedId?: string | null;
 }
 
-const LEAFLET_CSS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+let leafletLoaded = false;
+let L: typeof import('leaflet') | null = null;
 
-function ensureLeafletCSS() {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById('leaflet-css')) return;
-  const link = document.createElement('link');
-  link.id = 'leaflet-css';
-  link.rel = 'stylesheet';
-  link.href = LEAFLET_CSS_URL;
-  document.head.appendChild(link);
+async function loadLeaflet() {
+  if (leafletLoaded && L) return L;
+  const mod = await import('leaflet');
+  L = mod.default ?? (mod as unknown as typeof import('leaflet'));
+  leafletLoaded = true;
+  return L;
 }
 
-/**
- * WLMap — keyless Leaflet map with CARTO dark basemaps.
- * Renders a full-height map container. Child layer hooks access the map via getMapById(mapId).
- */
+function makeIcon(lf: typeof import('leaflet'), color: string, selected: boolean) {
+  const size = selected ? 14 : 10;
+  const border = selected ? 3 : 2;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size + border * 2}" height="${size + border * 2}">
+    <circle cx="${(size + border * 2) / 2}" cy="${(size + border * 2) / 2}" r="${size / 2}" fill="${color}" stroke="white" stroke-width="${border}"/>
+  </svg>`;
+  const dataUrl = `data:image/svg+xml;base64,${btoa(svg)}`;
+  const iconSize = size + border * 2;
+  return lf.icon({
+    iconUrl: dataUrl,
+    iconSize: [iconSize, iconSize],
+    iconAnchor: [iconSize / 2, iconSize / 2],
+    popupAnchor: [0, -iconSize / 2],
+  });
+}
+
 export function WLMap({
+  className,
+  style,
   center = [40.7128, -74.006],
   zoom = 11,
-  className,
-  children,
-  onReady,
+  markers = [],
+  polylines = [],
+  theme = 'dark',
+  onMarkerClick,
+  fitBounds = true,
+  selectedId = null,
 }: WLMapProps) {
-  const id = useId().replace(/:/g, '_');
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<import('leaflet').Map | null>(null);
+  const markersRef = useRef<Map<string, import('leaflet').Marker>>(new Map());
+  const polylinesRef = useRef<Map<string, import('leaflet').Polyline>>(new Map());
   const initializedRef = useRef(false);
 
-  useEffect(() => {
-    if (initializedRef.current || !containerRef.current) return;
+  const initMap = useCallback(async () => {
+    if (!containerRef.current || initializedRef.current) return;
     initializedRef.current = true;
-    let alive = true;
 
-    ensureLeafletCSS();
+    const lf = await loadLeaflet();
 
-    getLeaflet().then((L) => {
-      if (!alive || !containerRef.current || MAP_REGISTRY.has(id)) return;
+    // Inject leaflet CSS once
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
 
-      // Fix Leaflet default icon in bundled environments
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      });
-
-      const map = L.map(containerRef.current!, {
-        center,
-        zoom,
-        zoomControl: false,
-        attributionControl: true,
-      });
-
-      L.tileLayer(CARTO_DARK_TILES, {
-        attribution: CARTO_ATTRIBUTION,
-        subdomains: 'abcd',
-        maxZoom: 20,
-      }).addTo(map);
-
-      L.control.zoom({ position: 'topright' }).addTo(map);
-
-      MAP_REGISTRY.set(id, map);
-      onReady?.(id);
+    const map = lf.map(containerRef.current, {
+      center,
+      zoom,
+      zoomControl: true,
+      attributionControl: true,
     });
 
+    const tileUrl = theme === 'dark' ? CARTO_DARK : CARTO_LIGHT;
+    lf.tileLayer(tileUrl, {
+      attribution: CARTO_ATTRIBUTION,
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    mapRef.current = map;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Initialize map on mount
+  useEffect(() => {
+    initMap();
     return () => {
-      alive = false;
-      const map = MAP_REGISTRY.get(id);
-      if (map) {
-        map.remove();
-        MAP_REGISTRY.delete(id);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        initializedRef.current = false;
       }
-      initializedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync markers
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !L) return;
+
+    const lf = L;
+    const incoming = new Set(markers.map((m) => m.id));
+
+    // Remove stale
+    markersRef.current.forEach((marker, id) => {
+      if (!incoming.has(id)) {
+        marker.remove();
+        markersRef.current.delete(id);
+      }
+    });
+
+    // Add / update
+    markers.forEach((m) => {
+      const color = m.color ?? '#6C63FF';
+      const selected = m.id === selectedId;
+      const icon = makeIcon(lf, color, selected);
+
+      const existing = markersRef.current.get(m.id);
+      if (existing) {
+        existing.setLatLng([m.lat, m.lng]);
+        existing.setIcon(icon);
+        if (m.popup) existing.bindPopup(m.popup);
+      } else {
+        const marker = lf.marker([m.lat, m.lng], { icon });
+        if (m.popup) marker.bindPopup(m.popup);
+        if (onMarkerClick) marker.on('click', () => onMarkerClick(m.id));
+        marker.addTo(map);
+        markersRef.current.set(m.id, marker);
+      }
+    });
+
+    // Auto-fit bounds
+    if (fitBounds && markers.length > 0) {
+      const bounds = lf.latLngBounds(markers.map((m) => [m.lat, m.lng]));
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      }
+    }
+  }, [markers, selectedId, fitBounds, onMarkerClick]);
+
+  // Sync polylines
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !L) return;
+
+    const lf = L;
+    const incoming = new Set(polylines.map((p) => p.id));
+
+    polylinesRef.current.forEach((line, id) => {
+      if (!incoming.has(id)) {
+        line.remove();
+        polylinesRef.current.delete(id);
+      }
+    });
+
+    polylines.forEach((p) => {
+      const existing = polylinesRef.current.get(p.id);
+      const opts = {
+        color: p.color ?? '#6C63FF',
+        weight: p.weight ?? 3,
+        opacity: p.opacity ?? 0.8,
+      };
+      if (existing) {
+        existing.setLatLngs(p.coords);
+        existing.setStyle(opts);
+      } else {
+        const line = lf.polyline(p.coords, opts).addTo(map);
+        polylinesRef.current.set(p.id, line);
+      }
+    });
+  }, [polylines]);
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl bg-[#0d0d14]', className)}>
-      <style>{`
-        .leaflet-container{background:#0d0d14!important}
-        .leaflet-control-attribution{background:rgba(0,0,0,.55)!important;color:#555!important;font-size:9px!important}
-        .leaflet-control-attribution a{color:#777!important}
-        .leaflet-bar{border:1px solid rgba(255,255,255,.08)!important;border-radius:6px!important}
-        .leaflet-bar a{background:rgba(13,13,20,.95)!important;color:#888!important;border-bottom:1px solid rgba(255,255,255,.06)!important;line-height:26px!important}
-        .leaflet-bar a:hover{background:rgba(25,25,38,.95)!important;color:#ccc!important}
-        .leaflet-popup-content-wrapper{background:rgba(13,13,20,.97)!important;border:1px solid rgba(255,255,255,.1)!important;color:#e2e8f0!important;border-radius:10px!important;box-shadow:0 8px 32px rgba(0,0,0,.6)!important}
-        .leaflet-popup-tip{background:rgba(13,13,20,.97)!important}
-        .leaflet-popup-close-button{color:#555!important;top:6px!important;right:8px!important}
-        .leaflet-popup-content{margin:12px 14px!important;line-height:1.5}
-      `}</style>
-      <div ref={containerRef} className="w-full h-full" id={`wlmap-${id}`} />
-      {children && (
-        <div className="absolute inset-0 pointer-events-none z-[999]">{children}</div>
-      )}
-    </div>
+    <div
+      ref={containerRef}
+      className={cn('relative rounded-lg overflow-hidden', className)}
+      style={{ minHeight: 300, ...style }}
+    />
   );
 }
