@@ -1,25 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
   Download,
@@ -31,593 +23,382 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
 } from "lucide-react";
+import { useDeliveryLog, type DeliveryLogEntry } from "@/hooks/use-notifications";
 
-type Channel = "email" | "sms" | "whatsapp" | "push";
-type EventType =
-  | "order_confirmed"
-  | "delivery_scheduled"
-  | "out_for_delivery"
-  | "delivery_arriving"
-  | "delivered"
-  | "delivery_failed"
-  | "rescheduled";
-type NotificationStatus = "sent" | "delivered" | "failed" | "bounced" | "pending";
-
-interface DeliveryAttempt {
-  timestamp: Date;
-  status: NotificationStatus;
-  errorCode?: string;
-  errorMessage?: string;
-}
-
-interface NotificationLog {
-  id: string;
-  timestamp: Date;
-  recipient: string;
-  channel: Channel;
-  eventType: EventType;
-  templateName: string;
-  status: NotificationStatus;
-  messageId?: string;
-  messagePreview: string;
-  cost: number;
-  attempts: DeliveryAttempt[];
-}
-
-const NOTIFICATION_LOGS: NotificationLog[] = [
-  {
-    id: "nlog1",
-    timestamp: new Date("2026-03-11T14:30:00"),
-    recipient: "customer@example.com",
-    channel: "email",
-    eventType: "order_confirmed",
-    templateName: "Order Confirmation",
-    status: "delivered",
-    messageId: "msg_1234567890",
-    messagePreview: "Your order #ORD-123456 has been confirmed",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:30:05"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog2",
-    timestamp: new Date("2026-03-11T14:25:00"),
-    recipient: "+1234567890",
-    channel: "sms",
-    eventType: "out_for_delivery",
-    templateName: "Out for Delivery SMS",
-    status: "delivered",
-    messageId: "msg_1234567891",
-    messagePreview: "Your delivery is on the way! Track: https://track.example.com",
-    cost: 0.05,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:25:10"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog3",
-    timestamp: new Date("2026-03-11T14:20:00"),
-    recipient: "+201012345678",
-    channel: "whatsapp",
-    eventType: "delivery_scheduled",
-    templateName: "Delivery Scheduled",
-    status: "delivered",
-    messageId: "msg_1234567892",
-    messagePreview: "Your delivery is scheduled for March 12, 2026",
-    cost: 0.02,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:20:15"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog4",
-    timestamp: new Date("2026-03-11T14:15:00"),
-    recipient: "customer2@example.com",
-    channel: "email",
-    eventType: "delivery_failed",
-    templateName: "Delivery Failed",
-    status: "failed",
-    messageId: "msg_1234567893",
-    messagePreview: "Unfortunately, we couldn't deliver your package",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:15:00"),
-        status: "failed",
-        errorCode: "INVALID_EMAIL",
-        errorMessage: "Email address not found",
-      },
-    ],
-  },
-  {
-    id: "nlog5",
-    timestamp: new Date("2026-03-11T14:10:00"),
-    recipient: "push-token-xyz",
-    channel: "push",
-    eventType: "delivered",
-    templateName: "Delivery Confirmation",
-    status: "sent",
-    messageId: "msg_1234567894",
-    messagePreview: "Your order has been delivered successfully",
-    cost: 0,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:10:05"),
-        status: "sent",
-      },
-    ],
-  },
-  {
-    id: "nlog6",
-    timestamp: new Date("2026-03-11T14:05:00"),
-    recipient: "+9876543210",
-    channel: "sms",
-    eventType: "order_confirmed",
-    templateName: "Order Confirmation SMS",
-    status: "bounced",
-    messageId: "msg_1234567895",
-    messagePreview: "Order confirmed! Track: https://track.example.com",
-    cost: 0.05,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:05:00"),
-        status: "bounced",
-        errorCode: "INVALID_NUMBER",
-        errorMessage: "Phone number no longer valid",
-      },
-    ],
-  },
-  {
-    id: "nlog7",
-    timestamp: new Date("2026-03-11T14:00:00"),
-    recipient: "customer3@example.com",
-    channel: "email",
-    eventType: "rescheduled",
-    templateName: "Rescheduled Notification",
-    status: "pending",
-    messageId: "msg_1234567896",
-    messagePreview: "Your delivery has been rescheduled",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:00:00"),
-        status: "pending",
-      },
-    ],
-  },
-];
+type Channel = "EMAIL" | "SMS" | "WHATSAPP" | "PUSH";
+type LogStatus = "QUEUED" | "SENT" | "DELIVERED" | "FAILED" | "BOUNCED";
 
 const CHANNEL_ICONS: Record<Channel, React.ReactNode> = {
-  email: <Mail className="w-4 h-4" />,
-  sms: <MessageSquare className="w-4 h-4" />,
-  whatsapp: <MessageSquare className="w-4 h-4" />,
-  push: <Bell className="w-4 h-4" />,
+  EMAIL: <Mail className="w-4 h-4" />,
+  SMS: <MessageSquare className="w-4 h-4" />,
+  WHATSAPP: <MessageSquare className="w-4 h-4" />,
+  PUSH: <Bell className="w-4 h-4" />,
 };
 
-const STATUS_ICONS: Record<NotificationStatus, React.ReactNode> = {
-  sent: <CheckCircle className="w-4 h-4 text-emerald-500" />,
-  delivered: <CheckCircle className="w-4 h-4 text-emerald-500" />,
-  failed: <AlertCircle className="w-4 h-4 text-red-500" />,
-  bounced: <AlertCircle className="w-4 h-4 text-amber-500" />,
-  pending: <Clock className="w-4 h-4 text-gray-400" />,
-};
-
-const getStatusVariant = (status: NotificationStatus) => {
+const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" | "default" => {
   switch (status) {
-    case "delivered":
-    case "sent":
-      return "success";
-    case "failed":
-      return "danger";
-    case "bounced":
-      return "warning";
-    case "pending":
-      return "info";
+    case "DELIVERED": return "success";
+    case "SENT": return "info";
+    case "FAILED": return "danger";
+    case "BOUNCED": return "warning";
+    default: return "default";
   }
 };
 
+const StatusIcon = ({ status }: { status: string }) => {
+  if (status === "DELIVERED" || status === "SENT")
+    return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+  if (status === "FAILED")
+    return <AlertCircle className="w-4 h-4 text-red-500" />;
+  if (status === "BOUNCED")
+    return <AlertCircle className="w-4 h-4 text-amber-500" />;
+  return <Clock className="w-4 h-4 text-gray-400" />;
+};
+
 interface DetailModalProps {
-  log?: NotificationLog;
-  isOpen: boolean;
+  entry: DeliveryLogEntry | null;
   onClose: () => void;
 }
 
-const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
-  if (!isOpen || !log) return null;
+function DetailModal({ entry, onClose }: DetailModalProps) {
+  if (!entry) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <Card className="bg-[#12121a] border border-[#1e1e2e] w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
         <CardHeader>
-          <CardTitle>Notification Details</CardTitle>
-          <CardDescription>Message ID: {log.messageId}</CardDescription>
-        </CardHeader>
+          <CardTitle className="text-base">Notification Detail</CardTitle>
+          </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Recipient
-              </p>
-              <p className="text-sm text-white">{log.recipient}</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Recipient</p>
+              <p className="text-white break-all">{entry.recipient}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Channel
-              </p>
-              <p className="text-sm text-white capitalize">
-                {log.channel}
-              </p>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Channel</p>
+              <p className="text-white capitalize">{entry.channel}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Status
-              </p>
-              <Badge variant={getStatusVariant(log.status) as any}>
-                {log.status}
-              </Badge>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Status</p>
+              <Badge variant={getStatusVariant(entry.status)}>{entry.status}</Badge>
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Cost
-              </p>
-              <p className="text-sm text-white">
-                ${log.cost.toFixed(2)}
-              </p>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Sent</p>
+              <p className="text-white">{new Date(entry.timestamp).toLocaleString()}</p>
+            </div>
+            {entry.deliveredAt && (
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Delivered</p>
+                <p className="text-white">{new Date(entry.deliveredAt).toLocaleString()}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Retries</p>
+              <p className="text-white">{entry.retryCount}</p>
             </div>
           </div>
 
-          <div className="border-t border-[#1e1e2e] pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-              Message Preview
-            </p>
-            <div className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
-              <p className="text-sm text-white whitespace-pre-wrap">
-                {log.messagePreview}
-              </p>
+          {entry.message && (
+            <div className="border-t border-[#1e1e2e] pt-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Event Type</p>
+              <p className="text-sm text-white">{entry.message}</p>
             </div>
-          </div>
+          )}
 
-          <div className="border-t border-[#1e1e2e] pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-              Delivery Attempts ({log.attempts.length})
-            </p>
-            <div className="space-y-2">
-              {log.attempts.map((attempt, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2">
-                      {STATUS_ICONS[attempt.status]}
-                      <div>
-                        <p className="text-sm font-medium text-white capitalize">
-                          {attempt.status}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {attempt.timestamp.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {attempt.errorMessage && (
-                    <div className="mt-2 text-xs">
-                      <p className="text-red-500">
-                        Error: {attempt.errorMessage}
-                      </p>
-                      <p className="text-gray-400">
-                        Code: {attempt.errorCode}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
+          {entry.error && (
+            <div className="border-t border-[#1e1e2e] pt-4">
+              <p className="text-xs font-semibold text-red-400 uppercase mb-2">Error</p>
+              <p className="text-sm text-red-400">{entry.error}</p>
             </div>
-          </div>
+          )}
 
-          <button
-            onClick={onClose}
-            className="w-full mt-4 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#252541] transition-colors"
-          >
+          <Button variant="secondary" onClick={onClose} className="w-full mt-2">
             Close
-          </button>
+          </Button>
         </CardContent>
       </Card>
     </div>
   );
-};
+}
+
+function RowSkeleton() {
+  return (
+    <tr className="border-b border-white/[0.04]">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <td key={i} className="px-4 py-3">
+          <Skeleton className="h-4 rounded" style={{ width: `${60 + (i % 3) * 20}px` }} />
+        </td>
+      ))}
+    </tr>
+  );
+}
 
 export default function NotificationLogPage() {
-  const [logs, setLogs] = useState<NotificationLog[]>(NOTIFICATION_LOGS);
-  const [selectedLog, setSelectedLog] = useState<NotificationLog>();
-  const [showDetail, setShowDetail] = useState(false);
-  const [filterChannel, setFilterChannel] = useState<Channel | "all">("all");
-  const [filterStatus, setFilterStatus] = useState<NotificationStatus | "all">(
-    "all"
+  const [filterChannel, setFilterChannel] = useState<Channel | "">("");
+  const [filterStatus, setFilterStatus] = useState<LogStatus | "">("");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [selectedEntry, setSelectedEntry] = useState<DeliveryLogEntry | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const {
+    entries,
+    isLoading,
+    hasMore,
+    searchQuery,
+    setSearchQuery,
+    setFilters,
+    loadMore,
+    exportCSV,
+    pagination,
+  } = useDeliveryLog({
+    channel: filterChannel || undefined,
+    status: filterStatus || undefined,
+    dateFrom: filterDateFrom || undefined,
+    dateTo: filterDateTo || undefined,
+  } as any);
+
+  const applyFilters = () => {
+    setFilters({
+      channel: filterChannel || undefined,
+      status: filterStatus || undefined,
+      dateFrom: filterDateFrom || undefined,
+      dateTo: filterDateTo || undefined,
+    } as any);
+  };
+
+  const total = pagination?.total ?? 0;
+  const delivered = useMemo(
+    () => entries.filter((e) => e.status === "DELIVERED").length,
+    [entries]
   );
-  const [filterDateRange, setFilterDateRange] = useState({ from: "", to: "" });
+  const failed = useMemo(
+    () => entries.filter((e) => e.status === "FAILED" || e.status === "BOUNCED").length,
+    [entries]
+  );
+  const deliveryRate = entries.length > 0
+    ? (((entries.length - failed) / entries.length) * 100).toFixed(1)
+    : "—";
 
-  const filteredLogs = logs.filter((log) => {
-    if (filterChannel !== "all" && log.channel !== filterChannel) return false;
-    if (filterStatus !== "all" && log.status !== filterStatus) return false;
-    return true;
-  });
-
-  const stats = {
-    totalSent: logs.length,
-    deliveryRate:
-      logs.length > 0
-        ? (
-            ((logs.filter((l) => l.status === "delivered" || l.status === "sent")
-              .length /
-              logs.length) *
-              100)
-          ).toFixed(1)
-        : "0",
-    bounceRate:
-      logs.length > 0
-        ? (((logs.filter((l) => l.status === "bounced").length / logs.length) * 100).toFixed(1))
-        : "0",
-    totalCost: logs.reduce((sum, log) => sum + log.cost, 0).toFixed(2),
+  const handleExport = async () => {
+    setIsExporting(true);
+    try { await exportCSV(); } finally { setIsExporting(false); }
   };
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Notification Log"
-        subtitle="Track sent notifications and delivery status"
+        subtitle="Track outbound notification delivery by channel and status"
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Total Sent
-              </p>
-              <p className="text-2xl font-bold text-white">
-                {stats.totalSent}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Delivery Rate
-              </p>
-              <p className="text-2xl font-bold text-emerald-500">
-                {stats.deliveryRate}%
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Bounce Rate
-              </p>
-              <p className="text-2xl font-bold text-amber-500">
-                {stats.bounceRate}%
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Total Cost
-              </p>
-              <p className="text-2xl font-bold text-white">
-                ${stats.totalCost}
-              </p>
-            </CardContent>
-          </Card>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: "Total", value: isLoading ? null : total, color: "text-white" },
+            { label: "Delivered", value: isLoading ? null : delivered, color: "text-emerald-400" },
+            { label: "Failed / Bounced", value: isLoading ? null : failed, color: "text-red-400" },
+            { label: "Delivery Rate", value: isLoading ? null : `${deliveryRate}%`, color: "text-emerald-400" },
+          ].map(({ label, value, color }) => (
+            <Card key={label} className="border border-[#1e1e2e] bg-[#12121a]">
+              <CardContent className="pt-5">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{label}</p>
+                {value === null ? (
+                  <Skeleton className="h-8 w-16 rounded" />
+                ) : (
+                  <p className={cn("text-2xl font-bold", color)}>{value}</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Filters */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-6">
+          <CardContent className="pt-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="lg:col-span-1">
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-1.5">Search</label>
+                <Input
+                  placeholder="Recipient, event…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white text-sm"
+                />
+              </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  Channel
-                </label>
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-1.5">Channel</label>
                 <select
                   value={filterChannel}
-                  onChange={(e) =>
-                    setFilterChannel(e.target.value as typeof filterChannel)
-                  }
+                  onChange={(e) => setFilterChannel(e.target.value as Channel | "")}
                   className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
                 >
-                  <option value="all">All Channels</option>
-                  <option value="email">Email</option>
-                  <option value="sms">SMS</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="push">Push</option>
+                  <option value="">All Channels</option>
+                  {["EMAIL", "SMS", "WHATSAPP", "PUSH"].map((ch) => (
+                    <option key={ch} value={ch}>{ch}</option>
+                  ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  Status
-                </label>
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-1.5">Status</label>
                 <select
                   value={filterStatus}
-                  onChange={(e) =>
-                    setFilterStatus(e.target.value as typeof filterStatus)
-                  }
+                  onChange={(e) => setFilterStatus(e.target.value as LogStatus | "")}
                   className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
                 >
-                  <option value="all">All Status</option>
-                  <option value="sent">Sent</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="failed">Failed</option>
-                  <option value="bounced">Bounced</option>
-                  <option value="pending">Pending</option>
+                  <option value="">All Status</option>
+                  {["SENT", "DELIVERED", "FAILED", "BOUNCED", "QUEUED"].map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  From Date
-                </label>
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-1.5">From Date</label>
                 <Input
                   type="date"
-                  value={filterDateRange.from}
-                  onChange={(e) =>
-                    setFilterDateRange({
-                      ...filterDateRange,
-                      from: e.target.value,
-                    })
-                  }
-                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white text-sm"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  To Date
-                </label>
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-1.5">To Date</label>
                 <Input
                   type="date"
-                  value={filterDateRange.to}
-                  onChange={(e) =>
-                    setFilterDateRange({
-                      ...filterDateRange,
-                      to: e.target.value,
-                    })
-                  }
-                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white text-sm"
                 />
               </div>
+            </div>
+            <div className="flex gap-2 mt-3">
+              <Button size="sm" onClick={applyFilters}>Apply Filters</Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setFilterChannel("");
+                  setFilterStatus("");
+                  setFilterDateFrom("");
+                  setFilterDateTo("");
+                  setFilters({});
+                }}
+              >
+                Clear
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Logs Table */}
+        {/* Table */}
         <Card className="border border-[#1e1e2e] bg-[#12121a]">
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <CardTitle>
-                  {filteredLogs.length} Notification
-                  {filteredLogs.length !== 1 ? "s" : ""}
-                </CardTitle>
-              </div>
-              <Button variant="secondary" size="sm">
-                <Download className="w-4 h-4 mr-2" />
+              <CardTitle className="text-sm">
+                {isLoading ? "Loading…" : `${total.toLocaleString()} entries`}
+              </CardTitle>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleExport}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-2" />
+                )}
                 Export CSV
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Recipient</TableHead>
-                    <TableHead>Channel</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Template</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredLogs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        <p className="text-gray-400 text-sm">
-                          No notifications found
-                        </p>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Clock className="w-3 h-3" />
-                            {log.timestamp.toLocaleString()}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white truncate max-w-xs">
-                            {log.recipient}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-400">
-                              {CHANNEL_ICONS[log.channel]}
-                            </span>
-                            <span className="text-sm capitalize text-white">
-                              {log.channel}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white">
-                            {log.eventType
-                              .replace(/_/g, " ")
-                              .replace(/\b\w/g, (l) => l.toUpperCase())}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-gray-400">
-                            {log.templateName}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {STATUS_ICONS[log.status]}
-                            <Badge variant={getStatusVariant(log.status) as any}>
-                              {log.status}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white">
-                            ${log.cost.toFixed(2)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedLog(log);
-                              setShowDetail(true);
-                            }}
-                            className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
-                          >
-                            <Eye className="w-4 h-4 text-gray-400" />
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06] text-xs text-gray-400 uppercase tracking-wide">
+                    {["Timestamp", "Recipient", "Channel", "Event", "Status", "Actions"].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading
+                    ? Array.from({ length: 8 }).map((_, i) => <RowSkeleton key={i} />)
+                    : entries.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
+                          No notification logs found
+                        </td>
+                      </tr>
+                    ) : (
+                      entries.map((entry) => (
+                        <tr
+                          key={entry.id}
+                          className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-400 whitespace-nowrap">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              {new Date(entry.timestamp).toLocaleString()}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-white truncate max-w-[180px] block">{entry.recipient}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2 text-gray-300">
+                              <span>{CHANNEL_ICONS[entry.channel as Channel]}</span>
+                              <span className="capitalize text-xs">{entry.channel}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-gray-300 text-xs">{entry.message}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <StatusIcon status={entry.status} />
+                              <Badge variant={getStatusVariant(entry.status)}>{entry.status}</Badge>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => setSelectedEntry(entry)}
+                              className="p-1.5 hover:bg-white/[0.06] rounded transition-colors"
+                              aria-label="View details"
+                            >
+                              <Eye className="w-4 h-4 text-gray-400" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                </tbody>
               </table>
             </div>
+
+            {/* Load more */}
+            {hasMore && !isLoading && (
+              <div className="p-4 flex justify-center border-t border-white/[0.04]">
+                <Button variant="secondary" size="sm" onClick={loadMore}>
+                  Load More
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {/* Detail Modal */}
-        <DetailModal
-          log={selectedLog}
-          isOpen={showDetail}
-          onClose={() => setShowDetail(false)}
-        />
       </main>
+
+      <DetailModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
     </div>
   );
 }

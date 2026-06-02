@@ -1,51 +1,45 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { BadgeVariant } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  ChevronUp,
-  Clock,
-  Package,
-  AlertCircle,
-} from "lucide-react";
+import { ChevronUp, Clock, Package, AlertCircle, RefreshCw } from "lucide-react";
+import { useApiList } from "@/hooks/use-api";
+import Link from "next/link";
 
-interface Order {
+interface ApiOrder {
   id: string;
-  customerId: string;
-  customerName: string;
-  status: "pending" | "assigned" | "in-transit" | "delivered" | "cancelled";
-  createdAt: Date;
-  amount: number;
-  itemCount: number;
+  status: string;
+  totalPrice: string | number | null;
+  createdAt: string;
+  customer?: { name?: string; email?: string } | null;
+  customerName?: string | null;
+  shopifyOrderNumber?: string | null;
 }
 
 interface LiveOrderFeedProps {
   className?: string;
-  onOrderClick?: (order: Order) => void;
 }
 
-const statusColors: Record<Order["status"], { badge: BadgeVariant; bg: string }> = {
-  pending: { badge: "warning", bg: "bg-wl-warning-bg" },
-  assigned: { badge: "info", bg: "bg-wl-info-bg" },
-  "in-transit": { badge: "primary", bg: "bg-wl-primary-500/12" },
-  delivered: { badge: "success", bg: "bg-wl-success-bg" },
-  cancelled: { badge: "danger", bg: "bg-wl-danger-bg" },
+const statusMap: Record<string, { badge: BadgeVariant; label: string }> = {
+  PENDING: { badge: "warning", label: "Pending" },
+  CONFIRMED: { badge: "info", label: "Confirmed" },
+  ASSIGNED: { badge: "info", label: "Assigned" },
+  IN_TRANSIT: { badge: "primary", label: "In Transit" },
+  DELIVERED: { badge: "success", label: "Delivered" },
+  CANCELLED: { badge: "danger", label: "Cancelled" },
+  FAILED: { badge: "danger", label: "Failed" },
 };
 
-const statusLabels: Record<Order["status"], string> = {
-  pending: "Pending",
-  assigned: "Assigned",
-  "in-transit": "In Transit",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
+function normalizeStatus(status: string) {
+  return statusMap[status.toUpperCase()] ?? { badge: "default" as BadgeVariant, label: status };
+}
 
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+function timeAgo(ts: string): string {
+  const seconds = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   return `${Math.floor(seconds / 3600)}h ago`;
@@ -53,184 +47,74 @@ function timeAgo(date: Date): string {
 
 function OrderSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 p-4">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-wl-bg-overlay rounded-lg p-4 space-y-2"
-        >
+        <div key={i} className="bg-wl-bg-overlay rounded-lg p-4 space-y-2">
           <div className="flex justify-between">
             <Skeleton className="h-4 w-24 rounded" />
             <Skeleton className="h-4 w-16 rounded" />
           </div>
           <Skeleton className="h-3 w-32 rounded" />
-          <div className="flex justify-between">
-            <Skeleton className="h-3 w-20 rounded" />
-            <Skeleton className="h-3 w-24 rounded" />
-          </div>
+          <Skeleton className="h-3 w-20 rounded" />
         </div>
       ))}
     </div>
   );
 }
 
-function OrderCard({
-  order,
-  onClick,
-}: {
-  order: Order;
-  onClick?: (order: Order) => void;
-}) {
-  const { badge, bg } = statusColors[order.status];
-  const statusLabel = statusLabels[order.status];
+function OrderCard({ order }: { order: ApiOrder }) {
+  const { badge, label } = normalizeStatus(order.status);
+  const amount = order.totalPrice != null ? parseFloat(String(order.totalPrice)) : null;
+  const customerName = order.customerName ?? order.customer?.name ?? order.customer?.email ?? "Customer";
+  const orderRef = order.shopifyOrderNumber ?? `#${order.id.slice(0, 8)}`;
 
   return (
-    <div
-      onClick={() => onClick?.(order)}
-      className={cn(
-        "bg-wl-bg-overlay rounded-lg p-4",
-        "border border-wl-border-subtle",
-        "transition-all duration-fast ease-default",
-        "hover:border-wl-border-default hover:shadow-md",
-        onClick && "cursor-pointer"
-      )}
-    >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold text-wl-text-primary text-sm truncate">
-              Order #{order.id.substring(0, 8)}
+    <Link href={`/orders/${order.id}`}>
+      <div className={cn(
+        "bg-wl-bg-overlay rounded-lg p-4 border border-wl-border-subtle",
+        "transition-all hover:border-wl-border-default hover:shadow-md cursor-pointer"
+      )}>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex-1 min-w-0">
+            <span className="font-semibold text-wl-text-primary text-sm truncate block">
+              Order {orderRef}
             </span>
+            <p className="text-xs text-wl-text-secondary truncate">{customerName}</p>
           </div>
-          <p className="text-xs text-wl-text-secondary truncate">
-            {order.customerName}
-          </p>
+          <Badge variant={badge} className="flex-shrink-0">{label}</Badge>
         </div>
-        <Badge variant={badge} className="flex-shrink-0">
-          {statusLabel}
-        </Badge>
-      </div>
 
-      <div className="flex items-center justify-between gap-2 text-xs text-wl-text-secondary mb-2">
-        <div className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          <span>{timeAgo(order.createdAt)}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Package className="w-3 h-3" />
-          <span>{order.itemCount} items</span>
+        <div className="flex items-center justify-between gap-2 text-xs text-wl-text-secondary mt-2">
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            <span>{timeAgo(order.createdAt)}</span>
+          </div>
+          {amount !== null && (
+            <span className="font-semibold text-wl-text-primary">${amount.toFixed(2)}</span>
+          )}
         </div>
       </div>
-
-      <div className="pt-2 border-t border-wl-border-subtle">
-        <p className="font-semibold text-wl-text-primary text-sm">
-          ${order.amount.toFixed(2)}
-        </p>
-      </div>
-    </div>
+    </Link>
   );
 }
 
-export function LiveOrderFeed({
-  className,
-  onOrderClick,
-}: LiveOrderFeedProps) {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function LiveOrderFeed({ className }: LiveOrderFeedProps) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Simulate real-time order data
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      const mockOrders: Order[] = [
-        {
-          id: "ord_001a2b3c4d5e6f7g",
-          customerId: "cust_001",
-          customerName: "John Smith",
-          status: "in-transit",
-          createdAt: new Date(Date.now() - 5 * 60000),
-          amount: 125.5,
-          itemCount: 3,
-        },
-        {
-          id: "ord_002x9y8z7w6v5u4t",
-          customerId: "cust_002",
-          customerName: "Sarah Johnson",
-          status: "assigned",
-          createdAt: new Date(Date.now() - 12 * 60000),
-          amount: 89.99,
-          itemCount: 2,
-        },
-        {
-          id: "ord_003m8n7o6p5q4r3s",
-          customerId: "cust_003",
-          customerName: "Mike Chen",
-          status: "pending",
-          createdAt: new Date(Date.now() - 2 * 60000),
-          amount: 234.0,
-          itemCount: 5,
-        },
-        {
-          id: "ord_004h5i6j7k8l9m0n",
-          customerId: "cust_004",
-          customerName: "Emma Davis",
-          status: "delivered",
-          createdAt: new Date(Date.now() - 45 * 60000),
-          amount: 156.75,
-          itemCount: 4,
-        },
-      ];
-      setOrders(mockOrders);
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Simulate new orders arriving
-  useEffect(() => {
-    if (isLoading || isPaused) return;
-
-    const interval = setInterval(() => {
-      const statuses: Order["status"][] = [
-        "pending",
-        "assigned",
-        "in-transit",
-        "delivered",
-      ];
-      const newOrder: Order = {
-        id: `ord_${Math.random().toString(36).substring(2, 18)}`,
-        customerId: `cust_${Math.floor(Math.random() * 1000)}`,
-        customerName: `Customer ${Math.floor(Math.random() * 1000)}`,
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        createdAt: new Date(),
-        amount: Math.round(Math.random() * 200 * 100) / 100,
-        itemCount: Math.floor(Math.random() * 5) + 1,
-      };
-
-      setOrders((prev) => [newOrder, ...prev.slice(0, 9)]);
-      setNewOrderCount((prev) => (isScrolled ? prev + 1 : 0));
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, [isLoading, isPaused, isScrolled]);
+  const { items: orders, loading, error, refetch } = useApiList<ApiOrder>("/api/v4/orders", {
+    limit: 10,
+    sort: "createdAt:desc",
+  });
 
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
-    const { scrollTop } = scrollContainerRef.current;
-    setIsScrolled(scrollTop > 0);
+    setIsScrolled(scrollContainerRef.current.scrollTop > 0);
   }, []);
 
   const scrollToTop = useCallback(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
-      setNewOrderCount(0);
-      setIsScrolled(false);
-    }
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    setIsScrolled(false);
   }, []);
 
   return (
@@ -238,62 +122,57 @@ export function LiveOrderFeed({
       <div className="flex items-center justify-between p-5 border-b border-wl-border-subtle">
         <div>
           <h3 className="text-sm font-semibold text-wl-text-primary tracking-wider uppercase">
-            Live Order Feed
+            Recent Orders
           </h3>
           <p className="text-xs text-wl-text-secondary mt-1">
-            Real-time order updates
+            {loading ? "Loading…" : error ? "Error loading orders" : `${orders.length} orders`}
           </p>
         </div>
-        <div className="text-xs text-wl-text-secondary">
-          {orders.length} orders
-        </div>
+        <button
+          onClick={() => refetch()}
+          className="p-1.5 rounded hover:bg-wl-bg-overlay transition-colors text-wl-text-secondary"
+          aria-label="Refresh orders"
+        >
+          <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+        </button>
       </div>
 
-      {newOrderCount > 0 && isScrolled && (
+      {isScrolled && (
         <div
           onClick={scrollToTop}
-          className={cn(
-            "bg-wl-primary-500/20 border-b border-wl-primary-500/30",
-            "px-5 py-3 flex items-center justify-between cursor-pointer",
-            "hover:bg-wl-primary-500/30 transition-colors duration-fast"
-          )}
+          className="bg-wl-primary-500/20 border-b border-wl-primary-500/30 px-5 py-2 flex items-center justify-between cursor-pointer hover:bg-wl-primary-500/30 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-wl-primary-400" />
-            <span className="text-xs font-semibold text-wl-primary-400">
-              {newOrderCount} new order{newOrderCount !== 1 ? "s" : ""}
-            </span>
+            <AlertCircle className="w-3.5 h-3.5 text-wl-primary-400" />
+            <span className="text-xs font-semibold text-wl-primary-400">Scroll to top</span>
           </div>
-          <ChevronUp className="w-4 h-4 text-wl-primary-400" />
+          <ChevronUp className="w-3.5 h-3.5 text-wl-primary-400" />
         </div>
       )}
 
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        className="flex-1 overflow-y-auto space-y-2 p-5"
+        className="flex-1 overflow-y-auto"
       >
-        {isLoading ? (
+        {loading ? (
           <OrderSkeleton />
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-32 gap-2 p-4 text-center">
+            <AlertCircle className="w-6 h-6 text-wl-danger-400 opacity-60" />
+            <p className="text-xs text-wl-text-secondary">Failed to load orders</p>
+          </div>
         ) : orders.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-center py-12">
-            <div>
-              <Package className="w-8 h-8 text-wl-text-secondary mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-wl-text-secondary">
-                No orders at the moment
-              </p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-32 gap-2 p-4 text-center">
+            <Package className="w-6 h-6 text-wl-text-secondary opacity-40" />
+            <p className="text-xs text-wl-text-secondary">No recent orders</p>
           </div>
         ) : (
-          orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onClick={onOrderClick}
-            />
-          ))
+          <div className="space-y-2 p-4">
+            {orders.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
         )}
       </div>
     </Card>

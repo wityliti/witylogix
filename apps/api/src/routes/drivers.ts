@@ -84,6 +84,7 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
             maxCapacity: true,
             status: true,
             isActive: true,
+            currentLocation: true,
             lastLocationAt: true,
             heading: true,
             createdAt: true,

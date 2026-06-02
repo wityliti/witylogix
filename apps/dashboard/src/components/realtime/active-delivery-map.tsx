@@ -1,460 +1,319 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
-  Zap,
   Navigation,
   MapPin,
-  ChevronDown,
-  ChevronUp,
+  Users,
+  RefreshCw,
+  Truck,
 } from "lucide-react";
+import { useApiList } from "@/hooks/use-api";
+import Link from "next/link";
 
-interface Driver {
+interface ApiDriver {
   id: string;
   name: string;
-  status: "available" | "on-delivery" | "offline";
-  latitude: number;
-  longitude: number;
-  currentDelivery?: string;
-  eta?: number;
-}
-
-interface Delivery {
-  id: string;
-  driverId: string;
-  status: "pickup" | "in-transit" | "delivered";
-  pickupLat: number;
-  pickupLng: number;
-  deliveryLat: number;
-  deliveryLng: number;
+  status: string;
+  currentLocation: { lat?: number; lng?: number; latitude?: number; longitude?: number } | null;
+  lastLocationAt: string | null;
+  heading: number | null;
+  vehicleType: string;
+  _count: { orders: number };
 }
 
 interface ActiveDeliveryMapProps {
   className?: string;
-  centerOnActive?: boolean;
 }
 
-const driverStatusColors: Record<Driver["status"], string> = {
-  available: "bg-wl-success-400",
-  "on-delivery": "bg-wl-primary-500",
-  offline: "bg-wl-text-secondary",
+const STATUS_CONFIG: Record<string, { color: string; label: string; badge: "success" | "primary" | "default" | "warning" }> = {
+  AVAILABLE: { color: "#10B981", label: "Available", badge: "success" },
+  ONLINE: { color: "#10B981", label: "Available", badge: "success" },
+  ON_DELIVERY: { color: "#3B82F6", label: "On Delivery", badge: "primary" },
+  ON_ROUTE: { color: "#3B82F6", label: "En Route", badge: "primary" },
+  ASSIGNED: { color: "#3B82F6", label: "Assigned", badge: "primary" },
+  ON_BREAK: { color: "#F59E0B", label: "On Break", badge: "warning" },
+  OFFLINE: { color: "#6B7280", label: "Offline", badge: "default" },
 };
 
-const driverStatusLabels: Record<Driver["status"], string> = {
-  available: "Available",
-  "on-delivery": "On Delivery",
-  offline: "Offline",
-};
+function getStatusConfig(status: string) {
+  return STATUS_CONFIG[status.toUpperCase()] ?? { color: "#6B7280", label: status, badge: "default" as const };
+}
 
-function MapSkeleton() {
-  return (
-    <div className="w-full h-full flex items-center justify-center bg-wl-bg-surface">
-      <div className="text-center">
-        <Skeleton className="h-12 w-12 rounded-full mx-auto mb-3" />
-        <Skeleton className="h-4 w-24 mx-auto mb-2" />
-        <Skeleton className="h-3 w-32 mx-auto" />
+function timeAgo(ts: string | null): string | null {
+  if (!ts) return null;
+  const secs = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if (secs < 60) return `${secs}s ago`;
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  return `${Math.floor(secs / 86400)}d ago`;
+}
+
+function extractCoords(loc: ApiDriver["currentLocation"]) {
+  if (!loc) return null;
+  const lat = loc.lat ?? loc.latitude;
+  const lng = loc.lng ?? loc.longitude;
+  if (lat == null || lng == null) return null;
+  return { lat, lng };
+}
+
+function DriverDotMap({ drivers }: { drivers: ApiDriver[] }) {
+  const withLoc = drivers.filter((d) => extractCoords(d.currentLocation));
+  const [selected, setSelected] = useState<string | null>(null);
+
+  if (withLoc.length === 0) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-wl-bg-surface/50 rounded-lg gap-3">
+        <MapPin className="w-8 h-8 text-wl-text-secondary opacity-30" />
+        <p className="text-xs text-wl-text-secondary text-center px-4">
+          No driver locations available.<br />Locations update as drivers go online.
+        </p>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function SVGMap({ drivers, deliveries, zoom }: {
-  drivers: Driver[];
-  deliveries: Delivery[];
-  zoom: number;
-}) {
-  const mapWidth = 800;
-  const mapHeight = 500;
-  const bounds = {
-    minLat: 40.7,
-    maxLat: 40.8,
-    minLng: -74.0,
-    maxLng: -73.9,
-  };
-
-  const latToY = (lat: number) => {
-    const normalized = (lat - bounds.minLat) / (bounds.maxLat - bounds.minLat);
-    return mapHeight - normalized * mapHeight;
-  };
-
-  const lngToX = (lng: number) => {
-    const normalized = (lng - bounds.minLng) / (bounds.maxLng - bounds.minLng);
-    return normalized * mapWidth;
-  };
-
-  const scaleX = (zoom / 100) * mapWidth;
-  const scaleY = (zoom / 100) * mapHeight;
+  // Compute map bounds
+  const lats = withLoc.map((d) => extractCoords(d.currentLocation)!.lat);
+  const lngs = withLoc.map((d) => extractCoords(d.currentLocation)!.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const padLat = Math.max((maxLat - minLat) * 0.2, 0.01);
+  const padLng = Math.max((maxLng - minLng) * 0.2, 0.01);
+  const bMinLat = minLat - padLat;
+  const bMaxLat = maxLat + padLat;
+  const bMinLng = minLng - padLng;
+  const bMaxLng = maxLng + padLng;
+  const latRange = bMaxLat - bMinLat || 0.1;
+  const lngRange = bMaxLng - bMinLng || 0.1;
 
   return (
-    <svg
-      viewBox={`0 0 ${mapWidth} ${mapHeight}`}
-      className="w-full h-full bg-wl-bg-surface"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      {/* Grid background */}
-      <defs>
-        <pattern
-          id="grid"
-          width="50"
-          height="50"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M 50 0 L 0 0 0 50"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="0.5"
-            className="text-wl-border-subtle"
-          />
-        </pattern>
-      </defs>
-      <rect width={mapWidth} height={mapHeight} fill="url(#grid)" />
+    <div className="relative w-full h-full bg-[#0f0f1a] rounded-lg overflow-hidden border border-white/[0.04]">
+      {/* Grid lines */}
+      <svg className="absolute inset-0 w-full h-full opacity-10" preserveAspectRatio="none">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+      </svg>
 
-      {/* Delivery routes */}
-      {deliveries.map((delivery) => {
-        const x1 = lngToX(delivery.pickupLng);
-        const y1 = latToY(delivery.pickupLat);
-        const x2 = lngToX(delivery.deliveryLng);
-        const y2 = latToY(delivery.deliveryLat);
+      {/* Driver dots */}
+      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+        {withLoc.map((driver) => {
+          const coords = extractCoords(driver.currentLocation)!;
+          const x = ((coords.lng - bMinLng) / lngRange) * 100;
+          const y = 100 - ((coords.lat - bMinLat) / latRange) * 100;
+          const cfg = getStatusConfig(driver.status);
 
-        return (
-          <g key={delivery.id}>
-            {/* Route line */}
-            <line
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-wl-primary-500/50"
-              strokeDasharray="5,5"
-            />
-            {/* Arrow */}
-            <path
-              d={`M${x2 - 8} ${y2 - 8} L${x2} ${y2} L${x2 + 8} ${y2 - 8}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-wl-primary-500"
-            />
-          </g>
-        );
-      })}
-
-      {/* Driver pins */}
-      {drivers.map((driver) => {
-        const x = lngToX(driver.longitude);
-        const y = latToY(driver.latitude);
-        const colorClass = driverStatusColors[driver.status];
-
-        return (
-          <g key={driver.id}>
-            {/* Outer ring for active drivers */}
-            {driver.status === "on-delivery" && (
-              <circle
-                cx={x}
-                cy={y}
-                r="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-wl-primary-500 animate-pulse"
-                opacity="0.3"
-              />
-            )}
-            {/* Pin circle */}
-            <circle
-              cx={x}
-              cy={y}
-              r="12"
-              fill="currentColor"
-              className={colorClass}
-              opacity="0.9"
-            />
-            {/* Pin icon */}
-            {driver.status === "on-delivery" && (
-              <g transform={`translate(${x - 4}, ${y - 4})`}>
-                <path
-                  d="M4 0 L8 8 L0 8 Z"
-                  fill="white"
-                  opacity="0.8"
+          return (
+            <g key={driver.id}>
+              {/* Pulse ring for active drivers */}
+              {driver.status !== "OFFLINE" && (
+                <circle
+                  cx={`${x}%`}
+                  cy={`${y}%`}
+                  r="12"
+                  fill={`${cfg.color}25`}
+                  stroke={cfg.color}
+                  strokeWidth="1"
+                  opacity="0.6"
                 />
-              </g>
-            )}
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
+              )}
+              {/* Driver dot */}
+              <circle
+                cx={`${x}%`}
+                cy={`${y}%`}
+                r="6"
+                fill={cfg.color}
+                className="cursor-pointer"
+                onClick={() => setSelected(selected === driver.id ? null : driver.id)}
+              />
+              {/* Driver name label */}
+              {selected === driver.id && (
+                <text
+                  x={`${x}%`}
+                  y={`${Math.max(y - 5, 5)}%`}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fill="white"
+                  fontWeight="600"
+                  style={{ pointerEvents: "none" }}
+                >
+                  {driver.name.split(" ")[0]}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
 
-function DriverPopover({
-  driver,
-  position,
-  onClose,
-}: {
-  driver: Driver;
-  position: { x: number; y: number };
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className={cn(
-        "absolute bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 z-10",
-        "shadow-lg w-56 text-sm"
-      )}
-      style={{
-        left: `${position.x + 20}px`,
-        top: `${position.y}px`,
-      }}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 text-wl-text-secondary hover:text-wl-text-primary"
-      >
-        ✕
-      </button>
-      <h4 className="font-semibold text-wl-text-primary mb-2">{driver.name}</h4>
-      <div className="space-y-1 text-xs text-wl-text-secondary">
-        <div className="flex items-center gap-2">
-          <div
-            className={cn(
-              "w-2 h-2 rounded-full",
-              driverStatusColors[driver.status]
-            )}
-          />
-          <span>{driverStatusLabels[driver.status]}</span>
-        </div>
-        {driver.currentDelivery && (
-          <div className="flex items-center gap-2">
-            <MapPin className="w-3 h-3" />
-            <span>Delivery: {driver.currentDelivery}</span>
+      {/* Legend */}
+      <div className="absolute bottom-3 left-3 flex flex-col gap-1">
+        {[
+          { color: "#10B981", label: "Available" },
+          { color: "#3B82F6", label: "On Delivery" },
+          { color: "#6B7280", label: "Offline" },
+        ].map(({ color, label }) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+            <span className="text-[10px] text-white/50">{label}</span>
           </div>
-        )}
-        {driver.eta && (
-          <div className="flex items-center gap-2">
-            <Navigation className="w-3 h-3" />
-            <span>ETA: {driver.eta} min</span>
-          </div>
-        )}
-        <div className="text-xs text-wl-text-secondary mt-2">
-          Lat: {driver.latitude.toFixed(4)}, Lng: {driver.longitude.toFixed(4)}
-        </div>
+        ))}
+      </div>
+
+      {/* Driver count */}
+      <div className="absolute top-3 right-3 bg-black/40 rounded-md px-2 py-1">
+        <span className="text-xs text-white/60">{withLoc.length} located</span>
       </div>
     </div>
   );
 }
 
-export function ActiveDeliveryMap({
-  className,
-  centerOnActive = true,
-}: ActiveDeliveryMapProps) {
-  const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [zoom, setZoom] = useState(100);
-  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-  const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
-  const mapRef = useRef<HTMLDivElement>(null);
-
-  // Simulate initial driver data
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      const mockDrivers: Driver[] = [
-        {
-          id: "drv_001",
-          name: "Driver A",
-          status: "on-delivery",
-          latitude: 40.75,
-          longitude: -73.95,
-          currentDelivery: "ORD_123",
-          eta: 12,
-        },
-        {
-          id: "drv_002",
-          name: "Driver B",
-          status: "available",
-          latitude: 40.72,
-          longitude: -73.98,
-        },
-        {
-          id: "drv_003",
-          name: "Driver C",
-          status: "on-delivery",
-          latitude: 40.78,
-          longitude: -73.92,
-          currentDelivery: "ORD_456",
-          eta: 8,
-        },
-        {
-          id: "drv_004",
-          name: "Driver D",
-          status: "available",
-          latitude: 40.73,
-          longitude: -73.93,
-        },
-        {
-          id: "drv_005",
-          name: "Driver E",
-          status: "offline",
-          latitude: 40.7,
-          longitude: -74.0,
-        },
-      ];
-
-      const mockDeliveries: Delivery[] = [
-        {
-          id: "del_001",
-          driverId: "drv_001",
-          status: "in-transit",
-          pickupLat: 40.75,
-          pickupLng: -73.95,
-          deliveryLat: 40.76,
-          deliveryLng: -73.94,
-        },
-        {
-          id: "del_002",
-          driverId: "drv_003",
-          status: "in-transit",
-          pickupLat: 40.78,
-          pickupLng: -73.92,
-          deliveryLat: 40.79,
-          deliveryLng: -73.91,
-        },
-      ];
-
-      setDrivers(mockDrivers);
-      setDeliveries(mockDeliveries);
-      setIsLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Simulate driver movement
-  useEffect(() => {
-    if (isLoading) return;
-
-    const interval = setInterval(() => {
-      setDrivers((prev) =>
-        prev.map((driver) => {
-          if (driver.status === "on-delivery") {
-            const latChange = (Math.random() - 0.5) * 0.001;
-            const lngChange = (Math.random() - 0.5) * 0.001;
-            return {
-              ...driver,
-              latitude: driver.latitude + latChange,
-              longitude: driver.longitude + lngChange,
-              eta: Math.max(0, (driver.eta || 0) - 1),
-            };
-          }
-          return driver;
-        })
-      );
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isLoading]);
-
-  const handleDriverClick = (driver: Driver, e: React.MouseEvent) => {
-    const rect = mapRef.current?.getBoundingClientRect();
-    if (rect) {
-      setPopoverPos({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    }
-    setSelectedDriver(driver);
-  };
-
-  const activeDriverCount = drivers.filter(
-    (d) => d.status === "available" || d.status === "on-delivery"
-  ).length;
+function DriverList({ drivers, loading }: { drivers: ApiDriver[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="space-y-2 p-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 p-2">
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <div className="flex-1 space-y-1">
+              <Skeleton className="h-3 w-24 rounded" />
+              <Skeleton className="h-2.5 w-16 rounded" />
+            </div>
+            <Skeleton className="h-5 w-16 rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>
-      <div className="flex items-center justify-between p-5 border-b border-wl-border-subtle">
+    <div className="overflow-y-auto flex-1">
+      {drivers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full py-8 gap-2">
+          <Users className="w-6 h-6 text-wl-text-secondary opacity-40" />
+          <p className="text-xs text-wl-text-secondary">No drivers found</p>
+        </div>
+      ) : (
+        <div className="space-y-1 p-2">
+          {drivers.map((driver) => {
+            const cfg = getStatusConfig(driver.status);
+            const coords = extractCoords(driver.currentLocation);
+            const ago = timeAgo(driver.lastLocationAt);
+
+            return (
+              <Link key={driver.id} href={`/drivers/${driver.id}`}>
+                <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-wl-bg-surface transition-colors cursor-pointer">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-wl-bg-surface flex items-center justify-center">
+                      <Truck className="w-4 h-4 text-wl-text-secondary" />
+                    </div>
+                    <div
+                      className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-wl-bg-elevated"
+                      style={{ backgroundColor: cfg.color }}
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-wl-text-primary truncate">{driver.name}</p>
+                    <p className="text-[10px] text-wl-text-secondary">
+                      {driver._count.orders > 0 ? `${driver._count.orders} active order${driver._count.orders !== 1 ? "s" : ""}` : "No active orders"}
+                      {ago && !coords && <span> · GPS off</span>}
+                      {ago && coords && <span> · {ago}</span>}
+                    </p>
+                  </div>
+
+                  <Badge variant={cfg.badge as any} className="text-[10px] flex-shrink-0">
+                    {cfg.label}
+                  </Badge>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
+  const [view, setView] = useState<"map" | "list">("map");
+
+  const { items: drivers, loading, error, refetch } = useApiList<ApiDriver>("/api/v4/drivers", {
+    limit: 50,
+    sort: "status:asc",
+  });
+
+  const activeDrivers = drivers.filter((d) => d.status !== "OFFLINE");
+  const onDelivery = drivers.filter((d) => ["ON_DELIVERY", "ON_ROUTE", "ASSIGNED"].includes(d.status.toUpperCase())).length;
+
+  return (
+    <Card className={cn("flex flex-col h-full", className)}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-wl-border-subtle flex-shrink-0">
         <div>
-          <h3 className="text-sm font-semibold text-wl-text-primary tracking-wider uppercase">
-            Live Delivery Map
+          <h3 className="text-sm font-semibold text-wl-text-primary tracking-wider uppercase flex items-center gap-2">
+            <Navigation className="w-4 h-4" />
+            Driver Overview
           </h3>
-          <p className="text-xs text-wl-text-secondary mt-1">
-            Real-time driver locations
+          <p className="text-xs text-wl-text-secondary mt-0.5">
+            {loading ? "Loading…" : error ? "Error" : `${activeDrivers.length} active · ${onDelivery} on delivery`}
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1 bg-wl-bg-surface rounded-md border border-wl-border-subtle">
-          <Zap className="w-3 h-3 text-wl-success-400" />
-          <span className="text-xs font-semibold text-wl-text-primary">
-            {activeDriverCount} active
-          </span>
+
+        <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <div className="flex rounded-md overflow-hidden border border-wl-border-subtle">
+            <button
+              onClick={() => setView("map")}
+              className={cn(
+                "px-2.5 py-1 text-[11px] font-medium transition-colors",
+                view === "map" ? "bg-wl-primary-500/20 text-wl-primary-400" : "text-wl-text-secondary hover:bg-wl-bg-overlay"
+              )}
+            >
+              Map
+            </button>
+            <button
+              onClick={() => setView("list")}
+              className={cn(
+                "px-2.5 py-1 text-[11px] font-medium transition-colors",
+                view === "list" ? "bg-wl-primary-500/20 text-wl-primary-400" : "text-wl-text-secondary hover:bg-wl-bg-overlay"
+              )}
+            >
+              List
+            </button>
+          </div>
+
+          <button
+            onClick={() => refetch()}
+            className="p-1.5 rounded hover:bg-wl-bg-overlay transition-colors text-wl-text-secondary"
+            aria-label="Refresh"
+          >
+            <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
+          </button>
         </div>
       </div>
 
-      <div ref={mapRef} className="relative flex-1 overflow-hidden bg-wl-bg-surface">
-        {isLoading ? (
-          <MapSkeleton />
+      {/* Content */}
+      <div className="flex-1 overflow-hidden p-3">
+        {loading && drivers.length === 0 ? (
+          <Skeleton className="w-full h-full rounded-lg" />
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-full gap-2">
+            <MapPin className="w-6 h-6 text-wl-danger-400 opacity-60" />
+            <p className="text-xs text-wl-text-secondary">Failed to load driver data</p>
+          </div>
+        ) : view === "map" ? (
+          <DriverDotMap drivers={drivers} />
         ) : (
-          <>
-            <SVGMap drivers={drivers} deliveries={deliveries} zoom={zoom} />
-
-            {/* Zoom controls */}
-            <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-20">
-              <button
-                onClick={() => setZoom(Math.min(200, zoom + 20))}
-                className={cn(
-                  "p-2 bg-wl-bg-elevated border border-wl-border-default rounded",
-                  "hover:bg-wl-bg-overlay transition-colors duration-fast"
-                )}
-                aria-label="Zoom in"
-              >
-                <ChevronUp className="w-4 h-4 text-wl-text-primary" />
-              </button>
-              <div className="text-xs text-wl-text-secondary text-center px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded">
-                {zoom}%
-              </div>
-              <button
-                onClick={() => setZoom(Math.max(50, zoom - 20))}
-                className={cn(
-                  "p-2 bg-wl-bg-elevated border border-wl-border-default rounded",
-                  "hover:bg-wl-bg-overlay transition-colors duration-fast"
-                )}
-                aria-label="Zoom out"
-              >
-                <ChevronDown className="w-4 h-4 text-wl-text-primary" />
-              </button>
-            </div>
-
-            {/* Legend */}
-            <div className="absolute top-4 left-4 bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 z-20">
-              <div className="text-xs space-y-2">
-                <div className="flex items-center gap-2 text-wl-text-secondary">
-                  <div className="w-3 h-3 rounded-full bg-wl-success-400" />
-                  <span>Available</span>
-                </div>
-                <div className="flex items-center gap-2 text-wl-text-secondary">
-                  <div className="w-3 h-3 rounded-full bg-wl-primary-500" />
-                  <span>On Delivery</span>
-                </div>
-                <div className="flex items-center gap-2 text-wl-text-secondary">
-                  <div className="w-3 h-3 rounded-full bg-wl-text-secondary" />
-                  <span>Offline</span>
-                </div>
-              </div>
-            </div>
-
-            {selectedDriver && (
-              <DriverPopover
-                driver={selectedDriver}
-                position={popoverPos}
-                onClose={() => setSelectedDriver(null)}
-              />
-            )}
-          </>
+          <DriverList drivers={drivers} loading={false} />
         )}
       </div>
     </Card>

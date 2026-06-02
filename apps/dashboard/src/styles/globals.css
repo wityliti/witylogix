@@ -1,6 +1,7 @@
 @import './tokens.css';
 @import './tailwind-tokens.css';
 @import './responsive.css';
+@import 'leaflet/dist/leaflet.css';
 
 @tailwind base;
 @tailwind components;
