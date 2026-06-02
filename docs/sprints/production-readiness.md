@@ -27,6 +27,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-505 | feat/WIT-505-dashboard-invoices-payments-production | Activity (2), Order Board (1), Invoices (5), Payments (1) | 9 | 2026-05-31 |
 | WIT-512 | feat/WIT-512-dashboard-analytics-production | Analytics overview (DEMO→real), Returns (MOCK_RETURNS→0), API route-performance (Math.random→Prisma), Map: DeliveryPerformanceLayer + route-performance Map tab | 7 + API | 2026-06-01 |
 | WIT-514 | feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production | Healthcare Records (mockRecords→0), SC Inventory (2 new API hooks), SC Orders (WAVE_PLANS/BATCH_PICKING/RETURN_QUEUE→real), E-Signatures (new esignatures.ts routes + 0 mocks), Products Sync (MOCK_PLATFORMS→integrations/connections), Field Service (computed stats), Collections (alert→real DELETE) | 17 | 2026-06-01 |
+| WIT-516 | feat/WIT-516-dashboard-activity-eld-webhooks-dispatch-production | Activity (Math.random live-mode→refetch), ELD HOS (DRIVER_OPTIONS→useELDDriverStatus, random 8-day recap→derived from real hos, broken /eld/hos→removed), Webhooks chart (Math.random→real hourly buckets), Webhook Test (fake setTimeout→real API + new POST /outbound-webhooks/test), Shipping Labels (Math.random price→deterministic), DispatchMap (Leaflet placeholder→WLMap+RoutePolylineLayer+RouteStopMarkersLayer+DriverLayer) | 7 + API | 2026-06-02 |
 
 ---
 

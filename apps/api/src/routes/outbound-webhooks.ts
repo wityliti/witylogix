@@ -420,6 +420,49 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
     }
   );
 
+  // ── AD-HOC WEBHOOK TEST ────────────────────────────────────
+  // Sends a test payload to an arbitrary URL server-side (avoids browser CORS).
+
+  fastify.post<{ Body: any }>(
+    "/test",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const schema = z.object({
+        url: z.string().url("Invalid target URL"),
+        eventType: z.string().min(1),
+        payload: z.record(z.any()).optional().default({}),
+      });
+      const body = schema.parse(request.body);
+      const start = Date.now();
+
+      try {
+        const res = await fetch(body.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Witylogix-Event": body.eventType },
+          body: JSON.stringify(body.payload),
+          signal: AbortSignal.timeout(10000),
+        });
+        const duration = Date.now() - start;
+        const responseText = await res.text().catch(() => "");
+
+        return {
+          success: res.ok,
+          statusCode: res.status,
+          duration,
+          response: responseText,
+        };
+      } catch (error) {
+        const duration = Date.now() - start;
+        reply.status(502);
+        return {
+          success: false,
+          statusCode: 502,
+          duration,
+          response: error instanceof Error ? error.message : "Delivery failed",
+        };
+      }
+    }
+  );
+
   // ── WEBHOOK STATISTICS ─────────────────────────────────────
 
   fastify.get(

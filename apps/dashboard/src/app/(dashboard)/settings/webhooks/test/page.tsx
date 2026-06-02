@@ -76,7 +76,7 @@ const SAMPLE_PAYLOADS: Record<string, Record<string, any>> = {
 };
 
 export default function WebhookTestPage() {
-  const { execute: sendTestWebhook } = useApiMutation('POST', '/api/v4/webhooks/test');
+  const { execute: sendTestWebhook } = useApiMutation('POST', '/api/v4/outbound-webhooks/test');
 
   const [selectedEvent, setSelectedEvent] = useState('shipment.created');
   const [endpoint, setEndpoint] = useState('https://webhook.example.com/events');
@@ -107,28 +107,36 @@ export default function WebhookTestPage() {
 
   const handleSendTest = async () => {
     setIsLoading(true);
+    const start = Date.now();
 
     try {
       const payload = JSON.parse(customPayload);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const result = await sendTestWebhook({ url: endpoint, eventType: selectedEvent, payload });
+      const duration = Date.now() - start;
 
       const newSend: TestSend = {
         id: `test-${Date.now()}`,
         timestamp: new Date(),
         eventType: selectedEvent,
         endpoint,
-        status: Math.random() > 0.2 ? "success" : "failed",
-        statusCode: Math.random() > 0.2 ? 200 : 500,
-        duration: Math.floor(Math.random() * 300) + 50,
-        responseBody: JSON.stringify({
-          success: true,
-          message: "Webhook processed",
-          eventId: payload.id,
-        }),
+        status: "success",
+        statusCode: (result as any)?.statusCode ?? 200,
+        duration,
+        responseBody: JSON.stringify((result as any)?.response ?? result ?? { success: true }),
       };
-
+      setTestSends([newSend, ...testSends]);
+    } catch (err) {
+      const duration = Date.now() - start;
+      const newSend: TestSend = {
+        id: `test-${Date.now()}`,
+        timestamp: new Date(),
+        eventType: selectedEvent,
+        endpoint,
+        status: "failed",
+        statusCode: (err as any)?.statusCode ?? 500,
+        duration,
+        responseBody: err instanceof Error ? err.message : "Delivery failed",
+      };
       setTestSends([newSend, ...testSends]);
     } finally {
       setIsLoading(false);

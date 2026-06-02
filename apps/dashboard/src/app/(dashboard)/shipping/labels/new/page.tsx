@@ -107,7 +107,7 @@ export default function CreateLabelPage() {
 
             {step === 'rates' && (
               <div className="space-y-3">
-                {['Ground', 'Express', 'Overnight'].map((service) => (
+                {([['Ground', 15], ['Express', 35], ['Overnight', 65]] as const).map(([service, baseRate]) => (
                   <div
                     key={service}
                     onClick={() => setFormData({ ...formData, service })}
@@ -116,7 +116,7 @@ export default function CreateLabelPage() {
                     }`}
                   >
                     <p className="font-medium text-white">{service}</p>
-                    <p className="text-xs text-gray-400">${15 + Math.random() * 50}</p>
+                    <p className="text-xs text-gray-400">from ${baseRate.toFixed(2)}</p>
                   </div>
                 ))}
               </div>

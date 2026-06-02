@@ -6,10 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useDriverHOS, useViolations, DutyStatus } from "@/hooks/use-eld";
+import { useDriverHOS, useViolations, useELDDriverStatus, DutyStatus } from "@/hooks/use-eld";
 import { HOSClock, MultiHOSGauge } from "@/components/eld/hos-clock";
 import { ViolationTimeline } from "@/components/eld/violation-timeline";
-import { useApiList } from "@/hooks/use-api";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import {
@@ -54,16 +53,6 @@ const generateDailyLog = (): DailyLogEntry[] => {
   return log;
 };
 
-const generateEightDayRecap = (): EightDayEntry[] => {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Today"];
-  return days.map((day) => ({
-    day,
-    driving: Math.floor(Math.random() * 11) + 2,
-    onDuty: Math.floor(Math.random() * 8) + 2,
-    total: 70 + Math.floor(Math.random() * 10) - 5,
-  }));
-};
-
 const dutyStatusColor = (status: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {
     OFF_DUTY: "bg-gray-600/40",
@@ -81,34 +70,47 @@ const dutyStatusLabel: Record<DutyStatus, string> = {
   ON_DUTY: "On-Duty",
 };
 
-const DRIVER_OPTIONS = [
-  { id: "drv-1", name: "Carlos Martinez" },
-  { id: "drv-2", name: "Sofia Lindberg" },
-  { id: "drv-3", name: "James Brown" },
-];
-
 export default function HOSPage() {
-  const [selectedDriverId, setSelectedDriverId] = useState<string>("drv-1");
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("");
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [personalConveyance, setPersonalConveyance] = useState(false);
   const [yardMove, setYardMove] = useState(false);
 
-  const { data: hos, loading: isLoading } = useDriverHOS(selectedDriverId);
-  const { items: violations, loading: violationsLoading } = useViolations({ search: selectedDriverId });
-  const { items: data, loading, error, refetch } = useApiList("/api/v4/eld/hos");
+  const { items: driverList, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useELDDriverStatus();
+
+  // Select first driver once list loads
+  const effectiveDriverId = selectedDriverId || driverList[0]?.driverId || "";
+
+  const { data: hos, loading: isLoading } = useDriverHOS(effectiveDriverId || null);
+  const { items: violations, loading: violationsLoading } = useViolations({ search: effectiveDriverId });
 
   const dailyLog = useMemo(() => generateDailyLog(), []);
-  const eightDayRecap = useMemo(() => generateEightDayRecap(), []);
 
-  const selectedDriver = DRIVER_OPTIONS.find((d) => d.id === selectedDriverId);
+  // 8-day recap derived from real HOS data — today from hos, prior days estimated from cycleHoursUsed
+  const eightDayRecap = useMemo<EightDayEntry[]>(() => {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Today"];
+    const todayDriving = hos ? Math.max(0, 11 - (hos.drivingTimeRemaining ?? 11)) : 0;
+    const todayOnDuty = hos ? Math.max(0, (14 - (hos.onDutyWindowRemaining ?? 14)) - todayDriving) : 0;
+    const priorCycleHours = hos ? Math.max(0, (hos.cycleHoursUsed ?? 0) - todayDriving - todayOnDuty) : 0;
+    const avgPriorDriving = priorCycleHours > 0 ? Math.round((priorCycleHours * 0.7) / 7 * 10) / 10 : 0;
+    const avgPriorOnDuty = priorCycleHours > 0 ? Math.round((priorCycleHours * 0.3) / 7 * 10) / 10 : 0;
+    return days.map((day, idx) => {
+      if (idx === 7) {
+        return { day, driving: todayDriving, onDuty: todayOnDuty, total: Math.round(hos?.cycleHoursUsed ?? 0) };
+      }
+      return { day, driving: avgPriorDriving, onDuty: avgPriorOnDuty, total: Math.round(hos?.cycleHoursUsed ?? 0) };
+    });
+  }, [hos]);
+
+  const selectedDriver = driverList.find((d) => d.driverId === effectiveDriverId);
   const filteredDrivers = useMemo(() => {
-    if (!searchQuery) return DRIVER_OPTIONS;
-    return DRIVER_OPTIONS.filter((d) => d.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [searchQuery]);
+    if (!searchQuery) return driverList;
+    return driverList.filter((d) => d.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [searchQuery, driverList]);
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (driversLoading) return <TableSkeleton rows={10} columns={6} />;
+  if (driversError) return <ErrorState message={driversError.message} onRetry={refetchDrivers} />;
 
   const getHosStatus = () => {
     if (!hos) return "unknown";
@@ -155,15 +157,15 @@ export default function HOSPage() {
                 <div className="max-h-60 overflow-y-auto">
                   {filteredDrivers.map((driver) => (
                     <button
-                      key={driver.id}
+                      key={driver.driverId}
                       onClick={() => {
-                        setSelectedDriverId(driver.id);
+                        setSelectedDriverId(driver.driverId);
                         setShowSearch(false);
                         setSearchQuery("");
                       }}
                       className={cn(
                         "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
-                        selectedDriverId === driver.id
+                        effectiveDriverId === driver.driverId
                           ? "bg-blue-500/10 text-blue-400"
                           : "text-gray-400 hover:bg-[#0a0a0f]"
                       )}

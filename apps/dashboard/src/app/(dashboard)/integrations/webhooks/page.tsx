@@ -132,6 +132,17 @@ export default function WebhooksPage() {
     return webhooks?.deliveries.filter((d) => d.status === "failed") || [];
   }, [webhooks?.deliveries]);
 
+  // Aggregate deliveries by hour-of-day for the chart (no random data)
+  const hourlyStats = useMemo(() => {
+    const buckets = Array.from({ length: 24 }, () => ({ success: 0, failed: 0 }));
+    for (const d of webhooks?.deliveries ?? []) {
+      const hour = new Date(d.timestamp).getHours();
+      if (d.status === "success") buckets[hour].success++;
+      else buckets[hour].failed++;
+    }
+    return buckets;
+  }, [webhooks?.deliveries]);
+
   const toggleDeliveryExpand = (deliveryId: string) => {
     setExpandedDeliveries((prev) => ({
       ...prev,
@@ -406,11 +417,11 @@ export default function WebhooksPage() {
             <div className="space-y-2">
               <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
               <div className="flex items-end gap-1 h-32 px-2 py-4 bg-[#0a0a0f]tertiary rounded-lg border border-neutral-700">
-                {Array.from({ length: 24 }).map((_, i) => {
-                  const total = Math.floor(Math.random() * 100) + 20;
-                  const success = Math.floor(total * 0.9);
-                  const failed = total - success;
-                  const maxTotal = 150;
+                {hourlyStats.map((bucket, i) => {
+                  const success = bucket.success;
+                  const failed = bucket.failed;
+                  const total = success + failed || 1;
+                  const maxTotal = Math.max(...hourlyStats.map((b) => b.success + b.failed), 1);
                   const heightPercent = (total / maxTotal) * 100;
 
                   return (
