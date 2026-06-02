@@ -389,6 +389,75 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
 
     return { data: gauges, pagination: { page: 1, limit: gauges.length, total: gauges.length, totalPages: 1 } };
   });
+
+  // ── WAVE PLANS ────────────────────────────────────────────────────────
+
+  fastify.get("/waves", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const shopId = request.shopId;
+
+    const waves = await (request.tenantDb as any).pickList.findMany({
+      where: { shopId, strategy: "WAVE_PICK" },
+      include: { items: { select: { orderId: true } } },
+      orderBy: { createdAt: "desc" as const },
+      take: 50,
+    });
+
+    const data = waves.map((w: any) => {
+      const orderIds = [...new Set(w.items.map((i: any) => i.orderId as string))];
+      const status =
+        w.status === "DONE" ? "completed"
+        : w.status === "IN_PROGRESS" ? "picking"
+        : "planned";
+      return {
+        waveId: `WAVE-${w.id.slice(0, 8).toUpperCase()}`,
+        id: w.id,
+        createdDate: w.createdAt,
+        ordersCount: orderIds.length,
+        itemsCount: w.items.length,
+        status,
+        waveWindow: w.waveWindow,
+        estimatedCompletionTime: w.completedAt ?? null,
+        assignedTo: w.assignedTo,
+      };
+    });
+
+    return { data, total: data.length };
+  });
+
+  // ── BATCH PICKING ─────────────────────────────────────────────────────
+
+  fastify.get("/batches", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const shopId = request.shopId;
+
+    const batches = await (request.tenantDb as any).pickList.findMany({
+      where: { shopId, strategy: "BATCH_PICK" },
+      include: { items: { select: { id: true, binLocation: true, zone: true } } },
+      orderBy: { createdAt: "desc" as const },
+      take: 50,
+    });
+
+    const data = batches.map((b: any) => {
+      const status =
+        b.status === "DONE" ? "completed"
+        : b.status === "IN_PROGRESS" ? "in-progress"
+        : "pending";
+      const doneItems = b.status === "DONE" ? b.items.length : b.status === "IN_PROGRESS" ? Math.floor(b.items.length * 0.5) : 0;
+      const completionRate = b.items.length > 0 ? Math.round((doneItems / b.items.length) * 100) : 0;
+      const zone = b.zone ?? b.items[0]?.zone ?? "General";
+      return {
+        batchId: `BATCH-${b.batchNumber ?? b.id.slice(0, 6).toUpperCase()}`,
+        id: b.id,
+        waveId: `WAVE-${b.id.slice(0, 8).toUpperCase()}`,
+        location: `Zone ${zone}`,
+        itemCount: b.items.length,
+        status,
+        assignedTo: b.assignedTo,
+        completionRate,
+      };
+    });
+
+    return { data, total: data.length };
+  });
 }
 
 // ─── Status Mappers ──────────────────────────────────────────────────

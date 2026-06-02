@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, GripVertical, Edit2, Trash2, Image as ImageIcon, Search } from "lucide-react";
 import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 
@@ -268,7 +269,18 @@ export default function CollectionsPage() {
                                         <p className="text-sm text-white m-0 font-medium">{product.title}</p>
                                         <p className="text-xs text-gray-400 m-0 mt-1">SKU: {product.sku}</p>
                                       </div>
-                                      <Button variant="danger" size="sm" onClick={() => alert(`Removing ${product.title} (mock)`)}>
+                                      <Button
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={() =>
+                                          api
+                                            .delete(`/api/v4/collections/${collection.id}/products`, {
+                                              body: JSON.stringify({ productIds: [product.id] }),
+                                            } as RequestInit)
+                                            .then(() => refetch())
+                                            .catch(console.error)
+                                        }
+                                      >
                                         Remove
                                       </Button>
                                     </div>
