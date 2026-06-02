@@ -76,7 +76,7 @@ const SAMPLE_PAYLOADS: Record<string, Record<string, any>> = {
 };
 
 export default function WebhookTestPage() {
-  const { execute: sendTestWebhook } = useApiMutation('POST', '/api/v4/webhooks/test');
+  const { execute: sendTestWebhook } = useApiMutation<{ success: boolean; statusCode: number; duration: number; response: string | null }>('POST', '/api/v4/outbound-webhooks/test');
 
   const [selectedEvent, setSelectedEvent] = useState('shipment.created');
   const [endpoint, setEndpoint] = useState('https://webhook.example.com/events');
@@ -107,28 +107,30 @@ export default function WebhookTestPage() {
 
   const handleSendTest = async () => {
     setIsLoading(true);
-
     try {
       const payload = JSON.parse(customPayload);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
+      const result = await sendTestWebhook({ url: endpoint, eventType: selectedEvent, payload });
       const newSend: TestSend = {
         id: `test-${Date.now()}`,
         timestamp: new Date(),
         eventType: selectedEvent,
         endpoint,
-        status: Math.random() > 0.2 ? "success" : "failed",
-        statusCode: Math.random() > 0.2 ? 200 : 500,
-        duration: Math.floor(Math.random() * 300) + 50,
-        responseBody: JSON.stringify({
-          success: true,
-          message: "Webhook processed",
-          eventId: payload.id,
-        }),
+        status: result?.success ? "success" : "failed",
+        statusCode: result?.statusCode,
+        duration: result?.duration ?? 0,
+        responseBody: result?.response ?? undefined,
       };
-
+      setTestSends([newSend, ...testSends]);
+    } catch (err) {
+      const newSend: TestSend = {
+        id: `test-${Date.now()}`,
+        timestamp: new Date(),
+        eventType: selectedEvent,
+        endpoint,
+        status: "failed",
+        duration: 0,
+        responseBody: err instanceof Error ? err.message : "Request failed",
+      };
       setTestSends([newSend, ...testSends]);
     } finally {
       setIsLoading(false);

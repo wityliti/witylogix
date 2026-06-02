@@ -131,10 +131,10 @@ export default function ActivityPage() {
 
   const displayedEvents = filteredEvents();
 
-  // Live mode: poll for new events every 30 seconds
+  // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
-    const interval = setInterval(() => refetch(), 30000);
+    const interval = setInterval(() => { refetch(); }, 30000);
     return () => clearInterval(interval);
   }, [isLiveMode, refetch]);
 

@@ -116,7 +116,7 @@ export default function CreateLabelPage() {
                     }`}
                   >
                     <p className="font-medium text-white">{service}</p>
-                    <p className="text-xs text-gray-400">${15 + Math.random() * 50}</p>
+                    <p className="text-xs text-gray-400">${{ Ground: "15.00", Express: "35.00", Overnight: "65.00" }[service] ?? "—"}</p>
                   </div>
                 ))}
               </div>

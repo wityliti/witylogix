@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useApiList } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -131,93 +132,54 @@ function OrderCard({
   );
 }
 
+const STATUS_NORMALIZE: Record<string, Order["status"]> = {
+  PENDING: "pending",
+  CONFIRMED: "assigned",
+  ASSIGNED: "assigned",
+  IN_TRANSIT: "in-transit",
+  DELIVERED: "delivered",
+  CANCELLED: "cancelled",
+};
+
 export function LiveOrderFeed({
   className,
   onOrderClick,
 }: LiveOrderFeedProps) {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevCountRef = useRef(0);
 
-  // Simulate real-time order data
+  const { items: rawOrders, loading: isLoading, refetch } =
+    useApiList<any>('/api/v4/orders', { limit: 10 });
+
+  const orders = useMemo<Order[]>(() =>
+    rawOrders.map((o) => ({
+      id: o.id,
+      customerId: o.customerId ?? o.id,
+      customerName: o.customerName ?? "Unknown",
+      status: STATUS_NORMALIZE[o.status] ?? "pending",
+      createdAt: new Date(o.createdAt),
+      amount: o.totalAmount ?? o.totalPrice ?? 0,
+      itemCount: o.itemCount ?? o.items?.length ?? 0,
+    })),
+  [rawOrders]);
+
+  // Poll for new orders every 30 seconds
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      const mockOrders: Order[] = [
-        {
-          id: "ord_001a2b3c4d5e6f7g",
-          customerId: "cust_001",
-          customerName: "John Smith",
-          status: "in-transit",
-          createdAt: new Date(Date.now() - 5 * 60000),
-          amount: 125.5,
-          itemCount: 3,
-        },
-        {
-          id: "ord_002x9y8z7w6v5u4t",
-          customerId: "cust_002",
-          customerName: "Sarah Johnson",
-          status: "assigned",
-          createdAt: new Date(Date.now() - 12 * 60000),
-          amount: 89.99,
-          itemCount: 2,
-        },
-        {
-          id: "ord_003m8n7o6p5q4r3s",
-          customerId: "cust_003",
-          customerName: "Mike Chen",
-          status: "pending",
-          createdAt: new Date(Date.now() - 2 * 60000),
-          amount: 234.0,
-          itemCount: 5,
-        },
-        {
-          id: "ord_004h5i6j7k8l9m0n",
-          customerId: "cust_004",
-          customerName: "Emma Davis",
-          status: "delivered",
-          createdAt: new Date(Date.now() - 45 * 60000),
-          amount: 156.75,
-          itemCount: 4,
-        },
-      ];
-      setOrders(mockOrders);
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Simulate new orders arriving
-  useEffect(() => {
-    if (isLoading || isPaused) return;
-
     const interval = setInterval(() => {
-      const statuses: Order["status"][] = [
-        "pending",
-        "assigned",
-        "in-transit",
-        "delivered",
-      ];
-      const newOrder: Order = {
-        id: `ord_${Math.random().toString(36).substring(2, 18)}`,
-        customerId: `cust_${Math.floor(Math.random() * 1000)}`,
-        customerName: `Customer ${Math.floor(Math.random() * 1000)}`,
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        createdAt: new Date(),
-        amount: Math.round(Math.random() * 200 * 100) / 100,
-        itemCount: Math.floor(Math.random() * 5) + 1,
-      };
-
-      setOrders((prev) => [newOrder, ...prev.slice(0, 9)]);
-      setNewOrderCount((prev) => (isScrolled ? prev + 1 : 0));
-    }, 8000);
-
+      refetch();
+    }, 30_000);
     return () => clearInterval(interval);
-  }, [isLoading, isPaused, isScrolled]);
+  }, [refetch]);
+
+  // Notify when new orders arrive
+  useEffect(() => {
+    if (orders.length > prevCountRef.current && prevCountRef.current > 0) {
+      setNewOrderCount((prev) => (isScrolled ? prev + (orders.length - prevCountRef.current) : 0));
+    }
+    prevCountRef.current = orders.length;
+  }, [orders.length, isScrolled]);
 
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
@@ -271,8 +233,8 @@ export function LiveOrderFeed({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
+        onMouseEnter={() => {/* pause handled by real polling */}}
+        onMouseLeave={() => {}}
         className="flex-1 overflow-y-auto space-y-2 p-5"
       >
         {isLoading ? (

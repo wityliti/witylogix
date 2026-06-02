@@ -440,6 +440,55 @@ async function outboundWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
       }
     }
   );
+
+  // ── AD-HOC TEST SEND (no webhook ID required) ──────────────────────────────
+  // POST /test  — fire a payload at an arbitrary URL server-side (avoids CORS)
+  fastify.post(
+    "/test",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { url, eventType, payload } = request.body as {
+        url: string;
+        eventType: string;
+        payload: Record<string, unknown>;
+      };
+
+      if (!url || !eventType) {
+        reply.status(400);
+        return { error: "url and eventType are required" };
+      }
+
+      const start = Date.now();
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Witylogix-Event": eventType },
+          body: JSON.stringify(payload ?? {}),
+          signal: AbortSignal.timeout(10_000),
+        });
+        const duration = Date.now() - start;
+        let responseBody: string | null = null;
+        try { responseBody = await res.text(); } catch { /* ignore */ }
+        return {
+          data: {
+            success: res.ok,
+            statusCode: res.status,
+            duration,
+            response: responseBody,
+          },
+        };
+      } catch (err) {
+        const duration = Date.now() - start;
+        return {
+          data: {
+            success: false,
+            statusCode: 0,
+            duration,
+            response: err instanceof Error ? err.message : "Request failed",
+          },
+        };
+      }
+    }
+  );
 }
 
 export default outboundWebhooksRoutes;
