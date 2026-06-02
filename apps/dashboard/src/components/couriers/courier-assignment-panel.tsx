@@ -11,12 +11,13 @@ interface Courier {
   id: string;
   name: string;
   partner: "onfleet" | "stuart" | "uber";
-  status: "idle" | "en-route" | "delivering" | "returning";
+  status: "idle" | "en-route" | "delivering" | "returning" | "unavailable";
   currentLoad: number;
   maxCapacity: number;
   rating: number;
   completedToday: number;
   phone: string;
+  serviceArea?: string;
 }
 
 interface Delivery {
@@ -59,11 +60,10 @@ export function CourierAssignmentPanel({
   const [selectedCourierId, setSelectedCourierId] = useState<string | null>(couriers[0]?.id || null);
   const [isAssigning, setIsAssigning] = useState(false);
 
-  // Calculate delivery distance (mock)
   const distance = useMemo(() => {
     const latDiff = Math.abs(delivery.dropoff.latitude - delivery.pickup.latitude);
     const lonDiff = Math.abs(delivery.dropoff.longitude - delivery.pickup.longitude);
-    return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111; // Approximate km
+    return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111; // approx km (Euclidean)
   }, [delivery]);
 
   // Calculate costs per courier
@@ -99,19 +99,8 @@ export function CourierAssignmentPanel({
           });
         }
 
-        // Service area check (mock)
-        const distance = Math.random() > 0.8 ? Math.random() > 0.5 : false;
-        if (distance) {
-          warnings.push({
-            courierId: courier.id,
-            type: "service_area",
-            message: "Outside service area",
-            severity: "warning",
-          });
-        }
-
         // Unavailable check
-        if (courier.status === "idle" && Math.random() > 0.7) {
+        if (courier.status === "unavailable") {
           warnings.push({
             courierId: courier.id,
             type: "unavailable",
@@ -127,10 +116,11 @@ export function CourierAssignmentPanel({
 
   const handleAssign = async (courierId: string) => {
     setIsAssigning(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    onAssign(courierId);
-    setIsAssigning(false);
+    try {
+      await onAssign(courierId);
+    } finally {
+      setIsAssigning(false);
+    }
   };
 
   const getPartnerLogo = (partner: Courier["partner"]): string => {
