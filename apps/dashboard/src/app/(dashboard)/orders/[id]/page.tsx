@@ -1,334 +1,432 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { WLMap } from '@/components/map/wl-map';
+import { PinLayer } from '@/components/map/pin-layer';
 
-interface Activity {
+// ─── Types matching the API response shape ────────────────────────────────────
+
+interface NotificationLog {
   id: string;
-  timestamp: string;
-  actor: string;
-  action: string;
-  description: string;
-}
-
-interface Note {
-  id: string;
-  author: string;
-  timestamp: string;
-  content: string;
-}
-
-interface LineItem {
-  id: string;
-  product: string;
-  sku: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
-}
-
-interface Order {
-  orderNumber: string;
+  createdAt: string;
+  type: string;
   status: string;
-  createdDate: string;
-  source: string;
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-    orderHistoryCount: number;
-  };
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-  };
-  lineItems: LineItem[];
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  discount: number;
-  total: number;
-  shipment: {
-    trackingNumber: string;
-    carrier: string;
-    status: string;
-    eta: string;
-  };
-  activities: Activity[];
+  recipient?: string | null;
 }
+
+interface ApiLineItem {
+  id?: string;
+  name?: string;
+  title?: string;
+  product?: string;
+  sku?: string;
+  quantity?: number;
+  qty?: number;
+  price?: number;
+  unitPrice?: number;
+  total?: number;
+  lineTotal?: number;
+}
+
+interface PrimaryShipment {
+  id: string;
+  shipmentNumber: string;
+  trackingNumber: string | null;
+  status: string;
+  deliveryMethod: string;
+  estimatedArrival: string | null;
+  deliveryLocation: { lat: number; lng: number } | null;
+  city: string | null;
+  province: string | null;
+  postalCode: string | null;
+  addressLine1: string | null;
+}
+
+interface ApiOrder {
+  id: string;
+  externalOrderNumber: string | null;
+  externalOrderId: string;
+  source: string;
+  status: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  customerPhone: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  province: string | null;
+  postalCode: string | null;
+  country: string | null;
+  deliveryDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  totalPrice: string | number | null;
+  totalWeight: string | number | null;
+  itemCount: number;
+  lineItems: ApiLineItem[];
+  notes: string | null;
+  driver: { id: string; name: string; phone: string | null; vehicleType: string | null } | null;
+  notificationLogs: NotificationLog[];
+  primaryShipment: PrimaryShipment | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
+}
+
+// ─── Status helpers ───────────────────────────────────────────────────────────
+
+const STATUS_LABEL: Record<string, string> = {
+  PENDING: 'Pending',
+  ACCEPTED: 'Accepted',
+  ASSIGNED: 'Assigned',
+  PICKED_UP: 'Picked Up',
+  OUT_FOR_DELIVERY: 'Out for Delivery',
+  ARRIVED: 'Arrived',
+  DELIVERED: 'Delivered',
+  FAILED: 'Failed',
+  RETURNED: 'Returned',
+  CANCELLED: 'Cancelled',
+};
+
+const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'default'> = {
+  DELIVERED: 'success',
+  OUT_FOR_DELIVERY: 'warning',
+  ARRIVED: 'warning',
+  FAILED: 'danger',
+  CANCELLED: 'danger',
+  RETURNED: 'danger',
+};
+
+// ─── Delivery Map sub-component ────────────────────────────────────────────────
+
+function DeliveryPin({ lat, lng, label }: { lat: number; lng: number; label: string }) {
+  const pins = useMemo(
+    () => [{ id: 'delivery', lat, lng, status: 'open' as const, label }],
+    [lat, lng, label],
+  );
+  return <PinLayer pins={pins} />;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OrderDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const [noteInput, setNoteInput] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [newNote, setNewNote] = useState('');
-
-  const { data: order, loading, error, refetch } = useApiQuery<Order>(
-    id ? `/api/v4/orders/${id}` : null
+  const { data: order, loading, error, refetch } = useApiQuery<ApiOrder>(
+    id ? `/api/v4/orders/${id}` : null,
   );
-  const { execute: addNoteApi } = useApiMutation<Note>('POST', `/api/v4/orders/${id}/notes`);
 
-  const statusColors: Record<string, string> = {
-    'pending': '#8888a0',
-    'confirmed': '#6C63FF',
-    'ready_to_ship': '#ffa500',
-    'shipped': '#4CAF50',
-    'delivered': '#4CAF50',
-    'cancelled': '#ff4444'
-  };
+  const { execute: patchOrder } = useApiMutation<ApiOrder>('PATCH', `/api/v4/orders/${id}`);
 
-  const shipmentStatusColors: Record<string, string> = {
-    'processing': '#ffa500',
-    'picked': '#6C63FF',
-    'packed': '#6C63FF',
-    'shipped': '#4CAF50',
-    'in_transit': '#4CAF50',
-    'delivered': '#4CAF50',
-    'cancelled': '#ff4444'
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      'pending': 'Pending',
-      'confirmed': 'Confirmed',
-      'ready_to_ship': 'Ready to Ship',
-      'shipped': 'Shipped',
-      'delivered': 'Delivered',
-      'cancelled': 'Cancelled'
-    };
-    return labels[status] || status;
-  };
-
-  const addNote = async () => {
-    if (!newNote.trim()) return;
+  const saveNote = async () => {
+    if (!noteInput.trim()) return;
+    setSavingNote(true);
     try {
-      await addNoteApi({ content: newNote });
-      setNewNote('');
+      await patchOrder({ notes: noteInput.trim() });
+      setNoteInput('');
       refetch();
-    } catch (err) {
-      console.error('Failed to add note:', err);
+    } catch {
+      // display is handled via the order refetch; silent fail is acceptable
+    } finally {
+      setSavingNote(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6">
-        <LoadingSkeleton />
+  if (loading) return <div className="min-h-screen bg-[#0a0a0f] p-6"><LoadingSkeleton /></div>;
+  if (error) return <div className="min-h-screen bg-[#0a0a0f] p-6"><ErrorState error={error} onRetry={refetch} /></div>;
+  if (!order) return (
+    <div className="min-h-screen bg-[#0a0a0f] p-6 flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-2xl font-bold text-white mb-2">Order not found</p>
+        <p className="text-gray-400 text-sm">This order may have been deleted or moved.</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6">
-        <ErrorState error={error} onRetry={refetch} />
-      </div>
-    );
-  }
+  const displayNumber = order.externalOrderNumber ?? order.externalOrderId ?? order.id.slice(0, 8);
+  const statusLabel = STATUS_LABEL[order.status.toUpperCase()] ?? order.status;
+  const statusVariant = STATUS_VARIANT[order.status.toUpperCase()] ?? 'default';
 
-  if (!order) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6">
-        <div className="text-center text-gray-400">Order not found</div>
-      </div>
-    );
-  }
+  const lineItems: ApiLineItem[] = Array.isArray(order.lineItems) ? order.lineItems : [];
+  const total = order.totalPrice != null ? Number(order.totalPrice) : null;
+
+  const hasMap = order.deliveryLat != null && order.deliveryLng != null;
+  const addressParts = [
+    order.addressLine1,
+    order.addressLine2,
+    order.city,
+    order.province,
+    order.postalCode,
+    order.country,
+  ].filter(Boolean);
+  const fullAddress = addressParts.join(', ') || '—';
+
+  const shipment = order.primaryShipment;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
-      <div className="flex justify-between items-center mb-8">
+      {/* Header */}
+      <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
         <div>
-          <h1 className="text-4xl font-bold text-white">{order.orderNumber}</h1>
-          <p className="text-sm text-gray-400 mt-2">
-            Created on {order.createdDate} • Source: {order.source}
+          <h1 className="text-3xl font-bold text-white">{displayNumber}</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Created {new Date(order.createdAt).toLocaleDateString()} · Source:{' '}
+            <span className="text-gray-300">{order.source}</span>
           </p>
         </div>
-        <div className="flex gap-3 flex-wrap">
-          <Button variant="primary">Edit Order</Button>
-          <Button variant="secondary">Create Shipment</Button>
-          <Button variant="secondary">Print Label</Button>
-          <Button variant="secondary">Refund</Button>
-          <Button variant="danger">Cancel</Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="secondary" size="sm">Create Shipment</Button>
+          <Button variant="secondary" size="sm">Print Label</Button>
+          <Button variant="danger" size="sm">Cancel Order</Button>
         </div>
       </div>
 
       {/* Status Banner */}
-      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="font-semibold text-sm text-gray-300 mb-3">Order Status</p>
-            <div>
-              <Badge variant="default">{getStatusLabel(order.status)}</Badge>
-            </div>
-          </div>
-          <p className="text-sm text-gray-400">
-            Last updated: {order.createdDate}
-          </p>
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-5 mb-6 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400 font-medium">Status:</span>
+          <Badge variant={statusVariant}>{statusLabel}</Badge>
         </div>
+        {order.deliveryDate && (
+          <p className="text-sm text-gray-400">
+            Delivery date:{' '}
+            <span className="text-gray-200">{new Date(order.deliveryDate).toLocaleDateString()}</span>
+          </p>
+        )}
+        <p className="text-sm text-gray-500">
+          Last updated {new Date(order.updatedAt).toLocaleString()}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
-        {/* Customer Info */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
-          <h3 className="font-semibold text-sm text-white mb-4">Customer Information</h3>
+      {/* Three-column info grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* Customer */}
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
+          <h3 className="text-sm font-semibold text-white mb-4">Customer</h3>
           {[
-            { label: 'Name', value: order.customer.name },
-            { label: 'Email', value: order.customer.email },
-            { label: 'Phone', value: order.customer.phone },
-            { label: 'Order History', value: `${order.customer.orderHistoryCount} orders` }
-          ].map((row, idx) => (
-            <div key={idx} className="flex justify-between py-3 border-b border-[#1e1e2e] text-sm last:border-0">
-              <span className="text-gray-400 font-medium">{row.label}</span>
-              <span className="text-gray-300 font-semibold">{row.value}</span>
-            </div>
-          ))}
+            { label: 'Name', value: order.customerName },
+            { label: 'Email', value: order.customerEmail },
+            { label: 'Phone', value: order.customerPhone },
+            order.driver
+              ? { label: 'Driver', value: order.driver.name }
+              : null,
+          ]
+            .filter(Boolean)
+            .map((row, i) => (
+              <div key={i} className="flex justify-between py-2.5 border-b border-[#1e1e2e] text-sm last:border-0">
+                <span className="text-gray-400">{row!.label}</span>
+                <span className="text-gray-200 font-medium truncate max-w-[60%] text-right">
+                  {row!.value ?? '—'}
+                </span>
+              </div>
+            ))}
         </div>
 
-        {/* Delivery Address */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
-          <h3 className="font-semibold text-sm text-white mb-4">Delivery Address</h3>
+        {/* Delivery address + map */}
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
+          <h3 className="text-sm font-semibold text-white mb-4">Delivery Address</h3>
           {[
-            { label: 'Street', value: order.address.street },
-            { label: 'City', value: order.address.city },
-            { label: 'State', value: order.address.state },
-            { label: 'Zip', value: order.address.zip }
-          ].map((row, idx) => (
-            <div key={idx} className="flex justify-between py-3 border-b border-[#1e1e2e] text-sm last:border-0">
-              <span className="text-gray-400 font-medium">{row.label}</span>
-              <span className="text-gray-300 font-semibold">{row.value}</span>
+            { label: 'Street', value: order.addressLine1 },
+            { label: 'City', value: order.city },
+            { label: 'State/Province', value: order.province },
+            { label: 'Postal', value: order.postalCode },
+            { label: 'Country', value: order.country },
+          ].map((row, i) => (
+            <div key={i} className="flex justify-between py-2 border-b border-[#1e1e2e] text-sm last:border-0">
+              <span className="text-gray-400">{row.label}</span>
+              <span className="text-gray-200 font-medium">{row.value ?? '—'}</span>
             </div>
           ))}
-          <div className="w-full h-52 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg mt-3 flex items-center justify-center text-gray-400 text-sm">
-            Map View Placeholder
-          </div>
+          {hasMap ? (
+            <div className="w-full h-44 mt-4 rounded-lg overflow-hidden">
+              <WLMap
+                center={[order.deliveryLng!, order.deliveryLat!]}
+                zoom={14}
+                interactive={false}
+                className="w-full h-full"
+              >
+                <DeliveryPin
+                  lat={order.deliveryLat!}
+                  lng={order.deliveryLng!}
+                  label={fullAddress}
+                />
+              </WLMap>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 mt-3 italic">No map coordinates on record.</p>
+          )}
         </div>
 
-        {/* Shipment Info */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
-          <h3 className="font-semibold text-sm text-white mb-4">Shipment Information</h3>
-          {[
-            { label: 'Tracking #', value: order.shipment.trackingNumber },
-            { label: 'Carrier', value: order.shipment.carrier },
-            { label: 'Status', value: null, isBadge: true },
-            { label: 'Estimated Delivery', value: order.shipment.eta }
-          ].map((row, idx) => (
-            <div key={idx} className="flex justify-between py-3 border-b border-[#1e1e2e] text-sm last:border-0">
-              <span className="text-gray-400 font-medium">{row.label}</span>
-              {row.isBadge ? (
-                <Badge variant="default">
-                  {order.shipment.status.charAt(0).toUpperCase() + order.shipment.status.slice(1)}
+        {/* Shipment / Tracking */}
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
+          <h3 className="text-sm font-semibold text-white mb-4">Shipment</h3>
+          {shipment ? (
+            <>
+              {[
+                { label: 'Shipment #', value: shipment.shipmentNumber },
+                { label: 'Tracking #', value: shipment.trackingNumber },
+                { label: 'Method', value: shipment.deliveryMethod },
+                {
+                  label: 'Est. Delivery',
+                  value: shipment.estimatedArrival
+                    ? new Date(shipment.estimatedArrival).toLocaleDateString()
+                    : null,
+                },
+              ].map((row, i) => (
+                <div key={i} className="flex justify-between py-2.5 border-b border-[#1e1e2e] text-sm last:border-0">
+                  <span className="text-gray-400">{row.label}</span>
+                  <span className="text-gray-200 font-medium">{row.value ?? '—'}</span>
+                </div>
+              ))}
+              <div className="flex justify-between py-2.5 text-sm">
+                <span className="text-gray-400">Status</span>
+                <Badge variant={shipment.status === 'DELIVERED' ? 'success' : 'default'}>
+                  {shipment.status}
                 </Badge>
-              ) : (
-                <span className="text-gray-300 font-semibold">{row.value}</span>
-              )}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center text-gray-500">
+              <p className="text-sm font-medium text-gray-400 mb-1">No shipment yet</p>
+              <p className="text-xs">Create a shipment to start tracking.</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
       {/* Line Items */}
-      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 mb-6">
-        <h3 className="font-semibold text-sm text-white mb-4">Line Items</h3>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              {['Product', 'SKU', 'Qty', 'Unit Price', 'Total'].map(h => (
-                <th key={h} className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {order.lineItems.map(item => (
-              <tr key={item.id}>
-                <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.product}</td>
-                <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.sku}</td>
-                <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.quantity}</td>
-                <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{item.unitPrice.toLocaleString()}</td>
-                <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{item.total.toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Order Totals */}
-        <div className="mt-4">
-          {[
-            { label: 'Subtotal', value: `₹${order.subtotal.toLocaleString()}` },
-            { label: 'Tax', value: `₹${order.tax.toLocaleString()}` },
-            { label: 'Shipping', value: `₹${order.shipping.toLocaleString()}` },
-            { label: 'Discount', value: `-₹${order.discount.toLocaleString()}` }
-          ].map((row, idx) => (
-            <div key={idx} className="flex justify-between py-2 border-b border-[#1e1e2e] text-sm text-gray-300">
-              <span>{row.label}</span>
-              <span>{row.value}</span>
-            </div>
-          ))}
-          <div className="flex justify-between py-4 border-t border-[#1e1e2e] text-base font-bold text-blue-500">
-            <span>Total Amount</span>
-            <span>₹{order.total.toLocaleString()}</span>
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6 mb-6">
+        <h3 className="text-sm font-semibold text-white mb-4">
+          Line Items <span className="text-gray-500 ml-1">({lineItems.length})</span>
+        </h3>
+        {lineItems.length === 0 ? (
+          <p className="text-gray-500 text-sm py-4 text-center">No line items recorded.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  {['Product', 'SKU', 'Qty', 'Unit Price', 'Total'].map((h) => (
+                    <th
+                      key={h}
+                      className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {lineItems.map((item, idx) => {
+                  const name = item.name ?? item.title ?? item.product ?? '—';
+                  const sku = item.sku ?? '—';
+                  const qty = item.quantity ?? item.qty ?? 1;
+                  const unit = item.unitPrice ?? item.price ?? 0;
+                  const itemTotal = item.total ?? item.lineTotal ?? unit * qty;
+                  return (
+                    <tr key={item.id ?? idx} className="hover:bg-[#1a1a2e] transition-colors">
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{name}</td>
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-400">{sku}</td>
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{qty}</td>
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">
+                        {unit ? `₹${Number(unit).toLocaleString()}` : '—'}
+                      </td>
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-200 font-medium">
+                        {itemTotal ? `₹${Number(itemTotal).toLocaleString()}` : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
+        {total != null && (
+          <div className="mt-4 flex justify-end">
+            <div className="text-right">
+              <div className="flex items-center gap-8 py-2 text-sm text-gray-400">
+                <span>Items</span>
+                <span className="text-gray-300">{order.itemCount}</span>
+              </div>
+              <div className="flex items-center gap-8 py-2 border-t border-[#1e1e2e] text-base font-bold text-blue-400">
+                <span>Total</span>
+                <span>₹{total.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Activity Timeline */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
-          <h3 className="font-semibold text-sm text-white mb-4">Activity Timeline</h3>
-          <div className="relative pl-8">
-            {order.activities.map((activity, idx) => (
-              <div key={activity.id} className="mb-5 pb-5 border-b border-[#1e1e2e] last:border-0">
-                <div className="absolute left-0 top-0 w-3 h-3 rounded-full bg-blue-500 border-4 border-[#12121a]" />
-                <p className="text-xs text-gray-400">{activity.timestamp}</p>
-                <p className="text-sm font-semibold text-gray-300 mt-1">{activity.action.replace(/_/g, ' ').toUpperCase()}</p>
-                <p className="text-xs text-gray-400 mt-1">{activity.description}</p>
-                <p className="text-xs text-gray-400 mt-1">by {activity.actor}</p>
-              </div>
-            ))}
-          </div>
+      {/* Activity + Notes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Activity Timeline from notification logs */}
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
+          <h3 className="text-sm font-semibold text-white mb-4">Activity Timeline</h3>
+          {order.notificationLogs.length === 0 ? (
+            <p className="text-gray-500 text-sm text-center py-6">No activity recorded yet.</p>
+          ) : (
+            <div className="relative pl-6 space-y-4 max-h-72 overflow-y-auto">
+              {order.notificationLogs.map((log, idx) => (
+                <div key={log.id} className="relative">
+                  <span
+                    className={`absolute -left-6 top-1 w-2.5 h-2.5 rounded-full border-2 border-[#12121a] ${
+                      log.status === 'sent' || log.status === 'delivered'
+                        ? 'bg-emerald-500'
+                        : log.status === 'failed'
+                          ? 'bg-red-500'
+                          : 'bg-blue-500'
+                    }`}
+                  />
+                  <p className="text-xs text-gray-500">{new Date(log.createdAt).toLocaleString()}</p>
+                  <p className="text-sm text-gray-300 font-medium mt-0.5">
+                    {log.type.replace(/_/g, ' ')}
+                  </p>
+                  {log.recipient && (
+                    <p className="text-xs text-gray-500 mt-0.5">→ {log.recipient}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Notes Section */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
-          <h3 className="font-semibold text-sm text-white mb-4">Internal Notes</h3>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Add Note</label>
-            <textarea
-              className="w-full p-3 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm min-h-20 font-inherit box-border"
-              placeholder="Add internal notes..."
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-            />
-            <Button variant="primary" className="w-full mt-2" onClick={addNote}>
-              Add Note
-            </Button>
-          </div>
-
-          <div className="border-t border-[#1e1e2e] pt-4">
-            <p className="text-xs font-semibold text-gray-400 mb-3">
-              {notes.length} Note{notes.length !== 1 ? 's' : ''}
-            </p>
-            {notes.map(note => (
-              <div key={note.id} className="bg-[#0a0a0f] border border-[#1e1e2e] rounded p-3 mb-3">
-                <div className="flex justify-between mb-2 text-xs">
-                  <span className="font-semibold text-gray-300">{note.author}</span>
-                  <span className="text-gray-400">{note.timestamp}</span>
-                </div>
-                <p className="text-sm text-gray-300 leading-relaxed">{note.content}</p>
-              </div>
-            ))}
-          </div>
+        {/* Notes */}
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
+          <h3 className="text-sm font-semibold text-white mb-4">Internal Notes</h3>
+          {order.notes ? (
+            <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 mb-4">
+              <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                {order.notes}
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm mb-4 italic">No notes yet.</p>
+          )}
+          <label className="block text-xs font-medium text-gray-400 mb-2">
+            {order.notes ? 'Update Notes' : 'Add Notes'}
+          </label>
+          <textarea
+            className="w-full p-3 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg text-gray-300 text-sm min-h-[80px] resize-y focus:outline-none focus:border-blue-500 transition-colors"
+            placeholder="Add internal notes…"
+            value={noteInput}
+            onChange={(e) => setNoteInput(e.target.value)}
+          />
+          <Button
+            variant="primary"
+            className="w-full mt-2"
+            onClick={saveNote}
+            disabled={savingNote || !noteInput.trim()}
+          >
+            {savingNote ? 'Saving…' : 'Save Notes'}
+          </Button>
         </div>
       </div>
     </div>

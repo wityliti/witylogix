@@ -172,6 +172,23 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
             orderBy: { createdAt: "desc" },
             take: 20,
           },
+          shipments: {
+            take: 1,
+            orderBy: { createdAt: "asc" },
+            select: {
+              id: true,
+              shipmentNumber: true,
+              trackingNumber: true,
+              status: true,
+              deliveryMethod: true,
+              estimatedArrival: true,
+              deliveryLocation: true,
+              city: true,
+              province: true,
+              postalCode: true,
+              addressLine1: true,
+            },
+          },
         },
       });
 
@@ -179,7 +196,23 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError("Order", id);
       }
 
-      return { data: order };
+      const primaryShipment = order.shipments?.[0] ?? null;
+      const deliveryCoords =
+        primaryShipment?.deliveryLocation &&
+        typeof primaryShipment.deliveryLocation === "object" &&
+        "lat" in (primaryShipment.deliveryLocation as object) &&
+        "lng" in (primaryShipment.deliveryLocation as object)
+          ? (primaryShipment.deliveryLocation as { lat: number; lng: number })
+          : null;
+
+      return {
+        data: {
+          ...order,
+          primaryShipment,
+          deliveryLat: deliveryCoords?.lat ?? null,
+          deliveryLng: deliveryCoords?.lng ?? null,
+        },
+      };
     } catch (err) {
       throw err;
     }
