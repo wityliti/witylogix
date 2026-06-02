@@ -127,45 +127,12 @@ export default function ActivityPage() {
 
   const displayedEvents = filteredEvents();
 
-  // Live mode updates
+  // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
-
-    const interval = setInterval(() => {
-      // Simulate new event arrival every 30 seconds
-      const eventTypes: ActivityEvent["type"][] = [
-        "order",
-        "shipment",
-        "driver",
-        "system",
-        "webhook",
-        "workflow",
-      ];
-      const severities: ActivityEvent["severity"][] = [
-        "info",
-        "warning",
-        "error",
-        "success",
-      ];
-
-      const newEvent: ActivityEvent = {
-        id: `evt-${Date.now()}`,
-        type: eventTypes[Math.floor(Math.random() * eventTypes.length)],
-        severity: severities[Math.floor(Math.random() * severities.length)],
-        title: "New Activity Detected",
-        description: "Real-time event from system monitoring",
-        timestamp: new Date().toISOString(),
-        user: {
-          id: "system",
-          name: "System",
-        },
-      };
-
-      setEvents((prev) => [newEvent, ...prev]);
-    }, 30000);
-
+    const interval = setInterval(() => { refetch(); }, 30000);
     return () => clearInterval(interval);
-  }, [isLiveMode]);
+  }, [isLiveMode, refetch]);
 
   // Debounced search
   const handleSearchChange = (value: string) => {

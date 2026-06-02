@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useApiList } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,115 +126,52 @@ function NotificationItem({
   );
 }
 
+const TYPE_MAP: Record<string, Notification["type"]> = {
+  order: "order", shipment: "delivery", delivery: "delivery",
+  driver: "alert", system: "system", webhook: "system", workflow: "system",
+};
+
 export function NotificationCenter({
   className,
   onNotificationClick,
 }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Initialize notifications
+  const { items: rawNotifs, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
+
+  const apiNotifs = useMemo<Notification[]>(() =>
+    rawNotifs.map((n) => ({
+      id: n.id,
+      type: TYPE_MAP[n.type ?? n.category] ?? "system",
+      title: n.title ?? n.action ?? "Notification",
+      message: n.message ?? n.description ?? "",
+      severity: (n.severity as Notification["severity"]) ?? "info",
+      read: n.read ?? true,
+      timestamp: new Date(n.timestamp ?? n.createdAt ?? Date.now()),
+      actionUrl: n.actionUrl,
+    })),
+  [rawNotifs]);
+
+  // Local overlay for optimistic read/delete operations
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  const notifications = useMemo(() =>
+    apiNotifs
+      .filter((n) => !deletedIds.has(n.id))
+      .map((n) => readIds.has(n.id) ? { ...n, read: true } : n),
+  [apiNotifs, readIds, deletedIds]);
+
+  // Poll for new notifications every 60 seconds
   useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: "notif_001",
-        type: "order",
-        title: "New Order Received",
-        message: "Order #12345 from John Smith has been placed",
-        severity: "info",
-        read: false,
-        timestamp: new Date(Date.now() - 2 * 60000),
-        actionUrl: "/orders/12345",
-      },
-      {
-        id: "notif_002",
-        type: "delivery",
-        title: "Delivery in Progress",
-        message: "Driver Mike is on the way with your package",
-        severity: "info",
-        read: false,
-        timestamp: new Date(Date.now() - 8 * 60000),
-      },
-      {
-        id: "notif_003",
-        type: "alert",
-        title: "Low Driver Availability",
-        message: "Only 5 drivers available. Consider scheduling breaks.",
-        severity: "warning",
-        read: true,
-        timestamp: new Date(Date.now() - 25 * 60000),
-      },
-      {
-        id: "notif_004",
-        type: "order",
-        title: "Order Delivered",
-        message: "Order #12340 has been successfully delivered",
-        severity: "info",
-        read: true,
-        timestamp: new Date(Date.now() - 60 * 60000),
-      },
-      {
-        id: "notif_005",
-        type: "system",
-        title: "Maintenance Notice",
-        message: "System maintenance scheduled for tomorrow at 2 AM",
-        severity: "info",
-        read: true,
-        timestamp: new Date(Date.now() - 120 * 60000),
-      },
-    ];
-
-    setNotifications(mockNotifications);
-  }, []);
-
-  // Simulate new critical notifications
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const random = Math.random();
-      if (random > 0.7) {
-        const newNotif: Notification = {
-          id: `notif_${Date.now()}`,
-          type: ["order", "delivery", "alert"][Math.floor(Math.random() * 3)] as any,
-          title: "Critical Alert",
-          message: "A critical system event has occurred",
-          severity: "critical",
-          read: false,
-          timestamp: new Date(),
-        };
-
-        setNotifications((prev) => [newNotif, ...prev.slice(0, 19)]);
-        setToastMessage(newNotif.title);
-        setShowToast(true);
-
-        if (soundEnabled) {
-          // Play a subtle notification sound (use Web Audio API in production)
-          try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            oscillator.connect(gain);
-            gain.connect(audioContext.destination);
-            oscillator.frequency.value = 800;
-            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
-          } catch (e) {
-            // Audio context not supported
-          }
-        }
-
-        setTimeout(() => setShowToast(false), 4000);
-      }
-    }, 15000);
-
+    const interval = setInterval(() => { refetch(); }, 60_000);
     return () => clearInterval(interval);
-  }, [soundEnabled]);
+  }, [refetch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -257,17 +195,15 @@ export function NotificationCenter({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    setReadIds((prev) => new Set([...prev, id]));
   };
 
   const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setReadIds(new Set(notifications.map((n) => n.id)));
   };
 
   const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setDeletedIds((prev) => new Set([...prev, id]));
   };
 
   const handleNotificationClick = (notification: Notification) => {

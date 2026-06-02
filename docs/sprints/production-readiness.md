@@ -28,6 +28,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-512 | feat/WIT-512-dashboard-analytics-production | Analytics overview (DEMO→real), Returns (MOCK_RETURNS→0), API route-performance (Math.random→Prisma), Map: DeliveryPerformanceLayer + route-performance Map tab | 7 + API | 2026-06-01 |
 | WIT-514 | feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production | Healthcare Records (mockRecords→0), SC Inventory (2 new API hooks), SC Orders (WAVE_PLANS/BATCH_PICKING/RETURN_QUEUE→real), E-Signatures (new esignatures.ts routes + 0 mocks), Products Sync (MOCK_PLATFORMS→integrations/connections), Field Service (computed stats), Collections (alert→real DELETE) | 17 | 2026-06-01 |
 | WIT-515 | feat/WIT-515-dashboard-orders-production | Orders: Detail field-shape fix + Map view, Import hook fix; CourierAssignmentPanel Math.random→0 | 5 + API | 2026-06-02 |
+| WIT-517 | feat/WIT-517-dashboard-realtime-mock-cleanup | Realtime components (4), Notification stats widget, Activity polling, ELD HOS recap, Webhooks hourly chart, Webhook test page, Shipping labels pricing, Dispatch map (WLMap); API: notifications-v2 rewrite, outbound-webhooks/test endpoint | 13 files | 2026-06-02 |
 
 ---
 
@@ -118,11 +119,13 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Dispatch (0 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Dispatch | `/dispatch` | 0 | ✅ |
-| Couriers | `/dispatch/couriers` | 0 | ✅ |
+## Dispatch (1 → 0 mock signals) ✅ WIT-517
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Dispatch | `/dispatch` | 1 (Leaflet placeholder map) | 0 + WLMap | ✅ WIT-517 |
+| Couriers | `/dispatch/couriers` | 0 | 0 | ✅ |
+
+**WIT-517 changes**: `dispatch-map.tsx` replaced Leaflet placeholder with `WLMap` + `RoutePolylineLayer` + `RouteStopMarkersLayer` + `DriverLayer`; center computed from first stop's coordinates; `STOP_STATUS_MAP`/`DRIVER_STATUS_MAP` normalize API enums to layer types
 
 ---
 
@@ -363,6 +366,19 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
+## Realtime / Shared Components (9 → 0 mock signals) ✅ WIT-517
+| Component | Location | Mock Before | Mock After | Status |
+|-----------|----------|------------|-----------|--------|
+| Live KPI Counters | `components/realtime/live-kpi-counters.tsx` | fake setInterval random mutations | `useApiQuery` analytics/overview + 60s poll | ✅ WIT-517 |
+| Live Order Feed | `components/realtime/live-order-feed.tsx` | mock orders + fake setInterval | `useApiList` orders + 30s poll + STATUS_NORMALIZE | ✅ WIT-517 |
+| Notification Center | `components/realtime/notification-center.tsx` | 5 hardcoded notifications + Math.random() critical sim | `useApiList` notifications + optimistic read/delete | ✅ WIT-517 |
+| Active Delivery Map | `components/realtime/active-delivery-map.tsx` | SVG dot-map with hardcoded NYC bounds | WLMap + DriverLayer with real driver locations | ✅ WIT-517 |
+| Notification Stats Widget | `components/notifications/notification-stats-widget.tsx` | MOCK_DAILY_STATS, MOCK_CHANNEL_BREAKDOWN, MOCK_FAILED_TEMPLATES | `useApiQuery` /api/v4/notifications/stats?days=7 | ✅ WIT-517 |
+
+**API changes**: `notifications-v2.ts` rewritten from stub (empty arrays) to real Prisma queries against `ActivityLog` + `NotificationLog`; `outbound-webhooks.ts` got new `POST /test` for ad-hoc URL testing
+
+---
+
 ## Misc / No-API-Key Gated
 | Section | Pages | Status |
 |---------|-------|--------|
@@ -393,6 +409,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-511 | `feat/WIT-511-dashboard-navigation-ia` | Navigation (174 routes) | sidebar + config | — | 0 page signals | #247 (open) |
 | WIT-512 | `feat/WIT-512-dashboard-analytics-zones` | Analytics overview, ETA accuracy, Zones map | 3 pages | `GET /api/v4/zones?format=geojson` (new), `GET /api/v4/zones/overlays` (new) | 10→0 | open |
 | WIT-514 | `feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production` | Healthcare Records, SC Inventory, SC Orders, E-Signatures, Products Sync, Field Service, Collections | 9 pages | `GET /api/v4/supply-chain/waves`, `/batches` (new); `GET /api/v4/envelopes`, `/envelopes/:id`, `/signing-templates`, `/esig/analytics` (new) | 17→0 | open |
+| WIT-517 | `feat/WIT-517-dashboard-realtime-mock-cleanup` | Realtime components (live-kpi-counters, live-order-feed, notification-center, active-delivery-map), notification-stats-widget, activity polling, ELD HOS recap, webhooks hourly chart, webhook test page, shipping labels pricing, dispatch-map WLMap | 13 files | `POST /api/v4/outbound-webhooks/test` (new); `GET /api/v4/notifications` + `/stats` (rewritten from stub) | 13 files, 13 mock signals | #257 |
 
 ---
 
