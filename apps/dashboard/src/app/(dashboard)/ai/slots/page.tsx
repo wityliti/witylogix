@@ -14,7 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useApiMutation } from '@/hooks/use-api';
+import { useApiQuery, useApiList } from '@/hooks/use-api';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -42,48 +42,10 @@ interface RecommendResponse {
   timestamp: string;
 }
 
-// ── Demo data ────────────────────────────────────────────────────
-
-const DEMO_ZONES = [
-  { id: 'zone-downtown', name: 'Downtown Core' },
-  { id: 'zone-midtown',  name: 'Midtown' },
-  { id: 'zone-west',     name: 'Westside' },
-  { id: 'zone-harbor',   name: 'Harbor District' },
-  { id: 'zone-suburb',   name: 'Suburbs' },
-];
-
-const DEMO_SLOTS: ScoredSlot[] = [
-  {
-    id: 'slot-1', name: 'Morning Express', startTime: '09:00', endTime: '12:00', zoneId: 'zone-downtown', score: 94,
-    reasoning: ['Matches customer preference for morning delivery', 'Low demand predicted — high success rate', 'Strong driver availability in this zone'],
-    demandForecast: { predicted: 18, confidence: 0.87 },
-    driverAvailability: { available: 8, total: 10 },
-  },
-  {
-    id: 'slot-2', name: 'Midday Window',   startTime: '12:00', endTime: '15:00', zoneId: 'zone-downtown', score: 81,
-    reasoning: ['Moderate demand during lunch peak', 'Good driver coverage', 'Slight delay risk at 12–13h due to traffic'],
-    demandForecast: { predicted: 34, confidence: 0.79 },
-    driverAvailability: { available: 6, total: 10 },
-  },
-  {
-    id: 'slot-3', name: 'Afternoon Run',   startTime: '15:00', endTime: '18:00', zoneId: 'zone-downtown', score: 73,
-    reasoning: ['Higher demand predicted', 'Adequate driver count', 'Evening traffic may extend windows'],
-    demandForecast: { predicted: 41, confidence: 0.74 },
-    driverAvailability: { available: 5, total: 10 },
-  },
-  {
-    id: 'slot-4', name: 'Early Morning',   startTime: '06:00', endTime: '09:00', zoneId: 'zone-downtown', score: 68,
-    reasoning: ['Very low demand — high success probability', 'Limited driver availability at this hour', 'Customer has no preference data for this window'],
-    demandForecast: { predicted: 8, confidence: 0.92 },
-    driverAvailability: { available: 3, total: 10 },
-  },
-  {
-    id: 'slot-5', name: 'Evening Premium', startTime: '18:00', endTime: '21:00', zoneId: 'zone-downtown', score: 61,
-    reasoning: ['Premium surcharge applies', 'Demand spike after 18h', 'Fewer available drivers'],
-    demandForecast: { predicted: 52, confidence: 0.68 },
-    driverAvailability: { available: 4, total: 10 },
-  },
-];
+interface Zone {
+  id: string;
+  name: string;
+}
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -111,30 +73,24 @@ function ScoreRing({ score, isTop }: { score: number; isTop: boolean }) {
 
 export default function SlotAIPage() {
   const [customerId, setCustomerId] = useState('');
-  const [zoneId, setZoneId] = useState(DEMO_ZONES[0].id);
+  const [zoneId, setZoneId] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [queryUrl, setQueryUrl] = useState<string | null>(null);
 
-  const { data, loading, execute } = useApiMutation<RecommendResponse>(
-    'POST',
-    '/api/v4/ai/slots/recommend',
-  );
+  const { items: zones, loading: zonesLoading } = useApiList<Zone>('/api/v4/zones?limit=50');
 
-  const slots: ScoredSlot[] = data?.recommendations ?? (hasSearched ? DEMO_SLOTS : []);
+  const activeZoneId = zoneId || zones[0]?.id || '';
 
-  const handleSearch = async () => {
-    setHasSearched(true);
-    if (!customerId) return; // use demo data
-    try {
-      await execute({
-        customerId,
-        zoneId,
-        date: new Date(date).toISOString(),
-        maxSlots: 5,
-      });
-    } catch {
-      // fall through to demo data
-    }
+  const { data, loading } = useApiQuery<RecommendResponse>(queryUrl);
+
+  const slots: ScoredSlot[] = data?.recommendations ?? [];
+
+  const handleSearch = () => {
+    if (!customerId.trim()) return;
+    const dateIso = encodeURIComponent(new Date(date + 'T00:00:00.000Z').toISOString());
+    setQueryUrl(
+      `/api/v4/ai/slots/recommend?customerId=${encodeURIComponent(customerId.trim())}&zoneId=${encodeURIComponent(activeZoneId)}&date=${dateIso}&maxSlots=5`,
+    );
   };
 
   return (
@@ -173,13 +129,20 @@ export default function SlotAIPage() {
             <div>
               <label className="block text-xs text-white/30 mb-1.5">Delivery Zone</label>
               <select
-                value={zoneId}
+                value={activeZoneId}
                 onChange={(e) => setZoneId(e.target.value)}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors"
+                disabled={zonesLoading}
+                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
               >
-                {DEMO_ZONES.map((z) => (
-                  <option key={z.id} value={z.id}>{z.name}</option>
-                ))}
+                {zonesLoading ? (
+                  <option>Loading zones…</option>
+                ) : zones.length === 0 ? (
+                  <option value="">No zones configured</option>
+                ) : (
+                  zones.map((z) => (
+                    <option key={z.id} value={z.id}>{z.name}</option>
+                  ))
+                )}
               </select>
             </div>
 
@@ -210,10 +173,23 @@ export default function SlotAIPage() {
         </div>
 
         {/* Results */}
-        {!hasSearched ? (
+        {!queryUrl ? (
           <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
-            <p className="text-sm text-white/25">Enter a zone and date above to preview AI slot recommendations</p>
+            <p className="text-sm text-white/25">Enter a customer ID and click "Get Recommendations"</p>
+            <p className="text-xs text-white/15 mt-1">Customer ID is required to personalise slot scoring</p>
+          </div>
+        ) : loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : slots.length === 0 ? (
+          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
+            <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
+            <p className="text-sm text-white/25">No slot recommendations available</p>
+            <p className="text-xs text-white/15 mt-1">Try a different zone or date</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -227,14 +203,7 @@ export default function SlotAIPage() {
               </div>
             )}
 
-            {loading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              slots.map((slot, idx) => {
+            {slots.map((slot, idx) => {
                 const isTop = idx === 0;
                 const grade = scoreGrade(slot.score);
                 const driverPct = slot.driverAvailability.total > 0
@@ -327,13 +296,12 @@ export default function SlotAIPage() {
                     </div>
                   </div>
                 );
-              })
-            )}
+              })}
           </div>
         )}
 
         {/* Info footer */}
-        {hasSearched && slots.length > 0 && (
+        {queryUrl && slots.length > 0 && (
           <p className="text-[11px] text-white/20 text-center">
             Recommendations scored by demand forecast · driver availability · customer preferences · historical success rates
           </p>
