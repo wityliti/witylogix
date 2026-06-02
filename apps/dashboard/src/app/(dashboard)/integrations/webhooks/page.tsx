@@ -402,36 +402,41 @@ export default function WebhooksPage() {
               </div>
             </div>
 
-            {/* Stacked Bar Chart (hourly) */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
-              <div className="flex items-end gap-1 h-32 px-2 py-4 bg-[#0a0a0f]tertiary rounded-lg border border-neutral-700">
-                {Array.from({ length: 24 }).map((_, i) => {
-                  const total = Math.floor(Math.random() * 100) + 20;
-                  const success = Math.floor(total * 0.9);
-                  const failed = total - success;
-                  const maxTotal = 150;
-                  const heightPercent = (total / maxTotal) * 100;
-
-                  return (
-                    <div
-                      key={i}
-                      className="flex-1 flex flex-col-reverse gap-0 group relative"
-                      title={`${i}:00 - Success: ${success}, Failed: ${failed}`}
-                    >
-                      <div
-                        className="w-full bg-red-500 rounded-t transition-all group-hover:opacity-80"
-                        style={{ height: `${(failed / total) * heightPercent}%` }}
-                      />
-                      <div
-                        className="w-full bg-emerald-500 rounded-t transition-all group-hover:opacity-80"
-                        style={{ height: `${(success / total) * heightPercent}%` }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Stacked Bar Chart (hourly) — bucketed from real deliveries */}
+            {(() => {
+              const hourly = Array.from({ length: 24 }, (_, h) => ({ success: 0, failed: 0 }));
+              for (const d of webhooks?.deliveries ?? []) {
+                const h = new Date(d.timestamp).getHours();
+                if (h >= 0 && h < 24) {
+                  if (d.status === 'success') hourly[h].success++;
+                  else hourly[h].failed++;
+                }
+              }
+              const maxTotal = Math.max(1, ...hourly.map((h) => h.success + h.failed));
+              return (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
+                  <div className="flex items-end gap-1 h-32 px-2 py-4 bg-[#0a0a0f] rounded-lg border border-neutral-700">
+                    {hourly.map((bucket, i) => {
+                      const total = bucket.success + bucket.failed;
+                      const heightPercent = (total / maxTotal) * 100;
+                      return (
+                        <div
+                          key={i}
+                          className="flex-1 flex flex-col-reverse gap-0 group relative"
+                          title={`${i}:00 — Success: ${bucket.success}, Failed: ${bucket.failed}`}
+                        >
+                          <div className="w-full bg-red-500 rounded-t transition-all group-hover:opacity-80"
+                            style={{ height: `${total > 0 ? (bucket.failed / total) * heightPercent : 0}%` }} />
+                          <div className="w-full bg-emerald-500 rounded-t transition-all group-hover:opacity-80"
+                            style={{ height: `${total > 0 ? (bucket.success / total) * heightPercent : 0}%` }} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
       )}

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useApiQuery } from "@/hooks/use-api";
 import {
   TrendingUp,
   TrendingDown,
@@ -182,94 +183,69 @@ function KPICardSkeleton() {
   );
 }
 
+interface AnalyticsOverview {
+  totalOrders: number;
+  totalDeliveries: number;
+  activeDrivers: number;
+  onTimeRate: number;
+  avgDeliveryTime: number;
+}
+
 export function LiveKPICounters({ className }: LiveKPICountersProps) {
-  const [metrics, setMetrics] = useState<KPIMetric[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, loading, refetch } = useApiQuery<AnalyticsOverview>('/api/v4/analytics/overview?range=today');
 
-  // Initialize metrics
+  // Poll every 60 seconds for fresh data
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      const mockMetrics: KPIMetric[] = [
-        {
-          label: "Orders Today",
-          value: 1247,
-          previousValue: 1089,
-          icon: <Package className="w-5 h-5" />,
-          unit: "orders",
-          status: "good",
-          sparkline: [89, 102, 95, 112, 108, 115, 118, 125, 120, 1247],
-        },
-        {
-          label: "Active Deliveries",
-          value: 42,
-          previousValue: 38,
-          icon: <Truck className="w-5 h-5" />,
-          unit: "in transit",
-          status: "good",
-          sparkline: [35, 36, 34, 37, 39, 40, 38, 41, 42, 42],
-        },
-        {
-          label: "Available Drivers",
-          value: 12,
-          previousValue: 15,
-          icon: <Users className="w-5 h-5" />,
-          unit: "drivers",
-          status: "warning",
-          sparkline: [18, 17, 16, 15, 14, 15, 14, 13, 12, 12],
-        },
-        {
-          label: "SLA Performance",
-          value: 94.2,
-          previousValue: 96.1,
-          icon: <Gauge className="w-5 h-5" />,
-          unit: "%",
-          status: "warning",
-          sparkline: [96.5, 96.1, 95.8, 95.2, 95.0, 94.8, 94.5, 94.3, 94.2, 94.2],
-        },
-      ];
-
-      setMetrics(mockMetrics);
-      setIsLoading(false);
-    }, 600);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Simulate real-time metric updates
-  useEffect(() => {
-    if (isLoading) return;
-
-    const interval = setInterval(() => {
-      setMetrics((prev) =>
-        prev.map((metric) => {
-          const change = Math.floor(Math.random() * 10) - 4;
-          const newValue = Math.max(0, metric.value + change);
-          const newSparkline = [...metric.sparkline.slice(1), newValue];
-
-          let newStatus: "good" | "warning" | "critical" = "good";
-          if (metric.label === "Available Drivers") {
-            newStatus = newValue < 10 ? "critical" : newValue < 15 ? "warning" : "good";
-          } else if (metric.label === "SLA Performance") {
-            newStatus = newValue < 92 ? "critical" : newValue < 95 ? "warning" : "good";
-          }
-
-          return {
-            ...metric,
-            value: newValue,
-            sparkline: newSparkline,
-            status: newStatus,
-          };
-        })
-      );
-    }, 5000);
-
+    const interval = setInterval(() => { refetch(); }, 60_000);
     return () => clearInterval(interval);
-  }, [isLoading]);
+  }, [refetch]);
+
+  const metrics = useMemo<KPIMetric[]>(() => {
+    if (!data) return [];
+    const onTime = data.onTimeRate ?? 0;
+    return [
+      {
+        label: "Orders Today",
+        value: data.totalOrders,
+        previousValue: 0,
+        icon: <Package className="w-5 h-5" />,
+        unit: "orders",
+        status: "good",
+        sparkline: [data.totalOrders],
+      },
+      {
+        label: "Active Deliveries",
+        value: data.totalDeliveries,
+        previousValue: 0,
+        icon: <Truck className="w-5 h-5" />,
+        unit: "in transit",
+        status: "good",
+        sparkline: [data.totalDeliveries],
+      },
+      {
+        label: "Available Drivers",
+        value: data.activeDrivers,
+        previousValue: 0,
+        icon: <Users className="w-5 h-5" />,
+        unit: "drivers",
+        status: data.activeDrivers < 5 ? "critical" : data.activeDrivers < 10 ? "warning" : "good",
+        sparkline: [data.activeDrivers],
+      },
+      {
+        label: "SLA Performance",
+        value: Math.round(onTime * 10) / 10,
+        previousValue: 0,
+        icon: <Gauge className="w-5 h-5" />,
+        unit: "%",
+        status: onTime < 85 ? "critical" : onTime < 95 ? "warning" : "good",
+        sparkline: [onTime],
+      },
+    ];
+  }, [data]);
 
   return (
     <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
-      {isLoading
+      {loading
         ? Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
         : metrics.map((metric, i) => (
             <KPICard key={i} metric={metric} />
