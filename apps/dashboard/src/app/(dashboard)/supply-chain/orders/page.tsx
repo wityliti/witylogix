@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useOrders, useFulfillment } from '@/hooks/use-supply-chain';
+import { useApiList } from '@/hooks/use-api';
 
 interface FilterOptions {
   status: string;
@@ -42,97 +43,6 @@ interface ReturnItem {
   customerName: string;
 }
 
-// Mock data
-const WAVE_PLANS: WavePlan[] = [
-  {
-    waveId: 'WAVE-2026-0001',
-    createdDate: '2026-03-17T06:00:00Z',
-    ordersCount: 45,
-    itemsCount: 234,
-    status: 'picking',
-    estimatedCompletionTime: '2026-03-17T12:00:00Z',
-  },
-  {
-    waveId: 'WAVE-2026-0002',
-    createdDate: '2026-03-17T10:00:00Z',
-    ordersCount: 38,
-    itemsCount: 189,
-    status: 'planned',
-    estimatedCompletionTime: '2026-03-17T18:00:00Z',
-  },
-  {
-    waveId: 'WAVE-2026-0003',
-    createdDate: '2026-03-16T06:00:00Z',
-    ordersCount: 52,
-    itemsCount: 267,
-    status: 'completed',
-    estimatedCompletionTime: '2026-03-16T15:30:00Z',
-  },
-];
-
-const BATCH_PICKING: BatchPickingTask[] = [
-  {
-    batchId: 'BATCH-001',
-    waveId: 'WAVE-2026-0001',
-    location: 'Zone A - Shelves 1-10',
-    itemCount: 45,
-    status: 'in-progress',
-    assignedTo: 'John Smith',
-    completionRate: 72,
-  },
-  {
-    batchId: 'BATCH-002',
-    waveId: 'WAVE-2026-0001',
-    location: 'Zone B - Shelves 11-20',
-    itemCount: 38,
-    status: 'in-progress',
-    assignedTo: 'Sarah Johnson',
-    completionRate: 58,
-  },
-  {
-    batchId: 'BATCH-003',
-    waveId: 'WAVE-2026-0001',
-    location: 'Zone C - Bulk Storage',
-    itemCount: 42,
-    status: 'pending',
-    completionRate: 0,
-  },
-  {
-    batchId: 'BATCH-004',
-    waveId: 'WAVE-2026-0002',
-    location: 'Zone A - Shelves 1-10',
-    itemCount: 35,
-    status: 'pending',
-    completionRate: 0,
-  },
-];
-
-const RETURN_QUEUE: ReturnItem[] = [
-  {
-    id: 'ret-001',
-    orderNumber: 'ORD-2026-0098',
-    reason: 'Damaged in transit',
-    status: 'pending-approval',
-    submittedDate: '2026-03-17T14:30:00Z',
-    customerName: 'Acme Corp',
-  },
-  {
-    id: 'ret-002',
-    orderNumber: 'ORD-2026-0087',
-    reason: 'Wrong item shipped',
-    status: 'approved',
-    submittedDate: '2026-03-17T10:15:00Z',
-    customerName: 'Global Trading',
-  },
-  {
-    id: 'ret-003',
-    orderNumber: 'ORD-2026-0076',
-    reason: 'Customer changed mind',
-    status: 'restocked',
-    submittedDate: '2026-03-16T16:45:00Z',
-    customerName: 'TechSupply Inc',
-  },
-];
 
 const PRIORITY_OPTIONS = ['All', 'Standard', 'Expedited', 'Backorder'];
 const WAREHOUSE_OPTIONS = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
@@ -141,6 +51,9 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 export default function OrdersPage() {
   const orders = useOrders();
   const fulfillment = useFulfillment();
+  const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: returnQueue } = useApiList<ReturnItem>('/api/v4/returns');
   const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
     priority: 'all',
@@ -409,7 +322,10 @@ export default function OrdersPage() {
             <Button variant="primary">Create Wave</Button>
           </div>
 
-          {WAVE_PLANS.map((wave) => (
+          {wavePlans.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No wave plans found. Create a wave to start batch fulfillment.</div>
+          ) : null}
+          {wavePlans.map((wave) => (
             <Card key={wave.waveId}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -473,7 +389,10 @@ export default function OrdersPage() {
             Batch Picking Tasks
           </h3>
 
-          {BATCH_PICKING.map((batch) => (
+          {batchPicking.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No batch picking tasks found.</div>
+          ) : null}
+          {batchPicking.map((batch) => (
             <Card key={batch.batchId}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-4">
@@ -538,7 +457,10 @@ export default function OrdersPage() {
             Returns Queue
           </h3>
 
-          {RETURN_QUEUE.map((returnItem) => (
+          {returnQueue.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No returns in queue.</div>
+          ) : null}
+          {returnQueue.map((returnItem) => (
             <Card key={returnItem.id}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-3">

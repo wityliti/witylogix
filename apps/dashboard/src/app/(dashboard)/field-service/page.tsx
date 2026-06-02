@@ -76,21 +76,29 @@ export default function FieldServicePage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  // Mock data for now - will be replaced with real data from schedule endpoint
   const schedule: ScheduleItem[] = [];
   const technicians: Technician[] = [];
+
+  const completedOrders = allOrders.filter(o => o.status === 'completed');
+  const activeOrders = allOrders.filter(o => ['in_progress', 'dispatched'].includes(o.status));
+  const pendingOrders = allOrders.filter(o => ['created', 'scheduled'].includes(o.status));
+
+  const completionRate = allOrders.length > 0
+    ? Math.round((completedOrders.length / allOrders.length) * 100)
+    : 0;
+
   const overview = {
     totalTechnicians: technicians.length,
-    activeJobs: allOrders.filter(o => ['in_progress', 'dispatched'].includes(o.status)).length,
-    completionRate: 85,
-    techniciansInField: 12,
-    avgResponseTime: 8,
+    activeJobs: activeOrders.length,
+    completionRate,
+    techniciansInField: activeOrders.length,
+    avgResponseTime: 0,
   };
   const slaMetrics = {
-    onTimePercentage: 92,
-    overdueCount: 2,
+    onTimePercentage: completionRate,
+    overdueCount: pendingOrders.length,
     totalJobs: allOrders.length,
-    avgCompletionTime: 45,
+    avgCompletionTime: 0,
   };
 
   // Filter pending/unassigned jobs for queue

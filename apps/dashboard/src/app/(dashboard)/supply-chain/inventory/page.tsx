@@ -15,7 +15,6 @@ interface SearchFilters {
   abcClass: string;
 }
 
-// Mock data
 const WAREHOUSES = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
 
 const ABC_CLASSES = [
@@ -88,6 +87,8 @@ interface ReorderAlert {
 
 export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
+  const { items: stockGauges } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
+  const { items: reorderAlerts } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
   const [filters, setFilters] = useState<SearchFilters>({
     searchTerm: '',
     warehouse: 'All',
@@ -96,10 +97,6 @@ export default function InventoryPage() {
   });
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [showTransferForm, setShowTransferForm] = useState(false);
-
-  // Mock data for stock gauges and alerts (would come from API in production)
-  const stockGauges: StockGauge[] = [];
-  const reorderAlerts: ReorderAlert[] = [];
 
   // Filter inventory
   const filteredInventory = inventory.filter((item) => {

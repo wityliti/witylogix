@@ -26,6 +26,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-504 | feat/WIT-504-settings-production | Settings (8) | 8 | 2026-05 |
 | WIT-505 | feat/WIT-505-dashboard-invoices-payments-production | Activity (2), Order Board (1), Invoices (5), Payments (1) | 9 | 2026-05-31 |
 | WIT-512 | feat/WIT-512-dashboard-analytics-production | Analytics overview (DEMO→real), Returns (MOCK_RETURNS→0), API route-performance (Math.random→Prisma), Map: DeliveryPerformanceLayer + route-performance Map tab | 7 + API | 2026-06-01 |
+| WIT-514 | feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production | Healthcare Records (mockRecords→0), SC Inventory (2 new API hooks), SC Orders (WAVE_PLANS/BATCH_PICKING/RETURN_QUEUE→real), E-Signatures (new esignatures.ts routes + 0 mocks), Products Sync (MOCK_PLATFORMS→integrations/connections), Field Service (computed stats), Collections (alert→real DELETE) | 17 | 2026-06-01 |
 | WIT-515 | feat/WIT-515-dashboard-orders-production | Orders: Detail field-shape fix + Map view, Import hook fix; CourierAssignmentPanel Math.random→0 | 5 + API | 2026-06-02 |
 
 ---
@@ -274,11 +275,13 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Products (3 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Product List | `/products` | 0 | ✅ |
-| Product Sync | `/products/sync` | 3 | ⬜ |
+## Products (3 → 0 mock signals) ✅ WIT-514
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Product List | `/products` | 0 | 0 | ✅ |
+| Product Sync | `/products/sync` | 3 | 0 | ✅ WIT-514 |
+
+**WIT-514 changes**: Removed `MOCK_PLATFORMS` (100+ line hardcoded array); added `mapConnection()` to transform `/api/v4/integrations/connections` response; static `PLATFORM_FIELDS` constants retained as documented field schemas (not DB data)
 
 ---
 
@@ -291,21 +294,52 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Supply Chain (3 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Supply Chain Overview | `/supply-chain` | 0 | ✅ |
-| SC Inventory | `/supply-chain/inventory` | 2 | ⬜ |
-| SC Orders | `/supply-chain/orders` | 1 | ⬜ |
+## Supply Chain (3 → 0 mock signals) ✅ WIT-514
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Supply Chain Overview | `/supply-chain` | 0 | 0 | ✅ |
+| SC Inventory | `/supply-chain/inventory` | 2 | 0 | ✅ WIT-514 |
+| SC Orders | `/supply-chain/orders` | 1 | 0 | ✅ WIT-514 |
+
+**WIT-514 changes**: SC Inventory: added `useApiList` hooks for `/api/v4/supply-chain/stock-gauges` and `/api/v4/supply-chain/reorder-alerts`; SC Orders: removed `WAVE_PLANS`, `BATCH_PICKING`, `RETURN_QUEUE` hardcoded arrays, wired to `/api/v4/supply-chain/waves`, `/api/v4/supply-chain/batches`, `/api/v4/returns`; added new API endpoints `/waves` and `/batches` in `supply-chain.ts` (PickList-backed)
 
 ---
 
-## Healthcare (6 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Healthcare Overview | `/healthcare` | 0 | ✅ |
-| Patients | `/healthcare/patients` | 0 | ✅ |
-| Records | `/healthcare/records` | 6 | ⬜ |
+## Healthcare (6 → 0 mock signals) ✅ WIT-514
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Healthcare Overview | `/healthcare` | 0 | 0 | ✅ |
+| Patients | `/healthcare/patients` | 0 | 0 | ✅ |
+| Records | `/healthcare/records` | 6 | 0 | ✅ WIT-514 |
+
+**WIT-514 changes**: Removed `mockRecords` fallback array (30+ hardcoded HealthRecord objects); all KPIs, filters, and record detail now computed from real API data; added empty state when `filteredRecords.length === 0`
+
+---
+
+## E-Signatures (3 → 0 mock signals) ✅ WIT-514
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| E-Signatures Overview | `/esignatures` | 3 | 0 | ✅ WIT-514 |
+
+**WIT-514 changes**: Removed `mockTemplates` array; added `useTemplates()` hook; new API file `apps/api/src/routes/esignatures.ts` providing `/api/v4/envelopes`, `/api/v4/signing-templates`, `/api/v4/esig/analytics` backed by ActivityLog (entityType="envelope") and NotificationTemplate models
+
+---
+
+## Field Service (1 → 0 mock signals) ✅ WIT-514
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Field Service Overview | `/field-service` | 1 | 0 | ✅ WIT-514 |
+
+**WIT-514 changes**: Removed hardcoded stats comment; `overview` and `slaMetrics` now computed from real `allOrders` (completed, active, pending counts)
+
+---
+
+## Collections (1 → 0 mock signals) ✅ WIT-514
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Collections | `/collections` | 1 | 0 | ✅ WIT-514 |
+
+**WIT-514 changes**: Replaced `alert('Removing ... (mock)')` with real `api.delete('/api/v4/collections/:id/products', { body: JSON.stringify({ productIds }) })` + `refetch()`
 
 ---
 
@@ -358,6 +392,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-505 | `feat/WIT-505-dashboard-invoices-payments-production` | Invoices, Payments, Activity, Order Board | 5 pages | Fix invoice response shape | 9→0 | #246 (open) |
 | WIT-511 | `feat/WIT-511-dashboard-navigation-ia` | Navigation (174 routes) | sidebar + config | — | 0 page signals | #247 (open) |
 | WIT-512 | `feat/WIT-512-dashboard-analytics-zones` | Analytics overview, ETA accuracy, Zones map | 3 pages | `GET /api/v4/zones?format=geojson` (new), `GET /api/v4/zones/overlays` (new) | 10→0 | open |
+| WIT-514 | `feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production` | Healthcare Records, SC Inventory, SC Orders, E-Signatures, Products Sync, Field Service, Collections | 9 pages | `GET /api/v4/supply-chain/waves`, `/batches` (new); `GET /api/v4/envelopes`, `/envelopes/:id`, `/signing-templates`, `/esig/analytics` (new) | 17→0 | open |
 
 ---
 
@@ -370,10 +405,13 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | 3 | ELD (overview + DVIR) | 9→0 ✅ | Medium |
 | 4 | AI route-efficiency | 0 ✅ | Medium |
 | 5 | Integrations (connected provider, routing) | 11→0 ✅ | Medium |
-| 6 | Healthcare records | 6 | Low |
-| 7 | Invoices (detail + create) | 5 | Low |
-| 8 | Settings (auth-providers, payments, billing, webhooks) | 8→0 ✅ | Low |
-| 9 | Returns, Products sync | 6 | Low |
-| 10 | Supply-chain | 3 | Low |
-| 11 | Activity feed | 2 | Low |
+| 6 | Healthcare records | 6→0 ✅ WIT-514 | Low |
+| 7 | Invoices (detail + create) | 5→0 ✅ WIT-505 | Low |
+| 8 | Settings (auth-providers, payments, billing, webhooks) | 8→0 ✅ WIT-504 | Low |
+| 9 | Returns, Products sync | 6→0 ✅ WIT-512/514 | Low |
+| 10 | Supply-chain | 3→0 ✅ WIT-514 | Low |
+| 11 | Activity feed | 2→0 ✅ WIT-505 | Low |
 | 12 | Orders (detail, board, import) | 5→0 ✅ WIT-515 | Medium |
+| 13 | E-Signatures | 3→0 ✅ WIT-514 | Low |
+| 14 | Field Service | 1→0 ✅ WIT-514 | Low |
+| 15 | Collections | 1→0 ✅ WIT-514 | Low |
