@@ -26,6 +26,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-504 | feat/WIT-504-settings-production | Settings (8) | 8 | 2026-05 |
 | WIT-505 | feat/WIT-505-dashboard-invoices-payments-production | Activity (2), Order Board (1), Invoices (5), Payments (1) | 9 | 2026-05-31 |
 | WIT-512 | feat/WIT-512-dashboard-analytics-production | Analytics overview (DEMO→real), Returns (MOCK_RETURNS→0), API route-performance (Math.random→Prisma), Map: DeliveryPerformanceLayer + route-performance Map tab | 7 + API | 2026-06-01 |
+| WIT-515 | feat/WIT-515-dashboard-orders-production | Orders: Detail field-shape fix + Map view, Import hook fix; CourierAssignmentPanel Math.random→0 | 5 + API | 2026-06-02 |
 
 ---
 
@@ -51,17 +52,22 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Orders (1 mock signal — 8 pages total)
+## Orders (5 → 0 mock signals) ✅ WIT-515
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
 | Order List | `/orders` | 0 | 0 | ✅ |
-| Order Detail | `/orders/[id]` | 2 | — | ⬜ |
+| Order Detail | `/orders/[id]` | 2+1placeholder | 0 + Map view | ✅ WIT-515 |
 | Order Board | `/orders/board` | 1 | 0 | ✅ WIT-505 |
-| Order Import | `/orders/import` | 3 | — | ⬜ |
-| Order Create | `/orders/create` | 0 | — | ⬜ |
-| Order Bulk | `/orders/bulk` | 0 | — | ⬜ |
-| Order Conflicts | `/orders/conflicts` | 0 | — | ⬜ |
-| Order Local | `/orders/local` | 0 | — | ⬜ |
+| Order Import | `/orders/import` | 3 | 0 | ✅ WIT-515 |
+| Order Create | `/orders/create` | 0 | 0 | ✅ |
+| Order Bulk | `/orders/bulk` | 0 | 0 | ✅ |
+| Order Conflicts | `/orders/conflicts` | 0 | 0 | ✅ |
+| Order Local | `/orders/local` | 0 | 0 | ✅ |
+
+**WIT-515 changes**:
+- Order Detail: Fixed field name mismatches (`orderNumber`→`externalOrderNumber`, `customer.name`→`customerName`, `address.street`→`addressLine1`, `order.activities`→`notificationLogs`); replaced "Map View Placeholder" div with real `WLMap` + `PinLayer` using `deliveryLat`/`deliveryLng` from API; notes now use `PATCH /api/v4/orders/:id`; shipment info from included `primaryShipment`; API updated to include `shipments` relation + extract `deliveryLat`/`deliveryLng` from shipment's `deliveryLocation: { lat, lng }` JSON
+- Order Import: Replaced broken `useSyncStatus`/`useSyncTrigger`/`useSyncMetrics` hooks (called non-existent `/api/orders/sync/*` Next.js routes) with `useApiList('/api/v4/integrations/connections')` + `useApiQuery('/api/v4/dashboard/stats')`; `handleTriggerSync` now calls `POST /api/v4/integrations/connections/:id/force-sync`
+- CourierAssignmentPanel: Removed `Math.random()` service area check + random unavailable check; replaced with data-driven `status === 'unavailable'` only; removed fake `setTimeout` simulation in `handleAssign`
 
 ---
 
@@ -370,4 +376,4 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | 9 | Returns, Products sync | 6 | Low |
 | 10 | Supply-chain | 3 | Low |
 | 11 | Activity feed | 2 | Low |
-| 12 | Orders (detail, board, import) | 6 | Medium |
+| 12 | Orders (detail, board, import) | 5→0 ✅ WIT-515 | Medium |
