@@ -140,10 +140,10 @@ export default function OrderDetailPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-wl-bg-root p-6"><LoadingSkeleton /></div>;
-  if (error) return <div className="min-h-screen bg-wl-bg-root p-6"><ErrorState error={error} onRetry={refetch} /></div>;
+  if (loading) return <div className="min-h-screen bg-[#0a0a0f] p-6"><LoadingSkeleton /></div>;
+  if (error) return <div className="min-h-screen bg-[#0a0a0f] p-6"><ErrorState error={error} onRetry={refetch} /></div>;
   if (!order) return (
-    <div className="min-h-screen bg-wl-bg-root p-6 flex items-center justify-center">
+    <div className="min-h-screen bg-[#0a0a0f] p-6 flex items-center justify-center">
       <div className="text-center">
         <p className="text-2xl font-bold text-white mb-2">Order not found</p>
         <p className="text-gray-400 text-sm">This order may have been deleted or moved.</p>
@@ -172,7 +172,7 @@ export default function OrderDetailPage() {
   const shipment = order.primaryShipment;
 
   return (
-    <div className="min-h-screen bg-wl-bg-root p-6 text-white">
+    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
         <div>
@@ -190,7 +190,7 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Status Banner */}
-      <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-5 mb-6 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-5 mb-6 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-400 font-medium">Status:</span>
           <Badge variant={statusVariant}>{statusLabel}</Badge>
@@ -209,7 +209,7 @@ export default function OrderDetailPage() {
       {/* Three-column info grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Customer */}
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
           <h3 className="text-sm font-semibold text-white mb-4">Customer</h3>
           {[
             { label: 'Name', value: order.customerName },
@@ -221,7 +221,7 @@ export default function OrderDetailPage() {
           ]
             .filter(Boolean)
             .map((row, i) => (
-              <div key={i} className="flex justify-between py-2.5 border-b border-wl-border-default text-sm last:border-0">
+              <div key={i} className="flex justify-between py-2.5 border-b border-[#1e1e2e] text-sm last:border-0">
                 <span className="text-gray-400">{row!.label}</span>
                 <span className="text-gray-200 font-medium truncate max-w-[60%] text-right">
                   {row!.value ?? '—'}
@@ -231,7 +231,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Delivery address + map */}
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
           <h3 className="text-sm font-semibold text-white mb-4">Delivery Address</h3>
           {[
             { label: 'Street', value: order.addressLine1 },
@@ -240,7 +240,7 @@ export default function OrderDetailPage() {
             { label: 'Postal', value: order.postalCode },
             { label: 'Country', value: order.country },
           ].map((row, i) => (
-            <div key={i} className="flex justify-between py-2 border-b border-wl-border-default text-sm last:border-0">
+            <div key={i} className="flex justify-between py-2 border-b border-[#1e1e2e] text-sm last:border-0">
               <span className="text-gray-400">{row.label}</span>
               <span className="text-gray-200 font-medium">{row.value ?? '—'}</span>
             </div>
@@ -266,7 +266,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Shipment / Tracking */}
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
           <h3 className="text-sm font-semibold text-white mb-4">Shipment</h3>
           {shipment ? (
             <>
@@ -281,7 +281,7 @@ export default function OrderDetailPage() {
                     : null,
                 },
               ].map((row, i) => (
-                <div key={i} className="flex justify-between py-2.5 border-b border-wl-border-default text-sm last:border-0">
+                <div key={i} className="flex justify-between py-2.5 border-b border-[#1e1e2e] text-sm last:border-0">
                   <span className="text-gray-400">{row.label}</span>
                   <span className="text-gray-200 font-medium">{row.value ?? '—'}</span>
                 </div>
@@ -303,7 +303,7 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Line Items */}
-      <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6 mb-6">
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6 mb-6">
         <h3 className="text-sm font-semibold text-white mb-4">
           Line Items <span className="text-gray-500 ml-1">({lineItems.length})</span>
         </h3>
@@ -317,7 +317,7 @@ export default function OrderDetailPage() {
                   {['Product', 'SKU', 'Qty', 'Unit Price', 'Total'].map((h) => (
                     <th
                       key={h}
-                      className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400"
+                      className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400"
                     >
                       {h}
                     </th>
@@ -332,14 +332,14 @@ export default function OrderDetailPage() {
                   const unit = item.unitPrice ?? item.price ?? 0;
                   const itemTotal = item.total ?? item.lineTotal ?? unit * qty;
                   return (
-                    <tr key={item.id ?? idx} className="hover:bg-wl-bg-elevated transition-colors">
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{name}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-400">{sku}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{qty}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                    <tr key={item.id ?? idx} className="hover:bg-[#1a1a2e] transition-colors">
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{name}</td>
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-400">{sku}</td>
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{qty}</td>
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">
                         {unit ? `₹${Number(unit).toLocaleString()}` : '—'}
                       </td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-gray-200 font-medium">
+                      <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-200 font-medium">
                         {itemTotal ? `₹${Number(itemTotal).toLocaleString()}` : '—'}
                       </td>
                     </tr>
@@ -356,7 +356,7 @@ export default function OrderDetailPage() {
                 <span>Items</span>
                 <span className="text-gray-300">{order.itemCount}</span>
               </div>
-              <div className="flex items-center gap-8 py-2 border-t border-wl-border-default text-base font-bold text-blue-400">
+              <div className="flex items-center gap-8 py-2 border-t border-[#1e1e2e] text-base font-bold text-blue-400">
                 <span>Total</span>
                 <span>₹{total.toLocaleString()}</span>
               </div>
@@ -368,7 +368,7 @@ export default function OrderDetailPage() {
       {/* Activity + Notes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Activity Timeline from notification logs */}
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
           <h3 className="text-sm font-semibold text-white mb-4">Activity Timeline</h3>
           {order.notificationLogs.length === 0 ? (
             <p className="text-gray-500 text-sm text-center py-6">No activity recorded yet.</p>
@@ -377,7 +377,7 @@ export default function OrderDetailPage() {
               {order.notificationLogs.map((log, idx) => (
                 <div key={log.id} className="relative">
                   <span
-                    className={`absolute -left-6 top-1 w-2.5 h-2.5 rounded-full border-2 border-wl-border-default ${
+                    className={`absolute -left-6 top-1 w-2.5 h-2.5 rounded-full border-2 border-[#12121a] ${
                       log.status === 'sent' || log.status === 'delivered'
                         ? 'bg-emerald-500'
                         : log.status === 'failed'
@@ -399,10 +399,10 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Notes */}
-        <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-xl p-6">
           <h3 className="text-sm font-semibold text-white mb-4">Internal Notes</h3>
           {order.notes ? (
-            <div className="bg-wl-bg-root border border-wl-border-default rounded-lg p-4 mb-4">
+            <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 mb-4">
               <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
                 {order.notes}
               </p>
@@ -414,7 +414,7 @@ export default function OrderDetailPage() {
             {order.notes ? 'Update Notes' : 'Add Notes'}
           </label>
           <textarea
-            className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded-lg text-gray-300 text-sm min-h-[80px] resize-y focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full p-3 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg text-gray-300 text-sm min-h-[80px] resize-y focus:outline-none focus:border-blue-500 transition-colors"
             placeholder="Add internal notes…"
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
