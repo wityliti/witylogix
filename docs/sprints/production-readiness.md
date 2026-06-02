@@ -96,13 +96,15 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Drivers (0 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Driver List | `/drivers` | 0 | ✅ |
-| Driver Detail | `/drivers/[id]` | 0 | ✅ |
-| Driver Create | `/drivers/create` | 0 | ✅ |
-| Driver Performance | `/drivers/performance` | 0 | ✅ |
+## Drivers (0 mock signals) ✅ WIT-340
+| Page | Route | Mock Before | Status | Map |
+|------|-------|------------|--------|-----|
+| Driver List | `/drivers` | 0 | ✅ WIT-340 | 🗺 Cards+Map toggle, WLMap+DriverLayer |
+| Driver Detail | `/drivers/[id]` | 0 | ✅ | — |
+| Driver Create | `/drivers/create` | 0 | ✅ | — |
+| Driver Performance | `/drivers/performance` | 0 | ✅ | — |
+
+**WIT-340 changes**: Added Cards/Map view toggle to driver list. Map view uses `WLMap` + `DriverLayer` (status-coloured markers) with `useFitBounds` auto-centering. Location data from `/api/v4/dispatch/drivers` (lat/lng from Redis GEO). New file: `drivers/components/drivers-map-view.tsx`.
 
 ---
 
@@ -184,11 +186,13 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Billing / Payments (1 → 0 mock signals) ✅ WIT-505
+## Billing / Payments ✅ WIT-340
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
-| Billing | `/billing` | 0 | 0 | ✅ |
+| Billing | `/billing` | hardcoded `currentPlan`, `quotas \|\|[...]`, `plans \|\|[...]`, `invoices \|\|[...]` fallbacks | 0 — real `GET /api/v4/billing/` + `GET /api/v4/billing/plans` | ✅ WIT-340 |
 | Payments | `/payments` | 1 | 0 | ✅ WIT-505 |
+
+**WIT-340 changes**: Rewrote billing page to use `useApiQuery('/api/v4/billing/')` (subscription + usage + invoices) and `useApiQuery('/api/v4/billing/plans')` (plan comparison). Removed all hardcoded fallbacks. Fixed API: `GET /api/v4/billing/` and `GET /api/v4/billing/plans` now return `{ data: {...} }` wrapper so `useApiQuery` resolves correctly.
 
 **WIT-505 changes**: Removed dead `MOCK_PAYMENTS` array; replaced hardcoded `MONTHLY_REVENUE` constant with `buildMonthlyRevenue(payments)` computed dynamically from real API data
 
@@ -393,6 +397,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-511 | `feat/WIT-511-dashboard-navigation-ia` | Navigation (174 routes) | sidebar + config | — | 0 page signals | #247 (open) |
 | WIT-512 | `feat/WIT-512-dashboard-analytics-zones` | Analytics overview, ETA accuracy, Zones map | 3 pages | `GET /api/v4/zones?format=geojson` (new), `GET /api/v4/zones/overlays` (new) | 10→0 | open |
 | WIT-514 | `feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production` | Healthcare Records, SC Inventory, SC Orders, E-Signatures, Products Sync, Field Service, Collections | 9 pages | `GET /api/v4/supply-chain/waves`, `/batches` (new); `GET /api/v4/envelopes`, `/envelopes/:id`, `/signing-templates`, `/esig/analytics` (new) | 17→0 | open |
+| WIT-340 | `feat/WIT-340-dashboard-analytics-production-ready` | Billing (real API), Drivers (map view added) | 2 pages | Fixed `GET /api/v4/billing/` + `/plans` to return `{ data: {...} }` wrapper | billing: 4 hardcoded→0, drivers: map added | open |
 
 ---
 
