@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useApiList } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -110,20 +111,9 @@ function NotificationItem({
   );
 }
 
-const CATEGORY_TYPE_MAP: Record<string, Notification["type"]> = {
-  order: "order",
-  delivery: "delivery",
-  alert: "alert",
-  system: "system",
-  driver: "alert",
-  payment: "system",
-};
-
-const PRIORITY_SEVERITY_MAP: Record<string, Notification["severity"]> = {
-  HIGH: "critical",
-  MEDIUM: "warning",
-  LOW: "info",
-  CRITICAL: "critical",
+const TYPE_MAP: Record<string, Notification["type"]> = {
+  order: "order", shipment: "delivery", delivery: "delivery",
+  driver: "alert", system: "system", webhook: "system", workflow: "system",
 };
 
 export function NotificationCenter({
@@ -131,16 +121,46 @@ export function NotificationCenter({
   onNotificationClick,
 }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading } =
-    useNotifications();
+  const { items: rawNotifs, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
 
-  // Close on outside click
+  const apiNotifs = useMemo<Notification[]>(() =>
+    rawNotifs.map((n) => ({
+      id: n.id,
+      type: TYPE_MAP[n.type ?? n.category] ?? "system",
+      title: n.title ?? n.action ?? "Notification",
+      message: n.message ?? n.description ?? "",
+      severity: (n.severity as Notification["severity"]) ?? "info",
+      read: n.read ?? true,
+      timestamp: new Date(n.timestamp ?? n.createdAt ?? Date.now()),
+      actionUrl: n.actionUrl,
+    })),
+  [rawNotifs]);
+
+  // Local overlay for optimistic read/delete operations
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  const notifications = useMemo(() =>
+    apiNotifs
+      .filter((n) => !deletedIds.has(n.id))
+      .map((n) => readIds.has(n.id) ? { ...n, read: true } : n),
+  [apiNotifs, readIds, deletedIds]);
+
+  // Poll for new notifications every 60 seconds
   useEffect(() => {
-    if (!isOpen) return;
-    function handler(e: MouseEvent) {
+    const interval = setInterval(() => { refetch(); }, 60_000);
+    return () => clearInterval(interval);
+  }, [refetch]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
       if (
         dropdownRef.current &&
         buttonRef.current &&
@@ -154,7 +174,21 @@ export function NotificationCenter({
     return () => document.removeEventListener("mousedown", handler);
   }, [isOpen]);
 
-  const handleClick = (notification: Notification) => {
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const markAsRead = (id: string) => {
+    setReadIds((prev) => new Set([...prev, id]));
+  };
+
+  const markAllAsRead = () => {
+    setReadIds(new Set(notifications.map((n) => n.id)));
+  };
+
+  const deleteNotification = (id: string) => {
+    setDeletedIds((prev) => new Set([...prev, id]));
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
     if (notification.actionUrl) {
       onNotificationClick?.(notification);

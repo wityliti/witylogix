@@ -416,7 +416,7 @@ export default function WebhooksPage() {
               return (
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
-                  <div className="flex items-end gap-1 h-32 px-2 py-4 bg-wl-bg-root rounded-lg border border-neutral-700">
+                  <div className="flex items-end gap-1 h-32 px-2 py-4 bg-[#0a0a0f] rounded-lg border border-neutral-700">
                     {hourly.map((bucket, i) => {
                       const total = bucket.success + bucket.failed;
                       const heightPercent = (total / maxTotal) * 100;
