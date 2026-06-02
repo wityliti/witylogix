@@ -93,18 +93,6 @@ const DonutChart = ({ data }: { data: Record<string, number> }) => {
   );
 }
 
-function StatCardSkeleton() {
-  return (
-    <div className="border border-[var(--wl-border)] rounded-lg p-6 space-y-3">
-      <Skeleton className="h-3 w-20" />
-      <Skeleton className="h-8 w-16" />
-    </div>
-  );
-}
-
-export function NotificationStatsWidget({ className }: NotificationStatsWidgetProps) {
-  const { data, loading, error } = useApiQuery<NotificationStatsData>("/api/v4/notifications/stats");
-
 export function NotificationStatsWidget({ className }: NotificationStatsWidgetProps) {
   const { data, loading, error, refetch } = useApiQuery<StatsPayload>('/api/v4/notifications/stats?days=7');
 
