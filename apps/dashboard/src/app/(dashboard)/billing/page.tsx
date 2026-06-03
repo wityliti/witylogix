@@ -165,7 +165,7 @@ export default function BillingPage() {
         subtitle="Manage your subscription plan and billing information"
       />
 
-      <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
+      <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-screen">
         {/* ── Current Plan Card ───────────────────────────────────────────── */}
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/30 border-2">
           <CardContent className="pt-6">
@@ -190,7 +190,7 @@ export default function BillingPage() {
 
             {/* Usage Metrics */}
             {billing.usageMetrics.length > 0 && (
-              <div className="mt-8 pt-8 border-t border-wl-border-default">
+              <div className="mt-8 pt-8 border-t border-[#1e1e2e]">
                 <h3 className="text-sm font-semibold text-gray-400 uppercase mb-6">Usage This Month</h3>
                 <div className="space-y-6">
                   {billing.usageMetrics.map((resource) => {
@@ -208,7 +208,7 @@ export default function BillingPage() {
                             </Badge>
                           </div>
                         </div>
-                        <div className="w-full h-2.5 bg-wl-bg-elevated rounded-full overflow-hidden">
+                        <div className="w-full h-2.5 bg-[#1a1a2e] rounded-full overflow-hidden">
                           <div
                             className={cn(
                               'h-full transition-all duration-300 rounded-full',
@@ -261,7 +261,7 @@ export default function BillingPage() {
                       'relative overflow-hidden cursor-pointer transition-all border-2',
                       isCurrent
                         ? 'border-blue-500 bg-blue-500/5'
-                        : 'border-wl-border-default bg-wl-bg-surface hover:border-blue-500/50'
+                        : 'border-[#1e1e2e] bg-[#12121a] hover:border-blue-500/50'
                     )}
                     onClick={() => setExpandedPlan(isExpanded ? null : plan.tier)}
                   >
@@ -330,7 +330,7 @@ export default function BillingPage() {
         )}
 
         {/* ── Payment Method ──────────────────────────────────────────────── */}
-        <Card className="bg-wl-bg-surface border-wl-border-default">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <CreditCard className="w-5 h-5" />
@@ -339,7 +339,7 @@ export default function BillingPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {billing.billingAddress ? (
-              <div className="bg-wl-bg-elevated rounded-lg p-4 border border-wl-border-default text-sm text-gray-300">
+              <div className="bg-[#1a1a2e] rounded-lg p-4 border border-[#1e1e2e] text-sm text-gray-300">
                 <p className="font-medium text-white mb-1">Billing Address</p>
                 <p>{billing.billingAddress.line1}</p>
                 {billing.billingAddress.line2 && <p>{billing.billingAddress.line2}</p>}
@@ -347,7 +347,7 @@ export default function BillingPage() {
                 <p>{billing.billingAddress.country}</p>
               </div>
             ) : (
-              <div className="bg-wl-bg-elevated rounded-lg p-5 border border-wl-border-default">
+              <div className="bg-[#1a1a2e] rounded-lg p-5 border border-[#1e1e2e]">
                 <p className="text-sm text-gray-400">
                   Payment is processed through your Shopify store. Manage payment methods in your Shopify admin.
                 </p>
@@ -360,7 +360,7 @@ export default function BillingPage() {
         </Card>
 
         {/* ── Invoice History ─────────────────────────────────────────────── */}
-        <Card className="bg-wl-bg-surface border-wl-border-default">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <TrendingUp className="w-5 h-5" />
@@ -380,7 +380,7 @@ export default function BillingPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-wl-border-default">
+                    <tr className="border-b border-[#1e1e2e]">
                       <th className="text-left py-3 text-xs font-semibold text-gray-400 uppercase">Period</th>
                       <th className="text-left py-3 text-xs font-semibold text-gray-400 uppercase">Date</th>
                       <th className="text-right py-3 text-xs font-semibold text-gray-400 uppercase">Amount</th>
