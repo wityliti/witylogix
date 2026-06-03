@@ -30,6 +30,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-515 | feat/WIT-515-dashboard-orders-production | Orders: Detail field-shape fix + Map view, Import hook fix; CourierAssignmentPanel Math.random→0 | 5 + API | 2026-06-02 |
 | WIT-517 | feat/WIT-517-dashboard-realtime-mock-cleanup | Realtime components (4), Notification stats widget, Activity polling, ELD HOS recap, Webhooks hourly chart, Webhook test page, Shipping labels pricing, Dispatch map (WLMap); API: notifications-v2 rewrite, outbound-webhooks/test endpoint | 13 files | 2026-06-02 |
 | WIT-518 | feat/WIT-518-dashboard-billing-drivers-map | Billing (4 hardcoded fallbacks→real API; billing API { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap + DriverLayer status-coloured markers + useFitBounds) | 4 + API | 2026-06-03 |
+| WIT-519 | feat/WIT-519-supply-chain-kpis-locations-map | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline percentages→real hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | 5 | 2026-06-03 |
 
 ---
 
@@ -304,14 +305,16 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Supply Chain (3 → 0 mock signals) ✅ WIT-514
+## Supply Chain (8 → 0 mock signals) ✅ WIT-514 + WIT-519
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
-| Supply Chain Overview | `/supply-chain` | 0 | 0 | ✅ |
+| Supply Chain Overview | `/supply-chain` | 4 hardcoded consts | 0 + live KPIs | ✅ WIT-519 |
 | SC Inventory | `/supply-chain/inventory` | 2 | 0 | ✅ WIT-514 |
 | SC Orders | `/supply-chain/orders` | 1 | 0 | ✅ WIT-514 |
 
 **WIT-514 changes**: SC Inventory: added `useApiList` hooks for `/api/v4/supply-chain/stock-gauges` and `/api/v4/supply-chain/reorder-alerts`; SC Orders: removed `WAVE_PLANS`, `BATCH_PICKING`, `RETURN_QUEUE` hardcoded arrays, wired to `/api/v4/supply-chain/waves`, `/api/v4/supply-chain/batches`, `/api/v4/returns`; added new API endpoints `/waves` and `/batches` in `supply-chain.ts` (PickList-backed)
+
+**WIT-519 changes**: Supply Chain Overview: removed `KPI_METRICS` (hardcoded fill rate/backorder/lead-time/turns), `INVENTORY_DISTRIBUTION` (hardcoded class counts), `demandSupplyData` (hardcoded Week 1/2/3), and hardcoded pipeline percentages. All now derived from live hooks: fill rate from `useOrders()` delivered counts, ABC distribution from `useInventory()` items, demand/supply from `useDemandPlanning()` items, pipeline percentages from real fulfillment counts.
 
 ---
 
@@ -395,7 +398,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | CRM | `/crm` | ✅ |
 | Collaboration | `/collaboration` | ✅ |
 | POS | `/pos` | ✅ |
-| Locations | `/locations` | ✅ |
+| Locations | `/locations` | ✅ WIT-519 (map view added) |
 | Zones | `/zones` | ✅ (WIT-512: feature-flag removed, map always shown) |
 | Profile | `/profile` | ✅ |
 | Stores | `/stores` | ✅ |
@@ -417,6 +420,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-512 | `feat/WIT-512-dashboard-analytics-zones` | Analytics overview, ETA accuracy, Zones map | 3 pages | `GET /api/v4/zones?format=geojson` (new), `GET /api/v4/zones/overlays` (new) | 10→0 | open |
 | WIT-514 | `feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production` | Healthcare Records, SC Inventory, SC Orders, E-Signatures, Products Sync, Field Service, Collections | 9 pages | `GET /api/v4/supply-chain/waves`, `/batches` (new); `GET /api/v4/envelopes`, `/envelopes/:id`, `/signing-templates`, `/esig/analytics` (new) | 17→0 | open |
 | WIT-517 | `feat/WIT-517-dashboard-realtime-mock-cleanup` | Realtime components (live-kpi-counters, live-order-feed, notification-center, active-delivery-map), notification-stats-widget, activity polling, ELD HOS recap, webhooks hourly chart, webhook test page, shipping labels pricing, dispatch-map WLMap | 13 files | `POST /api/v4/outbound-webhooks/test` (new); `GET /api/v4/notifications` + `/stats` (rewritten from stub) | 13 files, 13 mock signals | #257 |
+| WIT-518 | `feat/WIT-518-dashboard-billing-drivers-map` | Billing (4 hardcoded fallbacks→real API; { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap+DriverLayer) | `GET /api/v4/billing/`, `GET /api/v4/billing/plans` ({ data } fix); `GET /api/v4/dispatch/drivers` | 4 + API | #260 |
+| WIT-519 | `feat/WIT-519-supply-chain-kpis-locations-map` | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline pct→live hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | — | 5 mock signals | #262 |
 
 ---
 
@@ -433,7 +438,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | 7 | Invoices (detail + create) | 5→0 ✅ WIT-505 | Low |
 | 8 | Settings (auth-providers, payments, billing, webhooks) | 8→0 ✅ WIT-504 | Low |
 | 9 | Returns, Products sync | 6→0 ✅ WIT-512/514 | Low |
-| 10 | Supply-chain | 3→0 ✅ WIT-514 | Low |
+| 10 | Supply-chain | 8→0 ✅ WIT-514+519 | Low |
 | 11 | Activity feed | 2→0 ✅ WIT-505 | Low |
 | 12 | Orders (detail, board, import) | 5→0 ✅ WIT-515 | Medium |
 | 13 | E-Signatures | 3→0 ✅ WIT-514 | Low |

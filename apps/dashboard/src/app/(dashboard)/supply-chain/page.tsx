@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { StatCard } from '@/components/ui/stat-card';
 import { Badge } from '@/components/ui/badge';
@@ -36,50 +36,6 @@ interface DemandSupplyData {
   variance: number;
 }
 
-const KPI_METRICS = [
-  {
-    id: 'kpi-1',
-    name: 'Fill Rate',
-    value: '96.8',
-    unit: '%',
-    trend: 2.3,
-    trendLabel: 'vs last week',
-    color: 'success' as const,
-  },
-  {
-    id: 'kpi-2',
-    name: 'Backorder Rate',
-    value: '3.2',
-    unit: '%',
-    trend: -1.5,
-    trendLabel: 'reduction',
-    color: 'success' as const,
-  },
-  {
-    id: 'kpi-3',
-    name: 'Avg Lead Time',
-    value: '4.2',
-    unit: 'days',
-    trend: -0.8,
-    trendLabel: 'faster',
-    color: 'success' as const,
-  },
-  {
-    id: 'kpi-4',
-    name: 'Inventory Turns',
-    value: '6.8',
-    unit: '/year',
-    trend: 0.5,
-    trendLabel: 'improvement',
-    color: 'primary' as const,
-  },
-];
-
-const INVENTORY_DISTRIBUTION = [
-  { category: 'Class A Items', count: 12, percentage: 15, description: 'High value, critical' },
-  { category: 'Class B Items', count: 34, percentage: 42, description: 'Medium value' },
-  { category: 'Class C Items', count: 39, percentage: 43, description: 'Low value, frequent' },
-];
 
 export default function SupplyChainPage() {
   const inventory = useInventory();
@@ -89,43 +45,51 @@ export default function SupplyChainPage() {
   const warehouse = useWarehouseOps();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
 
-  const pipelineStages: PipelineStage[] = [
-    {
-      stage: 'Received',
-      count: fulfillment.pipelineStats.received,
-      percentage: 25,
-      status: 'healthy',
-    },
-    {
-      stage: 'Picked',
-      count: fulfillment.pipelineStats.picked,
-      percentage: 20,
-      status: 'healthy',
-    },
-    {
-      stage: 'Packed',
-      count: fulfillment.pipelineStats.packed,
-      percentage: 25,
-      status: 'warning',
-    },
-    {
-      stage: 'Shipped',
-      count: fulfillment.pipelineStats.shipped,
-      percentage: 20,
-      status: 'healthy',
-    },
-    {
-      stage: 'Delivered',
-      count: fulfillment.pipelineStats.delivered,
-      percentage: 10,
-      status: 'healthy',
-    },
-  ];
+  const totalOrders = orders.orders.length;
+  const deliveredOrders = orders.orders.filter((o) => o.status === 'delivered').length;
 
-  const demandSupplyData: DemandSupplyData[] = [
-    { period: 'Week 1', demand: 4500, supply: 5200, variance: 15.6 },
-    { period: 'Week 2', demand: 5100, supply: 5200, variance: 2.0 },
-    { period: 'Week 3', demand: 6200, supply: 5200, variance: -16.1 },
+  const kpiMetrics = useMemo(() => {
+    const fillRate = totalOrders > 0 ? (deliveredOrders / totalOrders) * 100 : 0;
+    const backorderRate = orders.orders.filter((o) => o.priority === 'backorder').length / Math.max(totalOrders, 1) * 100;
+    const avgLeadTime = demand.items.length > 0
+      ? demand.items.reduce((sum, d) => sum + (d.confidence ?? 0), 0) / demand.items.length
+      : 0;
+    const avgUtilization = warehouse.warehouses.length > 0
+      ? warehouse.warehouses.reduce((sum, w) => sum + w.utilizationPercentage, 0) / warehouse.warehouses.length
+      : 0;
+    return [
+      { id: 'kpi-1', name: 'Fill Rate', value: fillRate.toFixed(1), unit: '%', trend: 0, trendLabel: 'delivered', color: 'success' as const },
+      { id: 'kpi-2', name: 'Backorder Rate', value: backorderRate.toFixed(1), unit: '%', trend: 0, trendLabel: 'of orders', color: backorderRate > 5 ? 'danger' as const : 'success' as const },
+      { id: 'kpi-3', name: 'Avg Confidence', value: avgLeadTime.toFixed(0), unit: '%', trend: 0, trendLabel: 'forecast', color: 'success' as const },
+      { id: 'kpi-4', name: 'Avg Utilization', value: avgUtilization.toFixed(1), unit: '%', trend: 0, trendLabel: 'warehouse', color: 'primary' as const },
+    ];
+  }, [orders.orders, totalOrders, deliveredOrders, demand.items, warehouse.warehouses]);
+
+  const inventoryDistribution = useMemo(() => {
+    const total = inventory.items.length;
+    if (total === 0) return [];
+    const counts = { A: 0, B: 0, C: 0 };
+    for (const item of inventory.items) counts[item.abcClass]++;
+    return [
+      { category: 'Class A Items', count: counts.A, percentage: Math.round((counts.A / total) * 100), description: 'High value, critical' },
+      { category: 'Class B Items', count: counts.B, percentage: Math.round((counts.B / total) * 100), description: 'Medium value' },
+      { category: 'Class C Items', count: counts.C, percentage: Math.round((counts.C / total) * 100), description: 'Low value, frequent' },
+    ];
+  }, [inventory.items]);
+
+  const demandSupplyData: DemandSupplyData[] = useMemo(
+    () => demand.items.map((d) => ({ period: d.period, demand: d.demand, supply: d.supply, variance: d.variance })),
+    [demand.items]
+  );
+
+  const totalPipelineOrders = Object.values(fulfillment.pipelineStats).reduce((s, v) => s + v, 0);
+
+  const pipelineStages: PipelineStage[] = [
+    { stage: 'Received', count: fulfillment.pipelineStats.received, percentage: totalPipelineOrders > 0 ? Math.round((fulfillment.pipelineStats.received / totalPipelineOrders) * 100) : 0, status: 'healthy' },
+    { stage: 'Picked', count: fulfillment.pipelineStats.picked, percentage: totalPipelineOrders > 0 ? Math.round((fulfillment.pipelineStats.picked / totalPipelineOrders) * 100) : 0, status: 'healthy' },
+    { stage: 'Packed', count: fulfillment.pipelineStats.packed, percentage: totalPipelineOrders > 0 ? Math.round((fulfillment.pipelineStats.packed / totalPipelineOrders) * 100) : 0, status: 'warning' },
+    { stage: 'Shipped', count: fulfillment.pipelineStats.shipped, percentage: totalPipelineOrders > 0 ? Math.round((fulfillment.pipelineStats.shipped / totalPipelineOrders) * 100) : 0, status: 'healthy' },
+    { stage: 'Delivered', count: fulfillment.pipelineStats.delivered, percentage: totalPipelineOrders > 0 ? Math.round((fulfillment.pipelineStats.delivered / totalPipelineOrders) * 100) : 0, status: 'healthy' },
   ];
 
   return (
@@ -157,7 +121,7 @@ export default function SupplyChainPage() {
         <div className="space-y-6 max-w-7xl">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {KPI_METRICS.map((metric, idx) => (
+            {kpiMetrics.map((metric, idx) => (
               <StatCard
                 key={metric.id}
                 label={metric.name}
@@ -315,7 +279,7 @@ export default function SupplyChainPage() {
               Inventory ABC Distribution
             </h2>
             <div className="space-y-4">
-              {INVENTORY_DISTRIBUTION.map((item) => (
+              {inventoryDistribution.map((item) => (
                 <div key={item.category}>
                   <div className="flex items-center justify-between mb-2">
                     <div>
