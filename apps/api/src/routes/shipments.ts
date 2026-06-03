@@ -119,7 +119,7 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          order: { select: { id: true, externalOrderNumber: true } },
+          order: { select: { id: true, externalOrderNumber: true, customerName: true } },
           driver: { select: { id: true, name: true, phone: true } },
           location: { select: { id: true, name: true, city: true } },
           timeSlot: { select: { id: true, name: true, startTime: true, endTime: true } },
@@ -128,8 +128,17 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.shipment.count({ where }),
     ]);
 
+    const data = shipments.map((s) => {
+      const loc = s.deliveryLocation as { lat?: number; lng?: number } | null;
+      return {
+        ...s,
+        deliveryLat: loc?.lat ?? null,
+        deliveryLng: loc?.lng ?? null,
+      };
+    });
+
     return {
-      data: shipments,
+      data,
       pagination: {
         page,
         limit,

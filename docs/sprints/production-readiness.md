@@ -29,6 +29,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-514 | feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production | Healthcare Records (mockRecords→0), SC Inventory (2 new API hooks), SC Orders (WAVE_PLANS/BATCH_PICKING/RETURN_QUEUE→real), E-Signatures (new esignatures.ts routes + 0 mocks), Products Sync (MOCK_PLATFORMS→integrations/connections), Field Service (computed stats), Collections (alert→real DELETE) | 17 | 2026-06-01 |
 | WIT-515 | feat/WIT-515-dashboard-orders-production | Orders: Detail field-shape fix + Map view, Import hook fix; CourierAssignmentPanel Math.random→0 | 5 + API | 2026-06-02 |
 | WIT-517 | feat/WIT-517-dashboard-realtime-mock-cleanup | Realtime components (4), Notification stats widget, Activity polling, ELD HOS recap, Webhooks hourly chart, Webhook test page, Shipping labels pricing, Dispatch map (WLMap); API: notifications-v2 rewrite, outbound-webhooks/test endpoint | 13 files | 2026-06-02 |
+| WIT-518 | feat/WIT-518-dashboard-billing-drivers-map | Billing: real API (fixed `{ data }` wrapper bug in `GET /api/v4/billing/`); Drivers: Cards ↔ Map toggle (WLMap + DriverLayer) | PR #260 | 2026-06-03 |
+| WIT-519 | feat/WIT-519-dashboard-delivery-shipments-map | Delivery: List ↔ Map toggle (WLMap + ShipmentMarkerLayer); API: added `customerName` to order select + `deliveryLat`/`deliveryLng` from `deliveryLocation` JSON | 3 files | 2026-06-03 |
 
 ---
 
@@ -81,11 +83,16 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Delivery (0 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Delivery Overview | `/delivery` | 0 | ✅ |
-| Standard Delivery | `/delivery/standard` | 0 | ✅ |
+## Delivery (0 mock signals) ✅ WIT-519
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Delivery Overview | `/delivery` | 0 (no map) | 0 + Map view | ✅ WIT-519 |
+| Standard Delivery | `/delivery/standard` | 0 | 0 | ✅ |
+
+**WIT-519 changes**:
+- `/delivery` page: Added List ↔ Map view toggle; Map view uses `WLMap` + `ShipmentMarkerLayer` colour-coded by status (blue=pending, amber=in-transit, green=out-for-delivery, emerald=delivered, red=failed); `useFitBounds` auto-centers; click popup shows shipment number, customer, status, address
+- API `GET /api/v4/shipments`: Added `customerName` to order select (was missing from list endpoint); extracts `deliveryLat`/`deliveryLng` from `deliveryLocation: { lat, lng }` JSON field
+- New file: `apps/dashboard/src/app/(dashboard)/delivery/components/delivery-map-view.tsx`
 
 ---
 
