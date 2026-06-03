@@ -10,8 +10,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 import { WLMap } from "@/components/map/wl-map";
-import { LocationPinLayer } from "@/components/map/location-pin-layer";
-import { LayoutGrid, Map } from "lucide-react";
+import { PinLayer, type Pin } from "@/components/map/pin-layer";
 
 // Dynamic imports — avoids SSR issues with Leaflet
 const WLMap = dynamic(
@@ -555,37 +554,25 @@ export default function LocationsPage() {
                   <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
                     Location
                   </div>
-                  {selectedLocation.latitude && selectedLocation.longitude ? (
-                    <div className="rounded-lg overflow-hidden border border-[#1e1e2e]" style={{ height: 180 }}>
-                      <WLMap
-                        className="w-full h-full"
-                        center={[selectedLocation.latitude, selectedLocation.longitude]}
-                        zoom={14}
-                        onReady={handleDetailMapReady}
-                      >
-                        {detailMapId && (
-                          <LocationPinLayer
-                            mapId={detailMapId}
-                            locations={[{
-                              id: selectedLocation.id,
-                              name: selectedLocation.name,
-                              type: selectedLocation.type,
-                              latitude: selectedLocation.latitude,
-                              longitude: selectedLocation.longitude,
-                              status: selectedLocation.status,
-                              isDefault: selectedLocation.isDefault,
-                              city: selectedLocation.city,
-                            }]}
-                            selectedId={selectedLocation.id}
-                          />
-                        )}
-                      </WLMap>
-                    </div>
-                  ) : (
-                    <div className={cn("bg-[#1a1a2e] border border-[#1e1e2e] rounded-md p-4 text-center text-xs text-gray-500")}>
-                      No coordinates available
-                    </div>
-                  )}
+                  <div className={cn("rounded-md overflow-hidden border border-[#1e1e2e]")} style={{ height: 160 }}>
+                    <WLMap
+                      center={[selectedLocation.longitude, selectedLocation.latitude]}
+                      zoom={12}
+                    >
+                      <PinLayer
+                        pins={[{
+                          id: selectedLocation.id,
+                          lng: selectedLocation.longitude,
+                          lat: selectedLocation.latitude,
+                          status: selectedLocation.status === 'ACTIVE' ? 'assigned' : selectedLocation.status === 'MAINTENANCE' ? 'delayed' : 'open',
+                          label: selectedLocation.name,
+                        } satisfies Pin]}
+                      />
+                    </WLMap>
+                  </div>
+                  <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
+                    {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
+                  </div>
                 </div>
 
                 {/* Action Buttons */}
