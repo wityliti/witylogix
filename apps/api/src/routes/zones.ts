@@ -42,7 +42,6 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
           minOrder: true,
           freeAbove: true,
           isActive: true,
-          boundary: true,
           timeSlots: {
             where: { isActive: true },
             select: { id: true, name: true, startTime: true, endTime: true },
@@ -53,9 +52,25 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.deliveryZone.count(),
     ]);
 
+    // Fetch GeoJSON boundaries via PostGIS (falls back to null if PostGIS unavailable)
+    let boundaryMap: Record<string, object | null> = {};
+    try {
+      const geoRows = await request.tenantDb.$queryRaw<Array<{ id: string; geojson: string | null }>>`
+        SELECT id::text,
+               CASE WHEN boundary IS NOT NULL THEN ST_AsGeoJSON(boundary) ELSE NULL END AS geojson
+        FROM delivery_zones
+        WHERE shop_id = ${request.shopId}::uuid
+      `;
+      for (const row of geoRows) {
+        boundaryMap[row.id] = row.geojson ? JSON.parse(row.geojson) : null;
+      }
+    } catch {
+      // PostGIS not available — boundaries will be null
+    }
+
     const data = zones.map((zone) => ({
       ...zone,
-      boundary: zone.boundary || null,
+      boundary: boundaryMap[zone.id] ?? null,
     }));
 
     return {
@@ -78,11 +93,19 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
 
     if (!zone) throw new NotFoundError("DeliveryZone", id);
 
+    let boundary: object | null = null;
+    try {
+      const [geoRow] = await request.tenantDb.$queryRaw<Array<{ geojson: string | null }>>`
+        SELECT CASE WHEN boundary IS NOT NULL THEN ST_AsGeoJSON(boundary) ELSE NULL END AS geojson
+        FROM delivery_zones WHERE id = ${id}::uuid
+      `;
+      boundary = geoRow?.geojson ? JSON.parse(geoRow.geojson) : null;
+    } catch {
+      // PostGIS not available
+    }
+
     return {
-      data: {
-        ...zone,
-        boundary: zone.boundary || null,
-      },
+      data: { ...zone, boundary },
     };
   });
 

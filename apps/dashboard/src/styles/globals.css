@@ -1,6 +1,7 @@
 @import './tokens.css';
 @import './tailwind-tokens.css';
 @import './responsive.css';
+@import 'maplibre-gl/dist/maplibre-gl.css';
 
 @tailwind base;
 @tailwind components;
