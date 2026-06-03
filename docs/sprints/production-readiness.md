@@ -29,6 +29,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-514 | feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production | Healthcare Records (mockRecords→0), SC Inventory (2 new API hooks), SC Orders (WAVE_PLANS/BATCH_PICKING/RETURN_QUEUE→real), E-Signatures (new esignatures.ts routes + 0 mocks), Products Sync (MOCK_PLATFORMS→integrations/connections), Field Service (computed stats), Collections (alert→real DELETE) | 17 | 2026-06-01 |
 | WIT-515 | feat/WIT-515-dashboard-orders-production | Orders: Detail field-shape fix + Map view, Import hook fix; CourierAssignmentPanel Math.random→0 | 5 + API | 2026-06-02 |
 | WIT-517 | feat/WIT-517-dashboard-realtime-mock-cleanup | Realtime components (4), Notification stats widget, Activity polling, ELD HOS recap, Webhooks hourly chart, Webhook test page, Shipping labels pricing, Dispatch map (WLMap); API: notifications-v2 rewrite, outbound-webhooks/test endpoint | 13 files | 2026-06-02 |
+| WIT-518 | feat/WIT-518-dashboard-billing-drivers-map | Billing (4 hardcoded fallbacks→real API; billing API { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap + DriverLayer status-coloured markers + useFitBounds) | 4 + API | 2026-06-03 |
 
 ---
 
@@ -97,13 +98,15 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Drivers (0 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Driver List | `/drivers` | 0 | ✅ |
-| Driver Detail | `/drivers/[id]` | 0 | ✅ |
-| Driver Create | `/drivers/create` | 0 | ✅ |
-| Driver Performance | `/drivers/performance` | 0 | ✅ |
+## Drivers (0 mock signals) ✅ WIT-518
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Driver List | `/drivers` | 0 | 0 + live map | ✅ WIT-518 |
+| Driver Detail | `/drivers/[id]` | 0 | 0 | ✅ |
+| Driver Create | `/drivers/create` | 0 | 0 | ✅ |
+| Driver Performance | `/drivers/performance` | 0 | 0 | ✅ |
+
+**WIT-518 changes**: Added Cards ↔ Map toggle on driver list. Map view: `WLMap` + `DriverLayer` (green=available, amber=en-route/delivering, purple=on-break, grey=offline) with `useFitBounds` auto-centring on drivers with location. Positions from `GET /api/v4/dispatch/drivers` (Redis GEO). Lazy-loaded via `next/dynamic` (no SSR for maplibre-gl).
 
 ---
 
@@ -187,13 +190,17 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Billing / Payments (1 → 0 mock signals) ✅ WIT-505
+## Billing / Payments (5 → 0 mock signals) ✅ WIT-505 + WIT-518
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
-| Billing | `/billing` | 0 | 0 | ✅ |
+| Billing | `/billing` | 4 hardcoded fallbacks | 0 + real API | ✅ WIT-518 |
 | Payments | `/payments` | 1 | 0 | ✅ WIT-505 |
 
 **WIT-505 changes**: Removed dead `MOCK_PAYMENTS` array; replaced hardcoded `MONTHLY_REVENUE` constant with `buildMonthlyRevenue(payments)` computed dynamically from real API data
+
+**WIT-518 changes**:
+- Billing page: Replaced `currentPlan||{}`, `quotas||[]`, `plans||[]`, `invoices||[]` hardcoded fallback patterns with real `useApiQuery('/api/v4/billing/')` and `useApiQuery('/api/v4/billing/plans')`; proper loading/error/empty states for each section; types match real `BillingOverview` + `PlansResponse` shapes
+- API fix: `GET /api/v4/billing/` and `GET /api/v4/billing/plans` now wrap response in `{ data: {} }` so `useApiQuery` resolves correctly (was returning flat object causing silent null for all consumers)
 
 ---
 
