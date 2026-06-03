@@ -4,737 +4,551 @@ import { useState, useCallback, useMemo } from 'react';
 import {
   Search,
   Download,
-  Filter,
   FilterX,
   TrendingUp,
   DollarSign,
   Clock,
+  CreditCard,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
-import { Table } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { MetricCard } from '@/components/ui/metric-card';
-import { useApiList } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 
-type PaymentMethod = 'bank_transfer' | 'card' | 'cash' | 'check';
-type PaymentStatus = 'completed' | 'pending' | 'failed' | 'cancelled';
+// ── Types — aligned with PaymentTransaction DB model ──────────────
 
-interface Payment {
+interface ApiPayment {
   id: string;
-  invoiceNumber: string;
-  customerName: string;
-  amount: number;
-  method: PaymentMethod;
-  status: PaymentStatus;
-  date: string;
-  reference: string;
-  metadata?: Record<string, unknown>;
+  shopId: string;
+  orderId: string | null;
+  shipmentId: string | null;
+  paymentMethodId: string | null;
+  /** Amount in cents (BigInt serialized as string or number) */
+  amount: string | number;
+  currency: string;
+  type: string;          // charge | refund | adjustment | cod_collection
+  status: string;        // pending | processing | completed | failed | refunded
+  providerName: string | null;
+  providerTxnId: string | null;
+  providerRef: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  metadata: Record<string, unknown>;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  shop?: { id: string; name: string };
 }
 
-interface MonthlyRevenue {
+function centsToUsd(cents: string | number): number {
+  const n = typeof cents === 'string' ? parseFloat(cents) : Number(cents);
+  return isNaN(n) ? 0 : n / 100;
+}
+
+function formatUsd(dollars: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(dollars);
+}
+
+const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' | 'info' | 'default' }> = {
+  completed: { label: 'Completed', variant: 'success' },
+  processing: { label: 'Processing', variant: 'info' },
+  pending:    { label: 'Pending', variant: 'warning' },
+  failed:     { label: 'Failed', variant: 'danger' },
+  refunded:   { label: 'Refunded', variant: 'default' },
+};
+
+const TYPE_CONFIG: Record<string, string> = {
+  charge: 'Charge',
+  refund: 'Refund',
+  adjustment: 'Adjustment',
+  cod_collection: 'COD',
+};
+
+function statusConfig(status: string) {
+  return STATUS_CONFIG[status.toLowerCase()] ?? { label: status, variant: 'default' as const };
+}
+
+// ── Stat card ──────────────────────────────────────────────────
+
+function StatTile({
+  label,
+  value,
+  icon: Icon,
+  color,
+}: {
+  label: string;
+  value: string;
+  icon: typeof DollarSign;
+  color: string;
+}) {
+  return (
+    <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-white/40 uppercase tracking-wider">{label}</span>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}18`, color }}>
+          <Icon className="w-4 h-4" />
+        </div>
+      </div>
+      <p className="text-2xl font-bold text-white/90 font-mono tracking-tight">{value}</p>
+    </div>
+  );
+}
+
+// ── Revenue bar chart (SVG, from real data) ────────────────────
+
+interface RevenueBar {
   month: string;
   revenue: number;
-  payments: number;
+  count: number;
 }
 
-const MOCK_PAYMENTS: Payment[] = [
-  {
-    id: "pay-001",
-    invoiceNumber: "INV-2024-001",
-    customerName: "Acme Corp",
-    amount: 2750.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-10",
-    reference: "TXN-20240210-12345",
-  },
-  {
-    id: "pay-002",
-    invoiceNumber: "INV-2024-005",
-    customerName: "Delta Logistics",
-    amount: 4500.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-01-28",
-    reference: "TXN-20240128-67890",
-  },
-  {
-    id: "pay-003",
-    invoiceNumber: "INV-2024-008",
-    customerName: "Gamma Ltd",
-    amount: 1450.0,
-    method: "card",
-    status: "completed",
-    date: "2024-02-18",
-    reference: "CARD-20240218-11111",
-  },
-  {
-    id: "pay-004",
-    invoiceNumber: "INV-2024-003",
-    customerName: "Gamma Ltd",
-    amount: 3200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-05",
-    reference: "TXN-20240305-22222",
-  },
-  {
-    id: "pay-005",
-    invoiceNumber: "INV-2024-002",
-    customerName: "Beta Inc",
-    amount: 1850.5,
-    method: "check",
-    status: "pending",
-    date: "2024-03-08",
-    reference: "CHK-20240308-33333",
-  },
-  {
-    id: "pay-006",
-    invoiceNumber: "INV-2024-007",
-    customerName: "Beta Inc",
-    amount: 3050.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-25",
-    reference: "TXN-20240225-44444",
-  },
-  {
-    id: "pay-007",
-    invoiceNumber: "INV-2024-004",
-    customerName: "Acme Corp",
-    amount: 1600.0,
-    method: "card",
-    status: "failed",
-    date: "2024-02-28",
-    reference: "CARD-20240228-55555",
-  },
-  {
-    id: "pay-008",
-    invoiceNumber: "INV-2024-006",
-    customerName: "Echo Distribution",
-    amount: 2200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-10",
-    reference: "TXN-20240310-66666",
-  },
-  {
-    id: "pay-009",
-    invoiceNumber: "INV-2024-009",
-    customerName: "Acme Corp",
-    amount: 5200.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-03-01",
-    reference: "TXN-20240301-77777",
-  },
-  {
-    id: "pay-010",
-    invoiceNumber: "INV-2024-010",
-    customerName: "Delta Logistics",
-    amount: 3800.0,
-    method: "card",
-    status: "completed",
-    date: "2024-03-02",
-    reference: "CARD-20240302-88888",
-  },
-];
-
-const MONTHLY_REVENUE: MonthlyRevenue[] = [
-  { month: "Jan", revenue: 12500, payments: 5 },
-  { month: "Feb", revenue: 18900, payments: 8 },
-  { month: "Mar", revenue: 15600, payments: 6 },
-];
-
-const getStatusBadgeVariant = (
-  status: PaymentStatus
-): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
-  switch (status) {
-    case "completed":
-      return "success";
-    case "pending":
-      return "warning";
-    case "failed":
-      return "danger";
-    case "cancelled":
-      return "danger";
-    default:
-      return "default";
-  }
-};
-
-const getStatusLabel = (status: PaymentStatus): string => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-};
-
-const getMethodLabel = (method: PaymentMethod): string => {
-  const labels: Record<PaymentMethod, string> = {
-    bank_transfer: "Bank Transfer",
-    card: "Card",
-    cash: "Cash",
-    check: "Check",
-  };
-  return labels[method];
-};
-
-// Simple SVG Bar Chart Component
-const RevenueChart = ({ data }: { data: MonthlyRevenue[] }) => {
-  const maxRevenue = Math.max(...data.map((d) => d.revenue));
-  const chartHeight = 200;
-  const barWidth = 60;
-  const gap = 40;
+function RevenueChart({ data }: { data: RevenueBar[] }) {
+  if (data.length === 0) return (
+    <div className="flex items-center justify-center h-40 text-white/25 text-sm">No revenue data</div>
+  );
+  const maxRev = Math.max(...data.map((d) => d.revenue), 1);
+  const chartH = 120;
+  const barW = 40;
+  const gap = 24;
+  const totalW = data.length * (barW + gap);
 
   return (
-    <svg
-      width="100%"
-      height={chartHeight + 40}
-      viewBox={`0 0 ${data.length * (barWidth + gap) + 20} ${chartHeight + 40}`}
-      className="mx-auto"
-    >
-      {/* Y-axis labels */}
-      {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
-        <g key={`tick-${tick}`}>
-          <text
-            x="30"
-            y={chartHeight - tick * chartHeight + 5}
-            fontSize="12"
-            fill="currentColor"
-            className="text-wl-text-secondary"
-            textAnchor="end"
-          >
-            ${Math.round((tick * maxRevenue) / 1000)}K
-          </text>
-          <line
-            x1="35"
-            y1={chartHeight - tick * chartHeight}
-            x2={data.length * (barWidth + gap) + 10}
-            y2={chartHeight - tick * chartHeight}
-            stroke="currentColor"
-            strokeDasharray="2,2"
-            className="text-wl-border-subtle"
-          />
-        </g>
-      ))}
-
-      {/* Bars */}
-      {data.map((item, index) => {
-        const barHeight = (item.revenue / maxRevenue) * chartHeight;
-        const x = 40 + index * (barWidth + gap);
-        const y = chartHeight - barHeight;
-
+    <svg width="100%" height={chartH + 40} viewBox={`0 0 ${totalW} ${chartH + 40}`} preserveAspectRatio="xMidYMid meet">
+      {data.map((item, i) => {
+        const bh = (item.revenue / maxRev) * chartH;
+        const x = i * (barW + gap);
+        const y = chartH - bh;
         return (
           <g key={item.month}>
-            {/* Bar */}
-            <rect
-              x={x}
-              y={y}
-              width={barWidth}
-              height={barHeight}
-              fill="var(--wl-primary-500)"
-              rx="4"
-            />
-            {/* Label */}
-            <text
-              x={x + barWidth / 2}
-              y={chartHeight + 20}
-              fontSize="13"
-              fontWeight="500"
-              fill="currentColor"
-              className="text-wl-text-primary"
-              textAnchor="middle"
-            >
+            <rect x={x} y={y} width={barW} height={bh} fill="var(--wl-primary, #6366f1)" rx="4" opacity="0.8" />
+            <text x={x + barW / 2} y={chartH + 14} fontSize="11" fill="rgba(255,255,255,0.4)" textAnchor="middle">
               {item.month}
             </text>
-            {/* Value */}
-            <text
-              x={x + barWidth / 2}
-              y={y - 8}
-              fontSize="12"
-              fontWeight="600"
-              fill="currentColor"
-              className="text-wl-primary-500"
-              textAnchor="middle"
-            >
-              ${item.revenue / 1000}K
+            <text x={x + barW / 2} y={y - 4} fontSize="10" fill="rgba(255,255,255,0.5)" textAnchor="middle">
+              {item.revenue >= 1000 ? `$${(item.revenue / 1000).toFixed(0)}k` : formatUsd(item.revenue)}
             </text>
           </g>
         );
       })}
     </svg>
   );
-};
+}
+
+// ── Page ───────────────────────────────────────────────────────
 
 export default function PaymentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | ''>('');
-  const [selectedStatus, setSelectedStatus] = useState<PaymentStatus | ''>('');
+  const [selectedType, setSelectedType] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
 
-  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments');
+  const { items: payments, loading, error, refetch } = useApiList<ApiPayment>('/api/v4/payments', {
+    limit: 100,
+  });
 
-  // Filter payments
+  // Filter & sort
   const filtered = useMemo(() => {
     let result = payments;
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.invoiceNumber.toLowerCase().includes(query) ||
-          p.customerName.toLowerCase().includes(query) ||
-          p.reference.toLowerCase().includes(query)
+      const q = searchQuery.toLowerCase();
+      result = result.filter((p) =>
+        p.id.includes(q) ||
+        (p.orderId ?? '').includes(q) ||
+        (p.providerTxnId ?? '').toLowerCase().includes(q) ||
+        (p.providerRef ?? '').toLowerCase().includes(q) ||
+        (p.providerName ?? '').toLowerCase().includes(q)
       );
     }
 
-    if (selectedMethod) {
-      result = result.filter((p) => p.method === selectedMethod);
+    if (selectedType) {
+      result = result.filter((p) => p.type.toLowerCase() === selectedType);
     }
 
     if (selectedStatus) {
-      result = result.filter((p) => p.status === selectedStatus);
+      result = result.filter((p) => p.status.toLowerCase() === selectedStatus);
     }
 
     if (dateFrom) {
-      const fromDate = new Date(dateFrom);
-      result = result.filter((p) => new Date(p.date) >= fromDate);
+      const from = new Date(dateFrom);
+      result = result.filter((p) => new Date(p.createdAt) >= from);
     }
 
     if (dateTo) {
-      const toDate = new Date(dateTo);
-      result = result.filter((p) => new Date(p.date) <= toDate);
+      const to = new Date(dateTo);
+      result = result.filter((p) => new Date(p.createdAt) <= to);
     }
 
-    // Sort
     const sorted = [...result];
     if (sortBy === 'date') {
-      sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } else if (sortBy === 'amount') {
-      sorted.sort((a, b) => b.amount - a.amount);
+      sorted.sort((a, b) => centsToUsd(b.amount) - centsToUsd(a.amount));
     } else if (sortBy === 'status') {
       sorted.sort((a, b) => a.status.localeCompare(b.status));
     }
-
     return sorted;
-  }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy, payments]);
+  }, [searchQuery, selectedType, selectedStatus, dateFrom, dateTo, sortBy, payments]);
 
-  // Calculate summary stats
+  // Stats from real data
   const stats = useMemo(() => {
-    const completed = payments.filter((p) => p.status === 'completed');
-    const pending = payments.filter((p) => p.status === 'pending');
-    const failed = payments.filter((p) => p.status === 'failed');
+    const completed = payments.filter((p) => p.status.toLowerCase() === 'completed');
+    const pending = payments.filter((p) => ['pending', 'processing'].includes(p.status.toLowerCase()));
+    const failed = payments.filter((p) => p.status.toLowerCase() === 'failed');
 
-    const totalCompleted = completed.reduce((sum, p) => sum + p.amount, 0);
-    const totalPending = pending.reduce((sum, p) => sum + p.amount, 0);
-    const totalFailed = failed.reduce((sum, p) => sum + p.amount, 0);
-
-    const avgPaymentAmount =
-      completed.length > 0 ? totalCompleted / completed.length : 0;
+    const totalCollected = completed.reduce((s, p) => s + centsToUsd(p.amount), 0);
+    const totalPending = pending.reduce((s, p) => s + centsToUsd(p.amount), 0);
+    const totalFailed = failed.reduce((s, p) => s + centsToUsd(p.amount), 0);
 
     return {
-      totalCollected: totalCompleted,
+      totalCollected,
       totalPending,
       totalFailed,
-      avgPaymentAmount,
       completedCount: completed.length,
       pendingCount: pending.length,
     };
   }, [payments]);
 
+  // Monthly revenue from real data
+  const monthlyRevenue: RevenueBar[] = useMemo(() => {
+    const map: Record<string, { revenue: number; count: number }> = {};
+    payments
+      .filter((p) => p.status.toLowerCase() === 'completed')
+      .forEach((p) => {
+        const d = new Date(p.createdAt);
+        const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+        if (!map[key]) map[key] = { revenue: 0, count: 0 };
+        map[key].revenue += centsToUsd(p.amount);
+        map[key].count += 1;
+      });
+    return Object.entries(map)
+      .map(([month, v]) => ({ month, revenue: v.revenue, count: v.count }))
+      .slice(-6);
+  }, [payments]);
+
+  const hasFilters = Boolean(searchQuery || selectedType || selectedStatus || dateFrom || dateTo);
+
   const handleExportCSV = useCallback(() => {
-    const headers = [
-      "Invoice",
-      "Customer",
-      "Amount",
-      "Method",
-      "Status",
-      "Date",
-      "Reference",
-    ];
     const rows = filtered.map((p) => [
-      p.invoiceNumber,
-      p.customerName,
-      p.amount.toFixed(2),
-      getMethodLabel(p.method),
-      getStatusLabel(p.status),
-      new Date(p.date).toLocaleDateString(),
-      p.reference,
+      p.id,
+      p.orderId ?? '',
+      formatUsd(centsToUsd(p.amount)),
+      p.currency,
+      TYPE_CONFIG[p.type] ?? p.type,
+      statusConfig(p.status).label,
+      p.providerName ?? '',
+      p.providerTxnId ?? '',
+      new Date(p.createdAt).toISOString(),
     ]);
-
     const csv = [
-      headers.join(","),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
+      ['ID', 'Order ID', 'Amount', 'Currency', 'Type', 'Status', 'Provider', 'Transaction ID', 'Created'].join(','),
+      ...rows.map((r) => r.map((c) => `"${c}"`).join(',')),
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `payments-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
   }, [filtered]);
 
-  const handleClearFilters = useCallback(() => {
-    setSearchQuery('');
-    setSelectedMethod('');
-    setSelectedStatus('');
-    setDateFrom('');
-    setDateTo('');
-    setSortBy('date');
-  }, []);
-
-  const hasActiveFilters = Boolean(
-    searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo
-  );
+  if (loading && payments.length === 0) {
+    return (
+      <div className="p-6">
+        <div className="h-8 w-48 bg-white/[0.06] rounded animate-pulse mb-2" />
+        <div className="h-4 w-64 bg-white/[0.04] rounded animate-pulse mb-8" />
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 rounded-xl bg-[#111118] animate-pulse" />
+          ))}
+        </div>
+        <div className="h-64 rounded-xl bg-[#111118] animate-pulse" />
+      </div>
+    );
+  }
 
   if (error) {
     return (
-      <ErrorState
-        message={error.message || 'Failed to load payments'}
-        onRetry={refetch}
-      />
+      <div className="flex items-center justify-center min-h-[60vh] p-8">
+        <ErrorState
+          title="Could not load payments"
+          message={error.message}
+          onRetry={refetch}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+    <div className="flex flex-col gap-5 p-6 min-h-screen bg-[#0a0a0f]">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">
-            Payment Tracking
-          </h1>
-          <p className="text-gray-400">
-            Monitor and manage incoming payments
-          </p>
+        <div>
+          <h1 className="text-2xl font-bold text-white/90 tracking-tight">Payment Tracking</h1>
+          <p className="text-sm text-white/35 mt-0.5">Monitor and manage payment transactions</p>
         </div>
-        <Button variant="secondary" size="lg" onClick={handleExportCSV}>
+        <Button variant="secondary" size="sm" onClick={handleExportCSV} className="flex items-center gap-2">
           <Download className="w-4 h-4" />
           Export CSV
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Total Collected"
-          value={stats.totalCollected}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
-        <MetricCard
-          label="Pending Payments"
-          value={stats.totalPending}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
-        <MetricCard
-          label="Failed Payments"
-          value={stats.totalFailed}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
-        <MetricCard
-          label="Avg Payment"
-          value={stats.avgPaymentAmount}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatTile label="Collected" value={formatUsd(stats.totalCollected)} icon={DollarSign} color="#34d399" />
+        <StatTile label="Pending" value={formatUsd(stats.totalPending)} icon={Clock} color="#fbbf24" />
+        <StatTile label="Failed" value={formatUsd(stats.totalFailed)} icon={XCircle} color="#f87171" />
+        <StatTile label="Completed" value={String(stats.completedCount)} icon={CheckCircle2} color="#818cf8" />
       </div>
 
       {/* Revenue Chart */}
-      <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-        <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
-          Monthly Revenue
-        </h2>
-        <div className="h-80 flex items-end justify-center">
-          <RevenueChart data={MONTHLY_REVENUE} />
+      <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="w-4 h-4 text-indigo-400" />
+          <h3 className="text-sm font-semibold text-white/60 tracking-wide">Monthly Collected Revenue</h3>
         </div>
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          {MONTHLY_REVENUE.map((item) => (
-            <div key={item.month} className="text-center">
-              <p className="text-sm text-gray-400 mb-1">
-                {item.month}
-              </p>
-              <p className="text-lg font-bold text-white">
-                ${item.revenue.toLocaleString()}
-              </p>
-              <p className="text-xs text-gray-400">
-                {item.payments} payments
-              </p>
-            </div>
-          ))}
+        <div className="flex justify-center">
+          <RevenueChart data={monthlyRevenue} />
         </div>
-      </Card>
-
-      {/* Outstanding vs Collected Comparison */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-          <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
-            <DollarSign className="w-4 h-4" />
-            Collected
-          </h3>
-          <p className="text-3xl font-bold text-emerald-500 mb-2">
-            ${stats.totalCollected.toFixed(2)}
-          </p>
-          <p className="text-sm text-gray-400">
-            {stats.completedCount} completed payments
-          </p>
-          <div className="mt-4 w-full bg-[#1a1a2e] rounded-full h-2">
-            <div
-              className="bg-emerald-500 h-2 rounded-full"
-              style={{
-                width: `${(stats.totalCollected / (stats.totalCollected + stats.totalPending)) * 100}%`,
-              }}
-            />
-          </div>
-        </Card>
-
-        <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-          <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Outstanding
-          </h3>
-          <p className="text-3xl font-bold text-amber-500 mb-2">
-            ${stats.totalPending.toFixed(2)}
-          </p>
-          <p className="text-sm text-gray-400">
-            {stats.pendingCount} pending payments
-          </p>
-          <div className="mt-4 w-full bg-[#1a1a2e] rounded-full h-2">
-            <div
-              className="bg-amber-500 h-2 rounded-full"
-              style={{
-                width: `${(stats.totalPending / (stats.totalCollected + stats.totalPending)) * 100}%`,
-              }}
-            />
-          </div>
-        </Card>
       </div>
 
-      {/* Filters & Controls */}
-      <Card className={cn("flex flex-col gap-4 bg-[#12121a] border border-[#1e1e2e] p-6")}>
-        <div className="flex gap-3 flex-wrap items-end">
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              placeholder="Search by invoice, customer, or reference..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.currentTarget.value)}
-              icon={<Search className="w-4 h-4" />}
-              className="w-full"
-            />
+      {/* Collected vs Outstanding */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs font-semibold uppercase text-white/40 tracking-wider">Collected</span>
           </div>
-
-          <Select
-            value={selectedMethod}
-            onChange={(e) => setSelectedMethod((e.target.value as PaymentMethod) || "")}
-            label="Method"
-            className="w-40"
-            options={[
-              { value: "", label: "All Methods" },
-              { value: "bank_transfer", label: "Bank Transfer" },
-              { value: "card", label: "Card" },
-              { value: "cash", label: "Cash" },
-              { value: "check", label: "Check" },
-            ]}
-          />
-
-          <Select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus((e.target.value as PaymentStatus) || "")}
-            label="Status"
-            className="w-32"
-            options={[
-              { value: "", label: "All Status" },
-              { value: "completed", label: "Completed" },
-              { value: "pending", label: "Pending" },
-              { value: "failed", label: "Failed" },
-              { value: "cancelled", label: "Cancelled" },
-            ]}
-          />
-
-          <Select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "date" | "amount" | "status")}
-            label="Sort By"
-            className="w-32"
-            options={[
-              { value: "date", label: "Date" },
-              { value: "amount", label: "Amount" },
-              { value: "status", label: "Status" },
-            ]}
-          />
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-              className="ml-auto"
-            >
-              <FilterX className="w-4 h-4" />
-              Clear Filters
-            </Button>
+          <p className="text-3xl font-bold text-emerald-400 mb-1 font-mono">{formatUsd(stats.totalCollected)}</p>
+          <p className="text-xs text-white/30">{stats.completedCount} completed payments</p>
+          {(stats.totalCollected + stats.totalPending) > 0 && (
+            <div className="mt-3 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div
+                className="bg-emerald-500 h-full rounded-full"
+                style={{ width: `${(stats.totalCollected / (stats.totalCollected + stats.totalPending)) * 100}%` }}
+              />
+            </div>
           )}
         </div>
 
-        {/* Additional Filters */}
-        <div className="flex gap-3 flex-wrap items-end border-t border-[#1e1e2e] pt-4">
-          <div className="flex gap-2 items-end">
-            <label className="text-xs font-semibold uppercase text-gray-400">
-              Date Range
-            </label>
+        <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-semibold uppercase text-white/40 tracking-wider">Outstanding</span>
+          </div>
+          <p className="text-3xl font-bold text-amber-400 mb-1 font-mono">{formatUsd(stats.totalPending)}</p>
+          <p className="text-xs text-white/30">{stats.pendingCount} pending payments</p>
+          {(stats.totalCollected + stats.totalPending) > 0 && (
+            <div className="mt-3 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div
+                className="bg-amber-500 h-full rounded-full"
+                style={{ width: `${(stats.totalPending / (stats.totalCollected + stats.totalPending)) * 100}%` }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 flex flex-col gap-4">
+        <div className="flex gap-3 flex-wrap items-end">
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+              type="text"
+              placeholder="Search by ID, order, provider, reference…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 bg-[#0d0d14] border border-white/[0.08] rounded-lg text-sm text-white/80 placeholder-white/25 focus:outline-none focus:border-indigo-500/50"
             />
-            <span className="text-gray-400">to</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
-            />
+          </div>
+
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="px-3 py-2 bg-[#0d0d14] border border-white/[0.08] rounded-lg text-sm text-white/60 focus:outline-none focus:border-indigo-500/50"
+          >
+            <option value="">All Types</option>
+            <option value="charge">Charge</option>
+            <option value="refund">Refund</option>
+            <option value="cod_collection">COD</option>
+            <option value="adjustment">Adjustment</option>
+          </select>
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-3 py-2 bg-[#0d0d14] border border-white/[0.08] rounded-lg text-sm text-white/60 focus:outline-none focus:border-indigo-500/50"
+          >
+            <option value="">All Statuses</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="failed">Failed</option>
+            <option value="refunded">Refunded</option>
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
+            className="px-3 py-2 bg-[#0d0d14] border border-white/[0.08] rounded-lg text-sm text-white/60 focus:outline-none focus:border-indigo-500/50"
+          >
+            <option value="date">Sort: Date</option>
+            <option value="amount">Sort: Amount</option>
+            <option value="status">Sort: Status</option>
+          </select>
+
+          {hasFilters && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedType('');
+                setSelectedStatus('');
+                setDateFrom('');
+                setDateTo('');
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm text-white/40 hover:text-white/60 transition-colors"
+            >
+              <FilterX className="w-4 h-4" />
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 border-t border-white/[0.04] pt-3">
+          <span className="text-xs text-white/30">Date range:</span>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="px-2 py-1 bg-[#0d0d14] border border-white/[0.08] rounded text-sm text-white/60 focus:outline-none focus:border-indigo-500/50"
+          />
+          <span className="text-white/20 text-xs">to</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="px-2 py-1 bg-[#0d0d14] border border-white/[0.08] rounded text-sm text-white/60 focus:outline-none focus:border-indigo-500/50"
+          />
+        </div>
+      </div>
+
+      {/* Payments table */}
+      {filtered.length === 0 ? (
+        <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 flex flex-col items-center gap-3">
+          <CreditCard className="w-10 h-10 text-white/10" />
+          <p className="text-sm text-white/30">
+            {hasFilters ? 'No payments match your filters' : 'No payment transactions yet'}
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-xl bg-[#111118] border border-white/[0.06] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.05]">
+                  {['Transaction ID', 'Order / Shipment', 'Amount', 'Type', 'Provider', 'Status', 'Date'].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-white/30">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.03]">
+                {filtered.map((p) => {
+                  const sc = statusConfig(p.status);
+                  const amountUsd = centsToUsd(p.amount);
+                  const isRefund = p.type === 'refund';
+                  return (
+                    <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-4 py-3">
+                        <span className="font-mono text-xs text-blue-400">
+                          {(p.providerTxnId ?? p.providerRef ?? p.id).slice(0, 16)}…
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-white/40 font-mono text-xs">
+                        {p.orderId ? p.orderId.slice(0, 8) : p.shipmentId ? p.shipmentId.slice(0, 8) : '—'}
+                      </td>
+                      <td className="px-4 py-3 font-semibold font-mono">
+                        <span className={isRefund ? 'text-red-400' : 'text-white/80'}>
+                          {isRefund ? '-' : ''}{formatUsd(amountUsd)}
+                        </span>
+                        {p.currency !== 'USD' && (
+                          <span className="text-xs text-white/25 ml-1">{p.currency}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-white/50">
+                        {TYPE_CONFIG[p.type] ?? p.type}
+                      </td>
+                      <td className="px-4 py-3 text-white/40">
+                        {p.providerName ?? '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={sc.variant}>{sc.label}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-white/30 text-xs">
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-4 py-2 border-t border-white/[0.04] flex items-center justify-between">
+            <span className="text-xs text-white/25">{filtered.length} transactions</span>
+            {loading && <RefreshCw className="w-3.5 h-3.5 text-white/20 animate-spin" />}
           </div>
         </div>
-      </Card>
-
-      {/* Payments Table */}
-      {filtered.length === 0 ? (
-        <Card className={cn("flex flex-col items-center justify-center gap-4 py-16 bg-[#12121a] border border-[#1e1e2e]")}>
-          <Search className="w-12 h-12 text-gray-500" />
-          <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-400">
-              No payments found
-            </h3>
-            <p className="text-sm text-gray-500">
-              Try adjusting your search or filters
-            </p>
-          </div>
-        </Card>
-      ) : (
-        <Card className={cn("overflow-hidden bg-[#12121a] border border-[#1e1e2e]")}>
-          <Table<Payment>
-            columns={[
-              {
-                key: "invoiceNumber",
-                header: "Invoice #",
-                render: (item) => (
-                  <div className="font-mono text-sm font-medium text-blue-500">
-                    {item.invoiceNumber}
-                  </div>
-                ),
-                sortable: true,
-                width: 120,
-              },
-              {
-                key: "customerName",
-                header: "Customer",
-                sortable: true,
-                width: 180,
-              },
-              {
-                key: "amount",
-                header: "Amount",
-                render: (item) => (
-                  <div className="font-medium text-white">
-                    ${item.amount.toFixed(2)}
-                  </div>
-                ),
-                sortable: true,
-                align: "right",
-                width: 120,
-              },
-              {
-                key: "method",
-                header: "Method",
-                render: (item) => (
-                  <div className="text-sm text-gray-300">
-                    {getMethodLabel(item.method)}
-                  </div>
-                ),
-                width: 140,
-              },
-              {
-                key: "status",
-                header: "Status",
-                render: (item) => (
-                  <Badge variant={getStatusBadgeVariant(item.status)}>
-                    {getStatusLabel(item.status)}
-                  </Badge>
-                ),
-                width: 110,
-              },
-              {
-                key: "date",
-                header: "Date",
-                render: (item) => (
-                  <div className="text-sm text-gray-300">
-                    {new Date(item.date).toLocaleDateString()}
-                  </div>
-                ),
-                sortable: true,
-                width: 110,
-              },
-              {
-                key: "reference",
-                header: "Reference",
-                render: (item) => (
-                  <div className="font-mono text-xs text-gray-400">
-                    {item.reference}
-                  </div>
-                ),
-                width: 160,
-              },
-            ]}
-            data={filtered}
-          />
-        </Card>
       )}
 
-      {/* Recent Payments Feed */}
-      <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-        <h2 className="text-lg font-semibold text-white mb-4">
-          Recent Payments
-        </h2>
-        <div className="space-y-3">
-          {filtered.slice(0, 5).map((payment) => (
-            <div
-              key={payment.id}
-              className={cn("flex items-center justify-between p-4 rounded border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors")}
-            >
-              <div className="flex-1">
-                <p className="font-medium text-white">
-                  {payment.customerName}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {payment.invoiceNumber} • {getMethodLabel(payment.method)}
-                </p>
-              </div>
-
-              <div className="text-right">
-                <p className="font-bold text-white">
-                  ${payment.amount.toFixed(2)}
-                </p>
-                <div className="flex items-center gap-2 justify-end mt-1">
-                  <Badge variant={getStatusBadgeVariant(payment.status)}>
-                    {getStatusLabel(payment.status)}
-                  </Badge>
-                  <span className="text-xs text-gray-400">
-                    {new Date(payment.date).toLocaleDateString()}
-                  </span>
+      {/* Recent feed */}
+      {filtered.length > 0 && (
+        <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Recent Transactions</h3>
+          <div className="space-y-2.5">
+            {filtered.slice(0, 5).map((p) => {
+              const sc = statusConfig(p.status);
+              return (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-[#0d0d14] border border-white/[0.04] hover:border-white/[0.08] transition-colors"
+                >
+                  <div>
+                    <p className="text-sm text-white/70 font-mono">
+                      {(p.providerTxnId ?? p.providerRef ?? p.id).slice(0, 20)}
+                    </p>
+                    <p className="text-xs text-white/30 mt-0.5">
+                      {TYPE_CONFIG[p.type] ?? p.type}
+                      {p.providerName ? ` · ${p.providerName}` : ''}
+                      {p.orderId ? ` · Order ${p.orderId.slice(0, 8)}` : ''}
+                    </p>
+                  </div>
+                  <div className="text-right flex items-center gap-3">
+                    <div>
+                      <p className="text-sm font-bold text-white/80 font-mono">{formatUsd(centsToUsd(p.amount))}</p>
+                      <p className="text-xs text-white/30">{new Date(p.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <Badge variant={sc.variant}>{sc.label}</Badge>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
-      </Card>
+      )}
     </div>
   );
 }
