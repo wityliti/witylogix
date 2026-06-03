@@ -44,6 +44,13 @@ interface FieldMapping {
   customMapping?: boolean;
 }
 
+const DEAL_PIPELINE_STAGES = [
+  { name: 'Lead', count: 342, value: 0 },
+  { name: 'Qualified', count: 156, value: 78000 },
+  { name: 'Proposal', count: 89, value: 445000 },
+  { name: 'Negotiation', count: 34, value: 170000 },
+  { name: 'Closed Won', count: 78, value: 390000 },
+];
 
 const getStatusColor = (status: string): 'success' | 'danger' | 'warning' | 'default' => {
   switch (status) {
