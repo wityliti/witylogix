@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
+import { WLMap } from "@/components/map/wl-map";
+import { PinLayer, type Pin } from "@/components/map/pin-layer";
 
 // Dynamic imports — avoids SSR issues with Leaflet
 const WLMap = dynamic(
@@ -318,6 +320,75 @@ export default function LocationsPage() {
                         <div>Sat: {location.operatingHours.Saturday.open} - {location.operatingHours.Saturday.close}</div>
                       )}
                     </div>
+                    <div className={cn("text-xs overflow-x-auto")}>
+                      <table className={cn("w-full border-collapse text-xs")}>
+                        <tbody>
+                          {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
+                            <tr key={day} className={cn("border-b border-[#1e1e2e]")}>
+                              <td
+                                className={cn("p-2 pr-3 text-gray-300 font-medium whitespace-nowrap")}
+                              >
+                                {day}
+                              </td>
+                              <td
+                                className={cn(
+                                  "p-2",
+                                  hours.open === "closed" ? "text-gray-400 font-sans" : "text-white font-mono"
+                                )}
+                              >
+                                {hours.open === "closed" ? "Closed" : `${hours.open} - ${hours.close}`}
+                              </td>
+
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                <div className={cn("h-px bg-[#1e1e2e]")} />
+
+                {/* Map */}
+                <div>
+                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
+                    Location
+                  </div>
+                  <div className={cn("rounded-md overflow-hidden border border-[#1e1e2e]")} style={{ height: 160 }}>
+                    <WLMap
+                      center={[selectedLocation.longitude, selectedLocation.latitude]}
+                      zoom={12}
+                    >
+                      <PinLayer
+                        pins={[{
+                          id: selectedLocation.id,
+                          lng: selectedLocation.longitude,
+                          lat: selectedLocation.latitude,
+                          status: selectedLocation.status === 'ACTIVE' ? 'assigned' : selectedLocation.status === 'MAINTENANCE' ? 'delayed' : 'open',
+                          label: selectedLocation.name,
+                        } satisfies Pin]}
+                      />
+                    </WLMap>
+                  </div>
+                  <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
+                    {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div
+                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-[#1e1e2e]")}
+                >
+                  <Button variant="primary" size="sm">
+                    Edit
+                  </Button>
+                  <Button variant="secondary" size="sm">
+                    {selectedLocation.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                  </Button>
+                  {!selectedLocation.isDefault && (
+                    <Button variant="ghost" size="sm">
+                      Set Default
+                    </Button>
                   )}
                 </Card>
               ))}
