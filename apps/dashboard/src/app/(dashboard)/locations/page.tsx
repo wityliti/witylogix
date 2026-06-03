@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
+import { WLMap } from "@/components/map/wl-map";
+import { PinLayer, type Pin } from "@/components/map/pin-layer";
 
 /* ═══════════════════════════════════════════════════════════
    LOCATIONS PAGE — Warehouse & store management with filtering
@@ -443,23 +445,29 @@ export default function LocationsPage() {
 
                 <div className={cn("h-px bg-[#1e1e2e]")} />
 
-                {/* Map Placeholder */}
+                {/* Map */}
                 <div>
                   <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
                     Location
                   </div>
-                  <div
-                    className={cn("bg-[#1a1a2e] border border-[#1e1e2e] rounded-md p-4 flex flex-col items-center justify-center text-center min-h-[140px]")}
-                  >
-                    <div className={cn("text-2xl mb-2 opacity-50")}>⊙</div>
-
-                    <div className={cn("text-xs text-gray-300 mb-1")}>
-                      Coordinates
-                    </div>
-                    <div className={cn("text-xs font-semibold font-mono text-white")}>
-                      {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
-                    </div>
-
+                  <div className={cn("rounded-md overflow-hidden border border-[#1e1e2e]")} style={{ height: 160 }}>
+                    <WLMap
+                      center={[selectedLocation.longitude, selectedLocation.latitude]}
+                      zoom={12}
+                    >
+                      <PinLayer
+                        pins={[{
+                          id: selectedLocation.id,
+                          lng: selectedLocation.longitude,
+                          lat: selectedLocation.latitude,
+                          status: selectedLocation.status === 'ACTIVE' ? 'assigned' : selectedLocation.status === 'MAINTENANCE' ? 'delayed' : 'open',
+                          label: selectedLocation.name,
+                        } satisfies Pin]}
+                      />
+                    </WLMap>
+                  </div>
+                  <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
+                    {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
                   </div>
                 </div>
 
