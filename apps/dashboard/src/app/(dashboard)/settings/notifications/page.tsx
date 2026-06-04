@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -62,7 +63,6 @@ const EVENT_CATEGORIES = [
 
 export default function NotificationsPage() {
   const { data: settings, loading, error, refetch } = useApiQuery<NotificationSettings>('/api/v4/settings/notifications');
-  const { execute: updateSettings } = useApiMutation('PATCH', '/api/v4/settings/notifications');
 
   const [preferences, setPreferences] = useState<NotificationPrefs>(settings?.preferences ?? {});
   const [quietHours, setQuietHours] = useState<QuietHours>(settings?.quietHours ?? { enabled: true, start: '22:00', end: '08:00' });
@@ -88,9 +88,12 @@ export default function NotificationsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    setHasChanges(false);
+    try {
+      await api.put('/api/v4/settings/notifications', { preferences, quietHours });
+      setHasChanges(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

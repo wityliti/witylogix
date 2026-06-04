@@ -172,6 +172,7 @@ export default function ProductSyncPage() {
 
   const {
     previewProduct,
+    runPreview,
   } = useProductPreview(effectivePlatformId, mappings);
 
   const unmappedRequired = useMemo(() => {
@@ -189,10 +190,16 @@ export default function ProductSyncPage() {
   };
 
   const handleTestSync = async () => {
+    if (!selectedPlatform) return;
     setTestSyncInProgress(true);
-    // Simulate test sync
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setTestSyncInProgress(false);
+    try {
+      const sampleProduct = Object.fromEntries(
+        selectedPlatform.fields.map((f) => [f.name, f.sampleValue ?? ''])
+      );
+      await runPreview(sampleProduct);
+    } finally {
+      setTestSyncInProgress(false);
+    }
   };
 
   const handleSaveTemplate = () => {

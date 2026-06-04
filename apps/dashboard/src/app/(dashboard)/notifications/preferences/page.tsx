@@ -23,6 +23,7 @@ import {
   type NotificationCategory,
   type DigestFrequency,
 } from "@/hooks/use-notifications";
+import { useApiMutation } from "@/hooks/use-api";
 
 /**
  * Notification Preferences Page
@@ -60,6 +61,11 @@ export default function NotificationPreferencesPage() {
     updatePreferences,
     toggleChannelCategory,
   } = useNotificationPreferences();
+
+  const { execute: sendTestNotification } = useApiMutation<{ sent: boolean }>(
+    'POST',
+    '/api/v4/notification-preferences/test'
+  );
 
   const [isSendingTest, setIsSendingTest] = useState<
     NotificationChannel | null
@@ -129,14 +135,14 @@ export default function NotificationPreferencesPage() {
     async (channel: NotificationChannel) => {
       setIsSendingTest(channel);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await sendTestNotification({ channel });
         setTestResult({
           channel,
           success: true,
           message: `Test notification sent via ${channel}`,
         });
         setTimeout(() => setTestResult(null), 3000);
-      } catch (err) {
+      } catch {
         setTestResult({
           channel,
           success: false,
@@ -146,7 +152,7 @@ export default function NotificationPreferencesPage() {
         setIsSendingTest(null);
       }
     },
-    []
+    [sendTestNotification]
   );
 
   if (isLoading) {

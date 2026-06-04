@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
@@ -17,7 +17,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import {
   Save,
@@ -25,19 +24,9 @@ import {
   Send,
   History,
   Copy,
-  RefreshCw,
-  Eye,
-  Code,
 } from 'lucide-react';
 
 type Channel = 'email' | 'sms' | 'whatsapp' | 'push';
-
-interface TemplateVersion {
-  id: string;
-  timestamp: Date;
-  author: string;
-  changes: string;
-}
 
 interface TemplateContent {
   email: {
@@ -71,6 +60,17 @@ interface TemplateContent {
   };
 }
 
+interface NotificationTemplate {
+  id: string;
+  name: string;
+  channel: string;
+  subject: string | null;
+  body: string;
+  isActive: boolean;
+  version: number;
+  variables: string[];
+}
+
 const VARIABLES = [
   { name: "customer_name", label: "Customer Name" },
   { name: "order_id", label: "Order ID" },
@@ -91,90 +91,82 @@ const SAMPLE_DATA = {
   delivery_address: "123 Main St, New York, NY 10001",
 };
 
-const INITIAL_TEMPLATE: TemplateContent = {
-  email: {
-    subject: "Your Delivery - {{order_id}}",
-    html: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
-  <h2>Delivery Update</h2>
-  <p>Hi {{customer_name}},</p>
-  <p>Your order {{order_id}} will be delivered on {{delivery_date}} between {{time_window}}.</p>
-  <p><a href="{{tracking_url}}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Track Your Order</a></p>
-  <p>Thank you!</p>
-</div>`,
-    text: "Hi {{customer_name}},\\n\\nYour order {{order_id}} will be delivered on {{delivery_date}} between {{time_window}}.\\n\\nTrack here: {{tracking_url}}\\n\\nThank you!",
-  },
-  sms: {
-    text: "Hi {{customer_name}}, your order {{order_id}} will arrive on {{delivery_date}} {{time_window}}. Track: {{tracking_url}}",
-  },
-  whatsapp: {
-    templateId: "delivery_update",
-    headerType: "text",
-    headerText: "{{order_id}}",
-    body: "Hi {{customer_name}},\\n\\nYour order is arriving on {{delivery_date}} between {{time_window}}.\\n\\nDriver: {{driver_name}}",
-    footer: "Thank you for your order!",
-    buttons: [
-      {
-        type: "url",
-        text: "Track Order",
-        value: "{{tracking_url}}",
-      },
-    ],
-  },
-  push: {
-    title: "Delivery Coming",
-    body: "Your order {{order_id}} arrives {{delivery_date}}",
-    actions: [
-      {
-        action: "track",
-        title: "Track",
-      },
-    ],
-  },
+const EMPTY_CONTENT: TemplateContent = {
+  email: { subject: '', html: '', text: '' },
+  sms: { text: '' },
+  whatsapp: { templateId: '', headerType: 'text', body: '', buttons: [] },
+  push: { title: '', body: '', actions: [] },
 };
-
-const VERSION_HISTORY: TemplateVersion[] = [
-  {
-    id: "v1",
-    timestamp: new Date("2026-03-10"),
-    author: "John Smith",
-    changes: "Updated email template",
-  },
-  {
-    id: "v2",
-    timestamp: new Date("2026-03-08"),
-    author: "Jane Doe",
-    changes: "Added WhatsApp template",
-  },
-  {
-    id: "v3",
-    timestamp: new Date("2026-03-01"),
-    author: "System",
-    changes: "Created template",
-  },
-];
 
 const renderPreview = (text: string) => {
   return text.replace(/\{\{(\w+)\}\}/g, (match, variable) => {
-    return (
-      SAMPLE_DATA[variable as keyof typeof SAMPLE_DATA] || match
-    );
+    return SAMPLE_DATA[variable as keyof typeof SAMPLE_DATA] || match;
   });
 };
 
 export default function TemplateEditorPage() {
   const router = useRouter();
-  const [content, setContent] = useState<TemplateContent>(INITIAL_TEMPLATE);
-  const [activeChannel, setActiveChannel] = useState<Channel>("email");
+  const params = useParams();
+  const id = params?.id as string;
+
+  const { data: template, loading, error, refetch } = useApiQuery<{ data: NotificationTemplate }>(
+    id ? `/api/v4/notification-templates/${id}` : null
+  );
+  const { execute: updateTemplate } = useApiMutation<{ data: NotificationTemplate }>(
+    'PATCH',
+    `/api/v4/notification-templates/${id}`
+  );
+
+  const [content, setContent] = useState<TemplateContent>(EMPTY_CONTENT);
+  const [activeChannel, setActiveChannel] = useState<Channel>('email');
   const [isSaving, setIsSaving] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showTestSend, setShowTestSend] = useState(false);
-  const [testRecipient, setTestRecipient] = useState("");
+  const [testRecipient, setTestRecipient] = useState('');
+
+  useEffect(() => {
+    if (!template?.data) return;
+    const t = template.data;
+    const channelKey = t.channel?.toLowerCase() as Channel;
+    setContent((prev) => {
+      if (channelKey === 'email') {
+        return { ...prev, email: { subject: t.subject ?? '', html: '', text: t.body } };
+      }
+      if (channelKey === 'sms') {
+        return { ...prev, sms: { text: t.body } };
+      }
+      if (channelKey === 'push') {
+        return { ...prev, push: { ...prev.push, body: t.body } };
+      }
+      return prev;
+    });
+    if (channelKey && ['email', 'sms', 'whatsapp', 'push'].includes(channelKey)) {
+      setActiveChannel(channelKey);
+    }
+  }, [template]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const buildPatchBody = (isActive: boolean) => {
+    const channel = template?.data?.channel?.toLowerCase();
+    if (channel === 'email') {
+      return { subject: content.email.subject, bodyTemplate: content.email.text, isActive };
+    }
+    if (channel === 'sms') {
+      return { bodyTemplate: content.sms.text, isActive };
+    }
+    if (channel === 'push') {
+      return { bodyTemplate: content.push.body, isActive };
+    }
+    return { bodyTemplate: content.whatsapp.body, isActive };
+  };
 
   const handleSaveDraft = async () => {
     setIsSaving(true);
     try {
-      // API call would go here
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateTemplate(buildPatchBody(false));
+      refetch();
     } finally {
       setIsSaving(false);
     }
@@ -183,9 +175,8 @@ export default function TemplateEditorPage() {
   const handlePublish = async () => {
     setIsSaving(true);
     try {
-      // API call would go here
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/settings/notifications/templates");
+      await updateTemplate(buildPatchBody(true));
+      router.push('/settings/notifications/templates');
     } finally {
       setIsSaving(false);
     }
@@ -193,29 +184,17 @@ export default function TemplateEditorPage() {
 
   const insertVariable = (variableName: string) => {
     const variable = `{{${variableName}}}`;
-    if (activeChannel === "email") {
+    if (activeChannel === 'email') {
       setContent((prev) => ({
         ...prev,
-        email: {
-          ...prev.email,
-          text: prev.email.text + variable,
-        },
+        email: { ...prev.email, text: prev.email.text + variable },
       }));
-    } else if (activeChannel === "sms") {
+    } else if (activeChannel === 'sms') {
+      setContent((prev) => ({ ...prev, sms: { text: prev.sms.text + variable } }));
+    } else if (activeChannel === 'push') {
       setContent((prev) => ({
         ...prev,
-        sms: {
-          ...prev.sms,
-          text: prev.sms.text + variable,
-        },
-      }));
-    } else if (activeChannel === "push") {
-      setContent((prev) => ({
-        ...prev,
-        push: {
-          ...prev.push,
-          body: prev.push.body + variable,
-        },
+        push: { ...prev.push, body: prev.push.body + variable },
       }));
     }
   };
@@ -223,8 +202,8 @@ export default function TemplateEditorPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       <Header
-        title="Edit Notification Template"
-        subtitle="Customize template content for different channels"
+        title={template?.data?.name ?? 'Edit Notification Template'}
+        subtitle={`v${template?.data?.version ?? 1} · Customize template content for different channels`}
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -259,10 +238,7 @@ export default function TemplateEditorPage() {
                         onChange={(e) =>
                           setContent((prev) => ({
                             ...prev,
-                            email: {
-                              ...prev.email,
-                              subject: e.target.value,
-                            },
+                            email: { ...prev.email, subject: e.target.value },
                           }))
                         }
                         placeholder="Email subject"
@@ -278,10 +254,7 @@ export default function TemplateEditorPage() {
                         onChange={(e) =>
                           setContent((prev) => ({
                             ...prev,
-                            email: {
-                              ...prev.email,
-                              html: e.target.value,
-                            },
+                            email: { ...prev.email, html: e.target.value },
                           }))
                         }
                         placeholder="HTML content"
@@ -298,10 +271,7 @@ export default function TemplateEditorPage() {
                         onChange={(e) =>
                           setContent((prev) => ({
                             ...prev,
-                            email: {
-                              ...prev.email,
-                              text: e.target.value,
-                            },
+                            email: { ...prev.email, text: e.target.value },
                           }))
                         }
                         placeholder="Plain text content"
@@ -322,10 +292,7 @@ export default function TemplateEditorPage() {
                         onChange={(e) =>
                           setContent((prev) => ({
                             ...prev,
-                            sms: {
-                              ...prev.sms,
-                              text: e.target.value,
-                            },
+                            sms: { text: e.target.value },
                           }))
                         }
                         placeholder="SMS message"
@@ -402,31 +369,25 @@ export default function TemplateEditorPage() {
                 <CardDescription>Live preview with sample data</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {activeChannel === "email" && (
+                {activeChannel === 'email' && (
                   <div className="space-y-2">
                     <div className="p-3 bg-[#1a1a2e] rounded-lg">
-                      <p className="text-xs text-gray-400 mb-1">
-                        Subject:
-                      </p>
+                      <p className="text-xs text-gray-400 mb-1">Subject:</p>
                       <p className="text-sm text-white break-words">
                         {renderPreview(content.email.subject)}
                       </p>
                     </div>
                     <div className="p-3 bg-[#1a1a2e] rounded-lg">
-                      <p className="text-xs text-gray-400 mb-1">
-                        Text Preview:
-                      </p>
+                      <p className="text-xs text-gray-400 mb-1">Text Preview:</p>
                       <p className="text-sm text-white whitespace-pre-wrap break-words">
                         {renderPreview(content.email.text)}
                       </p>
                     </div>
                   </div>
                 )}
-                {activeChannel === "sms" && (
+                {activeChannel === 'sms' && (
                   <div className="p-3 bg-[#1a1a2e] rounded-lg">
-                    <p className="text-xs text-gray-400 mb-2">
-                      SMS Preview:
-                    </p>
+                    <p className="text-xs text-gray-400 mb-2">SMS Preview:</p>
                     <div className="bg-white text-black p-3 rounded text-sm">
                       {renderPreview(content.sms.text)}
                     </div>
@@ -444,7 +405,7 @@ export default function TemplateEditorPage() {
                 disabled={isSaving}
               >
                 <Save className="w-4 h-4 mr-2" />
-                {isSaving ? "Saving..." : "Publish"}
+                {isSaving ? 'Saving...' : 'Publish'}
               </Button>
               <Button
                 variant="secondary"
@@ -474,26 +435,10 @@ export default function TemplateEditorPage() {
                   </button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {VERSION_HISTORY.map((version) => (
-                  <div
-                    key={version.id}
-                    className="p-4 border border-[#1e1e2e] rounded-lg flex items-start justify-between"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        {version.changes}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        by {version.author} on{" "}
-                        {version.timestamp.toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <RefreshCw className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+              <CardContent>
+                <p className="text-sm text-gray-400 text-center py-6">
+                  Version history is tracked on the server. Current version: {template?.data?.version ?? 1}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -517,19 +462,17 @@ export default function TemplateEditorPage() {
               <CardContent className="space-y-4">
                 <div>
                   <label className="text-sm font-semibold text-white block mb-2">
-                    {activeChannel === "email"
-                      ? "Email Address"
-                      : activeChannel === "sms"
-                      ? "Phone Number"
-                      : "Recipient"}
+                    {activeChannel === 'email'
+                      ? 'Email Address'
+                      : activeChannel === 'sms'
+                      ? 'Phone Number'
+                      : 'Recipient'}
                   </label>
                   <Input
                     value={testRecipient}
                     onChange={(e) => setTestRecipient(e.target.value)}
                     placeholder={
-                      activeChannel === "email"
-                        ? "test@example.com"
-                        : "+1234567890"
+                      activeChannel === 'email' ? 'test@example.com' : '+1234567890'
                     }
                   />
                 </div>
@@ -543,9 +486,7 @@ export default function TemplateEditorPage() {
                   </Button>
                   <Button
                     variant="primary"
-                    onClick={() => {
-                      setShowTestSend(false);
-                    }}
+                    onClick={() => setShowTestSend(false)}
                     className="flex-1"
                   >
                     Send Test
@@ -559,4 +500,3 @@ export default function TemplateEditorPage() {
     </div>
   );
 }
-
