@@ -399,7 +399,6 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-<<<<<<< HEAD
 ## Demand (5 Math.random() endpoints → Prisma) ✅ WIT-520
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
@@ -468,6 +467,20 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
+## Field Service (0 mock signals) ✅ WIT-524
+| Page | Route | Mock Before | Mock After | Map | Status |
+|------|-------|------------|-----------|-----|--------|
+| Field Service Overview | `/field-service` | 0 | 0 | — | ✅ |
+| Dispatch | `/field-service/dispatch` | `allTechs = []` hardcoded empty; emoji placeholder map; hex CSS | 0; technicians from `/api/v4/dispatch/drivers` | ✅ WLMap + DriverLayer + OrderLayer | ✅ WIT-524 |
+| Jobs | `/field-service/jobs` | Create form no-op; hex CSS | 0; Create WO → `POST /api/v4/orders` | — | ✅ WIT-524 |
+
+**WIT-524 changes**:
+- Dispatch: `allTechs = []` replaced with `useApiList('/api/v4/dispatch/drivers')`; emoji/grid placeholder replaced with real `WLMap` + `DriverLayer` (status-coloured: green=available, amber=busy, purple=break, grey=offline) + `OrderLayer` (pending=blue, assigned=amber, in-transit=green) + `useFitBounds`; List/Map view toggle; WL design tokens throughout
+- Jobs: Create Work Order modal wired to `POST /api/v4/orders` with `type: 'field-service'`; form validation; error state; `refetch()` after success; WL design tokens; empty state for filtered list
+- New component: `field-service/dispatch/components/field-service-dispatch-map.tsx` (dynamic import, SSR disabled)
+
+---
+
 ## Misc / No-API-Key Gated
 | Section | Pages | Status |
 |---------|-------|--------|
@@ -479,7 +492,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | POS | `/pos` | ✅ |
 | Locations | `/locations` | ✅ WIT-519 (map view added) |
 | Zones | `/zones` | ✅ (WIT-512: feature-flag removed, map always shown) |
-| Profile | `/profile` | 3 fake sessions | 0 | ✅ WIT-523 |
+| Profile | `/profile` | ✅ WIT-523 (fake sessions removed) |
 | Stores | `/stores` | ✅ |
 | Partners | `/partners` | ✅ |
 
@@ -500,13 +513,12 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-514 | `feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production` | Healthcare Records, SC Inventory, SC Orders, E-Signatures, Products Sync, Field Service, Collections | 9 pages | `GET /api/v4/supply-chain/waves`, `/batches` (new); `GET /api/v4/envelopes`, `/envelopes/:id`, `/signing-templates`, `/esig/analytics` (new) | 17→0 | open |
 | WIT-517 | `feat/WIT-517-dashboard-realtime-mock-cleanup` | Realtime components (live-kpi-counters, live-order-feed, notification-center, active-delivery-map), notification-stats-widget, activity polling, ELD HOS recap, webhooks hourly chart, webhook test page, shipping labels pricing, dispatch-map WLMap | 13 files | `POST /api/v4/outbound-webhooks/test` (new); `GET /api/v4/notifications` + `/stats` (rewritten from stub) | 13 files, 13 mock signals | #257 |
 | WIT-518 | `feat/WIT-518-dashboard-billing-drivers-map` | Billing (4 hardcoded fallbacks→real API; { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap+DriverLayer) | `GET /api/v4/billing/`, `GET /api/v4/billing/plans` ({ data } fix); `GET /api/v4/dispatch/drivers` | 4 + API | #260 |
-| WIT-519 | `feat/WIT-519-supply-chain-kpis-locations-map` | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline pct→live hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | — | 5 mock signals | #262 |
-<<<<<<< HEAD
-| WIT-520 | `feat/WIT-520-dashboard-demand-production` | Demand section (5 API endpoints Math.random→Prisma); Demand page Charts/Map toggle + DemandZoneLayer; Tracking Config API load/save; capacity URL fix | demand API x5 | 5 API Math.random() + 2 page issues | open |
-=======
-| WIT-520 | `feat/WIT-520-dashboard-demand-production` | Demand 5 endpoints (Math.random→Prisma); Demand overview map (WLMap+DemandZoneLayer); Capacity URL fix; Tracking-config full API wiring | 5 API rewrites | #266 |
-| WIT-521 | `feat/WIT-521-dashboard-freight-ux-design-tokens` | Freight 4 pages: hex CSS→WL tokens; totalSavings hardcode removed; real Shipment fields; freight overview map view | 94 CSS fixed | open |
->>>>>>> d40ce93 (feat(WIT-521): freight pages design token consistency + map view + tracker update)
+| WIT-519 | `feat/WIT-519-supply-chain-kpis-locations-map` | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline pct→live hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | — | 5 mock signals | merged |
+| WIT-520 | `feat/WIT-520-dashboard-demand-production` | Demand 5 endpoints (Math.random→Prisma); Demand overview map (WLMap+DemandZoneLayer); Capacity URL fix; Tracking-config full API wiring | 5 API rewrites | merged |
+| WIT-521 | `feat/WIT-521-dashboard-freight-ux-design-tokens` | Freight 4 pages: hex CSS→WL tokens; totalSavings hardcode removed; real Shipment fields; freight overview map view | 94 CSS fixed | merged |
+| WIT-522 | `feat/WIT-522-dashboard-tracking-timeslots` | Tracking overview + live (List/Map toggle); Time Slots real API + Create modal | `GET /api/v4/time-slots` existing | 7 slot mocks | merged |
+| WIT-523 | `feat/WIT-523-next-sprint` | Notification templates real API; profile fake sessions removed | — | 8→0 | merged #271 |
+| WIT-524 | `feat/WIT-524-dashboard-field-service-dispatch-map` | Field Service Dispatch map (technicians + jobs); Jobs create form real API; WL design tokens | `GET /api/v4/dispatch/drivers`, `GET /api/v4/dispatch/orders`, `POST /api/v4/orders` | 3 signals → 0 | open |
 
 ---
 
