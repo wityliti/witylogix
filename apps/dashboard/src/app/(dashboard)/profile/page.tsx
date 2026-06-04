@@ -15,22 +15,11 @@ import {
   LogOut,
   Clock,
   Globe,
-  Lock,
   Smartphone,
   AlertTriangle,
   Eye,
   EyeOff,
 } from "lucide-react";
-
-interface Session {
-  id: string;
-  browser: string;
-  platform: string;
-  ip: string;
-  location: string;
-  lastActive: string;
-  current: boolean;
-}
 
 interface User {
   id: string;
@@ -71,36 +60,6 @@ export default function ProfilePage() {
     confirm: "",
   });
 
-  const [sessions, setSessions] = useState<Session[]>([
-    {
-      id: "1",
-      browser: "Chrome",
-      platform: "Mac OS",
-      ip: "192.168.1.100",
-      location: "San Francisco, CA",
-      lastActive: "Just now",
-      current: true,
-    },
-    {
-      id: "2",
-      browser: "Safari",
-      platform: "iOS",
-      ip: "192.168.1.101",
-      location: "San Francisco, CA",
-      lastActive: "2 hours ago",
-      current: false,
-    },
-    {
-      id: "3",
-      browser: "Firefox",
-      platform: "Ubuntu",
-      ip: "192.168.1.102",
-      location: "San Francisco, CA",
-      lastActive: "3 days ago",
-      current: false,
-    },
-  ]);
-
   const handleEditChange = (field: string, value: string) => {
     setEditForm((prev) => ({
       ...prev,
@@ -118,17 +77,13 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleLogoutSession = (id: string) => {
-    setSessions(sessions.filter((s) => s.id !== id));
-  };
-
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
+    <div className="bg-wl-bg-primary min-h-screen">
       <Header title="Profile Settings" subtitle="Manage your account and security settings" />
 
       <main className="flex-1 p-6 max-w-4xl mx-auto">
         {/* Personal Information */}
-        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-between">
               Personal Information
@@ -145,7 +100,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   First Name
                 </label>
                 {isEditing ? (
@@ -153,7 +108,7 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.firstName}
                     onChange={(e) => handleEditChange("firstName", e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.firstName}</p>
@@ -161,7 +116,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Last Name
                 </label>
                 {isEditing ? (
@@ -169,7 +124,7 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.lastName}
                     onChange={(e) => handleEditChange("lastName", e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.lastName}</p>
@@ -177,7 +132,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Email
                 </label>
                 {isEditing ? (
@@ -185,7 +140,7 @@ export default function ProfilePage() {
                     type="email"
                     value={editForm.email}
                     onChange={(e) => handleEditChange("email", e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.email}</p>
@@ -193,7 +148,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Phone
                 </label>
                 {isEditing ? (
@@ -201,7 +156,7 @@ export default function ProfilePage() {
                     type="tel"
                     value={editForm.phone}
                     onChange={(e) => handleEditChange("phone", e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.phone}</p>
@@ -209,14 +164,14 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Timezone
                 </label>
                 {isEditing ? (
                   <select
                     value={editForm.timezone}
                     onChange={(e) => handleEditChange("timezone", e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                   >
                     <option>America/New_York</option>
                     <option>America/Chicago</option>
@@ -229,7 +184,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Role
                 </label>
                 <p className="text-white">{profile.role}</p>
@@ -237,7 +192,7 @@ export default function ProfilePage() {
             </div>
 
             {isEditing && (
-              <div className="flex gap-3 pt-4 border-t border-[#1e1e2e]">
+              <div className="flex gap-3 pt-4 border-t border-wl-border-default">
                 <button
                   onClick={handleSaveProfile}
                   className="px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-blue-600 transition-colors"
@@ -246,7 +201,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-[#1e1e2e] text-gray-300 rounded text-sm font-medium cursor-pointer hover:bg-[#2e2e3e] transition-colors"
+                  className="px-4 py-2 bg-[#1e1e2e] text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
                 >
                   Cancel
                 </button>
@@ -256,7 +211,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Security Settings */}
-        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Shield size={20} />
@@ -271,7 +226,7 @@ export default function ProfilePage() {
               </h4>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                     Current Password
                   </label>
                   <div className="relative">
@@ -281,11 +236,11 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, current: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-300 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -293,7 +248,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                     New Password
                   </label>
                   <div className="relative">
@@ -303,11 +258,11 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, new: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-300 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
                       {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -315,7 +270,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                     Confirm Password
                   </label>
                   <div className="relative">
@@ -325,11 +280,11 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, confirm: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-300 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
                       {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -341,13 +296,13 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <div className="border-t border-[#1e1e2e] pt-6">
+            <div className="border-t border-wl-border-default pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-base font-semibold text-white mb-1">
                     Two-Factor Authentication
                   </h4>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-wl-text-muted text-sm">
                     {twoFAEnabled
                       ? "Your account is protected with 2FA"
                       : "Add an extra layer of security to your account"}
@@ -366,7 +321,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Active Sessions */}
-        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Globe size={20} />
@@ -374,52 +329,23 @@ export default function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {sessions.map((session, index) => (
-                <div
-                  key={session.id}
-                  className={cn(
-                    "flex items-center justify-between p-4 bg-[#1a1a2e] rounded border border-[#1e1e2e]",
-                    index !== sessions.length - 1 && "mb-2"
-                  )}
-                >
-                  <div className="flex items-center gap-4 flex-1">
-                    <Smartphone size={20} className="text-blue-400 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium text-white">
-                          {session.browser} on {session.platform}
-                        </p>
-                        {session.current && (
-                          <Badge variant="success" className="text-xs">
-                            Current
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-400">
-                        {session.location} • {session.ip}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Last active: {session.lastActive}
-                      </p>
-                    </div>
+            <div className="flex items-center justify-between p-4 bg-wl-bg-overlay rounded border border-wl-border-default">
+              <div className="flex items-center gap-4">
+                <Smartphone size={20} className="text-blue-400 flex-shrink-0" />
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-medium text-white">Current session</p>
+                    <Badge variant="success" className="text-xs">Active</Badge>
                   </div>
-                  {!session.current && (
-                    <button
-                      onClick={() => handleLogoutSession(session.id)}
-                      className="text-red-500 text-xs font-medium hover:text-red-400 cursor-pointer transition-colors"
-                    >
-                      Log Out
-                    </button>
-                  )}
+                  <p className="text-xs text-wl-text-muted">Signed in as {profile.email || '—'}</p>
                 </div>
-              ))}
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Delete Account */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <AlertTriangle size={20} className="text-red-500" />
@@ -427,7 +353,7 @@ export default function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-wl-text-muted text-sm mb-4">
               Once you delete your account, there is no going back. Please be certain.
             </p>
             {!showDeleteConfirm && (
@@ -439,14 +365,14 @@ export default function ProfilePage() {
               </button>
             )}
             {showDeleteConfirm && (
-              <div className="p-4 bg-[#1a1a2e] rounded border border-red-500/30">
+              <div className="p-4 bg-wl-bg-overlay rounded border border-red-500/30">
                 <p className="text-white text-sm mb-4">
                   Are you absolutely sure? This action cannot be undone.
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 bg-[#1e1e2e] text-gray-300 rounded text-sm font-medium cursor-pointer hover:bg-[#2e2e3e] transition-colors"
+                    className="px-4 py-2 bg-[#1e1e2e] text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
                   >
                     Cancel
                   </button>
