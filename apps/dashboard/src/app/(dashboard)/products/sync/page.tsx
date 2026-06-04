@@ -172,6 +172,8 @@ export default function ProductSyncPage() {
 
   const {
     previewProduct,
+    runPreview,
+    isLoading: previewLoading,
   } = useProductPreview(effectivePlatformId, mappings);
 
   const unmappedRequired = useMemo(() => {
@@ -189,9 +191,12 @@ export default function ProductSyncPage() {
   };
 
   const handleTestSync = async () => {
+    if (!selectedPlatform) return;
     setTestSyncInProgress(true);
-    // Simulate test sync
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const sampleProduct = Object.fromEntries(
+      selectedPlatform.fields.map((f) => [f.name, f.sampleValue ?? ""]),
+    );
+    await runPreview(sampleProduct);
     setTestSyncInProgress(false);
   };
 
@@ -457,7 +462,7 @@ export default function ProductSyncPage() {
                     variant="secondary"
                     size="sm"
                     onClick={handleTestSync}
-                    disabled={testSyncInProgress || unmappedRequired.length > 0}
+                    disabled={testSyncInProgress || previewLoading || unmappedRequired.length > 0}
                     className="gap-2"
                   >
                     <RefreshCw
