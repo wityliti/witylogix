@@ -31,6 +31,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-517 | feat/WIT-517-dashboard-realtime-mock-cleanup | Realtime components (4), Notification stats widget, Activity polling, ELD HOS recap, Webhooks hourly chart, Webhook test page, Shipping labels pricing, Dispatch map (WLMap); API: notifications-v2 rewrite, outbound-webhooks/test endpoint | 13 files | 2026-06-02 |
 | WIT-518 | feat/WIT-518-dashboard-billing-drivers-map | Billing (4 hardcoded fallbacks→real API; billing API { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap + DriverLayer status-coloured markers + useFitBounds) | 4 + API | 2026-06-03 |
 | WIT-519 | feat/WIT-519-supply-chain-kpis-locations-map | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline percentages→real hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | 5 | 2026-06-03 |
+| WIT-520 | feat/WIT-520-marketplace-provider-real-api | Marketplace provider detail (PROVIDERS hardcoded object→GET /api/v4/integrations/marketplace/:slug; credentials form from credentialFields; install via POST /:slug/install); CRM: remove dead CRM_PROVIDER_LIST | 5 | 2026-06-03 |
 
 ---
 
@@ -242,7 +243,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Overview | `/integrations/overview` | 0 | 0 | ✅ |
 | Catalog | `/integrations/catalog` | 0 | 0 | ✅ |
 | Marketplace | `/integrations/marketplace` | 0 | 0 | ✅ |
-| Marketplace Provider | `/integrations/marketplace/[providerId]` | 0 | 0 | ✅ |
+| Marketplace Provider | `/integrations/marketplace/[providerId]` | 5 | 0 + real API | ✅ WIT-520 |
 | Connected | `/integrations/connected` | 0 | 0 | ✅ |
 | Connected Provider | `/integrations/connected/[providerId]` | 8 | 0 | ✅ |
 | Routing | `/integrations/routing` | 2 | 0 | ✅ |

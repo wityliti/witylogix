@@ -44,14 +44,6 @@ interface FieldMapping {
   customMapping?: boolean;
 }
 
-const CRM_PROVIDER_LIST = [
-  { id: 'salesforce', name: 'Salesforce', logo: 'SF' },
-  { id: 'hubspot', name: 'HubSpot', logo: 'HS' },
-  { id: 'zoho', name: 'Zoho CRM', logo: 'ZC' },
-  { id: 'ms-dynamics', name: 'MS Dynamics CRM', logo: 'MD' },
-  { id: 'pipedrive', name: 'Pipedrive', logo: 'PD' },
-];
-
 const DEAL_PIPELINE_STAGES = [
   { name: 'Lead', count: 342, value: 0 },
   { name: 'Qualified', count: 156, value: 78000 },
