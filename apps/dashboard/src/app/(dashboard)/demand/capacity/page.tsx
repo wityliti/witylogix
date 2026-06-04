@@ -57,7 +57,7 @@ export default function CapacityPage() {
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
 
   const { data, loading, error } = useApiQuery<CapacityData>(
-    '/api/v4/analytics?type=capacity'
+    '/api/v4/analytics/demand-capacity'
   );
 
   const slots = data?.slots || [];
