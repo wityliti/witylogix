@@ -31,8 +31,9 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-517 | feat/WIT-517-dashboard-realtime-mock-cleanup | Realtime components (4), Notification stats widget, Activity polling, ELD HOS recap, Webhooks hourly chart, Webhook test page, Shipping labels pricing, Dispatch map (WLMap); API: notifications-v2 rewrite, outbound-webhooks/test endpoint | 13 files | 2026-06-02 |
 | WIT-518 | feat/WIT-518-dashboard-billing-drivers-map | Billing (4 hardcoded fallbacks→real API; billing API { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap + DriverLayer status-coloured markers + useFitBounds) | 4 + API | 2026-06-03 |
 | WIT-519 | feat/WIT-519-supply-chain-kpis-locations-map | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline percentages→real hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | 5 | 2026-06-03 |
-| WIT-520 | feat/WIT-520-marketplace-provider-real-api | Marketplace provider detail (PROVIDERS hardcoded object→GET /api/v4/integrations/marketplace/:slug; credentials form from credentialFields; install via POST /:slug/install); CRM: remove dead CRM_PROVIDER_LIST | 5 | 2026-06-03 |
+| WIT-520a | feat/WIT-520-marketplace-provider-real-api | Marketplace provider detail (PROVIDERS hardcoded object→GET /api/v4/integrations/marketplace/:slug; credentials form from credentialFields; install via POST /:slug/install); CRM: remove dead CRM_PROVIDER_LIST | 5 | 2026-06-03 |
 | WIT-400 | feat/WIT-400-dashboard-orders-payments-returns | Delivery (List↔Map toggle on delivery/page + delivery/standard; WLMap + ShipmentMarkerLayer + useFitBounds; stat cards; detail panel; proper Shipment type with addressLine1/city/deliveryLocation); use-shipment-tracking hook (removed hardcoded John Doe / FedEx / random mock fallback → real /api/v4/shipments calls) | 2 pages + 1 component + 1 hook | 2026-06-03 |
+| WIT-520b | feat/WIT-520-dashboard-demand-production | Demand section (5 API endpoints: Math.random→Prisma real data); Demand page map view (Charts/Map toggle + WLMap + DemandZoneLayer); Tracking Config (local state→API load/save); capacity page URL fix | 5 API + 2 pages | 2026-06-04 |
 
 ---
 
@@ -395,6 +396,35 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
+## Demand (5 Math.random() endpoints → Prisma) ✅ WIT-520
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Demand Overview | `/demand` | 0 page signals; 5 Math.random() in API | 0 + Map view (Charts/Map toggle + WLMap + DemandZoneLayer) | ✅ WIT-520 |
+| Capacity | `/demand/capacity` | 0 page signals (wrong URL: `?type=capacity`) | 0 + correct URL: `/demand-capacity` | ✅ WIT-520 |
+| Anomalies | `/demand/anomalies` | 0 page signals; Math.random() in API | 0 | ✅ WIT-520 |
+| Models | `/demand/models` | 0 page signals; Math.random() in API | 0 | ✅ WIT-520 |
+| Scheduler | `/demand/scheduler` | 0 page signals; Math.random() in API | 0 | ✅ WIT-520 |
+
+**WIT-520 API changes**:
+- `GET /api/v4/analytics/demand`: Removed all `Math.random()`. Zone demand now computed from real order counts joined through `timeSlot → deliveryZoneId`. Actual = current 7-day count; predicted = prior-week trend projection; confidence = delivery completion rate; trend = week-over-week comparison; anomalies = zones with >25% deviation
+- `GET /api/v4/analytics/demand-models`: Removed `Math.random()`. MAE/RMSE/MAPE derived deterministically from real delivery rate. Model weights and trends based on actual data patterns
+- `GET /api/v4/analytics/demand-anomalies`: Removed `Math.random()`. Real deviation analysis comparing current vs prior week per zone; zones with <25% deviation are excluded
+- `GET /api/v4/analytics/demand-scheduler`: Removed `Math.random()`. Schedule based on actual driver status + route history. Recommendations from time slot capacity analysis
+- `GET /api/v4/analytics/demand-capacity`: Removed `Math.random()`. Capacity from real driver counts + time slot `maxCapacity` fields. Utilization = real active drivers / recommended; status = understaffed/optimal/overstaffed based on actual ratios
+
+**New map layer**: `components/map/demand-zone-layer.tsx` — zone polygons colored by demand intensity (blue→green→amber→orange→red) using zones GeoJSON + demand API data
+
+---
+
+## Tracking Config (0 → real API) ✅ WIT-520
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Tracking Config | `/tracking-config` | Pure local state (no API load/save) | Loads from `GET /api/v4/shops/me` settings.trackingConfig; saves via `PATCH /api/v4/shops/me` | ✅ WIT-520 |
+
+**WIT-520 changes**: Added `useApiQuery` for initial load; `useApiMutation` for save; `useEffect` to hydrate state from `shop.settings.trackingConfig`; loading/saving/error states; dirty tracking; save/discard buttons; proper toggle switch animation
+
+---
+
 ## Misc / No-API-Key Gated
 | Section | Pages | Status |
 |---------|-------|--------|
@@ -428,6 +458,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-517 | `feat/WIT-517-dashboard-realtime-mock-cleanup` | Realtime components (live-kpi-counters, live-order-feed, notification-center, active-delivery-map), notification-stats-widget, activity polling, ELD HOS recap, webhooks hourly chart, webhook test page, shipping labels pricing, dispatch-map WLMap | 13 files | `POST /api/v4/outbound-webhooks/test` (new); `GET /api/v4/notifications` + `/stats` (rewritten from stub) | 13 files, 13 mock signals | #257 |
 | WIT-518 | `feat/WIT-518-dashboard-billing-drivers-map` | Billing (4 hardcoded fallbacks→real API; { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap+DriverLayer) | `GET /api/v4/billing/`, `GET /api/v4/billing/plans` ({ data } fix); `GET /api/v4/dispatch/drivers` | 4 + API | #260 |
 | WIT-519 | `feat/WIT-519-supply-chain-kpis-locations-map` | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline pct→live hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | — | 5 mock signals | #262 |
+| WIT-520 | `feat/WIT-520-dashboard-demand-production` | Demand section (5 API endpoints Math.random→Prisma); Demand page Charts/Map toggle + DemandZoneLayer; Tracking Config API load/save; capacity URL fix | demand API x5 | 5 API Math.random() + 2 page issues | open |
 
 ---
 
