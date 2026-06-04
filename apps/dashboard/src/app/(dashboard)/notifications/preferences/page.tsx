@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { cn } from "@/lib/utils";
 import { ChevronRight, Send } from "lucide-react";
 import Link from "next/link";
@@ -23,6 +24,7 @@ import {
   type NotificationCategory,
   type DigestFrequency,
 } from "@/hooks/use-notifications";
+import { useApiMutation } from "@/hooks/use-api";
 
 /**
  * Notification Preferences Page
@@ -60,6 +62,11 @@ export default function NotificationPreferencesPage() {
     updatePreferences,
     toggleChannelCategory,
   } = useNotificationPreferences();
+
+  const { execute: sendTest } = useApiMutation<{ success: boolean; message: string }>(
+    "POST",
+    "/api/v4/notification-preferences/test",
+  );
 
   const [isSendingTest, setIsSendingTest] = useState<
     NotificationChannel | null
@@ -129,14 +136,14 @@ export default function NotificationPreferencesPage() {
     async (channel: NotificationChannel) => {
       setIsSendingTest(channel);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const res = await sendTest({ channel });
         setTestResult({
           channel,
-          success: true,
-          message: `Test notification sent via ${channel}`,
+          success: res?.success ?? true,
+          message: res?.message ?? `Test notification sent via ${channel}`,
         });
         setTimeout(() => setTestResult(null), 3000);
-      } catch (err) {
+      } catch {
         setTestResult({
           channel,
           success: false,
@@ -146,26 +153,22 @@ export default function NotificationPreferencesPage() {
         setIsSendingTest(null);
       }
     },
-    []
+    [sendTest]
   );
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
-        <Header title="Notification Preferences" subtitle="Coming soon..." />
+      <div className="min-h-screen bg-wl-bg-primary">
+        <Header title="Notification Preferences" subtitle="Loading preferences…" />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <p className="text-gray-300">
-              Loading preferences...
-            </p>
-          </div>
+          <LoadingSkeleton />
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-primary">
       <Header
         title="Notification Preferences"
         subtitle="Configure how and when you receive notifications"
@@ -182,7 +185,7 @@ export default function NotificationPreferencesPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Channel × Category Matrix */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle>Notification Channels</CardTitle>
               <CardDescription>
@@ -194,19 +197,19 @@ export default function NotificationPreferencesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#1e1e2e]">
+                    <tr className="border-b border-wl-border-default">
                       <th className="text-left py-3 px-4 font-semibold text-white">
                         Channel
                       </th>
                       {categories.map((cat) => (
                         <th
                           key={cat}
-                          className="text-center py-3 px-4 font-semibold text-gray-400 text-xs uppercase tracking-wide"
+                          className="text-center py-3 px-4 font-semibold text-wl-text-muted text-xs uppercase tracking-wide"
                         >
                           {cat}
                         </th>
                       ))}
-                      <th className="text-center py-3 px-4 font-semibold text-gray-400 text-xs">
+                      <th className="text-center py-3 px-4 font-semibold text-wl-text-muted text-xs">
                         Test
                       </th>
                     </tr>
@@ -224,7 +227,7 @@ export default function NotificationPreferencesPage() {
                       return (
                         <tr
                           key={channel}
-                          className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                          className="border-b border-wl-border-default hover:bg-wl-bg-overlay transition-colors"
                         >
                           <td className="py-4 px-4 font-medium text-white">
                             {channel}
@@ -303,7 +306,7 @@ export default function NotificationPreferencesPage() {
           </Card>
 
           {/* Quiet Hours */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle>Quiet Hours</CardTitle>
               <CardDescription>
@@ -316,7 +319,7 @@ export default function NotificationPreferencesPage() {
                   <h4 className="font-medium text-white">
                     Enable Quiet Hours
                   </h4>
-                  <p className="text-sm text-gray-300">
+                  <p className="text-sm text-wl-text-secondary">
                     Stop receiving notifications during your preferred hours
                   </p>
                 </div>
@@ -332,7 +335,7 @@ export default function NotificationPreferencesPage() {
               </div>
 
               {quietHours.enabled && (
-                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
+                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-wl-border-default">
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-white mb-2">
@@ -347,7 +350,7 @@ export default function NotificationPreferencesPage() {
                             startTime: e.target.value,
                           }))
                         }
-                        className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                        className="bg-wl-bg-overlay border-wl-border-default text-white"
                       />
                     </div>
 
@@ -364,7 +367,7 @@ export default function NotificationPreferencesPage() {
                             endTime: e.target.value,
                           }))
                         }
-                        className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                        className="bg-wl-bg-overlay border-wl-border-default text-white"
                       />
                     </div>
 
@@ -382,7 +385,7 @@ export default function NotificationPreferencesPage() {
                         }
                         className={cn(
                           "w-full px-4 py-2 rounded-md",
-                          "bg-[#1a1a2e] border border-[#1e1e2e]",
+                          "bg-wl-bg-overlay border border-wl-border-default",
                           "text-white",
                           "focus:outline-none focus:border-blue-500",
                           "transition-colors duration-fast"
@@ -402,7 +405,7 @@ export default function NotificationPreferencesPage() {
           </Card>
 
           {/* Digest Settings */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle>Digest Settings</CardTitle>
               <CardDescription>
@@ -415,7 +418,7 @@ export default function NotificationPreferencesPage() {
                   <h4 className="font-medium text-white">
                     Enable Digest
                   </h4>
-                  <p className="text-sm text-gray-300">
+                  <p className="text-sm text-wl-text-secondary">
                     Receive notifications in a consolidated email or report
                   </p>
                 </div>
@@ -431,7 +434,7 @@ export default function NotificationPreferencesPage() {
               </div>
 
               {digestSettings.enabled && (
-                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
+                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-wl-border-default">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-white mb-2">
@@ -447,7 +450,7 @@ export default function NotificationPreferencesPage() {
                         }
                         className={cn(
                           "w-full px-4 py-2 rounded-md",
-                          "bg-[#1a1a2e] border border-[#1e1e2e]",
+                          "bg-wl-bg-overlay border border-wl-border-default",
                           "text-white",
                           "focus:outline-none focus:border-blue-500",
                           "transition-colors duration-fast"
@@ -475,7 +478,7 @@ export default function NotificationPreferencesPage() {
                               time: e.target.value,
                             }))
                           }
-                          className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                          className="bg-wl-bg-overlay border-wl-border-default text-white"
                         />
                       </div>
                     )}
