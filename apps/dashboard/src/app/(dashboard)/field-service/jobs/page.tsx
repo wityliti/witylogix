@@ -4,10 +4,12 @@ import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { ClipboardList, Plus, Search, X } from 'lucide-react';
 
 type WorkOrderStatus = 'created' | 'scheduled' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
@@ -31,7 +33,9 @@ interface WorkOrder {
   notes: string[];
 }
 
-const statusVariant = (status: WorkOrderStatus): 'success' | 'warning' | 'info' | 'primary' | 'default' => {
+const statusVariant = (
+  status: WorkOrderStatus
+): 'success' | 'warning' | 'info' | 'primary' | 'default' => {
   const map: Record<WorkOrderStatus, 'success' | 'warning' | 'info' | 'primary' | 'default'> = {
     created: 'default',
     scheduled: 'info',
@@ -43,14 +47,39 @@ const statusVariant = (status: WorkOrderStatus): 'success' | 'warning' | 'info' 
   return map[status];
 };
 
-const priorityVariant = (priority: WorkOrderPriority): 'danger' | 'warning' | 'info' | 'primary' | 'default' | 'success' => {
-  const map: Record<WorkOrderPriority, 'danger' | 'warning' | 'info' | 'primary' | 'default' | 'success'> = {
+const priorityVariant = (
+  priority: WorkOrderPriority
+): 'danger' | 'warning' | 'info' | 'primary' | 'default' | 'success' => {
+  const map: Record<
+    WorkOrderPriority,
+    'danger' | 'warning' | 'info' | 'primary' | 'default' | 'success'
+  > = {
     low: 'default',
     medium: 'info',
     high: 'warning',
     urgent: 'danger',
   };
   return map[priority];
+};
+
+interface CreateWorkOrderForm {
+  customerName: string;
+  customerPhone: string;
+  serviceType: WorkOrderType;
+  priority: WorkOrderPriority;
+  preferredDate: string;
+  description: string;
+  location: string;
+}
+
+const DEFAULT_FORM: CreateWorkOrderForm = {
+  customerName: '',
+  customerPhone: '',
+  serviceType: 'installation',
+  priority: 'medium',
+  preferredDate: '',
+  description: '',
+  location: '',
 };
 
 export default function JobsPage() {
@@ -60,53 +89,91 @@ export default function JobsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [form, setForm] = useState<CreateWorkOrderForm>(DEFAULT_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const { items: allOrders, loading, error, refetch } = useApiList<WorkOrder>('/api/v4/orders?type=field-service&view=jobs');
+  const { items: allOrders, loading, error, refetch } = useApiList<WorkOrder>(
+    '/api/v4/orders?type=field-service&view=jobs'
+  );
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const filteredOrders = useMemo(() => {
     let result = [...allOrders];
-
-    if (statusFilter !== 'all') {
-      result = result.filter((o) => o.status === statusFilter);
-    }
-
-    if (priorityFilter !== 'all') {
-      result = result.filter((o) => o.priority === priorityFilter);
-    }
-
-    if (typeFilter !== 'all') {
-      result = result.filter((o) => o.serviceType === typeFilter);
-    }
-
+    if (statusFilter !== 'all') result = result.filter((o) => o.status === statusFilter);
+    if (priorityFilter !== 'all') result = result.filter((o) => o.priority === priorityFilter);
+    if (typeFilter !== 'all') result = result.filter((o) => o.serviceType === typeFilter);
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter((o) =>
-        o.jobNumber.toLowerCase().includes(term) ||
-        o.customerName.toLowerCase().includes(term) ||
-        o.description.toLowerCase().includes(term)
+      result = result.filter(
+        (o) =>
+          o.jobNumber.toLowerCase().includes(term) ||
+          o.customerName.toLowerCase().includes(term) ||
+          o.description.toLowerCase().includes(term)
       );
     }
-
     return result;
   }, [allOrders, statusFilter, priorityFilter, typeFilter, searchTerm]);
 
   const selectedJobData = selectedJob ? allOrders.find((o) => o.id === selectedJob) : null;
 
+  async function handleCreateOrder(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.customerName.trim() || !form.description.trim() || !form.location.trim()) {
+      setSubmitError('Customer name, description, and location are required.');
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await api.post('/api/v4/orders', {
+        customerName: form.customerName,
+        customerPhone: form.customerPhone || undefined,
+        serviceType: form.serviceType,
+        priority: form.priority.toUpperCase(),
+        deliveryDate: form.preferredDate || undefined,
+        notes: form.description,
+        addressLine1: form.location,
+        type: 'field-service',
+      });
+      setForm(DEFAULT_FORM);
+      setShowCreateForm(false);
+      await refetch();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to create work order');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function updateForm(field: keyof CreateWorkOrderForm, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
+    <div className="min-h-screen bg-surface-primary p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Work Order Management</h1>
-            <p className="text-gray-400">
-              {filteredOrders.length} orders · {allOrders.filter((o) => o.status === "completed").length} completed today
+            <h1 className="text-3xl font-bold text-content-primary mb-2">Work Order Management</h1>
+            <p className="text-content-secondary">
+              {filteredOrders.length} orders ·{' '}
+              {allOrders.filter((o) => o.status === 'completed').length} completed today
             </p>
           </div>
-          <Button variant="primary" size="md" onClick={() => setShowCreateForm(true)} className="flex items-center gap-2">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              setForm(DEFAULT_FORM);
+              setSubmitError(null);
+              setShowCreateForm(true);
+            }}
+            className="flex items-center gap-2"
+          >
             <Plus size={16} /> Create Work Order
           </Button>
         </div>
@@ -114,48 +181,45 @@ export default function JobsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Total Orders</span>
-              <ClipboardList className="text-blue-500" size={20} />
+              <span className="text-content-secondary text-sm font-medium">Total Orders</span>
+              <ClipboardList className="text-brand-primary" size={20} />
             </div>
-            <p className="text-3xl font-bold text-white">{allOrders.length}</p>
+            <p className="text-3xl font-bold text-content-primary">{allOrders.length}</p>
           </div>
         </Card>
-
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">In Progress</span>
-              <div className="w-5 h-5 rounded-full bg-amber-500"></div>
+              <span className="text-content-secondary text-sm font-medium">In Progress</span>
+              <div className="w-5 h-5 rounded-full bg-warning" />
             </div>
-            <p className="text-3xl font-bold text-white">
-              {allOrders.filter(o => o.status === 'in_progress').length}
+            <p className="text-3xl font-bold text-content-primary">
+              {allOrders.filter((o) => o.status === 'in_progress').length}
             </p>
           </div>
         </Card>
-
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Completed</span>
-              <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
+              <span className="text-content-secondary text-sm font-medium">Completed</span>
+              <div className="w-5 h-5 rounded-full bg-success" />
             </div>
-            <p className="text-3xl font-bold text-white">
-              {allOrders.filter(o => o.status === 'completed').length}
+            <p className="text-3xl font-bold text-content-primary">
+              {allOrders.filter((o) => o.status === 'completed').length}
             </p>
           </div>
         </Card>
-
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Urgent</span>
-              <div className="w-5 h-5 rounded-full bg-red-500"></div>
+              <span className="text-content-secondary text-sm font-medium">Urgent</span>
+              <div className="w-5 h-5 rounded-full bg-danger" />
             </div>
-            <p className="text-3xl font-bold text-white">
-              {allOrders.filter(o => o.priority === 'urgent').length}
+            <p className="text-3xl font-bold text-content-primary">
+              {allOrders.filter((o) => o.priority === 'urgent').length}
             </p>
           </div>
         </Card>
@@ -164,36 +228,50 @@ export default function JobsPage() {
       {/* Create Work Order Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#12121a] border-[#1e1e2e]">
-            <CardHeader className="border-b border-[#1e1e2e]">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader className="border-b border-border-subtle">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-white">Create New Work Order</CardTitle>
+                <CardTitle>Create New Work Order</CardTitle>
                 <button
                   onClick={() => setShowCreateForm(false)}
-                  className="text-gray-400 hover:text-white transition-colors text-xl"
+                  className="text-content-tertiary hover:text-content-primary transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
             </CardHeader>
+            <form onSubmit={handleCreateOrder} className="p-6 space-y-4">
+              {submitError && (
+                <div className="p-3 bg-danger-subtle border border-danger-border rounded text-sm text-danger">
+                  {submitError}
+                </div>
+              )}
 
-            <div className="p-6 space-y-4">
               {/* Customer Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-1">Customer Name</label>
+                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                    Customer Name <span className="text-danger">*</span>
+                  </label>
                   <input
                     type="text"
                     placeholder="John Smith"
-                    className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                    value={form.customerName}
+                    onChange={(e) => updateForm('customerName', e.target.value)}
+                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-1">Phone</label>
+                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                    Phone
+                  </label>
                   <input
                     type="tel"
                     placeholder="+1 555-0000"
-                    className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                    value={form.customerPhone}
+                    onChange={(e) => updateForm('customerPhone', e.target.value)}
+                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -201,136 +279,184 @@ export default function JobsPage() {
               {/* Service Details */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-1">Service Type</label>
-                  <select className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm focus:border-blue-500 focus:outline-none transition-colors">
-                    <option>Installation</option>
-                    <option>Maintenance</option>
-                    <option>Repair</option>
-                    <option>Inspection</option>
+                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                    Service Type
+                  </label>
+                  <select
+                    value={form.serviceType}
+                    onChange={(e) =>
+                      updateForm('serviceType', e.target.value as WorkOrderType)
+                    }
+                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                  >
+                    <option value="installation">Installation</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="repair">Repair</option>
+                    <option value="inspection">Inspection</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-1">Priority</label>
-                  <select className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm focus:border-blue-500 focus:outline-none transition-colors">
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
-                    <option>Urgent</option>
+                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                    Priority
+                  </label>
+                  <select
+                    value={form.priority}
+                    onChange={(e) =>
+                      updateForm('priority', e.target.value as WorkOrderPriority)
+                    }
+                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-1">Preferred Date</label>
+                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                    Preferred Date
+                  </label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                    value={form.preferredDate}
+                    onChange={(e) => updateForm('preferredDate', e.target.value)}
+                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <label className="text-sm font-medium text-gray-400 block mb-1">Description</label>
+                <label className="text-sm font-medium text-content-secondary block mb-1">
+                  Description <span className="text-danger">*</span>
+                </label>
                 <textarea
                   placeholder="Describe the work needed..."
                   rows={4}
-                  className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  value={form.description}
+                  onChange={(e) => updateForm('description', e.target.value)}
+                  className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                  required
                 />
               </div>
 
               {/* Location */}
               <div>
-                <label className="text-sm font-medium text-gray-400 block mb-1">Location</label>
+                <label className="text-sm font-medium text-content-secondary block mb-1">
+                  Location <span className="text-danger">*</span>
+                </label>
                 <input
                   type="text"
                   placeholder="123 Main St, New York, NY"
-                  className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  value={form.location}
+                  onChange={(e) => updateForm('location', e.target.value)}
+                  className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                  required
                 />
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
-                <Button variant="primary" className="flex-1">
-                  Create Work Order
+                <Button
+                  variant="primary"
+                  className="flex-1"
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Creating...' : 'Create Work Order'}
                 </Button>
                 <Button
                   variant="secondary"
                   className="flex-1"
+                  type="button"
                   onClick={() => setShowCreateForm(false)}
                 >
                   Cancel
                 </Button>
               </div>
-            </div>
+            </form>
           </Card>
         </div>
       )}
 
       {/* Search & Filters */}
       <div className="flex flex-col gap-4 mb-6">
-        {/* Search */}
         <div className="relative">
           <input
             type="text"
             placeholder="Search by job #, customer, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pl-10 rounded-lg border border-[#1e1e2e] bg-[#12121a] text-white text-sm placeholder-gray-500 focus:border-blue-500 focus:outline-none transition-colors"
+            className="w-full px-4 py-2 pl-10 rounded-lg border border-border-subtle bg-surface-secondary text-content-primary text-sm placeholder-content-muted focus:border-brand-primary focus:outline-none transition-colors"
           />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted"
+            size={16}
+          />
         </div>
 
-        {/* Filter Pills */}
         <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
           {/* Status Filter */}
           <div className="flex gap-2 flex-wrap">
-            {(["all", "created", "scheduled", "dispatched", "in_progress", "completed"] as const).map((status) => (
+            {(
+              [
+                'all',
+                'created',
+                'scheduled',
+                'dispatched',
+                'in_progress',
+                'completed',
+              ] as const
+            ).map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={cn(
-                  "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
+                  'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   statusFilter === status
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "border-[#1e1e2e] bg-transparent text-gray-400 hover:border-[#2a2a3a]"
+                    ? 'bg-brand-primary text-white border-brand-primary'
+                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
                 )}
               >
-                {status === "all" ? "All Status" : status.replace(/_/g, " ")}
+                {status === 'all' ? 'All Status' : status.replace(/_/g, ' ')}
               </button>
             ))}
           </div>
 
           {/* Priority Filter */}
           <div className="flex gap-2 flex-wrap">
-            {(["all", "low", "medium", "high", "urgent"] as const).map((priority) => (
+            {(['all', 'low', 'medium', 'high', 'urgent'] as const).map((priority) => (
               <button
                 key={priority}
                 onClick={() => setPriorityFilter(priority)}
                 className={cn(
-                  "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
+                  'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   priorityFilter === priority
-                    ? "bg-amber-500 text-white border-amber-500"
-                    : "border-[#1e1e2e] bg-transparent text-gray-400 hover:border-[#2a2a3a]"
+                    ? 'bg-warning text-white border-warning'
+                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
                 )}
               >
-                {priority === "all" ? "All Priority" : priority}
+                {priority === 'all' ? 'All Priority' : priority}
               </button>
             ))}
           </div>
 
           {/* Type Filter */}
           <div className="flex gap-2 flex-wrap">
-            {(["all", "installation", "maintenance", "repair", "inspection"] as const).map((type) => (
+            {(
+              ['all', 'installation', 'maintenance', 'repair', 'inspection'] as const
+            ).map((type) => (
               <button
                 key={type}
                 onClick={() => setTypeFilter(type)}
                 className={cn(
-                  "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
+                  'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   typeFilter === type
-                    ? "bg-blue-400 text-white border-blue-400"
-                    : "border-[#1e1e2e] bg-transparent text-gray-400 hover:border-[#2a2a3a]"
+                    ? 'bg-info text-white border-info'
+                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
                 )}
               >
-                {type === "all" ? "All Types" : type}
+                {type === 'all' ? 'All Types' : type}
               </button>
             ))}
           </div>
@@ -340,92 +466,119 @@ export default function JobsPage() {
       {/* Work Orders Table + Detail Panel */}
       <div
         className={cn(
-          "grid gap-5",
-          selectedJobData ? "grid-cols-1 lg:grid-cols-[1fr_450px]" : "grid-cols-1"
+          'grid gap-5',
+          selectedJobData ? 'grid-cols-1 lg:grid-cols-[1fr_450px]' : 'grid-cols-1'
         )}
       >
         {/* Table Card */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
-          <CardHeader className="border-b border-[#1e1e2e]">
-            <CardTitle className="text-white">Work Orders ({filteredOrders.length})</CardTitle>
+        <Card>
+          <CardHeader className="border-b border-border-subtle">
+            <CardTitle>Work Orders ({filteredOrders.length})</CardTitle>
           </CardHeader>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-[#1e1e2e] bg-[#0f0f14]">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Job #</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Customer</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Priority</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Tech</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">ETA</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#1e1e2e]">
-                {filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    onClick={() => setSelectedJob(order.id)}
-                    className={cn(
-                      "hover:bg-[#1a1a2e] transition-colors cursor-pointer",
-                      selectedJobData?.id === order.id && "bg-[#1a1a2e]"
-                    )}
-                  >
-                    <td className="px-4 py-3 text-white font-mono text-xs">{order.jobNumber}</td>
-                    <td className="px-4 py-3 text-gray-300">
-                      <div>{order.customerName}</div>
-                      <div className="text-xs text-gray-500">{order.customerPhone}</div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-300 capitalize text-xs">
-                      {order.serviceType.replace(/_/g, " ")}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={priorityVariant(order.priority)}>
-                        {order.priority}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={statusVariant(order.status)}>
-                        {order.status.replace(/_/g, " ")}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-gray-300 text-xs">
-                      {order.assignedTechName || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-gray-300 text-xs">
-                      {order.eta || "—"}
-                    </td>
+          {filteredOrders.length === 0 ? (
+            <div className="p-12 text-center text-content-tertiary">
+              <ClipboardList className="mx-auto mb-3 text-content-muted" size={32} />
+              <p className="font-medium text-content-secondary">No work orders found</p>
+              <p className="text-sm mt-1">Try adjusting your filters or create a new work order</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-border-subtle bg-surface-secondary">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                      Job #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                      Customer
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                      Priority
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                      Tech
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                      ETA
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border-subtle">
+                  {filteredOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      onClick={() => setSelectedJob(order.id)}
+                      className={cn(
+                        'hover:bg-surface-secondary transition-colors cursor-pointer',
+                        selectedJobData?.id === order.id && 'bg-surface-secondary'
+                      )}
+                    >
+                      <td className="px-4 py-3 text-content-primary font-mono text-xs">
+                        {order.jobNumber}
+                      </td>
+                      <td className="px-4 py-3 text-content-secondary">
+                        <div>{order.customerName}</div>
+                        <div className="text-xs text-content-tertiary">{order.customerPhone}</div>
+                      </td>
+                      <td className="px-4 py-3 text-content-secondary capitalize text-xs">
+                        {order.serviceType.replace(/_/g, ' ')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={priorityVariant(order.priority)}>
+                          {order.priority}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={statusVariant(order.status)}>
+                          {order.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-content-secondary text-xs">
+                        {order.assignedTechName || '—'}
+                      </td>
+                      <td className="px-4 py-3 text-content-secondary text-xs">
+                        {order.eta || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
 
         {/* Detail Drawer */}
         {selectedJobData && (
-          <Card className="sticky overflow-y-auto bg-[#12121a] border-[#1e1e2e]" style={{ top: "24px", maxHeight: "calc(100vh - 200px)" }}>
-            <CardHeader className="border-b border-[#1e1e2e]">
+          <Card
+            className="sticky overflow-y-auto"
+            style={{ top: '24px', maxHeight: 'calc(100vh - 200px)' }}
+          >
+            <CardHeader className="border-b border-border-subtle">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-white">Job Details</CardTitle>
+                <CardTitle>Job Details</CardTitle>
                 <button
                   onClick={() => setSelectedJob(null)}
-                  className="text-gray-400 hover:text-white transition-colors text-xl"
+                  className="text-content-tertiary hover:text-content-primary transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
             </CardHeader>
-
             <div className="p-4 space-y-4">
-              {/* Job Header */}
               <div>
-                <div className="text-lg font-bold text-white mb-1">{selectedJobData.jobNumber}</div>
+                <div className="text-lg font-bold text-content-primary mb-1">
+                  {selectedJobData.jobNumber}
+                </div>
                 <div className="flex gap-2 mb-3">
                   <Badge variant={statusVariant(selectedJobData.status)}>
-                    {selectedJobData.status.replace(/_/g, " ")}
+                    {selectedJobData.status.replace(/_/g, ' ')}
                   </Badge>
                   <Badge variant={priorityVariant(selectedJobData.priority)}>
                     {selectedJobData.priority}
@@ -433,34 +586,40 @@ export default function JobsPage() {
                 </div>
               </div>
 
-              <div className="h-px bg-[#1e1e2e]" />
+              <div className="h-px bg-border-subtle" />
 
-              {/* Customer Info */}
               <div>
-                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Customer</div>
-                <div className="text-sm text-white font-medium">{selectedJobData.customerName}</div>
-                <div className="text-xs text-gray-400 mt-1">{selectedJobData.customerPhone}</div>
+                <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
+                  Customer
+                </div>
+                <div className="text-sm text-content-primary font-medium">
+                  {selectedJobData.customerName}
+                </div>
+                <div className="text-xs text-content-secondary mt-1">
+                  {selectedJobData.customerPhone}
+                </div>
               </div>
 
-              <div className="h-px bg-[#1e1e2e]" />
+              <div className="h-px bg-border-subtle" />
 
-              {/* Location */}
               <div>
-                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Location</div>
-                <div className="text-sm text-white">{selectedJobData.location}</div>
+                <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
+                  Location
+                </div>
+                <div className="text-sm text-content-primary">{selectedJobData.location}</div>
               </div>
 
-              <div className="h-px bg-[#1e1e2e]" />
+              <div className="h-px bg-border-subtle" />
 
-              {/* Description */}
               <div>
-                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Description</div>
-                <div className="text-sm text-gray-300">{selectedJobData.description}</div>
+                <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
+                  Description
+                </div>
+                <div className="text-sm text-content-secondary">{selectedJobData.description}</div>
               </div>
 
-              <div className="h-px bg-[#1e1e2e]" />
+              <div className="h-px bg-border-subtle" />
 
-              {/* Action Buttons */}
               <div className="space-y-2">
                 <Button variant="primary" size="sm" className="w-full text-xs">
                   Edit Details
@@ -468,7 +627,7 @@ export default function JobsPage() {
                 <Button variant="secondary" size="sm" className="w-full text-xs">
                   Assign Technician
                 </Button>
-                {selectedJobData.status === "in_progress" && (
+                {selectedJobData.status === 'in_progress' && (
                   <Button variant="primary" size="sm" className="w-full text-xs">
                     Mark Complete
                   </Button>
