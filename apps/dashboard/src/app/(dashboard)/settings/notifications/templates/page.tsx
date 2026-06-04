@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -16,7 +17,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Table,
   TableHeader,
   TableRow,
   TableHead,
@@ -35,386 +35,254 @@ import {
   Smartphone,
   Clock,
   Plus,
+  FileText,
 } from 'lucide-react';
 
-type EventType =
-  | 'order_confirmed'
-  | 'delivery_scheduled'
-  | 'out_for_delivery'
-  | 'delivery_arriving'
-  | 'delivered'
-  | 'delivery_failed'
-  | 'rescheduled';
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION TEMPLATES — real API-backed list
+   ═══════════════════════════════════════════════════════════ */
 
-type Channel = 'email' | 'sms' | 'whatsapp' | 'push';
-
-interface NotificationTemplate {
+interface ApiTemplate {
   id: string;
-  eventType: EventType;
-  channel: Channel;
   name: string;
-  preview: string;
-  status: 'active' | 'draft';
-  lastEdited: Date;
-  createdAt: Date;
+  channel: 'EMAIL' | 'SMS' | 'WHATSAPP' | 'PUSH' | 'WEBHOOK';
+  eventType: string;
+  subject?: string | null;
+  version: number;
+  isActive: boolean;
+  variables: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-const TEMPLATES: NotificationTemplate[] = [
-  {
-    id: "t1",
-    eventType: "order_confirmed",
-    channel: "email",
-    name: "Order Confirmation Email",
-    preview: "Your order {{orderId}} has been confirmed",
-    status: "active",
-    lastEdited: new Date("2026-03-10"),
-    createdAt: new Date("2026-02-01"),
-  },
-  {
-    id: "t2",
-    eventType: "order_confirmed",
-    channel: "sms",
-    name: "Order Confirmation SMS",
-    preview: "Order confirmed! Track: {{trackingUrl}}",
-    status: "active",
-    lastEdited: new Date("2026-03-10"),
-    createdAt: new Date("2026-02-01"),
-  },
-  {
-    id: "t3",
-    eventType: "delivery_scheduled",
-    channel: "email",
-    name: "Delivery Scheduled Email",
-    preview: "Your delivery is scheduled for {{deliveryDate}}",
-    status: "active",
-    lastEdited: new Date("2026-03-09"),
-    createdAt: new Date("2026-02-05"),
-  },
-  {
-    id: "t4",
-    eventType: "delivery_scheduled",
-    channel: "sms",
-    name: "Delivery Scheduled SMS",
-    preview: "Delivery on {{deliveryDate}} {{timeWindow}}",
-    status: "draft",
-    lastEdited: new Date("2026-03-08"),
-    createdAt: new Date("2026-02-10"),
-  },
-  {
-    id: "t5",
-    eventType: "out_for_delivery",
-    channel: "push",
-    name: "Out for Delivery Push",
-    preview: "Your delivery is on the way",
-    status: "active",
-    lastEdited: new Date("2026-03-07"),
-    createdAt: new Date("2026-02-15"),
-  },
-  {
-    id: "t6",
-    eventType: "delivered",
-    channel: "email",
-    name: "Delivery Completed Email",
-    preview: "Your order has been delivered",
-    status: "active",
-    lastEdited: new Date("2026-03-06"),
-    createdAt: new Date("2026-02-20"),
-  },
-  {
-    id: "t7",
-    eventType: "delivery_failed",
-    channel: "whatsapp",
-    name: "Delivery Failed WhatsApp",
-    preview: "We couldn't deliver your package",
-    status: "active",
-    lastEdited: new Date("2026-03-05"),
-    createdAt: new Date("2026-02-25"),
-  },
-  {
-    id: "t8",
-    eventType: "rescheduled",
-    channel: "sms",
-    name: "Rescheduled SMS",
-    preview: "Your delivery has been rescheduled",
-    status: "draft",
-    lastEdited: new Date("2026-03-04"),
-    createdAt: new Date("2026-03-01"),
-  },
-];
-
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  order_confirmed: "Order Confirmed",
-  delivery_scheduled: "Delivery Scheduled",
-  out_for_delivery: "Out for Delivery",
-  delivery_arriving: "Delivery Arriving",
-  delivered: "Delivered",
-  delivery_failed: "Delivery Failed",
-  rescheduled: "Rescheduled",
+const CHANNEL_ICONS: Record<string, React.ReactNode> = {
+  EMAIL: <Mail className="w-4 h-4" />,
+  SMS: <MessageSquare className="w-4 h-4" />,
+  WHATSAPP: <MessageSquare className="w-4 h-4" />,
+  PUSH: <Bell className="w-4 h-4" />,
+  WEBHOOK: <Smartphone className="w-4 h-4" />,
 };
 
-const CHANNEL_ICONS: Record<Channel, React.ReactNode> = {
-  email: <Mail className="w-4 h-4" />,
-  sms: <MessageSquare className="w-4 h-4" />,
-  whatsapp: <MessageSquare className="w-4 h-4" />,
-  push: <Bell className="w-4 h-4" />,
-};
+function formatEventType(et: string) {
+  return et.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export default function NotificationTemplatesPage() {
-  const [templates, setTemplates] = useState<NotificationTemplate[]>(TEMPLATES);
-  const [selectedEvent, setSelectedEvent] = useState<EventType | "all">("all");
+  const { items: templates, loading, error, refetch } = useApiList<ApiTemplate>(
+    '/api/v4/notification-templates',
+    { limit: 100 },
+  );
+
+  const [selectedEvent, setSelectedEvent] = useState<string>('all');
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+
+  const eventTypes = useMemo(() => {
+    const types = Array.from(new Set(templates.map((t) => t.eventType))).sort();
+    return ['all', ...types];
+  }, [templates]);
 
   const filteredTemplates =
-    selectedEvent === "all"
+    selectedEvent === 'all'
       ? templates
       : templates.filter((t) => t.eventType === selectedEvent);
 
-  const handleDuplicate = (template: NotificationTemplate) => {
-    const newTemplate: NotificationTemplate = {
-      ...template,
-      id: `t${Date.now()}`,
-      name: `${template.name} (Copy)`,
-      status: "draft",
-      createdAt: new Date(),
-      lastEdited: new Date(),
-    };
-    setTemplates([...templates, newTemplate]);
+  const handleDelete = async (id: string) => {
+    setActionInProgress(id);
+    try {
+      await api.delete(`/api/v4/notification-templates/${id}`);
+      refetch();
+    } finally {
+      setActionInProgress(null);
+    }
   };
 
-  const handleDelete = (templateId: string) => {
-    setTemplates(templates.filter((t) => t.id !== templateId));
+  const handleToggleStatus = async (id: string, isActive: boolean) => {
+    setActionInProgress(id);
+    try {
+      await api.patch(`/api/v4/notification-templates/${id}`, { isActive: !isActive });
+      refetch();
+    } finally {
+      setActionInProgress(null);
+    }
   };
 
-  const handleToggleStatus = (templateId: string) => {
-    setTemplates(
-      templates.map((t) =>
-        t.id === templateId
-          ? { ...t, status: t.status === "active" ? "draft" : "active" }
-          : t
-      )
-    );
-  };
-
-  const eventTypes: (EventType | "all")[] = [
-    "all",
-    "order_confirmed",
-    "delivery_scheduled",
-    "out_for_delivery",
-    "delivery_arriving",
-    "delivered",
-    "delivery_failed",
-    "rescheduled",
-  ];
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-primary">
       <Header
         title="Notification Templates"
         subtitle="Manage and customize notification templates"
+        actions={
+          <Link href="/settings/notifications/templates/new">
+            <Button variant="primary" size="md">
+              <Plus className="w-4 h-4 mr-2" />
+              New Template
+            </Button>
+          </Link>
+        }
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Filter Bar */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="flex-1">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                  Filter by Event
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Total', value: templates.length, color: 'text-wl-text-primary' },
+            { label: 'Active', value: templates.filter((t) => t.isActive).length, color: 'text-emerald-400' },
+            { label: 'Inactive', value: templates.filter((t) => !t.isActive).length, color: 'text-amber-400' },
+            { label: 'Event Types', value: eventTypes.length - 1, color: 'text-blue-400' },
+          ].map((s) => (
+            <Card key={s.label} className="bg-wl-bg-surface border-wl-border-default">
+              <CardContent className="pt-5 pb-4">
+                <p className="text-xs font-semibold text-wl-text-muted uppercase tracking-wide mb-1">
+                  {s.label}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {eventTypes.map((eventType) => (
-                    <button
-                      key={eventType}
-                      onClick={() => setSelectedEvent(eventType)}
-                      className={cn(
-                        "px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                        selectedEvent === eventType
-                          ? "bg-blue-500 text-white"
-                          : "bg-[#1a1a2e] text-white hover:bg-[#1e1e2e]"
-                      )}
-                    >
-                      {eventType === "all"
-                        ? "All Events"
-                        : EVENT_TYPE_LABELS[eventType]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Link href="/settings/notifications/templates/new">
-                <Button variant="primary" size="md">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Template
-                </Button>
-              </Link>
+                <p className={cn('text-2xl font-bold', s.color)}>{s.value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Filter Bar */}
+        <Card className="bg-wl-bg-surface border-wl-border-default">
+          <CardContent className="pt-5">
+            <p className="text-xs font-semibold text-wl-text-muted uppercase tracking-wide mb-3">
+              Filter by Event
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {eventTypes.map((eventType) => (
+                <button
+                  key={eventType}
+                  onClick={() => setSelectedEvent(eventType)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                    selectedEvent === eventType
+                      ? 'bg-wl-primary text-white'
+                      : 'bg-wl-bg-overlay text-wl-text-muted hover:text-wl-text-primary border border-wl-border-default',
+                  )}
+                >
+                  {eventType === 'all' ? 'All Events' : formatEventType(eventType)}
+                </button>
+              ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Templates Table */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle>
-              {filteredTemplates.length} Template
-              {filteredTemplates.length !== 1 ? "s" : ""}
+              {filteredTemplates.length} Template{filteredTemplates.length !== 1 ? 's' : ''}
             </CardTitle>
             <CardDescription>
-              {selectedEvent === "all"
-                ? "All notification templates"
-                : `Templates for ${EVENT_TYPE_LABELS[selectedEvent]}`}
+              {selectedEvent === 'all'
+                ? 'All notification templates'
+                : `Templates for ${formatEventType(selectedEvent)}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Channel</TableHead>
-                    <TableHead>Name & Preview</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Edited</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTemplates.length === 0 ? (
+            {filteredTemplates.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="w-10 h-10 text-wl-text-muted mx-auto mb-3" />
+                <p className="text-sm font-semibold text-wl-text-primary mb-1">
+                  {templates.length === 0 ? 'No templates yet' : 'No templates match this filter'}
+                </p>
+                <p className="text-xs text-wl-text-muted">
+                  {templates.length === 0
+                    ? 'Create your first notification template to get started.'
+                    : 'Try selecting a different event type.'}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        <p className="text-gray-400 text-sm">
-                          No templates found
-                        </p>
-                      </TableCell>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Channel</TableHead>
+                      <TableHead>Name & Subject</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Updated</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredTemplates.map((template) => (
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTemplates.map((template) => (
                       <TableRow key={template.id}>
                         <TableCell>
-                          <span className="text-sm font-medium text-white">
-                            {EVENT_TYPE_LABELS[template.eventType]}
+                          <span className="text-sm font-medium text-wl-text-primary">
+                            {formatEventType(template.eventType)}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-400">
-                              {CHANNEL_ICONS[template.channel]}
+                            <span className="text-wl-text-muted">
+                              {CHANNEL_ICONS[template.channel] ?? <Bell className="w-4 h-4" />}
                             </span>
-                            <span className="text-sm capitalize text-white">
-                              {template.channel}
+                            <span className="text-sm capitalize text-wl-text-primary">
+                              {template.channel.toLowerCase()}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="text-sm font-medium text-white">
+                            <p className="text-sm font-medium text-wl-text-primary">
                               {template.name}
                             </p>
-                            <p className="text-xs text-gray-400 mt-1 truncate">
-                              {template.preview}
-                            </p>
+                            {template.subject && (
+                              <p className="text-xs text-wl-text-muted mt-0.5 truncate max-w-xs">
+                                {template.subject}
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              template.status === "active"
-                                ? "success"
-                                : "warning"
-                            }
-                          >
-                            {template.status === "active"
-                              ? "Active"
-                              : "Draft"}
+                          <Badge variant={template.isActive ? 'success' : 'warning'} dot>
+                            {template.isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <div className="flex items-center gap-1 text-xs text-wl-text-muted">
                             <Clock className="w-3 h-3" />
-                            {template.lastEdited.toLocaleDateString()}
+                            {new Date(template.updatedAt).toLocaleDateString()}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Link
-                              href={`/settings/notifications/templates/${template.id}`}
-                            >
-                              <button className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors">
-                                <Edit className="w-4 h-4 text-gray-400" />
+                          <div className="flex gap-1 justify-end">
+                            <Link href={`/settings/notifications/templates/${template.id}`}>
+                              <button className="p-2 hover:bg-wl-bg-overlay rounded-lg transition-colors" aria-label="Edit">
+                                <Edit className="w-4 h-4 text-wl-text-muted" />
                               </button>
                             </Link>
                             <button
-                              onClick={() => handleDuplicate(template)}
-                              className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
+                              onClick={() => handleToggleStatus(template.id, template.isActive)}
+                              disabled={actionInProgress === template.id}
+                              className="p-2 hover:bg-wl-bg-overlay rounded-lg transition-colors disabled:opacity-40"
+                              aria-label={template.isActive ? 'Deactivate' : 'Activate'}
+                              title={template.isActive ? 'Deactivate' : 'Activate'}
                             >
-                              <Copy className="w-4 h-4 text-gray-400" />
-                            </button>
-                            <button
-                              onClick={() => handleToggleStatus(template.id)}
-                              className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
-                            >
-                              <Eye className="w-4 h-4 text-gray-400" />
+                              <Eye className="w-4 h-4 text-wl-text-muted" />
                             </button>
                             <button
                               onClick={() => handleDelete(template.id)}
-                              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+                              disabled={actionInProgress === template.id}
+                              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-40"
+                              aria-label="Delete"
                             >
-                              <Trash2 className="w-4 h-4 text-red-500" />
+                              <Trash2 className="w-4 h-4 text-red-400" />
                             </button>
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </table>
-            </div>
+                    ))}
+                  </TableBody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Total Templates
-              </p>
-              <p className="text-2xl font-bold text-white">
-                {templates.length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Active
-              </p>
-              <p className="text-2xl font-bold text-emerald-500">
-                {templates.filter((t) => t.status === "active").length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Draft
-              </p>
-              <p className="text-2xl font-bold text-amber-500">
-                {templates.filter((t) => t.status === "draft").length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Event Types
-              </p>
-              <p className="text-2xl font-bold text-white">
-                {new Set(templates.map((t) => t.eventType)).size}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </main>
     </div>
   );
 }
-

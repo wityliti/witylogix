@@ -36,6 +36,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-520b | feat/WIT-520-dashboard-demand-production | Demand section (5 API endpoints: Math.random→Prisma real data); Demand page map view (Charts/Map toggle + WLMap + DemandZoneLayer); Tracking Config (local state→API load/save); capacity page URL fix | 5 API + 2 pages | 2026-06-04 |
 | WIT-521 | feat/WIT-521-dashboard-freight-ux-design-tokens | Freight 4 pages (overview, loads, rates, compliance): 94 hardcoded hex CSS values → WL design tokens; removed totalSavings=15000 const; real Shipment fields; freight overview Charts↔Map toggle (WLMap+DeliveryMapView); hooks-order fix | 94 CSS signals | 2026-06-04 |
 | WIT-522 | feat/WIT-522-dashboard-tracking-timeslots | Time-Slots: SLOTS[7] hardcoded array → real useApiList('/api/v4/time-slots'); loading/empty/error states; Create Slot modal (POST /api/v4/time-slots); WL design tokens. Tracking overview: List↔Map toggle, /dispatch/drivers for lat/lng, WLMap+OrderLayer+DriverLayer. Tracking Live: List↔Map toggle, map panel with order+driver markers + sidebar detail, 30s auto-refresh via dispatch drivers. New shared component: tracking/components/tracking-map-view.tsx | 7 mock slots | 2026-06-04 |
+| WIT-523 | feat/WIT-523-notification-templates-profile | Notification templates list: TEMPLATES[8] hardcoded array → real useApiList('/api/v4/notification-templates'); delete/toggle via api.delete/api.patch; WL design tokens; loading/empty states. Profile: 3 fake sessions (192.168.1.x, San Francisco CA, Chrome/Safari/Firefox) → current-session-only display; WL design tokens throughout. WIT-521 notifications/preferences + settings/notifications + products/sync + template [id]: all fake setTimeout replaced with real API calls | 11 mocks | 2026-06-04 |
 
 ---
 
@@ -224,8 +225,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Organization | `/settings/organization` | 0 | 0 | ✅ |
 | Notifications | `/settings/notifications` | 0 | 0 | ✅ |
 | Notifications Config | `/settings/notifications-config` | 0 | 0 | ✅ |
-| Notification Templates | `/settings/notifications/templates` | 0 | 0 | ✅ |
-| Notification Template Detail | `/settings/notifications/templates/[id]` | 0 | 0 | ✅ |
+| Notification Templates | `/settings/notifications/templates` | 8 | 0 | ✅ WIT-523 |
+| Notification Template Detail | `/settings/notifications/templates/[id]` | 3 | 0 | ✅ WIT-523 |
 | Notifications WhatsApp | `/settings/notifications/whatsapp` | 0 | 0 | ✅ |
 | Auth Providers | `/settings/auth-providers` | 2 | 0 | ✅ |
 | Payments | `/settings/payments` | 3 | 0 | ✅ |
@@ -478,7 +479,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | POS | `/pos` | ✅ |
 | Locations | `/locations` | ✅ WIT-519 (map view added) |
 | Zones | `/zones` | ✅ (WIT-512: feature-flag removed, map always shown) |
-| Profile | `/profile` | ✅ |
+| Profile | `/profile` | 3 fake sessions | 0 | ✅ WIT-523 |
 | Stores | `/stores` | ✅ |
 | Partners | `/partners` | ✅ |
 
