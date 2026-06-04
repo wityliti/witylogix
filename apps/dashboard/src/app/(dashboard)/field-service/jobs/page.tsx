@@ -11,10 +11,7 @@ import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
 import { api } from '@/lib/api';
-import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
-import { ClipboardList, Plus, Search, X, List, Map, MapPin } from 'lucide-react';
-
-const JobsMapView = dynamic(() => import('./components/jobs-map-view'), { ssr: false });
+import { ClipboardList, Plus, Search, X } from 'lucide-react';
 
 type WorkOrderStatus = 'created' | 'scheduled' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
 type WorkOrderPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -61,6 +58,21 @@ function toJobPinPriority(priority: WorkOrderPriority): 'low' | 'medium' | 'high
   if (priority === 'urgent' || priority === 'high') return 'high';
   if (priority === 'medium') return 'medium';
   return 'low';
+}
+
+function normalizeOrder(raw: RawOrder): WorkOrder {
+  return {
+    id: raw.id,
+    jobNumber: raw.externalOrderNumber || `#${raw.id.slice(0, 8).toUpperCase()}`,
+    customerName: raw.customerName,
+    customerPhone: raw.customerPhone || '—',
+    status: normalizeStatus(raw.status),
+    priority: normalizePriority(raw),
+    serviceType: 'delivery',
+    location: [raw.addressLine1, raw.city, raw.state].filter(Boolean).join(', ') || '—',
+    assignedTechName: raw.driver?.name,
+    eta: raw.deliveryDate ? new Date(raw.deliveryDate).toLocaleDateString() : undefined,
+  };
 }
 
 const statusVariant = (
@@ -121,10 +133,9 @@ export default function JobsPage() {
   const [form, setForm] = useState<CreateWorkOrderForm>(DEFAULT_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [view, setView] = useState<'list' | 'map'>('list');
 
   const { items: allOrders, loading, error, refetch } = useApiList<WorkOrder>(
-    '/api/v4/field-service/jobs'
+    '/api/v4/orders?type=field-service&view=jobs'
   );
 
   if (loading) return <LoadingSkeleton />;
@@ -151,21 +162,6 @@ export default function JobsPage() {
   const inProgressCount = allOrders.filter((o) => o.status === 'in_progress').length;
   const completedCount = allOrders.filter((o) => o.status === 'completed').length;
   const urgentCount = allOrders.filter((o) => o.priority === 'urgent').length;
-
-  const jobPins = useMemo<OrderPin[]>(() => {
-    return allOrders
-      .filter((o) => o.lat != null && o.lng != null)
-      .map((o) => ({
-        id: o.id,
-        orderNumber: o.jobNumber,
-        customerName: o.customerName,
-        address: o.location,
-        status: toJobPinStatus(o.status),
-        lat: o.lat!,
-        lng: o.lng!,
-        priority: toJobPinPriority(o.priority),
-      }));
-  }, [allOrders]);
 
   async function handleCreateOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -212,40 +208,18 @@ export default function JobsPage() {
               {allOrders.filter((o) => o.status === 'completed').length} completed today
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex rounded overflow-hidden border border-border-subtle">
-              <button
-                onClick={() => setView('list')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                  view === 'list' ? 'bg-brand-primary text-white' : 'bg-transparent text-content-secondary hover:text-content-primary',
-                )}
-              >
-                <List size={13} /> List
-              </button>
-              <button
-                onClick={() => setView('map')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-border-subtle',
-                  view === 'map' ? 'bg-brand-primary text-white' : 'bg-transparent text-content-secondary hover:text-content-primary',
-                )}
-              >
-                <Map size={13} /> Map
-              </button>
-            </div>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => {
-                setForm(DEFAULT_FORM);
-                setSubmitError(null);
-                setShowCreateForm(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <Plus size={16} /> Create Work Order
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              setForm(DEFAULT_FORM);
+              setSubmitError(null);
+              setShowCreateForm(true);
+            }}
+            className="flex items-center gap-2"
+          >
+            <Plus size={16} /> Create Work Order
+          </Button>
         </div>
       </div>
 
@@ -529,30 +503,6 @@ export default function JobsPage() {
           </div>
         </div>
       </div>
-
-      {/* Map View */}
-      {view === 'map' && (
-        <div
-          className="relative rounded-lg overflow-hidden border border-border-subtle mb-5"
-          style={{ height: 'calc(100vh - 400px)', minHeight: '400px' }}
-        >
-          {jobPins.length === 0 ? (
-            <div className="flex items-center justify-center h-full bg-surface-secondary text-content-tertiary text-sm">
-              <div className="text-center">
-                <MapPin size={28} className="mx-auto mb-2 opacity-40" />
-                <p>No geocoded jobs to display</p>
-                <p className="text-xs mt-1 opacity-60">Jobs need delivery coordinates to appear on the map</p>
-              </div>
-            </div>
-          ) : (
-            <JobsMapView
-              jobs={jobPins}
-              selectedJobId={selectedJob}
-              onJobClick={setSelectedJob}
-            />
-          )}
-        </div>
-      )}
 
       {/* Work Orders Table + Detail Panel */}
       <div
