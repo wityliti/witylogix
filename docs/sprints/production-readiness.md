@@ -33,6 +33,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-519 | feat/WIT-519-supply-chain-kpis-locations-map | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline percentages→real hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | 5 | 2026-06-03 |
 | WIT-520 | feat/WIT-520-marketplace-provider-real-api | Marketplace provider detail (PROVIDERS hardcoded object→GET /api/v4/integrations/marketplace/:slug; credentials form from credentialFields; install via POST /:slug/install); CRM: remove dead CRM_PROVIDER_LIST | 5 | 2026-06-03 |
 | WIT-400 | feat/WIT-400-dashboard-orders-payments-returns | Delivery (List↔Map toggle on delivery/page + delivery/standard; WLMap + ShipmentMarkerLayer + useFitBounds; stat cards; detail panel; proper Shipment type with addressLine1/city/deliveryLocation); use-shipment-tracking hook (removed hardcoded John Doe / FedEx / random mock fallback → real /api/v4/shipments calls) | 2 pages + 1 component + 1 hook | 2026-06-03 |
+| WIT-521 | feat/WIT-521-notification-settings-real-saves | Settings/Notifications (handleSave→api.put instead of setTimeout); Settings/Templates/[id] (fetch real template + PATCH saves + remove VERSION_HISTORY fake names); Notifications/Preferences (handleTestNotification→POST /api/v4/notification-preferences/test); Products/Sync (handleTestSync→runPreview API) | 5 | 2026-06-04 |
 
 ---
 
@@ -219,10 +220,10 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Team | `/settings/team` | 0 | 0 | ✅ |
 | Profile | `/settings/profile` | 0 | 0 | ✅ |
 | Organization | `/settings/organization` | 0 | 0 | ✅ |
-| Notifications | `/settings/notifications` | 0 | 0 | ✅ |
+| Notifications | `/settings/notifications` | 1 (handleSave→setTimeout) | 0 | ✅ WIT-521 |
 | Notifications Config | `/settings/notifications-config` | 0 | 0 | ✅ |
 | Notification Templates | `/settings/notifications/templates` | 0 | 0 | ✅ |
-| Notification Template Detail | `/settings/notifications/templates/[id]` | 0 | 0 | ✅ |
+| Notification Template Detail | `/settings/notifications/templates/[id]` | 3 (VERSION_HISTORY fake data + 2 setTimeout saves) | 0 | ✅ WIT-521 |
 | Notifications WhatsApp | `/settings/notifications/whatsapp` | 0 | 0 | ✅ |
 | Auth Providers | `/settings/auth-providers` | 2 | 0 | ✅ |
 | Payments | `/settings/payments` | 3 | 0 | ✅ |
@@ -296,7 +297,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
 | Product List | `/products` | 0 | 0 | ✅ |
-| Product Sync | `/products/sync` | 3 | 0 | ✅ WIT-514 |
+| Product Sync | `/products/sync` | 3+1 (handleTestSync→setTimeout) | 0 | ✅ WIT-514 + WIT-521 |
 
 **WIT-514 changes**: Removed `MOCK_PLATFORMS` (100+ line hardcoded array); added `mapConnection()` to transform `/api/v4/integrations/connections` response; static `PLATFORM_FIELDS` constants retained as documented field schemas (not DB data)
 
@@ -428,6 +429,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-517 | `feat/WIT-517-dashboard-realtime-mock-cleanup` | Realtime components (live-kpi-counters, live-order-feed, notification-center, active-delivery-map), notification-stats-widget, activity polling, ELD HOS recap, webhooks hourly chart, webhook test page, shipping labels pricing, dispatch-map WLMap | 13 files | `POST /api/v4/outbound-webhooks/test` (new); `GET /api/v4/notifications` + `/stats` (rewritten from stub) | 13 files, 13 mock signals | #257 |
 | WIT-518 | `feat/WIT-518-dashboard-billing-drivers-map` | Billing (4 hardcoded fallbacks→real API; { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap+DriverLayer) | `GET /api/v4/billing/`, `GET /api/v4/billing/plans` ({ data } fix); `GET /api/v4/dispatch/drivers` | 4 + API | #260 |
 | WIT-519 | `feat/WIT-519-supply-chain-kpis-locations-map` | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline pct→live hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | — | 5 mock signals | #262 |
+| WIT-520 | `feat/WIT-520-marketplace-provider-real-api` | Marketplace provider detail (PROVIDERS hardcoded object→GET /api/v4/integrations/marketplace/:slug; credentials form from credentialFields; install via POST /:slug/install); CRM: remove dead CRM_PROVIDER_LIST | — | 5 mock signals | #265 |
+| WIT-521 | `feat/WIT-521-notification-settings-real-saves` | Settings/Notifications (handleSave→api.put instead of setTimeout); Settings/Templates/[id] (fetch real template, wire PATCH saves, remove VERSION_HISTORY fake data); Notifications/Preferences (handleTestNotification→POST API); Products/Sync (handleTestSync→runPreview API) | — | 5 hidden fake-action signals | #267 |
 
 ---
 
