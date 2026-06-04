@@ -382,7 +382,7 @@ export default function TemplateEditorPage() {
                   <button
                     key={variable.name}
                     onClick={() => insertVariable(variable.name)}
-                    className="w-full text-left px-3 py-2 bg-wl-bg-overlay hover:bg-wl-bg-overlay text-white rounded-lg text-sm transition-colors border border-wl-border-default"
+                    className="w-full text-left px-3 py-2 bg-wl-bg-overlay hover:bg-[#202030] text-white rounded-lg text-sm transition-colors border border-wl-border-default"
                   >
                     <code className="font-mono">{`{{${variable.name}}}`}</code>
                     <p className="text-xs text-gray-400 mt-1">
