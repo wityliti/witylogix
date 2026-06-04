@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { api } from '@/lib/api';
 
 export interface TrackingEvent {
   id: string;
@@ -33,6 +34,34 @@ export interface TrackingData {
   proofOfDelivery?: string[];
 }
 
+interface ApiShipment {
+  id: string;
+  trackingNumber?: string | null;
+  orderId: string;
+  status: string;
+  carrier?: string | null;
+  estimatedArrival?: string | null;
+  deliveryDate?: string | null;
+  recipientName?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  weight?: number | null;
+  dimensions?: { length: number; width: number; height: number } | null;
+  deliveryMethod?: string | null;
+  location?: { name: string; city: string } | null;
+  activityLogs?: Array<{
+    id: string;
+    timestamp: string;
+    description: string;
+    status?: string | null;
+    location?: string | null;
+  }>;
+}
+
 interface UseShipmentTrackingReturn {
   trackingData: TrackingData | null;
   events: TrackingEvent[];
@@ -41,6 +70,40 @@ interface UseShipmentTrackingReturn {
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
+}
+
+function mapShipmentToTrackingData(s: ApiShipment): TrackingData {
+  const address = [s.addressLine1, s.city, s.province, s.postalCode]
+    .filter(Boolean)
+    .join(', ');
+  return {
+    trackingNumber: s.trackingNumber ?? s.id,
+    orderId: s.orderId,
+    carrier: s.carrier ?? 'Witylogix',
+    currentStatus: s.status,
+    eta: s.estimatedArrival ?? s.deliveryDate ?? null,
+    lastLocation: s.city ?? s.location?.city ?? '',
+    origin: s.location?.name ?? 'Warehouse',
+    destination: s.city ?? '',
+    recipientName: s.recipientName ?? '',
+    recipientAddress: address,
+    weight: s.weight ?? 0,
+    dimensions: s.dimensions ?? { length: 0, width: 0, height: 0 },
+    serviceLevel: s.deliveryMethod ?? 'Standard',
+  };
+}
+
+function mapLogsToEvents(
+  logs: NonNullable<ApiShipment['activityLogs']>,
+): TrackingEvent[] {
+  return logs.map((log) => ({
+    id: log.id,
+    timestamp: log.timestamp,
+    location: log.location ?? '',
+    description: log.description,
+    status: log.status ?? 'info',
+    icon: '📦',
+  }));
 }
 
 export function useShipmentTracking(trackingNumber: string): UseShipmentTrackingReturn {
@@ -57,95 +120,73 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
     setError(null);
 
     try {
-      // Mock API call - replace with actual endpoint
-      const response = await fetch(`/api/tracking/${trackingNumber}`);
-      if (!response.ok) throw new Error('Failed to fetch tracking data');
+      // Search shipments by tracking number
+      const result = await api.get<{ data: ApiShipment[] }>(
+        `/api/v4/shipments?search=${encodeURIComponent(trackingNumber)}&limit=1`,
+      );
 
-      const data = await response.json();
-      setTrackingData(data.shipment);
-      setEvents(data.events || []);
+      const shipment = result.data?.[0];
+      if (!shipment) {
+        throw new Error('Tracking number not found');
+      }
+
+      // Fetch full detail (includes activityLogs)
+      const detail = await api.get<{ data: ApiShipment }>(
+        `/api/v4/shipments/${shipment.id}`,
+      );
+
+      setTrackingData(mapShipmentToTrackingData(detail.data));
+      setEvents(mapLogsToEvents(detail.data.activityLogs ?? []));
       setStatus('success');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to load tracking data';
       setError(errorMessage);
       setStatus('error');
-
-      // Generate mock data for demo
-      setTrackingData({
-        trackingNumber,
-        orderId: `ORD-${Math.random().toString(36).substring(7).toUpperCase()}`,
-        carrier: ['FedEx', 'UPS', 'DHL'][Math.floor(Math.random() * 3)],
-        currentStatus: ['In Transit', 'Out for Delivery', 'Delivered'][Math.floor(Math.random() * 3)],
-        eta: new Date(Date.now() + 2 * 86400000).toISOString(),
-        lastLocation: 'Distribution Center, Toronto',
-        origin: 'Warehouse, Vancouver',
-        destination: 'Recipient Address, Toronto',
-        recipientName: 'John Doe',
-        recipientAddress: '123 Main St, Toronto, ON M1A 1A1',
-        weight: 2.5,
-        dimensions: { length: 30, width: 20, height: 15 },
-        serviceLevel: 'Express',
-      });
-
-      setEvents([
-        {
-          id: '1',
-          timestamp: new Date().toISOString(),
-          location: 'Toronto, ON',
-          description: 'Out for delivery',
-          status: 'in_transit',
-          icon: '🚚',
-        },
-        {
-          id: '2',
-          timestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
-          location: 'Distribution Center',
-          description: 'Package sorted and loaded',
-          status: 'in_transit',
-          icon: '📦',
-        },
-        {
-          id: '3',
-          timestamp: new Date(Date.now() - 6 * 3600000).toISOString(),
-          location: 'Vancouver, BC',
-          description: 'Package picked up',
-          status: 'picked_up',
-          icon: '📍',
-        },
-      ]);
     }
   }, [trackingNumber]);
 
   const subscribeToUpdates = useCallback(() => {
     if (!trackingNumber) return;
 
-    // Mock WebSocket subscription - replace with actual endpoint
-    const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:3001';
+    const wsUrl =
+      process.env.NEXT_PUBLIC_WS_URL ??
+      (typeof window !== 'undefined'
+        ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`
+        : '');
+
+    if (!wsUrl) return;
+
     try {
-      wsRef.current = new WebSocket(`${wsUrl}/tracking/${trackingNumber}`);
+      wsRef.current = new WebSocket(`${wsUrl}/ws/tracking/${trackingNumber}`);
 
       wsRef.current.onmessage = (event) => {
         try {
-          const update = JSON.parse(event.data);
-          setTrackingData((prev) => prev ? { ...prev, ...update.shipment } : null);
+          const update = JSON.parse(event.data as string) as {
+            shipment?: Partial<TrackingData>;
+            events?: TrackingEvent[];
+          };
+          if (update.shipment) {
+            setTrackingData((prev) => (prev ? { ...prev, ...update.shipment } : null));
+          }
           if (update.events) {
             setEvents(update.events);
           }
-        } catch (err) {
-          console.error('Failed to parse WebSocket message:', err);
+        } catch {
+          // Ignore malformed WS messages
         }
       };
 
       wsRef.current.onerror = () => {
-        console.warn('WebSocket error, falling back to polling');
+        // WS not available; polling via refetch is the fallback
       };
 
       wsRef.current.onclose = () => {
-        // Attempt reconnect after 5 seconds
-        setTimeout(subscribeToUpdates, 5000);
+        const t = setTimeout(subscribeToUpdates, 10_000);
+        return () => clearTimeout(t);
       };
-    } catch (err) {
-      console.warn('WebSocket unavailable, using polling instead');
+    } catch {
+      // WebSocket unavailable in this environment
     }
   }, [trackingNumber]);
 
@@ -154,9 +195,7 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
     subscribeToUpdates();
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
+      wsRef.current?.close();
     };
   }, [fetchTrackingData, subscribeToUpdates]);
 
@@ -164,7 +203,7 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
     trackingData,
     events,
     status,
-    eta: trackingData?.eta || null,
+    eta: trackingData?.eta ?? null,
     isLoading: status === 'loading',
     error,
     refetch: fetchTrackingData,
