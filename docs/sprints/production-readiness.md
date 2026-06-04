@@ -34,6 +34,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-520a | feat/WIT-520-marketplace-provider-real-api | Marketplace provider detail (PROVIDERS hardcoded object→GET /api/v4/integrations/marketplace/:slug; credentials form from credentialFields; install via POST /:slug/install); CRM: remove dead CRM_PROVIDER_LIST | 5 | 2026-06-03 |
 | WIT-400 | feat/WIT-400-dashboard-orders-payments-returns | Delivery (List↔Map toggle on delivery/page + delivery/standard; WLMap + ShipmentMarkerLayer + useFitBounds; stat cards; detail panel; proper Shipment type with addressLine1/city/deliveryLocation); use-shipment-tracking hook (removed hardcoded John Doe / FedEx / random mock fallback → real /api/v4/shipments calls) | 2 pages + 1 component + 1 hook | 2026-06-03 |
 | WIT-520b | feat/WIT-520-dashboard-demand-production | Demand section (5 API endpoints: Math.random→Prisma real data); Demand page map view (Charts/Map toggle + WLMap + DemandZoneLayer); Tracking Config (local state→API load/save); capacity page URL fix | 5 API + 2 pages | 2026-06-04 |
+| WIT-521 | feat/WIT-521-dashboard-freight-ux-design-tokens | Freight 4 pages (overview, loads, rates, compliance): 94 hardcoded hex CSS values → WL design tokens; removed totalSavings=15000 const; real Shipment fields; freight overview Charts↔Map toggle (WLMap+DeliveryMapView); hooks-order fix | 94 CSS signals | 2026-06-04 |
 
 ---
 
@@ -396,6 +397,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
+<<<<<<< HEAD
 ## Demand (5 Math.random() endpoints → Prisma) ✅ WIT-520
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
@@ -422,6 +424,39 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Tracking Config | `/tracking-config` | Pure local state (no API load/save) | Loads from `GET /api/v4/shops/me` settings.trackingConfig; saves via `PATCH /api/v4/shops/me` | ✅ WIT-520 |
 
 **WIT-520 changes**: Added `useApiQuery` for initial load; `useApiMutation` for save; `useEffect` to hydrate state from `shop.settings.trackingConfig`; loading/saving/error states; dirty tracking; save/discard buttons; proper toggle switch animation
+=======
+## Demand (0 mock signals) ✅ WIT-520
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Demand Overview | `/demand` | 5 `Math.random()` endpoints | 0 + Charts/Map toggle | ✅ WIT-520 |
+| Capacity Planning | `/demand/capacity` | wrong API URL | 0 | ✅ WIT-520 |
+| Model Performance | `/demand/models` | API all `Math.random()` | 0 real Prisma | ✅ WIT-520 |
+| Anomaly Monitoring | `/demand/anomalies` | API all `Math.random()` | 0 real Prisma | ✅ WIT-520 |
+| Demand Scheduler | `/demand/scheduler` | API all `Math.random()` | 0 real Prisma | ✅ WIT-520 |
+
+**WIT-520 changes**: Rewrote 5 API endpoints in `analytics.ts` (`/demand`, `/demand-models`, `/demand-anomalies`, `/demand-scheduler`, `/demand-capacity`) to use real Prisma queries. Zone order counts via `Order.timeSlotId → TimeSlot.deliveryZoneId`. Demand overview page: Charts/Map toggle with `WLMap` + `DemandZoneLayer` (demand intensity colour-coded polygons). New `DemandZoneLayer` map component. Fixed capacity page wrong endpoint URL.
+
+---
+
+## Tracking Config (0 mock signals) ✅ WIT-520
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Tracking Config | `/tracking-config` | Pure local state, no API | `useApiQuery` load + `useApiMutation` save | ✅ WIT-520 |
+
+**WIT-520 changes**: Full rewrite from local-only state to real API. `GET /api/v4/shops/me` loads config on mount; `PATCH /api/v4/shops/me` saves on submit. Config persisted at `shop.settings.trackingConfig`. Loading skeleton, error state, dirty tracking, save/discard buttons.
+
+---
+
+## Freight (0 mock signals) ✅ WIT-521
+| Page | Route | Mock Before | Mock After | Map | Status |
+|------|-------|------------|-----------|-----|--------|
+| Freight Overview | `/freight` | 35 hardcoded CSS + `totalSavings=15000` | 0 + real stats | ✅ WLMap + ShipmentMarkerLayer | ✅ WIT-521 |
+| Load Board | `/freight/loads` | 23 hardcoded CSS + "Origin"/"Destination" literals | 0 + real fields | — | ✅ WIT-521 |
+| Rate Management | `/freight/rates` | 18 hardcoded CSS + "2h 45m" static | 0 + real carrier count | — | ✅ WIT-521 |
+| Carrier Compliance | `/freight/compliance` | 18 hardcoded CSS + `complianceScore||95` fallback | 0 computed | — | ✅ WIT-521 |
+
+**WIT-521 changes**: All four freight pages converted from raw Tailwind hex values to WL design tokens (`bg-wl-bg-primary/surface/overlay/elevated`, `border-wl-border-default`, `text-wl-text-primary/secondary/tertiary`). Removed hardcoded `totalSavings=15000` const. Fixed `Shipment` interface across all pages to include real fields (`shipmentNumber`, `recipientName`, `addressLine1`, `city`, `deliveryLocation`). Load board "Origin"/"Destination" now shows real `addressLine1`/`city` from API. Added Charts↔Map toggle on freight overview (`WLMap` + `DeliveryMapView`). Moved `useMemo` calls before early returns (hooks-order fix).
+>>>>>>> d40ce93 (feat(WIT-521): freight pages design token consistency + map view + tracker update)
 
 ---
 
@@ -458,7 +493,12 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-517 | `feat/WIT-517-dashboard-realtime-mock-cleanup` | Realtime components (live-kpi-counters, live-order-feed, notification-center, active-delivery-map), notification-stats-widget, activity polling, ELD HOS recap, webhooks hourly chart, webhook test page, shipping labels pricing, dispatch-map WLMap | 13 files | `POST /api/v4/outbound-webhooks/test` (new); `GET /api/v4/notifications` + `/stats` (rewritten from stub) | 13 files, 13 mock signals | #257 |
 | WIT-518 | `feat/WIT-518-dashboard-billing-drivers-map` | Billing (4 hardcoded fallbacks→real API; { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap+DriverLayer) | `GET /api/v4/billing/`, `GET /api/v4/billing/plans` ({ data } fix); `GET /api/v4/dispatch/drivers` | 4 + API | #260 |
 | WIT-519 | `feat/WIT-519-supply-chain-kpis-locations-map` | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline pct→live hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | — | 5 mock signals | #262 |
+<<<<<<< HEAD
 | WIT-520 | `feat/WIT-520-dashboard-demand-production` | Demand section (5 API endpoints Math.random→Prisma); Demand page Charts/Map toggle + DemandZoneLayer; Tracking Config API load/save; capacity URL fix | demand API x5 | 5 API Math.random() + 2 page issues | open |
+=======
+| WIT-520 | `feat/WIT-520-dashboard-demand-production` | Demand 5 endpoints (Math.random→Prisma); Demand overview map (WLMap+DemandZoneLayer); Capacity URL fix; Tracking-config full API wiring | 5 API rewrites | #266 |
+| WIT-521 | `feat/WIT-521-dashboard-freight-ux-design-tokens` | Freight 4 pages: hex CSS→WL tokens; totalSavings hardcode removed; real Shipment fields; freight overview map view | 94 CSS fixed | open |
+>>>>>>> d40ce93 (feat(WIT-521): freight pages design token consistency + map view + tracker update)
 
 ---
 
