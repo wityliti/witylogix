@@ -12,8 +12,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Download,
-  Map as MapIcon,
-  LayoutGrid,
+  BarChart3,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,16 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
+
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => m.WLMap),
+  { ssr: false },
+);
+const DemandZoneLayer = dynamic(
+  () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
+  { ssr: false },
+);
 import { ErrorState } from '@/components/ui/error-state';
 import type { ZonePoint } from '@/components/map/zone-heat-layer';
 
@@ -74,11 +84,10 @@ export default function DemandPage() {
   const [selectedZone, setSelectedZone] = useState<string>('all');
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'nextweek' | 'custom'>('week');
   const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'data' | 'map'>('data');
-  const [mapId, setMapId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'charts' | 'map'>('charts');
 
   const { data, loading, error } = useApiQuery<DemandData>('/api/v4/analytics/demand');
-  const { data: heatmapPoints } = useApiQuery<ZonePoint[]>('/api/v4/analytics/demand-heatmap');
+  const { data: zonesGeojson } = useZonesGeoJson();
 
   const zones = data?.zones || [];
   const anomalies = data?.anomalies || [];
@@ -279,27 +288,30 @@ export default function DemandPage() {
               <h1 className="text-3xl font-bold text-white">Demand Forecast</h1>
               <p className="text-sm text-gray-400 mt-1">Real-time demand predictions and analytics</p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-1">
+            <div className="flex gap-2 items-center">
+              {/* Charts / Map toggle */}
+              <div className="flex rounded-lg border border-[#1e1e2e] overflow-hidden">
                 <button
-                  onClick={() => setViewMode('data')}
+                  onClick={() => setViewMode('charts')}
                   className={cn(
-                    'p-1.5 rounded transition-colors',
-                    viewMode === 'data' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60',
+                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                    viewMode === 'charts'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-transparent text-gray-400 hover:text-white'
                   )}
-                  aria-label="Data view"
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <BarChart3 className="w-3.5 h-3.5" /> Charts
                 </button>
                 <button
                   onClick={() => setViewMode('map')}
                   className={cn(
-                    'p-1.5 rounded transition-colors',
-                    viewMode === 'map' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60',
+                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                    viewMode === 'map'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-transparent text-gray-400 hover:text-white'
                   )}
-                  aria-label="Map view"
                 >
-                  <MapIcon className="w-4 h-4" />
+                  <Map className="w-3.5 h-3.5" /> Map
                 </button>
               </div>
               <Button variant="secondary" size="md">
@@ -372,28 +384,69 @@ export default function DemandPage() {
 
       {/* Map View */}
       {viewMode === 'map' && (
-        <div className="px-8 py-6">
-          <div className="relative h-[560px] rounded-xl overflow-hidden border border-white/[0.06]">
-            {!heatmapPoints || heatmapPoints.length === 0 ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d0d14] z-10 gap-2">
-                <MapIcon className="w-8 h-8 text-white/10" />
-                <p className="text-sm text-white/30">No city-level demand data yet</p>
-                <p className="text-xs text-white/20">Data appears once orders have city addresses</p>
+        <div className="flex-1 relative" style={{ height: 'calc(100vh - 200px)' }}>
+          {zonesGeojson ? (
+            <WLMap center={[77.12, 28.65]} zoom={10} className="h-full w-full">
+              <DemandZoneLayer
+                zones={zonesGeojson}
+                demandData={zones.map((z) => ({
+                  id: z.id,
+                  name: z.name,
+                  predictedVolume: z.predictedVolume,
+                  actualVolume: z.actualVolume,
+                  trend: z.trend,
+                }))}
+              />
+            </WLMap>
+          ) : (
+            <div className="h-full flex items-center justify-center bg-[#0a0a0f]">
+              <p className="text-gray-400 text-sm">Loading zone map…</p>
+            </div>
+          )}
+
+          {/* Map legend */}
+          <div className="absolute bottom-6 left-6 bg-[#12121a]/90 backdrop-blur border border-[#1e1e2e] rounded-xl p-4 text-xs">
+            <p className="font-semibold text-white mb-2">Demand Intensity</p>
+            {[
+              { color: '#3b82f6', label: 'Low' },
+              { color: '#22c55e', label: 'Moderate' },
+              { color: '#eab308', label: 'High' },
+              { color: '#f97316', label: 'Very High' },
+              { color: '#ef4444', label: 'Critical' },
+            ].map(({ color, label }) => (
+              <div key={label} className="flex items-center gap-2 mt-1">
+                <div className="w-3 h-3 rounded-sm" style={{ background: color }} />
+                <span className="text-gray-300">{label}</span>
               </div>
-            ) : null}
-            <WLMap center={[20, 0]} zoom={2} className="w-full h-full" onReady={setMapId} />
-            {mapId && heatmapPoints && heatmapPoints.length > 0 && (
-              <ZoneHeatLayer mapId={mapId} zones={heatmapPoints} />
-            )}
+            ))}
           </div>
-          <p className="mt-2 text-xs text-white/20 text-center">
-            Demand intensity by city — bubble size and opacity reflect order volume in the last 7 days
-          </p>
+
+          {/* Zone summary overlay */}
+          <div className="absolute top-4 right-4 bg-[#12121a]/90 backdrop-blur border border-[#1e1e2e] rounded-xl p-4 max-w-xs">
+            <p className="text-xs font-semibold text-white mb-3">Zone Summary</p>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {zones.slice(0, 8).map((z) => (
+                <div key={z.id} className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-gray-300 truncate">{z.name}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-xs font-mono text-white">{z.predictedVolume}</span>
+                    {z.trend === 'up' ? (
+                      <TrendingUp className="w-3 h-3 text-emerald-400" />
+                    ) : z.trend === 'down' ? (
+                      <TrendingDown className="w-3 h-3 text-red-400" />
+                    ) : (
+                      <span className="text-gray-500 text-[10px]">—</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Data View */}
-      {viewMode === 'data' && (
+      {/* Main Content — Charts view */}
+      {viewMode === 'charts' && (
       <div className="flex-1 overflow-auto px-8 py-6">
         <div className="space-y-6 max-w-7xl">
           {/* KPI Metric Cards */}

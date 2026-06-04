@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
 import {
   MapPin,
   Eye,
@@ -14,38 +17,148 @@ import {
   Copy,
   Check,
   Palette,
+  Save,
+  Loader2,
 } from "lucide-react";
 
+interface TrackingConfig {
+  liveMap: boolean;
+  etaDisplay: boolean;
+  ratingWidget: boolean;
+  deliveryPreferences: boolean;
+  customDomain: string;
+  metaTitle: string;
+  metaDescription: string;
+  primaryColor: string;
+  secondaryColor: string;
+  logoUrl: string;
+}
+
+interface ShopData {
+  id: string;
+  name: string;
+  shopifyDomain: string;
+  settings: Record<string, unknown>;
+}
+
+const DEFAULT_CONFIG: TrackingConfig = {
+  liveMap: true,
+  etaDisplay: true,
+  ratingWidget: true,
+  deliveryPreferences: true,
+  customDomain: "",
+  metaTitle: "Track Your Delivery",
+  metaDescription: "Real-time order tracking with live map",
+  primaryColor: "#3b82f6",
+  secondaryColor: "#10b981",
+  logoUrl: "",
+};
+
 export default function TrackingConfigPage() {
-  const [liveMapEnabled, setLiveMapEnabled] = useState(true);
-  const [etaEnabled, setEtaEnabled] = useState(true);
-  const [ratingEnabled, setRatingEnabled] = useState(true);
-  const [preferencesEnabled, setPreferencesEnabled] = useState(true);
-  const [customDomain, setCustomDomain] = useState("track.myshop.com");
+  const { data: shop, loading, error } = useApiQuery<ShopData>("/api/v4/shops/me");
+  const saveMutation = useApiMutation<{ data: ShopData }>("PATCH", "/api/v4/shops/me");
+
+  const [config, setConfig] = useState<TrackingConfig>(DEFAULT_CONFIG);
   const [copied, setCopied] = useState(false);
-  const [metaTitle, setMetaTitle] = useState("Track Your Delivery");
-  const [metaDesc, setMetaDesc] = useState("Real-time order tracking with live map");
-  const [primaryColor, setPrimaryColor] = useState("#3b82f6");
-  const [secondaryColor, setSecondaryColor] = useState("#10b981");
-  const [logoUrl, setLogoUrl] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Hydrate config from shop settings once loaded
+  useEffect(() => {
+    if (!shop) return;
+    const stored = (shop.settings as any)?.trackingConfig ?? {};
+    setConfig({ ...DEFAULT_CONFIG, ...stored });
+  }, [shop]);
+
+  const update = <K extends keyof TrackingConfig>(key: K, value: TrackingConfig[K]) => {
+    setConfig((prev) => ({ ...prev, [key]: value }));
+    setIsDirty(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      await saveMutation.execute({
+        settings: {
+          ...(shop?.settings ?? {}),
+          trackingConfig: config,
+        },
+      });
+      setSaveSuccess(true);
+      setIsDirty(false);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch {
+      // error surfaced via saveMutation.error
+    }
+  };
+
+  const handleDiscard = () => {
+    if (!shop) return;
+    const stored = (shop.settings as any)?.trackingConfig ?? {};
+    setConfig({ ...DEFAULT_CONFIG, ...stored });
+    setIsDirty(false);
+  };
 
   const handleCopyDomain = () => {
-    navigator.clipboard.writeText(customDomain);
+    if (!config.customDomain) return;
+    navigator.clipboard.writeText(config.customDomain);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const trackingPageUrl = `https://${customDomain}/track/order-123`;
+  const trackingPageUrl = config.customDomain
+    ? `https://${config.customDomain}/track/order-123`
+    : `https://${shop?.shopifyDomain ?? "yourshop.com"}/pages/track`;
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} />;
+
+  const featureToggles = [
+    { key: "liveMap" as const, icon: MapPin, label: "Live Map", desc: "Show real-time driver location on the tracking page" },
+    { key: "etaDisplay" as const, icon: Clock, label: "ETA Display", desc: "Show estimated time of arrival" },
+    { key: "ratingWidget" as const, icon: Star, label: "Rating Widget", desc: "Allow customers to rate their delivery" },
+    { key: "deliveryPreferences" as const, icon: Settings, label: "Delivery Preferences", desc: "Let customers set delivery notes and preferences" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e] p-6">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-2">Tracking Page Configuration</h1>
-          <p className="text-gray-400 text-sm">Customize your branded tracking page for customers</p>
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Tracking Page Configuration</h1>
+            <p className="text-gray-400 text-sm mt-0.5">Customize your branded tracking page for customers</p>
+          </div>
+          {isDirty && (
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="md" onClick={handleDiscard}>Discard</Button>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleSave}
+                disabled={saveMutation.loading}
+                className="flex items-center gap-2"
+              >
+                {saveMutation.loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : saveSuccess ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {saveSuccess ? "Saved" : "Save Configuration"}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
+
+      {saveMutation.error && (
+        <div className="max-w-6xl mx-auto px-6 pt-4">
+          <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
+            Failed to save: {saveMutation.error.message}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -54,34 +167,39 @@ export default function TrackingConfigPage() {
             {/* Feature Toggles */}
             <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
               <h3 className="text-lg font-semibold text-white mb-1">Page Features</h3>
-              <p className="text-gray-400 text-xs mb-4">Enable/disable tracking page features</p>
+              <p className="text-gray-400 text-xs mb-4">Enable or disable tracking page features</p>
               <div className="space-y-3">
-                {[
-                  { icon: MapPin, label: "Live Map", desc: "Show real-time driver location", enabled: liveMapEnabled, setter: setLiveMapEnabled },
-                  { icon: Clock, label: "ETA Display", desc: "Show estimated time of arrival", enabled: etaEnabled, setter: setEtaEnabled },
-                  { icon: Star, label: "Rating Widget", desc: "Allow customer delivery ratings", enabled: ratingEnabled, setter: setRatingEnabled },
-                  { icon: Settings, label: "Delivery Preferences", desc: "Let customers set delivery notes", enabled: preferencesEnabled, setter: setPreferencesEnabled },
-                ].map((feature) => {
+                {featureToggles.map((feature) => {
                   const Icon = feature.icon;
+                  const enabled = config[feature.key] as boolean;
                   return (
                     <div
-                      key={feature.label}
+                      key={feature.key}
                       className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] hover:border-blue-500/30 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <Icon size={18} className="text-blue-500" />
+                        <Icon size={18} className="text-blue-500 shrink-0" />
                         <div>
                           <p className="text-white text-sm font-medium">{feature.label}</p>
                           <p className="text-gray-400 text-xs">{feature.desc}</p>
                         </div>
                       </div>
                       <button
-                        onClick={() => feature.setter(!feature.enabled)}
+                        onClick={() => update(feature.key, !enabled)}
+                        aria-pressed={enabled}
+                        aria-label={`Toggle ${feature.label}`}
                         className={cn(
-                          "w-12 h-7 rounded-full border-none cursor-pointer transition-colors",
-                          feature.enabled ? "bg-blue-500" : "bg-[#1e1e2e]"
+                          "relative w-12 h-7 rounded-full border-none cursor-pointer transition-colors shrink-0",
+                          enabled ? "bg-blue-500" : "bg-[#2a2a3e]"
                         )}
-                      />
+                      >
+                        <span
+                          className={cn(
+                            "absolute top-1 w-5 h-5 rounded-full bg-white transition-transform",
+                            enabled ? "translate-x-6" : "translate-x-1"
+                          )}
+                        />
+                      </button>
                     </div>
                   );
                 })}
@@ -95,8 +213,9 @@ export default function TrackingConfigPage() {
               <div className="flex gap-2 items-center mb-3">
                 <input
                   type="text"
-                  value={customDomain}
-                  onChange={(e) => setCustomDomain(e.target.value)}
+                  value={config.customDomain}
+                  onChange={(e) => update("customDomain", e.target.value)}
+                  placeholder="track.yourshop.com"
                   className="flex-1 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm font-mono focus:outline-none focus:border-blue-500/50"
                 />
                 <Button
@@ -104,39 +223,45 @@ export default function TrackingConfigPage() {
                   variant="secondary"
                   size="sm"
                   className="flex items-center gap-1.5"
+                  disabled={!config.customDomain}
                 >
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
                   {copied ? "Copied" : "Copy"}
                 </Button>
               </div>
-              <p className="text-gray-500 text-xs">Configure your DNS to point to witylogix.com</p>
+              <p className="text-gray-500 text-xs">Configure a CNAME DNS record pointing to <code className="text-blue-400">tracking.witylogix.com</code></p>
             </Card>
 
             {/* SEO Settings */}
             <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
               <h3 className="text-lg font-semibold text-white mb-1">SEO Configuration</h3>
-              <p className="text-gray-400 text-xs mb-4">Meta tags and SEO settings</p>
+              <p className="text-gray-400 text-xs mb-4">Meta tags shown in search results</p>
               <div className="space-y-4">
                 <div>
                   <label className="block text-gray-300 text-xs font-medium mb-2">Meta Title</label>
                   <input
                     type="text"
-                    value={metaTitle}
-                    onChange={(e) => setMetaTitle(e.target.value)}
+                    value={config.metaTitle}
+                    onChange={(e) => update("metaTitle", e.target.value)}
+                    maxLength={60}
                     className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-xs focus:outline-none focus:border-blue-500/50"
                   />
-                  <p className="text-gray-500 text-xs mt-1">{metaTitle.length}/60 characters</p>
+                  <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-amber-400" : "text-gray-500")}>
+                    {config.metaTitle.length}/60 characters
+                  </p>
                 </div>
-
                 <div>
                   <label className="block text-gray-300 text-xs font-medium mb-2">Meta Description</label>
                   <textarea
-                    value={metaDesc}
-                    onChange={(e) => setMetaDesc(e.target.value)}
+                    value={config.metaDescription}
+                    onChange={(e) => update("metaDescription", e.target.value)}
+                    maxLength={160}
                     className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-xs focus:outline-none focus:border-blue-500/50 resize-none"
                     rows={3}
                   />
-                  <p className="text-gray-500 text-xs mt-1">{metaDesc.length}/160 characters</p>
+                  <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-amber-400" : "text-gray-500")}>
+                    {config.metaDescription.length}/160 characters
+                  </p>
                 </div>
               </div>
             </Card>
@@ -150,50 +275,58 @@ export default function TrackingConfigPage() {
                 <Eye size={18} className="text-blue-500" />
                 <h3 className="text-lg font-semibold text-white">Page Preview</h3>
               </div>
-              <div className="bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] p-4 space-y-3">
-                <div className="flex items-center justify-between pb-3 border-b border-[#1e1e2e]">
-                  <p className="text-gray-400 text-xs">Preview URL:</p>
-                  <code className="text-blue-500 text-xs font-mono">{trackingPageUrl}</code>
-                </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-white text-sm font-semibold mb-2">Order #12345 Status</p>
-                    <Badge variant="primary">In Transit</Badge>
+              {/* Mini preview */}
+              <div
+                className="rounded-lg border border-[#1e1e2e] p-4 space-y-3"
+                style={{ background: "#111" }}
+              >
+                {config.logoUrl && (
+                  <div className="pb-3 border-b border-white/10">
+                    <img src={config.logoUrl} alt="Logo" className="h-7 object-contain" />
                   </div>
-
-                  {liveMapEnabled && (
-                    <div className="p-3 bg-[#0a0a0f] rounded text-xs border border-[#1e1e2e]">
-                      <p className="text-gray-400 italic">Live map would display here</p>
+                )}
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <p className="text-gray-400 text-xs">Preview URL:</p>
+                  <code className="text-blue-400 text-xs font-mono truncate max-w-[180px]">{trackingPageUrl}</code>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-white text-sm font-semibold">Order #12345</p>
+                  <Badge variant="primary">In Transit</Badge>
+                  {config.liveMap && (
+                    <div className="p-3 rounded text-xs border border-white/10 bg-white/5 flex items-center gap-2">
+                      <MapPin size={14} style={{ color: config.primaryColor }} />
+                      <span className="text-gray-300">Live map enabled</span>
                     </div>
                   )}
-
-                  {etaEnabled && (
-                    <div className="flex items-center gap-2 p-2 bg-[#0a0a0f] rounded text-xs border border-[#1e1e2e]">
-                      <Clock size={14} className="text-blue-500" />
+                  {config.etaDisplay && (
+                    <div className="flex items-center gap-2 p-2 rounded text-xs border border-white/10 bg-white/5">
+                      <Clock size={14} style={{ color: config.primaryColor }} />
                       <span className="text-gray-300">Arrives today by 6:30 PM</span>
                     </div>
                   )}
-
-                  {ratingEnabled && (
-                    <div className="p-2 bg-[#0a0a0f] rounded text-xs border border-[#1e1e2e]">
+                  {config.ratingWidget && (
+                    <div className="p-2 rounded text-xs border border-white/10 bg-white/5">
                       <p className="text-gray-400 mb-1">Rate your delivery</p>
                       <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star key={star} size={16} className="text-yellow-500 cursor-pointer" />
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} size={14} style={{ color: config.primaryColor }} />
                         ))}
                       </div>
                     </div>
                   )}
-
-                  {preferencesEnabled && (
-                    <div className="p-2 bg-[#0a0a0f] rounded text-xs border border-[#1e1e2e]">
-                      <p className="text-gray-400">Delivery preferences configured</p>
-                    </div>
-                  )}
                 </div>
               </div>
-              <Button variant="primary" className="w-full mt-4">Open Full Preview</Button>
+
+              {/* Active features summary */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {featureToggles.filter((f) => config[f.key]).map((f) => (
+                  <Badge key={f.key} variant="success" className="text-xs">{f.label}</Badge>
+                ))}
+                {featureToggles.filter((f) => !config[f.key]).map((f) => (
+                  <Badge key={f.key} variant="default" className="text-xs opacity-50">{f.label}</Badge>
+                ))}
+              </div>
             </Card>
 
             {/* Branding Configuration */}
@@ -202,21 +335,21 @@ export default function TrackingConfigPage() {
                 <Palette size={18} className="text-blue-500" />
                 <h3 className="text-lg font-semibold text-white">Branding</h3>
               </div>
-              <p className="text-gray-400 text-xs mb-4">Customize colors and logo</p>
+              <p className="text-gray-400 text-xs mb-4">Customize colors and logo for the tracking page</p>
               <div className="space-y-4">
                 <div>
                   <label className="block text-gray-300 text-xs font-medium mb-2">Primary Color</label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
+                      value={config.primaryColor}
+                      onChange={(e) => update("primaryColor", e.target.value)}
+                      className="w-10 h-10 rounded border border-[#1e1e2e] cursor-pointer p-0.5 bg-transparent"
                     />
                     <input
                       type="text"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      value={config.primaryColor}
+                      onChange={(e) => update("primaryColor", e.target.value)}
                       className="flex-1 px-2 py-1.5 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
                     />
                   </div>
@@ -227,14 +360,14 @@ export default function TrackingConfigPage() {
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
-                      value={secondaryColor}
-                      onChange={(e) => setSecondaryColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
+                      value={config.secondaryColor}
+                      onChange={(e) => update("secondaryColor", e.target.value)}
+                      className="w-10 h-10 rounded border border-[#1e1e2e] cursor-pointer p-0.5 bg-transparent"
                     />
                     <input
                       type="text"
-                      value={secondaryColor}
-                      onChange={(e) => setSecondaryColor(e.target.value)}
+                      value={config.secondaryColor}
+                      onChange={(e) => update("secondaryColor", e.target.value)}
                       className="flex-1 px-2 py-1.5 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
                     />
                   </div>
@@ -244,24 +377,32 @@ export default function TrackingConfigPage() {
                   <label className="block text-gray-300 text-xs font-medium mb-2">Logo URL</label>
                   <input
                     type="url"
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
+                    value={config.logoUrl}
+                    onChange={(e) => update("logoUrl", e.target.value)}
                     placeholder="https://example.com/logo.png"
                     className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-gray-300 text-xs focus:outline-none focus:border-blue-500/50"
                   />
-                  <p className="text-gray-500 text-xs mt-1">Recommended size: 200x50px</p>
+                  <p className="text-gray-500 text-xs mt-1">Recommended: 200×50px PNG or SVG</p>
                 </div>
-
-                <Button variant="primary" className="w-full">Save Branding</Button>
               </div>
             </Card>
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="flex gap-3 justify-end mt-6">
-          <Button variant="secondary">Discard</Button>
-          <Button variant="primary">Save Configuration</Button>
+        {/* Save Button (bottom) */}
+        <div className="flex gap-3 justify-end mt-4 pb-8">
+          <Button variant="secondary" onClick={handleDiscard} disabled={!isDirty || saveMutation.loading}>
+            Discard Changes
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={!isDirty || saveMutation.loading}
+            className="flex items-center gap-2"
+          >
+            {saveMutation.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saveSuccess ? "Configuration saved!" : "Save Configuration"}
+          </Button>
         </div>
       </div>
     </div>
