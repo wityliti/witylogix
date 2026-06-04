@@ -212,6 +212,8 @@ export default function ProductSyncPage() {
 
   const {
     previewProduct,
+    runPreview,
+    isLoading: previewLoading,
   } = useProductPreview(effectivePlatformId, mappings);
 
   const unmappedRequired = useMemo(() => {
@@ -225,15 +227,13 @@ export default function ProductSyncPage() {
   };
 
   const handleTestSync = async () => {
-    if (!selectedPlatformId) return;
+    if (!selectedPlatform) return;
     setTestSyncInProgress(true);
-    try {
-      await api.post(`/api/v4/integrations/${selectedPlatformId}/test`, {});
-    } catch {
-      // test sync endpoint may not exist yet — ignore
-    } finally {
-      setTestSyncInProgress(false);
-    }
+    const sampleProduct = Object.fromEntries(
+      selectedPlatform.fields.map((f) => [f.name, f.sampleValue ?? ""]),
+    );
+    await runPreview(sampleProduct);
+    setTestSyncInProgress(false);
   };
 
   const handleSaveTemplate = () => {
@@ -463,7 +463,7 @@ export default function ProductSyncPage() {
                     variant="secondary"
                     size="sm"
                     onClick={handleTestSync}
-                    disabled={testSyncInProgress || unmappedRequired.length > 0}
+                    disabled={testSyncInProgress || previewLoading || unmappedRequired.length > 0}
                     className="gap-2"
                   >
                     <RefreshCw className={cn('w-4 h-4', testSyncInProgress && 'animate-spin')} />
