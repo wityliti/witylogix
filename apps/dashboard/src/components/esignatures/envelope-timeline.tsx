@@ -12,6 +12,7 @@ import {
   FileCheckIcon,
   PackageIcon,
   ChevronDownIcon,
+  ClockIcon,
 } from "lucide-react";
 
 interface TimelineEvent {
@@ -33,64 +34,7 @@ interface EnvelopeTimelineProps {
   className?: string;
 }
 
-// Mock data for demo
-const mockEvents: TimelineEvent[] = [
-  {
-    id: "1",
-    type: "created",
-    timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    description: "Envelope created",
-    details: "Envelope DSA-2024-001 created with 2 recipients",
-  },
-  {
-    id: "2",
-    type: "sent",
-    timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-    description: "Sent to recipients",
-    signer: {
-      name: "Sarah Johnson",
-      email: "sarah@company.com",
-      initials: "SJ",
-    },
-    ipAddress: "192.168.1.45",
-  },
-  {
-    id: "3",
-    type: "viewed",
-    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    description: "Document viewed",
-    signer: {
-      name: "Michael Chen",
-      email: "michael@client.com",
-      initials: "MC",
-    },
-    ipAddress: "203.45.67.89",
-  },
-  {
-    id: "4",
-    type: "signed",
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    description: "Document signed",
-    signer: {
-      name: "Michael Chen",
-      email: "michael@client.com",
-      initials: "MC",
-    },
-    ipAddress: "203.45.67.89",
-    details: "Signed with electronic signature",
-  },
-  {
-    id: "5",
-    type: "completed",
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    description: "Envelope completed",
-    details: "All recipients have signed the document",
-  },
-];
-
-const getIcon = (
-  type: TimelineEvent["type"]
-) => {
+const getIcon = (type: TimelineEvent["type"]) => {
   switch (type) {
     case "created":
       return PackageIcon;
@@ -110,11 +54,9 @@ const getStatusColor = (
 ): "success" | "info" | "warning" | "default" => {
   switch (type) {
     case "completed":
-      return "success";
     case "signed":
       return "success";
     case "viewed":
-      return "info";
     case "sent":
       return "info";
     case "created":
@@ -122,7 +64,7 @@ const getStatusColor = (
   }
 };
 
-const TimelineEvent = ({
+const TimelineEventItem = ({
   event,
   isLast,
 }: {
@@ -228,20 +170,37 @@ const TimelineEvent = ({
 };
 
 const EnvelopeTimeline = ({
-  events = mockEvents,
+  events = [],
   className,
 }: EnvelopeTimelineProps) => {
   const sortedEvents = [...events].sort(
     (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
   );
 
-  const completionPercentage = Math.round(
-    ((sortedEvents.filter(
-      (e) => e.type === "signed" || e.type === "completed"
-    ).length /
-      sortedEvents.length) *
-      100) as number
-  );
+  const completionPercentage =
+    sortedEvents.length > 0
+      ? Math.round(
+          (sortedEvents.filter(
+            (e) => e.type === "signed" || e.type === "completed"
+          ).length /
+            sortedEvents.length) *
+            100
+        )
+      : 0;
+
+  if (sortedEvents.length === 0) {
+    return (
+      <Card className={cn("w-full p-6", className)}>
+        <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+          Envelope Status Timeline
+        </h3>
+        <div className="flex flex-col items-center py-8 text-wl-text-tertiary">
+          <ClockIcon className="w-10 h-10 mb-3 opacity-30" />
+          <p className="text-sm">No timeline events yet</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className={cn("w-full p-6", className)}>
@@ -262,7 +221,7 @@ const EnvelopeTimeline = ({
 
       <div className="space-y-0">
         {sortedEvents.map((event, index) => (
-          <TimelineEvent
+          <TimelineEventItem
             key={event.id}
             event={event}
             isLast={index === sortedEvents.length - 1}

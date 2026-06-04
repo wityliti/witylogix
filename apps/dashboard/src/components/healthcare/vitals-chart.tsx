@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
+import { ChevronDownIcon, TrendingUpIcon, TrendingDownIcon, ActivityIcon } from "lucide-react";
 
 interface VitalReading {
   timestamp: Date;
@@ -17,31 +17,10 @@ interface VitalReading {
 }
 
 interface VitalsChartProps {
-  readings: VitalReading[];
+  readings?: VitalReading[];
   onDateRangeChange?: (start: Date, end: Date) => void;
   className?: string;
 }
-
-// Mock vitals data
-const generateMockReadings = (): VitalReading[] => {
-  const readings: VitalReading[] = [];
-  const now = Date.now();
-
-  for (let i = 30; i >= 0; i--) {
-    readings.push({
-      timestamp: new Date(now - i * 24 * 60 * 60 * 1000),
-      heartRate: 72 + Math.random() * 8 - 4,
-      bpSystolic: 128 + Math.random() * 6 - 3,
-      bpDiastolic: 82 + Math.random() * 4 - 2,
-      temperature: 98.6 + Math.random() * 0.4 - 0.2,
-      spO2: 96 + Math.random() * 3 - 1.5,
-      weight: 165 + Math.random() * 2 - 1,
-    });
-  }
-  return readings;
-};
-
-const mockReadings = generateMockReadings();
 
 interface VitalMetric {
   name: string;
@@ -54,7 +33,14 @@ interface VitalMetric {
   change: number;
 }
 
-const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
+const getTrend = (current: number, previous: number | undefined): "up" | "down" | "stable" => {
+  if (previous === undefined) return "stable";
+  const diff = current - previous;
+  if (Math.abs(diff) < 0.5) return "stable";
+  return diff > 0 ? "up" : "down";
+};
+
+const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): VitalMetric[] => [
   {
     name: "Heart Rate",
     unit: "bpm",
@@ -62,8 +48,8 @@ const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
     normalMax: 100,
     color: "wl-primary-400",
     value: latest.heartRate,
-    trend: Math.random() > 0.5 ? "up" : "down",
-    change: Math.round(Math.random() * 4 - 2),
+    trend: getTrend(latest.heartRate, previous?.heartRate),
+    change: previous ? Math.round(latest.heartRate - previous.heartRate) : 0,
   },
   {
     name: "BP Systolic",
@@ -72,8 +58,8 @@ const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
     normalMax: 120,
     color: "wl-info-400",
     value: latest.bpSystolic,
-    trend: Math.random() > 0.5 ? "up" : "stable",
-    change: Math.round(Math.random() * 4 - 2),
+    trend: getTrend(latest.bpSystolic, previous?.bpSystolic),
+    change: previous ? Math.round(latest.bpSystolic - previous.bpSystolic) : 0,
   },
   {
     name: "BP Diastolic",
@@ -82,8 +68,8 @@ const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
     normalMax: 80,
     color: "wl-info-400",
     value: latest.bpDiastolic,
-    trend: Math.random() > 0.5 ? "up" : "down",
-    change: Math.round(Math.random() * 3 - 1),
+    trend: getTrend(latest.bpDiastolic, previous?.bpDiastolic),
+    change: previous ? Math.round(latest.bpDiastolic - previous.bpDiastolic) : 0,
   },
   {
     name: "Temperature",
@@ -92,8 +78,8 @@ const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
     normalMax: 99,
     color: "wl-warning-400",
     value: latest.temperature,
-    trend: "stable",
-    change: 0,
+    trend: getTrend(latest.temperature, previous?.temperature),
+    change: previous ? Math.round((latest.temperature - previous.temperature) * 10) / 10 : 0,
   },
   {
     name: "SpO2",
@@ -102,8 +88,8 @@ const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
     normalMax: 100,
     color: "wl-success-400",
     value: latest.spO2,
-    trend: "stable",
-    change: 0,
+    trend: getTrend(latest.spO2, previous?.spO2),
+    change: previous ? Math.round((latest.spO2 - previous.spO2) * 10) / 10 : 0,
   },
   {
     name: "Weight",
@@ -112,8 +98,8 @@ const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
     normalMax: 180,
     color: "wl-danger-400",
     value: latest.weight,
-    trend: "stable",
-    change: 0,
+    trend: getTrend(latest.weight, previous?.weight),
+    change: previous ? Math.round((latest.weight - previous.weight) * 10) / 10 : 0,
   },
 ];
 
@@ -121,18 +107,51 @@ const isNormal = (metric: VitalMetric): boolean => {
   return metric.value >= metric.normalMin && metric.value <= metric.normalMax;
 };
 
+const getChartDimensions = (metric: string): { min: number; max: number } => {
+  switch (metric) {
+    case "Heart Rate":
+      return { min: 50, max: 110 };
+    case "BP Systolic":
+      return { min: 100, max: 160 };
+    case "BP Diastolic":
+      return { min: 50, max: 110 };
+    case "Temperature":
+      return { min: 96, max: 102 };
+    case "SpO2":
+      return { min: 90, max: 100 };
+    case "Weight":
+      return { min: 155, max: 175 };
+    default:
+      return { min: 0, max: 100 };
+  }
+};
+
 const VitalsChart = ({
-  readings = mockReadings,
+  readings = [],
   onDateRangeChange,
   className,
 }: VitalsChartProps) => {
   const [timeRange, setTimeRange] = useState<"7d" | "14d" | "30d">("30d");
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
 
-  const latestReading = readings[readings.length - 1] || readings[0];
-  const metrics = getMetricsFromLatest(latestReading);
+  if (readings.length === 0) {
+    return (
+      <Card className={cn("w-full p-6", className)}>
+        <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+          Vital Signs Chart
+        </h3>
+        <div className="flex flex-col items-center py-12 text-wl-text-tertiary">
+          <ActivityIcon className="w-10 h-10 mb-3 opacity-30" />
+          <p className="text-sm">No vital readings recorded</p>
+        </div>
+      </Card>
+    );
+  }
 
-  // Filter readings by time range
+  const latestReading = readings[readings.length - 1];
+  const previousReading = readings.length > 1 ? readings[readings.length - 2] : undefined;
+  const metrics = getMetricsFromReadings(latestReading, previousReading);
+
   const now = Date.now();
   const rangeMs =
     timeRange === "7d"
@@ -144,28 +163,6 @@ const VitalsChart = ({
   const filteredReadings = readings.filter(
     (r) => now - r.timestamp.getTime() <= rangeMs
   );
-
-  // Calculate min/max for chart scaling
-  const getChartDimensions = (
-    metric: string
-  ): { min: number; max: number } => {
-    switch (metric) {
-      case "Heart Rate":
-        return { min: 50, max: 110 };
-      case "BP Systolic":
-        return { min: 100, max: 160 };
-      case "BP Diastolic":
-        return { min: 50, max: 110 };
-      case "Temperature":
-        return { min: 96, max: 102 };
-      case "SpO2":
-        return { min: 90, max: 100 };
-      case "Weight":
-        return { min: 155, max: 175 };
-      default:
-        return { min: 0, max: 100 };
-    }
-  };
 
   return (
     <Card className={cn("w-full p-6", className)}>
@@ -187,11 +184,7 @@ const VitalsChart = ({
                   const end = new Date();
                   const start = new Date(
                     end.getTime() -
-                      (range === "7d"
-                        ? 7
-                        : range === "14d"
-                          ? 14
-                          : 30) *
+                      (range === "7d" ? 7 : range === "14d" ? 14 : 30) *
                         24 *
                         60 *
                         60 *
@@ -228,9 +221,7 @@ const VitalsChart = ({
               <div
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() =>
-                  setExpandedMetric(
-                    isExpanded ? null : metric.name
-                  )
+                  setExpandedMetric(isExpanded ? null : metric.name)
                 }
               >
                 <div className="flex items-center gap-3 flex-1">
@@ -239,9 +230,7 @@ const VitalsChart = ({
                     <p className="text-sm font-semibold text-wl-text-primary">
                       {metric.name}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary">
-                      {metric.unit}
-                    </p>
+                    <p className="text-xs text-wl-text-tertiary">{metric.unit}</p>
                   </div>
                 </div>
 
@@ -271,11 +260,7 @@ const VitalsChart = ({
                     </div>
                   </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex-shrink-0"
-                  >
+                  <Button variant="ghost" size="sm" className="flex-shrink-0">
                     <ChevronDownIcon
                       className={cn(
                         "w-4 h-4 transition-transform",
@@ -295,7 +280,7 @@ const VitalsChart = ({
                   }}
                 />
                 <div
-                  className={`absolute w-1 h-full rounded-full transition-all`}
+                  className="absolute w-1 h-full rounded-full transition-all"
                   style={{
                     left: `${(
                       ((metric.value - dims.min) / (dims.max - dims.min)) *
@@ -309,7 +294,7 @@ const VitalsChart = ({
               </div>
 
               <p className="text-xs text-wl-text-tertiary mt-2">
-                Normal: {metric.normalMin} - {metric.normalMax}
+                Normal: {metric.normalMin} – {metric.normalMax}
                 {!isNormal(metric) && (
                   <span className="ml-2 text-wl-warning-400">
                     ⚠ Outside normal range

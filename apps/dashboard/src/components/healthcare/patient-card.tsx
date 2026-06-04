@@ -35,24 +35,6 @@ interface PatientCardProps {
   className?: string;
 }
 
-// Mock patient data
-const mockPatient: Patient = {
-  id: "PAT-001",
-  name: "Margaret Johnson",
-  mrn: "MRN-789456",
-  dateOfBirth: new Date("1965-03-15"),
-  age: 59,
-  gender: "F",
-  conditions: ["Hypertension", "Type 2 Diabetes", "COPD"],
-  medicationCount: 8,
-  lastEncounter: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-  riskLevel: "high",
-  initials: "MJ",
-  phone: "(555) 123-4567",
-  email: "margaret.johnson@email.com",
-  address: "1234 Oak Street, Springfield, IL 62701",
-};
-
 const getRiskColor = (
   level: "low" | "medium" | "high"
 ): "success" | "warning" | "danger" => {
@@ -78,7 +60,7 @@ const getRiskLabel = (level: "low" | "medium" | "high") => {
 };
 
 const PatientCard = ({
-  patient = mockPatient,
+  patient,
   onViewDetails,
   className,
 }: PatientCardProps) => {
