@@ -35,6 +35,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-400 | feat/WIT-400-dashboard-orders-payments-returns | Delivery (List↔Map toggle on delivery/page + delivery/standard; WLMap + ShipmentMarkerLayer + useFitBounds; stat cards; detail panel; proper Shipment type with addressLine1/city/deliveryLocation); use-shipment-tracking hook (removed hardcoded John Doe / FedEx / random mock fallback → real /api/v4/shipments calls) | 2 pages + 1 component + 1 hook | 2026-06-03 |
 | WIT-520b | feat/WIT-520-dashboard-demand-production | Demand section (5 API endpoints: Math.random→Prisma real data); Demand page map view (Charts/Map toggle + WLMap + DemandZoneLayer); Tracking Config (local state→API load/save); capacity page URL fix | 5 API + 2 pages | 2026-06-04 |
 | WIT-521 | feat/WIT-521-dashboard-freight-ux-design-tokens | Freight 4 pages (overview, loads, rates, compliance): 94 hardcoded hex CSS values → WL design tokens; removed totalSavings=15000 const; real Shipment fields; freight overview Charts↔Map toggle (WLMap+DeliveryMapView); hooks-order fix | 94 CSS signals | 2026-06-04 |
+| WIT-522 | feat/WIT-522-dashboard-tracking-timeslots | Time-Slots: SLOTS[7] hardcoded array → real useApiList('/api/v4/time-slots'); loading/empty/error states; Create Slot modal (POST /api/v4/time-slots); WL design tokens. Tracking overview: List↔Map toggle, /dispatch/drivers for lat/lng, WLMap+OrderLayer+DriverLayer. Tracking Live: List↔Map toggle, map panel with order+driver markers + sidebar detail, 30s auto-refresh via dispatch drivers. New shared component: tracking/components/tracking-map-view.tsx | 7 mock slots | 2026-06-04 |
 
 ---
 
@@ -418,26 +419,6 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Tracking Config (0 → real API) ✅ WIT-520
-| Page | Route | Mock Before | Mock After | Status |
-|------|-------|------------|-----------|--------|
-| Tracking Config | `/tracking-config` | Pure local state (no API load/save) | Loads from `GET /api/v4/shops/me` settings.trackingConfig; saves via `PATCH /api/v4/shops/me` | ✅ WIT-520 |
-
-**WIT-520 changes**: Added `useApiQuery` for initial load; `useApiMutation` for save; `useEffect` to hydrate state from `shop.settings.trackingConfig`; loading/saving/error states; dirty tracking; save/discard buttons; proper toggle switch animation
-=======
-## Demand (0 mock signals) ✅ WIT-520
-| Page | Route | Mock Before | Mock After | Status |
-|------|-------|------------|-----------|--------|
-| Demand Overview | `/demand` | 5 `Math.random()` endpoints | 0 + Charts/Map toggle | ✅ WIT-520 |
-| Capacity Planning | `/demand/capacity` | wrong API URL | 0 | ✅ WIT-520 |
-| Model Performance | `/demand/models` | API all `Math.random()` | 0 real Prisma | ✅ WIT-520 |
-| Anomaly Monitoring | `/demand/anomalies` | API all `Math.random()` | 0 real Prisma | ✅ WIT-520 |
-| Demand Scheduler | `/demand/scheduler` | API all `Math.random()` | 0 real Prisma | ✅ WIT-520 |
-
-**WIT-520 changes**: Rewrote 5 API endpoints in `analytics.ts` (`/demand`, `/demand-models`, `/demand-anomalies`, `/demand-scheduler`, `/demand-capacity`) to use real Prisma queries. Zone order counts via `Order.timeSlotId → TimeSlot.deliveryZoneId`. Demand overview page: Charts/Map toggle with `WLMap` + `DemandZoneLayer` (demand intensity colour-coded polygons). New `DemandZoneLayer` map component. Fixed capacity page wrong endpoint URL.
-
----
-
 ## Tracking Config (0 mock signals) ✅ WIT-520
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
@@ -455,8 +436,34 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Rate Management | `/freight/rates` | 18 hardcoded CSS + "2h 45m" static | 0 + real carrier count | — | ✅ WIT-521 |
 | Carrier Compliance | `/freight/compliance` | 18 hardcoded CSS + `complianceScore||95` fallback | 0 computed | — | ✅ WIT-521 |
 
-**WIT-521 changes**: All four freight pages converted from raw Tailwind hex values to WL design tokens (`bg-wl-bg-primary/surface/overlay/elevated`, `border-wl-border-default`, `text-wl-text-primary/secondary/tertiary`). Removed hardcoded `totalSavings=15000` const. Fixed `Shipment` interface across all pages to include real fields (`shipmentNumber`, `recipientName`, `addressLine1`, `city`, `deliveryLocation`). Load board "Origin"/"Destination" now shows real `addressLine1`/`city` from API. Added Charts↔Map toggle on freight overview (`WLMap` + `DeliveryMapView`). Moved `useMemo` calls before early returns (hooks-order fix).
->>>>>>> d40ce93 (feat(WIT-521): freight pages design token consistency + map view + tracker update)
+**WIT-521 changes**: All four freight pages converted from raw Tailwind hex values to WL design tokens. Removed hardcoded `totalSavings=15000` const. Real Shipment fields (`shipmentNumber`, `recipientName`, `addressLine1`, `city`, `deliveryLocation`). Freight overview Charts↔Map toggle (`WLMap` + `DeliveryMapView`). Moved `useMemo` before early returns.
+
+---
+
+## Tracking (0 mock signals) ✅ WIT-522
+| Page | Route | Mock Before | Mock After | Map | Status |
+|------|-------|------------|-----------|-----|--------|
+| Tracking Overview | `/tracking` | 0 page signals; no map; hex CSS | 0 + List/Map toggle | ✅ WLMap + OrderLayer + DriverLayer | ✅ WIT-522 |
+| Live Tracking | `/tracking/live` | 0 page signals; no map; hex CSS | 0 + List/Map toggle | ✅ WLMap + OrderLayer + DriverLayer + sidebar | ✅ WIT-522 |
+
+**WIT-522 changes**:
+- Both pages: replaced all hardcoded `bg-[#0a0a0f]/[#12121a]/[#1e1e2e]` hex CSS with WL design tokens.
+- Tracking overview: switched `/api/v4/drivers` → `/api/v4/dispatch/drivers` (has lat/lng); added `deliveryLat`/`deliveryLng` to order interface from API transformer; added List↔Map toggle; map renders `OrderLayer` (delivery locations, status-coloured) + `DriverLayer` (live positions) with `useFitBounds` auto-centering.
+- Live tracking: added `GET /api/v4/dispatch/drivers` call for driver locations; added List↔Map toggle; map view renders full-height `TrackingMapView` (shared component) with order markers + driver markers + click-to-select sidebar; `ErrorState` for API errors.
+- New shared component: `tracking/components/tracking-map-view.tsx` — WLMap + OrderLayer + DriverLayer with status normalisers, legend, driver toggle, no-location overlay. Reusable across both tracking pages.
+
+**Endpoints used**: `GET /api/v4/orders` (with `deliveryLat`/`deliveryLng` from shipment transformer), `GET /api/v4/dispatch/drivers` (with `lat`/`lng` from Redis GEO / PostGIS).
+
+---
+
+## Time Slots (7 hardcoded → 0) ✅ WIT-522
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Time Slots | `/time-slots` | `SLOTS[7]` hardcoded array (fake capacities/booking counts) | Real `useApiList('/api/v4/time-slots')` | ✅ WIT-522 |
+
+**WIT-522 changes**: Removed 7-element `SLOTS` hardcoded array. Replaced with `useApiList('/api/v4/time-slots', { limit: 100 })`. Added summary cards (total/active/inactive/total-capacity), search filter, status filter (all/active/inactive), loading skeleton, empty state with CTA, error state with retry. Added `CreateSlotModal` (POST `/api/v4/time-slots`) with name, start/end time, day-of-week picker, max capacity, and surcharge fields. `deliveryZone?.name` shown as badge when present. Capacity bar shows `maxCapacity`. Cutoff minutes displayed. WL design tokens throughout.
+
+**API used**: `GET /api/v4/time-slots` (existing, full Prisma implementation), `POST /api/v4/time-slots` (existing).
 
 ---
 
