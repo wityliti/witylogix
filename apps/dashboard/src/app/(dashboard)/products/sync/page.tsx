@@ -212,6 +212,8 @@ export default function ProductSyncPage() {
 
   const {
     previewProduct,
+    runPreview,
+    isLoading: previewLoading,
   } = useProductPreview(effectivePlatformId, mappings);
 
   const unmappedRequired = useMemo(() => {
