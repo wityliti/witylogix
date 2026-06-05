@@ -324,6 +324,93 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
     }
   });
 
+  // ── LIST DRIVER LOCATIONS (for map) ──────────────────────
+
+  fastify.get("/locations", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      // Return active drivers with location extracted via raw SQL (PostGIS ST_X/ST_Y)
+      // Falls back to null if PostGIS unavailable or location not set
+      type DriverLocRow = {
+        id: string;
+        name: string;
+        status: string;
+        vehicle_type: string;
+        vehicle_plate: string | null;
+        heading: number | null;
+        active_orders: bigint;
+        lat: number | null;
+        lng: number | null;
+      };
+
+      let rows: DriverLocRow[] = [];
+
+      try {
+        rows = await request.tenantDb.$queryRaw<DriverLocRow[]>`
+          SELECT
+            d.id,
+            d.name,
+            d.status,
+            d.vehicle_type,
+            d.vehicle_plate,
+            d.heading,
+            COUNT(o.id) FILTER (WHERE o.status IN ('ASSIGNED','PICKED_UP','OUT_FOR_DELIVERY')) AS active_orders,
+            ST_Y(d.current_location::geometry) AS lat,
+            ST_X(d.current_location::geometry) AS lng
+          FROM drivers d
+          LEFT JOIN orders o ON o.driver_id = d.id
+          WHERE d.shop_id = ${request.shopId}::uuid
+            AND d.is_active = true
+            AND d.current_location IS NOT NULL
+          GROUP BY d.id
+        `;
+      } catch {
+        // PostGIS not available — return drivers without coordinates
+        const drivers = await request.tenantDb.driver.findMany({
+          where: { shopId: request.shopId, isActive: true },
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            vehicleType: true,
+            vehiclePlate: true,
+            heading: true,
+            _count: { select: { orders: { where: { status: { in: ['ASSIGNED','PICKED_UP','OUT_FOR_DELIVERY'] } } } } },
+          },
+          orderBy: { name: 'asc' },
+        });
+        return {
+          data: drivers.map((d) => ({
+            id: d.id,
+            name: d.name,
+            status: d.status.toLowerCase(),
+            vehicleType: d.vehicleType,
+            vehiclePlate: d.vehiclePlate,
+            heading: d.heading,
+            activeOrders: d._count.orders,
+            lat: null,
+            lng: null,
+          })),
+        };
+      }
+
+      return {
+        data: rows.map((r) => ({
+          id: r.id,
+          name: r.name,
+          status: r.status.toLowerCase(),
+          vehicleType: r.vehicle_type,
+          vehiclePlate: r.vehicle_plate,
+          heading: r.heading,
+          activeOrders: Number(r.active_orders),
+          lat: r.lat ?? null,
+          lng: r.lng ?? null,
+        })),
+      };
+    } catch (err) {
+      throw err;
+    }
+  });
+
   // ── FIND NEARBY DRIVERS ───────────────────────────────────
 
   fastify.get("/nearby", async (request: FastifyRequest, reply: FastifyReply) => {

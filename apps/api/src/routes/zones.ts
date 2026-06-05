@@ -94,33 +94,24 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
     const body = createDeliveryZoneSchema.parse(request.body);
     const { boundary: boundaryPoints, ...zoneData } = body;
 
-    // Convert coordinate array to WKT polygon
-    // Close the ring if not already closed
-    const points = [...boundaryPoints];
-    const first = points[0];
-    const last = points[points.length - 1];
+    // Store boundary as GeoJSON-compatible JSON (no PostGIS needed)
+    const closedRing = [...boundaryPoints];
+    const first = closedRing[0];
+    const last = closedRing[closedRing.length - 1];
     if (first.longitude !== last.longitude || first.latitude !== last.latitude) {
-      points.push(first);
+      closedRing.push(first);
     }
-    const wktRing = points.map((p) => `${p.longitude} ${p.latitude}`).join(", ");
-    const wkt = `POLYGON((${wktRing}))`;
+    const boundaryJson = {
+      type: 'Polygon',
+      coordinates: [closedRing.map((p) => [p.longitude, p.latitude])],
+    };
 
-    // Create zone with PostGIS boundary
-    const zone = await request.tenantDb.$transaction(async (tx) => {
-      const created = await tx.deliveryZone.create({
-        data: {
-          shopId: request.shopId,
-          ...zoneData,
-        },
-      });
-
-      await tx.$executeRaw`
-        UPDATE delivery_zones
-        SET boundary = ST_GeomFromText(${wkt}, 4326)
-        WHERE id = ${created.id}::uuid
-      `;
-
-      return created;
+    const zone = await request.tenantDb.deliveryZone.create({
+      data: {
+        shopId: request.shopId,
+        ...zoneData,
+        boundary: boundaryJson,
+      },
     });
 
     await request.tenantRedis.invalidateGroup("zones");
@@ -154,30 +145,26 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
     const existing = await request.tenantDb.deliveryZone.findUnique({ where: { id } });
     if (!existing) throw new NotFoundError("DeliveryZone", id);
 
-    const zone = await request.tenantDb.$transaction(async (tx) => {
-      const updated = await tx.deliveryZone.update({
-        where: { id },
-        data: updateData,
-      });
-
-      if (boundaryPoints) {
-        const points = [...boundaryPoints];
-        const first = points[0];
-        const last = points[points.length - 1];
-        if (first.longitude !== last.longitude || first.latitude !== last.latitude) {
-          points.push(first);
-        }
-        const wktRing = points.map((p) => `${p.longitude} ${p.latitude}`).join(", ");
-        const wkt = `POLYGON((${wktRing}))`;
-
-        await tx.$executeRaw`
-          UPDATE delivery_zones
-          SET boundary = ST_GeomFromText(${wkt}, 4326)
-          WHERE id = ${id}::uuid
-        `;
+    let boundaryJson: object | undefined;
+    if (boundaryPoints) {
+      const closedRing = [...boundaryPoints];
+      const first = closedRing[0];
+      const last = closedRing[closedRing.length - 1];
+      if (first.longitude !== last.longitude || first.latitude !== last.latitude) {
+        closedRing.push(first);
       }
+      boundaryJson = {
+        type: 'Polygon',
+        coordinates: [closedRing.map((p) => [p.longitude, p.latitude])],
+      };
+    }
 
-      return updated;
+    const zone = await request.tenantDb.deliveryZone.update({
+      where: { id },
+      data: {
+        ...updateData,
+        ...(boundaryJson ? { boundary: boundaryJson } : {}),
+      },
     });
 
     await request.tenantRedis.invalidateGroup("zones");
