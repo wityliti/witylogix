@@ -215,7 +215,7 @@ const mockActivityLog: ActivityLog[] = [
   },
 ];
 
-export default function AdminShopDetail({ params }: { params: { id: string } }) {
+export default function AdminShopDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
 
