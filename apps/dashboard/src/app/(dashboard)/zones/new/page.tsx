@@ -6,16 +6,13 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { WLMap } from '@/components/map/wl-map';
 import { DrawLayer } from '@/components/map/draw-layer';
-import { LegacyNotice } from '@/components/zones/legacy-notice';
 import { track } from '@/lib/track';
 import type { ZoneShape } from '@witylogix/validators';
 
 const DEFAULT_CENTER: [number, number] = [77.12, 28.65];
 
 export default function NewZonePage() {
-  if (process.env.NEXT_PUBLIC_FEATURE_ZONES_MAP !== '1') return <LegacyNotice />;
   const router = useRouter();
-  const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
   const [tool, setTool] = useState<'polygon' | 'circle'>('polygon');
   const [shape, setShape] = useState<ZoneShape | null>(null);
   const [name, setName] = useState('');
@@ -25,36 +22,43 @@ export default function NewZonePage() {
   const [freeAbove, setFreeAbove] = useState('');
   const [circleRadius, setCircleRadius] = useState(1000);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const canSubmit = name.length > 0 && shape !== null;
 
   async function submit() {
     if (!shape) return;
     setSubmitting(true);
-    const res = await fetch('/api/v4/zones', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        shape,
+    setSubmitError(null);
+    try {
+      const res = await fetch('/api/v4/zones', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          shape,
+          baseRate: Number(baseRate),
+          perKmRate: Number(perKmRate),
+          minOrder: Number(minOrder),
+          freeAbove: freeAbove ? Number(freeAbove) : undefined,
+        }),
+      });
+      if (!res.ok) {
+        setSubmitError(`Create failed: HTTP ${res.status}`);
+        return;
+      }
+      const body = (await res.json()) as { data: { id: string } };
+      track('zones.created', {
+        shape: shape.type,
         baseRate: Number(baseRate),
         perKmRate: Number(perKmRate),
-        minOrder: Number(minOrder),
-        freeAbove: freeAbove ? Number(freeAbove) : undefined,
-      }),
-    });
-    setSubmitting(false);
-    if (!res.ok) {
-      alert(`Create failed: HTTP ${res.status}`);
-      return;
+      });
+      router.push(`/zones/${body.data.id}`);
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setSubmitting(false);
     }
-    const body = (await res.json()) as { data: { id: string } };
-    track('zones.created', {
-      shape: shape.type,
-      baseRate: Number(baseRate),
-      perKmRate: Number(perKmRate),
-    });
-    router.push(`/zones/${body.data.id}`);
   }
 
   return (
@@ -64,7 +68,7 @@ export default function NewZonePage() {
         className="relative h-[calc(100vh-64px)] w-full"
         style={{ background: 'var(--wl-bg-root)' }}
       >
-        <WLMap maptilerKey={maptilerKey} center={DEFAULT_CENTER} zoom={11}>
+        <WLMap center={DEFAULT_CENTER} zoom={11}>
           <DrawLayer
             mode={tool}
             value={shape}
@@ -154,6 +158,11 @@ export default function NewZonePage() {
               />
             </label>
           ))}
+          {submitError && (
+            <p className="text-xs mb-3" style={{ color: 'var(--wl-danger-500)' }}>
+              {submitError}
+            </p>
+          )}
           <div className="flex gap-2 mt-4">
             <Button variant="ghost" onClick={() => router.push('/zones')}>
               Cancel
