@@ -28,6 +28,9 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const { page, limit } = paginationSchema.parse(request.query);
 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
     const [zones, total] = await Promise.all([
       request.tenantDb.deliveryZone.findMany({
         orderBy: [{ priority: "desc" }, { name: "asc" }],
@@ -45,7 +48,13 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
           boundary: true,
           timeSlots: {
             where: { isActive: true },
-            select: { id: true, name: true, startTime: true, endTime: true },
+            select: {
+              id: true,
+              name: true,
+              startTime: true,
+              endTime: true,
+              _count: { select: { orders: { where: { createdAt: { gte: todayStart } } } } },
+            },
           },
           _count: { select: { timeSlots: true } },
         },
@@ -56,6 +65,10 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
     const data = zones.map((zone) => ({
       ...zone,
       boundary: zone.boundary || null,
+      ordersToday: zone.timeSlots.reduce(
+        (sum, ts) => sum + (ts._count?.orders ?? 0),
+        0,
+      ),
     }));
 
     return {

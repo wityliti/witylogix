@@ -76,56 +76,6 @@ interface HistoryResponse {
   history: HistoryEntry[];
 }
 
-// ── Demo data ────────────────────────────────────────────────────
-
-const DEMO_SCORE_RESPONSE: DriverScoreResponse = {
-  score: {
-    driverId: 'demo',
-    compositeScore: 91.4,
-    breakdown: {
-      onTimeScore: 94.2,
-      customerRatingScore: 96.0,
-      podComplianceScore: 88.5,
-      routeEfficiencyScore: 87.1,
-      reliabilityScore: 91.2,
-    },
-    tier: 'platinum',
-    rank: 1,
-    trend: 'up',
-    previousScore: 89.2,
-    calculatedAt: new Date().toISOString(),
-  },
-  driver: {
-    id: 'demo',
-    name: 'Marcus Chen',
-    email: 'marcus.chen@fleet.witylogix.io',
-    phone: '+1 (555) 012-3456',
-    vehicleType: 'Van',
-    joinedAt: '2024-03-15T00:00:00Z',
-  },
-  metrics: {
-    totalDeliveries: 1840,
-    onTimeCount: 1789,
-    lateCount: 51,
-    avgDeliveryMinutes: 28,
-    customerRatingSum: 9016,
-    customerRatingCount: 1840,
-    podComplianceCount: 1828,
-    podMissedCount: 12,
-    incidentCount: 2,
-  },
-};
-
-const DEMO_HISTORY: HistoryEntry[] = [
-  { period: 'Week 1', compositeScore: 82.1, tier: 'gold' },
-  { period: 'Week 2', compositeScore: 84.7, tier: 'gold' },
-  { period: 'Week 3', compositeScore: 86.2, tier: 'gold' },
-  { period: 'Week 4', compositeScore: 88.0, tier: 'gold' },
-  { period: 'Week 5', compositeScore: 87.5, tier: 'gold' },
-  { period: 'Week 6', compositeScore: 89.2, tier: 'platinum' },
-  { period: 'Week 7', compositeScore: 90.1, tier: 'platinum' },
-  { period: 'Week 8', compositeScore: 91.4, tier: 'platinum' },
-];
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -233,8 +183,36 @@ export default function DriverDetailPage() {
     `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
   );
 
-  const scoreRes = scoreData ?? DEMO_SCORE_RESPONSE;
-  const history = historyData?.history ?? DEMO_HISTORY;
+  if (scoreLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-36 h-36 rounded-full bg-white/[0.03] animate-pulse mx-auto" />
+          <div className="h-4 w-32 bg-white/[0.04] rounded animate-pulse mx-auto" />
+          <div className="h-3 w-48 bg-white/[0.03] rounded animate-pulse mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
+  const history = historyData?.history ?? [];
+  if (!scoreData && !scoreLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white/40 text-sm mb-3">No performance data for this driver yet.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 text-xs text-white/40 border border-white/[0.08] rounded-lg hover:text-white/60 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const scoreRes = scoreData!;
   const { score, driver, metrics } = scoreRes;
   const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
 

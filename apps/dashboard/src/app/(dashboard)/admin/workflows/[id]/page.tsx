@@ -59,99 +59,6 @@ interface WorkflowExecutionDetail {
   retryCount: number;
 }
 
-const MOCK_EXECUTION: WorkflowExecutionDetail = {
-  id: "exec-004",
-  executionId: "EXE-2026-00004",
-  workflowName: "Payment Processing",
-  status: "failed",
-  totalSteps: 6,
-  completedSteps: 4,
-  failedSteps: 1,
-  startedAt: "2026-03-07T07:30:00Z",
-  completedAt: "2026-03-07T07:33:45Z",
-  totalDuration: "3m 45s",
-  createdBy: "webhook",
-  retryCount: 1,
-  input: {
-    orderId: "ORD-2026-123456",
-    amount: 1250.5,
-    currency: "USD",
-    customerId: "CUST-789",
-    paymentMethod: "credit_card",
-  },
-  context: {
-    tenantId: "tenant-789",
-    userId: "user-456",
-    requestId: "req-abc-def-123",
-    region: "us-east-1",
-  },
-  steps: [
-    {
-      id: "step-1",
-      number: 1,
-      name: "Validate Payment Details",
-      status: "completed",
-      duration: "245ms",
-      startedAt: "2026-03-07T07:30:00Z",
-      input: { paymentMethod: "credit_card", amount: 1250.5 },
-      output: { validated: true, riskScore: 0.15 },
-    },
-    {
-      id: "step-2",
-      number: 2,
-      name: "Check Fraud Detection",
-      status: "completed",
-      duration: "1.2s",
-      startedAt: "2026-03-07T07:30:00Z",
-      input: { amount: 1250.5, customerId: "CUST-789" },
-      output: { fraudRisk: "low", flagged: false },
-    },
-    {
-      id: "step-3",
-      number: 3,
-      name: "Reserve Inventory",
-      status: "completed",
-      duration: "890ms",
-      startedAt: "2026-03-07T07:30:02Z",
-      input: { items: [{ sku: "ITEM-001", qty: 2 }] },
-      output: { reservationId: "RES-12345", reserved: true },
-    },
-    {
-      id: "step-4",
-      number: 4,
-      name: "Process Payment",
-      status: "completed",
-      duration: "2.1s",
-      startedAt: "2026-03-07T07:30:03Z",
-      input: { amount: 1250.5, method: "credit_card" },
-      output: { transactionId: "TXN-98765", status: "charged" },
-    },
-    {
-      id: "step-5",
-      number: 5,
-      name: "Send Confirmation Email",
-      status: "failed",
-      duration: "1.8s",
-      startedAt: "2026-03-07T07:30:06Z",
-      input: { recipientEmail: "customer@example.com", orderId: "ORD-2026-123456" },
-      error: {
-        message: "Email service timeout: Unable to reach SMTP server",
-        stack: "Error: SMTP connection timeout\n    at SMTPClient.connect (smtp.js:145)\n    at EmailService.send (email.js:89)",
-      },
-    },
-    {
-      id: "step-6",
-      number: 6,
-      name: "Complete Order",
-      status: "compensating",
-      duration: "—",
-      startedAt: "2026-03-07T07:30:08Z",
-      compensationStatus: "completed",
-      input: { orderId: "ORD-2026-123456", status: "pending" },
-      output: { orderStatus: "compensation_completed" },
-    },
-  ],
-};
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -347,13 +254,50 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
   );
 }
 
-export default function WorkflowExecutionDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function WorkflowExecutionDetailPage() {
   const router = useRouter();
-  const execution = MOCK_EXECUTION;
+  const params = useParams();
+  const executionId = params.id as string;
+
+  const { data: executionData, loading, error, refetch } = useApiQuery<WorkflowExecutionDetail>(
+    `/api/v4/workflow/executions/${executionId}`,
+  );
+
+  if (loading) {
+    return (
+      <div className="bg-[#0a0a0f] min-h-screen p-6">
+        <div className="space-y-4">
+          <div className="h-12 bg-white/[0.03] rounded-lg animate-pulse" />
+          <div className="grid grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 bg-white/[0.03] rounded-xl animate-pulse" />
+            ))}
+          </div>
+          <div className="h-96 bg-white/[0.03] rounded-xl animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !executionData) {
+    return (
+      <div className="bg-[#0a0a0f] min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-sm mb-3">{error?.message ?? 'Execution not found'}</p>
+          <div className="flex gap-2 justify-center">
+            <Button variant="secondary" size="sm" onClick={() => router.push('/admin/workflows')}>
+              <ChevronLeft size={16} /> Back
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => refetch()}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const execution = executionData;
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen">

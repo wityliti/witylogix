@@ -12,276 +12,111 @@ import {
   Truck,
   Users,
   Zap,
-  CreditCard,
-  MoreVertical,
+  Crown,
+  Activity,
   AlertTriangle,
   Lock,
   Trash2,
-  Crown,
-  Activity,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { useApiQuery } from '@/hooks/use-api';
 import { useParams } from 'next/navigation';
 
-interface ShopDetail {
+/* ═══════════════════════════════════════════════════════════
+   ADMIN SHOP DETAIL — Real API via /api/v4/admin/stores/:id
+   ═══════════════════════════════════════════════════════════ */
+
+interface ShopDetailResponse {
   id: string;
   name: string;
-  domain: string;
-  planTier: "free" | "starter" | "growth" | "enterprise";
-  status: "active" | "suspended" | "trial";
-  owner: {
-    name: string;
-    email: string;
-    phone: string;
-    joinDate: string;
-  };
+  shopifyDomain: string;
+  email?: string;
+  phone?: string;
+  planTier: string;
+  isActive: boolean;
+  createdAt: string;
+  status: string;
   usage: {
     orders: number;
-    shipments: number;
+    users: number;
     drivers: number;
-    apiCalls: number;
-    apiCallsLimit: number;
+    suspension: { suspendedAt: string; reason: string } | null;
   };
-  billing: {
-    currentPlan: string;
-    monthlyFee: number;
-    nextBillingDate: string;
-    status: "active" | "overdue" | "pending";
+  subscription?: {
+    planTier: string;
+    status: string;
+    billingCycleEnd?: string;
   };
-  createdAt: string;
-  lastActive: string;
-  uptime: number;
 }
 
-interface BillingRecord {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  status: "paid" | "pending" | "failed";
-}
-
-interface ActivityLog {
-  id: string;
-  timestamp: string;
-  action: string;
-  details: string;
-  user: string;
-  severity: "info" | "warning" | "error";
-}
-
-const mockShopDetail: ShopDetail = {
-  id: "shop_001",
-  name: "Elegant Boutique",
-  domain: "elegantboutique.com",
-  planTier: "enterprise",
-  status: "active",
-  owner: {
-    name: "Sarah Anderson",
-    email: "sarah.anderson@elegantboutique.com",
-    phone: "+1 (555) 123-4567",
-    joinDate: "2024-01-15",
-  },
-  usage: {
-    orders: 4523,
-    shipments: 4456,
-    drivers: 12,
-    apiCalls: 450000,
-    apiCallsLimit: 1000000,
-  },
-  billing: {
-    currentPlan: "Enterprise",
-    monthlyFee: 999,
-    nextBillingDate: "2026-04-06",
-    status: "active",
-  },
-  createdAt: "2024-01-15",
-  lastActive: "2026-03-06 14:32:10",
-  uptime: 99.98,
+const getStatusColor = (status: string): string => {
+  const s = status?.toUpperCase();
+  if (s === 'ACTIVE') return '#22c55e';
+  if (s === 'SUSPENDED') return '#ef4444';
+  if (s === 'TRIAL') return '#f59e0b';
+  return '#6b7280';
 };
 
-const mockBillingHistory: BillingRecord[] = [
-  {
-    id: "bill_001",
-    date: "2026-03-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_002",
-    date: "2026-02-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_003",
-    date: "2026-01-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_004",
-    date: "2025-12-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_005",
-    date: "2025-11-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_006",
-    date: "2025-10-06",
-    description: "Growth Plan - Monthly",
-    amount: 499,
-    status: "paid",
-  },
-];
+const getPlanColor = (plan: string): string => {
+  const p = plan?.toLowerCase();
+  if (p === 'free') return '#94a3b8';
+  if (p === 'starter') return '#3b82f6';
+  if (p === 'growth') return '#8b5cf6';
+  if (p === 'enterprise') return '#ec4899';
+  return '#6b7280';
+};
 
-const mockActivityLog: ActivityLog[] = [
-  {
-    id: "act_001",
-    timestamp: "2026-03-06 14:32:10",
-    action: "Order processed",
-    details: "Order #78945 completed successfully",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_002",
-    timestamp: "2026-03-06 13:54:22",
-    action: "Shipment created",
-    details: "245 items shipped via FedEx",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_003",
-    timestamp: "2026-03-06 13:12:08",
-    action: "API call",
-    details: "Bulk inventory sync - 1250 products",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_004",
-    timestamp: "2026-03-06 12:45:33",
-    action: "Settings updated",
-    details: "Shipping zones configuration modified",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_005",
-    timestamp: "2026-03-05 22:18:55",
-    action: "Payment processed",
-    details: "Monthly subscription fee charged",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_006",
-    timestamp: "2026-03-05 20:17:42",
-    action: "API threshold warning",
-    details: "API calls usage at 75% of monthly limit",
-    user: "System",
-    severity: "warning",
-  },
-  {
-    id: "act_007",
-    timestamp: "2026-03-04 18:56:44",
-    action: "Team member added",
-    details: "john.doe@elegantboutique.com added as Manager",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_008",
-    timestamp: "2026-03-03 16:45:50",
-    action: "Backup created",
-    details: "Automatic daily backup completed",
-    user: "System",
-    severity: "info",
-  },
-];
-
-export default function AdminShopDetail({ params }: { params: { id: string } }) {
+export default function AdminShopDetail() {
+  const params = useParams();
+  const shopId = params.id as string;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "#22c55e";
-      case "suspended":
-        return "#ef4444";
-      case "trial":
-        return "#f59e0b";
-      default:
-        return "#6C63FF";
-    }
-  };
+  const { data, loading, error, refetch } = useApiQuery<ShopDetailResponse>(
+    `/api/v4/admin/stores/${shopId}`,
+  );
 
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case "free":
-        return "#94a3b8";
-      case "starter":
-        return "#3b82f6";
-      case "growth":
-        return "#8b5cf6";
-      case "enterprise":
-        return "#ec4899";
-      default:
-        return "#6C63FF";
-    }
-  };
+  if (loading) {
+    return (
+      <div className="p-6 space-y-4">
+        <div className="h-10 w-32 bg-white/[0.03] rounded animate-pulse" />
+        <div className="h-36 bg-white/[0.03] rounded-xl animate-pulse" />
+        <div className="grid grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 bg-white/[0.03] rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  const getBillingStatusColor = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "#22c55e";
-      case "pending":
-        return "#f59e0b";
-      case "failed":
-        return "#ef4444";
-      default:
-        return "#6C63FF";
-    }
-  };
+  if (error || !data) {
+    return (
+      <div className="p-6">
+        <Link href="/admin" className="text-blue-500 no-underline flex items-center gap-2 text-sm mb-6">
+          <ArrowLeft size={16} /> Back to Shops
+        </Link>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-red-400 text-sm mb-3">{error?.message ?? 'Shop not found'}</p>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="w-4 h-4" /> Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "info":
-        return "#6C63FF";
-      case "warning":
-        return "#f59e0b";
-      case "error":
-        return "#ef4444";
-      default:
-        return "#6C63FF";
-    }
-  };
+  const shop = data;
+  const planTier = shop.subscription?.planTier ?? shop.planTier ?? 'free';
+  const billingStatus = shop.subscription?.status ?? (shop.isActive ? 'active' : 'inactive');
+  const billingEnd = shop.subscription?.billingCycleEnd;
 
   return (
-    <div className="bg-[#0a0a0f]-root">
+    <div>
       {/* Header */}
       <div className="px-6 py-6 border-b border-[#1e1e2e] flex gap-4 items-center">
-        <Link
-          href="/admin"
-          className="text-blue-600 no-underline flex items-center gap-2 hover:opacity-80"
-        >
-          <ArrowLeft size={20} />
+        <Link href="/admin" className="text-blue-500 no-underline flex items-center gap-2 hover:opacity-80 text-sm">
+          <ArrowLeft size={18} />
           Back to Shops
         </Link>
       </div>
@@ -292,67 +127,47 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-5">
               <div>
-                <h1 className="text-2xl font-bold text-white mb-2">
-                  {mockShopDetail.name}
-                </h1>
-                <p className="text-gray-400 text-sm">
-                  {mockShopDetail.domain}
-                </p>
+                <h1 className="text-2xl font-bold text-white mb-1">{shop.name}</h1>
+                <p className="text-gray-400 text-sm">{shop.shopifyDomain}</p>
               </div>
               <div className="flex gap-3 items-center">
-                <Badge
-                  style={{
-                    background: getStatusColor(mockShopDetail.status) + "20",
-                    color: getStatusColor(mockShopDetail.status),
-                    border: `1px solid ${getStatusColor(mockShopDetail.status)}40`,
-                  }}
-                >
-                  {mockShopDetail.status.toUpperCase()}
+                <Badge style={{
+                  background: getStatusColor(shop.status) + '20',
+                  color: getStatusColor(shop.status),
+                  border: `1px solid ${getStatusColor(shop.status)}40`,
+                }}>
+                  {shop.status?.toUpperCase() ?? '—'}
                 </Badge>
-                <Badge
-                  style={{
-                    background: getPlanColor(mockShopDetail.planTier) + "20",
-                    color: getPlanColor(mockShopDetail.planTier),
-                    border: `1px solid ${getPlanColor(mockShopDetail.planTier)}40`,
-                  }}
-                >
-                  {mockShopDetail.planTier.toUpperCase()}
+                <Badge style={{
+                  background: getPlanColor(planTier) + '20',
+                  color: getPlanColor(planTier),
+                  border: `1px solid ${getPlanColor(planTier)}40`,
+                }}>
+                  {planTier.toUpperCase()}
                 </Badge>
               </div>
             </div>
 
-            {/* Owner Info */}
+            {/* Contact + Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-[#1e1e2e]">
               <div>
-                <p className="text-gray-400 mb-1 text-xs">
-                  Owner Name
-                </p>
+                <p className="text-gray-400 mb-1 text-xs">Email</p>
+                <p className="text-white text-sm font-medium">{shop.email ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 mb-1 text-xs">Phone</p>
+                <p className="text-white text-sm font-medium">{shop.phone ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 mb-1 text-xs">Installed</p>
                 <p className="text-white text-sm font-medium">
-                  {mockShopDetail.owner.name}
+                  {new Date(shop.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <div>
-                <p className="text-gray-400 mb-1 text-xs">
-                  Email
-                </p>
+                <p className="text-gray-400 mb-1 text-xs">Billing Cycle End</p>
                 <p className="text-white text-sm font-medium">
-                  {mockShopDetail.owner.email}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-400 mb-1 text-xs">
-                  Phone
-                </p>
-                <p className="text-white text-sm font-medium">
-                  {mockShopDetail.owner.phone}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-400 mb-1 text-xs">
-                  Member Since
-                </p>
-                <p className="text-white text-sm font-medium">
-                  {new Date(mockShopDetail.owner.joinDate).toLocaleDateString()}
+                  {billingEnd ? new Date(billingEnd).toLocaleDateString() : '—'}
                 </p>
               </div>
             </div>
@@ -365,14 +180,10 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">
-                    Total Orders
-                  </p>
-                  <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.usage.orders.toLocaleString()}
-                  </p>
+                  <p className="text-gray-400 mb-2 text-xs">Total Orders</p>
+                  <p className="text-2xl font-bold text-white">{shop.usage.orders.toLocaleString()}</p>
                 </div>
-                <ShoppingCart size={24} className="text-blue-600" />
+                <ShoppingCart size={24} className="text-blue-500" />
               </div>
             </CardContent>
           </Card>
@@ -381,12 +192,8 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">
-                    Shipments
-                  </p>
-                  <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.usage.shipments.toLocaleString()}
-                  </p>
+                  <p className="text-gray-400 mb-2 text-xs">Users</p>
+                  <p className="text-2xl font-bold text-white">{shop.usage.users.toLocaleString()}</p>
                 </div>
                 <Truck size={24} className="text-purple-500" />
               </div>
@@ -397,14 +204,10 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">
-                    Drivers
-                  </p>
-                  <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.usage.drivers}
-                  </p>
+                  <p className="text-gray-400 mb-2 text-xs">Drivers</p>
+                  <p className="text-2xl font-bold text-white">{shop.usage.drivers}</p>
                 </div>
-                <Users size={24} className="text-blue-500" />
+                <Users size={24} className="text-blue-400" />
               </div>
             </CardContent>
           </Card>
@@ -413,12 +216,8 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">
-                    API Uptime
-                  </p>
-                  <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.uptime}%
-                  </p>
+                  <p className="text-gray-400 mb-2 text-xs">Account Status</p>
+                  <p className="text-sm font-bold text-white mt-1 capitalize">{billingStatus}</p>
                 </div>
                 <Activity size={24} className="text-emerald-500" />
               </div>
@@ -426,122 +225,50 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
           </Card>
         </div>
 
-        {/* API Usage */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
-          <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">
-              API Usage
-            </h3>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <div className="h-2 bg-[#0a0a0f]-root rounded overflow-hidden mb-2">
-                  <div
-                    className="h-full rounded transition-all duration-300 bg-[#3b82f6]"
-                    style={{
-                      width: `${(mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100}%`,
-                    }}
-                  />
-                </div>
-                <p className="text-gray-400 text-xs">
-                  {mockShopDetail.usage.apiCalls.toLocaleString()} /{" "}
-                  {mockShopDetail.usage.apiCallsLimit.toLocaleString()} calls
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-white text-sm font-semibold">
-                  {((mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100).toFixed(1)}%
-                </p>
-              </div>
+        {/* Suspension notice */}
+        {shop.usage.suspension && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-300 text-sm font-semibold">Shop Suspended</p>
+              <p className="text-red-400/70 text-xs mt-0.5">
+                {shop.usage.suspension.reason || 'No reason provided'} ·{' '}
+                {new Date(shop.usage.suspension.suspendedAt).toLocaleString()}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
 
         {/* Billing Section */}
         <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
           <CardContent className="p-5">
-            <div className="mb-5">
-              <h3 className="text-base font-semibold text-white mb-4">
-                Current Billing
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-                <div>
-                  <p className="text-gray-400 mb-1 text-xs">
-                    Current Plan
-                  </p>
-                  <p className="text-white text-sm font-medium">
-                    {mockShopDetail.billing.currentPlan}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400 mb-1 text-xs">
-                    Monthly Fee
-                  </p>
-                  <p className="text-white text-sm font-medium">
-                    ${mockShopDetail.billing.monthlyFee}/month
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400 mb-1 text-xs">
-                    Next Billing Date
-                  </p>
-                  <p className="text-white text-sm font-medium">
-                    {new Date(mockShopDetail.billing.nextBillingDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400 mb-1 text-xs">
-                    Status
-                  </p>
-                  <Badge
-                    style={{
-                      background: getBillingStatusColor(mockShopDetail.billing.status) + "20",
-                      color: getBillingStatusColor(mockShopDetail.billing.status),
-                      border: `1px solid ${getBillingStatusColor(mockShopDetail.billing.status)}40`,
-                    }}
-                  >
-                    {mockShopDetail.billing.status.toUpperCase()}
-                  </Badge>
-                </div>
+            <h3 className="text-base font-semibold text-white mb-4">Current Billing</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+              <div>
+                <p className="text-gray-400 mb-1 text-xs">Current Plan</p>
+                <p className="text-white text-sm font-medium capitalize">{planTier}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 mb-1 text-xs">Next Billing Date</p>
+                <p className="text-white text-sm font-medium">
+                  {billingEnd ? new Date(billingEnd).toLocaleDateString() : '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400 mb-1 text-xs">Subscription Status</p>
+                <span className={cn('text-sm font-semibold capitalize',
+                  billingStatus === 'active' ? 'text-emerald-400' : 'text-gray-400'
+                )}>
+                  {billingStatus}
+                </span>
               </div>
             </div>
 
-            {/* Billing History */}
             <div className="border-t border-[#1e1e2e] pt-5">
-              <h4 className="text-sm font-semibold text-white mb-3">
-                Billing History
-              </h4>
-              <div className="max-h-80 overflow-y-auto">
-                {mockBillingHistory.map((record, index) => (
-                  <div
-                    key={record.id}
-                    className={cn("py-3 flex justify-between items-center", index < mockBillingHistory.length - 1 && "border-b border-[#1e1e2e]")}
-                  >
-                    <div>
-                      <p className="text-white mb-1 text-sm">
-                        {record.description}
-                      </p>
-                      <p className="text-gray-400 text-xs">
-                        {new Date(record.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p className="text-white text-sm font-semibold">
-                        ${record.amount}
-                      </p>
-                      <Badge
-                        style={{
-                          background: getBillingStatusColor(record.status) + "20",
-                          color: getBillingStatusColor(record.status),
-                          border: `1px solid ${getBillingStatusColor(record.status)}40`,
-                        }}
-                      >
-                        {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <h4 className="text-sm font-semibold text-white mb-3">Billing History</h4>
+              <p className="text-gray-500 text-xs py-4 text-center">
+                Billing history is not available via the current API. Coming soon.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -549,40 +276,30 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         {/* Admin Actions */}
         <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">
-              Admin Actions
-            </h3>
+            <h3 className="text-base font-semibold text-white mb-4">Admin Actions</h3>
             <div className="flex gap-3 flex-wrap">
               <Button className="bg-blue-600 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90">
-                <Crown size={16} />
-                Upgrade Plan
+                <Crown size={16} /> Upgrade Plan
               </Button>
-
               <button
                 onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
                 className="bg-amber-500 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90"
               >
-                <Lock size={16} />
-                Suspend Shop
+                <Lock size={16} /> Suspend Shop
               </button>
-
-              <Button className="bg-blue-600 bg-opacity-10 text-blue-600 border border-blue-600 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80">
-                <Zap size={16} />
-                Impersonate
+              <Button className="bg-blue-600 bg-opacity-10 text-blue-500 border border-blue-600 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80">
+                <Zap size={16} /> Impersonate
               </Button>
-
               <button
                 onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
                 className="bg-red-500 bg-opacity-10 text-red-500 border border-red-500 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80"
               >
-                <Trash2 size={16} />
-                Delete Account
+                <Trash2 size={16} /> Delete Account
               </button>
             </div>
 
-            {/* Confirmation Dialogs */}
             {showSuspendConfirm && (
-              <div className="mt-4 p-3 bg-[#0a0a0f]-root rounded">
+              <div className="mt-4 p-3 bg-amber-500/5 border border-amber-500/20 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
                   <p className="text-white m-0 text-sm">
@@ -604,7 +321,7 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             )}
 
             {showDeleteConfirm && (
-              <div className="mt-4 p-3 bg-[#0a0a0f]-root rounded">
+              <div className="mt-4 p-3 bg-red-500/5 border border-red-500/20 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-red-500 flex-shrink-0" />
                   <p className="text-white m-0 text-sm">
@@ -627,39 +344,13 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
           </CardContent>
         </Card>
 
-        {/* Activity Log */}
+        {/* Activity Log placeholder */}
         <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">
-              Activity Log
-            </h3>
-            <div className="max-h-96 overflow-y-auto">
-              {mockActivityLog.map((log, index) => (
-                <div
-                  key={log.id}
-                  className={cn("py-3 flex gap-3", index < mockActivityLog.length - 1 && "border-b border-[#1e1e2e]")}
-                >
-                  <div
-                    className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5"
-                    style={{
-                      background: getSeverityColor(log.severity),
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white mb-1 text-sm">
-                      {log.action}
-                    </p>
-                    <p className="text-gray-400 mb-1 text-xs">
-                      {log.details}
-                    </p>
-                    <div className="flex gap-3 items-center">
-                      <span className="text-gray-400 text-xs">By: {log.user}</span>
-                      <span className="text-gray-400 text-xs">{log.timestamp}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <h3 className="text-base font-semibold text-white mb-4">Activity Log</h3>
+            <p className="text-gray-500 text-xs py-6 text-center">
+              Activity log API endpoint is not yet implemented. Coming soon.
+            </p>
           </CardContent>
         </Card>
       </div>
