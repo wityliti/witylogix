@@ -14,12 +14,13 @@ import {
   Camera,
   Route,
   ShieldCheck,
-  Trophy,
   BarChart3,
   RefreshCw,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
+import { Skeleton } from '@/components/ui/loading-skeleton';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -76,57 +77,6 @@ interface HistoryResponse {
   history: HistoryEntry[];
 }
 
-// ── Demo data ────────────────────────────────────────────────────
-
-const DEMO_SCORE_RESPONSE: DriverScoreResponse = {
-  score: {
-    driverId: 'demo',
-    compositeScore: 91.4,
-    breakdown: {
-      onTimeScore: 94.2,
-      customerRatingScore: 96.0,
-      podComplianceScore: 88.5,
-      routeEfficiencyScore: 87.1,
-      reliabilityScore: 91.2,
-    },
-    tier: 'platinum',
-    rank: 1,
-    trend: 'up',
-    previousScore: 89.2,
-    calculatedAt: new Date().toISOString(),
-  },
-  driver: {
-    id: 'demo',
-    name: 'Marcus Chen',
-    email: 'marcus.chen@fleet.witylogix.io',
-    phone: '+1 (555) 012-3456',
-    vehicleType: 'Van',
-    joinedAt: '2024-03-15T00:00:00Z',
-  },
-  metrics: {
-    totalDeliveries: 1840,
-    onTimeCount: 1789,
-    lateCount: 51,
-    avgDeliveryMinutes: 28,
-    customerRatingSum: 9016,
-    customerRatingCount: 1840,
-    podComplianceCount: 1828,
-    podMissedCount: 12,
-    incidentCount: 2,
-  },
-};
-
-const DEMO_HISTORY: HistoryEntry[] = [
-  { period: 'Week 1', compositeScore: 82.1, tier: 'gold' },
-  { period: 'Week 2', compositeScore: 84.7, tier: 'gold' },
-  { period: 'Week 3', compositeScore: 86.2, tier: 'gold' },
-  { period: 'Week 4', compositeScore: 88.0, tier: 'gold' },
-  { period: 'Week 5', compositeScore: 87.5, tier: 'gold' },
-  { period: 'Week 6', compositeScore: 89.2, tier: 'platinum' },
-  { period: 'Week 7', compositeScore: 90.1, tier: 'platinum' },
-  { period: 'Week 8', compositeScore: 91.4, tier: 'platinum' },
-];
-
 // ── Helpers ──────────────────────────────────────────────────────
 
 const TIER_STYLE: Record<string, { bg: string; text: string; border: string; label: string }> = {
@@ -155,7 +105,7 @@ function ScoreArc({ score }: { score: number }) {
   const largeArcFill = (score / 100) * sweep > 180 ? 1 : 0;
   const accent = score >= 90 ? '#818cf8' : score >= 75 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171';
   return (
-    <svg viewBox="0 0 140 140" className="w-36 h-36">
+    <svg viewBox="0 0 140 140" className="w-36 h-36" aria-label={`Score: ${score.toFixed(0)} out of 100`}>
       <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArcBase} 1 ${x2b} ${y2b}`} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" strokeLinecap="round" />
       {score > 0 && (
         <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArcFill} 1 ${x2f} ${y2f}`} fill="none" stroke={accent} strokeWidth="10" strokeLinecap="round" opacity="0.9" />
@@ -174,26 +124,28 @@ function BreakdownRow({ label, value, icon: Icon, accent }: { label: string; val
           <Icon className="w-3 h-3" />
           <span>{label}</span>
         </div>
-        <span className="font-mono font-medium" style={{ color: accent }}>{value.toFixed(1)}</span>
+        <span className="font-mono text-white/70">{value.toFixed(1)}</span>
       </div>
-      <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${value}%`, background: accent }} />
+      <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${value}%`, background: accent }}
+        />
       </div>
     </div>
   );
 }
 
 function HistoryChart({ history }: { history: HistoryEntry[] }) {
-  const max = Math.max(...history.map((h) => h.compositeScore));
-  const min = Math.min(...history.map((h) => h.compositeScore));
+  if (!history.length) return <p className="text-xs text-white/20 text-center py-8">No history data</p>;
+  const scores = history.map((h) => h.compositeScore);
+  const min = Math.min(...scores) - 5;
+  const max = Math.max(...scores) + 5;
   const range = max - min || 1;
-  const w = 100 / (history.length - 1);
-
-  const points = history.map((h, i) => {
-    const x = i * w;
-    const y = 100 - ((h.compositeScore - min) / range) * 80 - 10;
-    return `${x},${y}`;
-  }).join(' ');
+  const w = 100 / (history.length - 1 || 1);
+  const points = history
+    .map((h, i) => `${i * w},${100 - ((h.compositeScore - min) / range) * 80 - 10}`)
+    .join(' ');
 
   return (
     <div>
@@ -219,13 +171,45 @@ function HistoryChart({ history }: { history: HistoryEntry[] }) {
   );
 }
 
+// ── Loading skeleton ─────────────────────────────────────────────
+
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen px-6 lg:px-8 py-6 space-y-6" aria-label="Loading driver profile">
+      <Skeleton variant="text" className="h-4 w-24 mb-2" />
+      <div className="flex items-center gap-4">
+        <Skeleton variant="circle" className="w-14 h-14" />
+        <div className="space-y-2">
+          <Skeleton variant="text" className="h-6 w-40" />
+          <Skeleton variant="text" className="h-4 w-56" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5">
+        <div className="space-y-4">
+          <Skeleton variant="rect" className="h-52 rounded-xl" />
+          <Skeleton variant="rect" className="h-48 rounded-xl" />
+        </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} variant="rect" className="h-20 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton variant="rect" className="h-40 rounded-xl" />
+          <Skeleton variant="rect" className="h-36 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────────
 
 export default function DriverDetailPage() {
   const params = useParams();
   const driverId = params.id as string;
 
-  const { data: scoreData, loading: scoreLoading, refetch } = useApiQuery<DriverScoreResponse>(
+  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreResponse>(
     `/api/v4/driver-scoring/${driverId}`,
   );
 
@@ -233,9 +217,39 @@ export default function DriverDetailPage() {
     `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
   );
 
-  const scoreRes = scoreData ?? DEMO_SCORE_RESPONSE;
-  const history = historyData?.history ?? DEMO_HISTORY;
-  const { score, driver, metrics } = scoreRes;
+  // Loading state
+  if (scoreLoading) return <PageSkeleton />;
+
+  // Error / not found state
+  if (scoreError || !scoreData) {
+    return (
+      <div className="min-h-screen px-6 lg:px-8 py-6">
+        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 transition-colors mb-6">
+          <ArrowLeft className="w-4 h-4" />
+          All Drivers
+        </Link>
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-400" />
+          </div>
+          <h2 className="text-lg font-semibold text-white/70 mb-2">Score data unavailable</h2>
+          <p className="text-sm text-white/35 mb-6 max-w-sm">
+            {scoreError?.message ?? 'Driver scoring data could not be loaded. The driver may not have any deliveries yet.'}
+          </p>
+          <button
+            onClick={refetch}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm text-white/50 hover:text-white/70 border border-white/[0.1] rounded-lg transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { score, driver, metrics } = scoreData;
+  const history = historyData?.history ?? [];
   const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
 
   const avgRating = metrics.customerRatingCount > 0
@@ -263,14 +277,12 @@ export default function DriverDetailPage() {
       <div className="px-6 lg:px-8 pt-4 pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center" aria-hidden>
               <User className="w-7 h-7 text-white/30" />
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-bold text-white/90 tracking-tight">
-                  {scoreLoading ? '…' : driver.name}
-                </h1>
+                <h1 className="text-2xl font-bold text-white/90 tracking-tight">{driver.name}</h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
                 </span>
@@ -283,6 +295,7 @@ export default function DriverDetailPage() {
           <button
             onClick={() => refetch()}
             className="flex items-center gap-1.5 px-3 py-2 text-xs text-white/35 hover:text-white/60 border border-white/[0.06] rounded-lg transition-colors"
+            aria-label="Refresh driver data"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh
@@ -300,7 +313,6 @@ export default function DriverDetailPage() {
               <ScoreArc score={score.compositeScore} />
               <p className="text-xs text-white/30 mt-1">Composite Score</p>
 
-              {/* Trend */}
               {scoreDelta !== null && (
                 <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
                   scoreDelta > 0 ? 'text-emerald-400' : scoreDelta < 0 ? 'text-red-400' : 'text-white/30'
@@ -327,12 +339,12 @@ export default function DriverDetailPage() {
             {/* KPI row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'Deliveries',    value: metrics.totalDeliveries.toLocaleString(), icon: BarChart3, accent: '#818cf8' },
-                { label: 'On-Time Rate',  value: `${onTimePct.toFixed(1)}%`,               icon: Clock,     accent: '#34d399' },
-                { label: 'Avg Rating',    value: avgRating.toFixed(2),                     icon: Star,      accent: '#fbbf24', suffix: '/ 5' },
-                { label: 'POD Rate',      value: `${podPct.toFixed(1)}%`,                  icon: Camera,    accent: '#60a5fa' },
+                { label: 'Deliveries',   value: metrics.totalDeliveries.toLocaleString(), icon: BarChart3, accent: '#818cf8' },
+                { label: 'On-Time Rate', value: `${onTimePct.toFixed(1)}%`,               icon: Clock,     accent: '#34d399' },
+                { label: 'Avg Rating',   value: avgRating.toFixed(2),                     icon: Star,      accent: '#fbbf24', suffix: '/ 5' },
+                { label: 'POD Rate',     value: `${podPct.toFixed(1)}%`,                  icon: Camera,    accent: '#60a5fa' },
               ].map(({ label, value, suffix, icon: Icon, accent }) => (
-                <div key={label} className="relative overflow-hidden rounded-xl bg-[#111118] border border-white/[0.06] p-4 group hover:border-white/[0.12] transition-all">
+                <div key={label} className="relative overflow-hidden rounded-xl bg-[#111118] border border-white/[0.06] p-4">
                   <div className="absolute top-0 left-0 right-0 h-[2px] opacity-40" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] text-white/35">{label}</span>
