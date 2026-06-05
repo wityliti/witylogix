@@ -110,20 +110,9 @@ export function CredentialForm({
   };
 
   const handleOAuthConnect = () => {
-    // Simulate OAuth flow
-    setOauthConnected(true);
-    const expiryDate = new Date();
-    expiryDate.setHours(expiryDate.getHours() + 24);
-    setTokenExpiry(expiryDate);
-    setCredentials((prev) => ({
-      ...prev,
-      oauth_token: 'mock_oauth_token_' + Math.random().toString(36).substr(2, 9),
-      oauth_refresh_token: 'mock_refresh_' + Math.random().toString(36).substr(2, 9),
-    }));
-    setTestResult({
-      status: 'success',
-      message: 'OAuth connection successful!',
-    });
+    // Redirect to backend OAuth initiation endpoint; backend returns the provider's authorize URL
+    const redirectUrl = `/api/v4/integrations/${encodeURIComponent(providerId)}/oauth/authorize`;
+    window.location.href = redirectUrl;
   };
 
   return (

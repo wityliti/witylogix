@@ -481,7 +481,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Misc / No-API-Key Gated
+## Misc / Additional Pages (0 mock signals) ✅ WIT-525
 | Section | Pages | Status |
 |---------|-------|--------|
 | Map | `/map` | ⚙️ (requires maps key) |
@@ -495,6 +495,27 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Profile | `/profile` | ✅ WIT-523 (fake sessions removed) |
 | Stores | `/stores` | ✅ |
 | Partners | `/partners` | ✅ |
+| Calendar | `/calendar` | ✅ WIT-525 (useApiList + real calendar rules) |
+| Support | `/support` | ✅ WIT-525 (useApiQuery + useApiMutation) |
+| Operations | `/operations` | ✅ WIT-525 (real API throughout) |
+| Onboarding | `/onboarding` | ✅ WIT-525 (13 files, 0 mocks) |
+| Shipping / Profiles | `/shipping`, `/shipping-profiles` | ✅ WIT-525 (5 files, 0 mocks) |
+| Widget Config | `/widget-config`, `/widgets` | ✅ WIT-525 (useApiList for catalog + config) |
+| Apps | `/apps` | ✅ WIT-525 (0 mocks) |
+| Inventory | `/inventory` | ✅ WIT-525 (0 mocks) |
+| Mobile Config | `/mobile-config` | ✅ WIT-525 (0 mocks) |
+| Saved Views | `/saved-views` | ✅ WIT-525 (0 mocks) |
+| Platform | `/platform` | ✅ WIT-525 (0 mocks) |
+
+**WIT-525 shared component fixes**:
+- `components/supply-chain/inventory-gauge.tsx`: Removed `mockInventory` const; prop defaults changed to 0/"units"
+- `components/supply-chain/fulfillment-tracker.tsx`: Removed `mockTracker` const; prop defaults changed to 0
+- `components/esignatures/envelope-timeline.tsx`: Removed `mockEvents[5]` array; `events` defaults to `[]`; added empty state
+- `components/healthcare/patient-card.tsx`: Removed `mockPatient` const; `patient` prop now required (no default)
+- `components/healthcare/vitals-chart.tsx`: Removed `generateMockReadings()`/`mockReadings`; `readings` defaults to `[]`; trend computed by comparing latest vs previous reading (deterministic); added empty state
+- `components/analytics/analytics-widget.tsx`: Removed 4 mock constants (`mockMetricData`, `mockChartData`, `mockPieData`, `mockTableData`); added `data?: WidgetData` prop; all render sub-components now data-driven with `EmptyState` when no data
+- `components/analytics/report-builder-card.tsx`: Removed inline SVG `mockPreview` data-URI; replaced with "Run report to see preview" placeholder div
+- `components/integrations/credential-form.tsx`: Replaced fake `mock_oauth_token_` + `Math.random()` token generation with real redirect to `/api/v4/integrations/:id/oauth/authorize`
 
 ---
 
@@ -518,7 +539,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-521 | `feat/WIT-521-dashboard-freight-ux-design-tokens` | Freight 4 pages: hex CSS→WL tokens; totalSavings hardcode removed; real Shipment fields; freight overview map view | 94 CSS fixed | merged |
 | WIT-522 | `feat/WIT-522-dashboard-tracking-timeslots` | Tracking overview + live (List/Map toggle); Time Slots real API + Create modal | `GET /api/v4/time-slots` existing | 7 slot mocks | merged |
 | WIT-523 | `feat/WIT-523-next-sprint` | Notification templates real API; profile fake sessions removed | — | 8→0 | merged #271 |
-| WIT-524 | `feat/WIT-524-dashboard-field-service-dispatch-map` | Field Service Dispatch map (technicians + jobs); Jobs create form real API; WL design tokens | `GET /api/v4/dispatch/drivers`, `GET /api/v4/dispatch/orders`, `POST /api/v4/orders` | 3 signals → 0 | open |
+| WIT-524 | `feat/WIT-524-dashboard-field-service-dispatch-map` | Field Service Dispatch map (technicians + jobs); Jobs create form real API; WL design tokens | `GET /api/v4/dispatch/drivers`, `GET /api/v4/dispatch/orders`, `POST /api/v4/orders` | 3 signals → 0 | merged #272 |
+| WIT-525 | `feat/WIT-525-dashboard-component-mock-cleanup` | Shared component mock defaults → safe real-data defaults: InventoryGauge, FulfillmentTracker, EnvelopeTimeline, PatientCard, VitalsChart (Math.random→deterministic trend), AnalyticsWidget (mock constants→data props + empty states), ReportBuilderCard (SVG mock→placeholder), CredentialForm (fake OAuth tokens→real redirect); pages: calendar, support, operations, onboarding, shipping, widgets all verified 0 mock signals | — | 70 component signals → 0 | open |
 
 ---
 

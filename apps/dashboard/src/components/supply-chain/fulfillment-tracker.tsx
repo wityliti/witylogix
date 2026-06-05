@@ -32,27 +32,15 @@ interface FulfillmentTrackerProps {
   className?: string;
 }
 
-// Mock data
-const mockTracker: FulfillmentTrackerProps = {
-  received: 45,
-  picked: 32,
-  packed: 28,
-  shipped: 25,
-  delivered: 20,
-  slaTotalHours: 48,
-  slaDueTime: new Date(Date.now() + 12 * 60 * 60 * 1000),
-  isOverdue: false,
-};
-
 const FulfillmentTracker = ({
-  received: receivedProp = mockTracker.received ?? 0,
-  picked: pickedProp = mockTracker.picked ?? 0,
-  packed: packedProp = mockTracker.packed ?? 0,
-  shipped: shippedProp = mockTracker.shipped ?? 0,
-  delivered: deliveredProp = mockTracker.delivered ?? 0,
-  slaTotalHours = mockTracker.slaTotalHours ?? 48,
-  slaDueTime = mockTracker.slaDueTime,
-  isOverdue = mockTracker.isOverdue,
+  received: receivedProp = 0,
+  picked: pickedProp = 0,
+  packed: packedProp = 0,
+  shipped: shippedProp = 0,
+  delivered: deliveredProp = 0,
+  slaTotalHours = 48,
+  slaDueTime,
+  isOverdue = false,
   className,
 }: FulfillmentTrackerProps) => {
   const received = receivedProp ?? 0;
