@@ -1,74 +1,82 @@
 'use client';
 
-/**
- * Zone-specific API hooks for the dashboard
- */
+import { useApiList, useApiMutation, useApiQuery, UseApiMutationResult, UseApiQueryResult } from './use-api';
 
-import { useApiMutation, useApiQuery, UseApiQueryResult, UseApiMutationResult } from './use-api';
-
-/**
- * Zone polygon coordinates
- */
-export interface ZonePolygon {
+export interface ZoneBoundary {
   type: 'Polygon';
-  coordinates: Array<Array<[number, number]>>;
+  coordinates: number[][][];
 }
 
-/**
- * Zone type
- */
-export interface Zone {
+export interface ZoneTimeSlot {
   id: string;
   name: string;
-  description?: string;
-  code: string;
-  status: 'active' | 'inactive' | 'archived';
-  polygon: ZonePolygon;
-  center: {
-    latitude: number;
-    longitude: number;
-  };
-  area: number;
-  assignedDriverCount: number;
-  activeDeliveries: number;
-  createdAt: string;
-  updatedAt: string;
+  startTime: string;
+  endTime: string;
 }
 
-/**
- * Hook to fetch all zones
- * @returns Array of zones
- */
-export function useZones(): UseApiQueryResult<Zone[]> {
-  return useApiQuery<Zone[]>('/api/v4/zones');
+export interface DeliveryZone {
+  id: string;
+  name: string;
+  priority: number;
+  baseRate: number;
+  perKmRate: number;
+  minOrder: number;
+  freeAbove: number | null;
+  isActive: boolean;
+  boundary: ZoneBoundary | null;
+  timeSlots: ZoneTimeSlot[];
+  _count: { timeSlots: number };
 }
 
-/**
- * Hook to fetch a single zone by ID with full polygon data
- * @param id - Zone ID
- * @returns Single zone with polygon
- */
-export function useZone(
-  id: string | null,
-): UseApiQueryResult<Zone> {
-  return useApiQuery<Zone>(id ? `/zones/${id}` : null);
+export interface UseZonesResult {
+  zones: DeliveryZone[];
+  loading: boolean;
+  error: Error | null;
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+  refetch: () => Promise<void>;
 }
 
-/**
- * Hook to create a new zone
- * @returns Mutation to create zone
- */
-export function useCreateZone(): UseApiMutationResult<Zone> {
-  return useApiMutation<Zone>('POST', '/api/v4/zones');
+export function useZones(filters?: { page?: number; limit?: number }): UseZonesResult {
+  const { items, loading, error, pagination, refetch } = useApiList<DeliveryZone>(
+    '/api/v4/zones',
+    { page: filters?.page ?? 1, limit: filters?.limit ?? 50 },
+  );
+  return { zones: items, loading, error, pagination, refetch };
 }
 
-/**
- * Hook to update an existing zone
- * @param id - Zone ID
- * @returns Mutation to update zone
- */
-export function useUpdateZone(
-  id: string,
-): UseApiMutationResult<Zone> {
-  return useApiMutation<Zone>('PATCH', `/zones/${id}`);
+export function useZone(id: string | null): UseApiQueryResult<{ data: DeliveryZone }> {
+  return useApiQuery<{ data: DeliveryZone }>(id ? `/api/v4/zones/${id}` : null);
+}
+
+export interface CreateZonePayload {
+  name: string;
+  baseRate: number;
+  perKmRate: number;
+  minOrder: number;
+  freeAbove?: number | null;
+  priority?: number;
+  boundary: { latitude: number; longitude: number }[];
+}
+
+export function useCreateZone(): UseApiMutationResult<{ data: DeliveryZone }> {
+  return useApiMutation<{ data: DeliveryZone }>('POST', '/api/v4/zones');
+}
+
+export interface UpdateZonePayload {
+  name?: string;
+  baseRate?: number;
+  perKmRate?: number;
+  minOrder?: number;
+  freeAbove?: number | null;
+  priority?: number;
+  isActive?: boolean;
+  boundary?: { latitude: number; longitude: number }[];
+}
+
+export function useUpdateZone(id: string): UseApiMutationResult<{ data: DeliveryZone }> {
+  return useApiMutation<{ data: DeliveryZone }>('PATCH', `/api/v4/zones/${id}`);
+}
+
+export function useDeactivateZone(id: string): UseApiMutationResult<{ data: DeliveryZone }> {
+  return useApiMutation<{ data: DeliveryZone }>('DELETE', `/api/v4/zones/${id}`);
 }
