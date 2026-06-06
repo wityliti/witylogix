@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCustomers } from '@/hooks/use-customers';
+import { useCustomers, useCustomerStats } from '@/hooks/use-customers';
 
 /* ═══════════════════════════════════════════════════════════
    CUSTOMERS PAGE — Customer management with Shopify sync
@@ -36,11 +36,12 @@ export default function CustomersPage() {
 
   const pageSize = 10;
 
-  // Fetch customers from API
+  // Fetch customers + global stats from API
   const { items: customers, loading, error, refetch, pagination } = useCustomers({
     search: search || undefined,
     limit: pageSize,
   });
+  const { data: statsData } = useCustomerStats();
 
   // Filter customers client-side
   const filtered = useMemo(() => {
@@ -69,11 +70,18 @@ export default function CustomersPage() {
   const paginatedItems = filtered.slice(0, pageSize);
   const totalPages = Math.max(1, Math.ceil(pagination.total / pageSize));
 
-  // Calculate stats
+  // Stats — prefer server-side stats, fall back to client-computed from loaded page
   const activeCustomers = customers.filter((c) => c.status === 'active').length;
-  const avgOrders =
-    customers.length > 0 ? (customers.reduce((sum, c) => sum + c.totalOrders, 0) / customers.length).toFixed(1) : '0';
-  const topSpender = customers.length > 0 ? Math.max(...customers.map((c) => c.totalSpent)) : 0;
+  const avgOrders = statsData?.avgOrderCount
+    ? statsData.avgOrderCount.toFixed(1)
+    : customers.length > 0
+    ? (customers.reduce((sum, c) => sum + c.totalOrders, 0) / customers.length).toFixed(1)
+    : '0';
+  const topSpender = statsData?.topSpenders?.[0]
+    ? Number(statsData.topSpenders[0].totalSpent)
+    : customers.length > 0
+    ? Math.max(...customers.map((c) => c.totalSpent))
+    : 0;
 
   return (
     <>
@@ -108,15 +116,15 @@ export default function CustomersPage() {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Customers"
-            value={pagination.total}
-            change={{ value: 5.2, label: 'vs last month' }}
+            value={statsData?.total ?? pagination.total}
+            change={{ value: statsData?.syncedToday ?? 0, label: 'synced today' }}
             accentColor="var(--wl-primary-500)"
             index={0}
           />
           <StatCard
             label="Active Customers"
             value={activeCustomers}
-            change={{ value: 12.8, label: 'vs last month' }}
+            change={{ value: 0, label: 'on this page' }}
             accentColor="var(--wl-info-400)"
             index={1}
           />
@@ -246,9 +254,10 @@ export default function CustomersPage() {
                   paginatedItems.map((customer, idx) => (
                     <tr
                       key={customer.id}
+                      onClick={() => router.push(`/customers/${customer.id}`)}
                       className={cn(
-                        'border-b border-[#1e1e2e] transition-colors duration-fast',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-[#1a1a2e]'
+                        'border-b border-[#1e1e2e] transition-colors duration-fast cursor-pointer hover:bg-[#1a1a2e]',
+                        idx % 2 === 0 ? 'bg-transparent' : 'bg-[#1a1a2e]/60'
                       )}
                     >
                       <td className="p-3 px-4 text-white font-semibold">{customer.name}</td>
@@ -268,13 +277,14 @@ export default function CustomersPage() {
                           {customer.status}
                         </Badge>
                       </td>
-                      <td className="p-3 px-4 text-center">
+                      <td className="p-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-1 justify-center">
-                          <Button variant="secondary" size="sm">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => router.push(`/customers/${customer.id}`)}
+                          >
                             View
-                          </Button>
-                          <Button variant="secondary" size="sm">
-                            Edit
                           </Button>
                         </div>
                       </td>
