@@ -28,6 +28,11 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const { page, limit } = paginationSchema.parse(request.query);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     const [zones, total] = await Promise.all([
       request.tenantDb.deliveryZone.findMany({
         orderBy: [{ priority: "desc" }, { name: "asc" }],
@@ -53,9 +58,31 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.deliveryZone.count(),
     ]);
 
+    // Aggregate today's slot bookings per zone in a single query
+    const zoneIds = zones.map((z) => z.id);
+    const todaySlots =
+      zoneIds.length > 0
+        ? await request.tenantDb.deliverySlot.groupBy({
+            by: ["zoneId"],
+            where: {
+              zoneId: { in: zoneIds },
+              date: { gte: today, lt: tomorrow },
+              isActive: true,
+            },
+            _sum: { currentBookings: true },
+          })
+        : [];
+
+    const bookingsMap = new Map(
+      todaySlots
+        .filter((s) => s.zoneId != null)
+        .map((s) => [s.zoneId as string, s._sum.currentBookings ?? 0]),
+    );
+
     const data = zones.map((zone) => ({
       ...zone,
       boundary: zone.boundary || null,
+      todayBookings: bookingsMap.get(zone.id) ?? 0,
     }));
 
     return {
