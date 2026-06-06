@@ -101,11 +101,21 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Customers (0 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Customer List | `/customers` | 0 | ✅ |
-| Customer Create | `/customers/create` | 0 | ✅ |
+## Customers (0 mock signals) ✅ WIT-526
+| Page | Route | Mock Before | Mock After | Map | Status |
+|------|-------|------------|-----------|-----|--------|
+| Customer List | `/customers` | 0 | 0 (+ real stats) | — | ✅ WIT-526 |
+| Customer Detail | `/customers/[id]` | n/a (page missing) | 0 (new page) | ✅ Delivery-pin WLMap | ✅ WIT-526 |
+| Customer Create | `/customers/create` | 0 | 0 | — | ✅ |
+
+**WIT-526 changes**:
+- NEW: `customers/[id]/page.tsx` — full customer detail page with profile card, stat tiles (total orders, total spent, avg order value, last order), order history table (click-through to `/orders/:id`), loading skeleton, error/not-found states
+- Map: `WLMap` + `PinLayer` showing past delivery locations from customer orders (auto-fit bounds via `useFitBounds`); status-coloured pins (in_transit=delivered, delayed=failed, open=pending, assigned=others)
+- Fixed `useCustomer` hook: path corrected `/customers/${id}` → `/api/v4/customers/${id}`; `useApiQuery` correctly extracts the data envelope
+- New hooks: `useCustomerOrders(id)` — `GET /api/v4/customers/:id/orders`; `useCustomerStats()` — `GET /api/v4/customers/stats`
+- Customer list: "View" button + full row now navigate to `/customers/:id`; stat cards use `useCustomerStats()` for accurate server-side totals
+
+**Endpoints used**: `GET /api/v4/customers/:id` (existing), `GET /api/v4/customers/:id/orders` (existing), `GET /api/v4/customers/stats` (existing)
 
 ---
 
@@ -541,6 +551,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-523 | `feat/WIT-523-next-sprint` | Notification templates real API; profile fake sessions removed | — | 8→0 | merged #271 |
 | WIT-524 | `feat/WIT-524-dashboard-field-service-dispatch-map` | Field Service Dispatch map (technicians + jobs); Jobs create form real API; WL design tokens | `GET /api/v4/dispatch/drivers`, `GET /api/v4/dispatch/orders`, `POST /api/v4/orders` | 3 signals → 0 | merged #272 |
 | WIT-525 | `feat/WIT-525-dashboard-component-mock-cleanup` | Shared component mock defaults → safe real-data defaults: InventoryGauge, FulfillmentTracker, EnvelopeTimeline, PatientCard, VitalsChart (Math.random→deterministic trend), AnalyticsWidget (mock constants→data props + empty states), ReportBuilderCard (SVG mock→placeholder), CredentialForm (fake OAuth tokens→real redirect); pages: calendar, support, operations, onboarding, shipping, widgets all verified 0 mock signals | — | 70 component signals → 0 | open |
+| WIT-526 | `feat/WIT-526-dashboard-customers-detail` | Customers detail page (new): profile card + WLMap delivery-pin map + order history table; Fixed useCustomer hook path; added useCustomerOrders + useCustomerStats hooks; list page View button + row click navigation | `GET /api/v4/customers/:id` (existing), `GET /api/v4/customers/:id/orders` (existing), `GET /api/v4/customers/stats` (existing) | 0 (page added) + 1 map | this PR |
 
 ---
 
