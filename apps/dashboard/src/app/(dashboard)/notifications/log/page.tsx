@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/layout/header";
 import {
   Card,
@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
   TableHeader,
   TableRow,
   TableHead,
@@ -20,6 +19,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   Download,
@@ -27,309 +28,117 @@ import {
   Mail,
   MessageSquare,
   Bell,
-  Smartphone,
+  MessageCircle,
   Clock,
   CheckCircle,
   AlertCircle,
-  RotateCcw,
+  XCircle,
+  Package,
+  RefreshCw,
 } from "lucide-react";
+import { useApiList } from "@/hooks/use-api";
+import Link from "next/link";
 
-type Channel = "email" | "sms" | "whatsapp" | "push";
-type EventType =
-  | "order_confirmed"
-  | "delivery_scheduled"
-  | "out_for_delivery"
-  | "delivery_arriving"
-  | "delivered"
-  | "delivery_failed"
-  | "rescheduled";
-type NotificationStatus = "sent" | "delivered" | "failed" | "bounced" | "pending";
+// ── API types matching notifications-v2 /log response ─────────────────────
 
-interface DeliveryAttempt {
-  timestamp: Date;
-  status: NotificationStatus;
-  errorCode?: string;
-  errorMessage?: string;
-}
-
-interface NotificationLog {
+interface ApiNotificationLog {
   id: string;
-  timestamp: Date;
+  channel: string;
+  eventType: string;
   recipient: string;
-  channel: Channel;
-  eventType: EventType;
-  templateName: string;
-  status: NotificationStatus;
-  messageId?: string;
-  messagePreview: string;
-  cost: number;
-  attempts: DeliveryAttempt[];
+  status: string;
+  providerMsgId: string | null;
+  errorMessage: string | null;
+  sentAt: string | null;
+  deliveredAt: string | null;
+  createdAt: string;
+  orderId: string | null;
+  orderNumber: string | null;
 }
 
-const NOTIFICATION_LOGS: NotificationLog[] = [
-  {
-    id: "nlog1",
-    timestamp: new Date("2026-03-11T14:30:00"),
-    recipient: "customer@example.com",
-    channel: "email",
-    eventType: "order_confirmed",
-    templateName: "Order Confirmation",
-    status: "delivered",
-    messageId: "msg_1234567890",
-    messagePreview: "Your order #ORD-123456 has been confirmed",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:30:05"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog2",
-    timestamp: new Date("2026-03-11T14:25:00"),
-    recipient: "+1234567890",
-    channel: "sms",
-    eventType: "out_for_delivery",
-    templateName: "Out for Delivery SMS",
-    status: "delivered",
-    messageId: "msg_1234567891",
-    messagePreview: "Your delivery is on the way! Track: https://track.example.com",
-    cost: 0.05,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:25:10"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog3",
-    timestamp: new Date("2026-03-11T14:20:00"),
-    recipient: "+201012345678",
-    channel: "whatsapp",
-    eventType: "delivery_scheduled",
-    templateName: "Delivery Scheduled",
-    status: "delivered",
-    messageId: "msg_1234567892",
-    messagePreview: "Your delivery is scheduled for March 12, 2026",
-    cost: 0.02,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:20:15"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog4",
-    timestamp: new Date("2026-03-11T14:15:00"),
-    recipient: "customer2@example.com",
-    channel: "email",
-    eventType: "delivery_failed",
-    templateName: "Delivery Failed",
-    status: "failed",
-    messageId: "msg_1234567893",
-    messagePreview: "Unfortunately, we couldn't deliver your package",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:15:00"),
-        status: "failed",
-        errorCode: "INVALID_EMAIL",
-        errorMessage: "Email address not found",
-      },
-    ],
-  },
-  {
-    id: "nlog5",
-    timestamp: new Date("2026-03-11T14:10:00"),
-    recipient: "push-token-xyz",
-    channel: "push",
-    eventType: "delivered",
-    templateName: "Delivery Confirmation",
-    status: "sent",
-    messageId: "msg_1234567894",
-    messagePreview: "Your order has been delivered successfully",
-    cost: 0,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:10:05"),
-        status: "sent",
-      },
-    ],
-  },
-  {
-    id: "nlog6",
-    timestamp: new Date("2026-03-11T14:05:00"),
-    recipient: "+9876543210",
-    channel: "sms",
-    eventType: "order_confirmed",
-    templateName: "Order Confirmation SMS",
-    status: "bounced",
-    messageId: "msg_1234567895",
-    messagePreview: "Order confirmed! Track: https://track.example.com",
-    cost: 0.05,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:05:00"),
-        status: "bounced",
-        errorCode: "INVALID_NUMBER",
-        errorMessage: "Phone number no longer valid",
-      },
-    ],
-  },
-  {
-    id: "nlog7",
-    timestamp: new Date("2026-03-11T14:00:00"),
-    recipient: "customer3@example.com",
-    channel: "email",
-    eventType: "rescheduled",
-    templateName: "Rescheduled Notification",
-    status: "pending",
-    messageId: "msg_1234567896",
-    messagePreview: "Your delivery has been rescheduled",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:00:00"),
-        status: "pending",
-      },
-    ],
-  },
-];
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const CHANNEL_ICONS: Record<Channel, React.ReactNode> = {
-  email: <Mail className="w-4 h-4" />,
-  sms: <MessageSquare className="w-4 h-4" />,
-  whatsapp: <MessageSquare className="w-4 h-4" />,
-  push: <Bell className="w-4 h-4" />,
+const CHANNEL_ICON: Record<string, React.ReactNode> = {
+  EMAIL: <Mail className="w-4 h-4" />,
+  SMS: <MessageSquare className="w-4 h-4" />,
+  WHATSAPP: <MessageCircle className="w-4 h-4" />,
+  PUSH: <Bell className="w-4 h-4" />,
 };
 
-const STATUS_ICONS: Record<NotificationStatus, React.ReactNode> = {
-  sent: <CheckCircle className="w-4 h-4 text-emerald-500" />,
-  delivered: <CheckCircle className="w-4 h-4 text-emerald-500" />,
-  failed: <AlertCircle className="w-4 h-4 text-red-500" />,
-  bounced: <AlertCircle className="w-4 h-4 text-amber-500" />,
-  pending: <Clock className="w-4 h-4 text-gray-400" />,
+const STATUS_ICON: Record<string, React.ReactNode> = {
+  SENT: <CheckCircle className="w-4 h-4 text-blue-400" />,
+  DELIVERED: <CheckCircle className="w-4 h-4 text-emerald-400" />,
+  FAILED: <XCircle className="w-4 h-4 text-red-400" />,
+  BOUNCED: <AlertCircle className="w-4 h-4 text-amber-400" />,
+  PENDING: <Clock className="w-4 h-4 text-zinc-400" />,
 };
 
-const getStatusVariant = (status: NotificationStatus) => {
-  switch (status) {
-    case "delivered":
-    case "sent":
-      return "success";
-    case "failed":
-      return "danger";
-    case "bounced":
-      return "warning";
-    case "pending":
-      return "info";
+function statusVariant(s: string): "success" | "danger" | "warning" | "info" | "default" {
+  switch (s) {
+    case "DELIVERED": return "success";
+    case "SENT": return "info";
+    case "FAILED": return "danger";
+    case "BOUNCED": return "warning";
+    default: return "default";
   }
-};
-
-interface DetailModalProps {
-  log?: NotificationLog;
-  isOpen: boolean;
-  onClose: () => void;
 }
 
-const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
-  if (!isOpen || !log) return null;
+function fmtEvent(e: string): string {
+  return e.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
+function fmtTs(ts: string): string {
+  return new Date(ts).toLocaleString(undefined, {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+// ── Detail Modal ───────────────────────────────────────────────────────────
+
+function DetailModal({ log, onClose }: { log: ApiNotificationLog; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
+      <Card
+        className="border border-zinc-800 bg-[#12121a] w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <CardHeader>
-          <CardTitle>Notification Details</CardTitle>
-          <CardDescription>Message ID: {log.messageId}</CardDescription>
+          <CardTitle className="text-base">Notification Details</CardTitle>
+          {log.providerMsgId && (
+            <CardDescription className="font-mono text-xs">{log.providerMsgId}</CardDescription>
+          )}
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Recipient
-              </p>
-              <p className="text-sm text-white">{log.recipient}</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Channel
-              </p>
-              <p className="text-sm text-white capitalize">
-                {log.channel}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Status
-              </p>
-              <Badge variant={getStatusVariant(log.status) as any}>
-                {log.status}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Cost
-              </p>
-              <p className="text-sm text-white">
-                ${log.cost.toFixed(2)}
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t border-[#1e1e2e] pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-              Message Preview
-            </p>
-            <div className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
-              <p className="text-sm text-white whitespace-pre-wrap">
-                {log.messagePreview}
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t border-[#1e1e2e] pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-              Delivery Attempts ({log.attempts.length})
-            </p>
-            <div className="space-y-2">
-              {log.attempts.map((attempt, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]"
+        <CardContent className="space-y-4 text-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Channel" value={log.channel} />
+            <Field label="Event" value={fmtEvent(log.eventType)} />
+            <Field label="Recipient" value={log.recipient} mono />
+            <Field label="Status">
+              <Badge variant={statusVariant(log.status)}>{log.status}</Badge>
+            </Field>
+            {log.orderId && (
+              <Field label="Order">
+                <Link
+                  href={`/orders/${log.orderId}`}
+                  className="text-blue-400 hover:text-blue-300 font-mono text-xs"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2">
-                      {STATUS_ICONS[attempt.status]}
-                      <div>
-                        <p className="text-sm font-medium text-white capitalize">
-                          {attempt.status}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {attempt.timestamp.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {attempt.errorMessage && (
-                    <div className="mt-2 text-xs">
-                      <p className="text-red-500">
-                        Error: {attempt.errorMessage}
-                      </p>
-                      <p className="text-gray-400">
-                        Code: {attempt.errorCode}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                  {log.orderNumber ?? log.orderId.slice(0, 8)}
+                </Link>
+              </Field>
+            )}
+            <Field label="Sent" value={log.sentAt ? fmtTs(log.sentAt) : log.createdAt ? fmtTs(log.createdAt) : "—"} />
+            {log.deliveredAt && <Field label="Delivered" value={fmtTs(log.deliveredAt)} />}
           </div>
-
+          {log.errorMessage && (
+            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3">
+              <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">Error</p>
+              <p className="text-xs text-red-300">{log.errorMessage}</p>
+            </div>
+          )}
           <button
             onClick={onClose}
-            className="w-full mt-4 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#252541] transition-colors"
+            className="w-full mt-2 px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 transition-colors text-sm"
           >
             Close
           </button>
@@ -337,287 +146,292 @@ const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
       </Card>
     </div>
   );
-};
+}
+
+function Field({
+  label,
+  value,
+  mono,
+  children,
+}: {
+  label: string;
+  value?: string;
+  mono?: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">{label}</p>
+      {children ?? (
+        <p className={cn("text-sm text-zinc-200", mono && "font-mono text-xs break-all")}>
+          {value}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────
 
 export default function NotificationLogPage() {
-  const [logs, setLogs] = useState<NotificationLog[]>(NOTIFICATION_LOGS);
-  const [selectedLog, setSelectedLog] = useState<NotificationLog>();
-  const [showDetail, setShowDetail] = useState(false);
-  const [filterChannel, setFilterChannel] = useState<Channel | "all">("all");
-  const [filterStatus, setFilterStatus] = useState<NotificationStatus | "all">(
-    "all"
+  const [filterChannel, setFilterChannel] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [selectedLog, setSelectedLog] = useState<ApiNotificationLog | null>(null);
+
+  const filters = useMemo(() => {
+    const f: Record<string, string> = {};
+    if (filterChannel) f.channel = filterChannel;
+    if (filterStatus) f.status = filterStatus;
+    if (filterDateFrom) f.dateFrom = filterDateFrom;
+    if (filterDateTo) f.dateTo = filterDateTo;
+    return f;
+  }, [filterChannel, filterStatus, filterDateFrom, filterDateTo]);
+
+  const { items: logs, loading, error, refetch, pagination } = useApiList<ApiNotificationLog>(
+    "/api/v4/notifications/log",
+    { ...filters, limit: 50 },
   );
-  const [filterDateRange, setFilterDateRange] = useState({ from: "", to: "" });
 
-  const filteredLogs = logs.filter((log) => {
-    if (filterChannel !== "all" && log.channel !== filterChannel) return false;
-    if (filterStatus !== "all" && log.status !== filterStatus) return false;
-    return true;
-  });
+  // derive stats from loaded page
+  const stats = useMemo(() => {
+    const total = pagination.total ?? logs.length;
+    const delivered = logs.filter((l) => l.status === "DELIVERED" || l.status === "SENT").length;
+    const failed = logs.filter((l) => l.status === "FAILED").length;
+    const bounced = logs.filter((l) => l.status === "BOUNCED").length;
+    const deliveryRate = logs.length > 0 ? ((delivered / logs.length) * 100).toFixed(1) : "—";
+    const bounceRate = logs.length > 0 ? ((bounced / logs.length) * 100).toFixed(1) : "—";
+    return { total, deliveryRate, bounceRate, pending: logs.filter((l) => l.status === "PENDING").length };
+  }, [logs, pagination.total]);
 
-  const stats = {
-    totalSent: logs.length,
-    deliveryRate:
-      logs.length > 0
-        ? (
-            ((logs.filter((l) => l.status === "delivered" || l.status === "sent")
-              .length /
-              logs.length) *
-              100)
-          ).toFixed(1)
-        : "0",
-    bounceRate:
-      logs.length > 0
-        ? (((logs.filter((l) => l.status === "bounced").length / logs.length) * 100).toFixed(1))
-        : "0",
-    totalCost: logs.reduce((sum, log) => sum + log.cost, 0).toFixed(2),
-  };
+  function exportCSV() {
+    const rows = [
+      ["Timestamp", "Recipient", "Channel", "Event", "Status", "Provider ID", "Order"],
+      ...logs.map((l) => [
+        l.createdAt,
+        l.recipient,
+        l.channel,
+        l.eventType,
+        l.status,
+        l.providerMsgId ?? "",
+        l.orderNumber ?? l.orderId ?? "",
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `notification-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Notification Log"
         subtitle="Track sent notifications and delivery status"
+        actions={
+          <Button variant="secondary" size="sm" onClick={refetch}>
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        }
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Total Sent
-              </p>
-              <p className="text-2xl font-bold text-white">
-                {stats.totalSent}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Delivery Rate
-              </p>
-              <p className="text-2xl font-bold text-emerald-500">
-                {stats.deliveryRate}%
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Bounce Rate
-              </p>
-              <p className="text-2xl font-bold text-amber-500">
-                {stats.bounceRate}%
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Total Cost
-              </p>
-              <p className="text-2xl font-bold text-white">
-                ${stats.totalCost}
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Total (this page)", value: String(logs.length), sub: `of ${(pagination.total ?? 0).toLocaleString()} total` },
+            { label: "Delivery Rate", value: `${stats.deliveryRate}%`, accent: "text-emerald-400" },
+            { label: "Bounce Rate", value: `${stats.bounceRate}%`, accent: "text-amber-400" },
+            { label: "Pending", value: String(stats.pending), accent: "text-zinc-400" },
+          ].map(({ label, value, sub, accent }) => (
+            <Card key={label} className="border border-zinc-800 bg-[#12121a]">
+              <CardContent className="pt-5 pb-4">
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">{label}</p>
+                <p className={cn("text-2xl font-bold", accent ?? "text-white")}>{loading ? "—" : value}</p>
+                {sub && <p className="text-xs text-zinc-600 mt-0.5">{sub}</p>}
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Filters */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="border border-zinc-800 bg-[#12121a]">
+          <CardContent className="pt-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  Channel
-                </label>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">Channel</label>
                 <select
                   value={filterChannel}
-                  onChange={(e) =>
-                    setFilterChannel(e.target.value as typeof filterChannel)
-                  }
-                  className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
+                  onChange={(e) => setFilterChannel(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-900 text-zinc-100 border border-zinc-800 rounded-md text-sm focus:outline-none focus:border-zinc-600"
                 >
-                  <option value="all">All Channels</option>
-                  <option value="email">Email</option>
-                  <option value="sms">SMS</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="push">Push</option>
+                  <option value="">All Channels</option>
+                  <option value="EMAIL">Email</option>
+                  <option value="SMS">SMS</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="PUSH">Push</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  Status
-                </label>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">Status</label>
                 <select
                   value={filterStatus}
-                  onChange={(e) =>
-                    setFilterStatus(e.target.value as typeof filterStatus)
-                  }
-                  className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-900 text-zinc-100 border border-zinc-800 rounded-md text-sm focus:outline-none focus:border-zinc-600"
                 >
-                  <option value="all">All Status</option>
-                  <option value="sent">Sent</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="failed">Failed</option>
-                  <option value="bounced">Bounced</option>
-                  <option value="pending">Pending</option>
+                  <option value="">All Statuses</option>
+                  <option value="SENT">Sent</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="FAILED">Failed</option>
+                  <option value="BOUNCED">Bounced</option>
+                  <option value="PENDING">Pending</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  From Date
-                </label>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">From Date</label>
                 <Input
                   type="date"
-                  value={filterDateRange.from}
-                  onChange={(e) =>
-                    setFilterDateRange({
-                      ...filterDateRange,
-                      from: e.target.value,
-                    })
-                  }
-                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="bg-zinc-900 border-zinc-800 text-zinc-100"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  To Date
-                </label>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">To Date</label>
                 <Input
                   type="date"
-                  value={filterDateRange.to}
-                  onChange={(e) =>
-                    setFilterDateRange({
-                      ...filterDateRange,
-                      to: e.target.value,
-                    })
-                  }
-                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="bg-zinc-900 border-zinc-800 text-zinc-100"
                 />
               </div>
             </div>
+            {(filterChannel || filterStatus || filterDateFrom || filterDateTo) && (
+              <button
+                onClick={() => { setFilterChannel(""); setFilterStatus(""); setFilterDateFrom(""); setFilterDateTo(""); }}
+                className="mt-3 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                Clear filters
+              </button>
+            )}
           </CardContent>
         </Card>
 
-        {/* Logs Table */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a]">
+        {/* Table */}
+        <Card className="border border-zinc-800 bg-[#12121a]">
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <CardTitle>
-                  {filteredLogs.length} Notification
-                  {filteredLogs.length !== 1 ? "s" : ""}
-                </CardTitle>
-              </div>
-              <Button variant="secondary" size="sm">
-                <Download className="w-4 h-4 mr-2" />
+              <CardTitle className="text-base">
+                {loading ? "Loading…" : `${logs.length} notification${logs.length !== 1 ? "s" : ""}`}
+              </CardTitle>
+              <Button variant="secondary" size="sm" onClick={exportCSV} disabled={loading || logs.length === 0}>
+                <Download className="w-4 h-4" />
                 Export CSV
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Recipient</TableHead>
-                    <TableHead>Channel</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Template</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredLogs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        <p className="text-gray-400 text-sm">
-                          No notifications found
-                        </p>
-                      </TableCell>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="p-6">
+                <TableSkeleton rows={8} columns={6} />
+              </div>
+            ) : error ? (
+              <div className="p-6">
+                <ErrorState message={error.message} onRetry={refetch} />
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Package className="w-10 h-10 text-zinc-700" />
+                <p className="text-sm text-zinc-500">No notifications found</p>
+                {(filterChannel || filterStatus || filterDateFrom || filterDateTo) && (
+                  <p className="text-xs text-zinc-600">Try clearing your filters</p>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <TableHeader>
+                    <TableRow className="border-b border-zinc-800 bg-zinc-950/50">
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Timestamp</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Recipient</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Channel</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Event</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Order</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Status</TableHead>
+                      <TableHead className="py-3 px-4 w-10" />
                     </TableRow>
-                  ) : (
-                    filteredLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Clock className="w-3 h-3" />
-                            {log.timestamp.toLocaleString()}
+                  </TableHeader>
+                  <TableBody>
+                    {logs.map((log) => (
+                      <TableRow
+                        key={log.id}
+                        className="border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors"
+                      >
+                        <TableCell className="py-3 px-4">
+                          <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            {fmtTs(log.createdAt)}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white truncate max-w-xs">
+                        <TableCell className="py-3 px-4">
+                          <span className="text-xs text-zinc-300 font-mono truncate max-w-[160px] block">
                             {log.recipient}
                           </span>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-400">
-                              {CHANNEL_ICONS[log.channel]}
-                            </span>
-                            <span className="text-sm capitalize text-white">
-                              {log.channel}
-                            </span>
+                        <TableCell className="py-3 px-4">
+                          <div className="flex items-center gap-2 text-zinc-400">
+                            {CHANNEL_ICON[log.channel] ?? <Bell className="w-4 h-4" />}
+                            <span className="text-xs">{log.channel}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white">
-                            {log.eventType
-                              .replace(/_/g, " ")
-                              .replace(/\b\w/g, (l) => l.toUpperCase())}
-                          </span>
+                        <TableCell className="py-3 px-4">
+                          <span className="text-xs text-zinc-200">{fmtEvent(log.eventType)}</span>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-gray-400">
-                            {log.templateName}
-                          </span>
+                        <TableCell className="py-3 px-4">
+                          {log.orderId ? (
+                            <Link
+                              href={`/orders/${log.orderId}`}
+                              className="text-xs text-blue-400 hover:text-blue-300 font-mono"
+                            >
+                              {log.orderNumber ?? log.orderId.slice(0, 8)}
+                            </Link>
+                          ) : (
+                            <span className="text-zinc-600 text-xs">—</span>
+                          )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-3 px-4">
                           <div className="flex items-center gap-2">
-                            {STATUS_ICONS[log.status]}
-                            <Badge variant={getStatusVariant(log.status) as any}>
+                            {STATUS_ICON[log.status] ?? <Clock className="w-4 h-4 text-zinc-500" />}
+                            <Badge variant={statusVariant(log.status)} className="text-xs">
                               {log.status}
                             </Badge>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white">
-                            ${log.cost.toFixed(2)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="py-3 px-4 text-right">
                           <button
-                            onClick={() => {
-                              setSelectedLog(log);
-                              setShowDetail(true);
-                            }}
-                            className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
+                            onClick={() => setSelectedLog(log)}
+                            aria-label="View details"
+                            className="p-1.5 hover:bg-zinc-800 rounded transition-colors text-zinc-500 hover:text-zinc-200"
                           >
-                            <Eye className="w-4 h-4 text-gray-400" />
+                            <Eye className="w-4 h-4" />
                           </button>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </table>
-            </div>
+                    ))}
+                  </TableBody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {/* Detail Modal */}
-        <DetailModal
-          log={selectedLog}
-          isOpen={showDetail}
-          onClose={() => setShowDetail(false)}
-        />
       </main>
+
+      {selectedLog && (
+        <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />
+      )}
     </div>
   );
 }
