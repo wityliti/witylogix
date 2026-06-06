@@ -272,6 +272,57 @@ export function useCustomers(
   return { ...result, items } as UseApiListResult<Customer>;
 }
 
+// ─── Raw order shape from /:id/orders endpoint ─────────────
+
+export interface CustomerOrder {
+  id: string;
+  externalOrderNumber: string | null;
+  externalOrderId: string;
+  status: string;
+  customerName: string | null;
+  totalPrice: string | number | null;
+  itemCount: number;
+  city: string | null;
+  province: string | null;
+  country: string | null;
+  deliveryLocation: { lat: number; lng: number } | null;
+  createdAt: string;
+  driver: { id: string; name: string } | null;
+}
+
+export interface CustomerOrdersData {
+  customer: Record<string, unknown>;
+  orders: CustomerOrder[];
+}
+
+export interface CustomerOrdersResult {
+  data: CustomerOrdersData | null;
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+  loading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+}
+
+export interface CustomerStats {
+  total: number;
+  syncedToday: number;
+  avgOrderCount: number;
+  totalRevenue: string | number;
+  lastSync: string | null;
+  topSpenders: Array<{
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    totalSpent: string | number;
+  }>;
+}
+
+/**
+ * Hook to fetch a single customer by ID.
+ * useApiQuery already extracts `.data` from the JSON wrapper, so the raw
+ * Prisma customer lands directly in result.data. We normalize it.
+ */
 export function useCustomer(id: string | null): UseApiQueryResult<Customer> {
   const result = useApiQuery<unknown>(id ? `/api/v4/customers/${id}` : null);
   const customer = useMemo<Customer | null>(
@@ -300,14 +351,10 @@ export function useCustomerOrders(id: string | null): CustomerOrdersResult {
   };
 }
 
+/**
+ * Hook to fetch overall customer stats.
+ * useApiQuery extracts `.data` from the wrapper, so result.data IS the stats.
+ */
 export function useCustomerStats(): UseApiQueryResult<CustomerStats> {
   return useApiQuery<CustomerStats>('/api/v4/customers/stats');
-}
-
-export function useCustomerLocations(): UseApiQueryResult<CustomerLocation[]> {
-  return useApiQuery<CustomerLocation[]>('/api/v4/customers/locations');
-}
-
-export function useCustomerSegmentStats(): UseApiQueryResult<CustomerSegmentStats> {
-  return useApiQuery<CustomerSegmentStats>('/api/v4/customers/segment-stats');
 }

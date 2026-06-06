@@ -12,6 +12,7 @@ import {
   Calendar,
   Package,
   MapPin,
+  Tag,
   ChevronRight,
   TrendingUp,
   Clock,
@@ -258,7 +259,7 @@ export default function CustomerDetailPage() {
   return (
     <div className="min-h-screen bg-[var(--wl-bg-root,#0a0a0f)]">
       {/* ── Back nav ──────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 bg-wl-bg-root/90 backdrop-blur border-b border-white/[0.06] px-6 py-3">
+      <div className="sticky top-0 z-10 bg-[#0a0a0f]/90 backdrop-blur border-b border-white/[0.06] px-6 py-3">
         <button
           onClick={() => router.push('/customers')}
           className="flex items-center gap-2 text-sm text-white/50 hover:text-white/80 transition-colors"
@@ -275,7 +276,7 @@ export default function CustomerDetailPage() {
           <div className="lg:col-span-1 space-y-4">
 
             {/* Profile card */}
-            <Card className="p-6 bg-wl-bg-surface border border-white/[0.06] text-center">
+            <Card className="p-6 bg-[#111118] border border-white/[0.06] text-center">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-4"
                 style={{ backgroundColor: avatarBg }}
@@ -309,6 +310,14 @@ export default function CustomerDetailPage() {
                       <Phone className="w-3.5 h-3.5 text-white/40" />
                     </div>
                     <span className="text-white/60">{customer.phone}</span>
+                  </div>
+                )}
+                {customer.company && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-7 h-7 rounded bg-white/[0.05] flex items-center justify-center shrink-0">
+                      <Package className="w-3.5 h-3.5 text-white/40" />
+                    </div>
+                    <span className="text-white/60">{customer.company}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-3 text-sm">
@@ -352,7 +361,7 @@ export default function CustomerDetailPage() {
 
             {/* Tags */}
             {customer.addresses && customer.addresses.length > 0 && (
-              <Card className="p-4 bg-wl-bg-surface border border-white/[0.06]">
+              <Card className="p-4 bg-[#111118] border border-white/[0.06]">
                 <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
                   Saved Addresses
                 </h3>
@@ -360,7 +369,7 @@ export default function CustomerDetailPage() {
                   {customer.addresses.slice(0, 3).map((addr, i) => (
                     <div key={addr.id ?? i} className="flex items-start gap-2 text-xs text-white/50">
                       <MapPin className="w-3 h-3 mt-0.5 shrink-0 text-white/30" />
-                      <span>{[addr.address1, addr.city, addr.province, addr.country].filter(Boolean).join(', ')}</span>
+                      <span>{[addr.street, addr.city, addr.state, addr.country].filter(Boolean).join(', ')}</span>
                     </div>
                   ))}
                 </div>
@@ -372,7 +381,7 @@ export default function CustomerDetailPage() {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Map: delivery pin locations */}
-            <Card className="overflow-hidden border border-white/[0.06] bg-wl-bg-surface" style={{ height: 340 }}>
+            <Card className="overflow-hidden border border-white/[0.06] bg-[#111118]" style={{ height: 340 }}>
               <CardHeader className="px-4 py-3 border-b border-white/[0.06]">
                 <CardTitle className="text-sm font-semibold text-white/70 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
@@ -399,7 +408,7 @@ export default function CustomerDetailPage() {
             </Card>
 
             {/* Order history */}
-            <Card className="bg-wl-bg-surface border border-white/[0.06]">
+            <Card className="bg-[#111118] border border-white/[0.06]">
               <CardHeader className="px-5 py-4 border-b border-white/[0.06]">
                 <CardTitle className="text-sm font-semibold text-white/70 flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4" />
@@ -519,7 +528,7 @@ function StatTile({
   accent: string;
 }) {
   return (
-    <Card className="p-4 bg-wl-bg-surface border border-white/[0.06] relative overflow-hidden group hover:border-white/[0.10] transition-colors">
+    <Card className="p-4 bg-[#111118] border border-white/[0.06] relative overflow-hidden group hover:border-white/[0.10] transition-colors">
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
         style={{ background: `linear-gradient(90deg, ${accent}60, transparent)` }}
