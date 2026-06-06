@@ -134,14 +134,89 @@ export function useCustomers(
   return { ...result, items } as UseApiListResult<Customer>;
 }
 
-export function useCustomer(id: string | null): UseApiQueryResult<Customer> {
-  return useApiQuery<Customer>(id ? `/api/v4/customers/${id}` : null);
+// ─── Raw order shape from /:id/orders endpoint ─────────────
+
+export interface CustomerOrder {
+  id: string;
+  externalOrderNumber: string | null;
+  externalOrderId: string;
+  status: string;
+  customerName: string | null;
+  totalPrice: string | number | null;
+  itemCount: number;
+  city: string | null;
+  province: string | null;
+  country: string | null;
+  deliveryLocation: { lat: number; lng: number } | null;
+  createdAt: string;
+  driver: { id: string; name: string } | null;
 }
 
+export interface CustomerOrdersData {
+  customer: Record<string, unknown>;
+  orders: CustomerOrder[];
+}
+
+export interface CustomerOrdersResult {
+  data: CustomerOrdersData | null;
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+  loading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+}
+
+export interface CustomerStats {
+  total: number;
+  syncedToday: number;
+  avgOrderCount: number;
+  totalRevenue: string | number;
+  lastSync: string | null;
+  topSpenders: Array<{
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    totalSpent: string | number;
+  }>;
+}
+
+/**
+ * Hook to fetch a single customer by ID.
+ * useApiQuery already extracts `.data` from the JSON wrapper, so the raw
+ * Prisma customer lands directly in result.data. We normalize it.
+ */
+export function useCustomer(id: string | null): UseApiQueryResult<Customer> {
+  const result = useApiQuery<unknown>(id ? `/api/v4/customers/${id}` : null);
+  const customer = useMemo<Customer | null>(
+    () => (result.data ? normalizeCustomer(result.data) : null),
+    [result.data],
+  );
+  return { ...result, data: customer } as UseApiQueryResult<Customer>;
+}
+
+/**
+ * Hook to fetch orders for a customer.
+ * The endpoint returns { data: { customer, orders }, pagination } — useApiQuery
+ * extracts the inner `data` field ({ customer, orders }).
+ * 20 orders is sufficient for the customer detail page.
+ */
+export function useCustomerOrders(id: string | null): CustomerOrdersResult {
+  const result = useApiQuery<CustomerOrdersData>(
+    id ? `/api/v4/customers/${id}/orders?limit=20&sortBy=createdAt&sortOrder=desc` : null,
+  );
+  return {
+    data: result.data ?? null,
+    pagination: { page: 1, limit: 20, total: result.data?.orders?.length ?? 0, totalPages: 1 },
+    loading: result.loading,
+    error: result.error,
+    refetch: result.refetch,
+  };
+}
+
+/**
+ * Hook to fetch overall customer stats.
+ * useApiQuery extracts `.data` from the wrapper, so result.data IS the stats.
+ */
 export function useCustomerStats(): UseApiQueryResult<CustomerStats> {
   return useApiQuery<CustomerStats>('/api/v4/customers/stats');
-}
-
-export function useCustomerDensity(): UseApiQueryResult<CustomerDensityPoint[]> {
-  return useApiQuery<CustomerDensityPoint[]>('/api/v4/customers/density');
 }

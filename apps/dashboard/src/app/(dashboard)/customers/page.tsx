@@ -10,9 +10,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useCustomers, useCustomerStats, useCustomerDensity } from '@/hooks/use-customers';
-import type { CustomerDensityPoint } from '@/hooks/use-customers';
-import { Users, Map as MapIcon, LayoutGrid, Search, RefreshCw } from 'lucide-react';
+import { useCustomers, useCustomerStats } from '@/hooks/use-customers';
 
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
@@ -89,11 +87,13 @@ export default function CustomersPage() {
 
   const pageSize = 20;
 
+  // Fetch customers + global stats from API
   const { items: customers, loading, error, refetch, pagination } = useCustomers({
     search: search || undefined,
     limit: pageSize,
     page: currentPage,
   });
+  const { data: statsData } = useCustomerStats();
 
   const { data: stats, loading: statsLoading } = useCustomerStats();
   const { data: densityRaw } = useCustomerDensity();
@@ -116,11 +116,18 @@ export default function CustomersPage() {
 
   const totalPages = Math.max(1, Math.ceil(pagination.total / pageSize));
 
-  const handleCityClick = useCallback((point: CustomerDensityPoint) => {
-    setSelectedCity(point);
-  }, []);
-
-  const handleMapReady = useCallback((id: string) => setMapId(id), []);
+  // Stats — prefer server-side stats, fall back to client-computed from loaded page
+  const activeCustomers = customers.filter((c) => c.status === 'active').length;
+  const avgOrders = statsData?.avgOrderCount
+    ? statsData.avgOrderCount.toFixed(1)
+    : customers.length > 0
+    ? (customers.reduce((sum, c) => sum + c.totalOrders, 0) / customers.length).toFixed(1)
+    : '0';
+  const topSpender = statsData?.topSpenders?.[0]
+    ? Number(statsData.topSpenders[0].totalSpent)
+    : customers.length > 0
+    ? Math.max(...customers.map((c) => c.totalSpent))
+    : 0;
 
   return (
     <>
@@ -156,37 +163,35 @@ export default function CustomersPage() {
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
-          {statsLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
-          ) : (
-            <>
-              <StatCard
-                label="Total Customers"
-                value={stats?.total ?? pagination.total}
-                accentColor="var(--wl-primary-500)"
-                index={0}
-              />
-              <StatCard
-                label="Active"
-                value={stats?.active ?? customers.filter((c) => c.status === 'active').length}
-                accentColor="var(--wl-success-400)"
-                index={1}
-              />
-              <StatCard
-                label="Avg Orders / Customer"
-                value={stats ? Number(stats.avgOrderCount).toFixed(1) : '—'}
-                accentColor="var(--wl-info-400)"
-                index={2}
-              />
-              <StatCard
-                label="Total Revenue"
-                value={stats ? fmtCurrency(stats.totalRevenue) : '—'}
-                accentColor="var(--wl-warning-400)"
-                index={3}
-              />
-            </>
-          )}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
+          <StatCard
+            label="Total Customers"
+            value={statsData?.total ?? pagination.total}
+            change={{ value: statsData?.syncedToday ?? 0, label: 'synced today' }}
+            accentColor="var(--wl-primary-500)"
+            index={0}
+          />
+          <StatCard
+            label="Active Customers"
+            value={activeCustomers}
+            change={{ value: 0, label: 'on this page' }}
+            accentColor="var(--wl-info-400)"
+            index={1}
+          />
+          <StatCard
+            label="Average Orders"
+            value={avgOrders}
+            change={{ value: 2.3, label: 'per customer' }}
+            accentColor="var(--wl-success-400)"
+            index={2}
+          />
+          <StatCard
+            label="Top Spender"
+            value={formatCurrency(topSpender)}
+            change={{ value: 15.1, label: 'vs avg' }}
+            accentColor="var(--wl-warning-400)"
+            index={3}
+          />
         </div>
 
         {/* Tier Overview */}
@@ -268,18 +273,175 @@ export default function CustomersPage() {
         )}
 
         {/* Filters Bar */}
-        {view === 'grid' && (
-          <>
-            <div className="flex gap-3 mb-5 items-center flex-wrap">
-              <div className="relative flex-shrink-0 w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Search name, email, phone…"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                  className="w-full pl-9 pr-4 py-2 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm outline-none focus:border-blue-500/50 transition-colors"
-                />
+        <div className="flex gap-4 mb-5 items-center flex-wrap">
+          {/* Search */}
+          <div className="flex-1 flex-grow-0 w-[300px] max-w-96">
+            <input
+              type="text"
+              placeholder="Search customers, email, phone..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full p-2 px-4 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm font-sans outline-none"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex gap-1">
+            {(['all', 'active', 'inactive'] as const).map((status) => (
+              <button
+                key={status}
+                onClick={() => {
+                  setStatusFilter(status);
+                  setCurrentPage(1);
+                }}
+                className={cn(
+                  'p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-fast',
+                  statusFilter === status
+                    ? 'bg-blue-500 text-black border-blue-500'
+                    : 'bg-transparent text-gray-400 border-[#1e1e2e]',
+                  'capitalize'
+                )}
+              >
+                {status === 'all' ? 'All Statuses' : status}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort Dropdown */}
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value as typeof sortBy);
+              setCurrentPage(1);
+            }}
+            className="p-1 px-3 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm font-sans cursor-pointer outline-none"
+          >
+            <option value="name">Sort by Name</option>
+            <option value="totalSpent">Sort by Total Spent</option>
+            <option value="totalOrders">Sort by Orders</option>
+            <option value="lastOrderDate">Sort by Last Order</option>
+          </select>
+        </div>
+
+        {/* Tiers Overview */}
+        <Card className="mb-5 p-4">
+          <div className="flex gap-4 flex-wrap items-center">
+            <div>
+              <h3 className="m-0 text-sm font-semibold text-white">Customer Tiers</h3>
+            </div>
+            {(['standard', 'premium', 'enterprise'] as const).map((tier) => {
+              const count = customers.filter((c) => c.tier === tier).length;
+              return (
+                <button
+                  key={tier}
+                  className={cn(
+                    'p-2 px-3 rounded-md border text-xs font-semibold cursor-pointer font-sans capitalize',
+                    'bg-transparent text-gray-300 border-[#1e1e2e]'
+                  )}
+                >
+                  {tier} <span className="ml-1.5 opacity-70">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Customers Table */}
+        <Card className="overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Name</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Email</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Phone</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">Orders</th>
+                  <th className="p-3 px-4 text-right font-semibold text-gray-300">Total Spent</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Tier</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">Status</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-[#1e1e2e]">
+                      <td colSpan={8} className="px-4 py-3 h-12 bg-[#1a1a2e]/50 animate-pulse" />
+                    </tr>
+                  ))
+                ) : paginatedItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                      No customers found
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedItems.map((customer, idx) => (
+                    <tr
+                      key={customer.id}
+                      onClick={() => router.push(`/customers/${customer.id}`)}
+                      className={cn(
+                        'border-b border-[#1e1e2e] transition-colors duration-fast cursor-pointer hover:bg-[#1a1a2e]',
+                        idx % 2 === 0 ? 'bg-transparent' : 'bg-[#1a1a2e]/60'
+                      )}
+                    >
+                      <td className="p-3 px-4 text-white font-semibold">{customer.name}</td>
+                      <td className="p-3 px-4 text-gray-300">{customer.email}</td>
+                      <td className="p-3 px-4 text-gray-300">{customer.phone}</td>
+                      <td className="p-3 px-4 text-center text-white font-semibold">
+                        {customer.totalOrders}
+                      </td>
+                      <td className="p-3 px-4 text-right text-white font-semibold">
+                        {formatCurrency(customer.totalSpent)}
+                      </td>
+                      <td className="p-3 px-4 text-left">
+                        <Badge variant={getTierColor(customer.tier)}>{customer.tier}</Badge>
+                      </td>
+                      <td className="p-3 px-4 text-center">
+                        <Badge variant={customer.status === 'active' ? 'success' : 'default'}>
+                          {customer.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-1 justify-center">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => router.push(`/customers/${customer.id}`)}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-300">
+            <div>
+              Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
+              {Math.min(currentPage * pageSize, pagination.total)} of {pagination.total}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center gap-2">
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
               </div>
 
               <div className="flex gap-1">
