@@ -495,7 +495,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 ## Misc / Additional Pages (0 mock signals) ✅ WIT-525
 | Section | Pages | Status |
 |---------|-------|--------|
-| Map | `/map` | ⚙️ (requires maps key) |
+| Map | `/map` | ✅ WIT-341 (SVG canvas → WLMap + OrderLayer + DriverLayer; keyless CARTO; auto-fit bounds; layer toggles; detail panel) |
 | Campaigns | `/campaigns` | ✅ |
 | Notifications | `/notifications` | ✅ |
 | Notifications Log | `/notifications/log` | ✅ WIT-530 (NOTIFICATION_LOGS[7]→real API) |
@@ -556,6 +556,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-525 | `feat/WIT-525-dashboard-component-mock-cleanup` | Shared component mock defaults → safe real-data defaults: InventoryGauge, FulfillmentTracker, EnvelopeTimeline, PatientCard, VitalsChart (Math.random→deterministic trend), AnalyticsWidget (mock constants→data props + empty states), ReportBuilderCard (SVG mock→placeholder), CredentialForm (fake OAuth tokens→real redirect); pages: calendar, support, operations, onboarding, shipping, widgets all verified 0 mock signals | — | 70 component signals → 0 | open |
 | WIT-526 | `feat/WIT-526-dashboard-customers-detail` | Customers detail page (new): profile card + WLMap delivery-pin map + order history table; Fixed useCustomer hook path; added useCustomerOrders + useCustomerStats hooks; list page View button + row click navigation | `GET /api/v4/customers/:id` (existing), `GET /api/v4/customers/:id/orders` (existing), `GET /api/v4/customers/stats` (existing) | 0 (page added) + 1 map | merged #281 |
 | WIT-530 | `feat/WIT-530-dashboard-drivers-production-ready` | Notifications Log (`/notifications/log`): replace `NOTIFICATION_LOGS[7]` with real `useApiList('/api/v4/notifications/log')`; add Order link column; real stats cards; TableSkeleton + ErrorState + empty state; client CSV export. API: new `GET /log` (filters: channel/status/dateFrom/dateTo + groupBy stats) + `GET /delivery-log` (wires the previously-broken delivery-log page) + `POST /delivery-log/export` stub | `GET /api/v4/notifications/log` (new), `GET /api/v4/notifications/delivery-log` (new) | 7→0 | open |
+| WIT-341 | `feat/WIT-341-dashboard-map-production` | Map page (`/map`): replaced DIY SVG canvas + NYC-hardcoded bounds + pseudoLatLng fallbacks with real `WLMap` (MapLibre, keyless CARTO) + `OrderLayer` + `DriverLayer` + `useFitBounds`; layer toggles (Orders/Drivers/Routes); collapsible sidebar with item list + detail panel; loading/empty/error states; stats strip | existing `GET /api/v4/orders`, `GET /api/v4/dispatch/drivers`, `GET /api/v4/routes` | SVG canvas→WLMap; 0 mock signals | TBD |
 
 ---
 

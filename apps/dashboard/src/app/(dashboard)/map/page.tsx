@@ -93,7 +93,7 @@ function toDriverStatus(status: string): DriverStatus {
 const LiveMap = dynamic(() => import('./components/map-view'), {
   ssr: false,
   loading: () => (
-    <div className="flex-1 bg-wl-bg-sunken flex items-center justify-center">
+    <div className="flex-1 bg-[#0d0d14] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-[var(--wl-primary-500,#f5a623)] animate-spin" />
         <span className="text-sm text-white/40">Loading map…</span>
@@ -367,14 +367,14 @@ export default function MapPage() {
 
   if (error) {
     return (
-      <div className="h-screen flex items-center justify-center bg-wl-bg-root">
+      <div className="h-screen flex items-center justify-center bg-[#0a0a0f]">
         <ErrorState message={error.message ?? 'Failed to load map data'} onRetry={handleRefresh} />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-wl-bg-root overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] bg-[#0a0a0f] overflow-hidden">
       {/* ── Map area ─────────────────────────────────────────── */}
       <div className="flex-1 relative">
         <LiveMap
@@ -389,8 +389,8 @@ export default function MapPage() {
 
         {/* Loading overlay */}
         {loading && (
-          <div className="absolute inset-0 bg-wl-bg-root/60 flex items-center justify-center z-10 pointer-events-none">
-            <div className="flex items-center gap-2 px-4 py-2 bg-wl-bg-surface border border-white/[0.08] rounded-full text-sm text-white/60">
+          <div className="absolute inset-0 bg-[#0a0a0f]/60 flex items-center justify-center z-10 pointer-events-none">
+            <div className="flex items-center gap-2 px-4 py-2 bg-[#111118] border border-white/[0.08] rounded-full text-sm text-white/60">
               <div className="w-3.5 h-3.5 rounded-full border border-white/20 border-t-white/60 animate-spin" />
               Updating…
             </div>
@@ -400,7 +400,7 @@ export default function MapPage() {
         {/* Sidebar toggle */}
         <button
           onClick={() => setSidebarOpen((v) => !v)}
-          className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-lg bg-wl-bg-surface/90 border border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 transition-all"
+          className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-lg bg-[#111118]/90 border border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 transition-all"
           aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
           {sidebarOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -408,7 +408,7 @@ export default function MapPage() {
 
         {/* No-location note for orders */}
         {!loading && ordersWithLoc === 0 && rawOrders.length > 0 && showOrders && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-wl-bg-surface/95 border border-white/[0.08] rounded-full text-xs text-white/40">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-[#111118]/95 border border-white/[0.08] rounded-full text-xs text-white/40">
             Orders exist but have no geocoded delivery locations yet
           </div>
         )}
@@ -417,7 +417,7 @@ export default function MapPage() {
       {/* ── Sidebar ──────────────────────────────────────────── */}
       <div
         className={cn(
-          'flex flex-col bg-wl-bg-sunken border-l border-white/[0.06] transition-all duration-300 overflow-hidden',
+          'flex flex-col bg-[#0d0d14] border-l border-white/[0.06] transition-all duration-300 overflow-hidden',
           sidebarOpen ? 'w-72' : 'w-0',
         )}
       >
@@ -474,7 +474,7 @@ export default function MapPage() {
             { label: 'Orders mapped', value: ordersWithLoc },
             { label: 'Total orders', value: rawOrders.length },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-wl-bg-sunken px-3 py-2.5">
+            <div key={label} className="bg-[#0d0d14] px-3 py-2.5">
               <div className="text-[10px] text-white/30 mb-0.5">{label}</div>
               <div className="text-base font-bold font-mono text-white/80">{loading ? '—' : value}</div>
             </div>
@@ -494,7 +494,7 @@ export default function MapPage() {
               {/* Orders */}
               {showOrders && orders.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-[10px] font-semibold text-white/30 uppercase tracking-wider sticky top-0 bg-wl-bg-sunken z-10">
+                  <div className="px-4 py-2 text-[10px] font-semibold text-white/30 uppercase tracking-wider sticky top-0 bg-[#0d0d14] z-10">
                     Orders ({orders.length})
                   </div>
                   {orders.slice(0, 30).map((o) => (
@@ -536,7 +536,7 @@ export default function MapPage() {
               {/* Drivers */}
               {showDrivers && drivers.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-[10px] font-semibold text-white/30 uppercase tracking-wider sticky top-0 bg-wl-bg-sunken z-10">
+                  <div className="px-4 py-2 text-[10px] font-semibold text-white/30 uppercase tracking-wider sticky top-0 bg-[#0d0d14] z-10">
                     Drivers ({drivers.length})
                   </div>
                   {drivers.map((d) => (
