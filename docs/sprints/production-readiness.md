@@ -165,7 +165,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Page | Route | Mock Before | Status |
 |------|-------|------------|--------|
 | Fleet Overview | `/fleet` | 0 | ✅ |
-| Vehicles | `/fleet/vehicles` | 0 | ✅ |
+| Vehicles | `/fleet/vehicles` | 0 | ✅ WIT-531 (List/Map toggle + WLMap) |
 | Vehicle Detail | `/fleet/vehicles/[id]` | 0 | ✅ |
 | Fuel | `/fleet/fuel` | 0 | ✅ |
 | Maintenance | `/fleet/maintenance` | 0 | ✅ |
@@ -263,7 +263,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Integrations (11 → 0 mock signals) ✅ WIT-503
+## Integrations (11+12 → 0 mock signals) ✅ WIT-503 + WIT-531
 | Page | Route | Mock Before | Mock After | Status |
 |------|-------|------------|-----------|--------|
 | Integrations Overview | `/integrations` | 0 | 0 | ✅ |
@@ -284,6 +284,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | ERP | `/integrations/erp` | 0 | 0 | ✅ |
 | Messaging | `/integrations/messaging` | 0 | 0 | ✅ |
 | Webhooks | `/integrations/webhooks` | 0 | 0 | ✅ |
+| Fuel (integrations) | `/integrations/fuel` | 7 hardcoded arrays | 0 | ✅ WIT-531 |
+| Collaboration | `/integrations/collaboration` | 5 hardcoded arrays | 0 | ✅ WIT-531 |
 | Others | all others | 0 | 0 | ✅ |
 
 **New endpoints**: `GET /api/v4/integrations/connections`, `DELETE /api/v4/integrations/connections/:id`, `POST /api/v4/integrations/connections/:id/pause`, `POST /api/v4/integrations/connections/:id/resume`, `POST /api/v4/integrations/connections/:id/force-sync`, `GET /api/v4/integrations/:slug/usage`, `GET /api/v4/integrations/:slug/activity`, `GET /api/v4/integrations/:slug/errors`
@@ -564,6 +566,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-526 | `feat/WIT-526-dashboard-customers-detail` | Customers detail page (new): profile card + WLMap delivery-pin map + order history table; Fixed useCustomer hook path; added useCustomerOrders + useCustomerStats hooks; list page View button + row click navigation | `GET /api/v4/customers/:id` (existing), `GET /api/v4/customers/:id/orders` (existing), `GET /api/v4/customers/stats` (existing) | 0 (page added) + 1 map | merged #281 |
 | WIT-530 | `feat/WIT-530-dashboard-drivers-production-ready` | Notifications Log (`/notifications/log`): replace `NOTIFICATION_LOGS[7]` with real `useApiList('/api/v4/notifications/log')`; add Order link column; real stats cards; TableSkeleton + ErrorState + empty state; client CSV export. API: new `GET /log` (filters: channel/status/dateFrom/dateTo + groupBy stats) + `GET /delivery-log` (wires the previously-broken delivery-log page) + `POST /delivery-log/export` stub | `GET /api/v4/notifications/log` (new), `GET /api/v4/notifications/delivery-log` (new) | 7→0 | open |
 | WIT-341 | `feat/WIT-341-dashboard-map-production` | Map page (`/map`): replaced DIY SVG canvas + NYC-hardcoded bounds + pseudoLatLng fallbacks with real `WLMap` (MapLibre, keyless CARTO) + `OrderLayer` + `DriverLayer` + `useFitBounds`; layer toggles (Orders/Drivers/Routes); collapsible sidebar with item list + detail panel; loading/empty/error states; stats strip | existing `GET /api/v4/orders`, `GET /api/v4/dispatch/drivers`, `GET /api/v4/routes` | SVG canvas→WLMap; 0 mock signals | merged #284 |
+| WIT-531 | `feat/WIT-531-fleet-vehicles-map-integrations-fuel-collab` | Fleet vehicles: new `FleetVehiclesMapView` component (WLMap + VehicleMarkerLayer, status-coloured markers, useFitBounds, vehicle detail panel, GPS stats overlay); List/Map toggle with dynamic SSR-disabled import; API limit raised to 100. Integrations/fuel: 7 hardcoded arrays → `useApiList` connections (fuel/fleet category) + fuel transactions; KPIs from real data. Integrations/collaboration: 5 hardcoded arrays → `useApiList` messaging connections + team members + notification stats | `GET /api/v4/fleet/vehicles` (existing, limit 100), `GET /api/v4/fleet/fuel-transactions` (existing), `GET /api/v4/integrations/connections` (existing), `GET /api/v4/settings/team` (existing), `GET /api/v4/notifications/stats` (existing) | 12 mock signals → 0 | #283 |
 | WIT-532 | `feat/WIT-532-integration-health-real-api` | Integration health hooks: complete rewrite of `use-integration-health.ts` — root cause was raw `fetch()` without auth headers causing 401→demo fallback with `Math.random()`; switched to `api.get()` (auth cookie). `useIntegrationHealth`: `/api/v4/integrations` → transforms to `IntegrationHealthData`. `useProviderDetail`: same endpoint filtered by slug. `useWebhookMonitor`: parallel `/api/v4/outbound-webhooks` + `/api/v4/webhook-deliveries` → real latency from `durationMs`. `useCredentialManager`: derived from integrations list + expiry projection. `useIntegrationAlerts`: derived from degraded/error statuses. `partner-sla-indicator.tsx`: stable-trend sparkline now deterministic (was `Math.random()*3`). `webhook-config.tsx`: secret regeneration now uses `crypto.getRandomValues()`. `use-crm-connection.ts`: OAuth state uses `crypto.getRandomValues()`. `SAMPLE_DATA` renamed to `TEMPLATE_PREVIEW_VALUES` in templates/[id] and template-manager. | `GET /api/v4/integrations` (existing), `GET /api/v4/outbound-webhooks` (existing), `GET /api/v4/webhook-deliveries` (existing) | 8 Math.random() calls→0; 2 SAMPLE_DATA→renamed | open |
 
 ---
