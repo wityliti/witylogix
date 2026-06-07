@@ -73,7 +73,7 @@ const VARIABLES = [
   { name: "delivery_address", label: "Delivery Address" },
 ];
 
-const SAMPLE_DATA = {
+const TEMPLATE_PREVIEW_VALUES = {
   customer_name: "John Doe",
   order_id: "ORD-123456",
   delivery_date: "March 15, 2026",
@@ -127,7 +127,7 @@ const INITIAL_TEMPLATE: TemplateContent = {
 const renderPreview = (text: string) => {
   return text.replace(/\{\{(\w+)\}\}/g, (match, variable) => {
     return (
-      SAMPLE_DATA[variable as keyof typeof SAMPLE_DATA] || match
+      TEMPLATE_PREVIEW_VALUES[variable as keyof typeof TEMPLATE_PREVIEW_VALUES] || match
     );
   });
 };

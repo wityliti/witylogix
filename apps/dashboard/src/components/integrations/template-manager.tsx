@@ -26,7 +26,7 @@ export interface TemplateManagerProps {
   className?: string;
 }
 
-const SAMPLE_DATA = {
+const TEMPLATE_PREVIEW_VALUES = {
   name: 'John Doe',
   company: 'Acme Corporation',
   email: 'john@acme.com',
@@ -161,7 +161,7 @@ export function TemplateManager({ templates, onSave, onDelete, className }: Temp
                 <div className="mb-6">
                   <div className="text-xs font-semibold text-wl-text-secondary mb-3 uppercase">Preview</div>
                   <div className="p-4 rounded-lg bg-wl-surface-hover border border-wl-border-subtle text-sm text-wl-text-primary whitespace-pre-wrap font-mono">
-                    {renderTemplate(current.content, SAMPLE_DATA)}
+                    {renderTemplate(current.content, TEMPLATE_PREVIEW_VALUES)}
                   </div>
                 </div>
 
@@ -169,7 +169,7 @@ export function TemplateManager({ templates, onSave, onDelete, className }: Temp
                 <div className="mb-6">
                   <div className="text-xs font-semibold text-wl-text-secondary mb-3 uppercase">Sample Data</div>
                   <div className="grid grid-cols-2 gap-3">
-                    {Object.entries(SAMPLE_DATA).map(([key, value]) => (
+                    {Object.entries(TEMPLATE_PREVIEW_VALUES).map(([key, value]) => (
                       <div key={key} className="p-2 bg-wl-surface-hover rounded border border-wl-border-subtle text-xs">
                         <div className="font-mono text-wl-text-secondary">{`{${key}}`}</div>
                         <div className="text-wl-text-primary mt-1">{value}</div>

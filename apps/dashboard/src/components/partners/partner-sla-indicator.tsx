@@ -34,19 +34,14 @@ const PartnerSLAIndicator = forwardRef<
     },
     ref
   ) => {
-    // Generate sparkline data if not provided
     const data = useMemo(() => {
       if (sparklineData.length > 0) return sparklineData;
-      // Generate synthetic trend data
       const base = onTimePercentage;
       return Array.from({ length: 7 }, (_, i) => {
-        if (trend === "up") {
-          return base - 5 + (i * 1);
-        } else if (trend === "down") {
-          return base + 5 - (i * 1);
-        }
-        return base + (Math.random() - 0.5) * 3;
-      }).map((v) => Math.max(0, Math.min(100, v)));
+        if (trend === "up") return Math.min(100, base - 5 + i);
+        if (trend === "down") return Math.max(0, base + 5 - i);
+        return base;
+      });
     }, [onTimePercentage, sparklineData, trend]);
 
     const getTrendColor = (): string => {
