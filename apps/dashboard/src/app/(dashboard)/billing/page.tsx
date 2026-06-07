@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Table } from '@/components/ui/table';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 import {
   CreditCard,
   TrendingUp,
@@ -18,126 +18,254 @@ import {
   Check,
   X,
   AlertCircle,
+  ExternalLink,
 } from 'lucide-react';
 
-interface PricingPlan {
-  id: string;
-  name: string;
-  price: number;
-  interval: 'month' | 'year';
-  features: { name: string; included: boolean }[];
-  isCurrent?: boolean;
+/* ═══════════════════════════════════════════════════════════
+   BILLING PAGE — Subscription & invoice management
+   Real API: GET /api/v4/billing/subscription
+             GET /api/v4/billing/plans
+             GET /api/v4/billing/invoices
+   ═══════════════════════════════════════════════════════════ */
+
+type PlanTier = 'FREE' | 'STARTER' | 'GROWTH' | 'ENTERPRISE';
+
+interface PlanFeatures {
+  shipmentsPerMonth: number;
+  driversLimit: number;
+  apiCallsPerMonth: number;
+  notificationsPerMonth: number;
+  hasRouteOptimization: boolean;
+  hasAnalytics: boolean;
+  hasMultiCarrier: boolean;
+  hasDedicatedSupport: boolean;
+  monthlyPrice: number;
+}
+
+interface PlanComparison {
+  tier: PlanTier;
+  features: PlanFeatures;
+  displayName: string;
+  description: string;
+  recommendedFor: string;
+}
+
+interface UsageLimits {
+  shipments: { used: number; limit: number; remaining: number };
+  drivers: { used: number; limit: number; remaining: number };
+  apiCalls: { used: number; limit: number; remaining: number };
+  notifications: { used: number; limit: number; remaining: number };
+}
+
+interface SubscriptionSummary {
+  plan: PlanTier;
+  status: 'active' | 'trial' | 'cancelled' | 'past_due';
+  billingCycle: string;
+  nextBillingDate: string | null;
+  limits: UsageLimits;
 }
 
 interface Invoice {
   id: string;
   date: string;
-  period: string;
   amount: number;
-  status: 'paid' | 'pending' | 'failed';
+  currency: string;
+  status: string;
+  description: string;
 }
 
-interface QuotaResource {
-  name: string;
-  current: number;
-  limit: number;
-  unit: string;
-}
 
-interface SubscriptionData {
-  name: string;
-  price: number;
-  nextBillingDate: string;
-}
-
-const getQuotaColor = (percentage: number): 'success' | 'warning' | 'danger' => {
-  if (percentage >= 80) return 'danger';
-  if (percentage >= 60) return 'warning';
+const getQuotaColor = (pct: number): 'success' | 'warning' | 'danger' => {
+  if (pct >= 90) return 'danger';
+  if (pct >= 65) return 'warning';
   return 'success';
 };
 
+const planDisplayName: Record<PlanTier, string> = {
+  FREE: 'Free',
+  STARTER: 'Starter',
+  GROWTH: 'Growth',
+  ENTERPRISE: 'Enterprise',
+};
+
+const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'default' => {
+  if (s === 'active' || s === 'COMPLETED' || s === 'paid') return 'success';
+  if (s === 'trial') return 'info';
+  if (s === 'past_due' || s === 'failed' || s === 'FAILED') return 'danger';
+  if (s === 'pending' || s === 'PENDING') return 'warning';
+  return 'default';
+};
+
+function limitLabel(v: number): string {
+  return v === -1 || v === Infinity || v > 1_000_000 ? '∞' : v.toLocaleString();
+}
+
+function UsageBar({
+  label,
+  used,
+  limit,
+  unit,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+  unit: string;
+}) {
+  const isUnlimited = limit === -1 || limit === Infinity || limit > 1_000_000;
+  const pct = isUnlimited ? 0 : Math.min(100, (used / limit) * 100);
+  const color = isUnlimited ? 'success' : getQuotaColor(pct);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-semibold text-gray-300">{label}</p>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-mono text-gray-400">
+            {used.toLocaleString()} / {limitLabel(limit)} {unit}
+          </span>
+          {!isUnlimited && (
+            <Badge variant={color} className="min-w-[52px] text-center">
+              {Math.round(pct)}%
+            </Badge>
+          )}
+          {isUnlimited && <Badge variant="success">Unlimited</Badge>}
+        </div>
+      </div>
+      {!isUnlimited && (
+        <div className="w-full h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all duration-500',
+              color === 'danger' ? 'bg-red-500' : color === 'warning' ? 'bg-amber-500' : 'bg-emerald-500',
+            )}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlanCard({
+  plan,
+  isCurrent,
+  expanded,
+  onToggle,
+}: {
+  plan: PlanComparison;
+  isCurrent: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const boolFeatures = [
+    { label: 'Route optimisation', value: plan.features.hasRouteOptimization },
+    { label: 'Advanced analytics', value: plan.features.hasAnalytics },
+    { label: 'Multi-carrier shipping', value: plan.features.hasMultiCarrier },
+    { label: 'Dedicated support', value: plan.features.hasDedicatedSupport },
+  ];
+
+  const capacityFeatures = [
+    { label: `${limitLabel(plan.features.shipmentsPerMonth)} shipments/month`, value: true },
+    { label: `${limitLabel(plan.features.driversLimit)} drivers`, value: true },
+    { label: `${limitLabel(plan.features.apiCallsPerMonth)} API calls/month`, value: true },
+    { label: `${limitLabel(plan.features.notificationsPerMonth)} notifications/month`, value: true },
+  ];
+
+  const allFeatures = [...capacityFeatures, ...boolFeatures];
+  const visible = expanded ? allFeatures : allFeatures.slice(0, 4);
+
+  return (
+    <Card
+      onClick={onToggle}
+      className={cn(
+        'relative overflow-hidden cursor-pointer transition-all border-2',
+        isCurrent ? 'border-blue-500 bg-blue-500/5' : 'border-[#1e1e2e] bg-[#12121a] hover:border-blue-500/40',
+      )}
+    >
+      {isCurrent && <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-500" />}
+      <CardContent className={cn('pt-5', isCurrent && 'pt-6')}>
+        {isCurrent && <Badge variant="primary" className="mb-3">Current Plan</Badge>}
+        <h3 className="text-lg font-bold text-white mb-1">{plan.displayName}</h3>
+        <p className="text-xs text-gray-500 mb-4">{plan.description}</p>
+        <div className="flex items-baseline gap-1 mb-5">
+          <span className="text-2xl font-bold text-white">${plan.features.monthlyPrice}</span>
+          <span className="text-gray-500 text-sm">/month</span>
+        </div>
+
+        <div className="space-y-2.5 mb-5">
+          {visible.map((f, i) => (
+            <div key={i} className="flex items-start gap-2">
+              {f.value ? (
+                <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+              ) : (
+                <X className="w-3.5 h-3.5 text-gray-600 flex-shrink-0 mt-0.5" />
+              )}
+              <span className={cn('text-xs', f.value ? 'text-gray-300' : 'text-gray-600 line-through')}>
+                {f.label}
+              </span>
+            </div>
+          ))}
+          {!expanded && allFeatures.length > 4 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggle(); }}
+              className="text-blue-400 hover:text-blue-300 text-xs font-medium mt-1 transition-colors"
+            >
+              +{allFeatures.length - 4} more
+            </button>
+          )}
+        </div>
+
+        {isCurrent ? (
+          <Button variant="secondary" disabled className="w-full text-xs">
+            Current Plan
+          </Button>
+        ) : (
+          <Button variant="primary" className="w-full text-xs" onClick={(e) => e.stopPropagation()}>
+            Upgrade
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function BillingPage() {
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
-  const { items: quotas, loading: quotasLoading, error: quotasError } = useApiList<QuotaResource>('/api/v4/billing/quotas');
-  const { items: plans, loading: plansLoading, error: plansError } = useApiList<PricingPlan>('/api/v4/billing/plans');
-  const { items: invoices, loading: invoicesLoading, error: invoicesError } = useApiList<Invoice>('/api/v4/billing/invoices');
 
-  const loading = quotasLoading || plansLoading || invoicesLoading;
-  const error = quotasError || plansError || invoicesError;
+  const {
+    data: subscription,
+    loading: subLoading,
+    error: subError,
+    refetch: refetchSub,
+  } = useApiQuery<SubscriptionSummary>('/api/v4/billing/subscription');
+
+  const {
+    data: plans,
+    loading: plansLoading,
+    error: plansError,
+  } = useApiQuery<PlanComparison[]>('/api/v4/billing/plans');
+
+  const {
+    data: invoices,
+    loading: invoicesLoading,
+    error: invoicesError,
+  } = useApiQuery<Invoice[]>('/api/v4/billing/invoices');
+
+  const loading = subLoading || plansLoading || invoicesLoading;
+  const error = subError || plansError || invoicesError;
 
   if (loading) return <LoadingSkeleton />;
   if (error) {
     return (
       <ErrorState
-        message={error?.message || 'Failed to load billing data'}
+        message={error?.message ?? 'Failed to load billing data'}
+        onRetry={refetchSub}
       />
     );
   }
 
-  const currentPlan: SubscriptionData = {
-    name: 'Professional',
-    price: 299,
-    nextBillingDate: '2026-04-20',
-  };
-
-  const quotasData = quotas || [
-    { name: 'API Requests', current: 2400, limit: 3000, unit: 'requests/month' },
-    { name: 'Storage', current: 85, limit: 100, unit: 'GB' },
-    { name: 'Users', current: 12, limit: 20, unit: 'active seats' },
-  ];
-
-  const plansData = plans || [
-    {
-      id: '1',
-      name: 'Starter',
-      price: 99,
-      interval: 'month' as const,
-      isCurrent: false,
-      features: [
-        { name: 'Up to 1000 API requests/month', included: true },
-        { name: '10 GB storage', included: true },
-        { name: '5 active users', included: true },
-        { name: 'Email support', included: true },
-        { name: 'Advanced analytics', included: false },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Professional',
-      price: 299,
-      interval: 'month' as const,
-      isCurrent: true,
-      features: [
-        { name: 'Up to 10000 API requests/month', included: true },
-        { name: '100 GB storage', included: true },
-        { name: '20 active users', included: true },
-        { name: 'Priority email support', included: true },
-        { name: 'Advanced analytics', included: true },
-        { name: 'Custom integrations', included: false },
-      ],
-    },
-    {
-      id: '3',
-      name: 'Enterprise',
-      price: 999,
-      interval: 'month' as const,
-      isCurrent: false,
-      features: [
-        { name: 'Unlimited API requests', included: true },
-        { name: 'Unlimited storage', included: true },
-        { name: 'Unlimited users', included: true },
-        { name: '24/7 phone & email support', included: true },
-        { name: 'Advanced analytics', included: true },
-        { name: 'Custom integrations', included: true },
-      ],
-    },
-  ];
-
-  const invoicesData = invoices || [
-    { id: '1', period: 'Mar 2026', date: '2026-03-20', amount: 299, status: 'paid' as const },
-    { id: '2', period: 'Feb 2026', date: '2026-02-20', amount: 299, status: 'paid' as const },
-    { id: '3', period: 'Jan 2026', date: '2026-01-20', amount: 299, status: 'paid' as const },
-  ];
+  const currentPlanTier = subscription?.plan ?? 'FREE';
+  const sub = subscription;
 
   return (
     <>
@@ -147,282 +275,212 @@ export default function BillingPage() {
       />
 
       <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-screen">
-        {/* Current Plan Section */}
+        {/* Current Plan */}
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/30 border-2">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Current Plan</p>
-                <h2 className="text-3xl font-bold text-white">{currentPlan.name}</h2>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Current Plan</p>
+                <h2 className="text-3xl font-bold text-white">{planDisplayName[currentPlanTier]}</h2>
+                {sub?.status && (
+                  <Badge variant={statusVariant(sub.status)} className="mt-2">
+                    {sub.status.charAt(0).toUpperCase() + sub.status.slice(1).replace('_', ' ')}
+                  </Badge>
+                )}
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Monthly Cost</p>
-                <h2 className="text-3xl font-bold text-white">${currentPlan.price.toLocaleString()}</h2>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Billing Cycle</p>
+                <h2 className="text-3xl font-bold text-white capitalize">{sub?.billingCycle ?? 'Monthly'}</h2>
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Next Billing Date</p>
-                <h2 className="text-3xl font-bold text-white">{new Date(currentPlan.nextBillingDate).toLocaleDateString()}</h2>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Next Billing</p>
+                <h2 className="text-3xl font-bold text-white">
+                  {sub?.nextBillingDate
+                    ? new Date(sub.nextBillingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : '—'}
+                </h2>
               </div>
             </div>
 
-            {/* Usage Metrics */}
-            <div className="mt-8 pt-8 border-t border-[#1e1e2e]">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase mb-6">Usage This Month</h3>
-              <div className="space-y-6">
-                {quotasData.map((resource) => {
-                  const percentage = (resource.current / resource.limit) * 100;
-                  const quotaColor = getQuotaColor(percentage);
-
-                  return (
-                    <div key={resource.name}>
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-sm font-semibold text-gray-300">{resource.name}</p>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-mono text-gray-400">
-                            {resource.current.toLocaleString()} / {resource.limit.toLocaleString()}
-                          </span>
-                          <Badge variant={quotaColor} className="min-w-[55px] text-center">
-                            {Math.round(percentage)}%
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="w-full h-2.5 bg-[#1a1a2e] rounded-full overflow-hidden">
-                        <div
-                          className={cn(
-                            'h-full transition-all duration-300 rounded-full',
-                            quotaColor === 'danger'
-                              ? 'bg-red-500'
-                              : quotaColor === 'warning'
-                                ? 'bg-amber-500'
-                                : 'bg-emerald-500'
-                          )}
-                          style={{ width: `${Math.min(percentage, 100)}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">{resource.unit}</p>
-                    </div>
-                  );
-                })}
+            {/* Usage meters */}
+            {sub?.limits && (
+              <div className="mt-8 pt-8 border-t border-white/[0.06]">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-6">Usage This Month</h3>
+                <div className="space-y-5">
+                  <UsageBar
+                    label="Shipments"
+                    used={sub.limits.shipments.used}
+                    limit={sub.limits.shipments.limit}
+                    unit=""
+                  />
+                  <UsageBar
+                    label="Drivers"
+                    used={sub.limits.drivers.used}
+                    limit={sub.limits.drivers.limit}
+                    unit=""
+                  />
+                  <UsageBar
+                    label="API Calls"
+                    used={sub.limits.apiCalls.used}
+                    limit={sub.limits.apiCalls.limit}
+                    unit=""
+                  />
+                  <UsageBar
+                    label="Notifications"
+                    used={sub.limits.notifications.used}
+                    limit={sub.limits.notifications.limit}
+                    unit=""
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Action Buttons */}
             <div className="mt-8 flex flex-wrap gap-3">
               <Button variant="primary">
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
               </Button>
-              <Button variant="secondary">Downgrade Plan</Button>
+              <Button variant="secondary">Manage Subscription</Button>
               <Button variant="ghost" className="text-red-400 hover:text-red-300">
-                Cancel Subscription
+                Cancel
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Plan Comparison Section */}
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-4">Plan Comparison</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {plansData.map((plan) => (
-              <Card
-                key={plan.id}
-                onClick={() => setExpandedPlan(expandedPlan === plan.id ? null : plan.id)}
-                className={cn(
-                  'relative overflow-hidden cursor-pointer transition-all border-2',
-                  plan.isCurrent
-                    ? 'border-blue-500 bg-blue-500/5'
-                    : 'border-[#1e1e2e] bg-[#12121a] hover:border-blue-500/50'
-                )}
-              >
-                {plan.isCurrent && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
-                )}
-
-                <CardContent className={cn('pt-6', plan.isCurrent && 'pt-8')}>
-                  {plan.isCurrent && (
-                    <Badge variant="primary" className="mb-4">
-                      Current Plan
-                    </Badge>
-                  )}
-
-                  <h3 className="text-lg font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-3xl font-bold text-white">${plan.price}</span>
-                    <span className="text-gray-400">/month</span>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    {plan.features
-                      .slice(0, expandedPlan === plan.id ? plan.features.length : 3)
-                      .map((feature, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          {feature.included ? (
-                            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                          ) : (
-                            <X className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
-                          )}
-                          <span
-                            className={cn(
-                              'text-sm',
-                              feature.included ? 'text-gray-300' : 'text-gray-500 line-through'
-                            )}
-                          >
-                            {feature.name}
-                          </span>
-                        </div>
-                      ))}
-
-                    {plan.features.length > 3 && expandedPlan !== plan.id && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedPlan(plan.id);
-                        }}
-                        className="text-blue-400 hover:text-blue-300 text-sm font-semibold mt-2 transition-colors"
-                      >
-                        +{plan.features.length - 3} more features
-                      </button>
-                    )}
-                  </div>
-
-                  {plan.isCurrent ? (
-                    <Button variant="secondary" disabled className="w-full">
-                      Current Plan
-                    </Button>
-                  ) : (
-                    <Button variant="primary" className="w-full">
-                      Upgrade
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+        {/* Plan Comparison */}
+        {(plans ?? []).length > 0 && (
+          <div>
+            <h2 className="text-xl font-bold text-white mb-4">Plan Comparison</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(plans ?? []).map((plan) => (
+                <PlanCard
+                  key={plan.tier}
+                  plan={plan}
+                  isCurrent={plan.tier === currentPlanTier}
+                  expanded={expandedPlan === plan.tier}
+                  onToggle={() => setExpandedPlan(expandedPlan === plan.tier ? null : plan.tier)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Payment Method Section */}
+        {/* Payment Method — managed via Shopify */}
         <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <CreditCard className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-white text-sm">
+              <CreditCard className="w-4 h-4" />
               Payment Method
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-[#1a1a2e] rounded-lg p-5 border border-[#1e1e2e]">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-9 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <span className="text-white text-xs font-bold">VISA</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Visa ending in 4242</p>
-                    <p className="text-xs text-gray-500 mt-1">Expires 12/27</p>
-                  </div>
-                </div>
-                <Badge variant="success">Active</Badge>
+          <CardContent>
+            <div className="flex items-start gap-4 p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+              <div className="w-10 h-7 bg-gradient-to-br from-blue-600 to-blue-400 rounded flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-[9px] font-bold">SHP</span>
               </div>
-
-              <div className="flex gap-2">
-                <Button variant="secondary" size="sm">
-                  Update
-                </Button>
-                <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300">
-                  Remove
-                </Button>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white">Managed via Shopify Billing</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Payment details are handled through your Shopify subscription. Update them in your Shopify admin.
+                </p>
               </div>
+              <Button variant="ghost" size="sm" className="flex items-center gap-1 text-xs">
+                <ExternalLink className="w-3 h-3" />
+                Open Shopify
+              </Button>
             </div>
-
-            <Button variant="secondary" className="w-full">
-              Add Payment Method
-            </Button>
           </CardContent>
         </Card>
 
-        {/* Invoice History Section */}
+        {/* Invoice History */}
         <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <TrendingUp className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-white text-sm">
+              <TrendingUp className="w-4 h-4" />
               Invoice History
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Table<Invoice>
-              columns={[
-                {
-                  key: 'period',
-                  header: 'Period',
-                  sortable: true,
-                  width: '150px',
-                },
-                {
-                  key: 'date',
-                  header: 'Date',
-                  sortable: true,
-                  width: '120px',
-                  render: (invoice) => new Date(invoice.date).toLocaleDateString(),
-                },
-                {
-                  key: 'amount',
-                  header: 'Amount',
-                  align: 'right' as const,
-                  width: '120px',
-                  render: (invoice) => (
-                    <span className="font-mono font-semibold text-white">
-                      ${invoice.amount.toFixed(2)}
-                    </span>
-                  ),
-                },
-                {
-                  key: 'status',
-                  header: 'Status',
-                  width: '120px',
-                  render: (invoice) => (
-                    <Badge
-                      variant={
-                        invoice.status === 'paid'
-                          ? 'success'
-                          : invoice.status === 'pending'
-                            ? 'warning'
-                            : 'danger'
-                      }
-                    >
-                      {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                    </Badge>
-                  ),
-                },
-                {
-                  key: 'id',
-                  header: 'Actions',
-                  width: '100px',
-                  align: 'center' as const,
-                  render: () => (
-                    <Button variant="ghost" size="sm">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  ),
-                },
-              ]}
-              data={invoicesData}
-            />
+            {(invoices ?? []).length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-sm text-gray-500">No invoices yet</p>
+              </div>
+            ) : (
+              <Table<Invoice>
+                columns={[
+                  {
+                    key: 'description',
+                    header: 'Description',
+                    render: (inv) => (
+                      <span className="text-sm text-gray-300">{inv.description}</span>
+                    ),
+                  },
+                  {
+                    key: 'date',
+                    header: 'Date',
+                    sortable: true,
+                    width: '130px',
+                    render: (inv) => (
+                      <span className="text-sm text-gray-400">
+                        {new Date(inv.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: 'amount',
+                    header: 'Amount',
+                    align: 'right' as const,
+                    width: '110px',
+                    render: (inv) => (
+                      <span className="font-mono font-semibold text-white text-sm">
+                        {inv.currency ?? 'USD'} {inv.amount.toFixed(2)}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: 'status',
+                    header: 'Status',
+                    width: '110px',
+                    render: (inv) => (
+                      <Badge variant={statusVariant(inv.status)}>
+                        {inv.status.charAt(0).toUpperCase() + inv.status.slice(1).toLowerCase()}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: 'id',
+                    header: '',
+                    width: '56px',
+                    align: 'center' as const,
+                    render: () => (
+                      <Button variant="ghost" size="sm" title="Download">
+                        <Download className="w-3.5 h-3.5" />
+                      </Button>
+                    ),
+                  },
+                ]}
+                data={invoices ?? []}
+              />
+            )}
           </CardContent>
         </Card>
 
-        {/* Auto-renewal Notice */}
-        <div className="p-5 rounded-lg border border-amber-500/30 bg-amber-500/10 flex gap-4">
-          <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div>
+        {/* Auto-renewal notice */}
+        {sub?.nextBillingDate && sub.status === 'active' && (
+          <div className="p-4 rounded-lg border border-amber-500/25 bg-amber-500/10 flex gap-3">
+            <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-300">
-              Your subscription will automatically renew on{' '}
-              <strong className="text-white">{new Date(currentPlan.nextBillingDate).toLocaleDateString()}</strong> at $
-              {currentPlan.price}. You can cancel anytime before the renewal date.
+              Your subscription auto-renews on{' '}
+              <strong className="text-white">
+                {new Date(sub.nextBillingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </strong>
+              . Cancel any time before then to avoid being charged.
             </p>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

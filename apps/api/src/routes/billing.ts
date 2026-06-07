@@ -75,8 +75,8 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
     const plans = getPlanComparison();
 
     return reply.send({
-      plans,
-      metadata: {
+      data: plans,
+      meta: {
         total: plans.length,
         timestamp: new Date(),
       },
@@ -164,7 +164,7 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
         metrics,
       );
 
-      return reply.send(summary);
+      return reply.send({ data: summary });
     },
   );
 
@@ -512,7 +512,7 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
       ]);
 
       return reply.send({
-        invoices: invoices.map((invoice) => ({
+        data: invoices.map((invoice) => ({
           id: invoice.id,
           date: invoice.createdAt,
           amount: Number(invoice.amount),
@@ -520,7 +520,7 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
           status: invoice.status,
           description: (invoice.metadata as any)?.description || `Payment ${invoice.type}`,
           metadata: invoice.metadata,
-          downloadUrl: `/billing/invoices/${invoice.id}/pdf`, // Mock URL
+          downloadUrl: `/billing/invoices/${invoice.id}/pdf`,
         })),
         pagination: {
           page,
