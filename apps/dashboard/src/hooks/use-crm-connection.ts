@@ -476,13 +476,11 @@ export function useCrmMetrics(): UseCrmMetricsReturn {
  * Utility: Generate random string for OAuth state
  */
 function generateRandomString(length: number): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+  const bytes = new Uint8Array(Math.ceil(length * 0.75));
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/[+/=]/g, '')
+    .slice(0, length);
 }
 
 /**
