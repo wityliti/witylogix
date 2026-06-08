@@ -336,12 +336,12 @@ export default function CreateRoutePage() {
                     {formData.stops.map((stop, idx) => (
                       <div
                         key={stop.id}
-                        className={cn(
-                          "p-3 rounded-md flex items-center gap-3 cursor-grab transition-all border",
-                          draggedStop === idx
-                            ? "bg-wl-info-500 border-wl-info-500 opacity-70"
-                            : "bg-wl-bg-surface border-wl-border-default",
-                        )}
+                        className="p-3 rounded-md bg-wl-bg-surface border border-wl-border-default flex items-center gap-3 cursor-grab transition-all"
+                        style={{
+                          backgroundColor: draggedStop === idx ? "#2563eb" : "#12121a",
+                          borderColor: draggedStop === idx ? "#2563eb" : "#1e1e2e",
+                          opacity: draggedStop === idx ? 0.7 : 1,
+                        }}
                         draggable
                         onDragStart={() => handleDragStart(idx)}
                         onDragOver={handleDragOver}
@@ -396,7 +396,7 @@ export default function CreateRoutePage() {
 
           {step === 3 && (
             <div className="max-w-4xl">
-              <div className="w-full h-96 rounded-lg mb-6 overflow-hidden relative border border-[#1e1e2e]">
+              <div className="w-full h-96 rounded-lg mb-6 overflow-hidden relative border border-wl-border-default">
                 {previewStopMarkers.length > 0 ? (
                   <WLMap
                     center={DEFAULT_CENTER}
@@ -419,7 +419,7 @@ export default function CreateRoutePage() {
                     />
                   </WLMap>
                 ) : (
-                  <div className="w-full h-full bg-[#12121a] flex flex-col items-center justify-center text-gray-500 gap-3">
+                  <div className="w-full h-full bg-wl-bg-surface flex flex-col items-center justify-center text-gray-500 gap-3">
                     <MapPin className="w-10 h-10 opacity-20" />
                     <div className="text-sm font-medium">Map Preview</div>
                     <div className="text-xs text-gray-600 text-center max-w-xs">
@@ -443,7 +443,7 @@ export default function CreateRoutePage() {
                     )}
                   </div>
                 )}
-                <div className="absolute bottom-3 right-3 bg-[#0a0a0f]/80 backdrop-blur-sm text-xs text-gray-400 px-2 py-1 rounded border border-[#1e1e2e]">
+                <div className="absolute bottom-3 right-3 bg-wl-bg-root/80 backdrop-blur-sm text-xs text-wl-text-secondary px-2 py-1 rounded border border-wl-border-default">
                   {formData.stops.length} stop{formData.stops.length !== 1 ? 's' : ''}
                 </div>
               </div>
