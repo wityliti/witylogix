@@ -93,8 +93,28 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
         request.tenantDb.driver.count({ where }),
       ]);
 
+      // Enrich with PostGIS lat/lng for map rendering
+      let locationRows: Array<{ id: string; lat: number | null; lng: number | null }> = [];
+      if (drivers.length > 0) {
+        const ids = drivers.map((d) => d.id);
+        locationRows = await request.tenantDb.$queryRaw<typeof locationRows>`
+          SELECT
+            id::text,
+            CASE WHEN current_location IS NOT NULL THEN ST_Y(current_location) ELSE NULL END AS lat,
+            CASE WHEN current_location IS NOT NULL THEN ST_X(current_location) ELSE NULL END AS lng
+          FROM drivers
+          WHERE id = ANY(${ids}::uuid[])
+        `;
+      }
+
+      const locMap = new Map(locationRows.map((r) => [r.id, r]));
+
       return {
-        data: drivers,
+        data: drivers.map((d) => ({
+          ...d,
+          lat: locMap.get(d.id)?.lat ?? null,
+          lng: locMap.get(d.id)?.lng ?? null,
+        })),
         pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
       };
     } catch (err) {

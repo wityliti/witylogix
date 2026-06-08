@@ -42,7 +42,6 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
           minOrder: true,
           freeAbove: true,
           isActive: true,
-          boundary: true,
           timeSlots: {
             where: { isActive: true },
             select: { id: true, name: true, startTime: true, endTime: true },
@@ -53,10 +52,38 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.deliveryZone.count(),
     ]);
 
-    const data = zones.map((zone) => ({
-      ...zone,
-      boundary: zone.boundary || null,
-    }));
+    // Enrich with PostGIS centroid + GeoJSON boundary for map rendering
+    let geoRows: Array<{
+      id: string;
+      center_lat: number | null;
+      center_lng: number | null;
+      boundary_geojson: string | null;
+    }> = [];
+
+    if (zones.length > 0) {
+      const ids = zones.map((z) => z.id);
+      geoRows = await request.tenantDb.$queryRaw<typeof geoRows>`
+        SELECT
+          id::text,
+          CASE WHEN boundary IS NOT NULL THEN ST_Y(ST_Centroid(boundary)) ELSE NULL END AS center_lat,
+          CASE WHEN boundary IS NOT NULL THEN ST_X(ST_Centroid(boundary)) ELSE NULL END AS center_lng,
+          CASE WHEN boundary IS NOT NULL THEN ST_AsGeoJSON(boundary) ELSE NULL END AS boundary_geojson
+        FROM delivery_zones
+        WHERE id = ANY(${ids}::uuid[])
+      `;
+    }
+
+    const geoMap = new Map(geoRows.map((r) => [r.id, r]));
+
+    const data = zones.map((zone) => {
+      const geo = geoMap.get(zone.id);
+      return {
+        ...zone,
+        centerLat: geo?.center_lat ?? null,
+        centerLng: geo?.center_lng ?? null,
+        boundaryGeoJson: geo?.boundary_geojson ? JSON.parse(geo.boundary_geojson) : null,
+      };
+    });
 
     return {
       data,
