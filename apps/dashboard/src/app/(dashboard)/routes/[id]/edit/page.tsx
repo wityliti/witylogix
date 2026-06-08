@@ -60,6 +60,8 @@ export default function EditRoutePage() {
   const [draggedStop, setDraggedStop] = useState<number | null>(null);
   const [showAddStop, setShowAddStop] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const currentFormData = formData || route || { name: '', date: '', driverId: '', vehicleId: '', stops: [] };
   const driversList = drivers || [];
@@ -68,7 +70,7 @@ export default function EditRoutePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6">
+      <div className="min-h-screen bg-wl-bg-root p-6">
         <LoadingSkeleton />
       </div>
     );
@@ -76,7 +78,7 @@ export default function EditRoutePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6">
+      <div className="min-h-screen bg-wl-bg-root p-6">
         <ErrorState message={error.message} onRetry={refetch} />
       </div>
     );
@@ -152,6 +154,21 @@ export default function EditRoutePage() {
   const handleCancel = () => {
     setFormData(null);
     setHasChanges(false);
+    setSaveError(null);
+  };
+
+  const handleSave = async () => {
+    if (!hasChanges) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await updateRoute(currentFormData);
+      setHasChanges(false);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save route');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const estimatedDistance = currentFormData.stops.length * 3.5;
@@ -171,16 +188,16 @@ export default function EditRoutePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
+    <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">Edit Route</h1>
-        <p className="text-sm text-gray-400">Modify route details, reorder stops, and optimize delivery sequence</p>
+        <p className="text-sm text-wl-text-secondary">Modify route details, reorder stops, and optimize delivery sequence</p>
       </div>
 
       <div className="max-w-4xl mb-8">
         <div className="grid grid-cols-[2fr_1fr] gap-6">
           <div>
-            <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Route Information</CardTitle>
               </CardHeader>
@@ -193,7 +210,7 @@ export default function EditRoutePage() {
                       name="name"
                       value={currentFormData.name}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border"
                     />
                   </div>
                   <div>
@@ -203,7 +220,7 @@ export default function EditRoutePage() {
                       name="date"
                       value={currentFormData.date}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border"
                     />
                   </div>
                 </div>
@@ -214,7 +231,7 @@ export default function EditRoutePage() {
                       name="driverId"
                       value={currentFormData.driverId}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border"
                     >
                       {driversList.map((driver) => (
                         <option key={driver.id} value={driver.id}>
@@ -229,7 +246,7 @@ export default function EditRoutePage() {
                       name="vehicleId"
                       value={currentFormData.vehicleId}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border"
                     >
                       {vehiclesList.map((vehicle) => (
                         <option key={vehicle.id} value={vehicle.id}>
@@ -242,23 +259,23 @@ export default function EditRoutePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Route Stops</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                  <div className="p-4 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                  <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
                     <div className="text-lg font-bold text-blue-500 mb-0.5">{currentFormData.stops.length}</div>
-                    <div className="text-xs text-gray-400">Total Stops</div>
+                    <div className="text-xs text-wl-text-secondary">Total Stops</div>
                   </div>
-                  <div className="p-4 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                  <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
                     <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDistance.toFixed(1)}km</div>
-                    <div className="text-xs text-gray-400">Est. Distance</div>
+                    <div className="text-xs text-wl-text-secondary">Est. Distance</div>
                   </div>
-                  <div className="p-4 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                  <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
                     <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDuration}min</div>
-                    <div className="text-xs text-gray-400">Est. Duration</div>
+                    <div className="text-xs text-wl-text-secondary">Est. Duration</div>
                   </div>
                 </div>
 
@@ -266,19 +283,20 @@ export default function EditRoutePage() {
                   {currentFormData.stops.map((stop, idx) => (
                     <div
                       key={stop.id}
-                      className="p-3 rounded-md bg-[#12121a] border border-[#1e1e2e] grid gap-3 items-center cursor-grab transition-all"
-                      style={{
-                        gridTemplateColumns: "24px 1fr auto auto",
-                        backgroundColor: draggedStop === idx ? "#2563eb" : "#12121a",
-                        borderColor: draggedStop === idx ? "#2563eb" : "#1e1e2e",
-                        opacity: draggedStop === idx ? 0.7 : 1,
-                      }}
+                      className={cn(
+                        'p-3 rounded-md grid gap-3 items-center cursor-grab transition-all',
+                        'border border-wl-border-default',
+                        draggedStop === idx
+                          ? 'bg-blue-600/20 border-blue-500 opacity-70'
+                          : 'bg-wl-bg-surface',
+                      )}
+                      style={{ gridTemplateColumns: '24px 1fr auto auto' }}
                       draggable
                       onDragStart={() => handleDragStart(idx)}
                       onDragOver={handleDragOver}
                       onDrop={() => handleDrop(idx)}
                     >
-                      <div className="flex flex-col gap-0.5 text-gray-400 text-xs cursor-grab">
+                      <div className="flex flex-col gap-0.5 text-wl-text-secondary text-xs cursor-grab">
                         <span>⋮</span>
                         <span>⋮</span>
                       </div>
@@ -286,7 +304,7 @@ export default function EditRoutePage() {
                         <div className="text-white text-xs font-semibold mb-0.5">
                           {idx + 1}. {stop.orderId}
                         </div>
-                        <div className="text-gray-400 text-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                        <div className="text-wl-text-secondary text-xs overflow-hidden text-ellipsis whitespace-nowrap">
                           {stop.address}
                         </div>
                       </div>
@@ -320,23 +338,23 @@ export default function EditRoutePage() {
                 </div>
 
                 {showAddStop && (
-                  <div className="mt-4 p-4 rounded-md bg-[#12121a] border border-[#1e1e2e]">
-                    <h4 className="text-white text-sm font-semibold mb-3">Available Orders</h4>
+                  <div className="mt-4 p-4 rounded-md bg-wl-bg-surface border border-wl-border-default">
+                    <h4 className="text-wl-text-primary text-sm font-semibold mb-3">Available Orders</h4>
                     <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
                       {ordersList.map((order) => (
                         <div
                           key={order.id}
-                          className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] cursor-pointer text-xs transition-all hover:bg-[#12121a] hover:border-blue-500"
+                          className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default cursor-pointer text-xs transition-all hover:bg-wl-bg-surface hover:border-blue-500"
                           onClick={() => handleAddStop(order)}
                         >
                           <div className="flex justify-between items-center mb-1.5">
                             <span className="font-semibold text-white">{order.id}</span>
                             <Badge>{order.priority.toUpperCase()}</Badge>
                           </div>
-                          <div className="text-gray-400 mb-1">
+                          <div className="text-wl-text-secondary mb-1">
                             {order.address}
                           </div>
-                          <div className="text-gray-400 text-xs">
+                          <div className="text-wl-text-secondary text-xs">
                             {order.timeWindow.start} - {order.timeWindow.end}
                           </div>
                         </div>
@@ -349,16 +367,16 @@ export default function EditRoutePage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Current Driver</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e]">
+                <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
                   <div className="text-white text-sm font-semibold mb-2">
                     {driversList.find((d) => d.id === currentFormData.driverId)?.name}
                   </div>
-                  <div className="text-gray-400 text-xs leading-relaxed">
+                  <div className="text-wl-text-secondary text-xs leading-relaxed">
                     <div>ID: {currentFormData.driverId}</div>
                     <div className="mt-2">Status: Active</div>
                   </div>
@@ -366,16 +384,16 @@ export default function EditRoutePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Vehicle Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e]">
+                <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
                   <div className="text-white text-sm font-semibold mb-2">
                     {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.name}
                   </div>
-                  <div className="text-gray-400 text-xs leading-relaxed">
+                  <div className="text-wl-text-secondary text-xs leading-relaxed">
                     <div>
                       Capacity: {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.capacity}
                     </div>
@@ -385,12 +403,12 @@ export default function EditRoutePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Route Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-gray-400 text-xs leading-relaxed">
+                <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-secondary text-xs leading-relaxed">
                   <div>
                     <strong>Name:</strong> {currentFormData.name}
                   </div>
@@ -410,8 +428,13 @@ export default function EditRoutePage() {
               </CardContent>
             </Card>
 
-            {hasChanges && (
+            {saveError && (
               <div className="p-3 rounded-md bg-red-500/10 border border-red-500 text-red-500 text-xs text-center">
+                {saveError}
+              </div>
+            )}
+            {hasChanges && !saveError && (
+              <div className="p-3 rounded-md bg-amber-500/10 border border-amber-500 text-amber-400 text-xs text-center">
                 You have unsaved changes
               </div>
             )}
@@ -424,9 +447,8 @@ export default function EditRoutePage() {
           Cancel
         </Button>
         <div className="flex gap-3">
-          <Button variant="secondary">Save as Draft</Button>
-          <Button variant="primary" disabled={!hasChanges}>
-            Save Changes
+          <Button variant="primary" disabled={!hasChanges || isSaving} onClick={handleSave}>
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>
