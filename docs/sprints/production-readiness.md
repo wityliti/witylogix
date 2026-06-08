@@ -38,6 +38,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-522 | feat/WIT-522-dashboard-tracking-timeslots | Time-Slots: SLOTS[7] hardcoded array → real useApiList('/api/v4/time-slots'); loading/empty/error states; Create Slot modal (POST /api/v4/time-slots); WL design tokens. Tracking overview: List↔Map toggle, /dispatch/drivers for lat/lng, WLMap+OrderLayer+DriverLayer. Tracking Live: List↔Map toggle, map panel with order+driver markers + sidebar detail, 30s auto-refresh via dispatch drivers. New shared component: tracking/components/tracking-map-view.tsx | 7 mock slots | 2026-06-04 |
 | WIT-523 | feat/WIT-523-notification-templates-profile | Notification templates list: TEMPLATES[8] hardcoded array → real useApiList('/api/v4/notification-templates'); delete/toggle via api.delete/api.patch; WL design tokens; loading/empty states. Profile: 3 fake sessions (192.168.1.x, San Francisco CA, Chrome/Safari/Firefox) → current-session-only display; WL design tokens throughout. WIT-521 notifications/preferences + settings/notifications + products/sync + template [id]: all fake setTimeout replaced with real API calls | 11 mocks | 2026-06-04 |
 | WIT-350 | feat/WIT-350-dashboard-zones-drivers-delivery | zones/[id]: remove NEXT_PUBLIC_FEATURE_ZONES_MAP gate + LegacyNotice; LoadingSkeleton + ErrorState with retry; useRouter navigation; Promise.all with proper error propagation; active/inactive badge. zones/new: remove feature flag gate; remove maptilerKey prop; replace alert() with submitError state in sidebar; try/catch/finally for submit | 0 mocks | 2026-06-05 |
+| WIT-533 | feat/WIT-533-routes-design-tokens-plan-map | Routes 6 pages: 105+ hex CSS → WL design tokens; routes/plan List↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer on optimized stop sequence); routes/[id]/edit Save Changes fix (useApiMutation); removed getPriorityColor() hex helper | 105 CSS signals | 2026-06-08 |
 
 ---
 
@@ -132,15 +133,21 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Routes (0 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Routes List | `/routes` | 0 | ✅ |
-| Route Detail | `/routes/[id]` | 0 | ✅ |
-| Route Plan | `/routes/plan` | 0 | ✅ |
-| Route Create | `/routes/create` | 0 | ✅ |
-| Route Assign | `/routes/[id]/assign` | 0 | ✅ |
-| Route Edit | `/routes/[id]/edit` | 0 | ✅ |
+## Routes (0 mock signals) ✅ WIT-533
+| Page | Route | Mock Before | Map | Status |
+|------|-------|------------|-----|--------|
+| Routes List | `/routes` | 0 | — | ✅ WIT-533 design tokens |
+| Route Detail | `/routes/[id]` | 0 | ✅ WLMap | ✅ WIT-533 design tokens |
+| Route Plan | `/routes/plan` | 0 | ✅ WLMap List↔Map toggle | ✅ WIT-533 map + design tokens |
+| Route Create | `/routes/create` | 0 | ✅ WLMap | ✅ WIT-533 design tokens |
+| Route Assign | `/routes/[id]/assign` | 0 | — | ✅ WIT-533 design tokens |
+| Route Edit | `/routes/[id]/edit` | 0 | — | ✅ WIT-533 design tokens + save fix |
+
+**WIT-533 changes**:
+- Replaced 105+ hex CSS values across all 6 routes pages with WL design tokens (`bg-wl-bg-root`, `bg-wl-bg-surface`, `bg-wl-bg-overlay`, `bg-wl-bg-elevated`, `bg-wl-bg-sunken`, `border-wl-border-default`, `border-wl-border-strong`, `text-wl-text-primary/secondary/tertiary`)
+- `routes/plan/page.tsx`: Added List↔Map toggle in optimize/review/dispatch steps; `WLMap` + `RoutePolylineLayer` + `RouteStopMarkersLayer` renders `state.selectedResult.stopSequence` with auto-fit bounds; toggle only shown when stops have coordinates
+- `routes/[id]/edit/page.tsx`: Fixed non-functional Save Changes button — now calls `updateRoute(currentFormData)` via `useApiMutation` with loading/error state; removed non-functional Save as Draft button; removed `getPriorityColor()` helper that leaked raw hex strings
+- PR: https://github.com/wityliti/witylogix/pull/287
 
 ---
 
