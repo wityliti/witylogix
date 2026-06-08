@@ -3,48 +3,31 @@
 import { useEffect, useRef } from 'react';
 import { getLeaflet, getMapById } from './wl-map';
 
-export interface ZonePolygon {
+export interface ZoneBoundary {
+  type: 'Polygon';
+  coordinates: number[][][]; // GeoJSON [lng, lat][][]
+}
+
+export interface ZoneMapData {
   id: string;
   name: string;
+  color: string;
   isActive: boolean;
-  boundary: Array<{ latitude: number; longitude: number }> | null;
-  baseRate?: number;
-  perKmRate?: number;
-  minOrder?: number;
+  boundary: ZoneBoundary | null;
+  baseRate: number;
+  perKmRate: number;
   ordersToday?: number;
-  color?: string;
 }
 
 interface ZonePolygonLayerProps {
   mapId: string;
-  zones: ZonePolygon[];
-  selectedId?: string | null;
-  onZoneClick?: (id: string) => void;
+  zones: ZoneMapData[];
 }
 
-const ZONE_PALETTE = [
-  '#818cf8', '#34d399', '#fbbf24', '#f472b6',
-  '#60a5fa', '#a78bfa', '#2dd4bf', '#fb923c',
-  '#4ade80', '#f87171', '#38bdf8', '#c084fc',
-];
-
-function zoneColor(zone: ZonePolygon, idx: number): string {
-  if (!zone.isActive) return '#475569';
-  return zone.color ?? ZONE_PALETTE[idx % ZONE_PALETTE.length];
-}
-
-export function ZonePolygonLayer({
-  mapId,
-  zones,
-  selectedId,
-  onZoneClick,
-}: ZonePolygonLayerProps) {
+export function ZonePolygonLayer({ mapId, zones }: ZonePolygonLayerProps) {
   const layersRef = useRef<unknown[]>([]);
 
   useEffect(() => {
-    const zonesWithBoundary = zones.filter((z) => z.boundary && z.boundary.length >= 3);
-    if (!zonesWithBoundary.length) return;
-
     let alive = true;
 
     getLeaflet().then((L) => {
@@ -52,95 +35,79 @@ export function ZonePolygonLayer({
       const map = getMapById(mapId);
       if (!map) return;
 
-      // Clear previous layers
       layersRef.current.forEach((l: any) => map.removeLayer(l));
       layersRef.current = [];
 
-      const allBounds: [number, number][] = [];
+      const boundsCoords: [number, number][] = [];
 
-      zonesWithBoundary.forEach((zone, idx) => {
-        if (!zone.boundary) return;
-        const latlngs = zone.boundary.map(
-          (p): [number, number] => [p.latitude, p.longitude]
-        );
-        latlngs.forEach((ll) => allBounds.push(ll));
+      zones.forEach((zone) => {
+        const color = zone.color;
+        const opacity = zone.isActive ? 0.7 : 0.35;
 
-        const color = zoneColor(zone, idx);
-        const isSelected = zone.id === selectedId;
+        if (zone.boundary?.coordinates?.length) {
+          // Draw the actual GeoJSON polygon boundary
+          const ringCoords = zone.boundary.coordinates[0];
+          if (ringCoords?.length >= 3) {
+            const latLngs: [number, number][] = ringCoords.map(([lng, lat]) => [lat, lng]);
+            latLngs.forEach((ll) => boundsCoords.push(ll));
 
-        const polygon = L.polygon(latlngs, {
-          color,
-          fillColor: color,
-          fillOpacity: isSelected ? 0.35 : zone.isActive ? 0.18 : 0.08,
-          weight: isSelected ? 2.5 : 1.5,
-          opacity: zone.isActive ? 0.8 : 0.4,
-          dashArray: zone.isActive ? undefined : '6 4',
-        });
+            const polygon = L.polygon(latLngs, {
+              color,
+              fillColor: color,
+              fillOpacity: zone.isActive ? 0.18 : 0.08,
+              weight: 2,
+              opacity,
+              dashArray: zone.isActive ? undefined : '6 4',
+            });
 
-        const ratesHtml = zone.baseRate != null
-          ? `<div style="margin-top:6px;font-size:11px;color:#94a3b8">
-              Base: <strong style="color:#e2e8f0">$${Number(zone.baseRate).toFixed(2)}</strong>
-              &nbsp;·&nbsp;Per km: <strong style="color:#e2e8f0">$${Number(zone.perKmRate ?? 0).toFixed(2)}</strong>
-             </div>`
-          : '';
+            polygon.bindPopup(buildPopup(zone));
+            polygon.addTo(map);
+            layersRef.current.push(polygon);
 
-        const statsHtml = zone.ordersToday != null
-          ? `<div style="margin-top:4px;font-size:11px;color:#94a3b8">
-              Orders today: <strong style="color:#e2e8f0">${zone.ordersToday}</strong>
-             </div>`
-          : '';
-
-        polygon.bindPopup(`
-          <div style="font-family:ui-sans-serif,system-ui;min-width:160px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></span>
-              <strong style="font-size:13px;color:#f1f5f9">${zone.name}</strong>
-            </div>
-            <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:${zone.isActive ? '#064e3b' : '#1e293b'};color:${zone.isActive ? '#34d399' : '#94a3b8'}">
-              ${zone.isActive ? 'Active' : 'Inactive'}
-            </span>
-            ${ratesHtml}
-            ${statsHtml}
-          </div>
-        `);
-
-        if (onZoneClick) {
-          polygon.on('click', () => onZoneClick(zone.id));
+            // Zone label at centroid
+            const center = polygon.getBounds().getCenter();
+            const labelIcon = L.divIcon({
+              className: '',
+              html: `<span style="
+                display:inline-block;
+                background:rgba(10,10,20,.88);
+                border:1px solid ${color}66;
+                color:#e2e8f0;
+                font-size:10px;
+                font-weight:600;
+                padding:2px 8px;
+                border-radius:20px;
+                white-space:nowrap;
+                backdrop-filter:blur(6px);
+                pointer-events:none;
+                box-shadow:0 2px 8px rgba(0,0,0,.4);
+                opacity:${zone.isActive ? 1 : 0.5};
+              ">${zone.name}</span>`,
+              iconAnchor: [0, 0],
+            });
+            const label = L.marker(center, { icon: labelIcon, interactive: false });
+            label.addTo(map);
+            layersRef.current.push(label);
+          }
+        } else {
+          // No boundary — render placeholder circle marker
+          const circleMarker = L.circleMarker([40.7128, -74.006], {
+            radius: 0,
+            opacity: 0,
+            fillOpacity: 0,
+          });
+          circleMarker.addTo(map);
+          layersRef.current.push(circleMarker);
         }
-
-        const centroid = latlngs.reduce(
-          (acc, ll) => [acc[0] + ll[0] / latlngs.length, acc[1] + ll[1] / latlngs.length],
-          [0, 0]
-        ) as [number, number];
-
-        const labelIcon = L.divIcon({
-          className: '',
-          html: `<span style="
-            display:inline-block;
-            background:rgba(10,10,20,.88);
-            border:1px solid ${color}55;
-            color:#e2e8f0;
-            font-size:10px;
-            font-weight:600;
-            padding:2px 8px;
-            border-radius:20px;
-            white-space:nowrap;
-            backdrop-filter:blur(6px);
-            pointer-events:none;
-            box-shadow:0 2px 8px rgba(0,0,0,.4);
-          ">${zone.name}</span>`,
-          iconAnchor: [0, 0],
-        });
-        const label = L.marker(centroid, { icon: labelIcon, interactive: false });
-
-        polygon.addTo(map);
-        label.addTo(map);
-        layersRef.current.push(polygon, label);
       });
 
-      // Auto-fit bounds to all polygons
-      if (allBounds.length > 0) {
-        map.fitBounds(allBounds, { padding: [40, 40], maxZoom: 13 });
+      // Auto-fit to all zone polygons
+      if (boundsCoords.length >= 2) {
+        try {
+          map.fitBounds(boundsCoords, { padding: [40, 40], maxZoom: 14 });
+        } catch {
+          // bounds fit failed; ignore
+        }
       }
     });
 
@@ -152,7 +119,36 @@ export function ZonePolygonLayer({
         layersRef.current = [];
       });
     };
-  }, [mapId, zones, selectedId, onZoneClick]);
+  }, [mapId, zones]);
 
   return null;
+}
+
+function buildPopup(zone: ZoneMapData): string {
+  const statusColor = zone.isActive ? '#34d399' : '#6b7280';
+  const statusLabel = zone.isActive ? 'Active' : 'Inactive';
+  return `
+    <div style="font-family:ui-sans-serif,system-ui;min-width:170px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${zone.color};flex-shrink:0"></span>
+        <span style="font-weight:700;font-size:13px;color:#f1f5f9">${zone.name}</span>
+        <span style="margin-left:auto;font-size:10px;font-weight:600;color:${statusColor}">${statusLabel}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+        <div>
+          <div style="color:#64748b;margin-bottom:2px">Base Rate</div>
+          <div style="color:#e2e8f0;font-weight:600;font-family:ui-monospace">$${Number(zone.baseRate).toFixed(2)}</div>
+        </div>
+        <div>
+          <div style="color:#64748b;margin-bottom:2px">Per KM</div>
+          <div style="color:#e2e8f0;font-weight:600;font-family:ui-monospace">$${Number(zone.perKmRate).toFixed(2)}</div>
+        </div>
+        ${zone.ordersToday !== undefined ? `
+        <div style="grid-column:1/-1;margin-top:4px;border-top:1px solid rgba(255,255,255,.07);padding-top:6px">
+          <div style="color:#64748b;margin-bottom:2px">Orders Today</div>
+          <div style="color:#e2e8f0;font-weight:600">${zone.ordersToday}</div>
+        </div>` : ''}
+      </div>
+    </div>
+  `;
 }
