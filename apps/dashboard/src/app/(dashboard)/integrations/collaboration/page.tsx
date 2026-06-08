@@ -1,390 +1,507 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import Link from 'next/link';
 import {
-  ChevronLeft,
   Slack,
   MessageSquare,
   Send,
   Activity,
-  Route,
-  Radio,
   Users,
+  Plus,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  Plug,
+  Settings,
+  ArrowRight,
+  MessageCircle,
 } from 'lucide-react';
-import { ProviderList } from './_components/provider-list';
-import { PresenceGrid } from './_components/presence-grid';
-import { MessageRoutes } from './_components/message-routes';
-import { DeliveryStats } from './_components/delivery-stats';
-import { NotificationPreferences } from './_components/notification-preferences';
+import { useApiList, useApiQuery } from '@/hooks/use-api';
 
-interface Provider {
+/* ═══════════════════════════════════════════════════════
+   COLLABORATION INTEGRATIONS PAGE — real API data
+   Providers:  /api/v4/integrations/connections (messaging/collaboration category)
+   Team:       /api/v4/settings/team
+   Stats:      /api/v4/notifications/stats?days=30
+   ═══════════════════════════════════════════════════════ */
+
+// ── Types ────────────────────────────────────────────────────
+
+interface Connection {
   id: string;
-  name: string;
-  icon: React.ReactNode;
-  status: "connected" | "disconnected" | "error";
-  lastSync?: string;
-  connectedAt?: string;
-  config: {
-    channels?: string[];
-    webhookUrl?: string;
-    apiKey?: string;
-  };
+  providerName: string;
+  status: 'connected' | 'disconnected' | 'error' | 'pending';
+  lastSyncTime?: string;
+  apiCallsCount: number;
+  errorCount: number;
+  uptime: number;
+  category: string;
 }
 
-interface PresenceIndicator {
-  userId: string;
-  name: string;
-  status: "online" | "away" | "offline" | "busy";
-  lastActive: string;
-}
-
-interface MessageRoute {
+interface TeamMember {
   id: string;
-  source: string;
-  target: string;
-  conditions: string[];
-  enabled: boolean;
+  name?: string;
+  email: string;
+  role: string;
+  createdAt: string;
 }
 
-interface DeliveryStats {
-  provider: string;
+interface NotificationStats {
+  total: number;
   sent: number;
   delivered: number;
   failed: number;
-  avgLatency: string;
+  channels: Record<string, { sent: number; delivered: number; failed: number }>;
 }
 
-const providers: Provider[] = [
-  {
-    id: "slack",
-    name: "Slack",
-    icon: <Slack className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-11-15",
-    lastSync: "2026-03-12 14:32",
-    config: {
-      channels: ["#dispatches", "#driver-alerts", "#support"],
-      webhookUrl: "https://hooks.slack.com/services/T00000000/B00000000",
-      apiKey: "xoxb-xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxx",
-    },
-  },
-  {
-    id: "teams",
-    name: "Microsoft Teams",
-    icon: <MessageSquare className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-10-22",
-    lastSync: "2026-03-12 14:28",
-    config: {
-      channels: ["Dispatches", "Operations", "Alerts"],
-      webhookUrl: "https://outlook.webhook.office.com/webhookb2/xxxxx",
-      apiKey: "team-api-key-xxxxx",
-    },
-  },
-  {
-    id: "pusher",
-    name: "Pusher Channels",
-    icon: <Send className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-09-10",
-    lastSync: "2026-03-12 14:35",
-    config: {
-      channels: ["shipments", "drivers", "notifications"],
-      webhookUrl: "https://api.pusher.com/apps/xxxxx/events",
-      apiKey: "pusher-key-xxxxxxxxxxxxx",
-    },
-  },
-  {
-    id: "trackpod",
-    name: "Track-POD",
-    icon: <Activity className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-08-05",
-    lastSync: "2026-03-12 14:30",
-    config: {
-      channels: ["POD-status", "delivery-updates"],
-      webhookUrl: "https://trackpod.com/api/webhooks/xxxxx",
-      apiKey: "trackpod-api-key-xxxxx",
-    },
-  },
-  {
-    id: "dispatchtrack",
-    name: "DispatchTrack",
-    icon: <Route className="w-5 h-5" />,
-    status: "disconnected",
-    config: {
-      channels: [],
-      webhookUrl: "",
-      apiKey: "",
-    },
-  },
-  {
-    id: "podium",
-    name: "Podium",
-    icon: <Users className="w-5 h-5" />,
-    status: "error",
-    lastSync: "2026-03-11 09:15",
-    config: {
-      channels: ["reviews", "feedback"],
-      webhookUrl: "https://api.podium.com/webhooks/xxxxx",
-      apiKey: "podium-key-xxxxx",
-    },
-  },
-  {
-    id: "workwave",
-    name: "WorkWave",
-    icon: <Radio className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-07-18",
-    lastSync: "2026-03-12 14:33",
-    config: {
-      channels: ["routes", "crew-comms"],
-      webhookUrl: "https://api.workwave.com/webhooks/xxxxx",
-      apiKey: "workwave-api-xxxxx",
-    },
-  },
-];
+// ── Helpers ──────────────────────────────────────────────────
 
-const presenceIndicators: PresenceIndicator[] = [
-  { userId: "user-001", name: "John Smith", status: "online", lastActive: "now" },
-  { userId: "user-002", name: "Sarah Johnson", status: "online", lastActive: "2m ago" },
-  { userId: "user-003", name: "Mike Davis", status: "away", lastActive: "15m ago" },
-  { userId: "user-004", name: "Emily Brown", status: "busy", lastActive: "3m ago" },
-  { userId: "user-005", name: "James Wilson", status: "offline", lastActive: "1h ago" },
-  { userId: "user-006", name: "Lisa Anderson", status: "online", lastActive: "1m ago" },
-];
+function providerIcon(name: string): React.ReactNode {
+  const n = name.toLowerCase();
+  if (n.includes('slack')) return <Slack className="w-5 h-5" />;
+  if (n.includes('teams') || n.includes('microsoft')) return <MessageSquare className="w-5 h-5" />;
+  if (n.includes('pusher')) return <Send className="w-5 h-5" />;
+  if (n.includes('track') || n.includes('pod')) return <Activity className="w-5 h-5" />;
+  return <MessageCircle className="w-5 h-5" />;
+}
 
-const messageRoutes: MessageRoute[] = [
-  {
-    id: "route-001",
-    source: "Slack",
-    target: "Teams",
-    conditions: ["priority=high", "type=alert"],
-    enabled: true,
-  },
-  {
-    id: "route-002",
-    source: "Teams",
-    target: "Slack",
-    conditions: ["channel=#operations"],
-    enabled: true,
-  },
-  {
-    id: "route-003",
-    source: "Slack",
-    target: "Pusher",
-    conditions: ["type=realtime"],
-    enabled: false,
-  },
-  {
-    id: "route-004",
-    source: "Track-POD",
-    target: "Slack",
-    conditions: ["status=delivered"],
-    enabled: true,
-  },
-  {
-    id: "route-005",
-    source: "DispatchTrack",
-    target: "Teams",
-    conditions: ["urgency=critical"],
-    enabled: false,
-  },
-];
+function statusVariant(s: string): 'success' | 'warning' | 'danger' | 'default' {
+  if (s === 'connected') return 'success';
+  if (s === 'error') return 'danger';
+  if (s === 'pending') return 'warning';
+  return 'default';
+}
 
-const deliveryStats: DeliveryStats[] = [
-  { provider: "Slack", sent: 15432, delivered: 15398, failed: 34, avgLatency: "145ms" },
-  { provider: "Teams", sent: 8921, delivered: 8867, failed: 54, avgLatency: "298ms" },
-  { provider: "Pusher", sent: 142561, delivered: 142501, failed: 60, avgLatency: "52ms" },
-  { provider: "Track-POD", sent: 3241, delivered: 3215, failed: 26, avgLatency: "1.2s" },
-  { provider: "WorkWave", sent: 2156, delivered: 2145, failed: 11, avgLatency: "876ms" },
-];
+function statusIcon(s: string) {
+  if (s === 'connected') return <CheckCircle2 className="w-4 h-4 text-wl-success-400" />;
+  if (s === 'error') return <AlertCircle className="w-4 h-4 text-wl-danger-400" />;
+  return <Clock className="w-4 h-4 text-wl-text-tertiary" />;
+}
 
-const notificationPreferences = [
-  { id: "pref-001", event: "Delivery Completed", slack: true, teams: true, pusher: false, sound: true },
-  { id: "pref-002", event: "Driver Alert", slack: true, teams: true, pusher: true, sound: true },
-  { id: "pref-003", event: "Route Optimized", slack: false, teams: true, pusher: true, sound: false },
-  { id: "pref-004", event: "Exception Occurred", slack: true, teams: true, pusher: true, sound: true },
-  { id: "pref-005", event: "Task Assigned", slack: true, teams: false, pusher: false, sound: false },
-];
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-export default function CollaborationPage() {
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    providers: true,
-    presence: true,
-    routes: true,
-    delivery: true,
-    preferences: true,
-  });
+const fmtSync = (iso?: string) => {
+  if (!iso) return 'Never synced';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+};
 
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
+const MESSAGING_KEYWORDS = ['slack', 'teams', 'microsoft', 'pusher', 'track', 'workwave', 'podium', 'dispatch'];
+const MESSAGING_CATEGORIES = new Set(['messaging', 'collaboration', 'communication', 'chat', 'notifications']);
+
+function isMessagingConnection(c: Connection): boolean {
+  return (
+    MESSAGING_CATEGORIES.has(c.category) ||
+    MESSAGING_KEYWORDS.some((k) => c.providerName.toLowerCase().includes(k))
+  );
+}
+
+// ── Providers Section ────────────────────────────────────────
+
+function ProvidersSection({
+  connections,
+  loading,
+  error,
+}: {
+  connections: Connection[];
+  loading: boolean;
+  error: Error | null;
+}) {
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} />;
+
+  const messagingConnections = connections.filter(isMessagingConnection);
+
+  if (messagingConnections.length === 0) {
+    return (
+      <Card className="p-12 text-center bg-wl-bg-surface border-wl-border-default">
+        <div className="w-12 h-12 rounded-full bg-wl-bg-overlay flex items-center justify-center mx-auto mb-4">
+          <Plug className="w-6 h-6 text-wl-text-tertiary" />
+        </div>
+        <p className="text-sm font-medium text-wl-text-secondary mb-1">
+          No collaboration integrations connected
+        </p>
+        <p className="text-xs text-wl-text-tertiary mb-4">
+          Connect Slack, Microsoft Teams, or other messaging platforms to receive real-time logistics alerts.
+        </p>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => (window.location.href = '/integrations/catalog')}
+        >
+          Browse Integrations
+        </Button>
+      </Card>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#12121a]">
-      <Header
-        title="Collaboration Integrations"
-        subtitle="Connect and manage team communication tools, presence, and message routing"
-      />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {messagingConnections.map((c) => (
+        <Card
+          key={c.id}
+          className="p-5 bg-wl-bg-surface border-wl-border-default hover:border-wl-border-strong transition-colors"
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-wl-bg-overlay flex items-center justify-center text-wl-text-secondary">
+                {providerIcon(c.providerName)}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  {statusIcon(c.status)}
+                  <p className="text-sm font-semibold text-wl-text-primary">{c.providerName}</p>
+                </div>
+                <p className="text-xs text-wl-text-tertiary mt-0.5">
+                  Synced {fmtSync(c.lastSyncTime)}
+                </p>
+              </div>
+            </div>
+            <Badge variant={statusVariant(c.status)} dot>
+              {c.status}
+            </Badge>
+          </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Back Button */}
-        <Link href="/integrations">
-          <Button
-            variant="ghost"
-            className="mb-8 text-gray-400 hover:text-white"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back to Integrations
+          <div className="grid grid-cols-3 gap-3 border-t border-wl-border-subtle pt-4">
+            <div className="text-center">
+              <p className="text-lg font-bold font-mono text-wl-text-primary">
+                {c.apiCallsCount.toLocaleString()}
+              </p>
+              <p className="text-xs text-wl-text-tertiary mt-0.5">Events</p>
+            </div>
+            <div className="text-center">
+              <p
+                className={cn(
+                  'text-lg font-bold font-mono',
+                  c.errorCount > 0 ? 'text-wl-danger-400' : 'text-wl-success-400',
+                )}
+              >
+                {c.errorCount}
+              </p>
+              <p className="text-xs text-wl-text-tertiary mt-0.5">Errors</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold font-mono text-wl-text-primary">{c.uptime}%</p>
+              <p className="text-xs text-wl-text-tertiary mt-0.5">Uptime</p>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ── Team Section ─────────────────────────────────────────────
+
+function TeamSection({
+  members,
+  loading,
+  error,
+}: {
+  members: TeamMember[];
+  loading: boolean;
+  error: Error | null;
+}) {
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} />;
+
+  if (members.length === 0) {
+    return (
+      <Card className="p-8 text-center bg-wl-bg-surface border-wl-border-default">
+        <Users className="w-8 h-8 text-wl-text-tertiary mx-auto mb-3" />
+        <p className="text-sm text-wl-text-secondary">No team members yet</p>
+        <Link href="/settings/team">
+          <Button variant="ghost" size="sm" className="mt-3">
+            Manage Team
+            <ArrowRight className="w-3.5 h-3.5 ml-1" />
           </Button>
         </Link>
+      </Card>
+    );
+  }
 
-        {/* Providers Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("providers")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white">
-                Communication Providers
-              </h2>
-              <Badge variant="primary" className="bg-blue-500/30 text-blue-500">
-                {providers.length} integrated
-              </Badge>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {members.map((m) => (
+        <Card
+          key={m.id}
+          className="p-4 bg-wl-bg-surface border-wl-border-default"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-wl-primary-500/10 flex items-center justify-center text-wl-primary-400 font-semibold text-sm shrink-0">
+              {(m.name ?? m.email).charAt(0).toUpperCase()}
             </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-gray-400 transition-transform",
-                expandedSections.providers ? "rotate-90" : ""
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-wl-text-primary truncate">
+                {m.name || m.email}
+              </p>
+              {m.name && (
+                <p className="text-xs text-wl-text-tertiary truncate">{m.email}</p>
               )}
-            />
-          </div>
-
-          {expandedSections.providers && (
-            <ProviderList
-              providers={providers}
-              selectedProvider={selectedProvider}
-              onSelectProvider={setSelectedProvider}
-            />
-          )}
-        </div>
-
-        {/* Presence Status Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("presence")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white">
-                Team Presence Status
-              </h2>
-              <Badge variant="info" className="bg-blue-500/20 text-blue-400">
-                Real-time
-              </Badge>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="default" className="text-[10px] py-0">
+                  {m.role}
+                </Badge>
+                <span className="text-[10px] text-wl-text-tertiary">
+                  Since {fmtDate(m.createdAt)}
+                </span>
+              </div>
             </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-gray-400 transition-transform",
-                expandedSections.presence ? "rotate-90" : ""
-              )}
-            />
           </div>
-
-          {expandedSections.presence && (
-            <PresenceGrid indicators={presenceIndicators} />
-          )}
-        </div>
-
-        {/* Message Routing Rules Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("routes")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white">
-                Message Routing Rules
-              </h2>
-              <Badge variant="default" className="bg-[#12121a]">
-                {messageRoutes.filter((r) => r.enabled).length}/{messageRoutes.length} active
-              </Badge>
-            </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-gray-400 transition-transform",
-                expandedSections.routes ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.routes && (
-            <MessageRoutes routes={messageRoutes} onAddRoute={() => {}} />
-          )}
-        </div>
-
-        {/* Delivery Stats Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("delivery")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white">
-                Delivery Statistics
-              </h2>
-              <Badge variant="success" className="bg-green-500/20 text-green-400">
-                99.7% success rate
-              </Badge>
-            </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-gray-400 transition-transform",
-                expandedSections.delivery ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.delivery && (
-            <DeliveryStats stats={deliveryStats} />
-          )}
-        </div>
-
-        {/* Notification Preferences Section */}
-        <div>
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("preferences")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white">
-                Notification Preferences
-              </h2>
-            </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-gray-400 transition-transform",
-                expandedSections.preferences ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.preferences && (
-            <NotificationPreferences preferences={notificationPreferences} />
-          )}
-        </div>
-      </div>
+        </Card>
+      ))}
     </div>
+  );
+}
+
+// ── Delivery Stats Section ────────────────────────────────────
+
+function DeliveryStatsSection({
+  stats,
+  loading,
+  error,
+}: {
+  stats: NotificationStats | null;
+  loading: boolean;
+  error: Error | null;
+}) {
+  if (loading) return <LoadingSkeleton />;
+  if (error || !stats) {
+    return (
+      <Card className="p-8 text-center bg-wl-bg-surface border-wl-border-default">
+        <p className="text-sm text-wl-text-secondary">No delivery stats available</p>
+      </Card>
+    );
+  }
+
+  const channels = Object.entries(stats.channels ?? {});
+
+  if (channels.length === 0) {
+    return (
+      <Card className="p-8 text-center bg-wl-bg-surface border-wl-border-default">
+        <p className="text-sm text-wl-text-secondary">No notifications sent yet</p>
+        <p className="text-xs text-wl-text-tertiary mt-1">
+          Stats will appear once notifications have been dispatched.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {channels.map(([channel, data]) => {
+        const successRate =
+          data.sent > 0 ? ((data.delivered / data.sent) * 100).toFixed(1) : '0';
+        return (
+          <Card
+            key={channel}
+            className="p-5 bg-wl-bg-surface border-wl-border-default"
+          >
+            <p className="text-sm font-semibold text-wl-text-primary mb-4 uppercase tracking-wide text-xs">
+              {channel}
+            </p>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="text-center">
+                <p className="text-lg font-bold font-mono text-wl-text-primary">
+                  {data.sent.toLocaleString()}
+                </p>
+                <p className="text-xs text-wl-text-tertiary mt-0.5">Sent</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold font-mono text-wl-success-400">
+                  {data.delivered.toLocaleString()}
+                </p>
+                <p className="text-xs text-wl-text-tertiary mt-0.5">Delivered</p>
+              </div>
+              <div className="text-center">
+                <p
+                  className={cn(
+                    'text-lg font-bold font-mono',
+                    data.failed > 0 ? 'text-wl-danger-400' : 'text-wl-text-tertiary',
+                  )}
+                >
+                  {data.failed}
+                </p>
+                <p className="text-xs text-wl-text-tertiary mt-0.5">Failed</p>
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-wl-text-tertiary">Success Rate</span>
+                <span className="text-xs font-semibold text-wl-success-400">{successRate}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-wl-success-500 rounded-full"
+                  style={{ width: `${successRate}%` }}
+                />
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Main Page ────────────────────────────────────────────────
+
+export default function CollaborationPage() {
+  const [activeSection, setActiveSection] = useState<
+    'providers' | 'team' | 'stats' | 'routes'
+  >('providers');
+
+  const {
+    items: connections,
+    loading: connLoading,
+    error: connError,
+  } = useApiList<Connection>('/api/v4/integrations/connections');
+
+  const {
+    items: teamMembers,
+    loading: teamLoading,
+    error: teamError,
+  } = useApiList<TeamMember>('/api/v4/settings/team');
+
+  const {
+    data: notifStats,
+    loading: statsLoading,
+    error: statsError,
+  } = useApiQuery<NotificationStats>('/api/v4/notifications/stats?days=30');
+
+  const messagingCount = useMemo(
+    () => connections.filter(isMessagingConnection).length,
+    [connections],
+  );
+
+  const connectedCount = connections.filter((c) => c.status === 'connected').length;
+
+  const SECTIONS = [
+    { id: 'providers' as const, label: `Providers (${messagingCount})`, icon: Plug },
+    { id: 'team' as const, label: `Team (${teamMembers.length})`, icon: Users },
+    { id: 'stats' as const, label: 'Delivery Stats', icon: Activity },
+    { id: 'routes' as const, label: 'Message Routes', icon: Send },
+  ];
+
+  return (
+    <>
+      <Header
+        title="Collaboration Integrations"
+        subtitle={`${connectedCount} integrations active · ${teamMembers.length} team members`}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link href="/settings/notifications">
+              <Button variant="ghost" size="sm">
+                <Settings className="w-4 h-4 mr-1.5" />
+                Notification Settings
+              </Button>
+            </Link>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => (window.location.href = '/integrations/catalog')}
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add Integration
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="p-6 space-y-6">
+        {/* Section tabs */}
+        <div className="flex gap-1 p-1 bg-wl-bg-elevated rounded-lg border border-wl-border-subtle w-fit flex-wrap">
+          {SECTIONS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveSection(id)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                activeSection === id
+                  ? 'bg-wl-bg-overlay text-wl-text-primary shadow-sm'
+                  : 'text-wl-text-tertiary hover:text-wl-text-secondary',
+              )}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {activeSection === 'providers' && (
+          <ProvidersSection
+            connections={connections}
+            loading={connLoading}
+            error={connError}
+          />
+        )}
+
+        {activeSection === 'team' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-wl-text-primary">Team Members</p>
+              <Link href="/settings/team">
+                <Button variant="ghost" size="sm">
+                  Manage Team
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              </Link>
+            </div>
+            <TeamSection
+              members={teamMembers}
+              loading={teamLoading}
+              error={teamError}
+            />
+          </div>
+        )}
+
+        {activeSection === 'stats' && (
+          <div className="space-y-4">
+            <p className="text-sm font-medium text-wl-text-primary">
+              Notification Delivery (last 30 days)
+            </p>
+            <DeliveryStatsSection
+              stats={notifStats}
+              loading={statsLoading}
+              error={statsError}
+            />
+          </div>
+        )}
+
+        {activeSection === 'routes' && (
+          <Card className="p-12 text-center bg-wl-bg-surface border-wl-border-default">
+            <div className="w-12 h-12 rounded-full bg-wl-bg-overlay flex items-center justify-center mx-auto mb-4">
+              <Send className="w-6 h-6 text-wl-text-tertiary" />
+            </div>
+            <p className="text-sm font-medium text-wl-text-secondary mb-1">
+              Message routing coming soon
+            </p>
+            <p className="text-xs text-wl-text-tertiary mb-4">
+              Route logistics events (delivery updates, driver alerts, exceptions) to specific channels and teams.
+            </p>
+            <Link href="/settings/notifications">
+              <Button variant="ghost" size="sm">
+                Configure Notification Preferences
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            </Link>
+          </Card>
+        )}
+      </div>
+    </>
   );
 }
