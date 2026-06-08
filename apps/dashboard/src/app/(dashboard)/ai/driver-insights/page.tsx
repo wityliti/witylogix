@@ -11,12 +11,11 @@ import {
   Target,
   BarChart3,
   Minus,
-  Map as MapIcon,
+  Map,
   List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery, useApiList } from '@/hooks/use-api';
-import { ErrorState } from '@/components/ui/error-state';
 import type { DriverMarker } from '@/components/map/driver-layer';
 
 const WLMap = dynamic(
@@ -59,8 +58,26 @@ interface LeaderboardResponse {
   timestamp: string;
 }
 
+interface DispatchDriver {
+  id: string;
+  name: string;
+  status: string;
+  lat?: number | null;
+  lng?: number | null;
+}
+
 function toScoringPeriod(p: Period) {
   return p === '24h' ? 'daily' : p === '7d' ? 'weekly' : 'monthly';
+}
+
+function tierToStatus(tier: LeaderboardEntry['tier']): DriverMarker['status'] {
+  switch (tier) {
+    case 'platinum': return 'available';
+    case 'gold':     return 'busy';
+    case 'silver':   return 'break';
+    case 'bronze':   return 'offline';
+    default:         return 'offline';
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -104,8 +121,6 @@ export default function DriverInsightsPage() {
   const { items: dispatchDrivers } = useApiList<DispatchDriver>(
     view === 'map' ? '/api/v4/dispatch/drivers?limit=200' : null!,
   );
-
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const rawEntries: LeaderboardEntry[] = data?.data?.entries ?? [];
 
@@ -166,7 +181,7 @@ export default function DriverInsightsPage() {
                 className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', view === 'map' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
                 aria-label="Map view"
               >
-                <MapIcon className="w-3.5 h-3.5" />
+                <Map className="w-3.5 h-3.5" />
                 Map
               </button>
             </div>
@@ -228,7 +243,7 @@ export default function DriverInsightsPage() {
             </div>
             {mapDrivers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <MapIcon className="w-10 h-10 text-white/10" />
+                <Map className="w-10 h-10 text-white/10" />
                 <p className="text-sm text-white/30">No driver locations available</p>
                 <p className="text-xs text-white/15">Driver GPS data appears here once drivers are active</p>
               </div>
@@ -243,6 +258,7 @@ export default function DriverInsightsPage() {
         )}
 
         {/* Leaderboard table */}
+        {view === 'list' && (
         <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide">Performance Leaderboard</h3>
