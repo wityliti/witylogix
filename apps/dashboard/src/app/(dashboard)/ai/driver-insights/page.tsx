@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Users,
   TrendingUp,
@@ -10,9 +11,21 @@ import {
   Target,
   BarChart3,
   Minus,
+  Map as MapIcon,
+  List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useApiQuery } from '@/hooks/use-api';
+import { useApiQuery, useApiList } from '@/hooks/use-api';
+import type { DriverMarker } from '@/components/map/driver-layer';
+
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false },
+);
+const DriverLayer = dynamic(
+  () => import('@/components/map/driver-layer').then((m) => ({ default: m.DriverLayer })),
+  { ssr: false },
+);
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -45,8 +58,26 @@ interface LeaderboardResponse {
   timestamp: string;
 }
 
+interface DispatchDriver {
+  id: string;
+  name: string;
+  status: string;
+  lat?: number | null;
+  lng?: number | null;
+}
+
 function toScoringPeriod(p: Period) {
   return p === '24h' ? 'daily' : p === '7d' ? 'weekly' : 'monthly';
+}
+
+function tierToStatus(tier: LeaderboardEntry['tier']): DriverMarker['status'] {
+  switch (tier) {
+    case 'platinum': return 'available';
+    case 'gold':     return 'busy';
+    case 'silver':   return 'break';
+    case 'bronze':   return 'offline';
+    default:         return 'offline';
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -81,9 +112,14 @@ function ScoreBar({ value, color }: { value: number; color: string }) {
 export default function DriverInsightsPage() {
   const [period, setPeriod] = useState<Period>('7d');
   const [sortBy, setSortBy] = useState<'score' | 'onTime' | 'efficiency' | 'rating'>('score');
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   const { data, loading } = useApiQuery<LeaderboardResponse>(
     `/api/v4/ai/analytics/leaderboard?period=${period}`,
+  );
+
+  const { items: dispatchDrivers } = useApiList<DispatchDriver>(
+    view === 'map' ? '/api/v4/dispatch/drivers?limit=200' : null!,
   );
 
   const rawEntries: LeaderboardEntry[] = data?.data?.entries ?? [];
@@ -105,6 +141,17 @@ export default function DriverInsightsPage() {
     ? entries.reduce((s, e) => s + e.breakdown.onTimeScore, 0) / entries.length
     : 0;
 
+  const tierByDriverId = new Map(entries.map((e) => [e.driverId, e.tier]));
+  const mapDrivers: DriverMarker[] = (dispatchDrivers ?? [])
+    .filter((d) => d.lat != null && d.lng != null)
+    .map((d) => ({
+      id: d.id,
+      name: d.name,
+      status: tierToStatus(tierByDriverId.get(d.id) ?? 'bronze'),
+      lat: d.lat!,
+      lng: d.lng!,
+    }));
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -120,6 +167,24 @@ export default function DriverInsightsPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center rounded-lg border border-white/[0.08] overflow-hidden">
+              <button
+                onClick={() => setView('list')}
+                className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', view === 'list' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
+                aria-label="Leaderboard view"
+              >
+                <List className="w-3.5 h-3.5" />
+                List
+              </button>
+              <button
+                onClick={() => setView('map')}
+                className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', view === 'map' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
+                aria-label="Map view"
+              >
+                <MapIcon className="w-3.5 h-3.5" />
+                Map
+              </button>
+            </div>
             {(['24h', '7d', '30d'] as const).map((p) => (
               <button
                 key={p}
@@ -164,7 +229,36 @@ export default function DriverInsightsPage() {
           ))}
         </div>
 
+        {/* Map view */}
+        {view === 'map' && (
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+              <h3 className="text-sm font-semibold text-white/60 tracking-wide">Driver Locations by Performance Tier</h3>
+              <div className="flex items-center gap-4 text-[11px] text-white/30">
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />Platinum</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" />Gold</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-violet-400" />Silver</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-500" />Bronze</span>
+              </div>
+            </div>
+            {mapDrivers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <MapIcon className="w-10 h-10 text-white/10" />
+                <p className="text-sm text-white/30">No driver locations available</p>
+                <p className="text-xs text-white/15">Driver GPS data appears here once drivers are active</p>
+              </div>
+            ) : (
+              <div className="h-[500px] relative">
+                <WLMap center={[0, 20]} zoom={2} className="h-full w-full">
+                  <DriverLayer drivers={mapDrivers} />
+                </WLMap>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Leaderboard table */}
+        {view === 'list' && (
         <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide">Performance Leaderboard</h3>
@@ -298,6 +392,7 @@ export default function DriverInsightsPage() {
             </div>
           )}
         </div>
+        )}
 
         <div className="flex items-center gap-6 text-[11px] text-white/25">
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-400" />Platinum (≥90)</span>

@@ -51,10 +51,10 @@ function getPeriodDays(period: Period): number {
 
 function MapLegend() {
   const items = [
-    { color: "#10b981", label: "On-Time" },
-    { color: "#ef4444", label: "Late" },
-    { color: "#f59e0b", label: "In Flight" },
-    { color: "#6b7280", label: "Failed" },
+    { color: "var(--wl-success-500)", label: "On-Time" },
+    { color: "var(--wl-error-500)",   label: "Late" },
+    { color: "var(--wl-warning-500)", label: "In Flight" },
+    { color: "var(--wl-text-tertiary)", label: "Failed" },
   ];
   return (
     <div className="absolute bottom-4 left-4 z-10 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-3 flex items-center gap-4">
