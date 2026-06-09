@@ -64,7 +64,7 @@ export default function TestDashboardPage() {
 
   if (!testData) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="min-h-screen bg-wl-bg-root">
         <Header
           title="Test Results Dashboard"
           actions={
@@ -80,7 +80,7 @@ export default function TestDashboardPage() {
           <p className="text-sm text-gray-400 mb-4">
             Test results are generated during CI runs. To populate this dashboard, run:
           </p>
-          <pre className="bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg p-4 text-xs text-gray-400 text-left mb-4">
+          <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-4 text-xs text-gray-400 text-left mb-4">
             pnpm test:run --reporter=json {'>'} test-results.json
           </pre>
           <p className="text-xs text-gray-500">
@@ -133,7 +133,7 @@ export default function TestDashboardPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Test Results Dashboard"
         subtitle={`Generated ${new Date(generatedAt).toLocaleString()}`}
@@ -242,7 +242,7 @@ export default function TestDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#1e1e2e]">
+                    <tr className="border-b border-wl-border-default">
                       <th className="text-left py-3 px-4 font-medium text-gray-400">File</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-400">Tests</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-400">Passed</th>
@@ -253,7 +253,7 @@ export default function TestDashboardPage() {
                   </thead>
                   <tbody>
                     {testResults.map((file, idx) => (
-                      <tr key={idx} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+                      <tr key={idx} className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
                         <td className="py-3 px-4 text-white font-mono text-xs max-w-sm truncate">
                           {file.file.split('/').slice(-2).join('/')}
                         </td>

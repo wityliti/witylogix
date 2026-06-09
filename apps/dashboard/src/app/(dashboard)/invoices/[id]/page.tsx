@@ -395,7 +395,7 @@ export default function InvoiceDetailPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
   if (!invoice) {
     return (
-      <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ChevronLeft className="w-4 h-4" />
@@ -464,7 +464,8 @@ export default function InvoiceDetailPage() {
       <div className="grid grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="col-span-2 flex flex-col gap-6">
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          {/* Invoice Header */}
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <div className="grid grid-cols-2 gap-8">
               <div>
                 <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4">Bill To</h3>
@@ -502,60 +503,67 @@ export default function InvoiceDetailPage() {
           </Card>
 
           {/* Line Items */}
-          {invoice.lineItems.length > 0 && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
-              <Table
-                columns={[
-                  { key: "description", header: "Description", width: "50%" },
-                  { key: "quantity", header: "Qty", align: "right", width: "15%" },
-                  {
-                    key: "rate",
-                    header: "Rate",
-                    align: "right",
-                    render: (item: LineItem) => <span>${item.rate.toFixed(2)}</span>,
-                    width: "15%",
-                  },
-                  {
-                    key: "amount",
-                    header: "Amount",
-                    align: "right",
-                    render: (item: LineItem) => <span className="font-medium">${item.amount.toFixed(2)}</span>,
-                    width: "20%",
-                  },
-                ]}
-                data={invoice.lineItems}
-              />
-              <div className="border-t border-[#1e1e2e] p-6">
-                <div className="flex justify-end max-w-xs ml-auto space-y-3">
-                  <div className="w-full">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-gray-400">Subtotal</span>
-                      <span className="text-white">${invoice.subtotal.toFixed(2)}</span>
-                    </div>
-                    {invoice.discountAmount > 0 && (
-                      <div className="flex justify-between mb-2 text-emerald-600">
-                        <span>Discount</span>
-                        <span>-${invoice.discountAmount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    {invoice.taxAmount > 0 && (
-                      <div className="flex justify-between mb-2 border-t border-[#1e1e2e] pt-2">
-                        <span className="text-gray-400">Tax</span>
-                        <span className="text-white">${invoice.taxAmount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-lg font-bold border-t-2 border-[#1e1e2e] pt-3 mt-3">
-                      <span className="text-white">Total</span>
-                      <span className="text-blue-500">${invoice.total.toFixed(2)}</span>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
+            <Table
+              columns={[
+                {
+                  key: "description",
+                  header: "Description",
+                  width: "50%",
+                },
+                {
+                  key: "quantity",
+                  header: "Qty",
+                  align: "right",
+                  width: "15%",
+                },
+                {
+                  key: "rate",
+                  header: "Rate",
+                  align: "right",
+                  render: (item: LineItem) => (
+                    <span>${item.rate.toFixed(2)}</span>
+                  ),
+                  width: "15%",
+                },
+                {
+                  key: "amount",
+                  header: "Amount",
+                  align: "right",
+                  render: (item: LineItem) => (
+                    <span className="font-medium">
+                      ${item.amount.toFixed(2)}
+                    </span>
+                  ),
+                  width: "20%",
+                },
+              ]}
+              data={invoice.lineItems}
+            />
+
+            {/* Totals */}
+            <div className="border-t border-wl-border-default p-6">
+              <div className="flex justify-end max-w-xs ml-auto space-y-3">
+                <div className="w-full">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-400">Subtotal</span>
+                    <span className="text-white">
+                      ${invoice.subtotal.toFixed(2)}
+                    </span>
+                  </div>
+                  {invoice.discountAmount > 0 && (
+                    <div className="flex justify-between mb-2 text-emerald-600">
+                      <span>Discount</span>
+                      <span>-${invoice.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between mb-2 border-t border-[#1e1e2e] pt-2">
+                  <div className="flex justify-between mb-2 border-t border-wl-border-default pt-2">
                     <span className="text-gray-400">Tax</span>
                     <span className="text-white">
                       ${invoice.taxAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold border-t-2 border-[#1e1e2e] pt-3 mt-3">
+                  <div className="flex justify-between text-lg font-bold border-t-2 border-wl-border-default pt-3 mt-3">
                     <span className="text-white">Total</span>
                     <span className="text-blue-500">
                       ${invoice.total.toFixed(2)}
@@ -568,7 +576,7 @@ export default function InvoiceDetailPage() {
 
           {/* Notes & Terms */}
           {(invoice.notes || invoice.terms) && (
-            <Card className="p-6 space-y-4 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className={cn("p-6 space-y-4 bg-wl-bg-surface border border-wl-border-default")}>
               {invoice.notes && (
                 <div>
                   <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">Notes</h3>
@@ -588,20 +596,35 @@ export default function InvoiceDetailPage() {
         {/* Right Column */}
         <div className="flex flex-col gap-6">
           {/* Payment Summary */}
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
-            <h3 className="font-semibold text-white mb-4">Payment Summary</h3>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+            <h3 className="font-semibold text-white mb-4">
+              Payment Summary
+            </h3>
             <div className="space-y-3">
               <div>
                 <p className="text-xs uppercase text-gray-400">Total Amount</p>
                 <p className="text-xl font-bold text-white">${invoice.total.toFixed(2)}</p>
               </div>
-              <div className="border-t border-[#1e1e2e] pt-3">
-                <p className="text-xs uppercase text-gray-400">Amount Paid</p>
-                <p className="text-lg font-bold text-emerald-600">${amountPaid.toFixed(2)}</p>
+              <div className="border-t border-wl-border-default pt-3">
+                <p className="text-xs uppercase text-gray-400">
+                  Amount Paid
+                </p>
+                <p className="text-lg font-bold text-emerald-600">
+                  ${amountPaid.toFixed(2)}
+                </p>
               </div>
-              <div className="border-t border-[#1e1e2e] pt-3">
-                <p className="text-xs uppercase text-gray-400">Remaining Balance</p>
-                <p className={cn("text-lg font-bold", remainingBalance > 0 ? "text-red-500" : "text-emerald-600")}>
+              <div className="border-t border-wl-border-default pt-3">
+                <p className="text-xs uppercase text-gray-400">
+                  Remaining Balance
+                </p>
+                <p
+                  className={cn(
+                    "text-lg font-bold",
+                    remainingBalance > 0
+                      ? "text-red-500"
+                      : "text-emerald-600"
+                  )}
+                >
                   ${remainingBalance.toFixed(2)}
                 </p>
               </div>
@@ -610,11 +633,16 @@ export default function InvoiceDetailPage() {
 
           {/* Payments */}
           {invoice.payments.length > 0 && (
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
-              <h3 className="font-semibold text-white mb-4">Payment History</h3>
+            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
+              <h3 className="font-semibold text-white mb-4">
+                Payment History
+              </h3>
               <div className="space-y-3">
                 {invoice.payments.map((payment) => (
-                  <div key={payment.id} className="border-b border-[#1e1e2e] pb-3 last:border-b-0 last:pb-0">
+                  <div
+                    key={payment.id}
+                    className="border-b border-wl-border-default pb-3 last:border-b-0 last:pb-0"
+                  >
                     <div className="flex justify-between mb-1">
                       <p className="text-sm font-medium text-white">${payment.amount.toFixed(2)}</p>
                       <span className="text-xs text-gray-400">{payment.date.toLocaleDateString()}</span>
@@ -635,7 +663,7 @@ export default function InvoiceDetailPage() {
 
           {/* Activity Log */}
           {invoice.activity.length > 0 && (
-            <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
               <h3 className="font-semibold text-white mb-4">
                 Activity Log
               </h3>
@@ -643,7 +671,7 @@ export default function InvoiceDetailPage() {
                 {invoice.activity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex gap-3 pb-3 last:pb-0 border-b border-[#1e1e2e] last:border-b-0"
+                    className="flex gap-3 pb-3 last:pb-0 border-b border-wl-border-default last:border-b-0"
                   >
                     <div className="text-gray-400 mt-1">
                       {getActivityIcon(activity.type)}
@@ -664,8 +692,10 @@ export default function InvoiceDetailPage() {
       {/* Void Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="max-w-md p-6 bg-[#12121a] border border-[#1e1e2e]">
-            <h2 className="text-lg font-bold text-white mb-2">Void Invoice?</h2>
+          <Card className={cn("max-w-md p-6 bg-wl-bg-surface border border-wl-border-default")}>
+            <h2 className="text-lg font-bold text-white mb-2">
+              Void Invoice?
+            </h2>
             <p className="text-sm text-gray-400 mb-6">
               Are you sure you want to void this invoice? This action cannot be undone.
             </p>

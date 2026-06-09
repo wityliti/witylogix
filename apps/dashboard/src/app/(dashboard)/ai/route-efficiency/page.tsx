@@ -224,7 +224,7 @@ export default function RouteEfficiencyPage() {
                 placeholder="Search routes…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-wl-bg-sunken border border-white/[0.06] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-surface border border-white/[0.06] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
 
@@ -276,16 +276,16 @@ export default function RouteEfficiencyPage() {
           {/* Right: score panel */}
           <div className="space-y-4">
             {!activeRouteId ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
                 <div className="text-center">
                   <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
                   <p className="text-sm text-white/30">Select a route to see its efficiency score</p>
                 </div>
               </div>
             ) : efficiencyLoading ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 animate-pulse" />
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 animate-pulse" />
             ) : !score ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
                 <div className="text-center">
                   <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
                   <p className="text-sm text-white/30">Score unavailable for this route</p>

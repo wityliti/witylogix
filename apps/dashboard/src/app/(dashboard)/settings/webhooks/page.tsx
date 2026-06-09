@@ -143,7 +143,7 @@ export default function WebhooksDebuggerPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
+          <Card className="border border-wl-border-default bg-wl-bg-surface">
             <CardHeader><CardDescription>Success Rate</CardDescription></CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-500">
@@ -175,7 +175,7 @@ export default function WebhooksDebuggerPage() {
         </div>
 
         {/* Filters */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
+        <Card className="border border-wl-border-default bg-wl-bg-surface mb-8">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Filter className="w-5 h-5" />
@@ -189,7 +189,7 @@ export default function WebhooksDebuggerPage() {
                 <select
                   value={filters.eventType}
                   onChange={(e) => setFilters({ ...filters, eventType: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-sm"
                 >
                   <option value="all">All Events</option>
                   {eventTypes.map((type) => (
@@ -276,7 +276,7 @@ export default function WebhooksDebuggerPage() {
                           'p-3 rounded-lg border cursor-pointer transition-all',
                           selectedEvent?.id === event.id
                             ? 'bg-blue-500/10 border-blue-500'
-                            : 'border-[#1e1e2e] hover:bg-[#1a1a2e]',
+                            : 'border-wl-border-default hover:bg-wl-bg-elevated',
                         )}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -325,7 +325,7 @@ export default function WebhooksDebuggerPage() {
                   <div className="space-y-4">
                     <div>
                       <div className="text-xs font-semibold text-gray-400 mb-1">Event ID</div>
-                      <div className="text-xs font-mono bg-[#1a1a2e] p-2 rounded flex items-center justify-between">
+                      <div className="text-xs font-mono bg-wl-bg-elevated p-2 rounded flex items-center justify-between">
                         <span className="truncate">{selectedEvent.id}</span>
                         <Copy
                           className="w-3 h-3 cursor-pointer hover:opacity-60 flex-shrink-0 ml-2"

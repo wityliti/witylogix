@@ -90,7 +90,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           <StatusBadge status={service.status} />
         </div>
 
-        <div className="grid grid-cols-3 gap-3 py-4 border-t border-[#1e1e2e]">
+        <div className="grid grid-cols-3 gap-3 py-4 border-t border-wl-border-default">
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wider">24h Uptime</p>
             <p className="text-sm font-semibold text-white mt-1">{service.uptime24h}%</p>
@@ -105,7 +105,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           </div>
         </div>
 
-        <div className="text-xs text-gray-400 pt-3 border-t border-[#1e1e2e]">
+        <div className="text-xs text-gray-400 pt-3 border-t border-wl-border-default">
           Last checked: {new Date(service.lastChecked).toLocaleTimeString()}
         </div>
       </CardContent>

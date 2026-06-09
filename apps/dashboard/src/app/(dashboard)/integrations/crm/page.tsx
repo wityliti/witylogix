@@ -254,6 +254,51 @@ export default function CRMIntegrationPage() {
           </div>
         </div>
 
+        {/* Deal Pipeline View */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Deal Pipeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {DEAL_PIPELINE_STAGES.map((stage, idx) => {
+                const percentage = (stage.value / pipelineValue) * 100;
+                return (
+                  <div key={idx}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="text-sm font-semibold text-white">
+                          {stage.name}
+                        </span>
+                        <span className="text-xs text-gray-500 ml-2">
+                          {stage.count} deals
+                        </span>
+                      </div>
+                      <span className="text-sm font-semibold text-blue-400">
+                        {formatCurrency(stage.value)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-wl-bg-surface rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full transition-all"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="border-t border-wl-border-default pt-3 mt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-white">Total Pipeline</span>
+                  <span className="text-lg font-bold text-blue-400">
+                    {formatCurrency(pipelineValue)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Sync Settings */}
         <Card className="mb-6">
           <CardHeader>

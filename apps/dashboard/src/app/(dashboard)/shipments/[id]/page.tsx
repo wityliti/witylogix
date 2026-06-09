@@ -35,7 +35,7 @@ const ShipmentDetailMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-64 bg-[#12121a] rounded-xl border border-[#1e1e2e] animate-pulse flex items-center justify-center">
+      <div className="h-64 bg-wl-bg-surface rounded-xl border border-wl-border-default animate-pulse flex items-center justify-center">
         <p className="text-xs text-gray-500">Loading map…</p>
       </div>
     ),
@@ -163,7 +163,7 @@ function humaniseAction(action: string): string {
 
 function DetailSkeleton() {
   return (
-    <div className="p-6 bg-[#0a0a0f] min-h-screen space-y-6">
+    <div className="p-6 bg-wl-bg-root min-h-screen space-y-6">
       <Skeleton variant="text" className="h-8 w-64" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
@@ -242,7 +242,7 @@ export default function ShipmentDetailPage() {
 
   if (!shipment) {
     return (
-      <div className="p-6 min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="p-6 min-h-screen bg-wl-bg-root flex items-center justify-center">
         <div className="text-center space-y-2">
           <p className="text-lg font-semibold text-gray-300">
             Shipment not found
@@ -265,7 +265,7 @@ export default function ShipmentDetailPage() {
     mapData?.destination != null || mapData?.origin != null;
 
   return (
-    <div className="p-6 min-h-screen bg-[#0a0a0f]">
+    <div className="p-6 min-h-screen bg-wl-bg-root">
       {/* ── Breadcrumb Header ───────────────────────────── */}
       <div className="mb-6">
         <Link
@@ -308,7 +308,7 @@ export default function ShipmentDetailPage() {
         <div className="lg:col-span-2 space-y-5">
           {/* Map: destination + optional origin + optional driver location */}
           {hasMap && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e] overflow-hidden">
+            <Card className="bg-wl-bg-surface border border-wl-border-default overflow-hidden">
               <div className="h-64">
                 <ShipmentDetailMap
                   destination={mapData!.destination}
@@ -328,7 +328,7 @@ export default function ShipmentDetailPage() {
           )}
 
           {/* Status Progression */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
               <h2 className="text-base font-semibold text-white mb-5">
                 Shipment Progress
@@ -368,7 +368,7 @@ export default function ShipmentDetailPage() {
 
           {/* Activity Timeline */}
           {timeline.length > 0 && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-6">
                 <h2 className="text-base font-semibold text-white mb-5">
                   Activity Timeline
@@ -394,7 +394,7 @@ export default function ShipmentDetailPage() {
                           )}
                         </div>
                         {index < timeline.length - 1 && (
-                          <div className="w-0.5 h-8 bg-[#1e1e2e]" />
+                          <div className="w-0.5 h-8 bg-wl-bg-elevated" />
                         )}
                       </div>
                       <div className="pt-0.5 pb-4 flex-1">
@@ -413,7 +413,7 @@ export default function ShipmentDetailPage() {
           )}
 
           {/* Package Details */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
               <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
                 <Package size={16} className="text-blue-500" />
@@ -452,7 +452,7 @@ export default function ShipmentDetailPage() {
               </div>
 
               {shipment.lineItems?.length > 0 && (
-                <div className="border-t border-[#1e1e2e] pt-4">
+                <div className="border-t border-wl-border-default pt-4">
                   <p className="text-xs font-semibold text-gray-400 mb-3">
                     Line Items
                   </p>
@@ -460,7 +460,7 @@ export default function ShipmentDetailPage() {
                     {shipment.lineItems.map((item, index) => (
                       <div
                         key={index}
-                        className="flex justify-between p-2.5 rounded-lg bg-[#1a1a2e]"
+                        className="flex justify-between p-2.5 rounded-lg bg-wl-bg-elevated"
                       >
                         <div>
                           <p className="text-xs font-semibold text-white">
@@ -484,7 +484,7 @@ export default function ShipmentDetailPage() {
           </Card>
 
           {/* Recipient Information */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
               <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
                 <User size={16} className="text-blue-500" />
@@ -539,13 +539,13 @@ export default function ShipmentDetailPage() {
 
           {/* Delivery Notes */}
           {shipment.notes && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-6">
                 <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
                   <FileText size={16} className="text-blue-500" />
                   Delivery Notes
                 </h2>
-                <div className="p-3 rounded-lg bg-[#1a1a2e] border-l-4 border-l-blue-500">
+                <div className="p-3 rounded-lg bg-wl-bg-elevated border-l-4 border-l-blue-500">
                   <p className="text-sm text-gray-300 leading-relaxed">
                     {shipment.notes}
                   </p>
@@ -556,7 +556,7 @@ export default function ShipmentDetailPage() {
 
           {/* Proof of Delivery */}
           {shipment.proofOfDelivery && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-6">
                 <h2 className="text-base font-semibold text-white mb-4">
                   Proof of Delivery
@@ -575,10 +575,10 @@ export default function ShipmentDetailPage() {
                       <img
                         src={shipment.proofOfDelivery.signatureUrl}
                         alt="Delivery signature"
-                        className="w-full rounded border border-[#1e1e2e] bg-white"
+                        className="w-full rounded border border-wl-border-default bg-white"
                       />
                     ) : (
-                      <div className="h-24 rounded border-2 border-dashed border-[#1e1e2e] bg-[#1a1a2e] flex items-center justify-center">
+                      <div className="h-24 rounded border-2 border-dashed border-wl-border-default bg-wl-bg-elevated flex items-center justify-center">
                         <p className="text-xs text-gray-500">
                           No signature
                         </p>
@@ -597,13 +597,13 @@ export default function ShipmentDetailPage() {
                               key={idx}
                               src={url}
                               alt={`Delivery photo ${idx + 1}`}
-                              className="w-full rounded border border-[#1e1e2e] aspect-square object-cover"
+                              className="w-full rounded border border-wl-border-default aspect-square object-cover"
                             />
                           ),
                         )}
                       </div>
                     ) : (
-                      <div className="h-24 rounded border-2 border-dashed border-[#1e1e2e] bg-[#1a1a2e] flex items-center justify-center">
+                      <div className="h-24 rounded border-2 border-dashed border-wl-border-default bg-wl-bg-elevated flex items-center justify-center">
                         <p className="text-xs text-gray-500">No photos</p>
                       </div>
                     )}
@@ -645,7 +645,7 @@ export default function ShipmentDetailPage() {
         {/* Right Sidebar */}
         <div className="space-y-4">
           {/* Quick Info */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-5">
               <p className="text-xs font-semibold text-blue-500 mb-4 uppercase tracking-wide">
                 Quick Info
@@ -693,7 +693,7 @@ export default function ShipmentDetailPage() {
               </div>
 
               {shipment.tags.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-[#1e1e2e]">
+                <div className="mt-4 pt-4 border-t border-wl-border-default">
                   <p className="text-xs text-gray-400 mb-2">Tags</p>
                   <div className="flex flex-wrap gap-1.5">
                     {shipment.tags.map((tag) => (
@@ -717,7 +717,7 @@ export default function ShipmentDetailPage() {
                 <p className="text-xs font-semibold text-blue-500 mb-4 flex items-center gap-1.5 uppercase tracking-wide">
                   <Truck size={13} /> Assigned Driver
                 </p>
-                <div className="p-3 rounded-lg bg-[#1a1a2e] space-y-1">
+                <div className="p-3 rounded-lg bg-wl-bg-elevated space-y-1">
                   <p className="text-sm font-semibold text-white">
                     {shipment.driver.name}
                   </p>
@@ -752,12 +752,12 @@ export default function ShipmentDetailPage() {
 
           {/* Origin Location */}
           {shipment.location && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-5">
                 <p className="text-xs font-semibold text-blue-500 mb-3 flex items-center gap-1.5 uppercase tracking-wide">
                   <MapPin size={13} /> Origin Location
                 </p>
-                <div className="p-3 rounded-lg bg-[#1a1a2e]">
+                <div className="p-3 rounded-lg bg-wl-bg-elevated">
                   <p className="text-sm font-semibold text-white">
                     {shipment.location.name}
                   </p>

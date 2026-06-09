@@ -214,34 +214,6 @@ export default function LocationsPage() {
           </div>
         </div>
 
-        {/* Map View */}
-        {viewMode === "map" && (
-          <div className="mb-6 rounded-xl overflow-hidden border border-[#1e1e2e]" style={{ height: "520px" }}>
-            <WLMap className="w-full h-full" onReady={handleMainMapReady}>
-              {mainMapId && (
-                <LocationPinLayer
-                  mapId={mainMapId}
-                  locations={filtered.filter((l) => l.latitude && l.longitude).map((l) => ({
-                    id: l.id,
-                    name: l.name,
-                    type: l.type,
-                    latitude: l.latitude,
-                    longitude: l.longitude,
-                    status: l.status,
-                    isDefault: l.isDefault,
-                    city: l.city,
-                  }))}
-                  selectedId={selectedLocation?.id ?? null}
-                  onLocationClick={(id) => {
-                    const loc = locations.find((l) => l.id === id) ?? null;
-                    setSelectedLocation(loc?.id === selectedLocation?.id ? null : loc);
-                  }}
-                />
-              )}
-            </WLMap>
-          </div>
-        )}
-
         {/* Locations Grid + Detail */}
         <div
           className={cn("grid gap-5")}
@@ -315,7 +287,7 @@ export default function LocationsPage() {
                 </Badge>
 
                 {/* Stats Grid */}
-                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-[#1e1e2e] mb-3")}>
+                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
                   <div>
                     <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
                     <div
@@ -524,7 +496,7 @@ export default function LocationsPage() {
                       <table className={cn("w-full border-collapse text-xs")}>
                         <tbody>
                           {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
-                            <tr key={day} className={cn("border-b border-[#1e1e2e]")}>
+                            <tr key={day} className={cn("border-b border-wl-border-default")}>
                               <td
                                 className={cn("p-2 pr-3 text-gray-300 font-medium whitespace-nowrap")}
                               >
@@ -547,14 +519,14 @@ export default function LocationsPage() {
                   </div>
                 )}
 
-                <div className={cn("h-px bg-[#1e1e2e]")} />
+                <div className={cn("h-px bg-wl-bg-elevated")} />
 
                 {/* Map */}
                 <div>
                   <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
                     Location
                   </div>
-                  <div className={cn("rounded-md overflow-hidden border border-[#1e1e2e]")} style={{ height: 160 }}>
+                  <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
                     <WLMap
                       center={[selectedLocation.longitude, selectedLocation.latitude]}
                       zoom={12}
@@ -577,7 +549,7 @@ export default function LocationsPage() {
 
                 {/* Action Buttons */}
                 <div
-                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-[#1e1e2e]")}
+                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-default")}
                 >
                   <Button variant="primary" size="sm">
                     Edit

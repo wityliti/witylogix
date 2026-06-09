@@ -135,7 +135,7 @@ export default function FieldServicePage() {
       />
 
       <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
-        {/* KPI Stats */}
+        {/* ═══ KPI Stats Row ═══ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-blue-500">
             <CardContent className="pt-6">
@@ -198,8 +198,8 @@ export default function FieldServicePage() {
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-white">Today&apos;s Schedule</CardTitle>
                   <select
-                    value={selectedTech ?? 'all'}
-                    onChange={(e) => setSelectedTech(e.target.value === 'all' ? null : e.target.value)}
+                    value={selectedTech || "all"}
+                    onChange={(e) => setSelectedTech(e.target.value === "all" ? null : e.target.value)}
                     className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-gray-300 focus:outline-none focus:border-blue-500/50"
                   >
                     <option value="all">All Technicians</option>
@@ -242,10 +242,12 @@ export default function FieldServicePage() {
             </Card>
           </div>
 
+          {/* SLA Compliance Tracker */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">SLA Compliance</CardTitle>
             </CardHeader>
+
             <CardContent className="space-y-5">
               <div>
                 <div className="flex justify-between items-baseline mb-3">
@@ -259,13 +261,29 @@ export default function FieldServicePage() {
                   />
                 </div>
               </div>
-              <div className="h-px bg-wl-border-default" />
+
+              <div className="h-px bg-wl-bg-elevated" />
+
+              {/* Overdue jobs */}
               <div>
                 <div className="text-sm text-gray-400 mb-2">Overdue Jobs</div>
                 <div className="text-3xl font-bold text-red-400">{slaMetrics.overdueCount}</div>
                 <div className="text-xs text-gray-500 mt-1">of {slaMetrics.totalJobs} total</div>
               </div>
-              <div className="h-px bg-wl-border-default" />
+
+              <div className="h-px bg-wl-bg-elevated" />
+
+              {/* Avg completion time */}
+              <div>
+                <div className="text-sm text-gray-400 mb-2">Drivers Available</div>
+                <div className="text-3xl font-bold text-blue-400">
+                  {drivers.filter((d) => d.status === 'AVAILABLE').length}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">of {totalTechnicians} total</div>
+              </div>
+
+              <div className="h-px bg-wl-bg-elevated" />
+
               <Button variant="secondary" size="sm" className="w-full">
                 View Details
               </Button>
@@ -275,6 +293,7 @@ export default function FieldServicePage() {
 
         {/* Job Queue + Recent Completions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Job Queue */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -290,7 +309,7 @@ export default function FieldServicePage() {
                   {jobQueue.map((job) => (
                     <div
                       key={job.id}
-                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer"
+                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer group"
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div>
@@ -315,10 +334,12 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
+          {/* Recent Completions Feed */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Recent Completions</CardTitle>
             </CardHeader>
+
             <CardContent>
               {recentCompletions.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">No completions yet today</div>

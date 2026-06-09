@@ -140,12 +140,12 @@ export default function BillingPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4 mt-8 pt-8 border-t border-[#1e1e2e]">
+            <div className="flex gap-4 mt-8 pt-8 border-t border-wl-border-default">
               <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
               </Button>
-              <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]">
+              <Button variant="secondary" className="border-wl-border-default text-white hover:bg-wl-bg-elevated">
                 Downgrade Plan
               </Button>
               <Button variant="ghost" className="text-red-400">
@@ -157,7 +157,7 @@ export default function BillingPage() {
 
         {/* Usage Metrics */}
         {usageMetrics.length > 0 && (
-          <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <TrendingUp className="w-5 h-5" />
@@ -173,7 +173,7 @@ export default function BillingPage() {
                       {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
                     </span>
                   </div>
-                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                  <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                     <div
                       className={cn(
                         'h-2 rounded-full transition-all',
@@ -204,14 +204,14 @@ export default function BillingPage() {
                 Configure payment gateways →
               </Link>
             </div>
-            <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]">
+            <Button variant="secondary" className="border-wl-border-default text-white hover:bg-wl-bg-elevated">
               Add Payment Method
             </Button>
           </CardContent>
         </Card>
 
         {/* Billing Address */}
-        <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white">Billing Address</CardTitle>
           </CardHeader>
@@ -224,7 +224,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.fullName ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,fullName: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Full name"
                   />
                 </div>
@@ -234,7 +234,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.company ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,company: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Company name"
                   />
                 </div>
@@ -245,7 +245,7 @@ export default function BillingPage() {
                   type="text"
                   value={addr.address ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,address: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Street address"
                 />
               </div>
@@ -256,7 +256,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.city ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,city: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="City"
                   />
                 </div>
@@ -266,7 +266,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.state ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,state: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="State"
                   />
                 </div>
@@ -276,7 +276,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.postalCode ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,postalCode: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Postal code"
                   />
                 </div>
@@ -309,7 +309,7 @@ export default function BillingPage() {
                 {invoices.map((invoice) => (
                   <div
                     key={invoice.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                    className="flex items-center justify-between p-4 rounded-lg border border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                   >
                     <div className="flex-1">
                       <p className="font-medium text-white">{invoice.period}</p>
@@ -324,7 +324,7 @@ export default function BillingPage() {
                           {invoiceStatusLabel(invoice.status)}
                         </Badge>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-blue-400 hover:bg-[#1a1a2e]">
+                      <Button variant="ghost" size="sm" className="text-blue-400 hover:bg-wl-bg-elevated">
                         <Download className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">Download</span>
                       </Button>

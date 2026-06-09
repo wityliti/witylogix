@@ -165,7 +165,7 @@ export default function HOSPage() {
                         setSearchQuery("");
                       }}
                       className={cn(
-                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                         selectedDriverId === driver.driverId
                           ? "bg-blue-500/10 text-blue-400"
                           : "text-gray-400 hover:bg-wl-bg-root"

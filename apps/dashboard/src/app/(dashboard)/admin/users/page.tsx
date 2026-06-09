@@ -395,10 +395,10 @@ export default function AdminUsersPage() {
                 {filteredUsers.map((user, idx) => (
                   <tr
                     key={user.id}
-                    className={cn(
-                      "border-b border-wl-border-default transition-colors duration-200 cursor-pointer hover:bg-wl-bg-elevated",
-                      idx % 2 !== 0 && "bg-wl-bg-overlay",
-                    )}
+                    className="border-b border-wl-border-default transition-colors duration-200 cursor-pointer"
+                    style={{
+                      backgroundColor: idx % 2 === 0 ? "transparent" : "#1a1a2e",
+                    }}
                     onClick={() => handleUserClick(user)}
                   >
                     <td className="p-3">

@@ -239,11 +239,11 @@ export default function StandardDeliveryPage() {
             </div>
           </div>
         ) : (
-          <Card className="bg-[#12121a] border border-[#1e1e2e] overflow-hidden">
+          <Card className="bg-wl-bg-surface border border-wl-border-default overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                  <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
                     <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Shipment #</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Customer</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Address</th>
@@ -258,8 +258,8 @@ export default function StandardDeliveryPage() {
                       key={shipment.id}
                       onClick={() => setSelectedId((prev) => (prev === shipment.id ? null : shipment.id))}
                       className={cn(
-                        'border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors cursor-pointer',
-                        idx % 2 === 0 ? 'bg-[#12121a]' : 'bg-[#0d0d14]',
+                        'border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer',
+                        idx % 2 === 0 ? 'bg-wl-bg-surface' : 'bg-wl-bg-sunken',
                         selectedId === shipment.id && 'bg-wl-primary/10',
                       )}
                     >
