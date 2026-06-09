@@ -11,7 +11,7 @@ import {
   Target,
   BarChart3,
   Minus,
-  Map,
+  Map as MapIcon,
   List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -181,7 +181,7 @@ export default function DriverInsightsPage() {
                 className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', view === 'map' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
                 aria-label="Map view"
               >
-                <Map className="w-3.5 h-3.5" />
+                <MapIcon className="w-3.5 h-3.5" />
                 Map
               </button>
             </div>
@@ -243,7 +243,7 @@ export default function DriverInsightsPage() {
             </div>
             {mapDrivers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <Map className="w-10 h-10 text-white/10" />
+                <MapIcon className="w-10 h-10 text-white/10" />
                 <p className="text-sm text-white/30">No driver locations available</p>
                 <p className="text-xs text-white/15">Driver GPS data appears here once drivers are active</p>
               </div>
