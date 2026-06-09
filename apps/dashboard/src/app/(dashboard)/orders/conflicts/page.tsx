@@ -127,11 +127,11 @@ export default function ConflictsPage() {
 
       <div className="p-6 space-y-6">
         {/* Conflict Stats */}
-        <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
           <h2 className="text-lg font-bold text-white mb-4">Conflict Summary</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e]">
+            <div className="p-4 rounded-lg bg-wl-bg-root border border-wl-border-default">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Total Conflicts
               </p>
@@ -143,7 +143,7 @@ export default function ConflictsPage() {
               </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e]">
+            <div className="p-4 rounded-lg bg-wl-bg-root border border-wl-border-default">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Affected Platforms
               </p>
@@ -155,7 +155,7 @@ export default function ConflictsPage() {
               </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e]">
+            <div className="p-4 rounded-lg bg-wl-bg-root border border-wl-border-default">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Resolution Rate
               </p>
@@ -176,14 +176,14 @@ export default function ConflictsPage() {
 
         {/* Conflicts by Field */}
         {Object.keys(conflictsByField).length > 0 && (
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-bold text-white mb-4">Conflicts by Field</h2>
 
             <div className="space-y-2">
               {Object.entries(conflictsByField).map(([field, count]) => (
                 <div
                   key={field}
-                  className="flex items-center justify-between p-3 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-wl-bg-root border border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div>
@@ -223,7 +223,7 @@ export default function ConflictsPage() {
         )}
 
         {/* Filters */}
-        <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
           <h2 className="text-lg font-bold text-white mb-4">Filters</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -237,7 +237,7 @@ export default function ConflictsPage() {
                 onChange={(e) =>
                   setFilterPlatform(e.target.value as SyncPlatform | "all")
                 }
-                className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-gray-300 outline-none focus:border-blue-500"
               >
                 <option value="all">All Platforms</option>
                 {Object.entries(PLATFORMS).map(([key, { name }]) => (
@@ -256,7 +256,7 @@ export default function ConflictsPage() {
               <select
                 value={filterField}
                 onChange={(e) => setFilterField(e.target.value)}
-                className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-gray-300 outline-none focus:border-blue-500"
               >
                 <option value="all">All Fields</option>
                 {uniqueFields.map((field) => (
@@ -279,7 +279,7 @@ export default function ConflictsPage() {
                     e.target.value as "all" | "today" | "week" | "month"
                   )
                 }
-                className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-gray-300 outline-none focus:border-blue-500"
               >
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
@@ -292,7 +292,7 @@ export default function ConflictsPage() {
 
         {/* Conflicts List */}
         {filteredConflicts.length === 0 ? (
-          <Card className="p-12 text-center bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-12 text-center bg-wl-bg-surface border border-wl-border-default">
             <p className="text-gray-400 text-lg font-medium">
               {unresolved === 0
                 ? "✓ All conflicts resolved!"
@@ -300,7 +300,7 @@ export default function ConflictsPage() {
             </p>
           </Card>
         ) : (
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-bold text-white mb-4">
               Unresolved Conflicts ({filteredConflicts.length})
             </h2>
@@ -317,7 +317,7 @@ export default function ConflictsPage() {
                       "rounded-lg border transition-all",
                       isExpanded
                         ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
-                        : "border-[#1e1e2e] bg-[#0a0a0f] hover:border-blue-500"
+                        : "border-wl-border-default bg-wl-bg-root hover:border-blue-500"
                     )}
                   >
                     {/* Header */}
@@ -352,7 +352,7 @@ export default function ConflictsPage() {
                     {/* Expanded Content */}
                     {isExpanded && (
                       <>
-                        <div className="border-t border-[#1e1e2e] p-4">
+                        <div className="border-t border-wl-border-default p-4">
                           {/* Side-by-side Diff View */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             {/* External (Platform) Value */}
@@ -360,7 +360,7 @@ export default function ConflictsPage() {
                               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                                 {platform?.name} Value
                               </p>
-                              <div className="p-3 rounded-lg bg-[#0a0a0f] border border-emerald-500/30 font-mono text-sm text-gray-300 break-words max-h-32 overflow-y-auto">
+                              <div className="p-3 rounded-lg bg-wl-bg-root border border-emerald-500/30 font-mono text-sm text-gray-300 break-words max-h-32 overflow-y-auto">
                                 {conflict.externalValue || "(empty)"}
                               </div>
                               <p className="text-xs text-emerald-500 mt-2 font-medium">
@@ -373,7 +373,7 @@ export default function ConflictsPage() {
                               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                                 Witylogix Value
                               </p>
-                              <div className="p-3 rounded-lg bg-[#0a0a0f] border border-blue-500/30 font-mono text-sm text-gray-300 break-words max-h-32 overflow-y-auto">
+                              <div className="p-3 rounded-lg bg-wl-bg-root border border-blue-500/30 font-mono text-sm text-gray-300 break-words max-h-32 overflow-y-auto">
                                 {conflict.internalValue || "(empty)"}
                               </div>
                               <p className="text-xs text-blue-500 mt-2 font-medium">
@@ -390,13 +390,13 @@ export default function ConflictsPage() {
                             <input
                               type="text"
                               placeholder="Enter custom value (optional)"
-                              className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
+                              className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-gray-300 outline-none focus:border-blue-500"
                             />
                           </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="border-t border-[#1e1e2e] p-4 flex gap-2 flex-wrap">
+                        <div className="border-t border-wl-border-default p-4 flex gap-2 flex-wrap">
                           <Button
                             variant="primary"
                             size="sm"

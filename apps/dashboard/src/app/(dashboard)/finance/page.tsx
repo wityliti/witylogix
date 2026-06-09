@@ -51,8 +51,8 @@ export default function FinancePage() {
   const summary = summaryData?.summary;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+    <div className="flex flex-col min-h-screen bg-wl-bg-root">
+      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -73,25 +73,25 @@ export default function FinancePage() {
         <div className="space-y-6 max-w-7xl">
           {summary && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className={cn('p-4 bg-[#12121a] border border-[#1e1e2e]')}>
+              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-gray-400 uppercase">Total Billed</p>
                 <p className="text-2xl font-bold text-emerald-500 mt-2">
                   ${summary.totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-[#12121a] border border-[#1e1e2e]')}>
+              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-gray-400 uppercase">Collected</p>
                 <p className="text-2xl font-bold text-white mt-2">
                   ${summary.totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-[#12121a] border border-[#1e1e2e]')}>
+              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-gray-400 uppercase">Outstanding</p>
                 <p className="text-2xl font-bold text-red-500 mt-2">
                   ${summary.totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-[#12121a] border border-[#1e1e2e]')}>
+              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-gray-400 uppercase">Payment Rate</p>
                 <p className="text-2xl font-bold text-white mt-2">
                   {summary.paymentRate.toFixed(1)}%
@@ -101,7 +101,7 @@ export default function FinancePage() {
           )}
 
           {summary && (
-            <Card className={cn('p-6 bg-[#12121a] border border-[#1e1e2e]')}>
+            <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default')}>
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" />
                 Invoice Status Breakdown
@@ -130,7 +130,7 @@ export default function FinancePage() {
             </Card>
           )}
 
-          <Card className={cn('p-6 bg-[#12121a] border border-[#1e1e2e] overflow-hidden')}>
+          <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden')}>
             <h2 className="text-lg font-semibold text-white mb-4">Recent Payments</h2>
             {payments.length === 0 ? (
               <p className="text-gray-400 text-center py-8">No payments found</p>
@@ -138,7 +138,7 @@ export default function FinancePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#1e1e2e]">
+                    <tr className="border-b border-wl-border-default">
                       <th className="text-left px-4 py-3 font-semibold text-gray-400">Date</th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-400">Reference</th>
                       <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
@@ -148,7 +148,7 @@ export default function FinancePage() {
                   </thead>
                   <tbody>
                     {payments.slice(0, 10).map((payment) => (
-                      <tr key={payment.id} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e]">
+                      <tr key={payment.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
                         <td className="px-4 py-3 text-gray-300">
                           {new Date(payment.createdAt).toLocaleDateString()}
                         </td>

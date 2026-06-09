@@ -24,9 +24,9 @@ export default function DocsPortal() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <div className="flex h-screen flex-col bg-[#0a0a0f]">
+    <div className="flex h-screen flex-col bg-wl-bg-root">
       {/* Header */}
-      <div className="border-b border-[#1e1e2e] bg-[#0a0a0f] px-8 py-6">
+      <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
         <h1 className="text-3xl font-bold text-white">Integration Documentation</h1>
         <p className="mt-2 text-gray-400">
           Complete reference for all providers, webhooks, and integration guides
@@ -34,7 +34,7 @@ export default function DocsPortal() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[#1e1e2e] px-8">
+      <div className="border-b border-wl-border-default px-8">
         <div className="flex gap-8">
           {(['sdk', 'webhooks', 'ratelimits', 'guides', 'troubleshooting', 'changelog'] as const).map((tab) => (
             <button
@@ -88,7 +88,7 @@ function SDKReference({
       <div>
         <Label className="text-white">Select Provider</Label>
         <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-          <SelectTrigger className="mt-2 w-64 bg-[#12121a] text-white">
+          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -102,19 +102,19 @@ function SDKReference({
       </div>
 
       {sdk && (
-        <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+        <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
           <div className="mb-6 space-y-4">
             <div>
               <h3 className="text-lg font-semibold text-white">{selectedProvider} SDK</h3>
               <p className="mt-1 text-sm text-gray-400">Version: {sdk.version}</p>
             </div>
 
-            <div className="rounded bg-[#0a0a0f] p-4">
+            <div className="rounded bg-wl-bg-root p-4">
               <div className="text-sm text-gray-400">Base URL</div>
               <code className="mt-1 block text-sm font-mono text-blue-500">{sdk.baseUrl}</code>
             </div>
 
-            <div className="rounded bg-[#0a0a0f] p-4">
+            <div className="rounded bg-wl-bg-root p-4">
               <div className="text-sm text-gray-400">Authentication</div>
               <code className="mt-1 block text-sm font-mono text-blue-500">{sdk.authentication}</code>
             </div>
@@ -125,12 +125,12 @@ function SDKReference({
               placeholder="Search methods..."
               value={methodSearch}
               onChange={(e) => setMethodSearch(e.target.value)}
-              className="mb-4 bg-[#0a0a0f] text-white"
+              className="mb-4 bg-wl-bg-root text-white"
             />
 
             <div className="space-y-4">
               {displayedMethods.map((method) => (
-                <div key={method.name} className="rounded border border-[#1e1e2e] bg-[#0a0a0f] p-4">
+                <div key={method.name} className="rounded border border-wl-border-default bg-wl-bg-root p-4">
                   <h4 className="font-mono text-sm font-semibold text-blue-500">{method.name}</h4>
                   <p className="mt-2 text-sm text-gray-400">{method.description}</p>
 
@@ -150,7 +150,7 @@ function SDKReference({
 
                   <div className="mt-3">
                     <div className="text-xs font-semibold text-white">Example:</div>
-                    <code className="mt-2 block overflow-x-auto rounded bg-[#12121a] p-2 text-xs font-mono text-blue-500">
+                    <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-surface p-2 text-xs font-mono text-blue-500">
                       {method.example}
                     </code>
                   </div>
@@ -182,19 +182,19 @@ function WebhookCatalog({
           placeholder="e.g., payment.success, refund.created"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="mt-2 bg-[#12121a] text-white"
+          className="mt-2 bg-wl-bg-surface text-white"
         />
       </div>
 
       {searchQuery ? (
         <div className="space-y-4">
           {results.length === 0 ? (
-            <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+            <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
               <p className="text-gray-400">No events found</p>
             </Card>
           ) : (
             results.map(({ provider, event }, idx) => (
-              <Card key={idx} className="border border-[#1e1e2e] bg-[#12121a] p-6">
+              <Card key={idx} className="border border-wl-border-default bg-wl-bg-surface p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-mono text-sm font-semibold text-blue-500">{event.type}</h4>
@@ -205,7 +205,7 @@ function WebhookCatalog({
 
                 <div className="mt-4">
                   <div className="text-xs font-semibold text-white">Example Payload:</div>
-                  <code className="mt-2 block overflow-x-auto rounded bg-[#0a0a0f] p-3 text-xs font-mono text-blue-500">
+                  <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-root p-3 text-xs font-mono text-blue-500">
                     {event.example}
                   </code>
                 </div>
@@ -216,7 +216,7 @@ function WebhookCatalog({
       ) : (
         <div className="space-y-4">
           {catalogs.map((catalog) => (
-            <Card key={catalog.provider} className="border border-[#1e1e2e] bg-[#12121a] p-6">
+            <Card key={catalog.provider} className="border border-wl-border-default bg-wl-bg-surface p-6">
               <h3 className="text-lg font-semibold text-white">{catalog.provider}</h3>
               <div className="mt-4 space-y-2">
                 {catalog.events.slice(0, 5).map((event) => (
@@ -242,12 +242,12 @@ function RateLimitReference() {
   const { rateLimits } = useRateLimitReference();
 
   return (
-    <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
       <h2 className="mb-6 text-xl font-semibold text-white">Rate Limits by Provider</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#1e1e2e]">
+            <tr className="border-b border-wl-border-default">
               <th className="px-4 py-2 text-left text-white">Provider</th>
               <th className="px-4 py-2 text-left text-white">Per Second</th>
               <th className="px-4 py-2 text-left text-white">Per Minute</th>
@@ -257,7 +257,7 @@ function RateLimitReference() {
           </thead>
           <tbody>
             {rateLimits.map((limit) => (
-              <tr key={limit.provider} className="border-b border-[#1e1e2e]">
+              <tr key={limit.provider} className="border-b border-wl-border-default">
                 <td className="px-4 py-2 font-medium text-white">{limit.provider}</td>
                 <td className="px-4 py-2 text-gray-400">{limit.requestsPerSecond}</td>
                 <td className="px-4 py-2 text-gray-400">{limit.requestsPerMinute}</td>
@@ -284,7 +284,7 @@ function ConfigurationGuides({
       <div>
         <Label className="text-white">Select Provider</Label>
         <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-          <SelectTrigger className="mt-2 w-64 bg-[#12121a] text-white">
+          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -297,14 +297,14 @@ function ConfigurationGuides({
         </Select>
       </div>
 
-      <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+      <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
         <h2 className="mb-4 text-xl font-semibold text-white">
           Setup Guide: {selectedProvider}
         </h2>
 
         <div className="space-y-6">
           {[1, 2, 3, 4].map((step) => (
-            <div key={step} className="rounded border border-[#1e1e2e] bg-[#0a0a0f] p-4">
+            <div key={step} className="rounded border border-wl-border-default bg-wl-bg-root p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 font-semibold text-white">
                   {step}
@@ -324,7 +324,7 @@ function ConfigurationGuides({
               </p>
 
               {step === 1 && (
-                <div className="mt-3 rounded bg-[#12121a] p-3">
+                <div className="mt-3 rounded bg-wl-bg-surface p-3">
                   <code className="text-xs font-mono text-blue-500">
                     API_KEY=your_key_here
                   </code>
@@ -359,19 +359,19 @@ function TroubleshootingSection({
           placeholder="e.g., rate limit, authentication, timeout"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="mt-2 bg-[#12121a] text-white"
+          className="mt-2 bg-wl-bg-surface text-white"
         />
       </div>
 
       <div className="space-y-4">
         {playbooks.length === 0 && searchQuery && (
-          <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+          <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
             <p className="text-gray-400">No troubleshooting guides found</p>
           </Card>
         )}
 
         {playbooks.map((playbook) => (
-          <Card key={playbook.id} className="border border-[#1e1e2e] bg-[#12121a] p-6">
+          <Card key={playbook.id} className="border border-wl-border-default bg-wl-bg-surface p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-white">{playbook.title}</h3>
@@ -427,7 +427,7 @@ function APIChangelog({
       <div>
         <Label className="text-white">Select Provider</Label>
         <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-          <SelectTrigger className="mt-2 w-64 bg-[#12121a] text-white">
+          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -442,12 +442,12 @@ function APIChangelog({
 
       <div className="space-y-4">
         {changelog.length === 0 ? (
-          <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+          <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
             <p className="text-gray-400">No changelog available</p>
           </Card>
         ) : (
           changelog.map((entry) => (
-            <Card key={entry.version} className="border border-[#1e1e2e] bg-[#12121a] p-6">
+            <Card key={entry.version} className="border border-wl-border-default bg-wl-bg-surface p-6">
               <div className="flex items-center gap-3">
                 <Badge variant="primary">{entry.version}</Badge>
                 <span className="text-sm text-gray-400">

@@ -139,7 +139,7 @@ function DeliverySkeleton() {
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl bg-[#12121a] border border-[#1e1e2e] p-4 h-24 animate-pulse"
+          className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-4 h-24 animate-pulse"
         />
       ))}
     </div>
@@ -156,7 +156,7 @@ function ShipmentDetailPanel({
   onClose: () => void;
 }) {
   return (
-    <Card className="mt-4 bg-[#12121a] border border-[#1e1e2e]">
+    <Card className="mt-4 bg-wl-bg-surface border border-wl-border-default">
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -466,10 +466,10 @@ export default function DeliveryPage() {
                 }
                 className={cn(
                   'w-full text-left rounded-xl border transition-colors',
-                  'bg-[#12121a] hover:bg-[#16161f]',
+                  'bg-wl-bg-surface hover:bg-wl-bg-elevated',
                   selectedId === shipment.id
                     ? 'border-wl-primary/60'
-                    : 'border-[#1e1e2e] hover:border-[#2e2e3e]',
+                    : 'border-wl-border-default hover:border-wl-border-strong',
                 )}
                 aria-pressed={selectedId === shipment.id}
               >

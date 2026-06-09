@@ -165,7 +165,7 @@ export default function OrderImportPage() {
         {/* Sync Stats Dashboard */}
         {metrics && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Total Synced
               </p>
@@ -175,7 +175,7 @@ export default function OrderImportPage() {
               <p className="text-xs text-gray-400 mt-2">orders imported</p>
             </Card>
 
-            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Pending
               </p>
@@ -185,7 +185,7 @@ export default function OrderImportPage() {
               <p className="text-xs text-gray-400 mt-2">awaiting sync</p>
             </Card>
 
-            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Failed
               </p>
@@ -195,7 +195,7 @@ export default function OrderImportPage() {
               <p className="text-xs text-gray-400 mt-2">errors</p>
             </Card>
 
-            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Conflicts
               </p>
@@ -208,7 +208,7 @@ export default function OrderImportPage() {
         )}
 
         {/* Platform Connection Status */}
-        <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-lg font-bold text-white">Platform Status</h2>
@@ -229,10 +229,10 @@ export default function OrderImportPage() {
                   key={platform.id}
                   className={cn(
                     "relative p-4 rounded-lg border-2 transition-all cursor-pointer",
-                    "bg-[#0a0a0f] hover:border-blue-500",
+                    "bg-wl-bg-root hover:border-blue-500",
                     selectedPlatform === platform.id
                       ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
-                      : "border-[#1e1e2e]"
+                      : "border-wl-border-default"
                   )}
                   onClick={() => isConnected && handlePlatformSelect(platform.id)}
                 >

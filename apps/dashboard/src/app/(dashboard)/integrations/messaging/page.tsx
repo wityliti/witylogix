@@ -150,7 +150,7 @@ export default function MessagingPage() {
         actions={<Button variant="primary">Add Provider</Button>}
       />
 
-      <div className={cn('p-6 bg-wl-bg-root space-y-6')}>
+      <div className={cn("p-6 bg-wl-bg-root space-y-6")}>
         {/* Channel Tabs */}
         <div className={cn('flex gap-2')}>
           {(['SMS', 'PUSH', 'CHAT'] as const).map((channel) => (
@@ -160,8 +160,8 @@ export default function MessagingPage() {
               className={cn(
                 'px-4 py-2 rounded-md font-semibold text-sm transition',
                 selectedChannel === channel
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-wl-bg-elevated text-gray-400 hover:bg-wl-bg-surface',
+                  ? "bg-blue-500 text-white"
+                  : "bg-wl-bg-elevated text-gray-400 hover:bg-wl-bg-surface"
               )}
             >
               {channel}
@@ -221,14 +221,34 @@ export default function MessagingPage() {
               <CardHeader>
                 <CardTitle>Channel Configuration</CardTitle>
               </CardHeader>
-              <div className={cn('p-4 pt-0 space-y-4')}>
-                {loading ? (
-                  <Skeleton type="text" className="w-full h-10" />
-                ) : installedChannelProviders.length > 0 ? (
-                  <>
-                    <div>
-                      <label className={cn('text-xs font-semibold text-gray-400 block mb-2')}>
-                        Primary Provider for {selectedChannel}
+              <div className={cn("p-4 pt-0 space-y-4")}>
+                <div>
+                  <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
+                    Primary Provider for {selectedChannel}
+                  </label>
+                  <select
+                    className={cn(
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
+                    )}
+                    defaultValue={channelProviders[0]?.id || ""}
+                  >
+                    {channelProviders.map((provider) => (
+                      <option key={provider.id} value={provider.id}>
+                        {provider.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
+                    Fallback Providers
+                  </label>
+                  <div className={cn("space-y-2")}>
+                    {channelProviders.map((provider) => (
+                      <label key={provider.id} className={cn("flex items-center gap-2")}>
+                        <input type="checkbox" className={cn("w-4 h-4")} defaultChecked />
+                        <span className={cn("text-sm text-white")}>{provider.name}</span>
                       </label>
                       <select
                         className={cn('w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none')}
@@ -269,13 +289,20 @@ export default function MessagingPage() {
                   <Button variant="secondary" size="sm" onClick={fetchProviders}>Refresh</Button>
                 </div>
               </CardHeader>
-              <div className={cn('p-4 pt-0 space-y-3')}>
-                {loading
-                  ? Array.from({ length: 2 }).map((_, i) => <ProviderSkeleton key={i} />)
-                  : channelProviders.length === 0
-                    ? (
-                      <div className={cn('py-8 text-center text-gray-500 text-sm')}>
-                        No {selectedChannel} providers in the catalog.
+              <div className={cn("p-4 pt-0 space-y-3")}>
+                {channelProviders.map((provider) => (
+                  <div
+                    key={provider.id}
+                    className={cn(
+                      "p-4 rounded border border-wl-border-default hover:border-blue-400 transition"
+                    )}
+                  >
+                    <div className={cn("flex items-start justify-between mb-3")}>
+                      <div>
+                        <h4 className={cn("font-semibold text-white")}>{provider.name}</h4>
+                        <p className={cn("text-xs text-gray-300")}>
+                          Rate limit: {provider.rateLimit.toLocaleString()} messages/day
+                        </p>
                       </div>
                     )
                     : channelProviders.map((provider) => {
@@ -295,18 +322,9 @@ export default function MessagingPage() {
 
                           <p className={cn('text-xs text-gray-300 mb-3 line-clamp-2')}>{provider.description}</p>
 
-                          {provider.capabilities.length > 0 && (
-                            <div className={cn('flex flex-wrap gap-1 mb-3')}>
-                              {provider.capabilities.map((cap) => (
-                                <span
-                                  key={cap}
-                                  className={cn('text-[10px] px-1.5 py-0.5 rounded bg-wl-bg-elevated border border-wl-border-default text-gray-400')}
-                                >
-                                  {cap.replace(/_/g, ' ')}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                    <div className={cn("h-12 bg-wl-bg-surface rounded mb-3")}>
+                      <BarChart data={[45, 38, 52, 48, 55, 42, 50]} height={48} />
+                    </div>
 
                           <div className={cn('flex gap-2')}>
                             <Button variant="secondary" size="sm">
@@ -336,7 +354,9 @@ export default function MessagingPage() {
                   <select
                     value={testChannel}
                     onChange={(e) => setTestChannel(e.target.value as ChannelType)}
-                    className={cn('w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none')}
+                    className={cn(
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
+                    )}
                   >
                     {(['SMS', 'PUSH', 'CHAT'] as const).map((ch) => (
                       <option key={ch} value={ch}>{ch}</option>
@@ -357,7 +377,9 @@ export default function MessagingPage() {
                         : testChannel === 'PUSH' ? 'device_token_...'
                           : 'user_id_...'
                     }
-                    className={cn('w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none')}
+                    className={cn(
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
+                    )}
                   />
                 </div>
 
@@ -368,11 +390,40 @@ export default function MessagingPage() {
                   <textarea
                     placeholder="Test message content..."
                     rows={3}
-                    className={cn('w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none')}
+                    className={cn(
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
+                    )}
                   />
                 </div>
 
-                <Button variant="primary" className="w-full">Send Test</Button>
+                <Button variant="primary" className="w-full">
+                  Send Test
+                </Button>
+              </div>
+            </Card>
+
+            {/* Rate Limits */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Rate Limits</CardTitle>
+              </CardHeader>
+              <div className={cn("p-4 pt-0 space-y-3")}>
+                {channelProviders.map((provider) => (
+                  <div key={provider.id}>
+                    <p className={cn("text-xs font-semibold text-gray-400 mb-1")}>
+                      {provider.name}
+                    </p>
+                    <div className={cn("flex items-center gap-2")}>
+                      <div className={cn("flex-1 h-2 rounded bg-wl-bg-surface overflow-hidden")}>
+                        <div
+                          className={cn("h-full bg-blue-500")}
+                          style={{ width: "65%" }}
+                        />
+                      </div>
+                      <span className={cn("text-xs text-gray-300")}>650/1000</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -393,8 +444,8 @@ export default function MessagingPage() {
                     className={cn(
                       'p-3 rounded cursor-pointer transition',
                       selectedTemplate === template.id
-                        ? 'bg-blue-500/10 border border-blue-400'
-                        : 'bg-wl-bg-surface border border-wl-border-default hover:border-blue-400',
+                        ? "bg-blue-500/10 border border-blue-400"
+                        : "bg-wl-bg-surface border border-wl-border-default hover:border-blue-400"
                     )}
                   >
                     <p className={cn('font-semibold text-white text-sm')}>{template.name}</p>
@@ -411,8 +462,10 @@ export default function MessagingPage() {
                     <label className={cn('text-xs font-semibold text-gray-400 block mb-2')}>Template Name</label>
                     <input
                       type="text"
-                      value={selectedTemplateObj.name}
-                      className={cn('w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none')}
+                      value={selected.name}
+                      className={cn(
+                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
+                      )}
                       readOnly
                     />
                   </div>
@@ -421,7 +474,9 @@ export default function MessagingPage() {
                     <textarea
                       value={selectedTemplateObj.content}
                       rows={4}
-                      className={cn('w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none font-mono')}
+                      className={cn(
+                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none font-mono"
+                      )}
                       readOnly
                     />
                   </div>

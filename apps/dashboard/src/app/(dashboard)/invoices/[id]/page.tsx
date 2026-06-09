@@ -452,7 +452,7 @@ export default function InvoiceDetailPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
   if (!invoice) {
     return (
-      <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ChevronLeft className="w-4 h-4" />
@@ -467,7 +467,7 @@ export default function InvoiceDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+    <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -571,7 +571,7 @@ export default function InvoiceDetailPage() {
         {/* Left Column - Invoice Details */}
         <div className="col-span-2 flex flex-col gap-6">
           {/* Invoice Header */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <div className="grid grid-cols-2 gap-8">
               <div>
                 <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4">
@@ -625,7 +625,7 @@ export default function InvoiceDetailPage() {
           </Card>
 
           {/* Line Items */}
-          <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <Table
               columns={[
                 {
@@ -664,7 +664,7 @@ export default function InvoiceDetailPage() {
             />
 
             {/* Totals */}
-            <div className="border-t border-[#1e1e2e] p-6">
+            <div className="border-t border-wl-border-default p-6">
               <div className="flex justify-end max-w-xs ml-auto space-y-3">
                 <div className="w-full">
                   <div className="flex justify-between mb-2">
@@ -679,13 +679,13 @@ export default function InvoiceDetailPage() {
                       <span>-${invoice.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between mb-2 border-t border-[#1e1e2e] pt-2">
+                  <div className="flex justify-between mb-2 border-t border-wl-border-default pt-2">
                     <span className="text-gray-400">Tax</span>
                     <span className="text-white">
                       ${invoice.taxAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold border-t-2 border-[#1e1e2e] pt-3 mt-3">
+                  <div className="flex justify-between text-lg font-bold border-t-2 border-wl-border-default pt-3 mt-3">
                     <span className="text-white">Total</span>
                     <span className="text-blue-500">
                       ${invoice.total.toFixed(2)}
@@ -698,7 +698,7 @@ export default function InvoiceDetailPage() {
 
           {/* Notes & Terms */}
           {(invoice.notes || invoice.terms) && (
-            <Card className={cn("p-6 space-y-4 bg-[#12121a] border border-[#1e1e2e]")}>
+            <Card className={cn("p-6 space-y-4 bg-wl-bg-surface border border-wl-border-default")}>
               {invoice.notes && (
                 <div>
                   <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">
@@ -726,7 +726,7 @@ export default function InvoiceDetailPage() {
         {/* Right Column - Summary & Activity */}
         <div className="flex flex-col gap-6">
           {/* Payment Summary */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h3 className="font-semibold text-white mb-4">
               Payment Summary
             </h3>
@@ -739,7 +739,7 @@ export default function InvoiceDetailPage() {
                   ${invoice.total.toFixed(2)}
                 </p>
               </div>
-              <div className="border-t border-[#1e1e2e] pt-3">
+              <div className="border-t border-wl-border-default pt-3">
                 <p className="text-xs uppercase text-gray-400">
                   Amount Paid
                 </p>
@@ -747,7 +747,7 @@ export default function InvoiceDetailPage() {
                   ${amountPaid.toFixed(2)}
                 </p>
               </div>
-              <div className="border-t border-[#1e1e2e] pt-3">
+              <div className="border-t border-wl-border-default pt-3">
                 <p className="text-xs uppercase text-gray-400">
                   Remaining Balance
                 </p>
@@ -767,7 +767,7 @@ export default function InvoiceDetailPage() {
 
           {/* Payments */}
           {invoice.payments.length > 0 && (
-            <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
               <h3 className="font-semibold text-white mb-4">
                 Payment History
               </h3>
@@ -775,7 +775,7 @@ export default function InvoiceDetailPage() {
                 {invoice.payments.map((payment) => (
                   <div
                     key={payment.id}
-                    className="border-b border-[#1e1e2e] pb-3 last:border-b-0 last:pb-0"
+                    className="border-b border-wl-border-default pb-3 last:border-b-0 last:pb-0"
                   >
                     <div className="flex justify-between mb-1">
                       <p className="text-sm font-medium text-white">
@@ -801,7 +801,7 @@ export default function InvoiceDetailPage() {
 
           {/* Activity Log */}
           {invoice.activity.length > 0 && (
-            <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
               <h3 className="font-semibold text-white mb-4">
                 Activity Log
               </h3>
@@ -809,7 +809,7 @@ export default function InvoiceDetailPage() {
                 {invoice.activity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex gap-3 pb-3 last:pb-0 border-b border-[#1e1e2e] last:border-b-0"
+                    className="flex gap-3 pb-3 last:pb-0 border-b border-wl-border-default last:border-b-0"
                   >
                     <div className="text-gray-400 mt-1">
                       {getActivityIcon(activity.type)}
@@ -830,7 +830,7 @@ export default function InvoiceDetailPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className={cn("max-w-md p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("max-w-md p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h2 className="text-lg font-bold text-white mb-2">
               Void Invoice?
             </h2>

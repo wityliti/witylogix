@@ -159,7 +159,7 @@ export default function ComparePage() {
                               "w-3 h-3",
                               i < Math.floor(courier.rating)
                                 ? "fill-amber-400 text-amber-400"
-                                : "text-[#1e1e2e]"
+                                : "text-wl-text-tertiary"
                             )}
                           />
                         ))}
@@ -174,7 +174,7 @@ export default function ComparePage() {
                         <CheckCircle className="w-4 h-4 text-black" />
                       </div>
                     ) : (
-                      <div className="w-6 h-6 rounded-full border-2 border-[#1e1e2e] flex-shrink-0" />
+                      <div className="w-6 h-6 rounded-full border-2 border-wl-border-default flex-shrink-0" />
                     )}
                   </div>
 
@@ -215,7 +215,7 @@ export default function ComparePage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                       Feature
                     </th>
@@ -290,7 +290,7 @@ export default function ComparePage() {
                                   "w-3 h-3",
                                   i < Math.floor(courier.rating)
                                     ? "fill-amber-400 text-amber-400"
-                                    : "text-[#1e1e2e]"
+                                    : "text-wl-text-tertiary"
                                 )}
                               />
                             ))}

@@ -360,7 +360,7 @@ export default function MarketplacePage() {
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               className={cn(
-                "w-full pl-10 pr-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg",
+                "w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg",
                 "text-white text-sm",
                 "focus:border-blue-500 outline-none",
                 "transition-all duration-fast"
@@ -374,7 +374,7 @@ export default function MarketplacePage() {
           {/* Filters & Controls */}
           <div className={cn("flex flex-wrap gap-3 items-center")}>
             {/* View Toggle */}
-            <div className={cn("flex gap-1 bg-[#1a1a2e] rounded-md p-1")}>
+            <div className={cn("flex gap-1 bg-wl-bg-elevated rounded-md p-1")}>
               {(["grid", "list"] as const).map((v) => (
                 <button
                   key={v}
@@ -400,7 +400,7 @@ export default function MarketplacePage() {
             <div className={cn("relative")}>
               <button
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg",
+                  "flex items-center gap-2 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg",
                   "text-sm text-white hover:border-blue-500 transition-all"
                 )}
               >
@@ -410,7 +410,7 @@ export default function MarketplacePage() {
               {/* Dropdown Menu */}
               <div
                 className={cn(
-                  "absolute top-full mt-2 left-0 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg",
+                  "absolute top-full mt-2 left-0 z-10 bg-wl-bg-elevated border border-wl-border-default rounded-lg",
                   "shadow-lg overflow-hidden min-w-max"
                 )}
               >
@@ -421,7 +421,7 @@ export default function MarketplacePage() {
                       onClick={() => setSortBy(opt)}
                       className={cn(
                         "w-full px-4 py-2 text-left text-sm",
-                        "hover:bg-[#1a1a2e]",
+                        "hover:bg-wl-bg-elevated",
                         sortBy === opt
                           ? "bg-blue-500/20 text-blue-500"
                           : "text-white"
@@ -493,7 +493,7 @@ export default function MarketplacePage() {
                     <label
                       key={cat.key}
                       className={cn(
-                        "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-[#1a1a2e] transition-all"
+                        "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-elevated transition-all"
                       )}
                     >
                       <input
@@ -501,7 +501,7 @@ export default function MarketplacePage() {
                         checked={selectedCategories.includes(cat.key)}
                         onChange={() => toggleCategory(cat.key)}
                         className={cn(
-                          "w-4 h-4 rounded border-[#1e1e2e]",
+                          "w-4 h-4 rounded border-wl-border-default",
                           "checked:bg-blue-500 checked:border-blue-500"
                         )}
                       />
@@ -589,7 +589,7 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
         <div className={cn("flex-1 flex items-center gap-4 min-w-0")}>
           <div
             className={cn(
-              "w-12 h-12 rounded-lg bg-[#1a1a2e] flex items-center justify-center flex-shrink-0"
+              "w-12 h-12 rounded-lg bg-wl-bg-elevated flex items-center justify-center flex-shrink-0"
             )}
           >
             <span className="text-xl">📦</span>
@@ -634,7 +634,7 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
         hover
       >
         {/* Logo Area */}
-        <div className={cn("w-full h-24 bg-[#1a1a2e] rounded-lg mb-3 flex items-center justify-center")}>
+        <div className={cn("w-full h-24 bg-wl-bg-elevated rounded-lg mb-3 flex items-center justify-center")}>
           <span className="text-3xl">📦</span>
         </div>
 

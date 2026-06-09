@@ -76,10 +76,10 @@ export default function DVIRPage() {
   const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] space-y-6 p-6">
+    <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+        <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-gray-400 uppercase">Total Defects</span>
             <Wrench className="w-4 h-4 text-blue-500" />
@@ -88,7 +88,7 @@ export default function DVIRPage() {
           <p className="text-xs text-gray-400 mt-1">{openDefectsCount} open</p>
         </div>
 
-        <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+        <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-gray-400 uppercase">Critical Issues</span>
             <AlertTriangle className="w-4 h-4 text-red-500" />
@@ -97,7 +97,7 @@ export default function DVIRPage() {
           <p className="text-xs text-gray-400 mt-1">Require immediate action</p>
         </div>
 
-        <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+        <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-gray-400 uppercase">Repaired</span>
             <CheckCircle className="w-4 h-4 text-emerald-500" />
@@ -108,7 +108,7 @@ export default function DVIRPage() {
           <p className="text-xs text-gray-400 mt-1">Awaiting certification</p>
         </div>
 
-        <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+        <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-gray-400 uppercase">Certified</span>
             <CheckCircle className="w-4 h-4 text-blue-500" />
@@ -123,7 +123,7 @@ export default function DVIRPage() {
       {!showForm ? (
         <>
           {/* Active Defects */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -143,13 +143,13 @@ export default function DVIRPage() {
                   placeholder="Search defects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 text-xs flex-1 bg-[#1a1a2e] border-[#1e1e2e] text-white placeholder-gray-500"
+                  className="h-9 text-xs flex-1 bg-wl-bg-elevated border-wl-border-default text-white placeholder-gray-500"
                 />
 
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as DefectStatus | "ALL")}
-                  className="h-9 px-3 text-xs rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white"
+                  className="h-9 px-3 text-xs rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="REPORTED">Reported</option>
@@ -174,7 +174,7 @@ export default function DVIRPage() {
                   {filteredDefects.map((defect) => (
                     <div
                       key={defect.id}
-                      className="p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] hover:border-blue-500/30 transition-all"
+                      className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default hover:border-blue-500/30 transition-all"
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
@@ -204,7 +204,7 @@ export default function DVIRPage() {
                           onChange={(e) =>
                             updateDefectStatus({ id: defect.id, status: e.target.value as DefectStatus })
                           }
-                          className="h-8 px-2 text-xs rounded bg-[#1a1a2e] border border-[#1e1e2e] text-white"
+                          className="h-8 px-2 text-xs rounded bg-wl-bg-elevated border border-wl-border-default text-white"
                         >
                           <option value="REPORTED">Reported</option>
                           <option value="ACKNOWLEDGED">Acknowledged</option>
@@ -214,7 +214,7 @@ export default function DVIRPage() {
                       </div>
 
                       {defect.mechanicApproval && (
-                        <div className="text-xs text-emerald-500 pt-2 border-t border-[#1e1e2e]">
+                        <div className="text-xs text-emerald-500 pt-2 border-t border-wl-border-default">
                           ✓ Certified by {defect.mechanicApproval.mechanicName}
                         </div>
                       )}
@@ -226,7 +226,7 @@ export default function DVIRPage() {
           </Card>
 
           {/* Inspection History */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -239,7 +239,7 @@ export default function DVIRPage() {
               <div className="mt-4 relative">
                 <button
                   onClick={() => setShowVehicleSearch(!showVehicleSearch)}
-                  className="w-full h-9 px-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-left flex items-center justify-between hover:bg-[#0a0a0f] transition-colors text-sm"
+                  className="w-full h-9 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors text-sm"
                 >
                   <span>
                     {selectedVehicle ? `Vehicle: ${selectedVehicle}` : "All vehicles"}
@@ -247,12 +247,12 @@ export default function DVIRPage() {
                 </button>
 
                 {showVehicleSearch && (
-                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     <button
                       onClick={() => { setSelectedVehicle(""); setShowVehicleSearch(false); }}
                       className={cn(
-                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e]",
-                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-[#0a0a0f]"
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default",
+                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-wl-bg-root"
                       )}
                     >
                       All vehicles
@@ -265,10 +265,10 @@ export default function DVIRPage() {
                           setShowVehicleSearch(false);
                         }}
                         className={cn(
-                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
+                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                           selectedVehicle === vehicle.vehicleNumber
                             ? "bg-blue-500/10 text-blue-400"
-                            : "text-gray-400 hover:bg-[#0a0a0f]"
+                            : "text-gray-400 hover:bg-wl-bg-root"
                         )}
                       >
                         {vehicle.vehicleNumber}
@@ -299,7 +299,7 @@ export default function DVIRPage() {
                   {filteredHistory.map((inspection: InspectionHistory) => (
                     <div
                       key={inspection.id}
-                      className="p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] hover:border-blue-500/30 transition-all"
+                      className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default hover:border-blue-500/30 transition-all"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">

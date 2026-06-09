@@ -27,13 +27,13 @@ export function WebhookConfig({ platforms }: WebhookConfigProps) {
         Webhook Configuration
       </h2>
 
-      <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
           <div className="space-y-4">
             {platforms.filter((p) => p.webhooks.length > 0).map((platform) => (
               <div
                 key={platform.id}
-                className="border border-[#1e1e2e] rounded-lg p-4"
+                className="border border-wl-border-default rounded-lg p-4"
               >
                 <h3 className="font-semibold text-white mb-3">
                   {platform.name} Webhooks
@@ -42,7 +42,7 @@ export function WebhookConfig({ platforms }: WebhookConfigProps) {
                   {platform.webhooks.map((hook) => (
                     <div
                       key={hook.id}
-                      className="flex items-center justify-between p-3 bg-[#12121a] rounded"
+                      className="flex items-center justify-between p-3 bg-wl-bg-surface rounded"
                     >
                       <div>
                         <div className="text-sm font-medium text-white">

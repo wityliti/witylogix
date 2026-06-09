@@ -100,7 +100,7 @@ export default function WorkflowExecutionsPage() {
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
@@ -137,7 +137,7 @@ export default function WorkflowExecutionsPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-5 border-b border-[#1e1e2e] pb-4">
+        <div className="flex gap-2 mb-5 border-b border-wl-border-default pb-4">
           {(["all", "running", "completed", "failed", "compensating"] as const).map((tab) => {
             const count =
               tab === "all"
@@ -170,21 +170,17 @@ export default function WorkflowExecutionsPage() {
             placeholder="Search workflow name or execution ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md px-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10"
+            className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10"
           />
         </div>
 
         {/* Executions Table */}
-        {loading && executions.length === 0 ? (
-          <LoadingSkeleton />
-        ) : error && executions.length === 0 ? (
-          <ErrorState message={error.message} onRetry={refetch} />
-        ) : filtered.length > 0 ? (
-          <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
+        {filtered.length > 0 ? (
+          <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+                  <tr className="border-b border-wl-border-default bg-wl-bg-root">
                     <th className="p-3 px-4 text-left font-semibold text-gray-400">
                       Workflow Name
                     </th>
@@ -205,8 +201,8 @@ export default function WorkflowExecutionsPage() {
                 <tbody>
                   {filtered.map((execution, idx) => (
                     <tr
-                      key={execution.executionId}
-                      className="border-b border-[#1e1e2e] transition-colors cursor-pointer hover:bg-[#1a1a2e]"
+                      key={execution.id}
+                      className="border-b border-wl-border-default transition-colors cursor-pointer hover:bg-wl-bg-elevated"
                       style={{
                         background: idx % 2 === 0 ? "transparent" : "#12121a",
                       }}
@@ -242,7 +238,7 @@ export default function WorkflowExecutionsPage() {
             </div>
           </Card>
         ) : (
-          <Card className="text-center p-8 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="text-center p-8 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-gray-400">
               <Activity size={40} className="mx-auto mb-3 opacity-50" />
               <h3 className="text-base font-semibold m-0 mb-2 text-white">

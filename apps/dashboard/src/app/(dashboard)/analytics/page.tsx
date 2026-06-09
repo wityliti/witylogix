@@ -56,9 +56,14 @@ function MetricTile({
   }
   const isUp = (trend ?? 0) >= 0;
   return (
-    <div className="relative overflow-hidden rounded-xl bg-[#111118] border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all">
-      <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-80 transition-opacity"
-        style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
+    <div
+      className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-80 transition-opacity"
+        style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }}
+      />
       <div className="flex items-start justify-between mb-3">
         <span className="text-[13px] font-medium text-white/40 tracking-wide">{label}</span>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -88,7 +93,7 @@ function MetricTile({
 
 function MetricSkeleton() {
   return (
-    <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 animate-pulse">
+    <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 animate-pulse">
       <div className="flex items-start justify-between mb-3">
         <div className="h-3 w-24 rounded bg-white/[0.06]" />
         <div className="w-8 h-8 rounded-lg bg-white/[0.04]" />
@@ -109,10 +114,13 @@ function MiniBarChart({
       {data.map((d, i) => {
         const h = maxVal > 0 ? (d.orders / maxVal) * 100 : 0;
         return (
-          <div key={i} className="flex-1 rounded-t-sm hover:opacity-80 group/bar relative"
-            style={{ height: `${Math.max(h, 4)}%`, backgroundColor: color, opacity: 0.7 }}>
-            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#1a1a28] text-[10px] text-white/60 px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 whitespace-nowrap pointer-events-none">
-              {d.orders}
+          <div
+            key={i}
+            className="flex-1 rounded-t-sm transition-all hover:opacity-80 group/bar relative"
+            style={{ height: `${Math.max(h, 4)}%`, backgroundColor: color, opacity: 0.7 }}
+          >
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-wl-bg-elevated text-[10px] text-white/60 px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {val}
             </div>
           </div>
         );
@@ -239,7 +247,7 @@ export default function AnalyticsPage() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 h-28 flex items-center justify-center">
+              <div key={i} className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 h-28 flex items-center justify-center">
                 <span className="text-xs text-white/15">No data</span>
               </div>
             ))}
@@ -248,7 +256,7 @@ export default function AnalyticsPage() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white/60 tracking-wide">Hourly Activity</h3>
               <div className="flex items-center gap-4 text-[11px] text-white/30">
@@ -270,7 +278,7 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white/60 tracking-wide">Weekly Trend</h3>
               <div className="flex items-center gap-4 text-[11px] text-white/30">
@@ -291,7 +299,7 @@ export default function AnalyticsPage() {
         {/* Bottom row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Top Zones */}
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Top Delivery Zones</h3>
             {loading ? (
               <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-8 rounded-lg bg-white/[0.03] animate-pulse" />)}</div>
@@ -336,7 +344,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Driver Leaderboard */}
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Driver Leaderboard</h3>
             {loading ? (
               <div className="space-y-2.5">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-10 rounded-lg bg-white/[0.03] animate-pulse" />)}</div>

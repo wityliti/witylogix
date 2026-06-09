@@ -25,7 +25,7 @@ const ShipmentsMapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-full bg-[#12121a] rounded-xl border border-[#1e1e2e] animate-pulse flex items-center justify-center">
+      <div className="h-full bg-wl-bg-surface rounded-xl border border-wl-border-default animate-pulse flex items-center justify-center">
         <p className="text-sm text-gray-500">Loading map…</p>
       </div>
     ),
@@ -76,7 +76,7 @@ function deliveryMethodIcon(method: DeliveryMethod): string {
 
 function ShipmentsTableSkeleton() {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden p-0">
+    <Card className="bg-wl-bg-surface border-wl-border-default overflow-hidden p-0">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
@@ -94,7 +94,7 @@ function ShipmentsTableSkeleton() {
               ].map((h) => (
                 <th
                   key={h}
-                  className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-[#1e1e2e] bg-[#1a1a2e] sticky top-0 whitespace-nowrap"
+                  className="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-wl-border-default bg-wl-bg-elevated sticky top-0 whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -103,7 +103,7 @@ function ShipmentsTableSkeleton() {
           </thead>
           <tbody>
             {Array.from({ length: 8 }).map((_, i) => (
-              <tr key={i} className="border-b border-[#1e1e2e]">
+              <tr key={i} className="border-b border-wl-border-default">
                 {Array.from({ length: 9 }).map((_, j) => (
                   <td key={j} className="p-4">
                     <Skeleton variant="text" className="h-4" />
@@ -158,7 +158,7 @@ interface MapShipmentCardProps {
 
 function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-2">
           <div>
@@ -328,7 +328,7 @@ export default function ShipmentsPage() {
         actions={
           <div className="flex items-center gap-3">
             {/* List / Map toggle */}
-            <div className="flex items-center rounded-lg border border-[#1e1e2e] overflow-hidden bg-[#12121a]">
+            <div className="flex items-center rounded-lg border border-wl-border-default overflow-hidden bg-wl-bg-surface">
               <button
                 onClick={() => setViewMode("list")}
                 className={cn(
@@ -371,7 +371,7 @@ export default function ShipmentsPage() {
         }
       />
 
-      <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-[calc(100vh-var(--header-height))]">
+      <div className="p-6 space-y-6 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))]">
         {/* KPI Stats Row */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
           <StatCard
@@ -415,7 +415,7 @@ export default function ShipmentsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
-                "w-full p-2 px-4 bg-[#12121a] border border-[#1e1e2e] rounded-md",
+                "w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md",
                 "text-white text-sm font-sans outline-none",
                 "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
                 "placeholder:text-gray-500 transition-colors",
@@ -437,7 +437,7 @@ export default function ShipmentsPage() {
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all",
                     statusFilter === f.key
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-transparent text-gray-400 border-[#1e1e2e] hover:border-[#2a2a3e]",
+                      : "bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-strong",
                   )}
                 >
                   {f.label}
@@ -471,7 +471,7 @@ export default function ShipmentsPage() {
                   "flex items-center gap-1 px-3 py-1 rounded border text-xs font-semibold cursor-pointer transition-all",
                   methodFilter === m.key
                     ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-transparent text-gray-400 border-[#1e1e2e] hover:border-[#2a2a3e]",
+                    : "bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-strong",
                 )}
               >
                 <span>{iconMap[m.key]}</span>
@@ -489,11 +489,11 @@ export default function ShipmentsPage() {
         {!error && viewMode === "map" && (
           <>
             {loading ? (
-              <div className="h-[560px] bg-[#12121a] rounded-xl border border-[#1e1e2e] animate-pulse flex items-center justify-center">
+              <div className="h-[560px] bg-wl-bg-surface rounded-xl border border-wl-border-default animate-pulse flex items-center justify-center">
                 <p className="text-sm text-gray-500">Loading map…</p>
               </div>
             ) : mappableShipments.length === 0 ? (
-              <Card className="bg-[#12121a] border-[#1e1e2e]">
+              <Card className="bg-wl-bg-surface border-wl-border-default">
                 <CardContent className="h-[480px] flex items-center justify-center">
                   <div className="text-center space-y-2">
                     <div className="text-3xl">🗺️</div>
@@ -558,7 +558,7 @@ export default function ShipmentsPage() {
             {loading ? (
               <ShipmentsTableSkeleton />
             ) : (
-              <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden p-0">
+              <Card className="bg-wl-bg-surface border-wl-border-default overflow-hidden p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead>
@@ -578,8 +578,8 @@ export default function ShipmentsPage() {
                             key={h}
                             className={cn(
                               "text-left p-4 text-xs font-semibold text-gray-400",
-                              "uppercase tracking-wider border-b border-[#1e1e2e]",
-                              "bg-[#1a1a2e] sticky top-0 whitespace-nowrap",
+                              "uppercase tracking-wider border-b border-wl-border-default",
+                              "bg-wl-bg-elevated sticky top-0 whitespace-nowrap",
                             )}
                           >
                             {h}
@@ -594,7 +594,7 @@ export default function ShipmentsPage() {
                           onClick={() =>
                             router.push(`/shipments/${shipment.id}`)
                           }
-                          className="border-b border-[#1e1e2e] cursor-pointer transition-all hover:bg-[#1a1a2e]"
+                          className="border-b border-wl-border-default cursor-pointer transition-all hover:bg-wl-bg-elevated"
                         >
                           {/* Tracking Number */}
                           <td className="p-4 font-mono font-semibold text-blue-400 text-xs whitespace-nowrap">

@@ -240,27 +240,13 @@ export default function CampaignsPage() {
   }
 
   return (
-    <>
-      <Header
-        title="Campaigns"
-        subtitle={
-          statsData
-            ? `${statsData.total} total · ${summaryStats.active} active`
-            : 'Marketing campaign management'
-        }
-        actions={
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={refetch}>
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </Button>
-            <Button variant="primary" size="md">
-              <Plus className="w-4 h-4" />
-              New Campaign
-            </Button>
-          </div>
-        }
-      />
+    <div className="min-h-screen bg-wl-bg-root p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Campaigns</h1>
+          <p className="text-gray-400">Create and manage marketing campaigns</p>
+        </div>
 
       {/* Stats row */}
       {statsLoading ? (
@@ -298,62 +284,133 @@ export default function CampaignsPage() {
         </div>
       )}
 
-      {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value as CampaignType | 'ALL')}
-          className="px-3 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-wl-text-primary text-sm"
-        >
-          <option value="ALL">All Types</option>
-          <option value="EMAIL">Email</option>
-          <option value="SMS">SMS</option>
-          <option value="WHATSAPP">WhatsApp</option>
-          <option value="PUSH">Push</option>
-          <option value="MULTI_CHANNEL">Multi-channel</option>
-        </select>
+        {/* Controls Card */}
+        <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white">Filters & Actions</CardTitle>
+              <Button variant="primary" onClick={() => setIsCreateOpen(true)}>
+                <Plus size={16} className="mr-2" />
+                New Campaign
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase">Campaign Type</label>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value as CampaignType | "ALL")}
+                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white text-sm"
+                >
+                  <option value="ALL">All Types</option>
+                  <option value="EMAIL">Email</option>
+                  <option value="SMS">SMS</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="PUSH">Push</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase">Status</label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as CampaignStatus | "ALL")}
+                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white text-sm"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="SCHEDULED">Scheduled</option>
+                  <option value="SENDING">Sending</option>
+                  <option value="COMPLETED">Completed</option>
+                </select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as CampaignStatus | 'ALL')}
-          className="px-3 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-wl-text-primary text-sm"
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="DRAFT">Draft</option>
-          <option value="SCHEDULED">Scheduled</option>
-          <option value="SENDING">Sending</option>
-          <option value="PAUSED">Paused</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="FAILED">Failed</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
-
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={() => setView('grid')}
-            className={cn(
-              'p-2 rounded-lg text-sm transition-colors',
-              view === 'grid'
-                ? 'bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30'
-                : 'bg-white/[0.04] text-wl-text-secondary hover:bg-white/[0.08] border border-transparent'
-            )}
-            title="List view"
-          >
-            <List className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setView('map')}
-            className={cn(
-              'p-2 rounded-lg text-sm transition-colors',
-              view === 'map'
-                ? 'bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30'
-                : 'bg-white/[0.04] text-wl-text-secondary hover:bg-white/[0.08] border border-transparent'
-            )}
-            title="Map view"
-          >
-            <Map className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Campaigns Table */}
+        <Card className="bg-wl-bg-surface border-wl-border-default">
+          <CardHeader>
+            <CardTitle className="text-white">Campaigns ({filteredCampaigns.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-wl-border-default">
+                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">Campaign Name</th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">Type</th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Recipients</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Sent</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Opened</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Clicked</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Created</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCampaigns.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="text-center py-8 text-gray-400">
+                        No campaigns found. Create your first campaign to get started.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCampaigns.map((campaign) => (
+                      <tr
+                        key={campaign.id}
+                        className={cn(
+                          "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors",
+                          selectedId === campaign.id && "bg-blue-500/10"
+                        )}
+                        onClick={() => setSelectedId(campaign.id)}
+                      >
+                        <td className="py-3 px-4 text-white font-medium">{campaign.name}</td>
+                        <td className="py-3 px-4">
+                          <Badge variant={typeVariant(campaign.type)} className="inline-flex items-center gap-1">
+                            {typeIcon(campaign.type)}
+                            {campaign.type}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant={statusVariant(campaign.status)}>{campaign.status}</Badge>
+                        </td>
+                        <td className="py-3 px-4 text-right text-gray-300">{formatNumber(campaign.recipients)}</td>
+                        <td className="py-3 px-4 text-right text-gray-300">{formatNumber(campaign.sent)}</td>
+                        <td className="py-3 px-4 text-right text-gray-300">
+                          {formatNumber(campaign.opened)} ({campaign.sent > 0 ? ((campaign.opened / campaign.sent) * 100).toFixed(0) : "0"}%)
+                        </td>
+                        <td className="py-3 px-4 text-right text-gray-300">
+                          {formatNumber(campaign.clicked)} ({campaign.sent > 0 ? ((campaign.clicked / campaign.sent) * 100).toFixed(0) : "0"}%)
+                        </td>
+                        <td className="py-3 px-4 text-right text-gray-400 text-xs">{formatRelativeTime(campaign.createdAt)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="ghost" size="sm" className="p-1">
+                              <Copy size={14} className="text-gray-400" />
+                            </Button>
+                            {campaign.status === "SENDING" && (
+                              <Button variant="ghost" size="sm" className="p-1">
+                                <Pause size={14} className="text-gray-400" />
+                              </Button>
+                            )}
+                            {campaign.status === "DRAFT" && (
+                              <Button variant="ghost" size="sm" className="p-1">
+                                <Trash2 size={14} className="text-red-500" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Map view */}

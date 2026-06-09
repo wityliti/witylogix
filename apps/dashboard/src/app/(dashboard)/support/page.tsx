@@ -150,7 +150,7 @@ export default function SupportPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
+    <div className="min-h-screen bg-wl-bg-root p-6">
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -163,7 +163,7 @@ export default function SupportPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* FAQ Section */}
           <div className="flex flex-col gap-4">
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Frequently Asked Questions</CardTitle>
               </CardHeader>
@@ -179,7 +179,7 @@ export default function SupportPage() {
                           onClick={() =>
                             setExpandedFaq(expandedFaq === item.id ? null : item.id)
                           }
-                          className="w-full flex items-center justify-between p-3 bg-[#1a1a2e] border border-[#1e1e2e] rounded hover:bg-[#1a1a2e]/80 cursor-pointer text-white text-sm font-medium transition-all"
+                          className="w-full flex items-center justify-between p-3 bg-wl-bg-elevated border border-wl-border-default rounded hover:bg-wl-bg-elevated/80 cursor-pointer text-white text-sm font-medium transition-all"
                         >
                           <span className="text-left">{item.q}</span>
                           {expandedFaq === item.id ? (
@@ -189,7 +189,7 @@ export default function SupportPage() {
                           )}
                         </button>
                         {expandedFaq === item.id && (
-                          <div className="bg-[#1a1a2e] border-l-4 border-l-blue-500 border-r border-r-[#1e1e2e] border-b border-b-[#1e1e2e] rounded-bl rounded-br p-3 -mt-0.5 text-gray-400 text-sm leading-relaxed">
+                          <div className="bg-wl-bg-elevated border-l-4 border-l-blue-500 border-r border-r-[#1e1e2e] border-b border-b-[#1e1e2e] rounded-bl rounded-br p-3 -mt-0.5 text-gray-400 text-sm leading-relaxed">
                             {item.a}
                           </div>
                         )}
@@ -203,7 +203,7 @@ export default function SupportPage() {
 
           {/* Contact Form */}
           <div className="flex flex-col gap-4">
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Contact Support</CardTitle>
                 <CardDescription className="text-gray-400">
@@ -220,7 +220,7 @@ export default function SupportPage() {
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
                       minLength={5}
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                   </div>
 
@@ -234,7 +234,7 @@ export default function SupportPage() {
                           priority: e.target.value as typeof formData.priority,
                         })
                       }
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     >
                       <option value="LOW">Low</option>
                       <option value="MEDIUM">Medium</option>
@@ -252,7 +252,7 @@ export default function SupportPage() {
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       required
                       minLength={10}
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm min-h-[100px] resize-vertical placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm min-h-[100px] resize-vertical placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                   </div>
 
@@ -272,7 +272,7 @@ export default function SupportPage() {
         </div>
 
         {/* Support Tickets */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <MessageSquare size={20} />
@@ -316,7 +316,7 @@ export default function SupportPage() {
                       <tr key={i} className="border-b border-b-[#1e1e2e]">
                         <td
                           colSpan={6}
-                          className="px-3 py-4 h-12 bg-[#1a1a2e]/30 animate-pulse"
+                          className="px-3 py-4 h-12 bg-wl-bg-elevated/30 animate-pulse"
                         />
                       </tr>
                     ))
@@ -331,7 +331,7 @@ export default function SupportPage() {
                       <tr
                         key={ticket.id}
                         className={cn(
-                          "border-b border-b-[#1e1e2e] hover:bg-[#1a1a2e]/40 transition-colors"
+                          "border-b border-b-[#1e1e2e] hover:bg-wl-bg-elevated/40 transition-colors"
                         )}
                       >
                         <td className="p-3 text-white text-sm font-medium font-mono">

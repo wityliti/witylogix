@@ -119,7 +119,7 @@ export default function LocalOrdersPage() {
 
   if (loading) {
     return (
-      <div className="p-6 min-h-screen bg-[#0a0a0f]">
+      <div className="p-6 min-h-screen bg-wl-bg-root">
         <TableSkeleton rows={8} />
       </div>
     );
@@ -127,14 +127,14 @@ export default function LocalOrdersPage() {
 
   if (error) {
     return (
-      <div className="p-6 min-h-screen bg-[#0a0a0f]">
+      <div className="p-6 min-h-screen bg-wl-bg-root">
         <ErrorState message="Failed to load local delivery orders" onRetry={refetch} />
       </div>
     );
   }
 
   return (
-    <div className="p-6 min-h-screen bg-[#0a0a0f]">
+    <div className="p-6 min-h-screen bg-wl-bg-root">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Local Delivery Orders</h1>
@@ -147,7 +147,7 @@ export default function LocalOrdersPage() {
             { key: 'in_transit', label: 'In Transit', color: '#3b82f6' },
             { key: 'delivered', label: 'Delivered', color: '#10b981' },
           ].map((stat) => (
-            <Card key={stat.key} className="bg-[#12121a] border-[#1e1e2e] p-4 min-w-[120px]">
+            <Card key={stat.key} className="bg-wl-bg-surface border-wl-border-default p-4 min-w-[120px]">
               <p className="text-xs text-gray-400 mb-1">{stat.label}</p>
               <p className="text-lg font-semibold" style={{ color: stat.color }}>
                 {statusCounts[stat.key] ?? 0}
@@ -171,7 +171,7 @@ export default function LocalOrdersPage() {
                   'px-3 py-1.5 rounded text-xs font-medium transition-all border',
                   statusFilter === s
                     ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-[#12121a] text-gray-400 border-[#1e1e2e] hover:border-blue-500 hover:text-blue-400',
+                    : 'bg-wl-bg-surface text-gray-400 border-wl-border-default hover:border-blue-500 hover:text-blue-400',
                 )}
               >
                 {s === 'all' ? 'All' : s.replace(/_/g, ' ')}
@@ -194,8 +194,8 @@ export default function LocalOrdersPage() {
                   className={cn(
                     'cursor-pointer transition-all',
                     selectedOrderId === order.id
-                      ? 'bg-[#1a1a2e] border-blue-500 border-2'
-                      : 'bg-[#12121a] border-[#1e1e2e]',
+                      ? 'bg-wl-bg-elevated border-blue-500 border-2'
+                      : 'bg-wl-bg-surface border-wl-border-default',
                   )}
                   onClick={() => setSelectedOrderId(order.id)}
                 >
@@ -255,8 +255,8 @@ export default function LocalOrdersPage() {
         {/* Right Sidebar - Order Detail */}
         <div>
           {selectedOrder ? (
-            <Card className="bg-[#12121a] border-[#1e1e2e] sticky top-6">
-              <CardHeader className="pb-3 border-b border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default sticky top-6">
+              <CardHeader className="pb-3 border-b border-wl-border-default">
                 <CardTitle className="text-base text-white font-mono">
                   #{selectedOrder.id.slice(0, 8)}
                 </CardTitle>
@@ -287,7 +287,7 @@ export default function LocalOrdersPage() {
                 </div>
 
                 {/* Delivery Details */}
-                <div className="border-t border-[#1e1e2e] pt-3">
+                <div className="border-t border-wl-border-default pt-3">
                   <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
                     <MapPin size={14} /> Delivery
                   </p>
@@ -304,7 +304,7 @@ export default function LocalOrdersPage() {
                 </div>
 
                 {/* Order Details */}
-                <div className="border-t border-[#1e1e2e] pt-3">
+                <div className="border-t border-wl-border-default pt-3">
                   <div className="mb-2">
                     <p className="text-xs text-gray-400 mb-0.5">Items</p>
                     <p className="text-sm font-semibold text-white">{selectedOrder.items.length}</p>
@@ -319,7 +319,7 @@ export default function LocalOrdersPage() {
 
                 {/* Driver Info */}
                 {selectedOrder.driver ? (
-                  <div className="border-t border-[#1e1e2e] pt-3 bg-[#0a0a0f] rounded p-3">
+                  <div className="border-t border-wl-border-default pt-3 bg-wl-bg-root rounded p-3">
                     <p className="text-xs text-gray-400 mb-1">Assigned Driver</p>
                     <p className="text-sm font-semibold text-white">{selectedOrder.driver.name}</p>
                     {selectedOrder.driver.phone && (
@@ -332,7 +332,7 @@ export default function LocalOrdersPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="border-t border-[#1e1e2e] pt-3">
+                  <div className="border-t border-wl-border-default pt-3">
                     <p className="text-xs text-gray-400">No driver assigned</p>
                   </div>
                 )}
@@ -349,7 +349,7 @@ export default function LocalOrdersPage() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="p-6 text-center">
                 <AlertCircle size={24} className="text-gray-400 mx-auto mb-3" />
                 <p className="text-gray-400 text-sm">Select an order to view details</p>

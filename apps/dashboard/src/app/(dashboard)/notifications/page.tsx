@@ -142,7 +142,7 @@ export default function NotificationsPage() {
   }, [loadMore]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Notifications"
         subtitle="Manage and view all your notifications"
@@ -190,7 +190,7 @@ export default function NotificationsPage() {
                   "border cursor-pointer",
                   selectedCategory === cat.id
                     ? "border-blue-500 bg-blue-500/20 text-blue-400"
-                    : "border-[#1e1e2e] text-gray-400 hover:border-[#2a2a3e]"
+                    : "border-wl-border-default text-gray-400 hover:border-wl-border-strong"
                 )}
               >
                 {cat.label}
@@ -228,7 +228,7 @@ export default function NotificationsPage() {
           )}
 
           {/* Notifications List */}
-          <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+          <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
             <CardContent className="p-0">
               {error ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -246,7 +246,7 @@ export default function NotificationsPage() {
               ) : (
                 <div className="divide-y divide-[#1e1e2e]">
                   {/* Header Row */}
-                  <div className="flex items-center gap-4 px-6 py-3 bg-[#1a1a2e] border-b border-[#1e1e2e]">
+                  <div className="flex items-center gap-4 px-6 py-3 bg-wl-bg-elevated border-b border-wl-border-default">
                     <Checkbox
                       checked={
                         selectedNotifications.size ===
@@ -275,8 +275,8 @@ export default function NotificationsPage() {
                         <div
                           className={cn(
                             "flex items-center gap-4 px-6 py-4",
-                            "hover:bg-[#1a1a2e] cursor-pointer transition-colors",
-                            isSelected && "bg-[#1a1a2e]",
+                            "hover:bg-wl-bg-elevated cursor-pointer transition-colors",
+                            isSelected && "bg-wl-bg-elevated",
                             notif.status === "UNREAD" &&
                               "bg-blue-500/5 border-l-2 border-blue-500"
                           )}
@@ -343,7 +343,7 @@ export default function NotificationsPage() {
 
                         {/* Expanded Details */}
                         {isExpanded && (
-                          <div className="bg-[#1a1a2e] px-6 py-4 border-t border-[#1e1e2e]">
+                          <div className="bg-wl-bg-elevated px-6 py-4 border-t border-wl-border-default">
                             <div className="space-y-4">
                               <div>
                                 <h4 className="text-sm font-semibold text-white mb-2">
@@ -382,7 +382,7 @@ export default function NotificationsPage() {
                               </div>
 
                               {notif.actionUrl && (
-                                <div className="pt-2 border-t border-[#1e1e2e]">
+                                <div className="pt-2 border-t border-wl-border-default">
                                   <Link href={notif.actionUrl}>
                                     <Button variant="primary" size="sm">
                                       View Details
@@ -391,7 +391,7 @@ export default function NotificationsPage() {
                                 </div>
                               )}
 
-                              <div className="flex gap-2 pt-2 border-t border-[#1e1e2e]">
+                              <div className="flex gap-2 pt-2 border-t border-wl-border-default">
                                 {notif.status === "UNREAD" ? (
                                   <Button
                                     variant="ghost"
@@ -449,7 +449,7 @@ export default function NotificationsPage() {
 
           {/* Loading Skeletons */}
           {isLoading && (
-            <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+            <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
               <CardContent className="space-y-3 py-6">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="flex gap-4">

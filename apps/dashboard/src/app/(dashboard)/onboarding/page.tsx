@@ -310,7 +310,7 @@ export default function OnboardingPage() {
     currentSubStep === "review";
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-[#0a0a0f] min-h-screen p-6">
+    <div className="w-full max-w-4xl mx-auto bg-wl-bg-root min-h-screen p-6">
       {/* Progress Bar */}
       <div className="mb-8">
         {/* Main Steps */}
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
                     "w-10 h-10 rounded-full flex items-center justify-center mb-2 font-semibold text-sm transition-all duration-200",
                     isCompleted || isActive
                       ? "bg-blue-500 text-white"
-                      : "bg-[#1a1a2e] text-gray-500 border border-[#1e1e2e]"
+                      : "bg-wl-bg-elevated text-gray-500 border border-wl-border-default"
                   )}
                 >
                   {isCompleted ? <Check size={20} /> : idx + 1}
@@ -351,7 +351,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Progress Line */}
-        <div className="w-full h-1 bg-[#1a1a2e] rounded-full overflow-hidden mb-6">
+        <div className="w-full h-1 bg-wl-bg-elevated rounded-full overflow-hidden mb-6">
           <div
             className="h-full bg-blue-500 transition-all duration-500"
             style={{
@@ -377,7 +377,7 @@ export default function OnboardingPage() {
                       ? "bg-blue-500 text-white"
                       : isCompleted
                         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30"
-                        : "bg-[#1a1a2e] text-gray-400 border border-[#1e1e2e] hover:border-[#2e2e3e]"
+                        : "bg-wl-bg-elevated text-gray-400 border border-wl-border-default hover:border-wl-border-strong"
                   )}
                 >
                   {step.label}
@@ -389,7 +389,7 @@ export default function OnboardingPage() {
       </div>
 
       {/* Content Card */}
-      <div className="rounded-lg border border-[#1e1e2e] bg-[#12121a] p-8 mb-6 animate-in fade-in duration-300">
+      <div className="rounded-lg border border-wl-border-default bg-wl-bg-surface p-8 mb-6 animate-in fade-in duration-300">
         {/* Step Title */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white m-0">

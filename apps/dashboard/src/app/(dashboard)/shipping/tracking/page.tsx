@@ -70,9 +70,9 @@ export default function TrackingPage() {
         subtitle={`${inTransitCount} in transit · ${pagination.total} total`}
       />
 
-      <main className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
+      <main className="min-h-screen bg-wl-bg-root p-6 space-y-6">
         {/* Filter Tabs */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="pt-4">
             <div className="flex gap-2 flex-wrap">
               {FILTER_OPTIONS.map((status) => {
@@ -87,7 +87,7 @@ export default function TrackingPage() {
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       filterStatus === status
                         ? 'bg-blue-500 text-white'
-                        : 'bg-[#1a1a2e] text-gray-400 hover:text-white'
+                        : 'bg-wl-bg-elevated text-gray-400 hover:text-white'
                     }`}
                   >
                     {status.replace(/_/g, ' ')}
@@ -100,11 +100,11 @@ export default function TrackingPage() {
         </Card>
 
         {/* Tracking Table */}
-        <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Recipient</th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
@@ -118,7 +118,7 @@ export default function TrackingPage() {
                 {filteredShipments.map((shipment, idx) => (
                   <tr
                     key={shipment.id}
-                    className={`border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e] ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]'}`}
+                    className={`border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated ${idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken'}`}
                   >
                     <td className="p-3 px-4 text-white font-mono text-xs">
                       {shipment.trackingNumber ?? shipment.shipmentNumber}

@@ -90,7 +90,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-[#1e1e2e]">
+      <div className="border-b border-wl-border-default">
         <div className="flex gap-6">
           {(['orders', 'waves', 'batches', 'returns'] as const).map((tab) => (
             <button
@@ -119,13 +119,17 @@ export default function OrdersPage() {
                   type="text"
                   placeholder="Search order # or customer..."
                   value={filters.searchTerm}
-                  onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, searchTerm: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
                 />
                 <select
                   value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, status: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {STATUS_OPTIONS.map((s) => (
                     <option key={s} value={s.toLowerCase()}>{s}</option>
@@ -133,8 +137,10 @@ export default function OrdersPage() {
                 </select>
                 <select
                   value={filters.priority}
-                  onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, priority: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {PRIORITY_OPTIONS.map((p) => (
                     <option key={p} value={p.toLowerCase()}>{p}</option>
@@ -142,8 +148,10 @@ export default function OrdersPage() {
                 </select>
                 <select
                   value={filters.warehouse}
-                  onChange={(e) => setFilters({ ...filters, warehouse: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, warehouse: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {WAREHOUSE_OPTIONS.map((w) => (
                     <option key={w} value={w.toLowerCase()}>{w}</option>
@@ -316,13 +324,22 @@ export default function OrdersPage() {
                       />
                     </div>
                   </div>
-                  {batch.status !== 'completed' && (
-                    <Button variant="secondary" size="sm" className="w-full">Update Progress</Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  <div className="w-full hover:bg-wl-bg-elevated rounded-full h-2">
+                    <div
+                      className="h-full rounded-full bg-blue-500 transition-all"
+                      style={{ width: `${batch.completionRate}%` }}
+                    />
+                  </div>
+                </div>
+
+                {batch.status !== 'completed' && (
+                  <Button variant="secondary" size="sm" className="w-full">
+                    Update Progress
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 

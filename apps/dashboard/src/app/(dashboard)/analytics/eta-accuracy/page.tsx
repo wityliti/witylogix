@@ -108,7 +108,7 @@ function MetricCard({
   sub?: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl bg-[#111118] border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all">
+    <div className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all">
       <div
         className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-80 transition-opacity"
         style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }}
@@ -299,7 +299,7 @@ export default function EtaAccuracyPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {reportLoading || !overall ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 animate-pulse">
+              <div key={i} className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 animate-pulse">
                 <div className="h-3 w-24 rounded bg-white/[0.06] mb-3" />
                 <div className="h-8 w-20 rounded bg-white/[0.08]" />
               </div>
@@ -376,7 +376,7 @@ export default function EtaAccuracyPage() {
         {/* Mid row: feature importance + by-zone breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Feature importance */}
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-semibold text-white/60 tracking-wide">Feature Importance</h3>
               <span className="text-[11px] text-white/20 font-mono">ensemble weights</span>
@@ -406,7 +406,7 @@ export default function EtaAccuracyPage() {
           </div>
 
           {/* By zone */}
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-semibold text-white/60 tracking-wide">MAE by Zone Type</h3>
               <span className="text-[11px] text-white/20 font-mono">lower = better</span>
@@ -465,7 +465,7 @@ export default function EtaAccuracyPage() {
         </div>
 
         {/* Per-model breakdown table */}
-        <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide">Model Breakdown</h3>
             <div className="flex items-center gap-10 pr-3 text-[11px] text-white/20">

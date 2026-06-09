@@ -89,7 +89,7 @@ const TableSkeleton = () => (
 const ReturnsTable = ({ returns }: { returns: Return[] }) => {
   if (returns.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-xl border border-white/[0.08] bg-[#13131a]">
+      <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-xl border border-white/[0.08] bg-wl-bg-surface">
         <RotateCcw className="w-10 h-10 text-white/10" />
         <div className="text-center">
           <p className="text-sm font-medium text-white/40">No returns yet</p>
@@ -104,7 +104,7 @@ const ReturnsTable = ({ returns }: { returns: Return[] }) => {
   }
 
   return (
-    <div className="bg-[#13131a] border border-white/[0.08] rounded-xl overflow-hidden">
+    <div className="bg-wl-bg-surface border border-white/[0.08] rounded-xl overflow-hidden">
       <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.08] bg-white/[0.02]">
         <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Return #</div>
         <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Order #</div>

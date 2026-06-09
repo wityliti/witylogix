@@ -114,7 +114,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Team Management"
         subtitle="Manage team members and their roles"
@@ -132,7 +132,7 @@ export default function TeamPage() {
 
           {/* Invite Dialog */}
           {showInviteDialog && (
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle>Invite Team Member</CardTitle>
                 <CardDescription>Add a new member to your team</CardDescription>
@@ -156,7 +156,7 @@ export default function TeamPage() {
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as typeof inviteRole)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="viewer">Viewer - Read-only access</option>
                     <option value="member">Member - Can edit content</option>
@@ -188,7 +188,7 @@ export default function TeamPage() {
           )}
 
           {/* Team Members */}
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
+          <Card className="border border-wl-border-default bg-wl-bg-surface">
             <CardHeader>
               <CardTitle>Team Members ({members.length})</CardTitle>
               <CardDescription>Manage your team and their permissions</CardDescription>
@@ -198,7 +198,7 @@ export default function TeamPage() {
                 {members.map((member) => (
                   <div
                     key={member.id}
-                    className="p-4 border border-[#1e1e2e] rounded-lg hover:bg-[#1a1a2e] transition-all"
+                    className="p-4 border border-wl-border-default rounded-lg hover:bg-wl-bg-elevated transition-all"
                   >
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div className="flex items-start gap-3 flex-1">
@@ -221,7 +221,7 @@ export default function TeamPage() {
                           <select
                             value={newRole}
                             onChange={(e) => setNewRole(e.target.value as typeof newRole)}
-                            className="px-2 py-1 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded text-sm"
+                            className="px-2 py-1 bg-wl-bg-elevated text-white border border-wl-border-default rounded text-sm"
                           >
                             <option value="viewer">Viewer</option>
                             <option value="member">Member</option>
@@ -312,7 +312,7 @@ export default function TeamPage() {
 
           {/* Pending Invitations */}
           {invitations.length > 0 && (
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle>Pending Invitations ({invitations.length})</CardTitle>
                 <CardDescription>Awaiting acceptance</CardDescription>
@@ -322,7 +322,7 @@ export default function TeamPage() {
                   {invitations.map((invitation) => (
                     <div
                       key={invitation.id}
-                      className="p-4 border border-[#1e1e2e] rounded-lg hover:bg-[#1a1a2e] transition-all"
+                      className="p-4 border border-wl-border-default rounded-lg hover:bg-wl-bg-elevated transition-all"
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3 flex-1">

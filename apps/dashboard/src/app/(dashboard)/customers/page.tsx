@@ -284,7 +284,7 @@ export default function CustomersPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full p-2 px-4 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm font-sans outline-none"
+              className="w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm font-sans outline-none"
             />
           </div>
 
@@ -301,7 +301,7 @@ export default function CustomersPage() {
                   'p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-fast',
                   statusFilter === status
                     ? 'bg-blue-500 text-black border-blue-500'
-                    : 'bg-transparent text-gray-400 border-[#1e1e2e]',
+                    : 'bg-transparent text-gray-400 border-wl-border-default',
                   'capitalize'
                 )}
               >
@@ -317,7 +317,7 @@ export default function CustomersPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className="p-1 px-3 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm font-sans cursor-pointer outline-none"
+            className="p-1 px-3 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm font-sans cursor-pointer outline-none"
           >
             <option value="name">Sort by Name</option>
             <option value="totalSpent">Sort by Total Spent</option>
@@ -339,7 +339,7 @@ export default function CustomersPage() {
                   key={tier}
                   className={cn(
                     'p-2 px-3 rounded-md border text-xs font-semibold cursor-pointer font-sans capitalize',
-                    'bg-transparent text-gray-300 border-[#1e1e2e]'
+                    'bg-transparent text-gray-300 border-wl-border-default'
                   )}
                 >
                   {tier} <span className="ml-1.5 opacity-70">({count})</span>
@@ -354,7 +354,7 @@ export default function CustomersPage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
                   <th className="p-3 px-4 text-left font-semibold text-gray-300">Name</th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-300">Email</th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-300">Phone</th>
@@ -368,8 +368,8 @@ export default function CustomersPage() {
               <tbody>
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className="border-b border-[#1e1e2e]">
-                      <td colSpan={8} className="px-4 py-3 h-12 bg-[#1a1a2e]/50 animate-pulse" />
+                    <tr key={i} className="border-b border-wl-border-default">
+                      <td colSpan={8} className="px-4 py-3 h-12 bg-wl-bg-elevated/50 animate-pulse" />
                     </tr>
                   ))
                 ) : paginatedItems.length === 0 ? (
@@ -384,8 +384,8 @@ export default function CustomersPage() {
                       key={customer.id}
                       onClick={() => router.push(`/customers/${customer.id}`)}
                       className={cn(
-                        'border-b border-[#1e1e2e] transition-colors duration-fast cursor-pointer hover:bg-[#1a1a2e]',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-[#1a1a2e]/60'
+                        'border-b border-wl-border-default transition-colors duration-fast cursor-pointer hover:bg-wl-bg-elevated',
+                        idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-elevated/60'
                       )}
                     >
                       <td className="p-3 px-4 text-white font-semibold">{customer.name}</td>
@@ -424,7 +424,7 @@ export default function CustomersPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-300">
+          <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-300">
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
               {Math.min(currentPage * pageSize, pagination.total)} of {pagination.total}

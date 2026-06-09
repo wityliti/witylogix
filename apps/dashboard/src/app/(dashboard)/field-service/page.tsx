@@ -212,10 +212,10 @@ export default function FieldServicePage() {
         subtitle={`${totalTechnicians} technicians · ${activeJobs} active jobs`}
       />
 
-      <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-screen">
-        {/* KPI Stats */}
+      <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
+        {/* ═══ KPI Stats Row ═══ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-blue-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-blue-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -228,7 +228,7 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-cyan-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-cyan-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -241,7 +241,7 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-emerald-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-emerald-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -254,7 +254,7 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-red-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-amber-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -271,14 +271,14 @@ export default function FieldServicePage() {
         {/* Schedule + SLA */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-white">Today's Schedule</CardTitle>
                   <select
-                    value={selectedTech || 'all'}
-                    onChange={(e) => setSelectedTech(e.target.value === 'all' ? null : e.target.value)}
-                    className="px-3 py-2 text-xs rounded border border-[#1e1e2e] bg-[#1a1a2e] text-gray-300 focus:outline-none focus:border-blue-500/50"
+                    value={selectedTech || "all"}
+                    onChange={(e) => setSelectedTech(e.target.value === "all" ? null : e.target.value)}
+                    className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-gray-300 focus:outline-none focus:border-blue-500/50"
                   >
                     <option value="all">All Drivers</option>
                     {techniciansInSchedule.map((d) => (
@@ -295,7 +295,7 @@ export default function FieldServicePage() {
                     {filteredSchedule.map((item) => (
                       <div
                         key={item.jobId}
-                        className="flex items-center gap-4 p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] hover:border-blue-500/30 transition-colors"
+                        className="flex items-center gap-4 p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
                       >
                         <div className="w-24 flex-shrink-0">
                           <div className="text-sm font-semibold text-blue-400">{item.startTime}</div>
@@ -319,9 +319,12 @@ export default function FieldServicePage() {
             </Card>
           </div>
 
-          {/* SLA */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
-            <CardHeader><CardTitle className="text-white">SLA Compliance</CardTitle></CardHeader>
+          {/* SLA Compliance Tracker */}
+          <Card className="bg-wl-bg-surface border-wl-border-default">
+            <CardHeader>
+              <CardTitle className="text-white">SLA Compliance</CardTitle>
+            </CardHeader>
+
             <CardContent className="space-y-5">
               <div>
                 <div className="flex justify-between items-baseline mb-3">
@@ -330,20 +333,26 @@ export default function FieldServicePage() {
                     {onTimePercentage}%
                   </span>
                 </div>
-                <div className="w-full bg-[#1a1a2e] rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-wl-bg-elevated rounded-full h-2.5 overflow-hidden">
                   <div
                     className={cn('h-2.5 rounded-full transition-all', onTimePercentage >= 90 ? 'bg-emerald-500' : onTimePercentage >= 70 ? 'bg-amber-500' : 'bg-red-500')}
                     style={{ width: `${onTimePercentage}%` }}
                   />
                 </div>
               </div>
-              <div className="h-px bg-[#1e1e2e]" />
+
+              <div className="h-px bg-wl-bg-elevated" />
+
+              {/* Overdue jobs */}
               <div>
                 <div className="text-sm text-gray-400 mb-2">Overdue Jobs</div>
                 <div className={cn('text-3xl font-bold', overdueCount > 0 ? 'text-red-400' : 'text-emerald-400')}>{overdueCount}</div>
                 <div className="text-xs text-gray-500 mt-1">of {totalJobs} total</div>
               </div>
-              <div className="h-px bg-[#1e1e2e]" />
+
+              <div className="h-px bg-wl-bg-elevated" />
+
+              {/* Avg completion time */}
               <div>
                 <div className="text-sm text-gray-400 mb-2">Drivers Available</div>
                 <div className="text-3xl font-bold text-blue-400">
@@ -351,9 +360,11 @@ export default function FieldServicePage() {
                 </div>
                 <div className="text-xs text-gray-500 mt-1">of {totalTechnicians} total</div>
               </div>
-              <div className="h-px bg-[#1e1e2e]" />
-              <Button variant="secondary" size="sm" className="w-full" onClick={() => window.location.href = '/field-service/dispatch'}>
-                Open Dispatch
+
+              <div className="h-px bg-wl-bg-elevated" />
+
+              <Button variant="secondary" size="sm" className="w-full">
+                View Details
               </Button>
             </CardContent>
           </Card>
@@ -361,7 +372,8 @@ export default function FieldServicePage() {
 
         {/* Job Queue + Recent Completions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          {/* Job Queue */}
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-white">Job Queue (Unassigned)</CardTitle>
@@ -374,7 +386,10 @@ export default function FieldServicePage() {
               ) : (
                 <div className="space-y-3">
                   {jobQueue.map((job) => (
-                    <div key={job.id} className="p-4 bg-[#1a1a2e] rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer">
+                    <div
+                      key={job.id}
+                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer group"
+                    >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div>
                           <div className="text-sm font-semibold text-white">{job.jobNumber}</div>
@@ -396,15 +411,22 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
-            <CardHeader><CardTitle className="text-white">Recent Completions</CardTitle></CardHeader>
+          {/* Recent Completions Feed */}
+          <Card className="bg-wl-bg-surface border-wl-border-default">
+            <CardHeader>
+              <CardTitle className="text-white">Recent Completions</CardTitle>
+            </CardHeader>
+
             <CardContent>
               {recentCompletions.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">No completions yet today</div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {recentCompletions.map((job) => (
-                    <div key={job.id} className="p-4 bg-[#1a1a2e] rounded-lg border-l-4 border-emerald-500">
+                    <div
+                      key={job.id}
+                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-emerald-500"
+                    >
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <div>
                           <div className="text-sm font-semibold text-emerald-400">✓ {job.jobNumber}</div>

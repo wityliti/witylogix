@@ -55,7 +55,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
   return (
     <>
       {/* Search Box */}
-      <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+      <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
         <CardContent className="pt-6">
           <div className="relative">
             <input
@@ -63,7 +63,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
               placeholder="Search by name or MRN..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 pl-10 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none transition-colors"
+              className="w-full px-4 py-2 pl-10 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none transition-colors"
             />
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -76,8 +76,8 @@ function PatientTable({ patients }: { patients: Patient[] }) {
       </Card>
 
       {/* Patients Table */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
-        <CardHeader className="border-b border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
+        <CardHeader className="border-b border-wl-border-default">
           <CardTitle className="text-base text-white">
             Patients ({filteredPatients.length})
           </CardTitle>
@@ -86,7 +86,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e]">
+                <tr className="border-b border-wl-border-default">
                   <th className="text-left py-3 px-4 font-medium text-gray-400">Name</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-400">MRN</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-400">Age</th>
@@ -100,7 +100,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
                 {filteredPatients.map((patient) => (
                   <tr
                     key={patient.id}
-                    className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors cursor-pointer"
+                    className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer"
                     onClick={() => setSelectedPatientId(patient.id)}
                   >
                     <td className="py-3 px-4 text-white font-medium">
@@ -146,8 +146,8 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 
       {/* Patient Detail Card */}
       {selectedPatient && (
-        <Card className="mt-6 bg-[#12121a] border-[#1e1e2e]">
-          <CardHeader className="border-b border-[#1e1e2e] flex flex-row items-center justify-between">
+        <Card className="mt-6 bg-wl-bg-surface border-wl-border-default">
+          <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white">
                 {selectedPatient.firstName} {selectedPatient.lastName}
@@ -229,7 +229,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 
               {/* Clinical Info */}
               <div className="space-y-4">
-                <div className="p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+                <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-2 mb-2">
                     <Heart className="text-red-500" size={16} />
                     <span className="text-sm font-semibold text-white">Active Conditions</span>
@@ -238,7 +238,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
                   <p className="text-xs text-gray-400 mt-1">Ongoing treatment</p>
                 </div>
 
-                <div className="p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+                <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-2 mb-2">
                     <Pill className="text-emerald-500" size={16} />
                     <span className="text-sm font-semibold text-white">Medications</span>
@@ -262,7 +262,7 @@ export default function PatientsPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
+    <div className="min-h-screen bg-wl-bg-root p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -278,7 +278,7 @@ export default function PatientsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Total Patients</span>
@@ -291,7 +291,7 @@ export default function PatientsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Avg. Conditions</span>
@@ -309,7 +309,7 @@ export default function PatientsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Avg. Medications</span>

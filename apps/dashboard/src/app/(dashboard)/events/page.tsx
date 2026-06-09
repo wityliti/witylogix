@@ -91,7 +91,7 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 py-8 bg-[#0a0a0f] min-h-screen space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-6 py-8 bg-wl-bg-root min-h-screen space-y-6">
       {/* Stats Bar */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Total Events" value={data.length} color="primary" />
@@ -101,7 +101,7 @@ export default function EventsPage() {
       </div>
 
       {/* Filters and Controls */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-white">Filters & Search</CardTitle>
@@ -125,7 +125,7 @@ export default function EventsPage() {
               onChange={(e) => updateFilter("searchQuery", e.target.value)}
               className={cn(
                 "w-full pl-10 pr-4 py-2 rounded-md",
-                "bg-[#1a1a2e] border border-[#1e1e2e]",
+                "bg-wl-bg-elevated border border-wl-border-default",
                 "text-white text-sm",
                 "placeholder-gray-500",
                 "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30",
@@ -141,7 +141,7 @@ export default function EventsPage() {
               <select
                 value={filters.eventType || ""}
                 onChange={(e) => updateFilter("eventType", e.target.value)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-[#1a1a2e] border border-[#1e1e2e]", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
               >
                 <option value="">All Types</option>
               </select>
@@ -152,7 +152,7 @@ export default function EventsPage() {
               <select
                 value={(filters.source as string) || ""}
                 onChange={(e) => updateFilter("source", e.target.value as any)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-[#1a1a2e] border border-[#1e1e2e]", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
               >
                 <option value="">All Sources</option>
                 <option value="api">API</option>
@@ -165,7 +165,7 @@ export default function EventsPage() {
               <select
                 value={filters.entityType || ""}
                 onChange={(e) => updateFilter("entityType", e.target.value)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-[#1a1a2e] border border-[#1e1e2e]", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
               >
                 <option value="">All Entities</option>
               </select>
@@ -177,7 +177,7 @@ export default function EventsPage() {
                 type="date"
                 value={filters.dateFrom || ""}
                 onChange={(e) => updateFilter("dateFrom", e.target.value)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-[#1a1a2e] border border-[#1e1e2e]", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
               />
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function EventsPage() {
               type="checkbox"
               checked={selectedEvents.size === data.length && data.length > 0}
               onChange={selectAll}
-              className="w-4 h-4 rounded border-[#1e1e2e] cursor-pointer bg-[#1a1a2e]"
+              className="w-4 h-4 rounded border-wl-border-default cursor-pointer bg-wl-bg-elevated"
               aria-label="Select all events"
             />
             <span className="text-xs text-gray-400">
@@ -213,11 +213,11 @@ export default function EventsPage() {
         {loading && data.length === 0 ? (
           <div className="grid grid-cols-1 gap-4 pt-8">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i} className="h-32 bg-[#12121a] animate-pulse">{null}</Card>
+              <Card key={i} className="h-32 bg-wl-bg-surface animate-pulse">{null}</Card>
             ))}
           </div>
         ) : data.length === 0 ? (
-          <Card className="p-8 bg-[#12121a] border-[#1e1e2e] text-center">
+          <Card className="p-8 bg-wl-bg-surface border-wl-border-default text-center">
             <p className="text-gray-400">No events found</p>
           </Card>
         ) : (
@@ -231,10 +231,10 @@ export default function EventsPage() {
                     e.stopPropagation();
                     toggleEventSelection(event.id);
                   }}
-                  className="w-4 h-4 mt-4 rounded border-[#1e1e2e] cursor-pointer bg-[#1a1a2e]"
+                  className="w-4 h-4 mt-4 rounded border-wl-border-default cursor-pointer bg-wl-bg-elevated"
                   aria-label={`Select event ${event.id}`}
                 />
-                <Card className="flex-1 p-4 bg-[#12121a] border-[#1e1e2e]">
+                <Card className="flex-1 p-4 bg-wl-bg-surface border-wl-border-default">
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="text-sm font-semibold text-white mb-1">{event.action}</h4>

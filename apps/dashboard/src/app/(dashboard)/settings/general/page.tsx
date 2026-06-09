@@ -48,7 +48,7 @@ export default function GeneralSettingsPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="General Settings"
         subtitle="Configure your tenant information and preferences"
@@ -67,7 +67,7 @@ export default function GeneralSettingsPage() {
         </Link>
 
         {/* Company Information */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white">Company Information</CardTitle>
           </CardHeader>
@@ -80,7 +80,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="Witylogix Inc."
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -90,7 +90,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="Logistics & Supply Chain"
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="email"
                   defaultValue="support@witylogix.com"
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
               <div>
@@ -124,7 +124,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="tel"
                   defaultValue="+1 (555) 123-4567"
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function GeneralSettingsPage() {
         </Card>
 
         {/* Regional Settings */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <MapPin className="w-5 h-5" />
@@ -145,7 +145,7 @@ export default function GeneralSettingsPage() {
                 <label className="block text-sm font-medium text-white mb-2">
                   Country
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>United States</option>
                   <option>Canada</option>
                   <option>United Kingdom</option>
@@ -159,7 +159,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="California"
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="San Francisco"
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
               <div>
@@ -182,7 +182,7 @@ export default function GeneralSettingsPage() {
                 <input
                   type="text"
                   defaultValue="94105"
-                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function GeneralSettingsPage() {
         </Card>
 
         {/* Localization */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <DollarSign className="w-5 h-5" />
@@ -214,7 +214,7 @@ export default function GeneralSettingsPage() {
                 <label className="block text-sm font-medium text-white mb-2">
                   Timezone
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>America/Los_Angeles</option>
                   <option>America/Chicago</option>
                   <option>America/New_York</option>
@@ -226,7 +226,7 @@ export default function GeneralSettingsPage() {
                 <label className="block text-sm font-medium text-white mb-2">
                   Language
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>English (US)</option>
                   <option>English (UK)</option>
                   <option>Spanish</option>
@@ -241,7 +241,7 @@ export default function GeneralSettingsPage() {
                 <label className="block text-sm font-medium text-white mb-2">
                   Default Currency
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>USD - US Dollar</option>
                   <option>EUR - Euro</option>
                   <option>GBP - British Pound</option>
@@ -252,7 +252,7 @@ export default function GeneralSettingsPage() {
                 <label className="block text-sm font-medium text-white mb-2">
                   Weight Unit
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>Pounds (lbs)</option>
                   <option>Kilograms (kg)</option>
                 </select>
@@ -264,7 +264,7 @@ export default function GeneralSettingsPage() {
                 <label className="block text-sm font-medium text-white mb-2">
                   Distance Unit
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>Miles (mi)</option>
                   <option>Kilometers (km)</option>
                 </select>
@@ -273,7 +273,7 @@ export default function GeneralSettingsPage() {
                 <label className="block text-sm font-medium text-white mb-2">
                   Date Format
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>MM/DD/YYYY</option>
                   <option>DD/MM/YYYY</option>
                   <option>YYYY-MM-DD</option>
@@ -284,7 +284,7 @@ export default function GeneralSettingsPage() {
         </Card>
 
         {/* Business Hours */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Clock className="w-5 h-5" />
@@ -296,7 +296,7 @@ export default function GeneralSettingsPage() {
               {businessHours.map((day, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg border border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                 >
                   <div className="flex-1">
                     <p className="font-medium text-white">
@@ -310,13 +310,13 @@ export default function GeneralSettingsPage() {
                       <input
                         type="time"
                         defaultValue={day.open.replace(/[AP]M/, "").trim()}
-                        className="px-3 py-1 text-sm rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white"
+                        className="px-3 py-1 text-sm rounded border border-wl-border-default bg-wl-bg-root text-white"
                       />
                       <span className="text-gray-400">to</span>
                       <input
                         type="time"
                         defaultValue={day.close.replace(/[AP]M/, "").trim()}
-                        className="px-3 py-1 text-sm rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white"
+                        className="px-3 py-1 text-sm rounded border border-wl-border-default bg-wl-bg-root text-white"
                       />
                     </div>
                   )}
@@ -330,7 +330,7 @@ export default function GeneralSettingsPage() {
         <div className="flex gap-4 justify-end">
           <Button
             variant="secondary"
-            className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
+            className="border-wl-border-default text-white hover:bg-wl-bg-elevated"
           >
             Cancel
           </Button>

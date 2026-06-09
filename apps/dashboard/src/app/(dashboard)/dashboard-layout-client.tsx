@@ -33,7 +33,7 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutProps
         {/* Top Bar */}
         <header
           className={cn(
-            "bg-[#0f0f14]/90 backdrop-blur-md border-b border-white/[0.06]",
+            "bg-wl-bg-sunken/90 backdrop-blur-md border-b border-white/[0.06]",
             "h-[var(--wl-header-height)]",
             "flex items-center justify-between",
             "px-6",

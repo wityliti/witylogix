@@ -33,7 +33,7 @@ export function PresenceGrid({ indicators }: PresenceGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {indicators.map((indicator) => (
-        <Card key={indicator.userId} className="bg-[#1a1a2e]">
+        <Card key={indicator.userId} className="bg-wl-bg-elevated">
           <CardContent className="pt-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3 flex-1">

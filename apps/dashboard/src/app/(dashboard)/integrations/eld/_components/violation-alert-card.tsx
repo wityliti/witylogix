@@ -35,7 +35,7 @@ const getSeverityColor = (severity: string) => {
 export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
   return (
     <Card className={cn(
-      "bg-[#1a1a2e]",
+      "bg-wl-bg-elevated",
       alert.severity === "critical" && "border-red-500/50"
     )}>
       <CardContent className="pt-6">
@@ -65,7 +65,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
           </Badge>
         </div>
 
-        <p className="text-sm text-white mb-4 p-3 bg-[#12121a] rounded">
+        <p className="text-sm text-white mb-4 p-3 bg-wl-bg-surface rounded">
           {alert.details}
         </p>
 

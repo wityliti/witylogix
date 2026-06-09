@@ -58,8 +58,8 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
 
   return (
     <>
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
-        <CardHeader className="border-b border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
+        <CardHeader className="border-b border-wl-border-default">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base text-white">
               Envelopes ({envelopes.length})
@@ -83,13 +83,13 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e]">
+                <tr className="border-b border-wl-border-default">
                   <th className="text-left py-3 px-4 w-10">
                     <input
                       type="checkbox"
                       checked={selectedIds.size === envelopes.length && envelopes.length > 0}
                       onChange={toggleSelectAll}
-                      className="w-4 h-4 rounded border-[#1e1e2e] accent-blue-500"
+                      className="w-4 h-4 rounded border-wl-border-default accent-blue-500"
                     />
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-gray-400">Name</th>
@@ -104,14 +104,14 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                 {envelopes.map((env) => (
                   <tr
                     key={env.id}
-                    className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                    className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                   >
                     <td className="py-3 px-4">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(env.id)}
                         onChange={() => toggleSelect(env.id)}
-                        className="w-4 h-4 rounded border-[#1e1e2e] accent-blue-500"
+                        className="w-4 h-4 rounded border-wl-border-default accent-blue-500"
                       />
                     </td>
                     <td className="py-3 px-4 text-white font-medium">
@@ -147,7 +147,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-20 h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden">
+                        <div className="w-20 h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden">
                           <div
                             className="h-full bg-emerald-500 transition-all"
                             style={{ width: `${env.completionRate}%` }}
@@ -171,8 +171,8 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
 
       {/* Detail Drawer */}
       {selectedEnvelope && (
-        <Card className="mt-6 bg-[#12121a] border-[#1e1e2e]">
-          <CardHeader className="border-b border-[#1e1e2e] flex flex-row items-center justify-between">
+        <Card className="mt-6 bg-wl-bg-surface border-wl-border-default">
+          <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white">
                 {selectedEnvelope.name}
@@ -200,7 +200,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                     {selectedEnvelope.recipients.map((r) => (
                       <div
                         key={r.id}
-                        className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
+                        className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                       >
                         <div className="flex items-center justify-between mb-1">
                           <p className="text-sm font-medium text-white">
@@ -304,7 +304,7 @@ export default function EnvelopesPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
+    <div className="min-h-screen bg-wl-bg-root p-6 space-y-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -320,7 +320,7 @@ export default function EnvelopesPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Total Envelopes</span>
@@ -330,7 +330,7 @@ export default function EnvelopesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Completed</span>
@@ -342,7 +342,7 @@ export default function EnvelopesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Pending</span>
@@ -354,7 +354,7 @@ export default function EnvelopesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Avg. Completion</span>
@@ -368,7 +368,7 @@ export default function EnvelopesPage() {
       </div>
 
       {/* Filters */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <label className="text-sm font-medium text-gray-400">
@@ -383,7 +383,7 @@ export default function EnvelopesPage() {
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                     filterStatus === status
                       ? "bg-blue-500 text-white"
-                      : "bg-[#1a1a2e] text-gray-400 hover:text-white"
+                      : "bg-wl-bg-elevated text-gray-400 hover:text-white"
                   )}
                 >
                   {status}
@@ -398,7 +398,7 @@ export default function EnvelopesPage() {
       <EnvelopeTable envelopes={filteredEnvelopes} />
 
       {/* Info Card */}
-      <Card className="bg-[#12121a] border-[#1e1e2e] border-2 border-blue-500/20">
+      <Card className="bg-wl-bg-surface border-wl-border-default border-2 border-blue-500/20">
         <CardHeader>
           <CardTitle className="text-base text-blue-400">
             Envelope Creation Wizard

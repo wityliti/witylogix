@@ -112,7 +112,7 @@ const TemplateModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+      <Card className="border border-wl-border-default bg-wl-bg-surface w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
         <CardHeader>
           <CardTitle>
             {template ? "Edit WhatsApp Template" : "Create WhatsApp Template"}
@@ -136,7 +136,7 @@ const TemplateModal = ({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as TemplateCategory)}
-              className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
+              className="w-full px-3 py-2 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
             >
               <option value="UTILITY">Utility</option>
               <option value="MARKETING">Marketing</option>
@@ -198,7 +198,7 @@ export default function WhatsAppPage() {
   const TEMPLATES: WhatsAppTemplate[] = templates ?? [];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="WhatsApp Template Manager"
         subtitle="Create and manage WhatsApp Business templates"
@@ -206,7 +206,7 @@ export default function WhatsAppPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filter & Actions */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
+        <Card className="border border-wl-border-default bg-wl-bg-surface mb-8">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex-1">
@@ -222,7 +222,7 @@ export default function WhatsAppPage() {
                           "px-3 py-2 rounded-lg text-sm font-medium transition-all",
                           category === "all"
                             ? "bg-blue-500 text-white"
-                            : "bg-[#1a1a2e] text-white hover:bg-[#202030]"
+                            : "bg-wl-bg-elevated text-white hover:bg-wl-bg-overlay"
                         )}
                       >
                         {category === "all" ? "All" : category}
@@ -256,7 +256,7 @@ export default function WhatsAppPage() {
         </Card>
 
         {/* Templates Table */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a]">
+        <Card className="border border-wl-border-default bg-wl-bg-surface">
           <CardHeader>
             <CardTitle>
               {TEMPLATES.length} Template
@@ -342,7 +342,7 @@ export default function WhatsAppPage() {
                           <div className="flex gap-2 justify-end">
                             {template.status === "REJECTED" && (
                               <button
-                                className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
+                                className="p-2 hover:bg-wl-bg-elevated rounded-lg transition-colors"
                                 title={template.rejectionReason}
                               >
                                 <AlertCircle className="w-4 h-4 text-red-500" />
@@ -353,7 +353,7 @@ export default function WhatsAppPage() {
                                 setSelectedTemplate(template);
                                 setIsModalOpen(true);
                               }}
-                              className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
+                              className="p-2 hover:bg-wl-bg-elevated rounded-lg transition-colors"
                             >
                               <Edit className="w-4 h-4 text-gray-400" />
                             </button>
@@ -381,7 +381,7 @@ export default function WhatsAppPage() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {TEMPLATES.map((template) => (
-              <Card key={template.id} className="border border-[#1e1e2e] bg-[#12121a]">
+              <Card key={template.id} className="border border-wl-border-default bg-wl-bg-surface">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -399,7 +399,7 @@ export default function WhatsAppPage() {
                   {template.components.map((component, idx) => (
                     <div
                       key={idx}
-                      className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
+                      className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                     >
                       <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
                         {component.type}

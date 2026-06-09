@@ -87,7 +87,7 @@ export default function OrganizationPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Organization Settings"
         subtitle="Manage your organization profile and billing"
@@ -96,7 +96,7 @@ export default function OrganizationPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Organization Details */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Organization Details</CardTitle>
               <CardDescription className="text-gray-400">Update your organization information</CardDescription>
@@ -110,7 +110,7 @@ export default function OrganizationPage() {
                   <img
                     src={orgData.logo}
                     alt="Logo"
-                    className="w-20 h-20 rounded-lg border border-[#1e1e2e] object-cover"
+                    className="w-20 h-20 rounded-lg border border-wl-border-default object-cover"
                   />
                   <Button variant="secondary" size="sm" asChild>
                     <label className="cursor-pointer">
@@ -159,7 +159,7 @@ export default function OrganizationPage() {
                   <select
                     value={orgData.industry}
                     onChange={(e) => setOrgData({ ...orgData, industry: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="Logistics & Delivery">Logistics & Delivery</option>
                     <option value="E-Commerce">E-Commerce</option>
@@ -176,7 +176,7 @@ export default function OrganizationPage() {
                   <select
                     value={orgData.companySize}
                     onChange={(e) => setOrgData({ ...orgData, companySize: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="1-10">1-10 employees</option>
                     <option value="10-50">10-50 employees</option>
@@ -196,7 +196,7 @@ export default function OrganizationPage() {
           </Card>
 
           {/* Billing Information */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e] border-l-4 border-l-blue-500">
+          <Card className="bg-wl-bg-surface border border-wl-border-default border-l-4 border-l-blue-500">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -208,7 +208,7 @@ export default function OrganizationPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-[#1a1a2e] rounded-lg">
+                <div className="p-4 bg-wl-bg-elevated rounded-lg">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
                     Monthly Cost
                   </p>
@@ -247,7 +247,7 @@ export default function OrganizationPage() {
                           {stat.current.toLocaleString()} / {stat.limit.toLocaleString()}
                         </span>
                       </div>
-                      <div className="w-full bg-[#0a0a0f] rounded-full h-2">
+                      <div className="w-full bg-wl-bg-root rounded-full h-2">
                         <div
                           className={cn("h-2 rounded-full transition-all", stat.color)}
                           style={{ width: `${Math.min((stat.current / stat.limit) * 100, 100)}%` }}
@@ -264,7 +264,7 @@ export default function OrganizationPage() {
           </Card>
 
           {/* Danger Zone */}
-          <Card className="bg-[#12121a] border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-red-500/30">
             <CardHeader>
               <CardTitle className="text-red-400 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />

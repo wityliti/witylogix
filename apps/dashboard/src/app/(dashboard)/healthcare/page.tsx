@@ -27,7 +27,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
   };
 
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -59,7 +59,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
 
 function ComplianceStatusCard({ compliance }: { compliance: Compliance }) {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <Shield className="w-5 h-5" />
@@ -67,25 +67,25 @@ function ComplianceStatusCard({ compliance }: { compliance: Compliance }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-gray-400">HIPAA Compliant</span>
           <Badge variant={compliance?.hipaaCompliant ? "success" : "danger"}>
             {compliance?.hipaaCompliant ? "Yes" : "No"}
           </Badge>
         </div>
-        <div className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-gray-400">Encryption</span>
           <Badge variant={compliance?.encryptionEnabled ? "success" : "warning"}>
             {compliance?.encryptionEnabled ? "Enabled" : "Disabled"}
           </Badge>
         </div>
-        <div className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-gray-400">Audit Logging</span>
           <Badge variant={compliance?.auditLoggingEnabled ? "success" : "warning"}>
             {compliance?.auditLoggingEnabled ? "Enabled" : "Disabled"}
           </Badge>
         </div>
-        <div className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-gray-400">Access Controls</span>
           <Badge variant={compliance?.accessControlsConfigured ? "success" : "warning"}>
             {compliance?.accessControlsConfigured ? "Configured" : "Pending"}
@@ -105,7 +105,7 @@ function ComplianceStatusCard({ compliance }: { compliance: Compliance }) {
 
 function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardHeader>
         <CardTitle className="text-white">Recent Patient Records</CardTitle>
       </CardHeader>
@@ -114,7 +114,7 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
           {patients.slice(0, 5).map((patient) => (
             <div
               key={patient.id}
-              className="p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] hover:border-blue-500/30 transition-colors"
+              className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -150,7 +150,7 @@ function ProviderSummaryCard() {
   ];
 
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardHeader>
         <CardTitle className="text-white">Provider Summary</CardTitle>
       </CardHeader>
@@ -159,7 +159,7 @@ function ProviderSummaryCard() {
           {providers.map((prov) => (
             <div
               key={prov.name}
-              className="flex items-center justify-between p-3 hover:bg-[#1a1a2e] rounded-lg transition-colors"
+              className="flex items-center justify-between p-3 hover:bg-wl-bg-elevated rounded-lg transition-colors"
             >
               <div>
                 <p className="text-sm font-medium text-white">{prov.name}</p>
@@ -242,7 +242,7 @@ export default function HealthcarePage() {
   ];
 
   return (
-    <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-screen">
+    <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
       {/* Header with Action */}
       <div className="flex items-center justify-between">
         <div>
@@ -276,7 +276,7 @@ export default function HealthcarePage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-gray-400 mb-2">Avg. Patient Age</p>
             <p className="text-3xl font-bold text-white">
@@ -293,14 +293,14 @@ export default function HealthcarePage() {
             <p className="text-xs text-gray-500 mt-2">Across all patients</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-gray-400 mb-2">System Status</p>
             <p className="text-3xl font-bold text-emerald-400">Operational</p>
             <p className="text-xs text-gray-500 mt-2">All systems normal</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-gray-400 mb-2">Data Backup</p>
             <p className="text-3xl font-bold text-white">Completed</p>

@@ -237,7 +237,7 @@ export default function AuditTrailPage() {
               placeholder="Search resource, ID, user…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#111118] border border-white/[0.06] rounded-lg pl-9 pr-4 py-2 text-sm text-white/60 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-wl-bg-surface border border-white/[0.06] rounded-lg pl-9 pr-4 py-2 text-sm text-white/60 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
@@ -245,7 +245,7 @@ export default function AuditTrailPage() {
           <select
             value={resourceFilter}
             onChange={(e) => { setResourceFilter(e.target.value); setPage(1); }}
-            className="bg-[#111118] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
+            className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
           >
             <option value="">All resources</option>
             {RESOURCE_TYPES.map((r) => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
@@ -258,20 +258,20 @@ export default function AuditTrailPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="bg-[#111118] border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
+              className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
             />
             <span className="text-white/20 text-xs">to</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="bg-[#111118] border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
+              className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
         </div>
 
         {/* Table */}
-        <div className="rounded-xl bg-[#111118] border border-white/[0.06] overflow-hidden">
+        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
           {/* Column headers */}
           <div className="grid grid-cols-[7rem_1fr_7rem_9rem_9rem] gap-3 px-5 py-2.5 text-[10px] text-white/20 font-medium uppercase tracking-wider border-b border-white/[0.05] bg-white/[0.01]">
             <span>Action</span>

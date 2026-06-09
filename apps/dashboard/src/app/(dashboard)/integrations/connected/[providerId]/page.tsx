@@ -104,7 +104,7 @@ export default function IntegrationDetailPage() {
           Back to Connected Integrations
         </Link>
 
-        <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-elevated border-wl-border-default">
           <CardContent className="pt-6">
             <div className="text-center py-12">
               {isLoading ? (
@@ -185,7 +185,7 @@ export default function IntegrationDetailPage() {
           {usageMetrics.map((metric) => (
             <Card
               key={`${metric.label}-${metric.period}`}
-              className="bg-[#1a1a2e] border-[#1e1e2e]"
+              className="bg-wl-bg-elevated border-wl-border-default"
             >
               <CardContent className="pt-6">
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
@@ -207,7 +207,7 @@ export default function IntegrationDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Sync Controls */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardHeader>
               <CardTitle>Sync Controls</CardTitle>
             </CardHeader>
@@ -239,7 +239,7 @@ export default function IntegrationDetailPage() {
                 </Button>
               </div>
 
-              <div className="pt-4 border-t border-[#1e1e2e]">
+              <div className="pt-4 border-t border-wl-border-default">
                 <Button
                   variant="ghost"
                   className="w-full justify-center"
@@ -273,8 +273,10 @@ export default function IntegrationDetailPage() {
           {showTestResult && (
             <Card
               className={cn(
-                "bg-[#1a1a2e] border",
-                showTestResult.success ? "border-emerald-500/20" : "border-red-500/20"
+                "bg-wl-bg-elevated border",
+                showTestResult.success
+                  ? "border-emerald-500/20"
+                  : "border-red-500/20"
               )}
             >
               <CardContent className="pt-6">
@@ -299,7 +301,7 @@ export default function IntegrationDetailPage() {
           )}
 
           {/* Recent Activity */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Activity</CardTitle>
@@ -357,7 +359,7 @@ export default function IntegrationDetailPage() {
 
           {/* Error Log */}
           {errorLog.length > 0 && (
-            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-elevated border-wl-border-default">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-500">
                   <AlertTriangle className="w-5 h-5" />
@@ -393,9 +395,9 @@ export default function IntegrationDetailPage() {
                       </button>
 
                       {isExpanded && error.stackTrace && (
-                        <div className="border-t border-red-500/20 p-3 bg-[#0a0a0f]">
-                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-[#1a1a2e] p-2 rounded border border-[#1e1e2e]">
-                            {trace}
+                        <div className="border-t border-red-500/20 p-3 bg-wl-bg-root">
+                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-wl-bg-elevated p-2 rounded border border-wl-border-default">
+                            {error.stackTrace}
                           </pre>
                         </div>
                       )}
@@ -409,8 +411,58 @@ export default function IntegrationDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Webhook Configuration */}
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
+            <CardHeader>
+              <CardTitle>Webhook Configuration</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide">
+                  Webhook URL
+                </label>
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={`https://api.example.com/webhooks/${connectionId}`}
+                    readOnly
+                    className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-gray-400 font-mono"
+                  />
+                  <button className="p-2 hover:bg-wl-bg-elevated rounded transition-colors">
+                    <Copy className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">
+                  Subscribed Events
+                </label>
+                <div className="space-y-2">
+                  {["orders.created", "orders.updated", "inventory.changed"].map(
+                    (event) => (
+                      <label
+                        key={event}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-400">
+                          {event}
+                        </span>
+                      </label>
+                    )
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Connection Info */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardHeader>
               <CardTitle>Connection Info</CardTitle>
             </CardHeader>

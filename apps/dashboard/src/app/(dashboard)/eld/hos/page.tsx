@@ -123,9 +123,9 @@ export default function HOSPage() {
   const hosStatus = getHosStatus();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] space-y-6 p-6">
+    <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
       {/* Driver Selector */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-lg text-white">Driver Selection</CardTitle>
         </CardHeader>
@@ -134,7 +134,7 @@ export default function HOSPage() {
           <div className="relative">
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="w-full h-10 px-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-left flex items-center justify-between hover:bg-[#0a0a0f] transition-colors"
+              className="w-full h-10 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors"
             >
               <span className="text-sm font-medium">{selectedDriver?.name}</span>
               <ChevronDown
@@ -146,12 +146,12 @@ export default function HOSPage() {
             </button>
 
             {showSearch && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
+              <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-lg">
                 <Input
                   placeholder="Search drivers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border-0 rounded-t-lg rounded-b-none text-xs h-8 bg-[#1a1a2e] text-white placeholder-gray-500"
+                  className="border-0 rounded-t-lg rounded-b-none text-xs h-8 bg-wl-bg-elevated text-white placeholder-gray-500"
                   autoFocus
                 />
 
@@ -165,10 +165,10 @@ export default function HOSPage() {
                         setSearchQuery("");
                       }}
                       className={cn(
-                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                         selectedDriverId === driver.driverId
                           ? "bg-blue-500/10 text-blue-400"
-                          : "text-gray-400 hover:bg-[#0a0a0f]"
+                          : "text-gray-400 hover:bg-wl-bg-root"
                       )}
                     >
                       {driver.name}
@@ -199,7 +199,7 @@ export default function HOSPage() {
           {/* Status Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Current Status */}
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-sm text-white">Current Status</CardTitle>
               </CardHeader>
@@ -241,33 +241,33 @@ export default function HOSPage() {
             </Card>
 
             {/* Toggles */}
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-sm text-white">HOS Exemptions</CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[#1a1a2e] transition-colors">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-wl-bg-elevated transition-colors">
                   <input
                     type="checkbox"
                     checked={personalConveyance}
                     onChange={(e) => setPersonalConveyance(e.target.checked)}
-                    className="w-4 h-4 rounded border-[#1e1e2e]"
+                    className="w-4 h-4 rounded border-wl-border-default"
                   />
                   <span className="text-xs text-white font-medium">Personal Conveyance</span>
                 </label>
 
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[#1a1a2e] transition-colors">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-wl-bg-elevated transition-colors">
                   <input
                     type="checkbox"
                     checked={yardMove}
                     onChange={(e) => setYardMove(e.target.checked)}
-                    className="w-4 h-4 rounded border-[#1e1e2e]"
+                    className="w-4 h-4 rounded border-wl-border-default"
                   />
                   <span className="text-xs text-white font-medium">Yard Move</span>
                 </label>
 
-                <p className="text-xs text-gray-400 pt-2 border-t border-[#1e1e2e]">
+                <p className="text-xs text-gray-400 pt-2 border-t border-wl-border-default">
                   These HOS exemptions apply only with proper authorization
                 </p>
               </CardContent>
@@ -276,7 +276,7 @@ export default function HOSPage() {
             {/* Compliance Alert */}
             <Card
               className={cn(
-                "bg-[#12121a] border-[#1e1e2e]",
+                "bg-wl-bg-surface border-wl-border-default",
                 hosStatus === "critical" && "border-red-500/50 bg-red-500/5"
               )}
             >
@@ -312,7 +312,7 @@ export default function HOSPage() {
           </div>
 
           {/* Daily Log Graph */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-white">24-Hour Daily Log</CardTitle>
@@ -354,7 +354,7 @@ export default function HOSPage() {
                 ))}
 
                 {/* Legend */}
-                <div className="pt-4 flex flex-wrap gap-4 text-xs text-gray-400 border-t border-[#1e1e2e]">
+                <div className="pt-4 flex flex-wrap gap-4 text-xs text-gray-400 border-t border-wl-border-default">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm bg-red-500/40" />
                     Driving
@@ -377,7 +377,7 @@ export default function HOSPage() {
           </Card>
 
           {/* 8-Day Recap Table */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-lg text-white">8-Day Cycle Recap</CardTitle>
             </CardHeader>
@@ -386,7 +386,7 @@ export default function HOSPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-[#1e1e2e]">
+                    <tr className="border-b border-wl-border-default">
                       <th className="text-left py-2 px-3 text-gray-400 font-semibold">Day</th>
                       <th className="text-center py-2 px-3 text-gray-400 font-semibold">Driving</th>
                       <th className="text-center py-2 px-3 text-gray-400 font-semibold">On-Duty</th>
@@ -396,7 +396,7 @@ export default function HOSPage() {
                   </thead>
                   <tbody>
                     {eightDayRecap.map((entry, idx) => (
-                      <tr key={idx} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e]">
+                      <tr key={idx} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
                         <td className="py-2 px-3 font-semibold text-white">{entry.day}</td>
                         <td className="py-2 px-3 text-center text-white">{entry.driving.toFixed(1)}h</td>
                         <td className="py-2 px-3 text-center text-white">{entry.onDuty.toFixed(1)}h</td>
@@ -437,7 +437,7 @@ export default function HOSPage() {
           <ViolationTimeline violations={violations} isLoading={violationsLoading} />
 
           {/* Edit Request Workflow */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-white">
                 <Edit2 className="w-5 h-5 text-blue-500" />
@@ -447,7 +447,7 @@ export default function HOSPage() {
 
             <CardContent>
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
+                <div className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">How It Works</p>
                   <ol className="space-y-2 text-xs text-white">
                     <li>1. Driver submits log edit request with reason and time</li>

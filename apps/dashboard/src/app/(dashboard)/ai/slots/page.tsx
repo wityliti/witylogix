@@ -115,7 +115,7 @@ export default function SlotAIPage() {
 
       <div className="px-6 lg:px-8 pb-8 space-y-5">
         {/* Query form */}
-        <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
           <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Preview Slot Recommendations</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Customer ID */}
@@ -126,7 +126,7 @@ export default function SlotAIPage() {
                 placeholder="cust_xxxxxxxx"
                 value={customerId}
                 onChange={(e) => setCustomerId(e.target.value)}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 placeholder:text-white/15 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-sunken border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 placeholder:text-white/15 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
 
@@ -137,7 +137,7 @@ export default function SlotAIPage() {
                 value={activeZoneId}
                 onChange={(e) => setZoneId(e.target.value)}
                 disabled={zonesLoading}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
+                className="w-full bg-wl-bg-sunken border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
               >
                 {zonesLoading ? (
                   <option>Loading zones…</option>
@@ -158,7 +158,7 @@ export default function SlotAIPage() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-sunken border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -179,7 +179,7 @@ export default function SlotAIPage() {
 
         {/* Results */}
         {!queryUrl ? (
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-12 text-center">
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
             <p className="text-sm text-white/25">Enter a customer ID and click "Get Recommendations"</p>
             <p className="text-xs text-white/15 mt-1">Customer ID is required to personalise slot scoring</p>
@@ -187,11 +187,11 @@ export default function SlotAIPage() {
         ) : loading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
+              <div key={i} className="h-28 bg-wl-bg-surface border border-white/[0.06] rounded-xl animate-pulse" />
             ))}
           </div>
         ) : slots.length === 0 ? (
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-12 text-center">
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
             <p className="text-sm text-white/25">No slot recommendations available</p>
             <p className="text-xs text-white/15 mt-1">Try a different zone or date</p>
@@ -222,7 +222,7 @@ export default function SlotAIPage() {
                       'rounded-xl border p-5 transition-all',
                       isTop
                         ? 'bg-emerald-500/5 border-emerald-500/20'
-                        : 'bg-[#111118] border-white/[0.06] hover:border-white/[0.10]',
+                        : 'bg-wl-bg-surface border-white/[0.06] hover:border-white/[0.10]',
                     )}
                   >
                     <div className="flex items-start gap-4">

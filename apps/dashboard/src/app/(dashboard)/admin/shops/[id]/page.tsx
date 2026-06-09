@@ -152,9 +152,9 @@ export default function AdminShopDetail() {
   const isSuspended = shop.status === "SUSPENDED";
 
   return (
-    <div className="bg-[#0a0a0f]-root">
+    <div className="bg-wl-bg-root-root">
       {/* Header */}
-      <div className="px-6 py-6 border-b border-[#1e1e2e] flex gap-4 items-center justify-between">
+      <div className="px-6 py-6 border-b border-wl-border-default flex gap-4 items-center justify-between">
         <Link
           href="/admin"
           className="text-blue-600 no-underline flex items-center gap-2 hover:opacity-80"
@@ -169,7 +169,7 @@ export default function AdminShopDetail() {
 
       <div className="p-6">
         {/* Shop Header Card */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-5">
               <div>
@@ -203,7 +203,7 @@ export default function AdminShopDetail() {
             </div>
 
             {/* Store Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-[#1e1e2e]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border-default">
               <div>
                 <p className="text-gray-400 mb-1 text-xs">Store ID</p>
                 <p className="text-white text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
@@ -240,7 +240,7 @@ export default function AdminShopDetail() {
 
         {/* Usage Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -254,7 +254,7 @@ export default function AdminShopDetail() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -268,7 +268,7 @@ export default function AdminShopDetail() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -282,7 +282,7 @@ export default function AdminShopDetail() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -300,7 +300,7 @@ export default function AdminShopDetail() {
         </div>
 
         {/* Admin Actions */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
           <CardContent className="p-5">
             <h3 className="text-base font-semibold text-white mb-4">Admin Actions</h3>
             <div className="flex gap-3 flex-wrap">
@@ -360,7 +360,7 @@ export default function AdminShopDetail() {
                   </button>
                   <button
                     onClick={() => setShowSuspendConfirm(false)}
-                    className="bg-[#1e1e2e] text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                    className="bg-wl-bg-elevated text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
                   >
                     Cancel
                   </button>
@@ -375,8 +375,15 @@ export default function AdminShopDetail() {
                   <p className="text-white m-0 text-sm">Deleting this account is permanent and cannot be undone.</p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="bg-red-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">Confirm Delete</button>
-                  <button onClick={() => setShowDeleteConfirm(false)} className="bg-[#1e1e2e] text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">Cancel</button>
+                  <button className="bg-red-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
+                    Confirm Delete
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="bg-wl-bg-elevated text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             )}
@@ -384,7 +391,7 @@ export default function AdminShopDetail() {
         </Card>
 
         {/* Activity Log */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
             <h3 className="text-base font-semibold text-white mb-4">Platform Activity Log</h3>
             {activityLoading ? (
@@ -396,7 +403,7 @@ export default function AdminShopDetail() {
                 {activityLogs.map((log, index) => (
                   <div
                     key={log.id}
-                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-[#1e1e2e]")}
+                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-wl-border-default")}
                   >
                     <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-blue-500" />
                     <div className="flex-1 min-w-0">

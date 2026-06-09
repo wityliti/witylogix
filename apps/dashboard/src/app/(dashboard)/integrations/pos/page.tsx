@@ -364,7 +364,7 @@ export default function POSIntegrationPage() {
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
@@ -422,25 +422,25 @@ export default function POSIntegrationPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-[#12121a] rounded p-2">
+                  <div className="bg-wl-bg-surface rounded p-2">
                     <p className="text-xs text-gray-300">Locations</p>
                     <p className="text-lg font-bold text-white">
                       {provider.locationsCount}
                     </p>
                   </div>
-                  <div className="bg-[#12121a] rounded p-2">
+                  <div className="bg-wl-bg-surface rounded p-2">
                     <p className="text-xs text-gray-300">Terminals</p>
                     <p className="text-lg font-bold text-white">
                       {provider.terminalsCount}
                     </p>
                   </div>
-                  <div className="bg-[#12121a] rounded p-2">
+                  <div className="bg-wl-bg-surface rounded p-2">
                     <p className="text-xs text-gray-300">Orders Today</p>
                     <p className="text-lg font-bold text-white">
                       {provider.ordersToday}
                     </p>
                   </div>
-                  <div className="bg-[#12121a] rounded p-2">
+                  <div className="bg-wl-bg-surface rounded p-2">
                     <p className="text-xs text-gray-300">Revenue</p>
                     <p className="text-lg font-bold text-white">
                       {formatCurrency(provider.revenueToday)}
@@ -480,7 +480,7 @@ export default function POSIntegrationPage() {
                     "p-4 rounded-lg border cursor-pointer transition-all",
                     selectedLocation === location.id
                       ? "border-blue-500 bg-blue-500/10"
-                      : "border-[#1e1e2e] hover:border-[#1e1e2e]"
+                      : "border-wl-border-default hover:border-wl-border-default"
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -528,7 +528,7 @@ export default function POSIntegrationPage() {
                     "px-3 py-1 text-xs font-semibold rounded-md border capitalize transition-all",
                     menuFilterStatus === status
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                      : "bg-transparent text-gray-400 border-wl-border-default"
                   )}
                 >
                   {status === "all" ? "All" : status === "out_of_stock" ? "Out of Stock" : status}
@@ -543,14 +543,14 @@ export default function POSIntegrationPage() {
                 placeholder="Search menu items..."
                 value={menuSearchTerm}
                 onChange={(e) => setMenuSearchTerm(e.target.value)}
-                className="w-full p-2 px-3 bg-[#12121a] border border-[#1e1e2e] rounded-md text-sm text-white outline-none"
+                className="w-full p-2 px-3 bg-wl-bg-surface border border-wl-border-default rounded-md text-sm text-white outline-none"
               />
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="p-3 text-left font-semibold text-gray-400">
                       Item Name
                     </th>
@@ -576,8 +576,8 @@ export default function POSIntegrationPage() {
                     <tr
                       key={item.id}
                       className={cn(
-                        "border-b border-[#1e1e2e]",
-                        idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]/30"
+                        "border-b border-wl-border-default",
+                        idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated/30"
                       )}
                     >
                       <td className="p-3 text-white font-medium">{item.name}</td>
@@ -639,7 +639,7 @@ export default function POSIntegrationPage() {
                       "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
                       orderFilterStatus === status
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                        : "bg-transparent text-gray-400 border-wl-border-default"
                     )}
                   >
                     {status === "all" ? "All" : status}
@@ -695,7 +695,7 @@ export default function POSIntegrationPage() {
             <CardContent>
               <div className="space-y-4">
                 {ITEM_PERFORMANCE.map((item, idx) => (
-                  <div key={idx} className="border-b border-[#1e1e2e] last:border-0 pb-4 last:pb-0">
+                  <div key={idx} className="border-b border-wl-border-default last:border-0 pb-4 last:pb-0">
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <h4 className="text-sm font-semibold text-white">
@@ -711,7 +711,7 @@ export default function POSIntegrationPage() {
                         {item.trend === "up" ? "↑" : item.trend === "down" ? "↓" : "→"} {item.trend}
                       </Badge>
                     </div>
-                    <div className="w-full bg-[#12121a] rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-wl-bg-surface rounded-full h-2 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-blue-500 to-blue-400"
                         style={{

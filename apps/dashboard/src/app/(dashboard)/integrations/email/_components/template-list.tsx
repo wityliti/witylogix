@@ -29,7 +29,7 @@ export function TemplateList({
             'w-full text-left p-4 rounded-lg border transition-all',
             selectedId === template.id
               ? 'bg-blue-500/10 border-blue-500'
-              : 'bg-[#1a1a2e] border-[#1e1e2e] hover:border-blue-500/50'
+              : 'bg-wl-bg-elevated border-wl-border-default hover:border-blue-500/50'
           )}
         >
           <div className="font-medium text-white">{template.name}</div>

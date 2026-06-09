@@ -67,7 +67,7 @@ const getStatusIcon = (status: string) => {
 
 export function DriverStatusCard({ driver }: DriverStatusCardProps) {
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
@@ -94,7 +94,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
         </div>
 
         {/* HOS Stats Grid */}
-        <div className="grid grid-cols-4 gap-3 mb-6 pb-6 border-b border-[#1e1e2e]">
+        <div className="grid grid-cols-4 gap-3 mb-6 pb-6 border-b border-wl-border-default">
           <div className="text-center">
             <p className="text-xs font-medium text-gray-500 uppercase">
               Driving
@@ -130,7 +130,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
         </div>
 
         {/* Break Status */}
-        <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
+        <div className="mb-4 pb-4 border-b border-wl-border-default">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-gray-500 uppercase">
               Break Status
@@ -155,7 +155,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             <Button
               variant="secondary"
               size="sm"
-              className="bg-[#12121a] hover:bg-[#1a1a2e]"
+              className="bg-wl-bg-surface hover:bg-wl-bg-elevated"
             >
               <Eye className="w-4 h-4 mr-2" />
               Details

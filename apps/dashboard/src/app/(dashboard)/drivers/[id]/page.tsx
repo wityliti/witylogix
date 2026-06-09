@@ -324,8 +324,9 @@ export default function DriverDetailPage() {
 
           {/* Left: score dial + breakdown */}
           <div className="space-y-4">
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 flex flex-col items-center">
-              <ScoreArc score={scoreData.compositeScore} />
+            {/* Score dial */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
+              <ScoreArc score={score.compositeScore} />
               <p className="text-xs text-white/30 mt-1">Composite Score</p>
               {scoreDelta !== null && (
                 <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
@@ -337,7 +338,8 @@ export default function DriverDetailPage() {
               )}
             </div>
 
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 space-y-4">
+            {/* Score breakdown */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">Score Breakdown</h3>
               <BreakdownRow label="On-Time Delivery"  value={scoreData.breakdown.onTimeScore}          icon={Clock}       accent="#34d399" />
               <BreakdownRow label="Customer Rating"   value={scoreData.breakdown.customerRatingScore}   icon={Star}        accent="#fbbf24" />
@@ -356,7 +358,7 @@ export default function DriverDetailPage() {
                 { label: 'Avg Rating',   value: avgRating != null ? avgRating.toFixed(2) : '—',      icon: Star,      accent: '#fbbf24', suffix: avgRating != null ? '/ 5' : undefined },
                 { label: 'POD Rate',     value: podPct != null ? `${podPct.toFixed(1)}%` : '—',      icon: Camera,    accent: '#60a5fa' },
               ].map(({ label, value, suffix, icon: Icon, accent }) => (
-                <div key={label} className="relative overflow-hidden rounded-xl bg-[#111118] border border-white/[0.06] p-4 hover:border-white/[0.12] transition-all">
+                <div key={label} className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-4 group hover:border-white/[0.12] transition-all">
                   <div className="absolute top-0 left-0 right-0 h-[2px] opacity-40" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] text-white/35">{label}</span>
@@ -372,7 +374,8 @@ export default function DriverDetailPage() {
               ))}
             </div>
 
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+            {/* Score history chart */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-white/60 tracking-wide">Score History</h3>
                 <span className="text-[11px] text-white/20 font-mono">weekly · 56d</span>
@@ -386,7 +389,8 @@ export default function DriverDetailPage() {
               )}
             </div>
 
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+            {/* Raw metrics */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
               <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Delivery Metrics</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[

@@ -49,7 +49,7 @@ export function PaymentProviderCard({
   const config = statusConfig[provider.status];
 
   return (
-    <div className="border border-[#1e1e2e] rounded-lg p-4 bg-[#12121a] hover:bg-[#16161e] transition-colors">
+    <div className="border border-wl-border-default rounded-lg p-4 bg-wl-bg-surface hover:bg-wl-bg-elevated transition-colors">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3">
           <div className="text-2xl">{provider.icon}</div>

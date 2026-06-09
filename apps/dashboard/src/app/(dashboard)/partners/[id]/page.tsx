@@ -256,7 +256,7 @@ export default function PartnerDetailPage() {
                 </div>
               </dl>
               {partner.description && (
-                <p className="mt-4 text-sm text-gray-400 border-t border-[#1e1e2e] pt-4">
+                <p className="mt-4 text-sm text-gray-400 border-t border-wl-border-default pt-4">
                   {partner.description}
                 </p>
               )}
@@ -382,7 +382,7 @@ export default function PartnerDetailPage() {
                 </div>
               )}
 
-              <div className="pt-4 border-t border-[#1e1e2e]">
+              <div className="pt-4 border-t border-wl-border-default">
                 <Button
                   variant="secondary"
                   size="md"
@@ -431,13 +431,13 @@ export default function PartnerDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+                <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
                     Max Delivery Time
                   </span>
                   <p className="text-2xl font-bold text-white mt-2">{maxDeliveryTime} min</p>
                 </div>
-                <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+                <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
                     Max Distance
                   </span>

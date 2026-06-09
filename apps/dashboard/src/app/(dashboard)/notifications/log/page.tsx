@@ -101,7 +101,7 @@ function DetailModal({ log, onClose }: { log: ApiNotificationLog; onClose: () =>
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
       <Card
-        className="border border-zinc-800 bg-[#12121a] w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"
+        className="border border-zinc-800 bg-wl-bg-surface w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <CardHeader>
@@ -227,7 +227,7 @@ export default function NotificationLogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Notification Log"
         subtitle="Track sent notifications and delivery status"
@@ -248,7 +248,7 @@ export default function NotificationLogPage() {
             { label: "Bounce Rate", value: `${stats.bounceRate}%`, accent: "text-amber-400" },
             { label: "Pending", value: String(stats.pending), accent: "text-zinc-400" },
           ].map(({ label, value, sub, accent }) => (
-            <Card key={label} className="border border-zinc-800 bg-[#12121a]">
+            <Card key={label} className="border border-zinc-800 bg-wl-bg-surface">
               <CardContent className="pt-5 pb-4">
                 <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">{label}</p>
                 <p className={cn("text-2xl font-bold", accent ?? "text-white")}>{loading ? "—" : value}</p>
@@ -259,7 +259,7 @@ export default function NotificationLogPage() {
         </div>
 
         {/* Filters */}
-        <Card className="border border-zinc-800 bg-[#12121a]">
+        <Card className="border border-zinc-800 bg-wl-bg-surface">
           <CardContent className="pt-5">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
@@ -322,7 +322,7 @@ export default function NotificationLogPage() {
         </Card>
 
         {/* Table */}
-        <Card className="border border-zinc-800 bg-[#12121a]">
+        <Card className="border border-zinc-800 bg-wl-bg-surface">
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
               <CardTitle className="text-base">

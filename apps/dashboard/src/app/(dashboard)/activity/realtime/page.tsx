@@ -64,8 +64,8 @@ export default function RealtimePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+    <div className="flex flex-col min-h-screen bg-wl-bg-root">
+      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -110,7 +110,7 @@ export default function RealtimePage() {
                     'px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap',
                     selectedType === type
                       ? 'bg-blue-500 text-white'
-                      : 'bg-[#1a1a2e] text-gray-300'
+                      : 'bg-wl-bg-elevated text-gray-300'
                   )}
                 >
                   {type === 'all' ? 'All' : type.replace('.', ' ')} ({count})
@@ -124,7 +124,7 @@ export default function RealtimePage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-3 max-w-4xl">
           {filtered.length === 0 ? (
-            <Card className="p-12 bg-[#12121a] border-[#1e1e2e] text-center">
+            <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
               <p className="text-gray-300">No events</p>
             </Card>
           ) : (
@@ -132,7 +132,7 @@ export default function RealtimePage() {
               {filtered.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-start gap-3 p-4 bg-[#12121a] border border-[#1e1e2e] rounded-md hover:border-[#2a2a3e] transition-colors"
+                  className="flex items-start gap-3 p-4 bg-wl-bg-surface border border-wl-border-default rounded-md hover:border-wl-border-strong transition-colors"
                 >
                   <div className="mt-1 text-gray-300">
                     {getEventIcon(event.type)}
