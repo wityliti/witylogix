@@ -73,13 +73,10 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
    */
   fastify.get("/plans", async (request: FastifyRequest, reply: FastifyReply) => {
     const plans = getPlanComparison();
-
+    // Return standard paginated shape so dashboard useApiList works
     return reply.send({
-      plans,
-      metadata: {
-        total: plans.length,
-        timestamp: new Date(),
-      },
+      data: plans,
+      pagination: { page: 1, limit: plans.length, total: plans.length, totalPages: 1 },
     });
   });
 
@@ -324,6 +321,42 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
     },
   );
 
+  // ── GET /quotas ──────────────────────────────────────────────────────────
+  /**
+   * Returns quota usage as a flat array for the dashboard billing page.
+   * Delegates to the subscription endpoint logic.
+   */
+  fastify.get("/quotas", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { shopId } = request;
+    const shop = await request.tenantDb.shop.findUnique({ where: { id: shopId } });
+    if (!shop) {
+      return reply.send({ data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } });
+    }
+
+    const plan = shop.planTier as import("@witylogix/db").PlanTier;
+    const planFeatures = PLANS[plan];
+    const monthStart = getMonthStart(new Date());
+
+    const [shipmentsUsed, driversUsed, apiCallsUsed, notificationsUsed] = await Promise.all([
+      request.tenantDb.shipment.count({ where: { shopId, createdAt: { gte: monthStart } } }),
+      request.tenantDb.driver.count({ where: { shopId } }),
+      request.tenantDb.routingMeterEvent.count({ where: { shopId, timestamp: { gte: monthStart } } }),
+      request.tenantDb.notificationMeterEvent.count({ where: { shopId, timestamp: { gte: monthStart } } }),
+    ]);
+
+    const quotas = [
+      { name: 'Shipments', current: shipmentsUsed, limit: planFeatures.shipmentsPerMonth, unit: 'shipments/month' },
+      { name: 'Drivers', current: driversUsed, limit: planFeatures.driversLimit, unit: 'active drivers' },
+      { name: 'API Calls', current: apiCallsUsed, limit: planFeatures.apiCallsPerMonth, unit: 'calls/month' },
+      { name: 'Notifications', current: notificationsUsed, limit: planFeatures.notificationsPerMonth, unit: 'notifications/month' },
+    ];
+
+    return reply.send({
+      data: quotas,
+      pagination: { page: 1, limit: quotas.length, total: quotas.length, totalPages: 1 },
+    });
+  });
+
   // ── GET /usage ───────────────────────────────────────────────────────────
   /**
    * Detailed usage metrics with daily breakdown and projections
@@ -512,21 +545,20 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
       ]);
 
       return reply.send({
-        invoices: invoices.map((invoice) => ({
+        data: invoices.map((invoice) => ({
           id: invoice.id,
+          period: new Date(invoice.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' }),
           date: invoice.createdAt,
-          amount: Number(invoice.amount),
+          amount: Number(invoice.amount) / 100,
           currency: invoice.currency,
-          status: invoice.status,
+          status: invoice.status.toLowerCase() === 'completed' ? 'paid' : invoice.status.toLowerCase(),
           description: (invoice.metadata as any)?.description || `Payment ${invoice.type}`,
-          metadata: invoice.metadata,
-          downloadUrl: `/billing/invoices/${invoice.id}/pdf`, // Mock URL
         })),
         pagination: {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit),
+          totalPages: Math.ceil(total / limit),
         },
       });
     },

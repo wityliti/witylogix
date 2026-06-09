@@ -42,114 +42,6 @@ interface MonthlyRevenue {
   payments: number;
 }
 
-const MOCK_PAYMENTS: Payment[] = [
-  {
-    id: "pay-001",
-    invoiceNumber: "INV-2024-001",
-    customerName: "Acme Corp",
-    amount: 2750.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-10",
-    reference: "TXN-20240210-12345",
-  },
-  {
-    id: "pay-002",
-    invoiceNumber: "INV-2024-005",
-    customerName: "Delta Logistics",
-    amount: 4500.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-01-28",
-    reference: "TXN-20240128-67890",
-  },
-  {
-    id: "pay-003",
-    invoiceNumber: "INV-2024-008",
-    customerName: "Gamma Ltd",
-    amount: 1450.0,
-    method: "card",
-    status: "completed",
-    date: "2024-02-18",
-    reference: "CARD-20240218-11111",
-  },
-  {
-    id: "pay-004",
-    invoiceNumber: "INV-2024-003",
-    customerName: "Gamma Ltd",
-    amount: 3200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-05",
-    reference: "TXN-20240305-22222",
-  },
-  {
-    id: "pay-005",
-    invoiceNumber: "INV-2024-002",
-    customerName: "Beta Inc",
-    amount: 1850.5,
-    method: "check",
-    status: "pending",
-    date: "2024-03-08",
-    reference: "CHK-20240308-33333",
-  },
-  {
-    id: "pay-006",
-    invoiceNumber: "INV-2024-007",
-    customerName: "Beta Inc",
-    amount: 3050.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-25",
-    reference: "TXN-20240225-44444",
-  },
-  {
-    id: "pay-007",
-    invoiceNumber: "INV-2024-004",
-    customerName: "Acme Corp",
-    amount: 1600.0,
-    method: "card",
-    status: "failed",
-    date: "2024-02-28",
-    reference: "CARD-20240228-55555",
-  },
-  {
-    id: "pay-008",
-    invoiceNumber: "INV-2024-006",
-    customerName: "Echo Distribution",
-    amount: 2200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-10",
-    reference: "TXN-20240310-66666",
-  },
-  {
-    id: "pay-009",
-    invoiceNumber: "INV-2024-009",
-    customerName: "Acme Corp",
-    amount: 5200.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-03-01",
-    reference: "TXN-20240301-77777",
-  },
-  {
-    id: "pay-010",
-    invoiceNumber: "INV-2024-010",
-    customerName: "Delta Logistics",
-    amount: 3800.0,
-    method: "card",
-    status: "completed",
-    date: "2024-03-02",
-    reference: "CARD-20240302-88888",
-  },
-];
-
-const MONTHLY_REVENUE: MonthlyRevenue[] = [
-  { month: "Jan", revenue: 12500, payments: 5 },
-  { month: "Feb", revenue: 18900, payments: 8 },
-  { month: "Mar", revenue: 15600, payments: 6 },
-];
 
 const getStatusBadgeVariant = (
   status: PaymentStatus
@@ -277,7 +169,29 @@ export default function PaymentsPage() {
   const [dateTo, setDateTo] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
 
-  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments');
+  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments', {
+    limit: 200,
+  });
+
+  // Derive monthly revenue from real payments — no hardcoded data
+  const monthlyRevenue = useMemo<MonthlyRevenue[]>(() => {
+    const byMonth: Record<string, { revenue: number; payments: number }> = {};
+    payments
+      .filter((p) => p.status === 'completed')
+      .forEach((p) => {
+        const d = new Date(p.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+        if (!byMonth[key]) byMonth[key] = { revenue: 0, payments: 0 };
+        byMonth[key].revenue += p.amount;
+        byMonth[key].payments += 1;
+        (byMonth[key] as any)._label = label;
+      });
+    return Object.entries(byMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([, v]) => ({ month: (v as any)._label, revenue: v.revenue, payments: v.payments }));
+  }, [payments]);
 
   // Filter payments
   const filtered = useMemo(() => {
@@ -394,6 +308,27 @@ export default function PaymentsPage() {
     searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo
   );
 
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen animate-pulse">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 w-48 bg-[#1e1e2e] rounded mb-2" />
+            <div className="h-4 w-64 bg-[#1e1e2e] rounded" />
+          </div>
+          <div className="h-9 w-28 bg-[#1e1e2e] rounded" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-[#12121a] border border-[#1e1e2e] rounded-xl" />
+          ))}
+        </div>
+        <div className="h-80 bg-[#12121a] border border-[#1e1e2e] rounded-xl" />
+        <div className="h-48 bg-[#12121a] border border-[#1e1e2e] rounded-xl" />
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <ErrorState
@@ -451,24 +386,29 @@ export default function PaymentsPage() {
           <TrendingUp className="w-5 h-5" />
           Monthly Revenue
         </h2>
-        <div className="h-80 flex items-end justify-center">
-          <RevenueChart data={MONTHLY_REVENUE} />
-        </div>
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          {MONTHLY_REVENUE.map((item) => (
-            <div key={item.month} className="text-center">
-              <p className="text-sm text-gray-400 mb-1">
-                {item.month}
-              </p>
-              <p className="text-lg font-bold text-white">
-                ${item.revenue.toLocaleString()}
-              </p>
-              <p className="text-xs text-gray-400">
-                {item.payments} payments
-              </p>
+        {monthlyRevenue.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-40 text-gray-500">
+            <TrendingUp className="w-8 h-8 mb-2 opacity-40" />
+            <p className="text-sm">No completed payments yet</p>
+          </div>
+        ) : (
+          <>
+            <div className="h-80 flex items-end justify-center">
+              <RevenueChart data={monthlyRevenue} />
             </div>
-          ))}
-        </div>
+            <div className="mt-6 grid grid-cols-3 gap-4">
+              {monthlyRevenue.map((item) => (
+                <div key={item.month} className="text-center">
+                  <p className="text-sm text-gray-400 mb-1">{item.month}</p>
+                  <p className="text-lg font-bold text-white">
+                    ${item.revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-gray-400">{item.payments} payments</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </Card>
 
       {/* Outstanding vs Collected Comparison */}

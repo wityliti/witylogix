@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Table } from '@/components/ui/table';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
+import { useApiList, useApiQuery } from '@/hooks/use-api';
 import {
   CreditCard,
   TrendingUp,
@@ -18,15 +18,21 @@ import {
   Check,
   X,
   AlertCircle,
+  Zap,
 } from 'lucide-react';
 
 interface PricingPlan {
   id: string;
   name: string;
-  price: number;
-  interval: 'month' | 'year';
-  features: { name: string; included: boolean }[];
-  isCurrent?: boolean;
+  monthlyPrice: number;
+  billingCycle: string;
+  shipmentsPerMonth: number;
+  driversLimit: number;
+  apiCallsPerMonth: number;
+  hasAnalytics: boolean;
+  hasRouteOptimization: boolean;
+  hasMultiCarrier: boolean;
+  hasDedicatedSupport: boolean;
 }
 
 interface Invoice {
@@ -34,6 +40,7 @@ interface Invoice {
   date: string;
   period: string;
   amount: number;
+  currency: string;
   status: 'paid' | 'pending' | 'failed';
 }
 
@@ -44,10 +51,27 @@ interface QuotaResource {
   unit: string;
 }
 
-interface SubscriptionData {
-  name: string;
-  price: number;
-  nextBillingDate: string;
+interface SubscriptionSummary {
+  plan: string;
+  status: string;
+  billingCycle: string;
+  nextBillingDate: string | null;
+  limits: {
+    shipments: { used: number; limit: number };
+    drivers: { used: number; limit: number };
+    apiCalls: { used: number; limit: number };
+    notifications: { used: number; limit: number };
+  };
+}
+
+interface PaymentMethodData {
+  id: string;
+  type: string;
+  displayName: string;
+  lastDigits?: string;
+  expiryDate?: string;
+  isDefault: boolean;
+  isActive: boolean;
 }
 
 const getQuotaColor = (percentage: number): 'success' | 'warning' | 'danger' => {
@@ -56,14 +80,38 @@ const getQuotaColor = (percentage: number): 'success' | 'warning' | 'danger' => 
   return 'success';
 };
 
+const PLAN_PRICE: Record<string, number> = {
+  FREE: 0, STARTER: 29, GROWTH: 99, ENTERPRISE: 299,
+};
+
+function planFeatureList(plan: PricingPlan): { name: string; included: boolean }[] {
+  return [
+    { name: `${plan.shipmentsPerMonth.toLocaleString()} shipments/month`, included: true },
+    { name: `${plan.driversLimit} drivers`, included: true },
+    { name: `${plan.apiCallsPerMonth.toLocaleString()} API calls/month`, included: true },
+    { name: 'Route optimization', included: plan.hasRouteOptimization },
+    { name: 'Advanced analytics', included: plan.hasAnalytics },
+    { name: 'Multi-carrier', included: plan.hasMultiCarrier },
+    { name: 'Dedicated support', included: plan.hasDedicatedSupport },
+  ];
+}
+
 export default function BillingPage() {
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
-  const { items: quotas, loading: quotasLoading, error: quotasError } = useApiList<QuotaResource>('/api/v4/billing/quotas');
-  const { items: plans, loading: plansLoading, error: plansError } = useApiList<PricingPlan>('/api/v4/billing/plans');
-  const { items: invoices, loading: invoicesLoading, error: invoicesError } = useApiList<Invoice>('/api/v4/billing/invoices');
 
-  const loading = quotasLoading || plansLoading || invoicesLoading;
-  const error = quotasError || plansError || invoicesError;
+  const { items: quotas, loading: quotasLoading, error: quotasError } =
+    useApiList<QuotaResource>('/api/v4/billing/quotas');
+  const { items: plans, loading: plansLoading, error: plansError } =
+    useApiList<PricingPlan>('/api/v4/billing/plans');
+  const { items: invoices, loading: invoicesLoading, error: invoicesError } =
+    useApiList<Invoice>('/api/v4/billing/invoices');
+  const { data: subscription, loading: subLoading, error: subError } =
+    useApiQuery<SubscriptionSummary>('/api/v4/billing/subscription');
+  const { items: paymentMethods, loading: pmLoading } =
+    useApiList<PaymentMethodData>('/api/v4/payment-methods/payment-methods');
+
+  const loading = quotasLoading || plansLoading || invoicesLoading || subLoading;
+  const error = quotasError || plansError || invoicesError || subError;
 
   if (loading) return <LoadingSkeleton />;
   if (error) {
@@ -74,70 +122,17 @@ export default function BillingPage() {
     );
   }
 
-  const currentPlan: SubscriptionData = {
-    name: 'Professional',
-    price: 299,
-    nextBillingDate: '2026-04-20',
-  };
+  const planName = subscription?.plan ?? 'FREE';
+  const planPrice = PLAN_PRICE[planName] ?? 0;
+  const nextBillingDate = subscription?.nextBillingDate
+    ? new Date(subscription.nextBillingDate).toLocaleDateString()
+    : 'N/A';
 
-  const quotasData = quotas || [
-    { name: 'API Requests', current: 2400, limit: 3000, unit: 'requests/month' },
-    { name: 'Storage', current: 85, limit: 100, unit: 'GB' },
-    { name: 'Users', current: 12, limit: 20, unit: 'active seats' },
-  ];
-
-  const plansData = plans || [
-    {
-      id: '1',
-      name: 'Starter',
-      price: 99,
-      interval: 'month' as const,
-      isCurrent: false,
-      features: [
-        { name: 'Up to 1000 API requests/month', included: true },
-        { name: '10 GB storage', included: true },
-        { name: '5 active users', included: true },
-        { name: 'Email support', included: true },
-        { name: 'Advanced analytics', included: false },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Professional',
-      price: 299,
-      interval: 'month' as const,
-      isCurrent: true,
-      features: [
-        { name: 'Up to 10000 API requests/month', included: true },
-        { name: '100 GB storage', included: true },
-        { name: '20 active users', included: true },
-        { name: 'Priority email support', included: true },
-        { name: 'Advanced analytics', included: true },
-        { name: 'Custom integrations', included: false },
-      ],
-    },
-    {
-      id: '3',
-      name: 'Enterprise',
-      price: 999,
-      interval: 'month' as const,
-      isCurrent: false,
-      features: [
-        { name: 'Unlimited API requests', included: true },
-        { name: 'Unlimited storage', included: true },
-        { name: 'Unlimited users', included: true },
-        { name: '24/7 phone & email support', included: true },
-        { name: 'Advanced analytics', included: true },
-        { name: 'Custom integrations', included: true },
-      ],
-    },
-  ];
-
-  const invoicesData = invoices || [
-    { id: '1', period: 'Mar 2026', date: '2026-03-20', amount: 299, status: 'paid' as const },
-    { id: '2', period: 'Feb 2026', date: '2026-02-20', amount: 299, status: 'paid' as const },
-    { id: '3', period: 'Jan 2026', date: '2026-01-20', amount: 299, status: 'paid' as const },
-  ];
+  const currentPlan = { name: planName, price: planPrice, nextBillingDate };
+  const quotasData = quotas;
+  const plansData = plans;
+  const invoicesData = invoices;
+  const primaryMethod = paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0] ?? null;
 
   return (
     <>
@@ -163,13 +158,19 @@ export default function BillingPage() {
 
               <div>
                 <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Next Billing Date</p>
-                <h2 className="text-3xl font-bold text-white">{new Date(currentPlan.nextBillingDate).toLocaleDateString()}</h2>
+                <h2 className="text-3xl font-bold text-white">{currentPlan.nextBillingDate}</h2>
               </div>
             </div>
 
             {/* Usage Metrics */}
             <div className="mt-8 pt-8 border-t border-[#1e1e2e]">
               <h3 className="text-sm font-semibold text-gray-400 uppercase mb-6">Usage This Month</h3>
+              {quotasData.length === 0 ? (
+                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                  <Zap className="w-4 h-4" />
+                  <span>No usage data available yet</span>
+                </div>
+              ) : (
               <div className="space-y-6">
                 {quotasData.map((resource) => {
                   const percentage = (resource.current / resource.limit) * 100;
@@ -206,6 +207,7 @@ export default function BillingPage() {
                   );
                 })}
               </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -225,38 +227,46 @@ export default function BillingPage() {
         {/* Plan Comparison Section */}
         <div>
           <h2 className="text-2xl font-bold text-white mb-4">Plan Comparison</h2>
+          {plansData.length === 0 ? (
+            <div className="p-8 text-center text-gray-500 border border-[#1e1e2e] rounded-xl bg-[#12121a]">
+              No plans available at this time.
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {plansData.map((plan) => (
+            {plansData.map((plan) => {
+              const isCurrent = plan.name === planName;
+              const features = planFeatureList(plan);
+              return (
               <Card
-                key={plan.id}
-                onClick={() => setExpandedPlan(expandedPlan === plan.id ? null : plan.id)}
+                key={plan.id ?? plan.name}
+                onClick={() => setExpandedPlan(expandedPlan === (plan.id ?? plan.name) ? null : (plan.id ?? plan.name))}
                 className={cn(
                   'relative overflow-hidden cursor-pointer transition-all border-2',
-                  plan.isCurrent
+                  isCurrent
                     ? 'border-blue-500 bg-blue-500/5'
                     : 'border-[#1e1e2e] bg-[#12121a] hover:border-blue-500/50'
                 )}
               >
-                {plan.isCurrent && (
+                {isCurrent && (
                   <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
                 )}
 
-                <CardContent className={cn('pt-6', plan.isCurrent && 'pt-8')}>
-                  {plan.isCurrent && (
+                <CardContent className={cn('pt-6', isCurrent && 'pt-8')}>
+                  {isCurrent && (
                     <Badge variant="primary" className="mb-4">
                       Current Plan
                     </Badge>
                   )}
 
-                  <h3 className="text-lg font-bold text-white mb-2">{plan.name}</h3>
+                  <h3 className="text-lg font-bold text-white mb-2 capitalize">{plan.name}</h3>
                   <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-3xl font-bold text-white">${plan.price}</span>
+                    <span className="text-3xl font-bold text-white">${plan.monthlyPrice}</span>
                     <span className="text-gray-400">/month</span>
                   </div>
 
                   <div className="space-y-3 mb-6">
-                    {plan.features
-                      .slice(0, expandedPlan === plan.id ? plan.features.length : 3)
+                    {features
+                      .slice(0, expandedPlan === (plan.id ?? plan.name) ? features.length : 4)
                       .map((feature, idx) => (
                         <div key={idx} className="flex items-start gap-2">
                           {feature.included ? (
@@ -275,20 +285,20 @@ export default function BillingPage() {
                         </div>
                       ))}
 
-                    {plan.features.length > 3 && expandedPlan !== plan.id && (
+                    {features.length > 4 && expandedPlan !== (plan.id ?? plan.name) && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setExpandedPlan(plan.id);
+                          setExpandedPlan(plan.id ?? plan.name);
                         }}
                         className="text-blue-400 hover:text-blue-300 text-sm font-semibold mt-2 transition-colors"
                       >
-                        +{plan.features.length - 3} more features
+                        +{features.length - 4} more features
                       </button>
                     )}
                   </div>
 
-                  {plan.isCurrent ? (
+                  {isCurrent ? (
                     <Button variant="secondary" disabled className="w-full">
                       Current Plan
                     </Button>
@@ -299,8 +309,10 @@ export default function BillingPage() {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
+          )}
         </div>
 
         {/* Payment Method Section */}
@@ -312,18 +324,25 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {pmLoading ? (
+              <div className="h-20 bg-[#1a1a2e] rounded-lg animate-pulse" />
+            ) : primaryMethod ? (
             <div className="bg-[#1a1a2e] rounded-lg p-5 border border-[#1e1e2e]">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-9 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <span className="text-white text-xs font-bold">VISA</span>
+                    <span className="text-white text-xs font-bold uppercase">{primaryMethod.type.slice(0, 4)}</span>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">Visa ending in 4242</p>
-                    <p className="text-xs text-gray-500 mt-1">Expires 12/27</p>
+                    <p className="text-sm font-semibold text-white">{primaryMethod.displayName}</p>
+                    {primaryMethod.expiryDate && (
+                      <p className="text-xs text-gray-500 mt-1">Expires {primaryMethod.expiryDate}</p>
+                    )}
                   </div>
                 </div>
-                <Badge variant="success">Active</Badge>
+                <Badge variant={primaryMethod.isActive ? 'success' : 'default'}>
+                  {primaryMethod.isActive ? 'Active' : 'Inactive'}
+                </Badge>
               </div>
 
               <div className="flex gap-2">
@@ -335,6 +354,9 @@ export default function BillingPage() {
                 </Button>
               </div>
             </div>
+            ) : (
+              <p className="text-sm text-gray-500 py-4 text-center">No payment methods on file.</p>
+            )}
 
             <Button variant="secondary" className="w-full">
               Add Payment Method
@@ -351,6 +373,12 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {invoicesData.length === 0 ? (
+              <div className="py-12 text-center text-gray-500">
+                <TrendingUp className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">No invoices yet. Your billing history will appear here.</p>
+              </div>
+            ) : (
             <Table<Invoice>
               columns={[
                 {
@@ -373,7 +401,7 @@ export default function BillingPage() {
                   width: '120px',
                   render: (invoice) => (
                     <span className="font-mono font-semibold text-white">
-                      ${invoice.amount.toFixed(2)}
+                      ${Number(invoice.amount).toFixed(2)}
                     </span>
                   ),
                 },
@@ -409,20 +437,23 @@ export default function BillingPage() {
               ]}
               data={invoicesData}
             />
+            )}
           </CardContent>
         </Card>
 
         {/* Auto-renewal Notice */}
-        <div className="p-5 rounded-lg border border-amber-500/30 bg-amber-500/10 flex gap-4">
-          <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm text-gray-300">
-              Your subscription will automatically renew on{' '}
-              <strong className="text-white">{new Date(currentPlan.nextBillingDate).toLocaleDateString()}</strong> at $
-              {currentPlan.price}. You can cancel anytime before the renewal date.
-            </p>
+        {currentPlan.nextBillingDate !== 'N/A' && (
+          <div className="p-5 rounded-lg border border-amber-500/30 bg-amber-500/10 flex gap-4">
+            <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-gray-300">
+                Your subscription will automatically renew on{' '}
+                <strong className="text-white">{currentPlan.nextBillingDate}</strong> at $
+                {currentPlan.price}/month. You can cancel anytime before the renewal date.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
