@@ -28,7 +28,10 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const { page, limit } = paginationSchema.parse(request.query);
 
-    const [zones, total] = await Promise.all([
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const [zones, total, ordersByZoneRaw] = await Promise.all([
       request.tenantDb.deliveryZone.findMany({
         orderBy: [{ priority: "desc" }, { name: "asc" }],
         skip: (page - 1) * limit,
@@ -51,11 +54,25 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
         },
       }),
       request.tenantDb.deliveryZone.count(),
+      request.tenantDb.$queryRaw<Array<{ zone_id: string; cnt: bigint }>>`
+        SELECT ts.delivery_zone_id::text AS zone_id, COUNT(o.id) AS cnt
+        FROM orders o
+        JOIN time_slots ts ON ts.id = o.time_slot_id
+        WHERE o.shop_id = ${request.shopId}::uuid
+          AND o.created_at >= ${startOfToday}
+          AND ts.delivery_zone_id IS NOT NULL
+        GROUP BY ts.delivery_zone_id
+      `,
     ]);
+
+    const ordersByZone = new Map(
+      ordersByZoneRaw.map((r) => [r.zone_id, Number(r.cnt)])
+    );
 
     const data = zones.map((zone) => ({
       ...zone,
       boundary: zone.boundary || null,
+      ordersToday: ordersByZone.get(zone.id) ?? 0,
     }));
 
     return {
