@@ -20,19 +20,18 @@ export function ProviderComparison({
     return providers.slice(0, maxCompare);
   }, [providers, maxCompare]);
 
-  // Mock comparison data
   const getMetricValue = (provider: Provider, metric: string): number => {
     switch (metric) {
       case "latency":
-        return Math.random() * 300 + 50; // 50-350ms
+        return provider.metrics.averageLatencyMs;
       case "uptime":
-        return Math.random() * 10 + 90; // 90-100%
+        return provider.metrics.successRate * 100;
       case "cost":
-        return Math.random() * 500 + 50; // $50-550/month
+        return 0; // billing data not yet available via API
       case "features":
-        return Math.floor(Math.random() * 15 + 10); // 10-25 features
+        return provider.metrics.requestCount > 0 ? 1 : 0;
       case "rate-limits":
-        return Math.random() * 50000 + 10000; // 10k-60k req/hr
+        return provider.rateLimit?.limit ?? 0;
       default:
         return 0;
     }
@@ -86,15 +85,38 @@ export function ProviderComparison({
     return value === best;
   };
 
-  // Mock features matrix
-  const features = [
-    { name: "Real-time Sync", available: [true, true, true, false] },
-    { name: "Webhook Support", available: [true, true, false, true] },
-    { name: "Rate Limiting", available: [true, true, true, true] },
-    { name: "OAuth 2.0", available: [true, false, true, true] },
-    { name: "API Key Auth", available: [true, true, true, true] },
-    { name: "Bulk Operations", available: [false, true, true, false] },
-  ];
+  const features = useMemo(() => [
+    {
+      name: "Webhook Support",
+      available: comparisonProviders.map((p) => !!p.webhookConfig),
+    },
+    {
+      name: "OAuth 2.0",
+      available: comparisonProviders.map(
+        (p) => p.credentialConfig?.authType === "oauth2"
+      ),
+    },
+    {
+      name: "API Key Auth",
+      available: comparisonProviders.map(
+        (p) => !p.credentialConfig || p.credentialConfig.authType === "api-key"
+      ),
+    },
+    {
+      name: "Rate Limiting",
+      available: comparisonProviders.map((p) => !!p.rateLimit),
+    },
+    {
+      name: "Active",
+      available: comparisonProviders.map((p) => p.isActive),
+    },
+    {
+      name: "Has Errors",
+      available: comparisonProviders.map(
+        (p) => !p.errors || p.errors.length === 0
+      ),
+    },
+  ], [comparisonProviders]);
 
   return (
     <div className={cn("w-full overflow-x-auto", className)}>

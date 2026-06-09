@@ -48,10 +48,12 @@ export function RateLimitDisplay({
     const padding = 5;
     const dataPoints = 24; // Last hour in 2.5min intervals
 
-    // Generate mock historical data
+    // Generate a deterministic sine-wave shaped history centred on current usage
     const historicalData = Array.from({ length: dataPoints }, (_, i) => {
-      const maxVariance = rateLimit.limit * 0.3;
-      return rateLimit.current * (0.7 + Math.random() * 0.3);
+      const phase = (i / dataPoints) * Math.PI * 2;
+      const base = rateLimit.current * 0.85;
+      const amplitude = rateLimit.current * 0.15;
+      return base + amplitude * Math.sin(phase);
     });
 
     const max = Math.max(...historicalData, rateLimit.limit);

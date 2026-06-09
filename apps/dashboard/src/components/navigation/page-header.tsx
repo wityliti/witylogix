@@ -22,7 +22,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "bg-[#0f0f14]/60 border-b border-white/[0.06]",
+        "bg-wl-bg-surface/60 border-b border-wl-border-subtle",
         "px-6 py-5",
         className
       )}
