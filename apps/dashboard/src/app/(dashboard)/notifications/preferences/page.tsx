@@ -339,7 +339,7 @@ export default function NotificationPreferencesPage() {
               </div>
 
               {quietHours.enabled && (
-                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-wl-border-default">
+                <div className="space-y-4 p-4 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-white mb-2">
@@ -438,7 +438,7 @@ export default function NotificationPreferencesPage() {
               </div>
 
               {digestSettings.enabled && (
-                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-wl-border-default">
+                <div className="space-y-4 p-4 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-white mb-2">

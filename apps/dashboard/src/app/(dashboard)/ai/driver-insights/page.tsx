@@ -243,7 +243,7 @@ export default function DriverInsightsPage() {
         )}
 
         {/* Leaderboard table */}
-        <div className="rounded-xl bg-[#111118] border border-white/[0.06] overflow-hidden">
+        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide">Performance Leaderboard</h3>
             <div className="flex items-center gap-1">

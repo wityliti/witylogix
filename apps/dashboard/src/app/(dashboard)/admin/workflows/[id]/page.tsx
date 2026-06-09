@@ -145,10 +145,10 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
   return (
     <div className="relative pl-6">
-      <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-[#1e1e2e]" />
+      <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-wl-bg-elevated" />
       {steps.map((step, idx) => (
         <div key={step.id} className={cn("relative", idx < steps.length - 1 ? "mb-5" : "")}>
-          <div className="absolute -left-5 top-2 w-4.5 h-4.5 rounded-full bg-[#0a0a0f] border-4 border-[#1e1e2e] flex items-center justify-center">
+          <div className="absolute -left-5 top-2 w-4.5 h-4.5 rounded-full bg-wl-bg-root border-4 border-wl-border-default flex items-center justify-center">
             <div
               className="w-2 h-2 rounded-full"
               style={{
@@ -280,8 +280,8 @@ export default function WorkflowExecutionDetailPage() {
   const failedSteps = steps.filter(s => s.status === 'failed').length;
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
-      <div className="flex items-center justify-between p-5 px-6 border-b border-[#1e1e2e] bg-[#12121a] backdrop-blur-sm sticky top-0 z-40">
+    <div className="bg-wl-bg-root min-h-screen">
+      <div className="flex items-center justify-between p-5 px-6 border-b border-wl-border-default bg-wl-bg-surface backdrop-blur-sm sticky top-0 z-40">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.push("/admin/workflows")} className="flex items-center gap-1">
             <ChevronLeft size={18} />
@@ -318,7 +318,7 @@ export default function WorkflowExecutionDetailPage() {
           <StatCard label="Duration" value={formatDuration(execution.durationMs)} accentColor="#3b82f6" index={3} />
         </div>
 
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white">Step Timeline</CardTitle>
           </CardHeader>
@@ -329,14 +329,14 @@ export default function WorkflowExecutionDetailPage() {
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 mb-6">
           {execution.input && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader><CardTitle className="text-white">Input Data</CardTitle></CardHeader>
               <CardContent><JsonViewer data={execution.input as Record<string, any>} /></CardContent>
             </Card>
           )}
 
           {execution.metadata && (
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader><CardTitle className="text-white">Execution Context</CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-3">
@@ -351,7 +351,7 @@ export default function WorkflowExecutionDetailPage() {
             </Card>
           )}
 
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader><CardTitle className="text-white">Timeline</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">

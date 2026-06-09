@@ -15,6 +15,7 @@ import {
   CheckCircle,
   Zap,
   Activity,
+  Clock,
   ArrowRight,
   Settings,
 } from 'lucide-react';
@@ -48,7 +49,6 @@ export default function IntegrationOverviewPage() {
     items: connections,
     loading: connectionsLoading,
     error: connectionsError,
-    refetch: refetchConnections,
   } = useApiList<IntegrationConnection>('/api/v4/integrations/connections');
 
   // Derive category summaries from API data
@@ -98,17 +98,6 @@ export default function IntegrationOverviewPage() {
 
     return items;
   }, [categories, searchQuery, selectedCategory, filterStatus]);
-
-  if (connectionsError && !connectionsLoading) {
-    return (
-      <>
-        <Header title="Integration Hub" subtitle="Manage and monitor all your connected integrations" />
-        <div className="p-6">
-          <ErrorState error={connectionsError} onRetry={refetchConnections} />
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -177,43 +166,28 @@ export default function IntegrationOverviewPage() {
             </CardContent>
           </Card>
 
-          {/* Active Connections */}
+          {/* API Usage — coming soon */}
           <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">Active Connections</h3>
-                <Zap className="w-5 h-5 text-emerald-500" />
+              <h3 className="font-semibold text-white mb-4">API Usage (24h)</h3>
+              <div className="flex flex-col items-center justify-center h-24 text-center">
+                <Clock className="w-8 h-8 text-wl-text-tertiary mb-2" />
+                <p className="text-sm text-wl-text-tertiary">
+                  API usage tracking coming soon
+                </p>
               </div>
-              {connectionsLoading ? (
-                <div className="h-24 flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-bold text-white">{totalActive}</span>
-                    <span className="text-gray-400 text-sm mb-1">of {totalProviders}</span>
-                  </div>
-                  <div className="w-full h-2 bg-wl-bg-root rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full transition-all"
-                      style={{ width: `${totalProviders > 0 ? (totalActive / totalProviders) * 100 : 0}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    {totalError > 0 ? `${totalError} with errors` : 'All connections healthy'}
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
 
-          {/* Integration Health */}
+          {/* Error Rate — coming soon */}
           <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">Integration Health</h3>
-                <AlertCircle className={cn('w-5 h-5', totalError > 0 ? 'text-red-500' : 'text-emerald-500')} />
+              <h3 className="font-semibold text-white mb-4">Error Rate Trend</h3>
+              <div className="flex flex-col items-center justify-center h-24 text-center">
+                <Clock className="w-8 h-8 text-wl-text-tertiary mb-2" />
+                <p className="text-sm text-wl-text-tertiary">
+                  API usage tracking coming soon
+                </p>
               </div>
               {connectionsLoading ? (
                 <div className="h-24 flex items-center justify-center">

@@ -181,12 +181,6 @@ export default function LastMileIntegrationPage() {
       />
 
       <div className="p-6 bg-wl-bg-root min-h-screen">
-        {partnersError && (
-          <div className="mb-6 p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
-            {partnersError.message}
-          </div>
-        )}
-
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
@@ -224,11 +218,132 @@ export default function LastMileIntegrationPage() {
           <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
             Courier Partners
           </h2>
-          {partnersLoading ? (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-40 rounded-lg bg-wl-bg-surface animate-pulse" />
-              ))}
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+            {DELIVERY_PROVIDERS.map((provider) => (
+              <Card
+                key={provider.id}
+                hover
+                onClick={() => setSelectedProvider(provider.id)}
+                className={cn(
+                  "cursor-pointer transition-all",
+                  selectedProvider === provider.id && "ring-2 ring-blue-500"
+                )}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
+                      {provider.logo}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white">
+                        {provider.name}
+                      </h3>
+                      <Badge variant="success">● {provider.status}</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs text-gray-400 mb-3">
+                  <div className="flex justify-between">
+                    <span>Deliveries Today:</span>
+                    <span className="text-white font-semibold">
+                      {provider.deliveriesToday}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Revenue:</span>
+                    <span className="text-white font-semibold">
+                      {formatCurrency(provider.revenueToday)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Commission:</span>
+                    <span className="text-white font-semibold">
+                      {provider.commissionsPercentage}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>On-Time Rate:</span>
+                    <span className="text-emerald-500 font-semibold">
+                      {provider.onTimeDeliveryRate}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Avg Delivery Time:</span>
+                    <span className="text-white font-semibold">
+                      {provider.averageDeliveryTime}m
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button variant="secondary" size="sm" className="flex-1">
+                    Settings
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex-1">
+                    View Details
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Performance Metrics */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Delivery Performance Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-wl-border-default">
+                    <th className="p-3 text-left font-semibold text-gray-400">
+                      Provider
+                    </th>
+                    <th className="p-3 text-center font-semibold text-gray-400">
+                      On-Time %
+                    </th>
+                    <th className="p-3 text-center font-semibold text-gray-400">
+                      Avg Time (mins)
+                    </th>
+                    <th className="p-3 text-center font-semibold text-gray-400">
+                      Rating
+                    </th>
+                    <th className="p-3 text-right font-semibold text-gray-400">
+                      Cost per Delivery
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERFORMANCE_METRICS.map((metric, idx) => (
+                    <tr
+                      key={idx}
+                      className={cn(
+                        "border-b border-wl-border-default",
+                        idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated/30"
+                      )}
+                    >
+                      <td className="p-3 text-white font-semibold">
+                        {metric.provider}
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="success">{metric.onTimePercent}%</Badge>
+                      </td>
+                      <td className="p-3 text-center text-white font-semibold">
+                        {metric.avgDeliveryTime}
+                      </td>
+                      <td className="p-3 text-center text-white font-semibold">
+                        {metric.customerRating} ⭐
+                      </td>
+                      <td className="p-3 text-right text-white font-semibold">
+                        {formatCurrency(metric.costPerDelivery)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (partners ?? []).length === 0 ? (
             <Card>
@@ -250,8 +365,10 @@ export default function LastMileIntegrationPage() {
                       selectedPartnerId === partner.id ? null : partner.id
                     )}
                     className={cn(
-                      'cursor-pointer transition-all',
-                      selectedPartnerId === partner.id && 'ring-2 ring-blue-500'
+                      "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
+                      deliveryFilterStatus === status
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-transparent text-gray-400 border-wl-border-default"
                     )}
                   >
                     <div className="flex items-start justify-between mb-3">
@@ -423,9 +540,18 @@ export default function LastMileIntegrationPage() {
                       </div>
                       <p className="text-xs text-gray-500 mt-1">{formatRelative(d.createdAt)}</p>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-wl-border-default text-xs">
+                      <span className="text-gray-400">
+                        {delivery.actualTime ? `${delivery.actualTime}` : delivery.estimatedTime}
+                      </span>
+                      <span className="text-gray-300">
+                        Fee: {formatCurrency(delivery.fee)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
@@ -439,10 +565,10 @@ export default function LastMileIntegrationPage() {
                     key={s}
                     onClick={() => setDriverFilter(s)}
                     className={cn(
-                      'px-2 py-1 text-xs font-semibold rounded border capitalize transition-all',
-                      driverFilter === s
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-transparent text-gray-400 border-wl-border-default'
+                      "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
+                      driverFilterStatus === status
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-transparent text-gray-400 border-wl-border-default"
                     )}
                   >
                     {s === 'all' ? 'All' : s === 'ON_ROUTE' ? 'En Route' : s.charAt(0) + s.slice(1).toLowerCase()}
@@ -451,38 +577,27 @@ export default function LastMileIntegrationPage() {
               </div>
             </CardHeader>
             <CardContent>
-              {driversLoading ? (
-                <div className="space-y-2">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-16 rounded-md bg-wl-bg-surface animate-pulse" />
-                  ))}
-                </div>
-              ) : (drivers ?? []).length === 0 ? (
-                <div className="py-8 text-center text-gray-400 text-sm">No drivers found.</div>
-              ) : (
-                <div className="space-y-2">
-                  {(drivers ?? []).map((driver) => (
-                    <div
-                      key={driver.id}
-                      className={cn(
-                        'p-3 rounded-md border',
-                        driver.status === 'AVAILABLE'
-                          ? 'border-emerald-500/20 bg-emerald-500/10'
-                          : driver.status === 'ON_ROUTE'
-                          ? 'border-amber-500/20 bg-amber-500/10'
-                          : 'border-neutral-600/20 bg-wl-bg-elevated/20'
-                      )}
-                    >
-                      <div className="flex items-start justify-between mb-1">
-                        <div>
-                          <p className="text-sm font-semibold text-white">{driver.name}</p>
-                          <p className="text-xs text-gray-400">
-                            {driver.vehicleType ?? 'Vehicle unknown'}
-                          </p>
-                        </div>
-                        <Badge variant={getDriverStatusVariant(driver.status)}>
-                          {driver.status.replace(/_/g, ' ')}
-                        </Badge>
+              <div className="space-y-2">
+                {filteredDrivers.map((driver) => (
+                  <div
+                    key={driver.id}
+                    className={cn(
+                      "p-3 rounded-md border",
+                      driver.status === "online"
+                        ? "border-emerald-500/20 bg-emerald-500/20"
+                        : driver.status === "on_delivery"
+                        ? "border-amber-500/20 bg-amber-500/20"
+                        : "border-neutral-600/20 bg-wl-bg-elevated/20"
+                    )}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-white">
+                          {driver.name}
+                        </p>
+                        <p className="text-xs text-gray-300">
+                          {driver.provider} • {driver.location}
+                        </p>
                       </div>
                       <div className="flex justify-between text-xs text-gray-400 mt-1">
                         <span>Active orders: {driver._count.orders}</span>

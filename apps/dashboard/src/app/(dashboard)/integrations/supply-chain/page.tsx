@@ -116,7 +116,6 @@ export default function SupplyChainIntegrationsPage() {
     items: warehouseConnections,
     loading: warehousesLoading,
     error: warehousesError,
-    refetch: refetchWarehouses,
   } = useApiList<WarehouseConnection>('/api/v4/integrations/connections?category=supply-chain');
 
   const {
@@ -173,6 +172,7 @@ export default function SupplyChainIntegrationsPage() {
           <StatCard
             label="Connected Warehouses"
             value={totalWarehouses}
+            change={{ value: connections.length, label: "connections" }}
             icon={<Warehouse size={16} />}
             accentColor="#3b82f6"
             index={0}
@@ -180,6 +180,7 @@ export default function SupplyChainIntegrationsPage() {
           <StatCard
             label="Items Tracked"
             value={totalItems > 0 ? `${Math.floor(totalItems / 1000)}K` : '—'}
+            change={{ value: syncs.length, label: "sync configs" }}
             icon={<Package size={16} />}
             accentColor="#3b82f6"
             index={1}
@@ -187,6 +188,7 @@ export default function SupplyChainIntegrationsPage() {
           <StatCard
             label="Synced"
             value={syncedCount}
+            change={{ value: connections.length, label: "total" }}
             icon={<TrendingUp size={16} />}
             accentColor="#3b82f6"
             index={2}
@@ -194,6 +196,7 @@ export default function SupplyChainIntegrationsPage() {
           <StatCard
             label="Connection Errors"
             value={connections.filter((w) => w.syncStatus === "FAILED").length}
+            change={{ value: 0, label: "vs yesterday" }}
             icon={<AlertTriangle size={16} />}
             accentColor="#3b82f6"
             index={3}
