@@ -79,7 +79,7 @@ export default function ShipmentsMapView({
     <WLMap
       center={defaultCenter}
       zoom={11}
-      className="h-full w-full rounded-xl overflow-hidden border border-[#1e1e2e]"
+      className="h-full w-full rounded-xl overflow-hidden border border-wl-border-subtle"
     >
       <BoundsFitter coords={coords} />
       <ShipmentMarkerLayer

@@ -46,7 +46,7 @@ const DialogContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> 
       <div
         ref={ref}
         className={cn(
-          "bg-[#13131a] border border-white/[0.08] rounded-xl shadow-xl",
+          "bg-wl-bg-elevated border border-white/[0.08] rounded-xl shadow-xl",
           "w-full max-w-lg p-6",
           "shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]",
           className
