@@ -99,9 +99,15 @@ export default async function paymentRoutes(
 
         const totalPages = Math.ceil(total / (limit ?? 25));
 
+        // Convert BigInt amount (cents) to number (dollars) for JSON serialization
+        const serialized = payments.map((p) => ({
+          ...p,
+          amount: p.amount != null ? Number(p.amount) / 100 : 0,
+        }));
+
         return reply.code(200).send({
           success: true,
-          data: payments,
+          data: serialized,
           pagination: {
             total,
             page: page ?? 1,
@@ -146,7 +152,7 @@ export default async function paymentRoutes(
 
         return reply.code(200).send({
           success: true,
-          data: payment,
+          data: { ...payment, amount: payment.amount != null ? Number(payment.amount) / 100 : 0 },
         });
       } catch (error) {
         if (error instanceof NotFoundError) {

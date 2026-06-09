@@ -4,11 +4,12 @@ import { useState, useCallback, useMemo } from 'react';
 import {
   Search,
   Download,
-  Filter,
   FilterX,
   TrendingUp,
   DollarSign,
   Clock,
+  CreditCard,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,382 +18,248 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { MetricCard } from '@/components/ui/metric-card';
 import { useApiList } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import { Skeleton } from '@/components/ui/loading-skeleton';
 
-type PaymentMethod = 'bank_transfer' | 'card' | 'cash' | 'check';
-type PaymentStatus = 'completed' | 'pending' | 'failed' | 'cancelled';
+// ── Types ────────────────────────────────────────────────────
 
-interface Payment {
+/** Matches the API response after BigInt→number conversion (amount in dollars) */
+interface PaymentTransaction {
   id: string;
-  invoiceNumber: string;
-  customerName: string;
-  amount: number;
-  method: PaymentMethod;
-  status: PaymentStatus;
-  date: string;
-  reference: string;
-  metadata?: Record<string, unknown>;
+  shopId: string;
+  orderId: string | null;
+  shipmentId: string | null;
+  paymentMethodId: string | null;
+  amount: number; // dollars (API converts cents/100)
+  currency: string;
+  type: string; // charge, refund, adjustment, cod_collection
+  status: string; // pending, processing, completed, failed, refunded
+  providerName: string | null;
+  providerTxnId: string | null;
+  providerRef: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  metadata: Record<string, unknown>;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  shop?: { id: string; name: string };
 }
 
 interface MonthlyRevenue {
   month: string;
   revenue: number;
-  payments: number;
+  count: number;
 }
 
-const MOCK_PAYMENTS: Payment[] = [
-  {
-    id: "pay-001",
-    invoiceNumber: "INV-2024-001",
-    customerName: "Acme Corp",
-    amount: 2750.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-10",
-    reference: "TXN-20240210-12345",
-  },
-  {
-    id: "pay-002",
-    invoiceNumber: "INV-2024-005",
-    customerName: "Delta Logistics",
-    amount: 4500.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-01-28",
-    reference: "TXN-20240128-67890",
-  },
-  {
-    id: "pay-003",
-    invoiceNumber: "INV-2024-008",
-    customerName: "Gamma Ltd",
-    amount: 1450.0,
-    method: "card",
-    status: "completed",
-    date: "2024-02-18",
-    reference: "CARD-20240218-11111",
-  },
-  {
-    id: "pay-004",
-    invoiceNumber: "INV-2024-003",
-    customerName: "Gamma Ltd",
-    amount: 3200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-05",
-    reference: "TXN-20240305-22222",
-  },
-  {
-    id: "pay-005",
-    invoiceNumber: "INV-2024-002",
-    customerName: "Beta Inc",
-    amount: 1850.5,
-    method: "check",
-    status: "pending",
-    date: "2024-03-08",
-    reference: "CHK-20240308-33333",
-  },
-  {
-    id: "pay-006",
-    invoiceNumber: "INV-2024-007",
-    customerName: "Beta Inc",
-    amount: 3050.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-02-25",
-    reference: "TXN-20240225-44444",
-  },
-  {
-    id: "pay-007",
-    invoiceNumber: "INV-2024-004",
-    customerName: "Acme Corp",
-    amount: 1600.0,
-    method: "card",
-    status: "failed",
-    date: "2024-02-28",
-    reference: "CARD-20240228-55555",
-  },
-  {
-    id: "pay-008",
-    invoiceNumber: "INV-2024-006",
-    customerName: "Echo Distribution",
-    amount: 2200.0,
-    method: "bank_transfer",
-    status: "pending",
-    date: "2024-03-10",
-    reference: "TXN-20240310-66666",
-  },
-  {
-    id: "pay-009",
-    invoiceNumber: "INV-2024-009",
-    customerName: "Acme Corp",
-    amount: 5200.0,
-    method: "bank_transfer",
-    status: "completed",
-    date: "2024-03-01",
-    reference: "TXN-20240301-77777",
-  },
-  {
-    id: "pay-010",
-    invoiceNumber: "INV-2024-010",
-    customerName: "Delta Logistics",
-    amount: 3800.0,
-    method: "card",
-    status: "completed",
-    date: "2024-03-02",
-    reference: "CARD-20240302-88888",
-  },
-];
+// ── Helpers ──────────────────────────────────────────────────
 
-const MONTHLY_REVENUE: MonthlyRevenue[] = [
-  { month: "Jan", revenue: 12500, payments: 5 },
-  { month: "Feb", revenue: 18900, payments: 8 },
-  { month: "Mar", revenue: 15600, payments: 6 },
-];
+function normalizeStatus(status: string): 'completed' | 'pending' | 'failed' | 'processing' | 'other' {
+  const s = status?.toLowerCase() ?? '';
+  if (s === 'completed' || s === 'refunded') return 'completed';
+  if (s === 'pending') return 'pending';
+  if (s === 'processing') return 'processing';
+  if (s === 'failed' || s === 'cancelled') return 'failed';
+  return 'other';
+}
 
-const getStatusBadgeVariant = (
-  status: PaymentStatus
-): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
-  switch (status) {
-    case "completed":
-      return "success";
-    case "pending":
-      return "warning";
-    case "failed":
-      return "danger";
-    case "cancelled":
-      return "danger";
-    default:
-      return "default";
-  }
-};
+function statusVariant(status: string): 'success' | 'warning' | 'danger' | 'info' | 'default' {
+  const n = normalizeStatus(status);
+  if (n === 'completed') return 'success';
+  if (n === 'pending') return 'warning';
+  if (n === 'processing') return 'info';
+  if (n === 'failed') return 'danger';
+  return 'default';
+}
 
-const getStatusLabel = (status: PaymentStatus): string => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-};
+function statusLabel(status: string): string {
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+}
 
-const getMethodLabel = (method: PaymentMethod): string => {
-  const labels: Record<PaymentMethod, string> = {
-    bank_transfer: "Bank Transfer",
-    card: "Card",
-    cash: "Cash",
-    check: "Check",
+function typeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    charge: 'Charge',
+    refund: 'Refund',
+    adjustment: 'Adjustment',
+    cod_collection: 'COD',
   };
-  return labels[method];
-};
+  return labels[type] ?? type;
+}
 
-// Simple SVG Bar Chart Component
-const RevenueChart = ({ data }: { data: MonthlyRevenue[] }) => {
-  const maxRevenue = Math.max(...data.map((d) => d.revenue));
-  const chartHeight = 200;
-  const barWidth = 60;
-  const gap = 40;
+function providerLabel(name: string | null): string {
+  if (!name) return '—';
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function fmtUSD(n: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+}
+
+// ── Simple SVG Bar Chart ─────────────────────────────────────
+
+function RevenueChart({ data }: { data: MonthlyRevenue[] }) {
+  if (data.length === 0) return null;
+  const max = Math.max(...data.map((d) => d.revenue), 1);
+  const chartH = 160;
+  const barW = 40;
+  const gap = 28;
+  const padL = 8;
 
   return (
     <svg
       width="100%"
-      height={chartHeight + 40}
-      viewBox={`0 0 ${data.length * (barWidth + gap) + 20} ${chartHeight + 40}`}
-      className="mx-auto"
+      height={chartH + 32}
+      viewBox={`0 0 ${data.length * (barW + gap) + padL} ${chartH + 32}`}
+      preserveAspectRatio="xMidYMid meet"
     >
-      {/* Y-axis labels */}
-      {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
-        <g key={`tick-${tick}`}>
-          <text
-            x="30"
-            y={chartHeight - tick * chartHeight + 5}
-            fontSize="12"
-            fill="currentColor"
-            className="text-wl-text-secondary"
-            textAnchor="end"
-          >
-            ${Math.round((tick * maxRevenue) / 1000)}K
-          </text>
-          <line
-            x1="35"
-            y1={chartHeight - tick * chartHeight}
-            x2={data.length * (barWidth + gap) + 10}
-            y2={chartHeight - tick * chartHeight}
-            stroke="currentColor"
-            strokeDasharray="2,2"
-            className="text-wl-border-subtle"
-          />
-        </g>
-      ))}
-
-      {/* Bars */}
-      {data.map((item, index) => {
-        const barHeight = (item.revenue / maxRevenue) * chartHeight;
-        const x = 40 + index * (barWidth + gap);
-        const y = chartHeight - barHeight;
-
+      {data.map((item, i) => {
+        const barH = Math.max((item.revenue / max) * chartH, 2);
+        const x = padL + i * (barW + gap);
+        const y = chartH - barH;
+        const isPositive = item.revenue > 0;
         return (
           <g key={item.month}>
-            {/* Bar */}
-            <rect
-              x={x}
-              y={y}
-              width={barWidth}
-              height={barHeight}
-              fill="var(--wl-primary-500)"
-              rx="4"
-            />
-            {/* Label */}
-            <text
-              x={x + barWidth / 2}
-              y={chartHeight + 20}
-              fontSize="13"
-              fontWeight="500"
-              fill="currentColor"
-              className="text-wl-text-primary"
-              textAnchor="middle"
-            >
+            <rect x={x} y={y} width={barW} height={barH}
+              fill={isPositive ? '#6366f1' : '#374151'} rx="4" opacity="0.85" />
+            <text x={x + barW / 2} y={chartH + 14} fontSize="10" fill="#6b7280" textAnchor="middle">
               {item.month}
             </text>
-            {/* Value */}
-            <text
-              x={x + barWidth / 2}
-              y={y - 8}
-              fontSize="12"
-              fontWeight="600"
-              fill="currentColor"
-              className="text-wl-primary-500"
-              textAnchor="middle"
-            >
-              ${item.revenue / 1000}K
-            </text>
+            {isPositive && (
+              <text x={x + barW / 2} y={y - 5} fontSize="9" fill="#818cf8" textAnchor="middle">
+                {fmtUSD(item.revenue).replace('$', '$').replace(',000', 'K')}
+              </text>
+            )}
           </g>
         );
       })}
     </svg>
   );
-};
+}
+
+// ── Main Page ────────────────────────────────────────────────
 
 export default function PaymentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | ''>('');
-  const [selectedStatus, setSelectedStatus] = useState<PaymentStatus | ''>('');
+  const [selectedType, setSelectedType] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
 
-  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments');
+  const { items: transactions, loading, error, refetch } = useApiList<PaymentTransaction>(
+    '/api/v4/payments',
+    { limit: 100 },
+  );
 
-  // Filter payments
+  // ── Filters ──────────────────────────────────────────────
+
   const filtered = useMemo(() => {
-    let result = payments;
+    let result = transactions;
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       result = result.filter(
         (p) =>
-          p.invoiceNumber.toLowerCase().includes(query) ||
-          p.customerName.toLowerCase().includes(query) ||
-          p.reference.toLowerCase().includes(query)
+          p.id.toLowerCase().includes(q) ||
+          (p.providerRef ?? '').toLowerCase().includes(q) ||
+          (p.providerTxnId ?? '').toLowerCase().includes(q) ||
+          (p.orderId ?? '').toLowerCase().includes(q) ||
+          (p.providerName ?? '').toLowerCase().includes(q),
       );
     }
 
-    if (selectedMethod) {
-      result = result.filter((p) => p.method === selectedMethod);
-    }
-
-    if (selectedStatus) {
-      result = result.filter((p) => p.status === selectedStatus);
-    }
+    if (selectedType) result = result.filter((p) => p.type === selectedType);
+    if (selectedStatus) result = result.filter((p) => normalizeStatus(p.status) === selectedStatus);
 
     if (dateFrom) {
-      const fromDate = new Date(dateFrom);
-      result = result.filter((p) => new Date(p.date) >= fromDate);
+      const from = new Date(dateFrom);
+      result = result.filter((p) => new Date(p.createdAt) >= from);
     }
-
     if (dateTo) {
-      const toDate = new Date(dateTo);
-      result = result.filter((p) => new Date(p.date) <= toDate);
+      const to = new Date(dateTo);
+      result = result.filter((p) => new Date(p.createdAt) <= to);
     }
 
-    // Sort
     const sorted = [...result];
-    if (sortBy === 'date') {
-      sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    } else if (sortBy === 'amount') {
-      sorted.sort((a, b) => b.amount - a.amount);
-    } else if (sortBy === 'status') {
-      sorted.sort((a, b) => a.status.localeCompare(b.status));
-    }
+    if (sortBy === 'amount') sorted.sort((a, b) => b.amount - a.amount);
+    else if (sortBy === 'status') sorted.sort((a, b) => a.status.localeCompare(b.status));
+    else sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return sorted;
-  }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy, payments]);
+  }, [searchQuery, selectedType, selectedStatus, dateFrom, dateTo, sortBy, transactions]);
 
-  // Calculate summary stats
+  // ── Stats ────────────────────────────────────────────────
+
   const stats = useMemo(() => {
-    const completed = payments.filter((p) => p.status === 'completed');
-    const pending = payments.filter((p) => p.status === 'pending');
-    const failed = payments.filter((p) => p.status === 'failed');
-
-    const totalCompleted = completed.reduce((sum, p) => sum + p.amount, 0);
-    const totalPending = pending.reduce((sum, p) => sum + p.amount, 0);
-    const totalFailed = failed.reduce((sum, p) => sum + p.amount, 0);
-
-    const avgPaymentAmount =
-      completed.length > 0 ? totalCompleted / completed.length : 0;
+    const completed = transactions.filter((p) => normalizeStatus(p.status) === 'completed' && p.type === 'charge');
+    const pending = transactions.filter((p) => normalizeStatus(p.status) === 'pending');
+    const failed = transactions.filter((p) => normalizeStatus(p.status) === 'failed');
+    const refunds = transactions.filter((p) => p.type === 'refund');
 
     return {
-      totalCollected: totalCompleted,
-      totalPending,
-      totalFailed,
-      avgPaymentAmount,
+      totalCollected: completed.reduce((s, p) => s + p.amount, 0),
+      totalPending: pending.reduce((s, p) => s + p.amount, 0),
+      totalRefunded: refunds.reduce((s, p) => s + p.amount, 0),
       completedCount: completed.length,
       pendingCount: pending.length,
+      failedCount: failed.length,
     };
-  }, [payments]);
+  }, [transactions]);
+
+  // ── Monthly revenue from real data ───────────────────────
+
+  const monthlyRevenue = useMemo<MonthlyRevenue[]>(() => {
+    const charges = transactions.filter(
+      (p) => p.type === 'charge' && normalizeStatus(p.status) === 'completed',
+    );
+    const buckets: Record<string, { revenue: number; count: number }> = {};
+    charges.forEach((p) => {
+      const d = new Date(p.createdAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!buckets[key]) buckets[key] = { revenue: 0, count: 0 };
+      buckets[key].revenue += p.amount;
+      buckets[key].count += 1;
+    });
+
+    return Object.entries(buckets)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([key, val]) => {
+        const [year, month] = key.split('-');
+        const monthName = new Date(Number(year), Number(month) - 1).toLocaleString('en-US', {
+          month: 'short',
+        });
+        return { month: `${monthName} ${year}`, revenue: val.revenue, count: val.count };
+      });
+  }, [transactions]);
+
+  // ── Export ───────────────────────────────────────────────
 
   const handleExportCSV = useCallback(() => {
-    const headers = [
-      "Invoice",
-      "Customer",
-      "Amount",
-      "Method",
-      "Status",
-      "Date",
-      "Reference",
-    ];
+    const headers = ['ID', 'Type', 'Status', 'Amount', 'Currency', 'Provider', 'Reference', 'Date'];
     const rows = filtered.map((p) => [
-      p.invoiceNumber,
-      p.customerName,
+      p.id,
+      typeLabel(p.type),
+      statusLabel(p.status),
       p.amount.toFixed(2),
-      getMethodLabel(p.method),
-      getStatusLabel(p.status),
-      new Date(p.date).toLocaleDateString(),
-      p.reference,
+      p.currency,
+      providerLabel(p.providerName),
+      p.providerRef ?? p.providerTxnId ?? '—',
+      new Date(p.createdAt).toLocaleDateString(),
     ]);
-
-    const csv = [
-      headers.join(","),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`;
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+      download: `payments-${new Date().toISOString().split('T')[0]}.csv`,
+    });
     a.click();
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(a.href);
   }, [filtered]);
 
-  const handleClearFilters = useCallback(() => {
-    setSearchQuery('');
-    setSelectedMethod('');
-    setSelectedStatus('');
-    setDateFrom('');
-    setDateTo('');
-    setSortBy('date');
-  }, []);
+  const hasFilters = Boolean(searchQuery || selectedType || selectedStatus || dateFrom || dateTo);
 
-  const hasActiveFilters = Boolean(
-    searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo
-  );
+  // ── Render ───────────────────────────────────────────────
 
   if (error) {
     return (
@@ -406,291 +273,278 @@ export default function PaymentsPage() {
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">
-            Payment Tracking
-          </h1>
-          <p className="text-gray-400">
-            Monitor and manage incoming payments
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Payment Tracking</h1>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            {loading ? 'Loading…' : `${transactions.length} transactions`}
           </p>
         </div>
-        <Button variant="secondary" size="lg" onClick={handleExportCSV}>
-          <Download className="w-4 h-4" />
-          Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => refetch()} disabled={loading}>
+            <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
+          </Button>
+          <Button variant="secondary" size="sm" onClick={handleExportCSV} disabled={loading || filtered.length === 0}>
+            <Download className="w-4 h-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Total Collected"
-          value={stats.totalCollected}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
-        <MetricCard
-          label="Pending Payments"
-          value={stats.totalPending}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
-        <MetricCard
-          label="Failed Payments"
-          value={stats.totalFailed}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
-        <MetricCard
-          label="Avg Payment"
-          value={stats.avgPaymentAmount}
-          format={(v) => `$${v.toFixed(2)}`}
-        />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl bg-[#12121a] border border-white/[0.06] p-5 animate-pulse">
+              <Skeleton variant="text" className="h-3 w-20 mb-3" />
+              <Skeleton variant="text" className="h-7 w-28 mb-2" />
+              <Skeleton variant="text" className="h-3 w-16" />
+            </div>
+          ))
+        ) : (
+          <>
+            <MetricTile label="Collected" value={fmtUSD(stats.totalCollected)} sub={`${stats.completedCount} charges`} accent="#10b981" />
+            <MetricTile label="Pending" value={fmtUSD(stats.totalPending)} sub={`${stats.pendingCount} transactions`} accent="#f59e0b" />
+            <MetricTile label="Refunded" value={fmtUSD(stats.totalRefunded)} sub="total refunds" accent="#6366f1" />
+            <MetricTile label="Failed" value={String(stats.failedCount)} sub="transactions" accent="#ef4444" />
+          </>
+        )}
       </div>
 
       {/* Revenue Chart */}
-      <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-        <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
-          Monthly Revenue
+      <Card className="p-6 bg-[#12121a] border border-white/[0.06]">
+        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4" />
+          Monthly Completed Revenue
         </h2>
-        <div className="h-80 flex items-end justify-center">
-          <RevenueChart data={MONTHLY_REVENUE} />
-        </div>
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          {MONTHLY_REVENUE.map((item) => (
-            <div key={item.month} className="text-center">
-              <p className="text-sm text-gray-400 mb-1">
-                {item.month}
-              </p>
-              <p className="text-lg font-bold text-white">
-                ${item.revenue.toLocaleString()}
-              </p>
-              <p className="text-xs text-gray-400">
-                {item.payments} payments
-              </p>
+        {loading ? (
+          <div className="h-48 animate-pulse bg-white/[0.04] rounded-lg" />
+        ) : monthlyRevenue.length === 0 ? (
+          <div className="h-48 flex items-center justify-center text-zinc-600 text-sm">
+            No completed charges yet
+          </div>
+        ) : (
+          <>
+            <div className="h-48 flex items-end">
+              <RevenueChart data={monthlyRevenue} />
             </div>
-          ))}
-        </div>
+            <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-2">
+              {monthlyRevenue.map((item) => (
+                <div key={item.month} className="text-center">
+                  <p className="text-[10px] text-zinc-500 mb-0.5">{item.month}</p>
+                  <p className="text-sm font-bold text-white">{fmtUSD(item.revenue)}</p>
+                  <p className="text-[10px] text-zinc-600">{item.count} txns</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </Card>
 
-      {/* Outstanding vs Collected Comparison */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-          <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
-            <DollarSign className="w-4 h-4" />
+      {/* Collected vs Outstanding */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-6 bg-[#12121a] border border-white/[0.06]">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase text-zinc-500 mb-3">
+            <DollarSign className="w-3.5 h-3.5" />
             Collected
-          </h3>
-          <p className="text-3xl font-bold text-emerald-500 mb-2">
-            ${stats.totalCollected.toFixed(2)}
-          </p>
-          <p className="text-sm text-gray-400">
-            {stats.completedCount} completed payments
-          </p>
-          <div className="mt-4 w-full bg-[#1a1a2e] rounded-full h-2">
+          </div>
+          <p className="text-3xl font-bold text-emerald-400 mb-1">{fmtUSD(stats.totalCollected)}</p>
+          <p className="text-xs text-zinc-500 mb-3">{stats.completedCount} completed charges</p>
+          <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
             <div
-              className="bg-emerald-500 h-2 rounded-full"
+              className="h-full bg-emerald-500 rounded-full transition-all"
               style={{
-                width: `${(stats.totalCollected / (stats.totalCollected + stats.totalPending)) * 100}%`,
+                width: stats.totalCollected + stats.totalPending > 0
+                  ? `${(stats.totalCollected / (stats.totalCollected + stats.totalPending)) * 100}%`
+                  : '0%',
               }}
             />
           </div>
         </Card>
-
-        <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-          <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
-            <Clock className="w-4 h-4" />
+        <Card className="p-6 bg-[#12121a] border border-white/[0.06]">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase text-zinc-500 mb-3">
+            <Clock className="w-3.5 h-3.5" />
             Outstanding
-          </h3>
-          <p className="text-3xl font-bold text-amber-500 mb-2">
-            ${stats.totalPending.toFixed(2)}
-          </p>
-          <p className="text-sm text-gray-400">
-            {stats.pendingCount} pending payments
-          </p>
-          <div className="mt-4 w-full bg-[#1a1a2e] rounded-full h-2">
+          </div>
+          <p className="text-3xl font-bold text-amber-400 mb-1">{fmtUSD(stats.totalPending)}</p>
+          <p className="text-xs text-zinc-500 mb-3">{stats.pendingCount} pending transactions</p>
+          <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
             <div
-              className="bg-amber-500 h-2 rounded-full"
+              className="h-full bg-amber-500 rounded-full transition-all"
               style={{
-                width: `${(stats.totalPending / (stats.totalCollected + stats.totalPending)) * 100}%`,
+                width: stats.totalCollected + stats.totalPending > 0
+                  ? `${(stats.totalPending / (stats.totalCollected + stats.totalPending)) * 100}%`
+                  : '0%',
               }}
             />
           </div>
         </Card>
       </div>
 
-      {/* Filters & Controls */}
-      <Card className={cn("flex flex-col gap-4 bg-[#12121a] border border-[#1e1e2e] p-6")}>
+      {/* Filters */}
+      <Card className="p-5 bg-[#12121a] border border-white/[0.06]">
         <div className="flex gap-3 flex-wrap items-end">
           <div className="flex-1 min-w-[200px]">
             <Input
-              placeholder="Search by invoice, customer, or reference..."
+              placeholder="Search by ID, provider, reference…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.currentTarget.value)}
               icon={<Search className="w-4 h-4" />}
-              className="w-full"
             />
           </div>
-
           <Select
-            value={selectedMethod}
-            onChange={(e) => setSelectedMethod((e.target.value as PaymentMethod) || "")}
-            label="Method"
-            className="w-40"
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            label="Type"
+            className="w-36"
             options={[
-              { value: "", label: "All Methods" },
-              { value: "bank_transfer", label: "Bank Transfer" },
-              { value: "card", label: "Card" },
-              { value: "cash", label: "Cash" },
-              { value: "check", label: "Check" },
+              { value: '', label: 'All Types' },
+              { value: 'charge', label: 'Charge' },
+              { value: 'refund', label: 'Refund' },
+              { value: 'adjustment', label: 'Adjustment' },
+              { value: 'cod_collection', label: 'COD' },
             ]}
           />
-
           <Select
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus((e.target.value as PaymentStatus) || "")}
+            onChange={(e) => setSelectedStatus(e.target.value)}
             label="Status"
-            className="w-32"
+            className="w-36"
             options={[
-              { value: "", label: "All Status" },
-              { value: "completed", label: "Completed" },
-              { value: "pending", label: "Pending" },
-              { value: "failed", label: "Failed" },
-              { value: "cancelled", label: "Cancelled" },
+              { value: '', label: 'All Status' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'pending', label: 'Pending' },
+              { value: 'processing', label: 'Processing' },
+              { value: 'failed', label: 'Failed' },
             ]}
           />
-
           <Select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "date" | "amount" | "status")}
-            label="Sort By"
-            className="w-32"
+            onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
+            label="Sort"
+            className="w-28"
             options={[
-              { value: "date", label: "Date" },
-              { value: "amount", label: "Amount" },
-              { value: "status", label: "Status" },
+              { value: 'date', label: 'Date' },
+              { value: 'amount', label: 'Amount' },
+              { value: 'status', label: 'Status' },
             ]}
           />
-
-          {hasActiveFilters && (
+          {hasFilters && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleClearFilters}
-              className="ml-auto"
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedType('');
+                setSelectedStatus('');
+                setDateFrom('');
+                setDateTo('');
+                setSortBy('date');
+              }}
             >
               <FilterX className="w-4 h-4" />
-              Clear Filters
+              Clear
             </Button>
           )}
         </div>
-
-        {/* Additional Filters */}
-        <div className="flex gap-3 flex-wrap items-end border-t border-[#1e1e2e] pt-4">
-          <div className="flex gap-2 items-end">
-            <label className="text-xs font-semibold uppercase text-gray-400">
-              Date Range
-            </label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
-            />
-            <span className="text-gray-400">to</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
-            />
-          </div>
+        <div className="flex gap-3 items-center border-t border-white/[0.04] pt-3 mt-3">
+          <span className="text-xs text-zinc-500">Date range</span>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+            className="px-2.5 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded text-xs text-white" />
+          <span className="text-zinc-600 text-xs">to</span>
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+            className="px-2.5 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded text-xs text-white" />
         </div>
       </Card>
 
-      {/* Payments Table */}
-      {filtered.length === 0 ? (
-        <Card className={cn("flex flex-col items-center justify-center gap-4 py-16 bg-[#12121a] border border-[#1e1e2e]")}>
-          <Search className="w-12 h-12 text-gray-500" />
-          <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-400">
-              No payments found
-            </h3>
-            <p className="text-sm text-gray-500">
-              Try adjusting your search or filters
-            </p>
+      {/* Transactions Table */}
+      {loading ? (
+        <Card className="p-6 bg-[#12121a] border border-white/[0.06]">
+          <div className="space-y-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-12 bg-white/[0.03] rounded-lg animate-pulse" />
+            ))}
           </div>
         </Card>
+      ) : filtered.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center py-16 bg-[#12121a] border border-white/[0.06]">
+          <CreditCard className="w-10 h-10 text-zinc-700 mb-3" />
+          <p className="text-zinc-400 font-medium">No transactions found</p>
+          <p className="text-zinc-600 text-sm mt-1">
+            {hasFilters ? 'Try adjusting your filters' : 'No payment data yet'}
+          </p>
+        </Card>
       ) : (
-        <Card className={cn("overflow-hidden bg-[#12121a] border border-[#1e1e2e]")}>
-          <Table<Payment>
+        <Card className="overflow-hidden bg-[#12121a] border border-white/[0.06]">
+          <Table<PaymentTransaction>
             columns={[
               {
-                key: "invoiceNumber",
-                header: "Invoice #",
-                render: (item) => (
-                  <div className="font-mono text-sm font-medium text-blue-500">
-                    {item.invoiceNumber}
-                  </div>
+                key: 'type',
+                header: 'Type',
+                render: (p) => (
+                  <span className="text-xs font-mono px-2 py-1 rounded bg-white/[0.06] text-zinc-300">
+                    {typeLabel(p.type)}
+                  </span>
+                ),
+                width: 110,
+              },
+              {
+                key: 'amount',
+                header: 'Amount',
+                render: (p) => (
+                  <span className={cn(
+                    'font-mono font-semibold text-sm',
+                    p.type === 'refund' ? 'text-red-400' : 'text-white',
+                  )}>
+                    {p.type === 'refund' ? '-' : ''}{fmtUSD(p.amount)}
+                  </span>
                 ),
                 sortable: true,
+                align: 'right',
                 width: 120,
               },
               {
-                key: "customerName",
-                header: "Customer",
-                sortable: true,
-                width: 180,
-              },
-              {
-                key: "amount",
-                header: "Amount",
-                render: (item) => (
-                  <div className="font-medium text-white">
-                    ${item.amount.toFixed(2)}
-                  </div>
-                ),
-                sortable: true,
-                align: "right",
-                width: 120,
-              },
-              {
-                key: "method",
-                header: "Method",
-                render: (item) => (
-                  <div className="text-sm text-gray-300">
-                    {getMethodLabel(item.method)}
-                  </div>
-                ),
-                width: 140,
-              },
-              {
-                key: "status",
-                header: "Status",
-                render: (item) => (
-                  <Badge variant={getStatusBadgeVariant(item.status)}>
-                    {getStatusLabel(item.status)}
+                key: 'status',
+                header: 'Status',
+                render: (p) => (
+                  <Badge variant={statusVariant(p.status)}>
+                    {statusLabel(p.status)}
                   </Badge>
                 ),
                 width: 110,
               },
               {
-                key: "date",
-                header: "Date",
-                render: (item) => (
-                  <div className="text-sm text-gray-300">
-                    {new Date(item.date).toLocaleDateString()}
-                  </div>
+                key: 'providerName',
+                header: 'Provider',
+                render: (p) => (
+                  <span className="text-sm text-zinc-400">{providerLabel(p.providerName)}</span>
                 ),
-                sortable: true,
-                width: 110,
+                width: 120,
               },
               {
-                key: "reference",
-                header: "Reference",
-                render: (item) => (
-                  <div className="font-mono text-xs text-gray-400">
-                    {item.reference}
-                  </div>
+                key: 'providerRef',
+                header: 'Reference',
+                render: (p) => (
+                  <span className="font-mono text-xs text-zinc-500 truncate max-w-[140px] block">
+                    {p.providerRef ?? p.providerTxnId ?? '—'}
+                  </span>
                 ),
                 width: 160,
+              },
+              {
+                key: 'createdAt',
+                header: 'Date',
+                render: (p) => (
+                  <span className="text-sm text-zinc-400">
+                    {new Date(p.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                ),
+                sortable: true,
+                width: 120,
               },
             ]}
             data={filtered}
@@ -698,43 +552,79 @@ export default function PaymentsPage() {
         </Card>
       )}
 
-      {/* Recent Payments Feed */}
-      <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
-        <h2 className="text-lg font-semibold text-white mb-4">
-          Recent Payments
-        </h2>
-        <div className="space-y-3">
-          {filtered.slice(0, 5).map((payment) => (
-            <div
-              key={payment.id}
-              className={cn("flex items-center justify-between p-4 rounded border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors")}
-            >
-              <div className="flex-1">
-                <p className="font-medium text-white">
-                  {payment.customerName}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {payment.invoiceNumber} • {getMethodLabel(payment.method)}
-                </p>
-              </div>
-
-              <div className="text-right">
-                <p className="font-bold text-white">
-                  ${payment.amount.toFixed(2)}
-                </p>
-                <div className="flex items-center gap-2 justify-end mt-1">
-                  <Badge variant={getStatusBadgeVariant(payment.status)}>
-                    {getStatusLabel(payment.status)}
+      {/* Recent Feed */}
+      {!loading && filtered.length > 0 && (
+        <Card className="p-5 bg-[#12121a] border border-white/[0.06]">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-4">
+            Recent Transactions
+          </h2>
+          <div className="space-y-2">
+            {filtered.slice(0, 5).map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between p-3 rounded-lg bg-white/[0.025] hover:bg-white/[0.04] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
+                    p.type === 'refund' ? 'bg-red-950/50' : 'bg-indigo-950/50',
+                  )}>
+                    <CreditCard className={cn(
+                      'w-4 h-4',
+                      p.type === 'refund' ? 'text-red-400' : 'text-indigo-400',
+                    )} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-200">
+                      {typeLabel(p.type)} · {providerLabel(p.providerName)}
+                    </p>
+                    <p className="text-[11px] text-zinc-600 font-mono">
+                      {p.providerRef ?? p.id.slice(0, 8) + '…'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={cn(
+                    'font-mono font-semibold text-sm',
+                    p.type === 'refund' ? 'text-red-400' : 'text-white',
+                  )}>
+                    {p.type === 'refund' ? '-' : ''}{fmtUSD(p.amount)}
+                  </p>
+                  <Badge variant={statusVariant(p.status)} size="sm">
+                    {statusLabel(p.status)}
                   </Badge>
-                  <span className="text-xs text-gray-400">
-                    {new Date(payment.date).toLocaleDateString()}
-                  </span>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+            ))}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ── Metric Tile ──────────────────────────────────────────────
+
+function MetricTile({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  accent: string;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-xl bg-[#12121a] border border-white/[0.06] p-5 group hover:border-white/[0.10] transition-all">
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }}
+      />
+      <div className="text-xs text-zinc-500 uppercase tracking-wide mb-2">{label}</div>
+      <div className="text-xl font-bold text-white font-mono mb-0.5">{value}</div>
+      <div className="text-xs text-zinc-600">{sub}</div>
     </div>
   );
 }
