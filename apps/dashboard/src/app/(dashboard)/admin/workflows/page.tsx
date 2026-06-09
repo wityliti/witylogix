@@ -188,7 +188,6 @@ export default function WorkflowExecutionsPage() {
             placeholder="Search workflow name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search workflows"
             className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10"
           />
         </div>
@@ -203,34 +202,7 @@ export default function WorkflowExecutionsPage() {
         )}
 
         {/* Executions Table */}
-        {loading ? (
-          <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Workflow Name</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Started</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Duration</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={i} className="border-b border-wl-border-default">
-                      {Array.from({ length: 5 }).map((_, j) => (
-                        <td key={j} className="p-3 px-4">
-                          <Skeleton type="text" className="h-4 w-full" />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        ) : !error && executions.length > 0 ? (
+        {filtered.length > 0 ? (
           <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
@@ -256,11 +228,11 @@ export default function WorkflowExecutionsPage() {
                 <tbody>
                   {executions.map((execution, idx) => (
                     <tr
-                      key={execution.executionId}
-                      className={cn(
-                        "border-b border-wl-border-default transition-colors cursor-pointer hover:bg-wl-bg-elevated",
-                        idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-surface",
-                      )}
+                      key={execution.id}
+                      className="border-b border-wl-border-default transition-colors cursor-pointer hover:bg-wl-bg-elevated"
+                      style={{
+                        background: idx % 2 === 0 ? "transparent" : "#12121a",
+                      }}
                       onClick={() => router.push(`/admin/workflows/${execution.executionId}`)}
                     >
                       <td className="p-3 px-4">
@@ -297,7 +269,7 @@ export default function WorkflowExecutionsPage() {
               </table>
             </div>
           </Card>
-        ) : !error ? (
+        ) : (
           <Card className="text-center p-8 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-gray-400">
               <Activity size={40} className="mx-auto mb-3 opacity-50" />

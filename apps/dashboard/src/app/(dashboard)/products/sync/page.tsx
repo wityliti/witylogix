@@ -296,8 +296,8 @@ export default function ProductSyncPage() {
                 className={cn(
                   'flex items-center justify-between p-4 rounded-lg border transition-all',
                   effectivePlatformId === platform.id
-                    ? 'hover:bg-[#1a1a2e] border-blue-500 ring-2 ring-blue-500/20'
-                    : 'bg-[#12121a] border-[#1e1e2e] hover:border-[#1e1e2e]'
+                    ? 'hover:bg-wl-bg-elevated border-blue-500 ring-2 ring-blue-500/20'
+                    : 'bg-wl-bg-surface border-wl-border-default hover:border-wl-border-default'
                 )}
               >
                 <div className="flex items-center gap-3 flex-1 text-left">

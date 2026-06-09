@@ -200,7 +200,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-[#1e1e2e] text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
+                  className="px-4 py-2 bg-wl-bg-elevated text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
                 >
                   Cancel
                 </button>
@@ -368,7 +368,7 @@ export default function ProfilePage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 bg-[#1e1e2e] text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
+                    className="px-4 py-2 bg-wl-bg-elevated text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
                   >
                     Cancel
                   </button>

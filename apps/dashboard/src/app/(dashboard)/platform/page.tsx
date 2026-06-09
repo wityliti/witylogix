@@ -97,25 +97,25 @@ function HealthScoreGauge({ score }: { score: number }) {
 function ServiceRow({ service }: { service: ServiceStatus }) {
   return (
     <div className="flex items-center justify-between py-3 px-4 border-b border-wl-border-default last:border-0">
-      <div className="flex items-center gap-3 flex-1">
-        {service.name === 'API Server' ? (
-          <Server className="w-4 h-4 text-blue-400 shrink-0" />
-        ) : service.name.includes('Redis') ? (
-          <Layers className="w-4 h-4 text-orange-400 shrink-0" />
-        ) : (
-          <Database className="w-4 h-4 text-purple-400 shrink-0" />
-        )}
-        <div>
-          <h4 className="font-medium text-sm text-white">{service.name}</h4>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Checked {service.lastChecked ? new Date(service.lastChecked).toLocaleTimeString() : '—'}
-          </p>
-        </div>
+      <div className="flex-1">
+        <h4 className="font-medium text-sm text-white">{service.name}</h4>
+        <p className="text-xs text-gray-400 mt-1">
+          Last checked: {service.lastChecked ? new Date(service.lastChecked).toLocaleTimeString() : '—'}
+        </p>
       </div>
       <div className="flex items-center gap-4">
         {service.responseTime != null && (
           <p className="text-xs font-mono text-gray-400">{service.responseTime}ms</p>
         )}
+        <div className="text-right w-20">
+          <p className="text-sm font-semibold text-white">{service.uptime?.toFixed(2)}%</p>
+          <div className="w-16 h-1 bg-wl-bg-elevated rounded-full overflow-hidden mt-1 mx-auto">
+            <div
+              className={cn('h-full', service.uptime >= 99.5 ? 'bg-emerald-500' : service.uptime >= 99 ? 'bg-amber-500' : 'bg-red-500')}
+              style={{ width: `${Math.min(service.uptime, 100)}%` }}
+            />
+          </div>
+        </div>
         <Badge
           variant={service.status === 'healthy' ? 'success' : service.status === 'degraded' ? 'warning' : 'danger'}
           className="w-22 justify-center"
@@ -191,8 +191,8 @@ function MetricCard({ label, value, unit, sublabel }: {
 }) {
   return (
     <Card className="bg-wl-bg-surface border-wl-border-default">
-      <CardContent className="pt-5 pb-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+      <CardContent className="pt-6">
+        <p className="text-xs font-medium text-gray-400 mb-1">{label}</p>
         <div className="flex items-baseline gap-1">
           {value == null ? (
             <span className="text-2xl font-bold text-gray-500">—</span>
@@ -259,7 +259,6 @@ export default function PlatformHealthPage() {
 
   return (
     <div className="space-y-8 bg-wl-bg-root min-h-screen p-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
@@ -274,13 +273,10 @@ export default function PlatformHealthPage() {
       {/* Health Score + Process Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-2">
-          <Card className="bg-wl-bg-surface border-wl-border-default h-full">
-            <CardContent className="pt-6 flex items-center justify-center h-full">
-              {statusLoading ? (
-                <div className="flex flex-col items-center gap-3 py-8">
-                  <Skeleton className="h-48 w-48 rounded-full" />
-                  <Skeleton className="h-6 w-24" />
-                </div>
+          <Card className="bg-wl-bg-surface border-wl-border-default">
+            <CardContent className="pt-6">
+              {healthLoading ? (
+                <div className="h-[260px] flex items-center justify-center text-gray-400">Loading...</div>
               ) : (
                 <HealthScoreGauge score={healthScore} />
               )}
@@ -369,7 +365,7 @@ export default function PlatformHealthPage() {
         </CardContent>
       </Card>
 
-      {/* Connected Integrations */}
+      {/* Integrations */}
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <div className="flex items-center justify-between">

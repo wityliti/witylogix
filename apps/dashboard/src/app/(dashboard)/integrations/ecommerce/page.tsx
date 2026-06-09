@@ -75,28 +75,32 @@ export default function EcommerceIntegrationsPage() {
         }
       />
 
-      <div className="p-6 bg-wl-bg-root space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Connected Platforms', value: stats.total, icon: ShoppingCart, color: 'text-blue-400' },
-            { label: 'Healthy', value: stats.healthy, icon: CheckCircle2, color: 'text-emerald-400' },
-            { label: 'With Errors', value: stats.errors, icon: AlertCircle, color: 'text-red-400' },
-            { label: 'API Calls (30d)', value: stats.apiCalls.toLocaleString(), icon: Clock, color: 'text-wl-text-primary' },
-          ].map((s) => {
-            const Icon = s.icon;
-            return (
-              <Card key={s.label} className="bg-wl-bg-surface border-wl-border-default">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <Icon className={cn('w-5 h-5 shrink-0', s.color)} />
-                  <div>
-                    <p className="text-xs text-wl-text-muted">{s.label}</p>
-                    <p className="text-xl font-bold text-wl-text-primary">{s.value}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PlatformStats
+          connected={connected.length}
+          totalProducts={totalProducts}
+          totalOrders={totalOrders}
+          syncErrors={syncErrors}
+        />
+
+        {/* Tab Navigation */}
+        <div className="flex gap-1 bg-wl-bg-elevated rounded-lg p-1 mb-8">
+          {(['overview', 'mapping', 'webhooks', 'conflict'] as const).map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => setSelectedTab(tab)}
+                className={cn(
+                  'px-4 py-2 rounded-md text-sm font-medium transition-all',
+                  selectedTab === tab
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-500 hover:text-gray-400'
+                )}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            )
+          )}
         </div>
 
         {/* Platform Connections */}

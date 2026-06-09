@@ -142,6 +142,37 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
   );
 }
 
+function ProviderSummaryCard() {
+  const providers = [
+    { name: "Dr. Sarah Johnson", specialty: "Internal Medicine", patients: 45 },
+    { name: "Dr. Michael Chen", specialty: "Cardiology", patients: 32 },
+    { name: "Dr. Emily Watson", specialty: "Pediatrics", patients: 28 },
+  ];
+
+  return (
+    <Card className="bg-wl-bg-surface border-wl-border-default">
+      <CardHeader>
+        <CardTitle className="text-white">Provider Summary</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {providers.map((prov) => (
+            <div
+              key={prov.name}
+              className="flex items-center justify-between p-3 hover:bg-wl-bg-elevated rounded-lg transition-colors"
+            >
+              <div>
+                <p className="text-sm font-medium text-white">{prov.name}</p>
+                <p className="text-xs text-gray-500">{prov.specialty}</p>
+              </div>
+              <Badge variant="info">{prov.patients}</Badge>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 interface LocalPatient {
   id: string;
