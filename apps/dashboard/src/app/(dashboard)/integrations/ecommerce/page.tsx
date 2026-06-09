@@ -237,7 +237,7 @@ export default function ECommerceIntegrationPage() {
         />
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 bg-[#1a1a2e] rounded-lg p-1 mb-8">
+        <div className="flex gap-1 bg-wl-bg-elevated rounded-lg p-1 mb-8">
           {(['overview', 'mapping', 'webhooks', 'conflict'] as const).map(
             (tab) => (
               <button

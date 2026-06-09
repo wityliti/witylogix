@@ -135,7 +135,7 @@ export default function MapsSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-wl-bg-root p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Page Header */}
         <div>
@@ -146,7 +146,7 @@ export default function MapsSettingsPage() {
       </div>
 
       {/* API Key Section */}
-      <section className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 space-y-4">
+      <section className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 space-y-4">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-semibold text-white">API Configuration</h2>
@@ -172,7 +172,7 @@ export default function MapsSettingsPage() {
 
           {!isEditingApiKey ? (
             <div className="flex items-center gap-3">
-              <div className="flex-1 px-4 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-gray-400 font-mono text-sm">
+              <div className="flex-1 px-4 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-gray-400 font-mono text-sm">
                 {apiKeyMasked || 'No API key configured'}
               </div>
               <Button
@@ -194,7 +194,7 @@ export default function MapsSettingsPage() {
                 placeholder="Paste your Google Maps API key here..."
                 className={cn(
                   'w-full px-4 py-2.5 rounded-md',
-                  'bg-[#0a0a0f] border border-[#1e1e2e]',
+                  'bg-wl-bg-root border border-wl-border-default',
                   'text-white placeholder:text-gray-500',
                   'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                   'font-mono text-sm'
@@ -223,7 +223,7 @@ export default function MapsSettingsPage() {
         </div>
 
         {/* Test Connection */}
-        <div className="pt-4 border-t border-[#1e1e2e]">
+        <div className="pt-4 border-t border-wl-border-default">
           <Button
             variant="secondary"
             onClick={testConnection}
@@ -261,7 +261,7 @@ export default function MapsSettingsPage() {
       </section>
 
       {/* Default Map Settings */}
-      <section className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 space-y-4">
+      <section className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 space-y-4">
         <h2 className="text-xl font-semibold text-white mb-6">Default Map Settings</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -282,7 +282,7 @@ export default function MapsSettingsPage() {
               step="0.0001"
               className={cn(
                 'w-full px-4 py-2.5 rounded-md',
-                'bg-[#0a0a0f] border border-[#1e1e2e]',
+                'bg-wl-bg-root border border-wl-border-default',
                 'text-white',
                 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               )}
@@ -305,7 +305,7 @@ export default function MapsSettingsPage() {
               step="0.0001"
               className={cn(
                 'w-full px-4 py-2.5 rounded-md',
-                'bg-[#0a0a0f] border border-[#1e1e2e]',
+                'bg-wl-bg-root border border-wl-border-default',
                 'text-white',
                 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               )}
@@ -346,7 +346,7 @@ export default function MapsSettingsPage() {
               }
               className={cn(
                 'w-full px-4 py-2.5 rounded-md',
-                'bg-[#0a0a0f] border border-[#1e1e2e]',
+                'bg-wl-bg-root border border-wl-border-default',
                 'text-white',
                 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               )}
@@ -360,7 +360,7 @@ export default function MapsSettingsPage() {
       </section>
 
       {/* Feature Toggles */}
-      <section className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 space-y-4">
+      <section className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 space-y-4">
         <h2 className="text-xl font-semibold text-white mb-6">Feature Toggles</h2>
 
         <div className="space-y-3">
@@ -391,7 +391,7 @@ export default function MapsSettingsPage() {
               description: 'Display bike lanes and routes',
             },
           ].map((feature) => (
-            <div key={feature.key} className="flex items-center justify-between p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e] hover:border-blue-500/30 transition-colors">
+            <div key={feature.key} className="flex items-center justify-between p-4 rounded-lg bg-wl-bg-root border border-wl-border-default hover:border-blue-500/30 transition-colors">
               <div>
                 <p className="text-sm font-semibold text-white">{feature.label}</p>
                 <p className="text-xs text-gray-400 mt-1">{feature.description}</p>
@@ -403,7 +403,7 @@ export default function MapsSettingsPage() {
                   onChange={(e) =>
                     handleSettingChange(feature.key as keyof MapsSettings, e.target.checked)
                   }
-                  className="w-5 h-5 rounded border-[#1e1e2e] accent-blue-500"
+                  className="w-5 h-5 rounded border-wl-border-default accent-blue-500"
                 />
               </label>
             </div>

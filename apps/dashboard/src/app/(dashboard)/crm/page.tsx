@@ -124,7 +124,7 @@ export default function CrmDashboardPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className={cn("flex flex-col min-h-screen", "bg-[#0a0a0f]")}>
+    <div className={cn("flex flex-col min-h-screen", "bg-wl-bg-root")}>
       <Header
         title="CRM Integrations"
         subtitle="Manage your connected CRM platforms and sync activity"
@@ -190,7 +190,7 @@ export default function CrmDashboardPage() {
                   {crmIntegrations.map((crm) => (
                     <div
                       key={crm.slug}
-                      className="border border-[#1e1e2e] rounded-lg p-4 bg-[#12121a] hover:bg-[#1a1a2e] transition-colors duration-200"
+                      className="border border-wl-border-default rounded-lg p-4 bg-wl-bg-surface hover:bg-wl-bg-elevated transition-colors duration-200"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div>
@@ -231,7 +231,7 @@ export default function CrmDashboardPage() {
                       </div>
 
                       {crm.description && (
-                        <p className="text-xs text-gray-400 mt-3 border-t border-[#1e1e2e] pt-3">
+                        <p className="text-xs text-gray-400 mt-3 border-t border-wl-border-default pt-3">
                           {crm.description}
                         </p>
                       )}
@@ -257,7 +257,7 @@ export default function CrmDashboardPage() {
                   {syncEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="flex items-center justify-between px-4 py-3 border border-[#1e1e2e] rounded-md hover:bg-[#1a1a2e] transition-colors duration-200"
+                      className="flex items-center justify-between px-4 py-3 border border-wl-border-default rounded-md hover:bg-wl-bg-elevated transition-colors duration-200"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">

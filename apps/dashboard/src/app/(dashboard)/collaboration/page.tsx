@@ -199,7 +199,7 @@ function TeamCollaborationPage() {
   }, [collaboration.messages]);
 
   return (
-    <div className="flex h-screen w-full bg-[#0a0a0f]">
+    <div className="flex h-screen w-full bg-wl-bg-root">
       {/* Left Sidebar: Channels & DMs */}
       <ChannelSidebar
         channels={collaboration.channels}
@@ -217,7 +217,7 @@ function TeamCollaborationPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         {collaboration.currentChannel && (
-          <div className="px-6 py-4 border-b border-[#1e1e2e] flex items-center justify-between">
+          <div className="px-6 py-4 border-b border-wl-border-default flex items-center justify-between">
             <div>
               <h1 className="text-lg font-semibold text-white">
                 #{collaboration.currentChannel.name}
@@ -261,7 +261,7 @@ function TeamCollaborationPage() {
 
             {/* Typing Indicators */}
             {collaboration.typingUsers.length > 0 && (
-              <div className="px-4 py-2 text-xs text-gray-400 border-t border-[#1e1e2e]">
+              <div className="px-4 py-2 text-xs text-gray-400 border-t border-wl-border-default">
                 {collaboration.typingUsers
                   .map((u) => u.userName)
                   .join(", ")} {collaboration.typingUsers.length === 1 ? "is" : "are"} typing...
@@ -338,7 +338,7 @@ function TeamCollaborationPage() {
         <div
           ref={mentionInputRef}
           className={cn(
-            "absolute bottom-64 left-64 z-50 bg-[#12121a] border border-[#1e1e2e]",
+            "absolute bottom-64 left-64 z-50 bg-wl-bg-surface border border-wl-border-default",
             "rounded-lg shadow-lg max-h-48 overflow-y-auto",
             "scrollbar-thin scrollbar-thumb-[#1e1e2e]"
           )}
@@ -363,8 +363,8 @@ function TeamCollaborationPage() {
               }}
               className={cn(
                 "w-full text-left px-4 py-2 text-sm",
-                "hover:bg-[#1a1a2e] transition-colors",
-                "border-b border-[#1e1e2e] last:border-b-0",
+                "hover:bg-wl-bg-elevated transition-colors",
+                "border-b border-wl-border-default last:border-b-0",
                 "text-white"
               )}
             >
@@ -404,9 +404,9 @@ function RightSidebar({
   >("details");
 
   return (
-    <div className="w-64 border-l border-[#1e1e2e] bg-[#12121a] flex flex-col">
+    <div className="w-64 border-l border-wl-border-default bg-wl-bg-surface flex flex-col">
       {/* Channel Details */}
-      <div className="px-4 py-4 border-b border-[#1e1e2e]">
+      <div className="px-4 py-4 border-b border-wl-border-default">
         <h2 className="text-sm font-semibold text-white mb-3">
           {channel.name}
         </h2>
@@ -423,7 +423,7 @@ function RightSidebar({
       </div>
 
       {/* Pinned Messages */}
-      <div className="px-4 py-4 border-b border-[#1e1e2e]">
+      <div className="px-4 py-4 border-b border-wl-border-default">
         <button
           onClick={() => setExpandedSection("pinned")}
           className="text-xs font-semibold text-white uppercase tracking-wider w-full text-left mb-2"
@@ -435,7 +435,7 @@ function RightSidebar({
             {pinnedMessages.map((msg) => (
               <div
                 key={msg.id}
-                className="p-2 rounded bg-[#1a1a2e] border border-[#1e1e2e] text-xs"
+                className="p-2 rounded bg-wl-bg-elevated border border-wl-border-default text-xs"
               >
                 <p className="font-medium text-gray-300">
                   {msg.userName}
@@ -463,7 +463,7 @@ function RightSidebar({
                 href={file.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-2 rounded bg-[#1a1a2e] border border-[#1e1e2e] hover:border-blue-500 text-xs text-blue-400 truncate"
+                className="block p-2 rounded bg-wl-bg-elevated border border-wl-border-default hover:border-blue-500 text-xs text-blue-400 truncate"
               >
                 📄 {file.name}
               </a>
@@ -493,9 +493,9 @@ function ThreadPanel({
   const [replyContent, setReplyContent] = useState("");
 
   return (
-    <div className="w-80 border-l border-[#1e1e2e] bg-[#12121a] flex flex-col animate-slide-in">
+    <div className="w-80 border-l border-wl-border-default bg-wl-bg-surface flex flex-col animate-slide-in">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-[#1e1e2e] flex items-center justify-between">
+      <div className="px-4 py-4 border-b border-wl-border-default flex items-center justify-between">
         <h2 className="text-sm font-semibold text-white">
           Thread
         </h2>
@@ -521,14 +521,14 @@ function ThreadPanel({
       </div>
 
       {/* Reply Input */}
-      <div className="px-4 py-3 border-t border-[#1e1e2e]">
+      <div className="px-4 py-3 border-t border-wl-border-default">
         <textarea
           value={replyContent}
           onChange={(e) => setReplyContent(e.target.value)}
           placeholder="Reply in thread..."
           className={cn(
             "w-full p-2 text-xs resize-none rounded",
-            "bg-[#1a1a2e] border border-[#1e1e2e]",
+            "bg-wl-bg-elevated border border-wl-border-default",
             "text-white placeholder-wl-text-tertiary",
             "focus-visible:outline-none focus-visible:ring-2",
             "focus-visible:ring-wl-primary-500"
@@ -571,7 +571,7 @@ function CreateChannelModal({
 }: CreateChannelModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 w-96 shadow-xl">
+      <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 w-96 shadow-xl">
         <h2 className="text-lg font-semibold text-white mb-4">
           Create New Channel
         </h2>
@@ -588,7 +588,7 @@ function CreateChannelModal({
               placeholder="e.g., urgent-orders"
               className={cn(
                 "w-full px-3 py-2 text-sm rounded",
-                "bg-[#12121a] border border-[#1e1e2e]",
+                "bg-wl-bg-surface border border-wl-border-default",
                 "text-white placeholder-wl-text-tertiary",
                 "focus-visible:outline-none focus-visible:ring-2",
                 "focus-visible:ring-wl-primary-500"
@@ -607,7 +607,7 @@ function CreateChannelModal({
               }
               className={cn(
                 "w-full px-3 py-2 text-sm rounded",
-                "bg-[#12121a] border border-[#1e1e2e]",
+                "bg-wl-bg-surface border border-wl-border-default",
                 "text-white",
                 "focus-visible:outline-none focus-visible:ring-2",
                 "focus-visible:ring-wl-primary-500"

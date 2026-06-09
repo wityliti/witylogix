@@ -99,7 +99,7 @@ export default function CampaignsPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
+    <div className="min-h-screen bg-wl-bg-root p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -140,7 +140,7 @@ export default function CampaignsPage() {
         </div>
 
         {/* Controls Card */}
-        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-white">Filters & Actions</CardTitle>
@@ -157,7 +157,7 @@ export default function CampaignsPage() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as CampaignType | "ALL")}
-                  className="w-full px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
+                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white text-sm"
                 >
                   <option value="ALL">All Types</option>
                   <option value="EMAIL">Email</option>
@@ -171,7 +171,7 @@ export default function CampaignsPage() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as CampaignStatus | "ALL")}
-                  className="w-full px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
+                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white text-sm"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="DRAFT">Draft</option>
@@ -185,7 +185,7 @@ export default function CampaignsPage() {
         </Card>
 
         {/* Campaigns Table */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white">Campaigns ({filteredCampaigns.length})</CardTitle>
           </CardHeader>
@@ -193,7 +193,7 @@ export default function CampaignsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="text-left py-3 px-4 text-gray-400 font-semibold">Campaign Name</th>
                     <th className="text-left py-3 px-4 text-gray-400 font-semibold">Type</th>
                     <th className="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
@@ -217,7 +217,7 @@ export default function CampaignsPage() {
                       <tr
                         key={campaign.id}
                         className={cn(
-                          "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors",
+                          "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors",
                           selectedId === campaign.id && "bg-blue-500/10"
                         )}
                         onClick={() => setSelectedId(campaign.id)}

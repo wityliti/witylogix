@@ -496,7 +496,7 @@ export default function FreightIntegrationsPage() {
         }
       />
 
-      <div className={cn("p-6 bg-[#0a0a0f]")}>
+      <div className={cn("p-6 bg-wl-bg-root")}>
         {/* Top Stats */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
           <StatCard
@@ -572,7 +572,7 @@ export default function FreightIntegrationsPage() {
         </div>
 
         {/* View Toggle */}
-        <div className={cn("flex gap-2 mb-6 bg-[#1a1a2e] rounded-md p-1 w-fit flex-wrap")}>
+        <div className={cn("flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit flex-wrap")}>
           {(["loads", "rates", "bookings", "compliance"] as const).map((v) => (
             <button
               key={v}
@@ -646,7 +646,7 @@ export default function FreightIntegrationsPage() {
                           <span
                             key={source}
                             className={cn(
-                              "text-xs px-1.5 py-0.5 rounded bg-[#12121a] text-gray-300 font-medium"
+                              "text-xs px-1.5 py-0.5 rounded bg-wl-bg-surface text-gray-300 font-medium"
                             )}
                           >
                             {prov?.name.split(" ")[0]}
@@ -659,27 +659,27 @@ export default function FreightIntegrationsPage() {
                     </div>
 
                     {isExpanded && (
-                      <div className={cn("border-t border-[#1e1e2e] pt-3 mt-3 space-y-3")}>
+                      <div className={cn("border-t border-wl-border-default pt-3 mt-3 space-y-3")}>
                         <div className={cn("grid grid-cols-4 gap-2 text-xs")}>
-                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
                             <p className={cn("text-gray-300 mb-1")}>Best Rate</p>
                             <p className={cn("font-bold text-blue-400")}>
                               ${load.bestRate.toLocaleString()}
                             </p>
                           </div>
-                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
                             <p className={cn("text-gray-300 mb-1")}>Avg Rate</p>
                             <p className={cn("font-bold text-white")}>
                               ${load.avgRate.toLocaleString()}
                             </p>
                           </div>
-                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
                             <p className={cn("text-gray-300 mb-1")}>Carriers</p>
                             <p className={cn("font-bold text-white")}>
                               {load.carriers}
                             </p>
                           </div>
-                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
                             <p className={cn("text-gray-300 mb-1")}>Pickup</p>
                             <p className={cn("font-bold text-white text-xs")}>
                               {load.pickup}
@@ -725,7 +725,7 @@ export default function FreightIntegrationsPage() {
                     "px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all",
                     selectedLane === comp.lane
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "border-[#1e1e2e] text-gray-300 hover:border-blue-400"
+                      : "border-wl-border-default text-gray-300 hover:border-blue-400"
                   )}
                 >
                   {comp.lane}
@@ -910,7 +910,7 @@ export default function FreightIntegrationsPage() {
                     </div>
                   </div>
 
-                  <div className={cn("bg-[#12121a] rounded p-3 mb-3")}>
+                  <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
                         <p className={cn("text-gray-300 mb-1")}>Booked</p>

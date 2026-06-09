@@ -22,7 +22,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
         Delivery Analytics (24h)
       </h2>
 
-      <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
           <div className="space-y-4">
             {metrics.map((metric) => {
@@ -43,7 +43,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
               return (
                 <div
                   key={metric.template}
-                  className="border border-[#1e1e2e] rounded-lg p-4"
+                  className="border border-wl-border-default rounded-lg p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium text-white">
@@ -55,7 +55,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                   </div>
 
                   {/* Stacked Bar Chart */}
-                  <div className="flex h-8 rounded-lg overflow-hidden bg-[#12121a]">
+                  <div className="flex h-8 rounded-lg overflow-hidden bg-wl-bg-surface">
                     <div
                       className="bg-emerald-500 flex items-center justify-center text-xs font-bold text-white"
                       style={{

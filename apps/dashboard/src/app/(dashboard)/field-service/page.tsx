@@ -130,10 +130,10 @@ export default function FieldServicePage() {
         subtitle={`${overview.totalTechnicians} technicians · ${overview.activeJobs} active jobs`}
       />
 
-      <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
         {/* ═══ KPI Stats Row ═══ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-blue-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-blue-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -146,7 +146,7 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-cyan-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-cyan-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -159,7 +159,7 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-emerald-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-emerald-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -172,7 +172,7 @@ export default function FieldServicePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-amber-500">
+          <Card className="bg-wl-bg-surface border-wl-border-default border-l-4 border-l-amber-500">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
@@ -190,14 +190,14 @@ export default function FieldServicePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Schedule Timeline */}
           <div className="lg:col-span-2">
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-white">Today's Schedule</CardTitle>
                   <select
                     value={selectedTech || "all"}
                     onChange={(e) => setSelectedTech(e.target.value === "all" ? null : e.target.value)}
-                    className="px-3 py-2 text-xs rounded border border-[#1e1e2e] bg-[#1a1a2e] text-gray-300 focus:outline-none focus:border-blue-500/50"
+                    className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-gray-300 focus:outline-none focus:border-blue-500/50"
                   >
                     <option value="all">All Technicians</option>
                     {technicians.map((t) => (
@@ -217,7 +217,7 @@ export default function FieldServicePage() {
                     {filteredSchedule.map((item, idx) => (
                       <div
                         key={item.jobId}
-                        className="flex items-center gap-4 p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] hover:border-blue-500/30 transition-colors"
+                        className="flex items-center gap-4 p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
                       >
                         <div className="w-24 flex-shrink-0">
                           <div className="text-sm font-semibold text-blue-400">{item.startTime}</div>
@@ -245,7 +245,7 @@ export default function FieldServicePage() {
           </div>
 
           {/* SLA Compliance Tracker */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">SLA Compliance</CardTitle>
             </CardHeader>
@@ -259,7 +259,7 @@ export default function FieldServicePage() {
                     {slaMetrics.onTimePercentage}%
                   </span>
                 </div>
-                <div className="w-full bg-[#1a1a2e] rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-wl-bg-elevated rounded-full h-2.5 overflow-hidden">
                   <div
                     className="bg-emerald-500 h-2.5 rounded-full transition-all"
                     style={{ width: `${slaMetrics.onTimePercentage}%` }}
@@ -267,7 +267,7 @@ export default function FieldServicePage() {
                 </div>
               </div>
 
-              <div className="h-px bg-[#1e1e2e]" />
+              <div className="h-px bg-wl-bg-elevated" />
 
               {/* Overdue jobs */}
               <div>
@@ -278,7 +278,7 @@ export default function FieldServicePage() {
                 </div>
               </div>
 
-              <div className="h-px bg-[#1e1e2e]" />
+              <div className="h-px bg-wl-bg-elevated" />
 
               {/* Avg completion time */}
               <div>
@@ -286,7 +286,7 @@ export default function FieldServicePage() {
                 <div className="text-3xl font-bold text-blue-400">{slaMetrics.avgCompletionTime}m</div>
               </div>
 
-              <div className="h-px bg-[#1e1e2e]" />
+              <div className="h-px bg-wl-bg-elevated" />
 
               <Button variant="secondary" size="sm" className="w-full">
                 View Details
@@ -298,7 +298,7 @@ export default function FieldServicePage() {
         {/* ═══ Job Queue + Recent Completions ═══ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Job Queue */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-white">Job Queue (Unassigned)</CardTitle>
@@ -314,7 +314,7 @@ export default function FieldServicePage() {
                   {jobQueue.map((job) => (
                     <div
                       key={job.id}
-                      className="p-4 bg-[#1a1a2e] rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer group"
+                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer group"
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div>
@@ -346,7 +346,7 @@ export default function FieldServicePage() {
           </Card>
 
           {/* Recent Completions Feed */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Recent Completions</CardTitle>
             </CardHeader>
@@ -359,7 +359,7 @@ export default function FieldServicePage() {
                   {recentCompletions.map((job) => (
                     <div
                       key={job.id}
-                      className="p-4 bg-[#1a1a2e] rounded-lg border-l-4 border-emerald-500"
+                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-emerald-500"
                     >
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <div>

@@ -376,7 +376,7 @@ export default function ESignaturesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="E-Signatures Integrations"
         subtitle="Manage document signing workflows, templates, and audit trails"
@@ -469,7 +469,7 @@ export default function ESignaturesPage() {
                     {/* Stats Grid */}
                     {provider.status === "connected" && (
                       <>
-                        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+                        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
                           <div>
                             <p className="text-xs font-medium text-gray-500 uppercase">
                               Templates
@@ -507,7 +507,7 @@ export default function ESignaturesPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                            className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
                           >
                             <Settings className="w-4 h-4 mr-2" />
                             Settings
@@ -573,7 +573,7 @@ export default function ESignaturesPage() {
           {expandedSections.envelopes && (
             <div className="space-y-4">
               {envelopes.map((envelope) => (
-                <Card key={envelope.id} className="bg-[#1a1a2e]">
+                <Card key={envelope.id} className="bg-wl-bg-elevated">
                   <CardContent className="pt-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
@@ -605,14 +605,14 @@ export default function ESignaturesPage() {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="mb-6 pb-6 border-b border-[#1e1e2e]">
+                    <div className="mb-6 pb-6 border-b border-wl-border-default">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs font-medium text-gray-500 uppercase">
                           Completion
                         </p>
                         <p className="text-sm font-bold text-white">{envelope.progress}%</p>
                       </div>
-                      <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-blue-500 to-blue-500/70"
                           style={{ width: `${envelope.progress}%` }}
@@ -629,7 +629,7 @@ export default function ESignaturesPage() {
                         {envelope.signers.map((signer) => (
                           <div key={signer.id} className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-[#12121a] flex items-center justify-center text-xs font-semibold">
+                              <div className="w-6 h-6 rounded-full bg-wl-bg-surface flex items-center justify-center text-xs font-semibold">
                                 {signer.order}
                               </div>
                               <div>
@@ -654,11 +654,11 @@ export default function ESignaturesPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
+                    <div className="flex gap-2 pt-4 border-t border-wl-border-default">
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                        className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         View
@@ -666,7 +666,7 @@ export default function ESignaturesPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                        className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
                       >
                         <DownloadCloud className="w-4 h-4 mr-2" />
                         Download
@@ -699,7 +699,7 @@ export default function ESignaturesPage() {
               <h2 className="text-2xl font-bold text-white">
                 Signing Templates
               </h2>
-              <Badge variant="default" className="bg-[#12121a]">
+              <Badge variant="default" className="bg-wl-bg-surface">
                 {templates.length} templates
               </Badge>
             </div>
@@ -714,7 +714,7 @@ export default function ESignaturesPage() {
           {expandedSections.templates && (
             <div className="space-y-4">
               {templates.map((template) => (
-                <Card key={template.id} className="bg-[#1a1a2e]">
+                <Card key={template.id} className="bg-wl-bg-elevated">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
@@ -731,7 +731,7 @@ export default function ESignaturesPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+                    <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-wl-border-default">
                       <div>
                         <p className="text-xs font-medium text-gray-500 uppercase">
                           Fields
@@ -770,7 +770,7 @@ export default function ESignaturesPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                        className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
                       >
                         <Settings className="w-4 h-4 mr-2" />
                         Edit
@@ -814,13 +814,13 @@ export default function ESignaturesPage() {
           </div>
 
           {expandedSections.webhooks && (
-            <Card className="bg-[#1a1a2e]">
+            <Card className="bg-wl-bg-elevated">
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   {webhookEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="flex items-start justify-between p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
+                      className="flex items-start justify-between p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -875,13 +875,13 @@ export default function ESignaturesPage() {
           </div>
 
           {expandedSections.audit && (
-            <Card className="bg-[#1a1a2e]">
+            <Card className="bg-wl-bg-elevated">
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   {auditLog.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex items-start gap-4 p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
+                      className="flex items-start gap-4 p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default"
                     >
                       <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
                       <div className="flex-1 min-w-0">

@@ -157,7 +157,7 @@ export default function ProductsPage() {
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
@@ -201,7 +201,7 @@ export default function ProductsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className={cn("w-full p-2 px-4 bg-[#1a1a2e] border border-[#1e1e2e] rounded-md text-white text-sm font-sans outline-none")}
+              className={cn("w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans outline-none")}
             />
           </div>
 
@@ -211,7 +211,7 @@ export default function ProductsPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className={cn("p-1 px-3 bg-[#1a1a2e] border border-[#1e1e2e] rounded-md text-white text-sm font-sans cursor-pointer outline-none")}
+            className={cn("p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans cursor-pointer outline-none")}
           >
             <option value="title">Sort by Title</option>
             <option value="type">Sort by Type</option>
@@ -231,7 +231,7 @@ export default function ProductsPage() {
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("requiresShipping")
                 ? "bg-blue-500 text-white border-blue-500"
-                : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                : "bg-transparent text-gray-400 border-wl-border-default"
             )}
           >
             Requires Shipping
@@ -243,7 +243,7 @@ export default function ProductsPage() {
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("missingWeight")
                 ? "bg-amber-500 text-white border-amber-500"
-                : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                : "bg-transparent text-gray-400 border-wl-border-default"
             )}
           >
             Missing Weight
@@ -257,7 +257,7 @@ export default function ProductsPage() {
                 "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
                 selectedFilters.has(vendor)
                   ? "bg-cyan-500 text-white border-cyan-500"
-                  : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                  : "bg-transparent text-gray-400 border-wl-border-default"
               )}
             >
               {vendor}
@@ -270,7 +270,7 @@ export default function ProductsPage() {
                 setSelectedFilters(new Set());
                 setCurrentPage(1);
               }}
-              className={cn("p-1 px-3 rounded-full border border-[#1e1e2e] text-xs font-semibold cursor-pointer font-sans bg-transparent text-gray-500")}
+              className={cn("p-1 px-3 rounded-full border border-wl-border-default text-xs font-semibold cursor-pointer font-sans bg-transparent text-gray-500")}
             >
               Clear all
             </button>
@@ -312,11 +312,11 @@ export default function ProductsPage() {
         )}
 
         {/* Products Table */}
-        <Card className={cn("overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]")}>
+        <Card className={cn("overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default")}>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className={cn("border-b border-[#1e1e2e] bg-[#1a1a2e]")}>
+                <tr className={cn("border-b border-wl-border-default bg-wl-bg-elevated")}>
                   <th className={cn("p-3 px-4 text-center font-semibold text-gray-400 w-10")}>
                     <input
                       type="checkbox"
@@ -348,8 +348,8 @@ export default function ProductsPage() {
                   <tr
                     key={product.id}
                     className={cn(
-                      "border-b border-[#1e1e2e] transition-colors duration-fast",
-                      idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]"
+                      "border-b border-wl-border-default transition-colors duration-fast",
+                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated"
                     )}
                   >
                     <td className="p-3 px-4 text-center">
@@ -395,7 +395,7 @@ export default function ProductsPage() {
           </div>
 
           {/* Pagination */}
-          <div className={cn("flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400")}>
+          <div className={cn("flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-400")}>
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
             </div>

@@ -59,9 +59,9 @@ export default function StoresManagement() {
   };
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
+    <div className="bg-wl-bg-root min-h-screen">
       {/* Header */}
-      <div className="px-6 py-8 border-b border-[#1e1e2e] flex justify-between items-center">
+      <div className="px-6 py-8 border-b border-wl-border-default flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-white mb-2">Connected Stores</h1>
           <p className="text-gray-400 text-sm">Manage your connected e-commerce store</p>
@@ -75,11 +75,11 @@ export default function StoresManagement() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="bg-[#12121a] border border-[#1e1e2e] animate-pulse h-24">{" "}</Card>
+              <Card key={i} className="bg-wl-bg-surface border border-wl-border-default animate-pulse h-24">{" "}</Card>
             ))}
           </div>
         ) : shopError ? (
-          <Card className="bg-[#12121a] border border-[#1e1e2e] p-8 text-center mb-8">
+          <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center mb-8">
             <p className="text-red-400 mb-4">Failed to load store data.</p>
             <Button variant="secondary" size="sm" onClick={handleRefresh}>Retry</Button>
           </Card>
@@ -87,7 +87,7 @@ export default function StoresManagement() {
           <>
             {/* Summary Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -101,7 +101,7 @@ export default function StoresManagement() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -113,7 +113,7 @@ export default function StoresManagement() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -125,7 +125,7 @@ export default function StoresManagement() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -139,7 +139,7 @@ export default function StoresManagement() {
             </div>
 
             {/* Store Card */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e] max-w-lg">
+            <Card className="bg-wl-bg-surface border border-wl-border-default max-w-lg">
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export default function StoresManagement() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-[#1e1e2e]">
+                <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-wl-border-default">
                   <div>
                     <p className="text-gray-400 mb-1 text-xs">Platform</p>
                     <p className="text-white font-semibold capitalize">{shop.platform ?? 'Shopify'}</p>

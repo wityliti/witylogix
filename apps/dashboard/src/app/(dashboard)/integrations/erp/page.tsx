@@ -326,7 +326,7 @@ export default function ERPPage() {
                   key={provider.id}
                   className={cn(
                     "cursor-pointer transition-all hover:border-blue-400",
-                    selectedProvider === provider.id && "border-blue-500 bg-[#12121a]"
+                    selectedProvider === provider.id && "border-blue-500 bg-wl-bg-surface"
                   )}
                   onClick={() => setSelectedProvider(provider.id)}
                 >
@@ -466,7 +466,7 @@ export default function ERPPage() {
                   <div
                     key={entity.name}
                     className={cn(
-                      "flex items-center justify-between p-3 rounded bg-[#12121a] border border-[#1e1e2e]"
+                      "flex items-center justify-between p-3 rounded bg-wl-bg-surface border border-wl-border-default"
                     )}
                   >
                     <div className={cn("flex-1")}>
@@ -476,7 +476,7 @@ export default function ERPPage() {
                     <div
                       className={cn(
                         "w-3 h-3 rounded-full",
-                        entity.enabled ? "bg-emerald-500" : "border-[#1e1e2e]"
+                        entity.enabled ? "bg-emerald-500" : "border-wl-border-default"
                       )}
                     />
                   </div>
@@ -495,7 +495,7 @@ export default function ERPPage() {
             <div className={cn("overflow-x-auto")}>
               <table className={cn("w-full text-sm")}>
                 <thead>
-                  <tr className={cn("border-b border-[#1e1e2e]")}>
+                  <tr className={cn("border-b border-wl-border-default")}>
                     <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                       Witylogix Field
                     </th>
@@ -515,7 +515,7 @@ export default function ERPPage() {
                 </thead>
                 <tbody>
                   {selected.fieldMappings.map((mapping) => (
-                    <tr key={mapping.witylogixField} className={cn("border-b border-[#1e1e2e] hover:bg-[#12121a]")}>
+                    <tr key={mapping.witylogixField} className={cn("border-b border-wl-border-default hover:bg-wl-bg-surface")}>
                       <td className={cn("p-4 font-mono text-xs text-white")}>{mapping.witylogixField}</td>
                       <td className={cn("p-4 font-mono text-xs text-white")}>{mapping.erpField}</td>
                       <td className={cn("p-4 text-xs text-gray-500")}>
@@ -540,7 +540,7 @@ export default function ERPPage() {
               </table>
             </div>
 
-            <div className={cn("p-4 pt-4 border-t border-[#1e1e2e]")}>
+            <div className={cn("p-4 pt-4 border-t border-wl-border-default")}>
               <Button variant="secondary" size="sm">
                 Auto-Map All Fields
               </Button>
@@ -556,7 +556,7 @@ export default function ERPPage() {
           <div className={cn("overflow-x-auto")}>
             <table className={cn("w-full text-sm")}>
               <thead>
-                <tr className={cn("border-b border-[#1e1e2e]")}>
+                <tr className={cn("border-b border-wl-border-default")}>
                   <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                     Timestamp
                   </th>
@@ -576,7 +576,7 @@ export default function ERPPage() {
               </thead>
               <tbody>
                 {SYNC_LOG.map((operation) => (
-                  <tr key={operation.id} className={cn("border-b border-[#1e1e2e] hover:bg-[#12121a]")}>
+                  <tr key={operation.id} className={cn("border-b border-wl-border-default hover:bg-wl-bg-surface")}>
                     <td className={cn("p-4 text-xs text-gray-500")}>{operation.timestamp}</td>
                     <td className={cn("p-4 font-semibold text-white")}>{operation.entity}</td>
                     <td className={cn("p-4")}>

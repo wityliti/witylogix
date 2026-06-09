@@ -560,7 +560,7 @@ export default function IntegrationCatalogPage() {
 
                 {/* Expanded Content */}
                 {expandedId === integration.id && (
-                  <div className={cn("border-t border-[#1e1e2e] pt-3 mt-3 space-y-3")}>
+                  <div className={cn("border-t border-wl-border-default pt-3 mt-3 space-y-3")}>
                     {/* Features */}
                     <div>
                       <p className={cn("text-xs font-semibold text-white mb-2")}>
@@ -571,7 +571,7 @@ export default function IntegrationCatalogPage() {
                           <span
                             key={feature}
                             className={cn(
-                              "px-2 py-1 rounded text-xs bg-[#1a1a2e] text-gray-500 font-medium"
+                              "px-2 py-1 rounded text-xs bg-wl-bg-elevated text-gray-500 font-medium"
                             )}
                           >
                             {feature}

@@ -68,7 +68,7 @@ const getStatusIcon = (status: string) => {
 
 export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -96,12 +96,12 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
           </Badge>
         </div>
 
-        <div className="mb-6 pb-6 border-b border-[#1e1e2e]">
+        <div className="mb-6 pb-6 border-b border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-medium text-gray-500 uppercase">Completion</p>
             <p className="text-sm font-bold text-white">{envelope.progress}%</p>
           </div>
-          <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-blue-500 to-blue-500/70" style={{ width: `${envelope.progress}%` }} />
           </div>
         </div>
@@ -112,7 +112,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
             {envelope.signers.map((signer) => (
               <div key={signer.id} className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-[#12121a] flex items-center justify-center text-xs font-semibold">
+                  <div className="w-6 h-6 rounded-full bg-wl-bg-surface flex items-center justify-center text-xs font-semibold">
                     {signer.order}
                   </div>
                   <div>
@@ -136,11 +136,11 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
           </div>
         </div>
 
-        <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
-          <Button variant="secondary" size="sm" className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]">
+        <div className="flex gap-2 pt-4 border-t border-wl-border-default">
+          <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">
             <Eye className="w-4 h-4 mr-2" />View
           </Button>
-          <Button variant="secondary" size="sm" className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]">
+          <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">
             <DownloadCloud className="w-4 h-4 mr-2" />Download
           </Button>
           {envelope.status === "sent" || envelope.status === "viewed" ? (

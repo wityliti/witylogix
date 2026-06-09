@@ -44,7 +44,7 @@ export function ConflictRules() {
 
       <div className="grid grid-cols-1 gap-4">
         {CONFLICT_RULES.map((rule) => (
-          <Card key={rule.field} className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card key={rule.field} className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
               <h3 className="font-semibold text-white mb-4">
                 {rule.field.replace(/_/g, ' ')}
@@ -69,7 +69,7 @@ export function ConflictRules() {
         ))}
       </div>
 
-      <Card className="bg-[#12121a] border border-blue-500/20">
+      <Card className="bg-wl-bg-surface border border-blue-500/20">
         <CardHeader>
           <CardTitle>Order Import Rules</CardTitle>
         </CardHeader>

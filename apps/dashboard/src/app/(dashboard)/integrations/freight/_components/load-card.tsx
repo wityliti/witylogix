@@ -29,7 +29,7 @@ interface LoadCardProps {
 
 export function LoadCard({ load, onBook, onDetails }: LoadCardProps) {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e] hover:border-blue-500/50 transition-colors">
+    <Card className="bg-wl-bg-surface border-wl-border-default hover:border-blue-500/50 transition-colors">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">

@@ -179,7 +179,7 @@ export default function ProviderDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className={cn("flex items-start gap-6")}>
-              <div className={cn("w-24 h-24 rounded-lg bg-[#1a1a2e] flex items-center justify-center flex-shrink-0")}>
+              <div className={cn("w-24 h-24 rounded-lg bg-wl-bg-elevated flex items-center justify-center flex-shrink-0")}>
                 {provider.logoUrl ? (
                   <img src={provider.logoUrl} alt={provider.name} className="w-16 h-16 object-contain" />
                 ) : (
@@ -245,7 +245,7 @@ export default function ProviderDetailPage() {
                 <CardContent>
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     {provider.capabilities.map((cap) => (
-                      <div key={cap} className={cn("flex items-center gap-2 p-2 rounded bg-[#1a1a2e]")}>
+                      <div key={cap} className={cn("flex items-center gap-2 p-2 rounded bg-wl-bg-elevated")}>
                         <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                         <span className="text-sm text-white">{cap}</span>
                       </div>
@@ -264,7 +264,7 @@ export default function ProviderDetailPage() {
                 <CardContent>
                   <div className={cn("space-y-2")}>
                     {credentialFields.map((field) => (
-                      <div key={field.key} className={cn("flex items-center gap-2 p-3 rounded border border-[#1e1e2e]")}>
+                      <div key={field.key} className={cn("flex items-center gap-2 p-3 rounded border border-wl-border-default")}>
                         <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
                         <span className="text-sm text-white">
                           {field.label}
@@ -346,7 +346,7 @@ export default function ProviderDetailPage() {
               Review the integration details before connecting:
             </p>
 
-            <div className={cn("space-y-3 bg-[#1a1a2e] p-4 rounded-lg")}>
+            <div className={cn("space-y-3 bg-wl-bg-elevated p-4 rounded-lg")}>
               <div>
                 <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>Provider</div>
                 <div className={cn("text-sm font-medium text-white")}>{provider.name}</div>
@@ -435,7 +435,7 @@ export default function ProviderDetailPage() {
                 })}
               </div>
             ) : (
-              <p className={cn("text-sm text-gray-500 bg-[#1a1a2e] p-3 rounded-lg")}>
+              <p className={cn("text-sm text-gray-500 bg-wl-bg-elevated p-3 rounded-lg")}>
                 This integration requires no credentials.
               </p>
             )}

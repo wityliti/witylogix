@@ -210,7 +210,7 @@ export default function MessagingPage() {
         actions={<Button variant="primary">Add Provider</Button>}
       />
 
-      <div className={cn("p-6 bg-[#0a0a0f] space-y-6")}>
+      <div className={cn("p-6 bg-wl-bg-root space-y-6")}>
         {/* Channel Tabs */}
         <div className={cn("flex gap-2 mb-4")}>
           {(["SMS", "PUSH", "CHAT"] as const).map((channel) => (
@@ -221,7 +221,7 @@ export default function MessagingPage() {
                 "px-4 py-2 rounded-md font-semibold text-sm transition",
                 selectedChannel === channel
                   ? "bg-blue-500 text-white"
-                  : "bg-[#1a1a2e] text-gray-400 hover:bg-[#12121a]"
+                  : "bg-wl-bg-elevated text-gray-400 hover:bg-wl-bg-surface"
               )}
             >
               {channel}
@@ -305,7 +305,7 @@ export default function MessagingPage() {
                   </label>
                   <select
                     className={cn(
-                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                     )}
                     defaultValue={channelProviders[0]?.id || ""}
                   >
@@ -343,7 +343,7 @@ export default function MessagingPage() {
                   <div
                     key={provider.id}
                     className={cn(
-                      "p-4 rounded border border-[#1e1e2e] hover:border-blue-400 transition"
+                      "p-4 rounded border border-wl-border-default hover:border-blue-400 transition"
                     )}
                   >
                     <div className={cn("flex items-start justify-between mb-3")}>
@@ -383,7 +383,7 @@ export default function MessagingPage() {
                       </div>
                     </div>
 
-                    <div className={cn("h-12 bg-[#12121a] rounded mb-3")}>
+                    <div className={cn("h-12 bg-wl-bg-surface rounded mb-3")}>
                       <BarChart data={[45, 38, 52, 48, 55, 42, 50]} height={48} />
                     </div>
 
@@ -417,7 +417,7 @@ export default function MessagingPage() {
                     value={testChannel}
                     onChange={(e) => setTestChannel(e.target.value as ChannelType)}
                     className={cn(
-                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                     )}
                   >
                     {(["SMS", "PUSH", "CHAT"] as const).map((ch) => (
@@ -444,7 +444,7 @@ export default function MessagingPage() {
                           : "user_id_..."
                     }
                     className={cn(
-                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                     )}
                   />
                 </div>
@@ -457,7 +457,7 @@ export default function MessagingPage() {
                     placeholder="Test message content..."
                     rows={3}
                     className={cn(
-                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                     )}
                   />
                 </div>
@@ -480,7 +480,7 @@ export default function MessagingPage() {
                       {provider.name}
                     </p>
                     <div className={cn("flex items-center gap-2")}>
-                      <div className={cn("flex-1 h-2 rounded bg-[#12121a] overflow-hidden")}>
+                      <div className={cn("flex-1 h-2 rounded bg-wl-bg-surface overflow-hidden")}>
                         <div
                           className={cn("h-full bg-blue-500")}
                           style={{ width: "65%" }}
@@ -511,7 +511,7 @@ export default function MessagingPage() {
                       "p-3 rounded cursor-pointer transition",
                       selectedTemplate === template.id
                         ? "bg-blue-500/10 border border-blue-400"
-                        : "bg-[#12121a] border border-[#1e1e2e] hover:border-blue-400"
+                        : "bg-wl-bg-surface border border-wl-border-default hover:border-blue-400"
                     )}
                   >
                     <p className={cn("font-semibold text-white text-sm")}>{template.name}</p>
@@ -535,7 +535,7 @@ export default function MessagingPage() {
                       type="text"
                       value={selected.name}
                       className={cn(
-                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                       )}
                       readOnly
                     />
@@ -556,7 +556,7 @@ export default function MessagingPage() {
                       value={selected.content}
                       rows={4}
                       className={cn(
-                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none font-mono"
+                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none font-mono"
                       )}
                       readOnly
                     />

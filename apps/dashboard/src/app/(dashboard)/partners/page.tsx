@@ -199,7 +199,7 @@ export default function PartnersPage() {
           <select
             value={selectedStatus as string}
             onChange={(e) => setSelectedStatus((e.target.value as PartnerStatus) || "")}
-            className="px-3 py-2 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm cursor-pointer focus:outline-none"
+            className="px-3 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm cursor-pointer focus:outline-none"
             aria-label="Filter by status"
           >
             <option value="">All Status</option>
@@ -211,7 +211,7 @@ export default function PartnersPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortBy)}
-            className="px-3 py-2 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm cursor-pointer focus:outline-none"
+            className="px-3 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm cursor-pointer focus:outline-none"
             aria-label="Sort by"
           >
             <option value="name">Name</option>
@@ -219,7 +219,7 @@ export default function PartnersPage() {
             <option value="deliveries">Active Deliveries</option>
           </select>
 
-          <div className="flex items-center gap-2 border border-[#1e1e2e] rounded-md p-2">
+          <div className="flex items-center gap-2 border border-wl-border-default rounded-md p-2">
             <button
               onClick={() => setViewMode("grid")}
               className={cn(
@@ -284,7 +284,7 @@ export default function PartnersPage() {
             <Card key={partner.id} className="flex items-center justify-between gap-4 p-4">
               <div className="flex items-center gap-4 flex-1">
                 {partner.logoUrl ? (
-                  <div className="w-12 h-12 rounded-md bg-[#12121a] flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-md bg-wl-bg-surface flex items-center justify-center">
                     <img
                       src={partner.logoUrl}
                       alt={partner.name}

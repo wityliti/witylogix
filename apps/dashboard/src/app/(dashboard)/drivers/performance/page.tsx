@@ -126,7 +126,7 @@ export default function DriverPerformancePage() {
                 "px-4 py-2 rounded-md text-sm font-medium transition-all duration-fast",
                 period === p
                   ? "bg-blue-500 text-white"
-                  : "bg-[#1a1a2e] text-gray-300 hover:text-white"
+                  : "bg-wl-bg-elevated text-gray-300 hover:text-white"
               )}
             >
               {p === "daily" && "Daily"}
@@ -219,7 +219,7 @@ export default function DriverPerformancePage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
                   <th className="p-3 px-4 text-center font-semibold text-gray-300 w-12">
                     Rank
                   </th>
@@ -258,9 +258,9 @@ export default function DriverPerformancePage() {
                     key={driver.id}
                     onClick={() => setSelectedDriver(driver)}
                     className={cn(
-                      "border-b border-[#1e1e2e] transition-colors duration-fast cursor-pointer",
-                      idx % 2 === 0 ? "bg-transparent hover:bg-[#1a1a2e]/50" : "bg-[#1a1a2e] hover:bg-[#12121a]",
-                      selectedDriver?.id === driver.id && "bg-[#12121a] ring-1 ring-blue-500"
+                      "border-b border-wl-border-default transition-colors duration-fast cursor-pointer",
+                      idx % 2 === 0 ? "bg-transparent hover:bg-wl-bg-elevated/50" : "bg-wl-bg-elevated hover:bg-wl-bg-surface",
+                      selectedDriver?.id === driver.id && "bg-wl-bg-surface ring-1 ring-blue-500"
                     )}
                   >
                     <td className="p-3 px-4 text-center font-bold text-white">
@@ -321,12 +321,12 @@ export default function DriverPerformancePage() {
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* On-Time Score */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                   style={{
                     background: `conic-gradient(var(--emerald-500) 0deg ${selectedDriver.onTimePercent * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.onTimePercent * 3.6}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
                     <span className="font-bold text-white">{selectedDriver.onTimePercent.toFixed(0)}</span>
                   </div>
                 </div>
@@ -335,12 +335,12 @@ export default function DriverPerformancePage() {
 
               {/* Rating Score */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                   style={{
                     background: `conic-gradient(var(--blue-500) 0deg ${(selectedDriver.customerRating / 5) * 360}deg, var(--wl-bg-overlay) ${(selectedDriver.customerRating / 5) * 360}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
                     <span className="font-bold text-white">{formatRating(selectedDriver.customerRating)}</span>
                   </div>
                 </div>
@@ -349,12 +349,12 @@ export default function DriverPerformancePage() {
 
               {/* POD Compliance */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                   style={{
                     background: `conic-gradient(var(--amber-500) 0deg ${selectedDriver.podCompliance * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.podCompliance * 3.6}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
                     <span className="font-bold text-white">{selectedDriver.podCompliance.toFixed(0)}</span>
                   </div>
                 </div>
@@ -363,7 +363,7 @@ export default function DriverPerformancePage() {
 
               {/* Deliveries */}
               <div className="flex flex-col items-center gap-3">
-                <div className="w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center bg-[#1a1a2e]">
+                <div className="w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center bg-wl-bg-elevated">
                   <span className="text-2xl font-bold text-white">{selectedDriver.deliveriesCount}</span>
                 </div>
                 <p className="text-sm font-semibold text-gray-300">Deliveries</p>
@@ -371,12 +371,12 @@ export default function DriverPerformancePage() {
 
               {/* Composite Score */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                   style={{
                     background: `conic-gradient(var(--blue-500) 0deg ${selectedDriver.compositeScore * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.compositeScore * 3.6}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center flex-col">
+                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center flex-col">
                     <span className="font-bold text-white">{selectedDriver.compositeScore.toFixed(0)}</span>
                     <span className="text-xs text-gray-400">/100</span>
                   </div>

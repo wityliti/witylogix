@@ -39,7 +39,7 @@ function EndpointCard({
   onEdit: (endpoint: WebhookEndpoint) => void;
 }) {
   return (
-    <Card className="bg-[#12121a] border-neutral-700">
+    <Card className="bg-wl-bg-surface border-neutral-700">
       <CardContent className="pt-6">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-2">
@@ -209,7 +209,7 @@ export default function WebhooksPage() {
 
       {/* Create/Edit Form */}
       {(showCreateForm || editingEndpoint) && (
-        <Card className="bg-[#12121a] border-neutral-700">
+        <Card className="bg-wl-bg-surface border-neutral-700">
           <CardHeader>
             <CardTitle>
               {editingEndpoint ? "Edit Webhook Endpoint" : "Create Webhook Endpoint"}
@@ -228,7 +228,7 @@ export default function WebhooksPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, url: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -281,7 +281,7 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, secret: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
                   />
                   <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 </div>
@@ -297,7 +297,7 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, retryPolicy: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="exponential">Exponential Backoff</option>
                     <option value="linear">Linear Backoff</option>
@@ -317,7 +317,7 @@ export default function WebhooksPage() {
                         maxRetries: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -371,7 +371,7 @@ export default function WebhooksPage() {
 
       {/* Delivery Analytics */}
       {webhooks && (
-        <Card className="bg-[#12121a] border-neutral-700">
+        <Card className="bg-wl-bg-surface border-neutral-700">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -416,7 +416,7 @@ export default function WebhooksPage() {
               return (
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
-                  <div className="flex items-end gap-1 h-32 px-2 py-4 bg-[#0a0a0f] rounded-lg border border-neutral-700">
+                  <div className="flex items-end gap-1 h-32 px-2 py-4 bg-wl-bg-root rounded-lg border border-neutral-700">
                     {hourly.map((bucket, i) => {
                       const total = bucket.success + bucket.failed;
                       const heightPercent = (total / maxTotal) * 100;
@@ -443,7 +443,7 @@ export default function WebhooksPage() {
 
       {/* Delivery Log */}
       {webhooks?.deliveries && webhooks.deliveries.length > 0 && (
-        <Card className="bg-[#12121a] border-neutral-700">
+        <Card className="bg-wl-bg-surface border-neutral-700">
           <CardHeader>
             <CardTitle>Delivery Log</CardTitle>
           </CardHeader>
@@ -456,7 +456,7 @@ export default function WebhooksPage() {
                 >
                   <button
                     onClick={() => toggleDeliveryExpand(delivery.id)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-[#0a0a0f]tertiary transition-colors text-left"
+                    className="w-full flex items-center justify-between p-3 hover:bg-wl-bg-sunken transition-colors text-left"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Badge
@@ -496,7 +496,7 @@ export default function WebhooksPage() {
                   </button>
 
                   {expandedDeliveries[delivery.id] && (
-                    <div className="border-t border-neutral-700 bg-[#0a0a0f]tertiary p-3 space-y-3">
+                    <div className="border-t border-neutral-700 bg-wl-bg-sunken p-3 space-y-3">
                       <div>
                         <p className="text-xs font-medium text-gray-400 mb-1">
                           Timestamp
@@ -510,7 +510,7 @@ export default function WebhooksPage() {
                           <p className="text-xs font-medium text-gray-400 mb-1">
                             Payload
                           </p>
-                          <pre className="text-xs bg-[#12121a] p-2 rounded border border-neutral-700 overflow-x-auto text-white">
+                          <pre className="text-xs bg-wl-bg-surface p-2 rounded border border-neutral-700 overflow-x-auto text-white">
                             {JSON.stringify(delivery.payload, null, 2)}
                           </pre>
                         </div>

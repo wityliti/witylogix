@@ -214,11 +214,11 @@ export default function ActivityPage() {
 
   return (
     <div
-      className="flex flex-col min-h-screen bg-[#0a0a0f]"
+      className="flex flex-col min-h-screen bg-wl-bg-root"
       ref={containerRef}
     >
       {/* Header */}
-      <div className="bg-[#0a0a0f] border-b border-[#1e1e2e] sticky top-0 z-30">
+      <div className="bg-wl-bg-root border-b border-wl-border-default sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -237,7 +237,7 @@ export default function ActivityPage() {
                   "transition-all duration-300",
                   isLiveMode
                     ? "bg-emerald-500/10 border-emerald-500/30"
-                    : "bg-[#1a1a2e] border-[#1e1e2e]"
+                    : "bg-wl-bg-elevated border-wl-border-default"
                 )}
               >
                 <div
@@ -284,7 +284,7 @@ export default function ActivityPage() {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className={cn(
                   "pl-10 pr-4 py-2.5 w-full",
-                  "bg-[#12121a] border border-[#1e1e2e]",
+                  "bg-wl-bg-surface border border-wl-border-default",
                   "text-white placeholder-wl-text-tertiary",
                   "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
                   "rounded-md transition-all duration-200"
@@ -445,7 +445,7 @@ export default function ActivityPage() {
                       </div>
                     </div>
 
-                    <div className="border-t border-[#1e1e2e] pt-4">
+                    <div className="border-t border-wl-border-default pt-4">
                       <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
                         Description
                       </p>
@@ -455,7 +455,7 @@ export default function ActivityPage() {
                     </div>
 
                     {selectedEvent.user && (
-                      <div className="border-t border-[#1e1e2e] pt-4">
+                      <div className="border-t border-wl-border-default pt-4">
                         <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
                           Triggered by
                         </p>
@@ -476,11 +476,11 @@ export default function ActivityPage() {
                     )}
 
                     {selectedEvent.entity && (
-                      <div className="border-t border-[#1e1e2e] pt-4">
+                      <div className="border-t border-wl-border-default pt-4">
                         <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
                           Related entity
                         </p>
-                        <div className="bg-[#12121a] rounded-md p-3 border border-[#1e1e2e]">
+                        <div className="bg-wl-bg-surface rounded-md p-3 border border-wl-border-default">
                           <p className="text-xs text-gray-300 mb-1">
                             {selectedEvent.entity.type.toUpperCase()}
                           </p>
@@ -494,7 +494,7 @@ export default function ActivityPage() {
                       </div>
                     )}
 
-                    <div className="border-t border-[#1e1e2e] pt-4">
+                    <div className="border-t border-wl-border-default pt-4">
                       <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
                         Timestamp
                       </p>
@@ -505,7 +505,7 @@ export default function ActivityPage() {
 
                     {selectedEvent.metadata &&
                       Object.keys(selectedEvent.metadata).length > 0 && (
-                        <div className="border-t border-[#1e1e2e] pt-4">
+                        <div className="border-t border-wl-border-default pt-4">
                           <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
                             Metadata
                           </p>

@@ -20,12 +20,12 @@ export function NotificationPreferences({
   preferences,
 }: NotificationPreferencesProps) {
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#1e1e2e]">
+              <tr className="border-b border-wl-border-default">
                 <th className="text-left py-3 px-4 font-semibold text-gray-400">
                   Event
                 </th>
@@ -47,7 +47,7 @@ export function NotificationPreferences({
               {preferences.map((pref) => (
                 <tr
                   key={pref.id}
-                  className="border-b border-[#1e1e2e] hover:bg-[#12121a]"
+                  className="border-b border-wl-border-default hover:bg-wl-bg-surface"
                 >
                   <td className="py-3 px-4 text-white">{pref.event}</td>
                   <td className="py-3 px-4 text-center">
@@ -94,7 +94,7 @@ export function NotificationPreferences({
           </Button>
           <Button
             variant="secondary"
-            className="bg-[#12121a] hover:bg-[#1a1a2e]"
+            className="bg-wl-bg-surface hover:bg-wl-bg-elevated"
           >
             Reset to Defaults
           </Button>

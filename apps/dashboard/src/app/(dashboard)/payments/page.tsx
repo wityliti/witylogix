@@ -316,7 +316,7 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+    <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
@@ -358,7 +358,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* Revenue Chart */}
-      <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+      <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
         <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
           <TrendingUp className="w-5 h-5" />
           Monthly Revenue
@@ -385,7 +385,7 @@ export default function PaymentsPage() {
 
       {/* Outstanding vs Collected Comparison */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+        <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
           <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
             Collected
@@ -396,7 +396,7 @@ export default function PaymentsPage() {
           <p className="text-sm text-gray-400">
             {stats.completedCount} completed payments
           </p>
-          <div className="mt-4 w-full bg-[#1a1a2e] rounded-full h-2">
+          <div className="mt-4 w-full bg-wl-bg-elevated rounded-full h-2">
             <div
               className="bg-emerald-500 h-2 rounded-full"
               style={{
@@ -406,7 +406,7 @@ export default function PaymentsPage() {
           </div>
         </Card>
 
-        <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+        <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
           <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4 flex items-center gap-2">
             <Clock className="w-4 h-4" />
             Outstanding
@@ -417,7 +417,7 @@ export default function PaymentsPage() {
           <p className="text-sm text-gray-400">
             {stats.pendingCount} pending payments
           </p>
-          <div className="mt-4 w-full bg-[#1a1a2e] rounded-full h-2">
+          <div className="mt-4 w-full bg-wl-bg-elevated rounded-full h-2">
             <div
               className="bg-amber-500 h-2 rounded-full"
               style={{
@@ -429,7 +429,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* Filters & Controls */}
-      <Card className={cn("flex flex-col gap-4 bg-[#12121a] border border-[#1e1e2e] p-6")}>
+      <Card className={cn("flex flex-col gap-4 bg-wl-bg-surface border border-wl-border-default p-6")}>
         <div className="flex gap-3 flex-wrap items-end">
           <div className="flex-1 min-w-[200px]">
             <Input
@@ -495,7 +495,7 @@ export default function PaymentsPage() {
         </div>
 
         {/* Additional Filters */}
-        <div className="flex gap-3 flex-wrap items-end border-t border-[#1e1e2e] pt-4">
+        <div className="flex gap-3 flex-wrap items-end border-t border-wl-border-default pt-4">
           <div className="flex gap-2 items-end">
             <label className="text-xs font-semibold uppercase text-gray-400">
               Date Range
@@ -504,14 +504,14 @@ export default function PaymentsPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+              className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
             />
             <span className="text-gray-400">to</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+              className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
             />
           </div>
         </div>
@@ -519,7 +519,7 @@ export default function PaymentsPage() {
 
       {/* Payments Table */}
       {filtered.length === 0 ? (
-        <Card className={cn("flex flex-col items-center justify-center gap-4 py-16 bg-[#12121a] border border-[#1e1e2e]")}>
+        <Card className={cn("flex flex-col items-center justify-center gap-4 py-16 bg-wl-bg-surface border border-wl-border-default")}>
           <Search className="w-12 h-12 text-gray-500" />
           <div className="flex flex-col items-center gap-2">
             <h3 className="text-lg font-semibold text-gray-400">
@@ -531,7 +531,7 @@ export default function PaymentsPage() {
           </div>
         </Card>
       ) : (
-        <Card className={cn("overflow-hidden bg-[#12121a] border border-[#1e1e2e]")}>
+        <Card className={cn("overflow-hidden bg-wl-bg-surface border border-wl-border-default")}>
           <Table<Payment>
             columns={[
               {
@@ -611,7 +611,7 @@ export default function PaymentsPage() {
       )}
 
       {/* Recent Payments Feed */}
-      <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+      <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
         <h2 className="text-lg font-semibold text-white mb-4">
           Recent Payments
         </h2>
@@ -619,7 +619,7 @@ export default function PaymentsPage() {
           {filtered.slice(0, 5).map((payment) => (
             <div
               key={payment.id}
-              className={cn("flex items-center justify-between p-4 rounded border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors")}
+              className={cn("flex items-center justify-between p-4 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors")}
             >
               <div className="flex-1">
                 <p className="font-medium text-white">

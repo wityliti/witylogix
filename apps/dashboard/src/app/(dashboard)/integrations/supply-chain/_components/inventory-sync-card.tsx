@@ -21,7 +21,7 @@ interface InventorySyncCardProps {
 
 export function InventorySyncCard({ sync }: InventorySyncCardProps) {
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -47,7 +47,7 @@ export function InventorySyncCard({ sync }: InventorySyncCardProps) {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-[#1e1e2e]">
+        <div className="pt-4 border-t border-wl-border-default">
           <p className="text-xs font-medium text-gray-500 uppercase">Last Update</p>
           <p className="text-xs text-gray-400 mt-1">{sync.lastUpdate}</p>
         </div>

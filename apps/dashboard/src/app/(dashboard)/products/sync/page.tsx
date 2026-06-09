@@ -251,8 +251,8 @@ export default function ProductSyncPage() {
                 className={cn(
                   'flex items-center justify-between p-4 rounded-lg border transition-all',
                   effectivePlatformId === platform.id
-                    ? 'hover:bg-[#1a1a2e] border-blue-500 ring-2 ring-blue-500/20'
-                    : 'bg-[#12121a] border-[#1e1e2e] hover:border-[#1e1e2e]'
+                    ? 'hover:bg-wl-bg-elevated border-blue-500 ring-2 ring-blue-500/20'
+                    : 'bg-wl-bg-surface border-wl-border-default hover:border-wl-border-default'
                 )}
               >
                 <div className="flex items-center gap-3 flex-1 text-left">
@@ -308,7 +308,7 @@ export default function ProductSyncPage() {
       {selectedPlatform && (
         <>
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-[#1e1e2e]">
+          <div className="flex gap-2 border-b border-wl-border-default">
             {(['mapping', 'schedule', 'preview'] as const).map((tab) => (
               <button
                 key={tab}
@@ -392,7 +392,7 @@ export default function ProductSyncPage() {
                       onChange={(e) => setTemplateName(e.target.value)}
                       className={cn(
                         'flex-1 px-3 py-2 text-sm rounded-md',
-                        'bg-[#12121a] border border-[#1e1e2e]',
+                        'bg-wl-bg-surface border border-wl-border-default',
                         'text-white placeholder:text-gray-300',
                         'focus:outline-none focus:ring-2 focus:ring-blue-500'
                       )}
@@ -479,7 +479,7 @@ export default function ProductSyncPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <div className="bg-[#12121a] rounded-lg p-4 border border-[#1e1e2e]">
+                <div className="bg-wl-bg-surface rounded-lg p-4 border border-wl-border-default">
                   <h4 className="font-semibold text-white mb-4">
                     Sample Product Transformation
                   </h4>
@@ -495,7 +495,7 @@ export default function ProductSyncPage() {
                           Object.entries(previewProduct.source).map(([key, value]) => (
                             <div
                               key={key}
-                              className="flex justify-between p-2 bg-[#1a1a2e] rounded"
+                              className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
                               <span className="text-gray-300">{key}:</span>
                               <span className="text-white font-medium">
@@ -516,7 +516,7 @@ export default function ProductSyncPage() {
                           Object.entries(previewProduct.target).map(([key, value]) => (
                             <div
                               key={key}
-                              className="flex justify-between p-2 bg-[#1a1a2e] rounded"
+                              className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
                               <span className="text-gray-300">{key}:</span>
                               <span className="text-white font-medium">

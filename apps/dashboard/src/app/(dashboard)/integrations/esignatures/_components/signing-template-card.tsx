@@ -21,7 +21,7 @@ interface SigningTemplateCardProps {
 
 export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -36,7 +36,7 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+        <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-wl-border-default">
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase">Fields</p>
             <p className="text-lg font-bold text-white mt-1">{template.fields}</p>
@@ -57,7 +57,7 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
           <Button variant="primary" size="sm" className="flex-1 bg-blue-500 hover:bg-blue-500/90">
             <Plus className="w-4 h-4 mr-2" />Use Template
           </Button>
-          <Button variant="secondary" size="sm" className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]">
+          <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">
             <Settings className="w-4 h-4 mr-2" />Edit
           </Button>
         </div>

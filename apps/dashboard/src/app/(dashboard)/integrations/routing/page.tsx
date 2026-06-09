@@ -285,7 +285,7 @@ export default function RoutingPage() {
         actions={<Button variant="primary">Add Provider</Button>}
       />
 
-      <div className={cn("p-6 bg-[#0a0a0f] space-y-6")}>
+      <div className={cn("p-6 bg-wl-bg-root space-y-6")}>
         {/* Overview Cards */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
           <Card>
@@ -367,7 +367,7 @@ export default function RoutingPage() {
                   key={provider.id}
                   className={cn(
                     "cursor-pointer transition-all hover:border-blue-400",
-                    selectedProvider === provider.id && "border-blue-500 bg-[#12121a]"
+                    selectedProvider === provider.id && "border-blue-500 bg-wl-bg-surface"
                   )}
                   onClick={() => setSelectedProvider(provider.id)}
                 >
@@ -419,7 +419,7 @@ export default function RoutingPage() {
                       <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         API Key
                       </label>
-                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300")}>
+                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-gray-300")}>
                         {selected.apiKey}
                       </div>
                       <Button variant="ghost" size="sm" className="mt-2 w-full">
@@ -431,7 +431,7 @@ export default function RoutingPage() {
                       <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Base URL
                       </label>
-                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300 break-all")}>
+                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-gray-300 break-all")}>
                         {selected.baseUrl}
                       </div>
                     </div>
@@ -440,7 +440,7 @@ export default function RoutingPage() {
                       <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Rate Limit
                       </label>
-                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300")}>
+                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-gray-300")}>
                         {selected.rateLimit.toLocaleString()} req/hour
                       </div>
                     </div>
@@ -449,7 +449,7 @@ export default function RoutingPage() {
                       <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Fallback Priority
                       </label>
-                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300")}>
+                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-gray-300")}>
                         #{selected.fallbackPriority} of {ROUTING_PROVIDERS.length}
                       </div>
                     </div>
@@ -509,7 +509,7 @@ export default function RoutingPage() {
                   value={origin}
                   onChange={(e) => setOrigin(e.target.value)}
                   className={cn(
-                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                    "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                   )}
                 />
               </div>
@@ -522,7 +522,7 @@ export default function RoutingPage() {
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
                   className={cn(
-                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                    "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                   )}
                 />
               </div>
@@ -542,7 +542,7 @@ export default function RoutingPage() {
                           setCompareProviders(compareProviders.filter((p) => p !== pid));
                         }
                       }}
-                      className={cn("w-4 h-4 rounded border-[#1e1e2e]")}
+                      className={cn("w-4 h-4 rounded border-wl-border-default")}
                     />
                     <span className={cn("text-sm text-white")}>
                       {ROUTING_PROVIDERS.find((p) => p.id === pid)?.name}
@@ -568,7 +568,7 @@ export default function RoutingPage() {
                   if (!provider || !comparison) return null;
 
                   return (
-                    <Card key={pid} className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+                    <Card key={pid} className={cn("bg-wl-bg-surface border-wl-border-default")}>
                       <div className={cn("p-3")}>
                         <h4 className={cn("font-semibold text-white mb-3")}>{provider.name}</h4>
                         <div className={cn("space-y-2 text-sm")}>
@@ -591,7 +591,7 @@ export default function RoutingPage() {
                 })}
               </div>
             ) : (
-              <div className={cn("py-8 text-center text-gray-500 text-sm bg-[#12121a] rounded border border-[#1e1e2e]")}>
+              <div className={cn("py-8 text-center text-gray-500 text-sm bg-wl-bg-surface rounded border border-wl-border-default")}>
                 Select providers above and click Compare Routes to see results.
               </div>
             )}
@@ -609,7 +609,7 @@ export default function RoutingPage() {
             </p>
             <div className={cn("space-y-2")}>
               {sortedByPriority.map((provider, idx) => (
-                <div key={provider.id} className={cn("flex items-center gap-3 p-3 bg-[#12121a] rounded border border-[#1e1e2e]")}>
+                <div key={provider.id} className={cn("flex items-center gap-3 p-3 bg-wl-bg-surface rounded border border-wl-border-default")}>
                   <div className={cn("flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold")}>
                     {idx + 1}
                   </div>

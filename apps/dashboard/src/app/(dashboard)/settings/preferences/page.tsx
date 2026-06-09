@@ -102,7 +102,7 @@ export default function PreferencesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Dashboard Preferences"
         subtitle="Customize your dashboard experience"
@@ -111,7 +111,7 @@ export default function PreferencesPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Location & Timezone */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <MapPin className="w-5 h-5" />
@@ -127,7 +127,7 @@ export default function PreferencesPage() {
                 <select
                   value={preferences.timezone}
                   onChange={(e) => setPreferences({ ...preferences, timezone: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz.value} value={tz.value}>
@@ -147,7 +147,7 @@ export default function PreferencesPage() {
           </Card>
 
           {/* Language & Regional */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Globe className="w-5 h-5" />
@@ -163,7 +163,7 @@ export default function PreferencesPage() {
                 <select
                   value={preferences.language}
                   onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                 >
                   {LANGUAGES.map((lang) => (
                     <option key={lang.value} value={lang.value}>
@@ -180,7 +180,7 @@ export default function PreferencesPage() {
                 <select
                   value={preferences.dateFormat}
                   onChange={(e) => setPreferences({ ...preferences, dateFormat: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                 >
                   {DATE_FORMATS.map((fmt) => (
                     <option key={fmt.value} value={fmt.value}>
@@ -193,7 +193,7 @@ export default function PreferencesPage() {
           </Card>
 
           {/* Units & Measurements */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Weight className="w-5 h-5" />
@@ -257,7 +257,7 @@ export default function PreferencesPage() {
           </Card>
 
           {/* Dashboard Display */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Calendar className="w-5 h-5" />
@@ -280,7 +280,7 @@ export default function PreferencesPage() {
                     <label
                       key={option.value}
                       className={cn(
-                        "p-3 border border-[#1e1e2e] rounded-lg cursor-pointer transition-all",
+                        "p-3 border border-wl-border-default rounded-lg cursor-pointer transition-all",
                         preferences.dashboardView === option.value
                           ? "border-blue-500 bg-blue-500/10"
                           : "hover:border-gray-400"

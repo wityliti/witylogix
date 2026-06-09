@@ -35,12 +35,12 @@ interface WizardContentProps {
 // Compound Wizard Components
 export function Wizard({ children, activeStep, onStepChange }: WizardProps) {
   return (
-    <div className={cn('flex h-screen bg-[#0a0a0f]')}>
+    <div className={cn('flex h-screen bg-wl-bg-root')}>
       {/* Sidebar Navigation */}
       <div
         className={cn(
-          'w-64 border-r border-[#1e1e2e]',
-          'bg-[#12121a] overflow-y-auto',
+          'w-64 border-r border-wl-border-default',
+          'bg-wl-bg-surface overflow-y-auto',
           'flex flex-col'
         )}
       >
@@ -85,7 +85,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
               'relative group',
               step.isActive
                 ? 'bg-blue-500/20 border border-blue-500'
-                : 'hover:bg-[#1a1a2e]',
+                : 'hover:bg-wl-bg-elevated',
               !step.isAccessible && 'opacity-50 cursor-not-allowed'
             )}
           >
@@ -100,7 +100,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
                     ? 'bg-emerald-500 text-white'
                     : step.isActive
                     ? 'bg-blue-500 text-white'
-                    : 'bg-[#12121a] border border-[#1e1e2e] text-gray-300'
+                    : 'bg-wl-bg-surface border border-wl-border-default text-gray-300'
                 )}
               >
                 {step.isComplete ? (
@@ -139,7 +139,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
             <div
               className={cn(
                 'ml-7 h-2 w-0.5',
-                'bg-[#1e1e2e]',
+                'bg-wl-bg-elevated',
                 step.isComplete && 'bg-emerald-500'
               )}
             />

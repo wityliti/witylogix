@@ -104,11 +104,11 @@ export default function TransactionsPage() {
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
         {/* ═══ Refund Modal ═══ */}
         {showRefundForm && selectedTxnData && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-md bg-[#12121a] border-[#1e1e2e]">
+            <Card className="w-full max-w-md bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Process Refund</CardTitle>
@@ -126,7 +126,7 @@ export default function TransactionsPage() {
                   <label className="text-sm font-medium text-gray-300 block mb-1">
                     Transaction
                   </label>
-                  <div className="px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm">
+                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm">
                     {selectedTxnData.transactionId}
                   </div>
                 </div>
@@ -135,7 +135,7 @@ export default function TransactionsPage() {
                   <label className="text-sm font-medium text-gray-300 block mb-1">
                     Amount
                   </label>
-                  <div className="px-3 py-2 rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white text-sm font-bold text-emerald-500">
+                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm font-bold text-emerald-500">
                     ${selectedTxnData.amount.toFixed(2)}
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export default function TransactionsPage() {
                   <select
                     value={refundReason}
                     onChange={(e) => setRefundReason(e.target.value)}
-                    className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#1a1a2e] text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-elevated text-white text-sm focus:outline-none focus:border-blue-500"
                   >
                     <option value="">Select reason...</option>
                     <option value="customer_request">Customer Request</option>
@@ -192,7 +192,7 @@ export default function TransactionsPage() {
             placeholder="Search by transaction ID, receipt, or customer name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-[#1e1e2e] bg-[#12121a] text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-4 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500"
           />
 
           {/* Filter Pills */}
@@ -208,7 +208,7 @@ export default function TransactionsPage() {
                       "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
                       statusFilter === status
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "border-[#1e1e2e] bg-transparent text-gray-400 hover:border-[#252541]"
+                        : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong"
                     )}
                   >
                     {status === "all" ? "All Status" : status}
@@ -228,7 +228,7 @@ export default function TransactionsPage() {
                       "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1",
                       paymentFilter === method
                         ? "bg-emerald-500 text-white border-emerald-500"
-                        : "border-[#1e1e2e] bg-transparent text-gray-400 hover:border-[#252541]"
+                        : "border-wl-border-default bg-transparent text-gray-400 hover:border-wl-border-strong"
                     )}
                   >
                     {method !== "all" && <span>{paymentMethodIcon[method]}</span>}
@@ -252,7 +252,7 @@ export default function TransactionsPage() {
                 onChange={(e) =>
                   setAmountRange({ ...amountRange, min: Math.max(0, parseInt(e.target.value) || 0) })
                 }
-                className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#12121a] text-white text-sm focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div>
@@ -265,7 +265,7 @@ export default function TransactionsPage() {
                 onChange={(e) =>
                   setAmountRange({ ...amountRange, max: Math.max(0, parseInt(e.target.value) || 10000) })
                 }
-                className="w-full px-3 py-2 rounded border border-[#1e1e2e] bg-[#12121a] text-white text-sm focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
@@ -279,14 +279,14 @@ export default function TransactionsPage() {
           )}
         >
           {/* Table Card */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle>Transactions ({filteredTransactions.length})</CardTitle>
             </CardHeader>
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+                <thead className="border-b border-wl-border-default bg-wl-bg-root">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
                       Transaction ID
@@ -314,8 +314,8 @@ export default function TransactionsPage() {
                       key={txn.id}
                       onClick={() => setSelectedTxn(txn.id)}
                       className={cn(
-                        "hover:bg-[#1a1a2e] transition-colors cursor-pointer",
-                        selectedTxnData?.id === txn.id && "bg-[#1a1a2e]"
+                        "hover:bg-wl-bg-elevated transition-colors cursor-pointer",
+                        selectedTxnData?.id === txn.id && "bg-wl-bg-elevated"
                       )}
                     >
                       <td className="px-4 py-3 text-white font-mono text-xs">
@@ -352,7 +352,7 @@ export default function TransactionsPage() {
 
           {/* Detail Modal */}
           {selectedTxnData && (
-            <Card className="sticky overflow-y-auto bg-[#12121a] border-[#1e1e2e]" style={{ top: "24px", maxHeight: "calc(100vh - 200px)" }}>
+            <Card className="sticky overflow-y-auto bg-wl-bg-surface border-wl-border-default" style={{ top: "24px", maxHeight: "calc(100vh - 200px)" }}>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Transaction Details</CardTitle>
@@ -376,7 +376,7 @@ export default function TransactionsPage() {
                   </Badge>
                 </div>
 
-                <div className="h-px bg-[#1e1e2e]" />
+                <div className="h-px bg-wl-bg-elevated" />
 
                 {/* Customer */}
                 <div>
@@ -393,7 +393,7 @@ export default function TransactionsPage() {
                   )}
                 </div>
 
-                <div className="h-px bg-[#1e1e2e]" />
+                <div className="h-px bg-wl-bg-elevated" />
 
                 {/* Terminal & Time */}
                 <div>
@@ -408,7 +408,7 @@ export default function TransactionsPage() {
                   </div>
                 </div>
 
-                <div className="h-px bg-[#1e1e2e]" />
+                <div className="h-px bg-wl-bg-elevated" />
 
                 {/* Items */}
                 {selectedTxnData.items.length > 0 && (
@@ -431,7 +431,7 @@ export default function TransactionsPage() {
                       </div>
                     </div>
 
-                    <div className="h-px bg-[#1e1e2e]" />
+                    <div className="h-px bg-wl-bg-elevated" />
                   </>
                 )}
 
@@ -457,7 +457,7 @@ export default function TransactionsPage() {
                       ${selectedTxnData.tax.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-base font-bold border-t border-[#1e1e2e] pt-2">
+                  <div className="flex justify-between text-base font-bold border-t border-wl-border-default pt-2">
                     <span className="text-white">Total</span>
                     <span className="text-emerald-500">
                       ${selectedTxnData.amount.toFixed(2)}
@@ -465,7 +465,7 @@ export default function TransactionsPage() {
                   </div>
                 </div>
 
-                <div className="h-px bg-[#1e1e2e]" />
+                <div className="h-px bg-wl-bg-elevated" />
 
                 {/* Payment Method */}
                 <div>
@@ -482,7 +482,7 @@ export default function TransactionsPage() {
                   </div>
                 </div>
 
-                <div className="h-px bg-[#1e1e2e]" />
+                <div className="h-px bg-wl-bg-elevated" />
 
                 {/* Refund Info */}
                 {selectedTxnData.refundedAmount && (
@@ -501,7 +501,7 @@ export default function TransactionsPage() {
                       )}
                     </div>
 
-                    <div className="h-px bg-[#1e1e2e]" />
+                    <div className="h-px bg-wl-bg-elevated" />
                   </>
                 )}
 

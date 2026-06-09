@@ -93,9 +93,9 @@ export default function SupplyChainPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
+    <div className="flex flex-col min-h-screen bg-wl-bg-root">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
         <div className="px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -139,7 +139,7 @@ export default function SupplyChainPage() {
           {/* Two-Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Order Fulfillment Pipeline */}
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <BoxIcon className="w-5 h-5 text-blue-500" />
                 Order Fulfillment Pipeline
@@ -156,7 +156,7 @@ export default function SupplyChainPage() {
                         {stage.count}
                       </Badge>
                     </div>
-                    <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                    <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
@@ -169,7 +169,7 @@ export default function SupplyChainPage() {
                 ))}
 
                 {/* Pipeline Summary */}
-                <div className="mt-6 p-4 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
+                <div className="mt-6 p-4 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
                       <span className="text-gray-400">Total Orders:</span>
@@ -195,7 +195,7 @@ export default function SupplyChainPage() {
             </Card>
 
             {/* Warehouse Utilization */}
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Warehouse className="w-5 h-5 text-emerald-500" />
                 Warehouse Utilization
@@ -207,7 +207,7 @@ export default function SupplyChainPage() {
                       <h4 className="font-medium text-white">{wh.name}</h4>
                       <span className="text-sm font-semibold text-white">{wh.utilizationPercentage.toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-[#1a1a2e] rounded-full h-2.5">
+                    <div className="w-full bg-wl-bg-elevated rounded-full h-2.5">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
@@ -225,7 +225,7 @@ export default function SupplyChainPage() {
                 ))}
 
                 {/* Warehouse Summary */}
-                <div className="mt-6 p-4 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
+                <div className="mt-6 p-4 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
                   <div className="text-center">
                     <p className="text-xs text-gray-400 mb-1">Highest Utilization</p>
                     <p className="text-lg font-bold text-white">{warehouse.highestUtilization.name}</p>
@@ -237,14 +237,14 @@ export default function SupplyChainPage() {
           </div>
 
           {/* Demand vs Supply */}
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-blue-500" />
               Demand vs Supply Forecast
             </h2>
             <div className="space-y-4">
               {demandSupplyData.map((data) => (
-                <div key={data.period} className="pb-4 border-b border-[#1e1e2e] last:border-0">
+                <div key={data.period} className="pb-4 border-b border-wl-border-default last:border-0">
                   <div className="flex items-start justify-between mb-3">
                     <h4 className="font-medium text-white">{data.period}</h4>
                     <Badge variant={data.variance > 10 ? 'danger' : data.variance < -10 ? 'warning' : 'success'}>
@@ -273,7 +273,7 @@ export default function SupplyChainPage() {
           </Card>
 
           {/* Inventory ABC Distribution */}
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Package className="w-5 h-5 text-amber-500" />
               Inventory ABC Distribution
@@ -291,7 +291,7 @@ export default function SupplyChainPage() {
                       <p className="text-xs text-gray-500">{item.percentage}% of inventory</p>
                     </div>
                   </div>
-                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                  <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                     <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400" style={{ width: `${item.percentage}%` }} />
                   </div>
                 </div>
@@ -301,21 +301,21 @@ export default function SupplyChainPage() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:border-blue-500/30 transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-blue-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Transfer Order
               </Button>
               <p className="text-xs text-gray-500 text-center">Move inventory between warehouses</p>
             </Card>
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:border-emerald-500/30 transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-emerald-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Schedule Cycle Count
               </Button>
               <p className="text-xs text-gray-500 text-center">Plan inventory verification</p>
             </Card>
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:border-amber-500/30 transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:border-amber-500/30 transition-colors">
               <Button variant="primary" className="w-full mb-3">
                 <Plus className="w-4 h-4 mr-2" />
                 Process Reorders

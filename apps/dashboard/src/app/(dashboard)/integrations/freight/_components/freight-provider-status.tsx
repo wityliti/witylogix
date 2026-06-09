@@ -44,7 +44,7 @@ export function FreightProviderStatusCard({
   onSettings,
 }: FreightProviderStatusProps) {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm font-semibold">{provider.name}</CardTitle>
         <Badge variant={statusVariant(provider.status) as any}>

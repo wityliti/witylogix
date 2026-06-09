@@ -32,7 +32,7 @@ export function ProviderTabs({
             'px-4 py-2 rounded-lg border transition-all whitespace-nowrap flex items-center gap-2',
             activeProvider === provider.id
               ? 'bg-blue-500 text-white border-blue-600'
-              : 'border-[#1e1e2e] text-gray-400 hover:border-blue-500/50'
+              : 'border-wl-border-default text-gray-400 hover:border-blue-500/50'
           )}
         >
           <span className="text-lg">{provider.icon}</span>

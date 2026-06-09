@@ -49,7 +49,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end gap-4 h-40 px-4 py-6 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+      <div className="flex items-end gap-4 h-40 px-4 py-6 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
         {/* P50 */}
         <div className="flex-1 flex flex-col items-center gap-2">
           <div
@@ -138,7 +138,7 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
             <div className="absolute inset-0 rounded-full border-8 flex items-center justify-center" style={{
               borderColor: `conic-gradient(${entries.map((e, i) => `${colors[i % colors.length].replace('bg-', '')} ${(e[1] / total) * 360}deg`).join(', ')}`
             }}>
-              <div className="text-center bg-[#12121a] rounded-full w-24 h-24 flex items-center justify-center">
+              <div className="text-center bg-wl-bg-surface rounded-full w-24 h-24 flex items-center justify-center">
                 <div>
                   <p className="text-sm text-gray-400">Total</p>
                   <p className="text-2xl font-bold text-white">
@@ -216,7 +216,7 @@ export default function ProvidersPage() {
         <select
           value={selectedProviderId}
           onChange={(e) => setSelectedProviderId(e.target.value)}
-          className="w-full md:w-80 px-3 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+          className="w-full md:w-80 px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
         >
           <optgroup label="Payment">
             <option value="stripe">Stripe</option>
@@ -237,7 +237,7 @@ export default function ProvidersPage() {
       {/* Status Header */}
       {metrics && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-gray-400 mb-2">Uptime</p>
               <p className="text-3xl font-bold text-white">
@@ -246,7 +246,7 @@ export default function ProvidersPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-gray-400 mb-2">SLA Target</p>
               <div className="flex items-baseline gap-2">
@@ -262,7 +262,7 @@ export default function ProvidersPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-gray-400 mb-2">Circuit Breaker</p>
               <p className={cn("text-lg font-bold capitalize", circuitBreakerColor)}>
@@ -271,7 +271,7 @@ export default function ProvidersPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-gray-400 mb-2">Avg Latency</p>
               <p className="text-2xl font-bold text-white">
@@ -283,7 +283,7 @@ export default function ProvidersPage() {
       )}
 
       {/* Latency Chart */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Latency by Percentile</CardTitle>
@@ -307,7 +307,7 @@ export default function ProvidersPage() {
       </Card>
 
       {/* Error Breakdown */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <CardTitle>Error Breakdown</CardTitle>
         </CardHeader>
@@ -318,7 +318,7 @@ export default function ProvidersPage() {
 
       {/* Recent Requests */}
       {metrics?.recentRequests && metrics.recentRequests.length > 0 && (
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle>Recent Requests</CardTitle>
           </CardHeader>
@@ -326,7 +326,7 @@ export default function ProvidersPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="text-left py-2 px-3 text-gray-400 font-medium">
                       Status
                     </th>
@@ -345,7 +345,7 @@ export default function ProvidersPage() {
                   {metrics.recentRequests.slice(0, 10).map((req) => (
                     <tr
                       key={req.id}
-                      className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e]"
+                      className="border-b border-wl-border-default hover:bg-wl-bg-elevated"
                     >
                       <td className="py-2 px-3">
                         <Badge
@@ -380,7 +380,7 @@ export default function ProvidersPage() {
 
       {/* Incident History Timeline */}
       {metrics?.incidents && metrics.incidents.length > 0 && (
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
@@ -401,7 +401,7 @@ export default function ProvidersPage() {
                       )}
                     />
                     {idx < metrics.incidents.length - 1 && (
-                      <div className="w-px h-12 bg-[#1e1e2e] my-2" />
+                      <div className="w-px h-12 bg-wl-bg-elevated my-2" />
                     )}
                   </div>
                   <div className="flex-1 pt-1">
@@ -426,7 +426,7 @@ export default function ProvidersPage() {
       )}
 
       {/* Configuration Panel */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -452,7 +452,7 @@ export default function ProvidersPage() {
                 type="number"
                 defaultValue="1000"
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
             </div>
 
@@ -464,7 +464,7 @@ export default function ProvidersPage() {
                 type="number"
                 defaultValue="5000"
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
             </div>
 
@@ -475,7 +475,7 @@ export default function ProvidersPage() {
               <select
                 defaultValue="exponential"
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               >
                 <option value="exponential">Exponential Backoff</option>
                 <option value="linear">Linear Backoff</option>
@@ -491,7 +491,7 @@ export default function ProvidersPage() {
                 type="number"
                 defaultValue="50"
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
             </div>
 

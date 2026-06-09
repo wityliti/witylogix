@@ -56,7 +56,7 @@ export function FuelCardItem({
   const spendPercentage = (card.monthlySpend / card.monthlyLimit) * 100;
 
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -92,7 +92,7 @@ export function FuelCardItem({
               ${card.monthlySpend} / ${card.monthlyLimit}
             </span>
           </div>
-          <div className="w-full bg-[#0a0a0f] rounded-full h-2">
+          <div className="w-full bg-wl-bg-root rounded-full h-2">
             <div
               className={cn(
                 'h-2 rounded-full transition-all',

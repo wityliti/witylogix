@@ -146,7 +146,7 @@ export default function InventoryPage() {
             {stockGauges.map((gauge) => {
               const gaugePercentage = (gauge.current / gauge.maximum) * 100;
               return (
-                <div key={gauge.sku} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
+                <div key={gauge.sku} className="p-4 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="text-sm font-medium text-white">
@@ -232,7 +232,7 @@ export default function InventoryPage() {
             {reorderAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
+                className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
               >
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-white">
@@ -287,7 +287,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, searchTerm: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
               />
 
               <select
@@ -295,7 +295,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, warehouse: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
               >
                 {WAREHOUSES.map((wh) => (
                   <option key={wh} value={wh}>
@@ -309,7 +309,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, abcClass: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
               >
                 {ABC_CLASSES.map((cls) => (
                   <option key={cls.value} value={cls.value}>
@@ -323,7 +323,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, status: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
               >
                 {STATUS_FILTERS.map((st) => (
                   <option key={st.value} value={st.value}>
@@ -343,7 +343,7 @@ export default function InventoryPage() {
                     'p-4 rounded-lg border-2 cursor-pointer transition-all',
                     selectedItem === item.id
                       ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-[#1e1e2e] hover:bg-[#1a1a2e]'
+                      : 'border-wl-border-default hover:bg-wl-bg-elevated'
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -423,7 +423,7 @@ export default function InventoryPage() {
             {[].map((transfer: Record<string, unknown>) => (
               <div
                 key={String(transfer.id)}
-                className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
+                className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
               >
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-white">
@@ -467,7 +467,7 @@ export default function InventoryPage() {
           <div className="space-y-3">
             {/* Cycle count data would come from API */}
             {[].map((count: Record<string, unknown>) => (
-              <div key={String(count.id)} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
+              <div key={String(count.id)} className="p-4 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h4 className="text-sm font-medium text-white">
@@ -500,7 +500,7 @@ export default function InventoryPage() {
                         {String(count.completionRate)}%
                       </span>
                     </div>
-                    <div className="w-full bg-[#12121a] rounded-full h-2">
+                    <div className="w-full bg-wl-bg-surface rounded-full h-2">
                       <div
                         className="h-full rounded-full bg-blue-500 transition-all"
                         style={{ width: `${count.completionRate}%` }}

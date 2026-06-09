@@ -78,7 +78,7 @@ function HealthScoreGauge({ score }: { score: number }) {
 
 function ServiceRow({ service }: { service: ServiceStatus }) {
   return (
-    <div className="flex items-center justify-between py-3 px-4 border-b border-[#1e1e2e] last:border-0">
+    <div className="flex items-center justify-between py-3 px-4 border-b border-wl-border-default last:border-0">
       <div className="flex-1">
         <h4 className="font-medium text-sm text-white">{service.name}</h4>
         <p className="text-xs text-gray-400 mt-1">
@@ -91,7 +91,7 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
         )}
         <div className="text-right w-20">
           <p className="text-sm font-semibold text-white">{service.uptime?.toFixed(2)}%</p>
-          <div className="w-16 h-1 bg-[#1a1a2e] rounded-full overflow-hidden mt-1 mx-auto">
+          <div className="w-16 h-1 bg-wl-bg-elevated rounded-full overflow-hidden mt-1 mx-auto">
             <div
               className={cn('h-full', service.uptime >= 99.5 ? 'bg-emerald-500' : service.uptime >= 99 ? 'bg-amber-500' : 'bg-red-500')}
               style={{ width: `${Math.min(service.uptime, 100)}%` }}
@@ -111,7 +111,7 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
 
 function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
   return (
-    <div className="border border-[#1e1e2e] rounded-lg p-4 hover:bg-[#1a1a2e] transition-colors bg-[#12121a]">
+    <div className="border border-wl-border-default rounded-lg p-4 hover:bg-wl-bg-elevated transition-colors bg-wl-bg-surface">
       <div className="flex items-start justify-between mb-3">
         <div>
           <h4 className="font-semibold text-sm text-white">{integration.name}</h4>
@@ -151,7 +151,7 @@ function AlertItem({ alert, onAcknowledge }: { alert: PlatformAlert; onAcknowled
   };
 
   return (
-    <div className="border border-[#1e1e2e] rounded-lg p-4 mb-3 last:mb-0 bg-[#12121a]">
+    <div className="border border-wl-border-default rounded-lg p-4 mb-3 last:mb-0 bg-wl-bg-surface">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-start gap-3 flex-1">
           <Badge variant={alert.severity === 'critical' ? 'danger' : alert.severity === 'warning' ? 'warning' : 'info'}>
@@ -175,7 +175,7 @@ function AlertItem({ alert, onAcknowledge }: { alert: PlatformAlert; onAcknowled
 
 function MetricCard({ label, value, unit }: { label: string; value: number | string | undefined; unit?: string }) {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardContent className="pt-6">
         <p className="text-xs font-medium text-gray-400 mb-1">{label}</p>
         <div className="flex items-baseline gap-1">
@@ -210,7 +210,7 @@ export default function PlatformHealthPage() {
   }, []);
 
   return (
-    <div className="space-y-8 bg-[#0a0a0f] min-h-screen p-6">
+    <div className="space-y-8 bg-wl-bg-root min-h-screen p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
@@ -225,7 +225,7 @@ export default function PlatformHealthPage() {
       {/* Health Score + Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-2">
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               {healthLoading ? (
                 <div className="h-[260px] flex items-center justify-center text-gray-400">Loading...</div>
@@ -248,7 +248,7 @@ export default function PlatformHealthPage() {
       )}
 
       {/* Service Status */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-white">Service Status ({services.length} monitored)</CardTitle>
         </CardHeader>
@@ -266,7 +266,7 @@ export default function PlatformHealthPage() {
       </Card>
 
       {/* Integrations */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-white">
             Third-Party Integrations ({integrations.filter((i) => i.status === 'connected').length} connected)
@@ -286,7 +286,7 @@ export default function PlatformHealthPage() {
       </Card>
 
       {/* Alerts */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-white">
             Recent Alerts &amp; Incidents ({alerts.filter((a) => !a.acknowledged).length} pending)
