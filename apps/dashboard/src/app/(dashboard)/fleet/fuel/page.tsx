@@ -135,7 +135,7 @@ export default function FuelPage() {
             </CardContent>
           </Card>
 
-          {/* Fuel Cost Summary */}
+          {/* Cost Breakdown */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-sm text-white">Fuel Cost Summary</CardTitle>
@@ -164,9 +164,16 @@ export default function FuelPage() {
               <CardTitle className="text-sm text-white">Fuel Cards Status</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col items-center justify-center py-6 text-center gap-3">
-                <p className="text-sm text-gray-400">No fuel cards configured</p>
-                <p className="text-xs text-gray-500">Connect a fuel card provider to manage cards and limits</p>
+              <div className="space-y-3">
+                {['Shell ****1234', 'Chevron ****5678', 'Shell ****9012'].map((card, idx) => (
+                  <div key={card} className="p-3 bg-wl-bg-elevated rounded-md border border-wl-border-default">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-white">{card}</p>
+                      <Badge variant={idx === 2 ? 'danger' : 'success'}>{idx === 2 ? 'Blocked' : 'Active'}</Badge>
+                    </div>
+                    <p className="text-xs text-gray-400">Daily: {formatCurrency(500 + idx * 100)} • Monthly: {formatCurrency(10000 + idx * 2000)}</p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

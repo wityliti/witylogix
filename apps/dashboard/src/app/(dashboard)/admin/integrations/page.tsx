@@ -265,7 +265,7 @@ export default function IntegrationsPage() {
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  !selectedCategory ? "bg-blue-600 text-white" : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                  !selectedCategory ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
                 )}
               >
                 All ({allIntegrations.length})
@@ -276,7 +276,7 @@ export default function IntegrationsPage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
                   )}
                 >
                   {cat.label} ({cat.count})

@@ -173,7 +173,7 @@ export default function AdminShopDetail() {
   return (
     <div className="bg-wl-bg-root-root">
       {/* Header */}
-      <div className="px-6 py-6 border-b border-[#1e1e2e] flex gap-4 items-center justify-between">
+      <div className="px-6 py-6 border-b border-wl-border-default flex gap-4 items-center justify-between">
         <Link
           href="/admin"
           className="text-blue-600 no-underline flex items-center gap-2 hover:opacity-80"
@@ -233,7 +233,7 @@ export default function AdminShopDetail() {
             </div>
 
             {/* Store Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-[#1e1e2e]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border-default">
               <div>
                 <p className="text-gray-400 mb-1 text-xs">Store ID</p>
                 <p className="text-white text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
@@ -444,7 +444,7 @@ export default function AdminShopDetail() {
                 {activityLogs.map((log, index) => (
                   <div
                     key={log.id}
-                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-[#1e1e2e]")}
+                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-wl-border-default")}
                   >
                     <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-blue-500" />
                     <div className="flex-1 min-w-0">

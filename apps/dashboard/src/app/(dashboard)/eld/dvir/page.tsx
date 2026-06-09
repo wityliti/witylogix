@@ -203,7 +203,7 @@ export default function DVIRPage() {
                           onChange={(e) =>
                             updateDefectStatus({ id: defect.id, status: e.target.value as DefectStatus })
                           }
-                          className="h-8 px-2 text-xs rounded bg-[#1a1a2e] border border-[#1e1e2e] text-white"
+                          className="h-8 px-2 text-xs rounded bg-wl-bg-elevated border border-wl-border-default text-white"
                         >
                           <option value="REPORTED">Reported</option>
                           <option value="ACKNOWLEDGED">Acknowledged</option>
@@ -246,12 +246,12 @@ export default function DVIRPage() {
                 </button>
 
                 {showVehicleSearch && (
-                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     <button
                       onClick={() => { setSelectedVehicle(""); setShowVehicleSearch(false); }}
                       className={cn(
-                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e]",
-                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-[#0a0a0f]"
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default",
+                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-wl-bg-root"
                       )}
                     >
                       All vehicles
@@ -264,7 +264,7 @@ export default function DVIRPage() {
                           setShowVehicleSearch(false);
                         }}
                         className={cn(
-                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
+                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
                           selectedVehicle === vehicle.vehicleNumber
                             ? "bg-blue-500/10 text-blue-400"
                             : "text-gray-400 hover:bg-wl-bg-root"

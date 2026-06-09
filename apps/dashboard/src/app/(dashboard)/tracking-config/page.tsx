@@ -122,7 +122,7 @@ export default function TrackingConfigPage() {
   return (
     <div className="min-h-screen bg-wl-bg-root">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e] p-6">
+      <div className="sticky top-0 z-20 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default p-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white">Tracking Page Configuration</h1>
@@ -175,7 +175,7 @@ export default function TrackingConfigPage() {
                   return (
                     <div
                       key={feature.key}
-                      className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] hover:border-blue-500/30 transition-colors"
+                      className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default hover:border-blue-500/30 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <Icon size={18} className="text-blue-500 shrink-0" />
@@ -190,7 +190,7 @@ export default function TrackingConfigPage() {
                         aria-label={`Toggle ${feature.label}`}
                         className={cn(
                           "relative w-12 h-7 rounded-full border-none cursor-pointer transition-colors shrink-0",
-                          enabled ? "bg-blue-500" : "bg-[#2a2a3e]"
+                          enabled ? "bg-blue-500" : "bg-wl-bg-overlay"
                         )}
                       >
                         <span
@@ -216,7 +216,7 @@ export default function TrackingConfigPage() {
                   value={config.customDomain}
                   onChange={(e) => update("customDomain", e.target.value)}
                   placeholder="track.yourshop.com"
-                  className="flex-1 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm font-mono focus:outline-none focus:border-blue-500/50"
+                  className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm font-mono focus:outline-none focus:border-blue-500/50"
                 />
                 <Button
                   onClick={handleCopyDomain}
@@ -244,7 +244,7 @@ export default function TrackingConfigPage() {
                     value={config.metaTitle}
                     onChange={(e) => update("metaTitle", e.target.value)}
                     maxLength={60}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-xs focus:outline-none focus:border-blue-500/50"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50"
                   />
                   <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-amber-400" : "text-gray-500")}>
                     {config.metaTitle.length}/60 characters
@@ -256,7 +256,7 @@ export default function TrackingConfigPage() {
                     value={config.metaDescription}
                     onChange={(e) => update("metaDescription", e.target.value)}
                     maxLength={160}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-xs focus:outline-none focus:border-blue-500/50 resize-none"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50 resize-none"
                     rows={3}
                   />
                   <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-amber-400" : "text-gray-500")}>
@@ -278,7 +278,7 @@ export default function TrackingConfigPage() {
 
               {/* Mini preview */}
               <div
-                className="rounded-lg border border-[#1e1e2e] p-4 space-y-3"
+                className="rounded-lg border border-wl-border-default p-4 space-y-3"
                 style={{ background: "#111" }}
               >
                 {config.logoUrl && (
@@ -344,13 +344,13 @@ export default function TrackingConfigPage() {
                       type="color"
                       value={config.primaryColor}
                       onChange={(e) => update("primaryColor", e.target.value)}
-                      className="w-10 h-10 rounded border border-[#1e1e2e] cursor-pointer p-0.5 bg-transparent"
+                      className="w-10 h-10 rounded border border-wl-border-default cursor-pointer p-0.5 bg-transparent"
                     />
                     <input
                       type="text"
                       value={config.primaryColor}
                       onChange={(e) => update("primaryColor", e.target.value)}
-                      className="flex-1 px-2 py-1.5 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
+                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
                     />
                   </div>
                 </div>
@@ -362,13 +362,13 @@ export default function TrackingConfigPage() {
                       type="color"
                       value={config.secondaryColor}
                       onChange={(e) => update("secondaryColor", e.target.value)}
-                      className="w-10 h-10 rounded border border-[#1e1e2e] cursor-pointer p-0.5 bg-transparent"
+                      className="w-10 h-10 rounded border border-wl-border-default cursor-pointer p-0.5 bg-transparent"
                     />
                     <input
                       type="text"
                       value={config.secondaryColor}
                       onChange={(e) => update("secondaryColor", e.target.value)}
-                      className="flex-1 px-2 py-1.5 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
+                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
                     />
                   </div>
                 </div>

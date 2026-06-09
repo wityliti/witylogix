@@ -206,7 +206,7 @@ export default function IntegrationDetailPage() {
           {usageMetrics.map((metric) => (
             <Card
               key={`${metric.label}-${metric.period}`}
-              className="bg-[#1a1a2e] border-[#1e1e2e]"
+              className="bg-wl-bg-elevated border-wl-border-default"
             >
               <CardContent className="pt-6">
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
@@ -416,9 +416,9 @@ export default function IntegrationDetailPage() {
                       </button>
 
                       {isExpanded && error.stackTrace && (
-                        <div className="border-t border-red-500/20 p-3 bg-[#0a0a0f]">
-                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-[#1a1a2e] p-2 rounded border border-[#1e1e2e]">
-                            {trace}
+                        <div className="border-t border-red-500/20 p-3 bg-wl-bg-root">
+                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-wl-bg-elevated p-2 rounded border border-wl-border-default">
+                            {error.stackTrace}
                           </pre>
                         </div>
                       )}

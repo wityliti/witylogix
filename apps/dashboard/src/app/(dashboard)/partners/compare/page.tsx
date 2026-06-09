@@ -190,26 +190,22 @@ export default function ComparePage() {
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex-1">
                       <h3 className="font-semibold text-white">{courier.name}</h3>
-                      {courier.rating > 0 ? (
-                        <div className="flex items-center gap-1 mt-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={cn(
-                                "w-3 h-3",
-                                i < Math.floor(courier.rating)
-                                  ? "fill-amber-400 text-amber-400"
-                                  : "text-wl-text-tertiary"
-                              )}
-                            />
-                          ))}
-                          <span className="text-xs text-wl-text-secondary ml-1">
-                            {courier.rating.toFixed(1)}
-                          </span>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-wl-text-tertiary mt-1">No ratings yet</p>
-                      )}
+                      <div className="flex items-center gap-1 mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={cn(
+                              "w-3 h-3",
+                              i < Math.floor(courier.rating)
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-wl-text-tertiary"
+                            )}
+                          />
+                        ))}
+                        <span className="text-xs text-gray-300 ml-1">
+                          {courier.rating.toFixed(1)}
+                        </span>
+                      </div>
                     </div>
 
                     {isSelected ? (
@@ -263,7 +259,7 @@ export default function ComparePage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-wl-border-default">
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                       Feature
                     </th>
                     {comparisonCouriers.map((courier) => (
@@ -334,22 +330,19 @@ export default function ComparePage() {
                     <td className="px-4 py-3 font-semibold text-white">Rating</td>
                     {comparisonCouriers.map((courier) => (
                       <td key={courier.id} className="px-4 py-3 text-center text-white">
-                        {courier.rating > 0 ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={cn(
-                                    "w-3 h-3",
-                                    i < Math.floor(courier.rating)
-                                      ? "fill-amber-400 text-amber-400"
-                                      : "text-wl-text-tertiary"
-                                  )}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-xs">{courier.rating.toFixed(1)}</span>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={cn(
+                                  "w-3 h-3",
+                                  i < Math.floor(courier.rating)
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-wl-text-tertiary"
+                                )}
+                              />
+                            ))}
                           </div>
                         ) : (
                           <span className="text-wl-text-tertiary text-sm">No ratings</span>

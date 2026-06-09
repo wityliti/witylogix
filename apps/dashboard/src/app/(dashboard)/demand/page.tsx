@@ -290,7 +290,7 @@ export default function DemandPage() {
             </div>
             <div className="flex gap-2 items-center">
               {/* Charts / Map toggle */}
-              <div className="flex rounded-lg border border-[#1e1e2e] overflow-hidden">
+              <div className="flex rounded-lg border border-wl-border-default overflow-hidden">
                 <button
                   onClick={() => setViewMode('charts')}
                   className={cn(
@@ -399,13 +399,13 @@ export default function DemandPage() {
               />
             </WLMap>
           ) : (
-            <div className="h-full flex items-center justify-center bg-[#0a0a0f]">
+            <div className="h-full flex items-center justify-center bg-wl-bg-root">
               <p className="text-gray-400 text-sm">Loading zone map…</p>
             </div>
           )}
 
           {/* Map legend */}
-          <div className="absolute bottom-6 left-6 bg-[#12121a]/90 backdrop-blur border border-[#1e1e2e] rounded-xl p-4 text-xs">
+          <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs">
             <p className="font-semibold text-white mb-2">Demand Intensity</p>
             {[
               { color: '#3b82f6', label: 'Low' },
@@ -422,7 +422,7 @@ export default function DemandPage() {
           </div>
 
           {/* Zone summary overlay */}
-          <div className="absolute top-4 right-4 bg-[#12121a]/90 backdrop-blur border border-[#1e1e2e] rounded-xl p-4 max-w-xs">
+          <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 max-w-xs">
             <p className="text-xs font-semibold text-white mb-3">Zone Summary</p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {zones.slice(0, 8).map((z) => (

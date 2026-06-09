@@ -188,7 +188,7 @@ export default function AuthProvidersPage() {
         {activeTab === 'providers' && (
           <div>
             {defaultProvider && (
-              <Card className="mb-8 border-l-4 border-l-emerald-500 bg-[#12121a] border border-[#1e1e2e]">
+              <Card className="mb-8 border-l-4 border-l-emerald-500 bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -206,7 +206,7 @@ export default function AuthProvidersPage() {
             )}
 
             {providers.length === 0 ? (
-              <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
                   <Shield className="w-12 h-12 text-gray-600" />
                   <p className="text-lg font-semibold text-white">No auth providers configured</p>
@@ -229,7 +229,7 @@ export default function AuthProvidersPage() {
                       <Card
                         key={provider.id}
                         className={cn(
-                          'bg-[#12121a] border border-[#1e1e2e] relative',
+                          'bg-wl-bg-surface border border-wl-border-default relative',
                           provider.isDefault && 'border-2 border-emerald-500',
                         )}
                       >
@@ -341,7 +341,7 @@ export default function AuthProvidersPage() {
 
         {/* ROLE MAPPING TAB */}
         {activeTab === 'role-mapping' && (
-          <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Role Mapping Configuration</CardTitle>
               <CardDescription className="text-gray-400">
@@ -352,7 +352,7 @@ export default function AuthProvidersPage() {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b-2 border-[#1e1e2e]">
+                    <tr className="border-b-2 border-wl-border-default">
                       <th className="py-4 px-4 text-left text-gray-400 font-semibold">External Role</th>
                       <th className="py-4 px-4 text-left text-gray-400 font-semibold">Witylogix Role</th>
                       <th className="py-4 px-4 text-left text-gray-400 font-semibold">Permissions</th>
@@ -363,10 +363,10 @@ export default function AuthProvidersPage() {
                     {ROLE_MAPPING.map((mapping, idx) => (
                       <tr
                         key={idx}
-                        className={cn('border-b border-[#1e1e2e]', idx % 2 === 1 && 'bg-[#1a1a2e]')}
+                        className={cn('border-b border-wl-border-default', idx % 2 === 1 && 'bg-wl-bg-elevated')}
                       >
                         <td className="py-4 px-4">
-                          <code className="bg-[#0a0a0f] px-2 py-1 rounded text-xs text-gray-400">
+                          <code className="bg-wl-bg-root px-2 py-1 rounded text-xs text-gray-400">
                             {mapping.externalRole}
                           </code>
                         </td>
@@ -393,14 +393,14 @@ export default function AuthProvidersPage() {
 
         {/* SETTINGS TAB */}
         {activeTab === 'settings' && (
-          <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Authentication Settings</CardTitle>
               <CardDescription className="text-gray-400">Configure global SSO and security options</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-8">
-                <div className="flex items-center justify-between pb-6 border-b border-[#1e1e2e]">
+                <div className="flex items-center justify-between pb-6 border-b border-wl-border-default">
                   <div>
                     <div className="text-sm font-semibold text-white mb-1">Just-In-Time Provisioning</div>
                     <div className="text-sm text-gray-400">Automatically create users on first SSO login</div>
@@ -414,7 +414,7 @@ export default function AuthProvidersPage() {
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between pb-6 border-b border-[#1e1e2e]">
+                <div className="flex items-center justify-between pb-6 border-b border-wl-border-default">
                   <div>
                     <div className="text-sm font-semibold text-white mb-1">Enforce MFA for All Users</div>
                     <div className="text-sm text-gray-400">Require multi-factor authentication on login</div>
@@ -422,7 +422,7 @@ export default function AuthProvidersPage() {
                   <Button variant="secondary" className="min-w-[100px]">Disabled</Button>
                 </div>
 
-                <div className="flex items-start justify-between pb-6 border-b border-[#1e1e2e]">
+                <div className="flex items-start justify-between pb-6 border-b border-wl-border-default">
                   <div>
                     <div className="text-sm font-semibold text-white mb-1">Session Timeout</div>
                     <div className="text-sm text-gray-400">Auto-logout after period of inactivity</div>

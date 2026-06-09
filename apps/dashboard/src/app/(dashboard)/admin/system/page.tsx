@@ -105,7 +105,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           </div>
         </div>
 
-        <div className="text-xs text-gray-400 pt-3 border-t border-[#1e1e2e]">
+        <div className="text-xs text-gray-400 pt-3 border-t border-wl-border-default">
           Last checked: {new Date(service.lastChecked).toLocaleTimeString()}
         </div>
       </CardContent>

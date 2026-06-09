@@ -395,7 +395,7 @@ export default function InvoiceDetailPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
   if (!invoice) {
     return (
-      <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ChevronLeft className="w-4 h-4" />
@@ -557,7 +557,7 @@ export default function InvoiceDetailPage() {
                       <span>-${invoice.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between mb-2 border-t border-[#1e1e2e] pt-2">
+                  <div className="flex justify-between mb-2 border-t border-wl-border-default pt-2">
                     <span className="text-gray-400">Tax</span>
                     <span className="text-white">
                       ${invoice.taxAmount.toFixed(2)}
@@ -663,7 +663,7 @@ export default function InvoiceDetailPage() {
 
           {/* Activity Log */}
           {invoice.activity.length > 0 && (
-            <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
               <h3 className="font-semibold text-white mb-4">
                 Activity Log
               </h3>
@@ -671,7 +671,7 @@ export default function InvoiceDetailPage() {
                 {invoice.activity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex gap-3 pb-3 last:pb-0 border-b border-[#1e1e2e] last:border-b-0"
+                    className="flex gap-3 pb-3 last:pb-0 border-b border-wl-border-default last:border-b-0"
                   >
                     <div className="text-gray-400 mt-1">
                       {getActivityIcon(activity.type)}
