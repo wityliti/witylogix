@@ -5,7 +5,7 @@ import { Grid, ChevronRight } from 'lucide-react';
 
 export function CategoryMapping() {
   return (
-    <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-elevated border-wl-border-default">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Grid className="w-5 h-5" />
@@ -33,7 +33,7 @@ export function CategoryMapping() {
           ].map((mapping, idx) => (
             <div
               key={idx}
-              className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
+              className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default"
             >
               <div className="grid grid-cols-3 gap-4 items-center">
                 <div>

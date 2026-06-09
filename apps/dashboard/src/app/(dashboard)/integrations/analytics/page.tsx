@@ -187,7 +187,7 @@ export default function AnalyticsIntegrationsPage() {
         }
       />
 
-      <div className={cn('min-h-screen bg-[#0a0a0f] p-6')}>
+      <div className={cn('min-h-screen bg-wl-bg-root p-6')}>
         {/* Top Stats */}
         <div className={cn('grid grid-cols-1 md:grid-cols-4 gap-4 mb-6')}>
           <StatCard
@@ -224,7 +224,7 @@ export default function AnalyticsIntegrationsPage() {
         </div>
 
         {/* View Toggle */}
-        <div className={cn('flex gap-2 mb-6 bg-[#1a1a2e] rounded-md p-1 w-fit')}>
+        <div className={cn('flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit')}>
           {(['connections', 'reports', 'metrics'] as const).map((v) => (
             <button
               key={v}
@@ -263,7 +263,7 @@ export default function AnalyticsIntegrationsPage() {
                           ? 'border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
                           : connection?.status === 'ERROR'
                             ? 'border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
-                            : 'border-[#1e1e2e] hover:border-blue-400'
+                            : 'border-wl-border-default hover:border-blue-400'
                       )}
                       onClick={() => setSelectedProvider(provider.slug)}
                     >
@@ -303,7 +303,7 @@ export default function AnalyticsIntegrationsPage() {
               {connectionsLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <Card key={i} className="p-4">
-                    <div className="h-20 bg-[#1a1a2e]/50 rounded animate-pulse" />
+                    <div className="h-20 bg-wl-bg-elevated/50 rounded animate-pulse" />
                   </Card>
                 ))
               ) : connections.length === 0 ? (
@@ -373,7 +373,7 @@ export default function AnalyticsIntegrationsPage() {
                         )}
 
                         {isExpanded && (
-                          <div className={cn('border-t border-[#1e1e2e] pt-3 mt-3')}>
+                          <div className={cn('border-t border-wl-border-default pt-3 mt-3')}>
                             <div className={cn('grid grid-cols-3 gap-3 mb-4')}>
                               <div>
                                 <p className={cn('text-xs text-gray-500 mb-1')}>Dashboards</p>
@@ -450,7 +450,7 @@ export default function AnalyticsIntegrationsPage() {
             {reportsLoading ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Card key={i} className="p-4">
-                  <div className="h-24 bg-[#1a1a2e]/50 rounded animate-pulse" />
+                  <div className="h-24 bg-wl-bg-elevated/50 rounded animate-pulse" />
                 </Card>
               ))
             ) : reports.length === 0 ? (
@@ -495,7 +495,7 @@ export default function AnalyticsIntegrationsPage() {
                         </Badge>
                       </div>
 
-                      <div className={cn('bg-[#12121a] rounded p-3 mb-3')}>
+                      <div className={cn('bg-wl-bg-surface rounded p-3 mb-3')}>
                         <div className={cn('grid grid-cols-2 gap-3 text-xs')}>
                           <div>
                             <p className={cn('text-gray-500 mb-1')}>Next Run</p>
@@ -521,7 +521,7 @@ export default function AnalyticsIntegrationsPage() {
                             <span
                               key={recipient}
                               className={cn(
-                                'text-xs px-2 py-1 rounded bg-[#1a1a2e] text-gray-400'
+                                'text-xs px-2 py-1 rounded bg-wl-bg-elevated text-gray-400'
                               )}
                             >
                               {recipient}
@@ -572,7 +572,7 @@ export default function AnalyticsIntegrationsPage() {
             {dataSourcesLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i} className="p-3">
-                  <div className="h-12 bg-[#1a1a2e]/50 rounded animate-pulse" />
+                  <div className="h-12 bg-wl-bg-elevated/50 rounded animate-pulse" />
                 </Card>
               ))
             ) : dataSources.length === 0 ? (

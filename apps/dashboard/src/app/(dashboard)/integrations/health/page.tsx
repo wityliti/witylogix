@@ -275,7 +275,7 @@ export default function IntegrationHealthPage() {
               <Card
                 key={integration.id}
                 className={cn(
-                  "hover:border-[#1e1e2e] transition-colors",
+                  "hover:border-wl-border-default transition-colors",
                   integration.status === "healthy" && "border-emerald-500/20",
                   integration.status === "degraded" && "border-amber-500/20",
                   integration.status === "down" && "border-red-500/20"
@@ -343,7 +343,7 @@ export default function IntegrationHealthPage() {
                   </div>
 
                   {/* Progress bar for uptime */}
-                  <div className={cn("w-full h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden")}>
+                  <div className={cn("w-full h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden")}>
                     <div
                       className={cn(
                         "h-full transition-all",
@@ -383,7 +383,7 @@ export default function IntegrationHealthPage() {
         {autoRefresh && (
           <div
             className={cn(
-              "fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-sm text-gray-400"
+              "fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-gray-400"
             )}
           >
             <Clock className="w-4 h-4 animate-spin" />

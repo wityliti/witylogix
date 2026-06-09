@@ -139,7 +139,7 @@ export default function LocationsPage() {
               placeholder="Search locations, cities, addresses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={cn("w-full p-2 px-4 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm font-sans outline-none")}
+              className={cn("w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm font-sans outline-none")}
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function LocationsPage() {
                     "py-1 px-3 rounded-full border text-xs font-semibold cursor-pointer transition-all",
                     typeFilter === t
                       ? "bg-blue-500 text-wl-text-inverse border-blue-500"
-                      : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                      : "bg-transparent text-gray-400 border-wl-border-default"
                   )}
                 >
                   {t === "ALL" ? "All Types" : typeLabel(t as LocationType)}
@@ -240,7 +240,7 @@ export default function LocationsPage() {
                 </Badge>
 
                 {/* Stats Grid */}
-                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-[#1e1e2e] mb-3")}>
+                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
                   <div>
                     <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
                     <div
@@ -355,7 +355,7 @@ export default function LocationsPage() {
                   </div>
                 </div>
 
-                <div className={cn("h-px bg-[#1e1e2e]")} />
+                <div className={cn("h-px bg-wl-bg-elevated")} />
 
                 {/* Contact Info */}
                 <div>
@@ -376,7 +376,7 @@ export default function LocationsPage() {
 
                 </div>
 
-                <div className={cn("h-px bg-[#1e1e2e]")} />
+                <div className={cn("h-px bg-wl-bg-elevated")} />
 
                 {/* Performance Stats */}
                 <div>
@@ -408,7 +408,7 @@ export default function LocationsPage() {
                   </div>
                 </div>
 
-                <div className={cn("h-px bg-[#1e1e2e]")} />
+                <div className={cn("h-px bg-wl-bg-elevated")} />
 
                 {/* Operating Hours */}
                 {selectedLocation.operatingHours && (
@@ -420,7 +420,7 @@ export default function LocationsPage() {
                       <table className={cn("w-full border-collapse text-xs")}>
                         <tbody>
                           {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
-                            <tr key={day} className={cn("border-b border-[#1e1e2e]")}>
+                            <tr key={day} className={cn("border-b border-wl-border-default")}>
                               <td
                                 className={cn("p-2 pr-3 text-gray-300 font-medium whitespace-nowrap")}
                               >
@@ -443,14 +443,14 @@ export default function LocationsPage() {
                   </div>
                 )}
 
-                <div className={cn("h-px bg-[#1e1e2e]")} />
+                <div className={cn("h-px bg-wl-bg-elevated")} />
 
                 {/* Map */}
                 <div>
                   <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
                     Location
                   </div>
-                  <div className={cn("rounded-md overflow-hidden border border-[#1e1e2e]")} style={{ height: 160 }}>
+                  <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
                     <WLMap
                       center={[selectedLocation.longitude, selectedLocation.latitude]}
                       zoom={12}
@@ -473,7 +473,7 @@ export default function LocationsPage() {
 
                 {/* Action Buttons */}
                 <div
-                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-[#1e1e2e]")}
+                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-default")}
                 >
                   <Button variant="primary" size="sm">
                     Edit

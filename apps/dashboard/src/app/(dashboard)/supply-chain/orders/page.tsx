@@ -119,7 +119,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-[#1e1e2e]">
+      <div className="border-b border-wl-border-default">
         <div className="flex gap-6">
           {['orders', 'waves', 'batches', 'returns'].map((tab) => (
             <button
@@ -152,7 +152,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, searchTerm: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
                 />
 
                 <select
@@ -160,7 +160,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, status: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {STATUS_OPTIONS.map((status) => (
                     <option key={status} value={status.toLowerCase()}>
@@ -174,7 +174,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, priority: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {PRIORITY_OPTIONS.map((priority) => (
                     <option key={priority} value={priority.toLowerCase()}>
@@ -188,7 +188,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, warehouse: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {WAREHOUSE_OPTIONS.map((warehouse) => (
                     <option key={warehouse} value={warehouse.toLowerCase()}>
@@ -431,7 +431,7 @@ export default function OrdersPage() {
                       {batch.completionRate}%
                     </span>
                   </div>
-                  <div className="w-full hover:bg-[#1a1a2e] rounded-full h-2">
+                  <div className="w-full hover:bg-wl-bg-elevated rounded-full h-2">
                     <div
                       className="h-full rounded-full bg-blue-500 transition-all"
                       style={{ width: `${batch.completionRate}%` }}

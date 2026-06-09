@@ -223,7 +223,7 @@ export default function OnboardPage() {
                         ? "bg-emerald-500/20 text-emerald-400"
                         : isActive
                           ? "bg-blue-500/20 text-blue-400 ring-2 ring-blue-400"
-                          : "bg-[#12121a] text-gray-300"
+                          : "bg-wl-bg-surface text-gray-300"
                     )}
                   >
                     {isCompleted ? (
@@ -267,7 +267,7 @@ export default function OnboardPage() {
                         "p-4 rounded-lg border-2 transition-all flex gap-4 items-start",
                         isSelected
                           ? "border-blue-400 bg-blue-500/10"
-                          : "border-[#1e1e2e] hover:border-[#1e1e2e]"
+                          : "border-wl-border-default hover:border-wl-border-default"
                       )}
                     >
                       <div
@@ -275,7 +275,7 @@ export default function OnboardPage() {
                           "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
                           isSelected
                             ? "bg-blue-500/20 text-blue-400"
-                            : "bg-[#12121a] text-gray-300"
+                            : "bg-wl-bg-surface text-gray-300"
                         )}
                       >
                         <Icon className="w-5 h-5" />
@@ -480,8 +480,8 @@ export default function OnboardPage() {
                     }))
                   }
                   className={cn(
-                    "w-full px-4 py-2 rounded-md bg-[#12121a] text-white",
-                    "border border-[#1e1e2e] focus:border-blue-400 outline-none"
+                    "w-full px-4 py-2 rounded-md bg-wl-bg-surface text-white",
+                    "border border-wl-border-default focus:border-blue-400 outline-none"
                   )}
                 >
                   <option value="no">No</option>

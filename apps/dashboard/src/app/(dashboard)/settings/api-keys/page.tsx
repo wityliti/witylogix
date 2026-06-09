@@ -102,7 +102,7 @@ export default function APIKeysPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="API Keys"
         subtitle="Manage API keys for programmatic access"
@@ -120,7 +120,7 @@ export default function APIKeysPage() {
 
           {/* Create Dialog */}
           {showCreateDialog && (
-            <Card className="border-blue-500/30 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Create New API Key</CardTitle>
                 <CardDescription className="text-gray-400">Generate a new API key for your application</CardDescription>
@@ -148,7 +148,7 @@ export default function APIKeysPage() {
                           type="checkbox"
                           checked={selectedScopes.includes(scope.id)}
                           onChange={() => toggleScope(scope.id)}
-                          className="w-4 h-4 rounded border-[#1e1e2e] text-blue-500 cursor-pointer"
+                          className="w-4 h-4 rounded border-wl-border-default text-blue-500 cursor-pointer"
                         />
                         <span className="text-sm text-gray-400">
                           {scope.label}
@@ -188,7 +188,7 @@ export default function APIKeysPage() {
           )}
 
           {/* API Keys List */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Your API Keys</CardTitle>
               <CardDescription className="text-gray-400">
@@ -201,7 +201,7 @@ export default function APIKeysPage() {
                   {apiKeys.map((apiKey) => (
                     <div
                       key={apiKey.id}
-                      className="p-4 border border-[#1e1e2e] rounded-lg hover:bg-[#1a1a2e]/50 transition-all"
+                      className="p-4 border border-wl-border-default rounded-lg hover:bg-wl-bg-elevated/50 transition-all"
                     >
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex-1">
@@ -297,7 +297,7 @@ export default function APIKeysPage() {
           </Card>
 
           {/* Documentation Link */}
-          <Card className="bg-blue-500/5 border border-blue-500/30 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-blue-500/5 border border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-gray-400">
                 Learn how to use the Witylogix API in our{" "}

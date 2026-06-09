@@ -62,7 +62,7 @@ export function PlatformCard({
   return (
     <Card
       className={cn(
-        'bg-[#1a1a2e] border-[#1e1e2e] cursor-pointer transition-all hover:border-blue-500/50',
+        'bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50',
         isExpanded && 'ring-1 ring-wl-primary-500'
       )}
       onClick={() => onToggleExpand(platform.id)}
@@ -104,7 +104,7 @@ export function PlatformCard({
         </div>
 
         {isExpanded && (
-          <div className="mt-6 pt-6 border-t border-[#1e1e2e] space-y-6">
+          <div className="mt-6 pt-6 border-t border-wl-border-default space-y-6">
             {/* Sync Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
@@ -182,7 +182,7 @@ export function PlatformCard({
                   {platform.webhooks.map((hook) => (
                     <div
                       key={hook.id}
-                      className="flex items-center justify-between p-2 bg-[#12121a] rounded text-sm"
+                      className="flex items-center justify-between p-2 bg-wl-bg-surface rounded text-sm"
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-gray-400">{hook.event}</span>
@@ -206,7 +206,7 @@ export function PlatformCard({
 
             {/* Actions */}
             {platform.status === 'connected' && (
-              <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
+              <div className="flex gap-2 pt-4 border-t border-wl-border-default">
                 <Button variant="secondary" size="sm">
                   Edit Configuration
                 </Button>

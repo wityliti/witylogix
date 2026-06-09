@@ -408,7 +408,7 @@ export default function ShippingIntegrationPage() {
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
@@ -525,7 +525,7 @@ export default function ShippingIntegrationPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="grid grid-cols-4 gap-3 text-xs text-gray-400 mb-4 pb-4 border-b border-[#1e1e2e]">
+              <div className="grid grid-cols-4 gap-3 text-xs text-gray-400 mb-4 pb-4 border-b border-wl-border-default">
                 <div>
                   <label className="block text-gray-300 text-xs font-semibold mb-1">
                     FROM
@@ -534,7 +534,7 @@ export default function ShippingIntegrationPage() {
                     type="text"
                     value="New York, NY"
                     disabled
-                    className="w-full p-2 bg-[#12121a] border border-[#1e1e2e] rounded text-sm text-gray-400"
+                    className="w-full p-2 bg-wl-bg-surface border border-wl-border-default rounded text-sm text-gray-400"
                   />
                 </div>
                 <div>
@@ -545,7 +545,7 @@ export default function ShippingIntegrationPage() {
                     type="text"
                     value="Los Angeles, CA"
                     disabled
-                    className="w-full p-2 bg-[#12121a] border border-[#1e1e2e] rounded text-sm text-gray-400"
+                    className="w-full p-2 bg-wl-bg-surface border border-wl-border-default rounded text-sm text-gray-400"
                   />
                 </div>
                 <div>
@@ -556,7 +556,7 @@ export default function ShippingIntegrationPage() {
                     type="number"
                     value={2.5}
                     disabled
-                    className="w-full p-2 bg-[#12121a] border border-[#1e1e2e] rounded text-sm text-gray-400"
+                    className="w-full p-2 bg-wl-bg-surface border border-wl-border-default rounded text-sm text-gray-400"
                   />
                 </div>
                 <div className="flex items-end">
@@ -574,7 +574,7 @@ export default function ShippingIntegrationPage() {
                       "p-3 rounded-md border cursor-pointer transition-all",
                       quote.selected
                         ? "border-blue-500 bg-blue-500/10"
-                        : "border-[#1e1e2e] hover:border-[#1e1e2e]"
+                        : "border-wl-border-default hover:border-wl-border-default"
                     )}
                   >
                     <div className="flex items-center justify-between">
@@ -604,7 +604,7 @@ export default function ShippingIntegrationPage() {
                 ))}
               </div>
 
-              <div className="flex gap-2 pt-3 border-t border-[#1e1e2e]">
+              <div className="flex gap-2 pt-3 border-t border-wl-border-default">
                 <Button variant="primary" size="sm" className="flex-1">
                   Generate Label
                 </Button>
@@ -629,7 +629,7 @@ export default function ShippingIntegrationPage() {
                     "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
                     shipmentFilterStatus === status
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                      : "bg-transparent text-gray-400 border-wl-border-default"
                   )}
                 >
                   {status === "all"
@@ -654,14 +654,14 @@ export default function ShippingIntegrationPage() {
                     "rounded-lg border overflow-hidden transition-all",
                     expandedShipment === shipment.id
                       ? "border-blue-500 bg-blue-500/5"
-                      : "border-[#1e1e2e]"
+                      : "border-wl-border-default"
                   )}
                 >
                   <div
                     onClick={() =>
                       setExpandedShipment(expandedShipment === shipment.id ? null : shipment.id)
                     }
-                    className="p-4 cursor-pointer hover:bg-[#1a1a2e]/30"
+                    className="p-4 cursor-pointer hover:bg-wl-bg-elevated/30"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
@@ -709,7 +709,7 @@ export default function ShippingIntegrationPage() {
                   </div>
 
                   {expandedShipment === shipment.id && (
-                    <div className="bg-[#1a1a2e]/50 border-t border-[#1e1e2e] p-4">
+                    <div className="bg-wl-bg-elevated/50 border-t border-wl-border-default p-4">
                       <h5 className="text-xs font-semibold text-white mb-3 uppercase tracking-wider">
                         Delivery Timeline
                       </h5>
@@ -717,7 +717,7 @@ export default function ShippingIntegrationPage() {
                         {shipment.timeline.map((event, idx) => (
                           <div
                             key={idx}
-                            className="flex items-start gap-3 pb-2 last:pb-0 border-b border-[#1e1e2e] last:border-0"
+                            className="flex items-start gap-3 pb-2 last:pb-0 border-b border-wl-border-default last:border-0"
                           >
                             <div className="flex-shrink-0">
                               <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
@@ -750,7 +750,7 @@ export default function ShippingIntegrationPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="p-3 text-left font-semibold text-gray-400">Date</th>
                     <th className="p-3 text-center font-semibold text-gray-400">
                       Shipments
@@ -774,8 +774,8 @@ export default function ShippingIntegrationPage() {
                     <tr
                       key={idx}
                       className={cn(
-                        "border-b border-[#1e1e2e]",
-                        idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]/30"
+                        "border-b border-wl-border-default",
+                        idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated/30"
                       )}
                     >
                       <td className="p-3 text-white font-semibold">

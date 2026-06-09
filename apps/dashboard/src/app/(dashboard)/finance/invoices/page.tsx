@@ -52,8 +52,8 @@ export default function InvoicesPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+    <div className="flex flex-col min-h-screen bg-wl-bg-root">
+      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -79,7 +79,7 @@ export default function InvoicesPage() {
                 }}
                 className={cn(
                   'w-full pl-10 pr-4 py-2 rounded-md text-sm',
-                  'bg-[#1a1a2e] border border-[#1e1e2e]',
+                  'bg-wl-bg-elevated border border-wl-border-default',
                   'text-white',
                   'focus:outline-none focus:ring-2 focus:ring-blue-500'
                 )}
@@ -90,7 +90,7 @@ export default function InvoicesPage() {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className={cn(
                 'px-3 py-2 rounded-md text-sm font-medium',
-                'bg-[#1a1a2e] border border-[#1e1e2e]',
+                'bg-wl-bg-elevated border border-wl-border-default',
                 'text-white',
                 'focus:outline-none focus:ring-2 focus:ring-blue-500'
               )}
@@ -108,14 +108,14 @@ export default function InvoicesPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-4 max-w-7xl">
           {filtered.length === 0 ? (
-            <Card className={cn("p-12 bg-[#12121a] border border-[#1e1e2e] text-center")}>
+            <Card className={cn("p-12 bg-wl-bg-surface border border-wl-border-default text-center")}>
               <p className="text-gray-400">No invoices found</p>
             </Card>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="text-left px-4 py-3 font-semibold text-gray-400">Invoice #</th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-400">Customer</th>
                     <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
@@ -126,7 +126,7 @@ export default function InvoicesPage() {
                 </thead>
                 <tbody>
                   {filtered.map((inv) => (
-                    <tr key={inv.id} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e]">
+                    <tr key={inv.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
                       <td className="px-4 py-3 font-medium text-white">{inv.invoiceNumber}</td>
                       <td className="px-4 py-3 text-gray-300">{inv.customer}</td>
                       <td className="text-right px-4 py-3 font-medium text-white">

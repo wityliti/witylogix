@@ -327,7 +327,7 @@ export default function InvoicesPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+    <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
@@ -342,25 +342,25 @@ export default function InvoicesPage() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-gray-400 mb-2">Total Outstanding</p>
             <p className="text-3xl font-bold text-white">${stats.totalOutstanding.toFixed(2)}</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-gray-400 mb-2">Total Overdue</p>
             <p className="text-3xl font-bold text-red-400">${stats.totalOverdue.toFixed(2)}</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-gray-400 mb-2">Paid This Month</p>
             <p className="text-3xl font-bold text-emerald-400">${stats.paidThisMonth.toFixed(2)}</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-gray-400 mb-2">Avg Days to Pay</p>
             <p className="text-3xl font-bold text-blue-400">{stats.avgDaysToPay} days</p>
@@ -370,7 +370,7 @@ export default function InvoicesPage() {
 
       {/* Bulk Actions */}
       {selectedInvoices.size > 0 && (
-        <Card className="bg-[#12121a] border-[#1e1e2e] flex items-center justify-between gap-4 p-4">
+        <Card className="bg-wl-bg-surface border-wl-border-default flex items-center justify-between gap-4 p-4">
           <span className="text-sm font-medium text-white">{selectedInvoices.size} selected</span>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={handleBulkSend} disabled={isSending}>
@@ -386,7 +386,7 @@ export default function InvoicesPage() {
       )}
 
       {/* Filters & Controls */}
-      <Card className="bg-[#12121a] border-[#1e1e2e] space-y-4">
+      <Card className="bg-wl-bg-surface border-wl-border-default space-y-4">
         <CardContent className="pt-6">
           <div className="flex gap-3 flex-wrap items-end">
             <div className="flex-1 min-w-[250px]">
@@ -398,7 +398,7 @@ export default function InvoicesPage() {
                   setCurrentPage(1);
                 }}
                 icon={<Search className="w-4 h-4" />}
-                className="w-full bg-[#1a1a2e] border-[#1e1e2e] text-white placeholder-gray-500"
+                className="w-full bg-wl-bg-elevated border-wl-border-default text-white placeholder-gray-500"
               />
             </div>
 
@@ -409,7 +409,7 @@ export default function InvoicesPage() {
                 setCurrentPage(1);
               }}
               label="Status"
-              className="w-40 bg-[#1a1a2e] border-[#1e1e2e] text-white"
+              className="w-40 bg-wl-bg-elevated border-wl-border-default text-white"
             >
               <option value="">All Status</option>
               <option value='draft'>Draft</option>
@@ -426,7 +426,7 @@ export default function InvoicesPage() {
                 setCurrentPage(1);
               }}
               label="Customer"
-              className="w-40 bg-[#1a1a2e] border-[#1e1e2e] text-white"
+              className="w-40 bg-wl-bg-elevated border-wl-border-default text-white"
             >
               <option value="">All Customers</option>
               {customers.map((name) => (
@@ -442,7 +442,7 @@ export default function InvoicesPage() {
                 setSortBy(value as "date" | "amount" | "status" | "due")
               }
               label="Sort By"
-              className="w-32 bg-[#1a1a2e] border-[#1e1e2e] text-white"
+              className="w-32 bg-wl-bg-elevated border-wl-border-default text-white"
             >
               <option value='date'>Date</option>
               <option value='amount'>Amount</option>
@@ -469,7 +469,7 @@ export default function InvoicesPage() {
           </div>
 
           {/* Additional Filters */}
-          <div className="flex gap-3 flex-wrap items-end border-t border-[#1e1e2e] pt-4 mt-4">
+          <div className="flex gap-3 flex-wrap items-end border-t border-wl-border-default pt-4 mt-4">
             <div className="flex gap-2 items-end">
               <label className="text-xs font-semibold uppercase text-gray-400">Date Range</label>
               <input
@@ -479,7 +479,7 @@ export default function InvoicesPage() {
                   setDateFrom(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+                className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
               />
               <span className="text-gray-400">to</span>
               <input
@@ -489,7 +489,7 @@ export default function InvoicesPage() {
                   setDateTo(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+                className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
               />
             </div>
 
@@ -503,7 +503,7 @@ export default function InvoicesPage() {
                   setAmountMin(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-20 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white placeholder-gray-500"
+                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder-gray-500"
               />
               <span className="text-gray-400">-</span>
               <input
@@ -514,7 +514,7 @@ export default function InvoicesPage() {
                   setAmountMax(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-20 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white placeholder-gray-500"
+                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder-gray-500"
               />
             </div>
           </div>
@@ -523,7 +523,7 @@ export default function InvoicesPage() {
 
       {/* Invoices Table */}
       {filtered.length === 0 ? (
-        <Card className="bg-[#12121a] border-[#1e1e2e] flex flex-col items-center justify-center gap-4 py-16">
+        <Card className="bg-wl-bg-surface border-wl-border-default flex flex-col items-center justify-center gap-4 py-16">
           <Search className="w-12 h-12 text-gray-600" />
           <div className="flex flex-col items-center gap-2">
             <h3 className="text-lg font-semibold text-gray-300">No invoices found</h3>
@@ -532,7 +532,7 @@ export default function InvoicesPage() {
         </Card>
       ) : (
         <>
-          <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden">
+          <Card className="bg-wl-bg-surface border-wl-border-default overflow-hidden">
             <Table
               columns={[
                 {
@@ -542,7 +542,7 @@ export default function InvoicesPage() {
                       type="checkbox"
                       checked={selectedInvoices.size === paginatedInvoices.length && paginatedInvoices.length > 0}
                       onChange={handleSelectAll}
-                      className="w-4 h-4 rounded border-[#1e1e2e] bg-[#1a1a2e]"
+                      className="w-4 h-4 rounded border-wl-border-default bg-wl-bg-elevated"
                     />
                   ),
                   render: (item: Invoice) => (
@@ -550,7 +550,7 @@ export default function InvoicesPage() {
                       type="checkbox"
                       checked={selectedInvoices.has(item.id)}
                       onChange={() => handleSelectInvoice(item.id)}
-                      className="w-4 h-4 rounded border-[#1e1e2e] bg-[#1a1a2e]"
+                      className="w-4 h-4 rounded border-wl-border-default bg-wl-bg-elevated"
                     />
                   ),
                   width: 40,
@@ -651,7 +651,7 @@ export default function InvoicesPage() {
                   setCurrentPage(1);
                 }}
                 label="Page Size"
-                className="w-24 bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                className="w-24 bg-wl-bg-elevated border-wl-border-default text-white"
               >
                 <option value="5">5</option>
                 <option value="10">10</option>

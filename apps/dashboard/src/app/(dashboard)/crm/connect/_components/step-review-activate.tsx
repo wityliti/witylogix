@@ -102,7 +102,7 @@ export function StepReviewActivate({
                   onChange={(e) => onSetSyncSchedule(e.target.value)}
                   className={cn(
                     'w-full px-3 py-2 rounded-md',
-                    'bg-[#12121a] border border-[#1e1e2e]',
+                    'bg-wl-bg-surface border border-wl-border-default',
                     'text-white',
                     'focus:outline-none focus:border-blue-500'
                   )}

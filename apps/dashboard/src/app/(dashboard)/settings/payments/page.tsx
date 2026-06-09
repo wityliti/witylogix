@@ -143,7 +143,7 @@ export default function PaymentSettingsPage() {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {gateways.length === 0 ? (
-              <Card className="border-dashed border-2 border-[#1e1e2e] bg-[#12121a]">
+              <Card className="border-dashed border-2 border-wl-border-default bg-wl-bg-surface">
                 <CardContent className="flex items-center justify-center py-16">
                   <div className="text-center">
                     <DollarSign className="w-10 h-10 mx-auto text-gray-600 mb-4" />
@@ -160,8 +160,8 @@ export default function PaymentSettingsPage() {
                   <Card
                     key={gateway.id}
                     className={cn(
-                      'border-2 transition-all bg-[#12121a]',
-                      gateway.isDefault ? 'border-blue-500 bg-blue-500/5' : 'border-[#1e1e2e]',
+                      'border-2 transition-all bg-wl-bg-surface',
+                      gateway.isDefault ? 'border-blue-500 bg-blue-500/5' : 'border-wl-border-default',
                     )}
                   >
                     <CardHeader>
@@ -201,7 +201,7 @@ export default function PaymentSettingsPage() {
                         <span className="text-sm text-gray-400 block mb-2">Supported Methods</span>
                         <div className="flex flex-wrap gap-1">
                           {gateway.supportedMethods.map((method) => (
-                            <Badge key={method} variant="default" className="text-xs capitalize bg-[#1a1a2e]">
+                            <Badge key={method} variant="default" className="text-xs capitalize bg-wl-bg-elevated">
                               {method.replace('_', ' ')}
                             </Badge>
                           ))}
@@ -210,7 +210,7 @@ export default function PaymentSettingsPage() {
 
                       {gateway.healthScore !== undefined && (
                         <div className="grid grid-cols-1 gap-3">
-                          <div className="bg-[#1a1a2e] rounded-lg p-3">
+                          <div className="bg-wl-bg-elevated rounded-lg p-3">
                             <span className="text-xs text-gray-400">Health Score</span>
                             <p className="text-lg font-semibold text-blue-500 mt-1">{gateway.healthScore}%</p>
                           </div>
@@ -263,7 +263,7 @@ export default function PaymentSettingsPage() {
               </div>
             )}
 
-            <Card className="border-dashed border-2 border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border-dashed border-2 border-wl-border-default bg-wl-bg-surface">
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Plus className="w-8 h-8 mx-auto text-gray-400 mb-3" />
@@ -284,7 +284,7 @@ export default function PaymentSettingsPage() {
         {activeTab === 'configuration' && (
           <div className="space-y-6">
             {gateways.filter((g) => g.status === 'connected').length === 0 ? (
-              <Card className="bg-[#12121a] border border-[#1e1e2e]">
+              <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="py-12 text-center text-gray-400">
                   No connected gateways to configure.
                 </CardContent>
@@ -312,13 +312,13 @@ export default function PaymentSettingsPage() {
                             type="text"
                             value={`**** **** **** ${gateway.config.lastDigits}${gateway.config.expiryDate ? ` (exp: ${gateway.config.expiryDate})` : ''}`}
                             readOnly
-                            className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                            className="bg-wl-bg-elevated border-wl-border-default text-white"
                           />
                         </div>
                       )}
 
                       {gateway.code === 'cod' && (
-                        <div className="p-4 bg-[#1a1a2e] rounded-lg">
+                        <div className="p-4 bg-wl-bg-elevated rounded-lg">
                           <p className="text-sm text-gray-400">
                             Cash on Delivery requires no API credentials. Collect payment upon delivery.
                           </p>
@@ -326,7 +326,7 @@ export default function PaymentSettingsPage() {
                       )}
 
                       {!gateway.config?.lastDigits && gateway.code !== 'cod' && (
-                        <div className="p-4 bg-[#1a1a2e] rounded-lg">
+                        <div className="p-4 bg-wl-bg-elevated rounded-lg">
                           <p className="text-sm text-gray-400">
                             <Shield className="w-3 h-3 inline mr-1" />
                             Credentials are configured via environment variables and never stored in plain text.
@@ -357,7 +357,7 @@ export default function PaymentSettingsPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-[#1e1e2e]">
+                        <tr className="border-b border-wl-border-default">
                           <th className="text-left py-3 px-4 font-medium text-white">Gateway</th>
                           <th className="text-right py-3 px-4 font-medium text-white">Rate</th>
                           <th className="text-right py-3 px-4 font-medium text-white">Fee on $100</th>
@@ -370,7 +370,7 @@ export default function PaymentSettingsPage() {
                           const maxFee100 = Math.max(...transactionFeesComparison.map((r) => r.for100));
                           const savings100 = maxFee100 - row.for100;
                           return (
-                            <tr key={i} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition">
+                            <tr key={i} className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition">
                               <td className="py-3 px-4"><span className="font-medium text-white">{row.gateway}</span></td>
                               <td className="py-3 px-4 text-right text-white">
                                 {row.percent}% + ${(row.fixed / 100).toFixed(2)}
@@ -392,7 +392,7 @@ export default function PaymentSettingsPage() {
                   </div>
                 )}
 
-                <div className="mt-6 p-4 bg-[#1a1a2e] rounded-lg">
+                <div className="mt-6 p-4 bg-wl-bg-elevated rounded-lg">
                   <p className="text-xs text-gray-400">
                     <DollarSign className="w-3 h-3 inline mr-2" />
                     Fees shown are estimates. Actual fees may vary based on payment method, region, and volume discounts.

@@ -236,7 +236,7 @@ export default function TelematicsPage() {
         }
       />
 
-      <div className={cn("p-6 bg-[#0a0a0f] space-y-6")}>
+      <div className={cn("p-6 bg-wl-bg-root space-y-6")}>
         {/* Overview */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
           <Card>
@@ -305,7 +305,7 @@ export default function TelematicsPage() {
                         setWizardStep("credentials");
                       }}
                       className={cn(
-                        "p-3 rounded border border-[#1e1e2e] hover:border-blue-400 text-left transition"
+                        "p-3 rounded border border-wl-border-default hover:border-blue-400 text-left transition"
                       )}
                     >
                       <p className={cn("font-semibold text-white")}>{provider.name}</p>
@@ -327,7 +327,7 @@ export default function TelematicsPage() {
                       type="password"
                       placeholder="Enter API key"
                       className={cn(
-                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                       )}
                     />
                   </div>
@@ -339,7 +339,7 @@ export default function TelematicsPage() {
                       type="text"
                       placeholder="Enter account ID"
                       className={cn(
-                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm outline-none"
                       )}
                     />
                   </div>
@@ -363,7 +363,7 @@ export default function TelematicsPage() {
                   <p className={cn("text-sm text-gray-300")}>
                     Step 2: Testing connection...
                   </p>
-                  <div className={cn("bg-[#12121a] p-3 rounded border border-[#1e1e2e]")}>
+                  <div className={cn("bg-wl-bg-surface p-3 rounded border border-wl-border-default")}>
                     <p className={cn("text-xs text-gray-400 mb-2")}>✓ Authentication successful</p>
                     <p className={cn("text-xs text-gray-400 mb-2")}>✓ API endpoint reachable</p>
                     <p className={cn("text-xs text-gray-400 mb-2")}>✓ Rate limits OK</p>
@@ -418,7 +418,7 @@ export default function TelematicsPage() {
                   key={provider.id}
                   className={cn(
                     "cursor-pointer transition-all hover:border-blue-400",
-                    selectedProvider === provider.id && "border-blue-500 bg-[#12121a]"
+                    selectedProvider === provider.id && "border-blue-500 bg-wl-bg-surface"
                   )}
                   onClick={() => setSelectedProvider(provider.id)}
                 >
@@ -520,7 +520,7 @@ export default function TelematicsPage() {
                   </CardHeader>
                   <div className={cn("p-4 pt-0 space-y-2")}>
                     {selected.dataTypes.map((dataType) => (
-                      <div key={dataType.name} className={cn("flex items-start justify-between p-2 rounded hover:bg-[#1a1a2e] transition")}>
+                      <div key={dataType.name} className={cn("flex items-start justify-between p-2 rounded hover:bg-wl-bg-elevated transition")}>
                         <div>
                           <p className={cn("text-sm font-semibold text-white")}>{dataType.name}</p>
                           <p className={cn("text-xs text-gray-300")}>{dataType.frequency}</p>
@@ -528,7 +528,7 @@ export default function TelematicsPage() {
                         <div
                           className={cn(
                             "w-3 h-3 rounded-full mt-1",
-                            dataType.enabled ? "bg-emerald-500" : "bg-[#1e1e2e]"
+                            dataType.enabled ? "bg-emerald-500" : "bg-wl-bg-elevated"
                           )}
                         />
                       </div>
@@ -555,7 +555,7 @@ export default function TelematicsPage() {
             <div className={cn("overflow-x-auto")}>
               <table className={cn("w-full text-sm")}>
                 <thead>
-                  <tr className={cn("border-b border-[#1e1e2e]")}>
+                  <tr className={cn("border-b border-wl-border-default")}>
                     <th className={cn("text-left p-4 text-xs font-semibold text-gray-300")}>
                       Witylogix Vehicle
                     </th>
@@ -575,7 +575,7 @@ export default function TelematicsPage() {
                 </thead>
                 <tbody>
                   {selected.vehicleMappings.map((mapping) => (
-                    <tr key={mapping.witylogixId} className={cn("border-b border-[#1e1e2e] hover:bg-[#12121a]")}>
+                    <tr key={mapping.witylogixId} className={cn("border-b border-wl-border-default hover:bg-wl-bg-surface")}>
                       <td className={cn("p-4")}>
                         <div>
                           <p className={cn("font-semibold text-white text-sm")}>{mapping.witylogixName}</p>
@@ -607,7 +607,7 @@ export default function TelematicsPage() {
             <div className={cn("p-4 pt-0")}>
               <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4")}>
                 {selected.vehicleMappings.slice(0, 3).map((mapping) => (
-                  <div key={mapping.witylogixId} className={cn("p-3 rounded bg-[#12121a] border border-[#1e1e2e]")}>
+                  <div key={mapping.witylogixId} className={cn("p-3 rounded bg-wl-bg-surface border border-wl-border-default")}>
                     <p className={cn("font-semibold text-white text-sm mb-3")}>{mapping.witylogixName}</p>
                     <div className={cn("space-y-2 text-xs")}>
                       <div className={cn("flex justify-between")}>

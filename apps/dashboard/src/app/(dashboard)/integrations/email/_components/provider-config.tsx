@@ -37,7 +37,7 @@ export function ProviderConfig({
   sendingLimits,
 }: ProviderConfigProps) {
   return (
-    <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-elevated border-wl-border-default">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Configuration</span>
@@ -52,12 +52,12 @@ export function ProviderConfig({
           <h4 className="text-sm font-semibold text-white mb-3">
             Authentication Method
           </h4>
-          <div className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+          <div className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default">
             <div className="text-sm text-gray-400 mb-2">
               {configType === 'api_key' ? 'API Key' : 'OAuth 2.0'}
             </div>
             {apiKey && (
-              <div className="font-mono text-xs text-gray-500 flex items-center justify-between p-2 bg-[#0a0a0f] rounded">
+              <div className="font-mono text-xs text-gray-500 flex items-center justify-between p-2 bg-wl-bg-root rounded">
                 <span>{apiKey}</span>
                 <Copy className="w-4 h-4 cursor-pointer hover:text-gray-400" />
               </div>
@@ -80,7 +80,7 @@ export function ProviderConfig({
             {domains.map((domain, idx) => (
               <div
                 key={idx}
-                className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
+                className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-mono text-sm text-white">
@@ -95,7 +95,7 @@ export function ProviderConfig({
                     {domain.dnsRecords.map((record, ridx) => (
                       <div
                         key={ridx}
-                        className="text-xs p-2 bg-[#0a0a0f] rounded font-mono text-gray-500"
+                        className="text-xs p-2 bg-wl-bg-root rounded font-mono text-gray-500"
                       >
                         <div>
                           <span className="text-cyan-400">{record.type}</span>{' '}
@@ -117,7 +117,7 @@ export function ProviderConfig({
             Sending Limits
           </h4>
           <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+            <div className="p-3 bg-wl-bg-surface rounded-lg border border-wl-border-default">
               <div className="text-xs text-gray-500 uppercase tracking-wide">
                 Per Day
               </div>
@@ -125,7 +125,7 @@ export function ProviderConfig({
                 {sendingLimits.perDay.toLocaleString()}
               </div>
             </div>
-            <div className="p-3 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+            <div className="p-3 bg-wl-bg-surface rounded-lg border border-wl-border-default">
               <div className="text-xs text-gray-500 uppercase tracking-wide">
                 Per Second
               </div>
@@ -133,7 +133,7 @@ export function ProviderConfig({
                 {sendingLimits.perSecond}
               </div>
             </div>
-            <div className="p-3 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+            <div className="p-3 bg-wl-bg-surface rounded-lg border border-wl-border-default">
               <div className="text-xs text-gray-500 uppercase tracking-wide">
                 Sent (24h)
               </div>
@@ -145,7 +145,7 @@ export function ProviderConfig({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
+        <div className="flex gap-2 pt-4 border-t border-wl-border-default">
           {status === 'active' && (
             <>
               <Button variant="secondary" size="sm">

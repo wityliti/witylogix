@@ -115,14 +115,14 @@ export default function ShippingProfileDetailPage() {
 
   if (!profile) {
     return (
-      <div className="p-6 min-h-screen bg-[#12121a]">
+      <div className="p-6 min-h-screen bg-wl-bg-surface">
         <p className="text-gray-400">Profile not found</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 min-h-screen bg-[#12121a]">
+    <div className="p-6 min-h-screen bg-wl-bg-surface">
       {/* Header */}
       <div className="mb-6">
         <div className="flex justify-between items-start mb-3">
@@ -186,7 +186,7 @@ export default function ShippingProfileDetailPage() {
 
       {/* Quick Info Cards */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
             <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
               <Truck size={14} /> Delivery Method
@@ -196,7 +196,7 @@ export default function ShippingProfileDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
             <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
               <DollarSign size={14} /> Flat Rate
@@ -210,7 +210,7 @@ export default function ShippingProfileDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
             <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
               <Settings size={14} /> Rate Type
@@ -220,7 +220,7 @@ export default function ShippingProfileDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
             <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
               <Clock size={14} /> Processing Time
@@ -234,8 +234,8 @@ export default function ShippingProfileDetailPage() {
 
       {/* Description */}
       {(profile.description || isEditing) && (
-        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
-          <CardHeader className="pb-4 border-b border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
+          <CardHeader className="pb-4 border-b border-wl-border-default">
             <CardTitle className="flex items-center gap-2">
               <AlertCircle size={18} className="text-blue-500" /> Description
             </CardTitle>
@@ -245,7 +245,7 @@ export default function ShippingProfileDetailPage() {
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="w-full p-3 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-sm outline-none resize-none focus:border-blue-500"
+                className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded text-white text-sm outline-none resize-none focus:border-blue-500"
                 rows={3}
                 placeholder="Profile description..."
               />
@@ -257,8 +257,8 @@ export default function ShippingProfileDetailPage() {
       )}
 
       {/* Rate Configuration */}
-      <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
-        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
+        <CardHeader className="pb-4 border-b border-wl-border-default">
           <CardTitle className="flex items-center gap-2">
             <DollarSign size={18} className="text-blue-500" /> Rate Configuration
           </CardTitle>
@@ -296,8 +296,8 @@ export default function ShippingProfileDetailPage() {
       </Card>
 
       {/* Attached Locations */}
-      <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
-        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
+        <CardHeader className="pb-4 border-b border-wl-border-default">
           <CardTitle className="flex items-center gap-2">
             <MapPin size={18} className="text-blue-500" /> Attached Locations
             <Badge variant="info" className="ml-auto">
@@ -313,7 +313,7 @@ export default function ShippingProfileDetailPage() {
               {profile.locations.map((location) => (
                 <div
                   key={location.id}
-                  className="p-3 rounded bg-[#0a0a0f] border border-[#1e1e2e] flex justify-between items-start"
+                  className="p-3 rounded bg-wl-bg-root border border-wl-border-default flex justify-between items-start"
                 >
                   <div>
                     <p className="text-sm text-white font-semibold">{location.name}</p>
@@ -331,8 +331,8 @@ export default function ShippingProfileDetailPage() {
       </Card>
 
       {/* Calendar Rules */}
-      <Card className="bg-[#12121a] border border-[#1e1e2e]">
-        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border border-wl-border-default">
+        <CardHeader className="pb-4 border-b border-wl-border-default">
           <CardTitle className="flex items-center gap-2">
             <Calendar size={18} className="text-blue-500" /> Calendar Rules
             <Badge variant="info" className="ml-auto">
@@ -348,7 +348,7 @@ export default function ShippingProfileDetailPage() {
               {profile.calendarRules.map((rule) => (
                 <div
                   key={rule.id}
-                  className="p-3 rounded bg-[#0a0a0f] border border-[#1e1e2e] flex justify-between items-center"
+                  className="p-3 rounded bg-wl-bg-root border border-wl-border-default flex justify-between items-center"
                 >
                   <div>
                     <p className="text-sm text-white font-semibold">{rule.name}</p>

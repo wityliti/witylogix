@@ -92,15 +92,15 @@ export default function WidgetsPage() {
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
         {loading ? (
           <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="bg-[#12121a] border border-[#1e1e2e] animate-pulse h-52">{" "}</Card>
+              <Card key={i} className="bg-wl-bg-surface border border-wl-border-default animate-pulse h-52">{" "}</Card>
             ))}
           </div>
         ) : error ? (
-          <Card className="bg-[#12121a] border border-[#1e1e2e] p-8 text-center mb-8">
+          <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center mb-8">
             <p className="text-red-400 mb-4">Failed to load widgets.</p>
             <Button variant="secondary" size="sm" onClick={refetch}>Retry</Button>
           </Card>
@@ -110,13 +110,13 @@ export default function WidgetsPage() {
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-white mb-4">Active Widgets</h2>
               {activeWidgets.length === 0 ? (
-                <Card className="bg-[#12121a] border border-[#1e1e2e] p-8 text-center">
+                <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center">
                   <p className="text-gray-400">No active widgets. Add some from the gallery.</p>
                 </Card>
               ) : (
                 <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
                   {activeWidgets.map((widget, idx) => (
-                    <Card key={widget.id} className="bg-[#12121a] border border-[#1e1e2e] flex flex-col">
+                    <Card key={widget.id} className="bg-wl-bg-surface border border-wl-border-default flex flex-col">
                       <CardHeader className="pb-3">
                         <div className="flex gap-2 items-center flex-1">
                           <div
@@ -136,7 +136,7 @@ export default function WidgetsPage() {
                           <Badge variant="success">Active</Badge>
                         </div>
                         <div
-                          className="border border-dashed border-[#1e1e2e] rounded-md flex items-center justify-center mb-4 text-xs text-gray-400"
+                          className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-gray-400"
                           style={{ background: getWidgetColor(idx), height: '80px' }}
                         >
                           Widget Preview
@@ -161,13 +161,13 @@ export default function WidgetsPage() {
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-white mb-4">Widget Gallery</h2>
                 {catalog.length === 0 ? (
-                  <Card className="bg-[#12121a] border border-[#1e1e2e] p-8 text-center">
+                  <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center">
                     <p className="text-gray-400">No widgets available in catalog.</p>
                   </Card>
                 ) : (
                   <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
                     {catalog.map((widget, idx) => (
-                      <Card key={widget.type} className="bg-[#12121a] border border-[#1e1e2e] flex flex-col">
+                      <Card key={widget.type} className="bg-wl-bg-surface border border-wl-border-default flex flex-col">
                         <CardHeader className="pb-3">
                           <div className="flex gap-2 items-center">
                             <div
@@ -182,7 +182,7 @@ export default function WidgetsPage() {
                         <CardContent className="flex-1 pt-0 pb-4 flex flex-col">
                           <p className="text-sm text-gray-400 mb-4 flex-1">{widget.description}</p>
                           <div
-                            className="border border-dashed border-[#1e1e2e] rounded-md flex items-center justify-center mb-4 text-xs text-gray-400"
+                            className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-gray-400"
                             style={{ background: getWidgetColor(idx), height: '60px' }}
                           >
                             Preview

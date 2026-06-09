@@ -56,7 +56,7 @@ export function StepConfigureSync({
                     'border cursor-pointer transition-all duration-base',
                     syncConfig.direction === option.value
                       ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-[#1e1e2e] hover:border-[#1e1e2e]'
+                      : 'border-wl-border-default hover:border-wl-border-default'
                   )}
                 >
                   <input

@@ -191,12 +191,12 @@ export default function RouteEfficiencyPage() {
                 placeholder="Search routes…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#111118] border border-white/[0.06] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-surface border border-white/[0.06] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
 
             {/* Route list */}
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] overflow-hidden">
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
               <div className="px-4 py-3 border-b border-white/[0.05]">
                 <p className="text-xs font-medium text-white/30 uppercase tracking-wider">Completed Routes</p>
               </div>
@@ -243,16 +243,16 @@ export default function RouteEfficiencyPage() {
           {/* Right: score panel */}
           <div className="space-y-4">
             {!activeRouteId ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
                 <div className="text-center">
                   <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
                   <p className="text-sm text-white/30">Select a route to see its efficiency score</p>
                 </div>
               </div>
             ) : efficiencyLoading ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 animate-pulse" />
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 animate-pulse" />
             ) : !score ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 flex items-center justify-center">
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
                 <div className="text-center">
                   <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
                   <p className="text-sm text-white/30">Score unavailable for this route</p>
@@ -262,7 +262,7 @@ export default function RouteEfficiencyPage() {
             ) : (
               <>
                 {/* Score card */}
-                <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-6">
+                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h2 className="text-base font-semibold text-white/70">{selectedRoute?.name}</h2>
@@ -336,7 +336,7 @@ export default function RouteEfficiencyPage() {
                 </div>
 
                 {/* Breakdown bars */}
-                <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
                   <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-5">Score Breakdown</h3>
                   <div className="space-y-4">
                     <BreakdownBar
@@ -378,7 +378,7 @@ export default function RouteEfficiencyPage() {
                 </div>
 
                 {/* Raw metrics */}
-                <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
                   <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Raw Metrics</h3>
                   <div className="grid grid-cols-3 gap-4">
                     {[

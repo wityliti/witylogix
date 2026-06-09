@@ -102,9 +102,9 @@ export default function ChaosDashboard() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-[#0a0a0f]">
+    <div className="flex h-screen flex-col bg-wl-bg-root">
       {/* Header */}
-      <div className="border-b border-[#1e1e2e] bg-[#0a0a0f] px-8 py-6">
+      <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
         <h1 className="text-3xl font-bold text-white">Chaos Testing Dashboard</h1>
         <p className="mt-2 text-gray-400">
           Test provider resilience with controlled fault injection
@@ -112,7 +112,7 @@ export default function ChaosDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[#1e1e2e] px-8">
+      <div className="border-b border-wl-border-default px-8">
         <div className="flex gap-8">
           {(['builder', 'execution', 'results', 'history'] as const).map((tab) => (
             <button
@@ -136,7 +136,7 @@ export default function ChaosDashboard() {
         {activeTab === 'builder' && (
           <div className="space-y-6">
             {/* Predefined Scenarios */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+            <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
               <h2 className="mb-4 text-lg font-semibold text-white">
                 Predefined Scenarios
               </h2>
@@ -149,8 +149,8 @@ export default function ChaosDashboard() {
                     className="h-auto justify-between p-4 text-left"
                   >
                     <div>
-                      <div className="font-medium text-[#ffffff]">{scenario.name}</div>
-                      <div className="text-xs text-[#9ca3af]">{scenario.faultType}</div>
+                      <div className="font-medium text-white">{scenario.name}</div>
+                      <div className="text-xs text-wl-text-tertiary">{scenario.faultType}</div>
                     </div>
                     <Badge variant={scenario.severity as any}>{scenario.severity}</Badge>
                   </Button>
@@ -159,28 +159,28 @@ export default function ChaosDashboard() {
             </Card>
 
             {/* Custom Scenario Builder */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
-              <h2 className="mb-6 text-lg font-semibold text-[#ffffff]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
+              <h2 className="mb-6 text-lg font-semibold text-white">
                 Custom Scenario Builder
               </h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[#ffffff]">Scenario Name</Label>
+                    <Label className="text-white">Scenario Name</Label>
                     <Input
                       value={builderForm.name}
                       onChange={(e) => setBuilderForm({ ...builderForm, name: e.target.value })}
                       placeholder="e.g., Black Friday Load Test"
-                      className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
+                      className="mt-2 bg-wl-bg-root text-white"
                     />
                   </div>
                   <div>
-                    <Label className="text-[#ffffff]">Provider</Label>
+                    <Label className="text-white">Provider</Label>
                     <Select
                       value={builderForm.provider}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, provider: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
                         <SelectValue placeholder="Select provider" />
                       </SelectTrigger>
                       <SelectContent>
@@ -196,12 +196,12 @@ export default function ChaosDashboard() {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-[#ffffff]">Fault Type</Label>
+                    <Label className="text-white">Fault Type</Label>
                     <Select
                       value={builderForm.faultType}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, faultType: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
                         <SelectValue placeholder="Select fault type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -214,12 +214,12 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[#ffffff]">Severity</Label>
+                    <Label className="text-white">Severity</Label>
                     <Select
                       value={builderForm.severity}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, severity: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
                         <SelectValue placeholder="Select severity" />
                       </SelectTrigger>
                       <SelectContent>
@@ -232,7 +232,7 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[#ffffff]">Duration (seconds)</Label>
+                    <Label className="text-white">Duration (seconds)</Label>
                     <Input
                       type="number"
                       value={builderForm.duration}
@@ -241,18 +241,18 @@ export default function ChaosDashboard() {
                       }
                       min="10"
                       max="3600"
-                      className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
+                      className="mt-2 bg-wl-bg-root text-white"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-[#ffffff]">Target Endpoints (comma-separated)</Label>
+                  <Label className="text-white">Target Endpoints (comma-separated)</Label>
                   <Input
                     value={builderForm.endpoints}
                     onChange={(e) => setBuilderForm({ ...builderForm, endpoints: e.target.value })}
                     placeholder="/api/checkout, /api/payment"
-                    className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
+                    className="mt-2 bg-wl-bg-root text-white"
                   />
                 </div>
 
@@ -263,16 +263,16 @@ export default function ChaosDashboard() {
             </Card>
 
             {/* Recurring Schedules */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
-              <h2 className="mb-6 text-lg font-semibold text-[#ffffff]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
+              <h2 className="mb-6 text-lg font-semibold text-white">
                 Schedule Recurring Tests
               </h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[#ffffff]">Frequency</Label>
+                    <Label className="text-white">Frequency</Label>
                     <Select value={recurringForm.frequency}>
-                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -283,12 +283,12 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[#ffffff]">Time</Label>
+                    <Label className="text-white">Time</Label>
                     <Input
                       type="time"
                       value={recurringForm.time}
                       onChange={(e) => setRecurringForm({ ...recurringForm, time: e.target.value })}
-                      className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
+                      className="mt-2 bg-wl-bg-root text-white"
                     />
                   </div>
                 </div>
@@ -316,20 +316,20 @@ export default function ChaosDashboard() {
 
 function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
   return (
-    <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#ffffff]">Execution Progress</h2>
+            <h2 className="text-lg font-semibold text-white">Execution Progress</h2>
             <Badge variant={execution.status as any}>{execution.status}</Badge>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#0a0a0f]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
             <div
               className="h-full bg-blue-500 transition-all"
               style={{ width: `${execution.progress}%` }}
             />
           </div>
-          <div className="mt-2 text-sm text-[#9ca3af]">{execution.progress}% complete</div>
+          <div className="mt-2 text-sm text-wl-text-tertiary">{execution.progress}% complete</div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -340,14 +340,14 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
         </div>
 
         <div>
-          <h3 className="mb-3 font-semibold text-[#ffffff]">Assertions</h3>
+          <h3 className="mb-3 font-semibold text-white">Assertions</h3>
           <div className="space-y-2">
             {execution.assertions.map((assertion, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between rounded border border-[#1e1e2e] bg-[#0a0a0f] p-3"
+                className="flex items-center justify-between rounded border border-wl-border-default bg-wl-bg-root p-3"
               >
-                <div className="text-sm text-[#ffffff]">{assertion.name}</div>
+                <div className="text-sm text-white">{assertion.name}</div>
                 <Badge variant={assertion.passed ? 'success' : 'danger'}>
                   {assertion.passed ? 'Passed' : 'Failed'}
                 </Badge>
@@ -364,8 +364,8 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
 
 function ResultsViewer({ executionId }: { executionId: string }) {
   return (
-    <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
-      <div className="text-center text-[#9ca3af]">Results for execution {executionId}</div>
+    <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
+      <div className="text-center text-wl-text-tertiary">Results for execution {executionId}</div>
     </Card>
   );
 }
@@ -378,25 +378,25 @@ function HistoryTable({
   onExecute: (id: string) => void;
 }) {
   return (
-    <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
-      <h2 className="mb-4 text-lg font-semibold text-[#ffffff]">Scenario History</h2>
+    <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
+      <h2 className="mb-4 text-lg font-semibold text-white">Scenario History</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#1e1e2e]">
-              <th className="px-4 py-2 text-left text-[#ffffff]">Name</th>
-              <th className="px-4 py-2 text-left text-[#ffffff]">Provider</th>
-              <th className="px-4 py-2 text-left text-[#ffffff]">Fault Type</th>
-              <th className="px-4 py-2 text-left text-[#ffffff]">Severity</th>
-              <th className="px-4 py-2 text-left text-[#ffffff]">Actions</th>
+            <tr className="border-b border-wl-border-default">
+              <th className="px-4 py-2 text-left text-white">Name</th>
+              <th className="px-4 py-2 text-left text-white">Provider</th>
+              <th className="px-4 py-2 text-left text-white">Fault Type</th>
+              <th className="px-4 py-2 text-left text-white">Severity</th>
+              <th className="px-4 py-2 text-left text-white">Actions</th>
             </tr>
           </thead>
           <tbody>
             {scenarios.map((scenario) => (
-              <tr key={scenario.id} className="border-b border-[#1e1e2e]">
-                <td className="px-4 py-2 text-[#ffffff]">{scenario.name}</td>
-                <td className="px-4 py-2 text-[#9ca3af]">{scenario.provider}</td>
-                <td className="px-4 py-2 text-[#9ca3af]">{scenario.faultType}</td>
+              <tr key={scenario.id} className="border-b border-wl-border-default">
+                <td className="px-4 py-2 text-white">{scenario.name}</td>
+                <td className="px-4 py-2 text-wl-text-tertiary">{scenario.provider}</td>
+                <td className="px-4 py-2 text-wl-text-tertiary">{scenario.faultType}</td>
                 <td className="px-4 py-2">
                   <Badge variant={scenario.severity as any}>{scenario.severity}</Badge>
                 </td>
@@ -420,8 +420,8 @@ function HistoryTable({
 
 function MetricCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded border border-[#1e1e2e] bg-[#0a0a0f] p-4">
-      <div className="text-xs text-[#9ca3af]">{label}</div>
+    <div className="rounded border border-wl-border-default bg-wl-bg-root p-4">
+      <div className="text-xs text-wl-text-tertiary">{label}</div>
       <div className="mt-1 text-2xl font-bold text-blue-500">{value}</div>
     </div>
   );

@@ -103,7 +103,7 @@ export default function ELDOverviewPage() {
   }), [drivers]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] space-y-6 p-6">
+    <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -144,7 +144,7 @@ export default function ELDOverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Driver Status Grid */}
         <div className="lg:col-span-2">
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -182,10 +182,10 @@ export default function ELDOverviewPage() {
                       onClick={() => setSelectedDriver(driver.driverId)}
                       className={cn(
                         "p-3 rounded-lg border transition-all text-left",
-                        "hover:border-blue-500/30 hover:bg-[#1a1a2e]",
+                        "hover:border-blue-500/30 hover:bg-wl-bg-elevated",
                         selectedDriver === driver.driverId
                           ? "border-blue-500/50 bg-blue-500/5"
-                          : "border-[#1e1e2e]"
+                          : "border-wl-border-default"
                       )}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -240,7 +240,7 @@ export default function ELDOverviewPage() {
                         )}
                       </div>
 
-                      <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-[#1e1e2e]">
+                      <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-wl-border-default">
                         Updated {new Date(driver.lastUpdate).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -255,7 +255,7 @@ export default function ELDOverviewPage() {
         </div>
 
         {/* Violations Summary */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-wl-danger-400" />
@@ -278,7 +278,7 @@ export default function ELDOverviewPage() {
                 {violations.map((violation) => (
                   <div
                     key={violation.id}
-                    className="p-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]"
+                    className="p-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default"
                   >
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <p className="text-xs font-semibold text-white">
@@ -314,7 +314,7 @@ export default function ELDOverviewPage() {
       {/* DVIR Status & Recent Events */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* DVIR Summary */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2 text-white">
               <Wrench className="w-5 h-5 text-blue-500" />
@@ -323,7 +323,7 @@ export default function ELDOverviewPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div className="p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
+            <div className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-gray-400">
                   Completion Rate
@@ -364,7 +364,7 @@ export default function ELDOverviewPage() {
 
         {/* Recent Events */}
         <div className="lg:col-span-2">
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-white">
                 <Activity className="w-5 h-5 text-blue-500" />
@@ -388,7 +388,7 @@ export default function ELDOverviewPage() {
                   {events.map((event) => (
                     <div
                       key={event.id}
-                      className="p-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-xs"
+                      className="p-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-xs"
                     >
                       <div className="flex items-start gap-2">
                         <span className="text-lg mt-0.5">
@@ -424,7 +424,7 @@ export default function ELDOverviewPage() {
       </div>
 
       {/* Quick Actions */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-lg text-white">Quick Actions</CardTitle>
         </CardHeader>

@@ -45,7 +45,7 @@ export default function RecordsPage() {
   const selectedRecord = records.find((r) => r.id === selectedRecordId);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
+    <div className="min-h-screen bg-wl-bg-root p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -66,7 +66,7 @@ export default function RecordsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Total Records</span>
@@ -77,7 +77,7 @@ export default function RecordsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Signed Records</span>
@@ -88,7 +88,7 @@ export default function RecordsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Unsigned</span>
@@ -101,7 +101,7 @@ export default function RecordsPage() {
       </div>
 
       {/* Filters */}
-      <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+      <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function RecordsPage() {
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
                     recordTypeFilter === type
                       ? "bg-blue-500 text-white"
-                      : "bg-[#1a1a2e] text-gray-400 hover:text-white"
+                      : "bg-wl-bg-elevated text-gray-400 hover:text-white"
                   )}
                 >
                   {type.replace(/_/g, " ")}
@@ -128,8 +128,8 @@ export default function RecordsPage() {
       </Card>
 
       {/* Records Table */}
-      <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
-        <CardHeader className="border-b border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
+        <CardHeader className="border-b border-wl-border-default">
           <CardTitle className="text-base text-white">
             Clinical Records ({filteredRecords.length})
           </CardTitle>
@@ -145,7 +145,7 @@ export default function RecordsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e]">
+                <tr className="border-b border-wl-border-default">
                   <th className="text-left py-3 px-4 font-medium text-gray-400">Title</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-400">Type</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-400">Patient</th>
@@ -158,7 +158,7 @@ export default function RecordsPage() {
                 {filteredRecords.map((record) => (
                   <tr
                     key={record.id}
-                    className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors cursor-pointer"
+                    className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer"
                     onClick={() => setSelectedRecordId(record.id)}
                   >
                     <td className="py-3 px-4 text-white font-medium">
@@ -190,8 +190,8 @@ export default function RecordsPage() {
 
       {/* Record Detail View */}
       {selectedRecord && (
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
-          <CardHeader className="border-b border-[#1e1e2e] flex flex-row items-center justify-between">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
+          <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white">{selectedRecord.title}</CardTitle>
               <p className="text-xs text-gray-400 mt-1">ID: {selectedRecord.id}</p>
@@ -209,14 +209,14 @@ export default function RecordsPage() {
               <div className="lg:col-span-2 space-y-4">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-400 mb-2">Summary</h3>
-                  <div className="p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+                  <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                     <p className="text-sm text-gray-300 leading-relaxed">{selectedRecord.summary}</p>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-semibold text-gray-400 mb-2">HL7 Message</h3>
-                  <pre className="p-3 bg-[#0a0a0f] border border-[#1e1e2e] rounded font-mono text-xs text-gray-400 overflow-x-auto">
+                  <pre className="p-3 bg-wl-bg-root border border-wl-border-default rounded font-mono text-xs text-gray-400 overflow-x-auto">
 {`MSH|^~\\&|EHR|FACILITY|LAB|REMOTE|202603101430||ORM^O01|20260310143000|P|2.3
 PID|||${selectedRecord.id}||PATIENT^NAME||19650315|M|||123 MAIN STREET^^SPRINGFIELD^IL^62701
 ORC|NW|${selectedRecord.id}|LAB001||CM|

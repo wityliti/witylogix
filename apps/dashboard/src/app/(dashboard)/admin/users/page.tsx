@@ -83,7 +83,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
     <Modal isOpen={isOpen} onClose={onClose} title={`User Details: ${user.name}`}>
       <div className="flex flex-col gap-4">
         {/* Overview Section */}
-        <div className="border-b border-[#1e1e2e] pb-3">
+        <div className="border-b border-wl-border-default pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -144,7 +144,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
         </div>
 
         {/* Activity Section */}
-        <div className="border-b border-[#1e1e2e] pb-3">
+        <div className="border-b border-wl-border-default pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -181,7 +181,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
         </div>
 
         {/* Permissions Section */}
-        <div className="border-b border-[#1e1e2e] pb-3">
+        <div className="border-b border-wl-border-default pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -239,7 +239,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-4 border-t border-[#1e1e2e] pt-4">
+        <div className="flex gap-2 mt-4 border-t border-wl-border-default pt-4">
           <Button variant="secondary" size="sm">
             Reset Password
           </Button>
@@ -295,7 +295,7 @@ export default function AdminUsersPage() {
       <div className="p-6">
         {/* Stats */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -311,7 +311,7 @@ export default function AdminUsersPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -327,7 +327,7 @@ export default function AdminUsersPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -343,7 +343,7 @@ export default function AdminUsersPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -368,7 +368,7 @@ export default function AdminUsersPage() {
               placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 pl-8 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
+              className="w-full p-2 pl-8 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
             />
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -385,7 +385,7 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f] min-h-screen">
+                <tr className="border-b border-wl-border-default bg-wl-bg-root min-h-screen">
                   <th className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider">
                     User
                   </th>
@@ -410,7 +410,7 @@ export default function AdminUsersPage() {
                 {filteredUsers.map((user, idx) => (
                   <tr
                     key={user.id}
-                    className="border-b border-[#1e1e2e] transition-colors duration-200 cursor-pointer"
+                    className="border-b border-wl-border-default transition-colors duration-200 cursor-pointer"
                     style={{
                       backgroundColor: idx % 2 === 0 ? "transparent" : "#1a1a2e",
                     }}
@@ -418,7 +418,7 @@ export default function AdminUsersPage() {
                   >
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#1a1a2e] flex items-center justify-center text-xs font-semibold text-white">
+                        <div className="w-8 h-8 rounded-full bg-wl-bg-elevated flex items-center justify-center text-xs font-semibold text-white">
                           {user.name.charAt(0)}
                         </div>
                         <div>

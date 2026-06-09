@@ -21,7 +21,7 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
   const percentage = (metric.value / 100) * 100;
 
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <h3 className="text-base font-semibold text-white">
@@ -59,7 +59,7 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
           )}
         </div>
 
-        <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
           <div
             className={cn("h-full transition-all",
               metric.status === "compliant" ? "bg-gradient-to-r from-green-500 to-green-400" : "bg-gradient-to-r from-yellow-500 to-yellow-400"

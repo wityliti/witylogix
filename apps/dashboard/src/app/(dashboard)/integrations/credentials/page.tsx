@@ -44,7 +44,7 @@ function VaultStatusCard({
   connectionStatus: "connected" | "disconnected";
 }) {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardContent className="pt-6">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-2">
@@ -66,7 +66,7 @@ function VaultStatusCard({
             </span>
           </div>
 
-          <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+          <div className="w-full bg-wl-bg-elevated rounded-full h-2">
             <div
               className={cn(
                 "h-2 rounded-full transition-all",
@@ -257,7 +257,7 @@ export default function CredentialsPage() {
 
       {/* Rotation Schedule Timeline */}
       {credentials?.rotationSchedule && credentials.rotationSchedule.length > 0 && (
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export default function CredentialsPage() {
       )}
 
       {/* Credential Inventory */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="w-4 h-4" />
@@ -292,11 +292,11 @@ export default function CredentialsPage() {
               return (
                 <div
                   key={credential.id}
-                  className="border border-[#1e1e2e] rounded-lg overflow-hidden"
+                  className="border border-wl-border-default rounded-lg overflow-hidden"
                 >
                   <button
                     onClick={() => toggleCredentialExpand(credential.id)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-[#1a1a2e] transition-colors text-left"
+                    className="w-full flex items-center justify-between p-3 hover:bg-wl-bg-elevated transition-colors text-left"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Badge
@@ -340,7 +340,7 @@ export default function CredentialsPage() {
                   </button>
 
                   {expandedCredentials[credential.id] && (
-                    <div className="border-t border-[#1e1e2e] bg-[#1a1a2e] p-3 space-y-3">
+                    <div className="border-t border-wl-border-default bg-wl-bg-elevated p-3 space-y-3">
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <p className="text-gray-400 mb-1">Vault</p>
@@ -398,12 +398,12 @@ export default function CredentialsPage() {
                       </div>
 
                       {showScheduleForm === credential.id && (
-                        <div className="mt-3 pt-3 border-t border-[#1e1e2e] space-y-2">
+                        <div className="mt-3 pt-3 border-t border-wl-border-default space-y-2">
                           <input
                             type="datetime-local"
                             value={scheduleDateInput}
                             onChange={(e) => setScheduleDateInput(e.target.value)}
-                            className="w-full px-2 py-1 text-sm rounded bg-[#12121a] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                            className="w-full px-2 py-1 text-sm rounded bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                           />
                           <div className="flex gap-2">
                             <Button
@@ -453,7 +453,7 @@ export default function CredentialsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="p-3 bg-[#12121a] border border-[#1e1e2e] rounded-lg">
+            <div className="p-3 bg-wl-bg-surface border border-wl-border-default rounded-lg">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="font-medium text-white">
@@ -479,7 +479,7 @@ export default function CredentialsPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-[#12121a] border border-[#1e1e2e] rounded-lg">
+            <div className="p-3 bg-wl-bg-surface border border-wl-border-default rounded-lg">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="font-medium text-white">

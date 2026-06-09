@@ -72,7 +72,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
     <Modal isOpen={isOpen} onClose={onClose} title={`Customer Details: ${customer.name}`}>
       <div className="flex flex-col gap-4">
         {/* Overview Section */}
-        <div className="border-b border-[#1e1e2e] pb-3">
+        <div className="border-b border-wl-border-default pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -141,7 +141,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Order History Section */}
-        <div className="border-b border-[#1e1e2e] pb-3">
+        <div className="border-b border-wl-border-default pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -186,7 +186,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Addresses Section */}
-        <div className="border-b border-[#1e1e2e] pb-3">
+        <div className="border-b border-wl-border-default pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -205,7 +205,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               {customer.addresses.map((addr, idx) => (
                 <div
                   key={idx}
-                  className="p-3 bg-[#0a0a0f] min-h-screen rounded-md border border-[#1e1e2e]"
+                  className="p-3 bg-wl-bg-root min-h-screen rounded-md border border-wl-border-default"
                 >
                   <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                     {addr.type}
@@ -220,7 +220,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Tags Section */}
-        <div className="border-b border-[#1e1e2e] pb-3">
+        <div className="border-b border-wl-border-default pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -261,14 +261,14 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
             Notes
           </button>
           {expandedSections.includes("notes") && (
-            <p className="text-gray-400 text-sm m-2 p-3 bg-[#0a0a0f] min-h-screen rounded-md border border-[#1e1e2e]">
+            <p className="text-gray-400 text-sm m-2 p-3 bg-wl-bg-root min-h-screen rounded-md border border-wl-border-default">
               {customer.notes}
             </p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-4 border-t border-[#1e1e2e] pt-4">
+        <div className="flex gap-2 mt-4 border-t border-wl-border-default pt-4">
           <Button variant="secondary" size="sm">
             <FileText className="w-3.5 h-3.5 mr-1" />
             Add Note
@@ -303,7 +303,7 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
         return (
           <Card
             key={idx}
-            className="bg-[#12121a] border-[#1e1e2e] animate-in"
+            className="bg-wl-bg-surface border-wl-border-default animate-in"
             style={{
               animationDelay: `${idx * 50}ms`,
             }}
@@ -381,7 +381,7 @@ export default function AdminCustomersPage() {
   if (error && customers.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
+    <div className="bg-wl-bg-root min-h-screen">
       <Header
         title="Customer Management"
         subtitle="Manage all customers across all stores"
@@ -396,7 +396,7 @@ export default function AdminCustomersPage() {
       <main className="flex-1 p-6 max-w-7xl mx-auto">
         <StatsBar customers={customers} loading={loading} />
 
-        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardContent className="p-4">
             {/* Search */}
             <div className="mb-4 relative">
@@ -405,7 +405,7 @@ export default function AdminCustomersPage() {
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 pl-8 bg-[#0a0a0f] min-h-screen text-white border border-[#1e1e2e] rounded-md text-sm"
+                className="w-full p-2 pl-8 bg-wl-bg-root min-h-screen text-white border border-wl-border-default rounded-md text-sm"
               />
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
@@ -421,7 +421,7 @@ export default function AdminCustomersPage() {
               <select
                 value={storeFilter}
                 onChange={(e) => setStoreFilter(e.target.value)}
-                className="px-3 py-1 bg-[#0a0a0f] min-h-screen text-white border border-[#1e1e2e] rounded-md text-xs cursor-pointer"
+                className="px-3 py-1 bg-wl-bg-root min-h-screen text-white border border-wl-border-default rounded-md text-xs cursor-pointer"
               >
                 {stores.map((store) => (
                   <option key={store} value={store}>
@@ -445,7 +445,7 @@ export default function AdminCustomersPage() {
                     "px-3 py-1 border rounded-md text-xs font-semibold cursor-pointer transition-all capitalize",
                     statusFilter === status
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-[#0a0a0f] min-h-screen text-white border-[#1e1e2e]"
+                      : "bg-wl-bg-root min-h-screen text-white border-wl-border-default"
                   )}
                 >
                   {status === "all" ? "All" : status}
@@ -456,17 +456,17 @@ export default function AdminCustomersPage() {
         </Card>
 
         {/* Customers Table */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           {filteredCustomers.length > 0 ? (
             <>
-              <div className="p-3 border-b border-[#1e1e2e] text-xs text-gray-400">
+              <div className="p-3 border-b border-wl-border-default text-xs text-gray-400">
                 Showing {filteredCustomers.length} of {customers.length} customers
               </div>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f] min-h-screen">
+                      <tr className="border-b border-wl-border-default bg-wl-bg-root min-h-screen">
                         {["Name", "Email", "Phone", "Store", "Orders", "Total Spent", "Last Order", "Status", "Actions"].map((header) => (
                           <th
                             key={header}
@@ -485,8 +485,8 @@ export default function AdminCustomersPage() {
                         <tr
                           key={customer.id}
                           className={cn(
-                            "border-b border-[#1e1e2e] transition-all cursor-pointer",
-                            idx % 2 === 0 ? "bg-[#0a0a0f] min-h-screen" : "bg-[#12121a]"
+                            "border-b border-wl-border-default transition-all cursor-pointer",
+                            idx % 2 === 0 ? "bg-wl-bg-root min-h-screen" : "bg-wl-bg-surface"
                           )}
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "#12121a";

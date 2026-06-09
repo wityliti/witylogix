@@ -40,7 +40,7 @@ interface KPICard {
 
 function KPICardComponent({ card }: { card: KPICard }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardContent className={cn("pt-6")}>
         <div className={cn("flex items-start justify-between")}>
           <div className={cn("flex-1")}>
@@ -82,7 +82,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
 
 function CompletionRateChart({ rate }: { rate: number }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
         <CardTitle className={cn("text-base text-white")}>Completion Rate</CardTitle>
       </CardHeader>
@@ -138,7 +138,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
 
 function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
         <CardTitle className={cn("text-base text-white")}>Recent Envelopes</CardTitle>
       </CardHeader>
@@ -146,7 +146,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
         <div className={cn("overflow-x-auto")}>
           <table className={cn("w-full text-sm")}>
             <thead>
-              <tr className={cn("border-b border-[#1e1e2e]")}>
+              <tr className={cn("border-b border-wl-border-default")}>
                 <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
                   Name
                 </th>
@@ -166,7 +166,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                 <tr
                   key={env.id}
                   className={cn(
-                    "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                    "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                   )}
                 >
                   <td className={cn("py-3 px-4 text-white font-medium")}>
@@ -192,7 +192,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                   </td>
                   <td className={cn("py-3 px-4")}>
                     <div className={cn("flex items-center gap-2")}>
-                      <div className={cn("flex-1 h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden")}>
+                      <div className={cn("flex-1 h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden")}>
                         <div
                           className={cn("h-full bg-emerald-500 transition-all")}
                           style={{ width: `${env.completionRate}%` }}
@@ -215,7 +215,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
 
 function TemplateUsageCard({ templates }: { templates: Array<{ name: string; count: number }> }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
         <CardTitle className={cn("text-base text-white")}>Template Usage</CardTitle>
       </CardHeader>
@@ -278,7 +278,7 @@ export default function ESignaturesPage() {
   ];
 
   return (
-    <div className={cn("p-6 space-y-6 bg-[#0a0a0f] min-h-[calc(100vh-var(--header-height))]")}>
+    <div className={cn("p-6 space-y-6 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))]")}>
       {/* Header with Action */}
       <div className={cn("flex items-center justify-between")}>
         <div>
@@ -316,7 +316,7 @@ export default function ESignaturesPage() {
 
       {/* Additional Stats */}
       <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4")}>
-        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+        <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
             <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               Decline Rate
@@ -329,7 +329,7 @@ export default function ESignaturesPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+        <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
             <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               Avg Signers per Envelope
@@ -342,7 +342,7 @@ export default function ESignaturesPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+        <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
             <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               Active Templates

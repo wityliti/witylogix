@@ -46,7 +46,7 @@ export function ProviderList({
           key={provider.id}
           className={cn(
             'cursor-pointer transition-all hover:border-blue-500/50',
-            selectedProvider === provider.id && 'border-blue-500/80 bg-[#1a1a2e]'
+            selectedProvider === provider.id && 'border-blue-500/80 bg-wl-bg-elevated'
           )}
           onClick={() =>
             onSelectProvider(
@@ -106,7 +106,7 @@ export function ProviderList({
 
             {/* Status & Sync Info */}
             {provider.status === 'connected' && (
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-wl-border-default">
                 <div className="flex-1">
                   <p className="text-xs font-medium text-gray-500 uppercase">
                     Last Sync
@@ -129,7 +129,7 @@ export function ProviderList({
 
             {/* Config Details (Expanded) */}
             {selectedProvider === provider.id && provider.status === 'connected' && (
-              <div className="space-y-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+              <div className="space-y-4 mb-6 pb-6 border-b border-wl-border-default">
                 {provider.config.channels && provider.config.channels.length > 0 && (
                   <div>
                     <p className="text-xs font-medium text-gray-500 uppercase mb-2">
@@ -140,7 +140,7 @@ export function ProviderList({
                         <Badge
                           key={channel}
                           variant="default"
-                          className="bg-[#12121a] text-white"
+                          className="bg-wl-bg-surface text-white"
                         >
                           {channel}
                         </Badge>
@@ -154,14 +154,14 @@ export function ProviderList({
                     <p className="text-xs font-medium text-gray-500 uppercase mb-2">
                       Webhook URL
                     </p>
-                    <div className="bg-[#12121a] rounded-lg p-3 flex items-center justify-between font-mono text-xs">
+                    <div className="bg-wl-bg-surface rounded-lg p-3 flex items-center justify-between font-mono text-xs">
                       <span className="text-gray-500 truncate">
                         {provider.config.webhookUrl.substring(0, 50)}...
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-blue-500 hover:bg-[#1a1a2e]"
+                        className="text-blue-500 hover:bg-wl-bg-elevated"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
@@ -178,7 +178,7 @@ export function ProviderList({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                    className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Configure

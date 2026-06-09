@@ -20,7 +20,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
       {stats.map((stat) => {
         const successRate = ((stat.delivered / stat.sent) * 100).toFixed(1);
         return (
-          <Card key={stat.provider} className="bg-[#1a1a2e]">
+          <Card key={stat.provider} className="bg-wl-bg-elevated">
             <CardHeader>
               <CardTitle className="text-base">{stat.provider}</CardTitle>
             </CardHeader>
@@ -53,7 +53,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#1e1e2e]">
+                <div className="pt-4 border-t border-wl-border-default">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs font-medium text-gray-500 uppercase">
                       Success Rate
@@ -62,7 +62,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                       {successRate}%
                     </p>
                   </div>
-                  <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-500 to-green-400"
                       style={{ width: `${successRate}%` }}
@@ -70,7 +70,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#1e1e2e]">
+                <div className="pt-4 border-t border-wl-border-default">
                   <p className="text-xs font-medium text-gray-500 uppercase">
                     Avg Latency
                   </p>

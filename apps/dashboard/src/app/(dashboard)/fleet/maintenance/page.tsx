@@ -86,10 +86,10 @@ export default function MaintenancePage() {
         }
       />
 
-      <main className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
+      <main className="min-h-screen bg-wl-bg-root p-6 space-y-6">
         {/* Quick Stats */}
         <div className="grid grid-cols-4 gap-4">
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">{statusCounts.scheduled}</p>
@@ -97,7 +97,7 @@ export default function MaintenancePage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-amber-400">{statusCounts.inProgress}</p>
@@ -105,7 +105,7 @@ export default function MaintenancePage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-emerald-400">{statusCounts.completed}</p>
@@ -113,7 +113,7 @@ export default function MaintenancePage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121a] border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-red-500/30">
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-red-400">{statusCounts.overdue}</p>
@@ -125,7 +125,7 @@ export default function MaintenancePage() {
 
         {/* Overdue Alerts */}
         {overdueMaintenance.length > 0 && (
-          <Card className="bg-[#12121a] border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-red-500/30">
             <CardHeader>
               <CardTitle className="text-sm text-red-400 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
@@ -135,7 +135,7 @@ export default function MaintenancePage() {
             <CardContent>
               <div className="space-y-2">
                 {overdueMaintenance.slice(0, 3).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-[#1e1e2e]">
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default">
                     <div>
                       <p className="text-sm font-medium text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
                       <p className="text-xs text-gray-400">{item.vehicleName} • Due {formatDate(item.scheduledDate)}</p>
@@ -151,7 +151,7 @@ export default function MaintenancePage() {
         )}
 
         {/* View Mode Toggle */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="pt-4">
             <div className="flex gap-1 mr-auto">
               <button
@@ -160,7 +160,7 @@ export default function MaintenancePage() {
                   'px-3 py-2 text-xs font-medium rounded-md transition-colors',
                   viewMode === 'list'
                     ? 'bg-blue-500 text-white'
-                    : 'bg-[#1a1a2e] text-gray-400 hover:text-white',
+                    : 'bg-wl-bg-elevated text-gray-400 hover:text-white',
                 )}
               >
                 List View
@@ -171,7 +171,7 @@ export default function MaintenancePage() {
                   'px-3 py-2 text-xs font-medium rounded-md transition-colors',
                   viewMode === 'calendar'
                     ? 'bg-blue-500 text-white'
-                    : 'bg-[#1a1a2e] text-gray-400 hover:text-white',
+                    : 'bg-wl-bg-elevated text-gray-400 hover:text-white',
                 )}
               >
                 Calendar
@@ -183,11 +183,11 @@ export default function MaintenancePage() {
         {viewMode === 'list' ? (
           <>
             {/* Maintenance List */}
-            <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                    <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
                       <th className="p-3 px-4 text-left font-semibold text-gray-400">Type</th>
                       <th className="p-3 px-4 text-left font-semibold text-gray-400">Vehicle</th>
                       <th className="p-3 px-4 text-center font-semibold text-gray-400">Scheduled</th>
@@ -198,7 +198,7 @@ export default function MaintenancePage() {
                   </thead>
                   <tbody>
                     {paginatedMaintenance.map((item, idx) => (
-                      <tr key={item.id} className={cn('border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e]', idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]')}>
+                      <tr key={item.id} className={cn('border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken')}>
                         <td className="p-3 px-4 text-white font-semibold capitalize">{item.type.replace('-', ' ')}</td>
                         <td className="p-3 px-4 text-gray-400 text-xs">{item.vehicleName}</td>
                         <td className="p-3 px-4 text-center text-gray-400 text-xs">{formatDate(item.scheduledDate)}</td>
@@ -214,7 +214,7 @@ export default function MaintenancePage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400">
+              <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-400">
                 <div>
                   Showing {paginatedMaintenance.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
                   {Math.min(currentPage * pageSize, filteredMaintenance.length)} of {filteredMaintenance.length}
@@ -246,14 +246,14 @@ export default function MaintenancePage() {
         ) : (
           <>
             {/* Calendar View */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-sm text-white">Maintenance Calendar</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {filteredMaintenance.slice(0, 5).map((item) => (
-                    <div key={item.id} className="p-4 bg-[#1a1a2e] rounded-md border-l-4 border-blue-500">
+                    <div key={item.id} className="p-4 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500">
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-semibold text-white">{item.type.replace('-', ' ').toUpperCase()}</p>

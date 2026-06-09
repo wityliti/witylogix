@@ -1,664 +1,369 @@
 'use client';
 
 import { useState } from 'react';
-import { useApiList } from '@/hooks/use-api';
+import { useApiList, useApiQuery } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import Link from 'next/link';
 import {
   ChevronLeft,
+  ChevronDown,
   Plus,
   Settings,
   Power,
   CheckCircle2,
   AlertCircle,
-  Copy,
-  Clock,
   CreditCard,
   DollarSign,
   TrendingUp,
   Activity,
   Eye,
   Download,
-  Repeat2,
   Shield,
-  AlertTriangle,
   Send,
+  Clock,
+  RefreshCw,
 } from 'lucide-react';
 
-interface PaymentProvider {
+// ── Types ─────────────────────────────────────────────────────────────────
+
+interface Gateway {
   id: string;
   name: string;
-  icon: React.ReactNode;
-  status: "connected" | "disconnected" | "error";
-  connectedAt?: string;
-  transactions?: number;
-  volume?: string;
-  fees?: string;
-  lastSync?: string;
+  code: string;
+  status: 'connected' | 'disconnected' | 'error';
+  isDefault: boolean;
+  transactionFeePercent: number;
+  fixedFeeInCents: number;
+  healthScore: number;
+  config?: { lastDigits?: string; expiryDate?: string };
 }
 
-interface Transaction {
+interface PaymentTx {
   id: string;
-  date: string;
-  type: "charge" | "refund" | "authorization";
-  amount: number;
-  currency: string;
-  status: "successful" | "pending" | "failed" | "disputed";
-  provider: string;
-  paymentMethod: string;
-  customer: string;
-  description: string;
+  createdAt: string;
+  amount: string | number;
+  status: string;
+  type: string;
+  method: string;
   reference?: string;
+  customerId?: string;
+}
+
+interface PaymentSummary {
+  totalRevenue: number;
+  byStatus: Array<{ status: string; _sum: { amount: string }; _count: number }>;
+  byMethod: Array<{ method: string; _sum: { amount: string }; _count: number }>;
 }
 
 interface PaymentMethod {
   id: string;
-  type: "card" | "ach" | "wallet";
-  label: string;
-  last4?: string;
-  expiryDate?: string;
-  bankName?: string;
-  routingNumber?: string;
-  isDefault: boolean;
-  status: "active" | "inactive" | "expired";
-  addedDate: string;
-}
-
-interface RefundChargebackCase {
-  id: string;
-  transactionId: string;
-  type: "refund" | "chargeback";
-  date: string;
-  amount: number;
-  status: "pending" | "processing" | "completed" | "denied" | "investigating";
-  reason: string;
-  customer: string;
-  provider: string;
-  notes?: string;
-}
-
-interface SettlementReport {
-  id: string;
-  date: string;
-  period: string;
-  provider: string;
-  totalTransactions: number;
-  totalVolume: number;
-  totalFees: number;
-  netSettlement: number;
-  status: "pending" | "settled" | "reconciled";
-}
-
-interface ReconciliationIssue {
-  id: string;
-  date: string;
   type: string;
-  amount: number;
-  status: "open" | "investigating" | "resolved";
-  description: string;
-  provider: string;
+  displayName: string;
+  isDefault: boolean;
+  lastDigits?: string;
+  expiryDate?: string;
+  createdAt: string;
 }
 
-const providers: PaymentProvider[] = [
-  {
-    id: "stripe",
-    name: "Stripe",
-    icon: <CreditCard className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-08-15",
-    transactions: 3245,
-    volume: "$487,230.00",
-    fees: "$12,180.75",
-    lastSync: "2026-03-12 14:32",
-  },
-  {
-    id: "paypal",
-    name: "PayPal",
-    icon: <DollarSign className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-09-10",
-    transactions: 1876,
-    volume: "$245,100.00",
-    fees: "$7,350.50",
-    lastSync: "2026-03-12 14:28",
-  },
-  {
-    id: "square",
-    name: "Square",
-    icon: <Activity className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-10-22",
-    transactions: 892,
-    volume: "$142,500.00",
-    fees: "$3,810.00",
-    lastSync: "2026-03-12 14:35",
-  },
-  {
-    id: "braintree",
-    name: "Braintree",
-    icon: <Shield className="w-5 h-5" />,
-    status: "disconnected",
-    transactions: 0,
-    volume: "$0.00",
-    fees: "$0.00",
-  },
-  {
-    id: "authorizenet",
-    name: "Authorize.Net",
-    icon: <Send className="w-5 h-5" />,
-    status: "connected",
-    connectedAt: "2025-11-05",
-    transactions: 456,
-    volume: "$89,200.00",
-    fees: "$2,250.00",
-    lastSync: "2026-03-12 14:30",
-  },
-  {
-    id: "adyen",
-    name: "Adyen",
-    icon: <TrendingUp className="w-5 h-5" />,
-    status: "error",
-    transactions: 234,
-    volume: "$34,500.00",
-    fees: "$950.00",
-    lastSync: "2026-03-11 09:15",
-  },
-];
+interface ReconciliationItem {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  status: 'matched' | 'unmatched';
+  confidence: number;
+}
 
-const transactions: Transaction[] = [
-  {
-    id: "txn-001",
-    date: "2026-03-12 14:32:15",
-    type: "charge",
-    amount: 2450.00,
-    currency: "USD",
-    status: "successful",
-    provider: "Stripe",
-    paymentMethod: "Visa ending in 4242",
-    customer: "Acme Logistics",
-    description: "Monthly shipping fees",
-    reference: "INV-2026-0001",
-  },
-  {
-    id: "txn-002",
-    date: "2026-03-12 13:45:22",
-    type: "charge",
-    amount: 1850.50,
-    currency: "USD",
-    status: "successful",
-    provider: "PayPal",
-    paymentMethod: "PayPal (jane@acme.com)",
-    customer: "Express Delivery Co",
-    description: "Service charge - Q1 2026",
-    reference: "INV-2026-0002",
-  },
-  {
-    id: "txn-003",
-    date: "2026-03-12 11:20:45",
-    type: "refund",
-    amount: 500.00,
-    currency: "USD",
-    status: "successful",
-    provider: "Stripe",
-    paymentMethod: "Visa ending in 4242",
-    customer: "Transport Plus",
-    description: "Partial refund - service adjustment",
-    reference: "REF-2026-0001",
-  },
-  {
-    id: "txn-004",
-    date: "2026-03-11 16:30:00",
-    type: "charge",
-    amount: 3200.00,
-    currency: "USD",
-    status: "pending",
-    provider: "Square",
-    paymentMethod: "ACH Bank Transfer",
-    customer: "National Freight",
-    description: "Annual contract payment",
-    reference: "INV-2026-0003",
-  },
-  {
-    id: "txn-005",
-    date: "2026-03-11 14:15:32",
-    type: "charge",
-    amount: 750.00,
-    currency: "USD",
-    status: "failed",
-    provider: "Authorize.Net",
-    paymentMethod: "Mastercard ending in 5555",
-    customer: "Local Delivery",
-    description: "Monthly service fee",
-    reference: "INV-2026-0004",
-  },
-];
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const paymentMethods: PaymentMethod[] = [
-  {
-    id: "pm-001",
-    type: "card",
-    label: "Visa - Corporate Account",
-    last4: "4242",
-    expiryDate: "12/2027",
-    isDefault: true,
-    status: "active",
-    addedDate: "2025-08-10",
-  },
-  {
-    id: "pm-002",
-    type: "card",
-    label: "Mastercard - Operations",
-    last4: "5555",
-    expiryDate: "06/2026",
-    isDefault: false,
-    status: "active",
-    addedDate: "2025-09-15",
-  },
-  {
-    id: "pm-003",
-    type: "ach",
-    label: "Primary Business Bank",
-    bankName: "First National Bank",
-    routingNumber: "021000021",
-    isDefault: false,
-    status: "active",
-    addedDate: "2025-10-01",
-  },
-  {
-    id: "pm-004",
-    type: "card",
-    label: "American Express - Travel",
-    last4: "3782",
-    expiryDate: "03/2025",
-    isDefault: false,
-    status: "expired",
-    addedDate: "2024-03-15",
-  },
-  {
-    id: "pm-005",
-    type: "wallet",
-    label: "Digital Wallet - Mobile Pay",
-    isDefault: false,
-    status: "active",
-    addedDate: "2025-11-20",
-  },
-];
+function fmtAmt(amt: string | number): string {
+  const n = typeof amt === 'string' ? parseFloat(amt) : amt;
+  if (isNaN(n)) return '—';
+  return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
-const refundsAndChargebacks: RefundChargebackCase[] = [
-  {
-    id: "rc-001",
-    transactionId: "txn-003",
-    type: "refund",
-    date: "2026-03-12 11:20",
-    amount: 500.00,
-    status: "completed",
-    reason: "Service adjustment",
-    customer: "Transport Plus",
-    provider: "Stripe",
-    notes: "Customer satisfied with resolution",
-  },
-  {
-    id: "rc-002",
-    transactionId: "txn-005",
-    type: "chargeback",
-    date: "2026-03-09 08:45",
-    amount: 750.00,
-    status: "pending",
-    reason: "Customer disputes charge",
-    customer: "Local Delivery",
-    provider: "Authorize.Net",
-    notes: "Gathering documentation for dispute",
-  },
-  {
-    id: "rc-003",
-    transactionId: "txn-2024-0854",
-    type: "refund",
-    date: "2026-03-08 14:30",
-    amount: 1200.00,
-    status: "completed",
-    reason: "Double charge error",
-    customer: "Mid-West Logistics",
-    provider: "PayPal",
-    notes: "System processing error corrected",
-  },
-  {
-    id: "rc-004",
-    transactionId: "txn-2024-0920",
-    type: "chargeback",
-    date: "2026-02-28 09:15",
-    amount: 2100.00,
-    status: "investigating",
-    reason: "Unauthorized transaction claim",
-    customer: "Premium Delivery",
-    provider: "Stripe",
-    notes: "Requested evidence from customer account",
-  },
-];
+function gatewayIcon(code: string) {
+  const icons: Record<string, React.ReactNode> = {
+    stripe: <CreditCard className="w-5 h-5" />,
+    paypal: <DollarSign className="w-5 h-5" />,
+    square: <Activity className="w-5 h-5" />,
+    braintree: <Shield className="w-5 h-5" />,
+    authorize_net: <Send className="w-5 h-5" />,
+    adyen: <TrendingUp className="w-5 h-5" />,
+    cod: <DollarSign className="w-5 h-5" />,
+  };
+  return icons[code] ?? <CreditCard className="w-5 h-5" />;
+}
 
-const settlementReports: SettlementReport[] = [
-  {
-    id: "sett-001",
-    date: "2026-03-12",
-    period: "2026-03-06 to 2026-03-12",
-    provider: "Stripe",
-    totalTransactions: 487,
-    totalVolume: 98450.00,
-    totalFees: 2453.75,
-    netSettlement: 95996.25,
-    status: "settled",
-  },
-  {
-    id: "sett-002",
-    date: "2026-03-12",
-    period: "2026-03-06 to 2026-03-12",
-    provider: "PayPal",
-    totalTransactions: 234,
-    totalVolume: 52300.00,
-    totalFees: 1570.50,
-    netSettlement: 50729.50,
-    status: "settled",
-  },
-  {
-    id: "sett-003",
-    date: "2026-03-12",
-    period: "2026-03-06 to 2026-03-12",
-    provider: "Square",
-    totalTransactions: 145,
-    totalVolume: 31200.00,
-    totalFees: 902.50,
-    netSettlement: 30297.50,
-    status: "reconciled",
-  },
-  {
-    id: "sett-004",
-    date: "2026-03-12",
-    period: "2026-03-06 to 2026-03-12",
-    provider: "Authorize.Net",
-    totalTransactions: 78,
-    totalVolume: 18900.00,
-    totalFees: 450.00,
-    netSettlement: 18450.00,
-    status: "pending",
-  },
-];
+function txStatusBadge(status: string) {
+  const s = status.toLowerCase();
+  if (s === 'completed' || s === 'successful') return <Badge variant="success" className="text-xs">Paid</Badge>;
+  if (s === 'pending') return <Badge variant="warning" className="text-xs capitalize">{status}</Badge>;
+  if (s === 'failed' || s === 'disputed') return <Badge variant="danger" className="text-xs capitalize">{status}</Badge>;
+  return <Badge variant="default" className="text-xs capitalize">{status}</Badge>;
+}
 
-const reconciliationIssues: ReconciliationIssue[] = [
-  {
-    id: "recon-001",
-    date: "2026-03-10",
-    type: "Amount Mismatch",
-    amount: 125.50,
-    status: "resolved",
-    description: "PayPal settlement amount did not match expected total",
-    provider: "PayPal",
-  },
-  {
-    id: "recon-002",
-    date: "2026-03-09",
-    type: "Transaction Discrepancy",
-    amount: 250.00,
-    status: "investigating",
-    description: "Square transaction appears in settlement but not in system",
-    provider: "Square",
-  },
-  {
-    id: "recon-003",
-    date: "2026-03-08",
-    type: "Timing Difference",
-    amount: 875.25,
-    status: "open",
-    description: "Stripe transaction dated 3/8 but settled on 3/10",
-    provider: "Stripe",
-  },
-];
+function methodLabel(type: string): string {
+  const map: Record<string, string> = {
+    stripe: 'Stripe', paypal: 'PayPal', square: 'Square',
+    credit_card: 'Credit Card', debit_card: 'Debit Card',
+    bank_transfer: 'Bank Transfer', cod: 'Cash on Delivery',
+    wallet: 'Digital Wallet',
+  };
+  return map[type.toLowerCase()] ?? type;
+}
 
-export default function PaymentsPage() {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    providers: true,
+// ── Section wrapper ────────────────────────────────────────────────────────
+
+function Section({
+  label,
+  badge,
+  expanded,
+  onToggle,
+  children,
+}: {
+  label: string;
+  badge?: React.ReactNode;
+  expanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-8">
+      <button
+        className="flex items-center justify-between w-full mb-5 text-left group"
+        onClick={onToggle}
+        aria-expanded={expanded}
+      >
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-wl-text-primary">{label}</h2>
+          {badge}
+        </div>
+        <ChevronDown
+          className={cn(
+            'w-4 h-4 text-wl-text-tertiary transition-transform group-hover:text-wl-text-secondary',
+            expanded ? 'rotate-180' : '',
+          )}
+        />
+      </button>
+      {expanded && children}
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────
+
+export default function PaymentsIntegrationPage() {
+  const [sections, setSections] = useState({
+    gateways: true,
     transactions: true,
-    methods: true,
-    refunds: true,
-    settlement: true,
-    reconciliation: true,
+    methods: false,
+    reconciliation: false,
   });
 
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
+  const toggle = (key: keyof typeof sections) =>
+    setSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const totalVolume = providers.reduce((sum, p) => {
-    const volume = p.volume?.replace(/[$,]/g, "") || "0";
-    return sum + parseFloat(volume);
-  }, 0);
+  // ── Data fetching ─────────────────────────────────────────────────────
 
-  const totalFees = providers.reduce((sum, p) => {
-    const fees = p.fees?.replace(/[$,]/g, "") || "0";
-    return sum + parseFloat(fees);
-  }, 0);
+  const {
+    data: gatewaysData,
+    loading: gwLoading,
+    error: gwError,
+    refetch: gwRefetch,
+  } = useApiQuery<{ gateways: Gateway[] }>('/api/v4/payments/gateways');
+
+  const {
+    data: summaryData,
+    loading: sumLoading,
+  } = useApiQuery<PaymentSummary>('/api/v4/payments/summary');
+
+  const {
+    items: transactions,
+    loading: txLoading,
+    error: txError,
+    refetch: txRefetch,
+  } = useApiList<PaymentTx>('/api/v4/payments', { limit: 10 });
+
+  const {
+    items: paymentMethods,
+    loading: pmLoading,
+    error: pmError,
+    refetch: pmRefetch,
+  } = useApiList<PaymentMethod>('/api/v4/payment-methods', { limit: 25 });
+
+  const {
+    data: reconData,
+    loading: reconLoading,
+    error: reconError,
+    refetch: reconRefetch,
+  } = useApiQuery<{ bankTransactions: ReconciliationItem[] }>('/api/v4/payments/reconciliation');
+
+  // ── Derived stats ─────────────────────────────────────────────────────
+
+  const gateways: Gateway[] = gatewaysData?.gateways ?? [];
+  const connectedCount = gateways.filter((g) => g.status === 'connected').length;
+
+  const totalRevenue = summaryData?.totalRevenue ?? 0;
+  const totalTxns = summaryData?.byStatus?.reduce((s, b) => s + b._count, 0) ?? 0;
+  const totalFeesPct = gateways.length
+    ? gateways.reduce((s, g) => s + g.transactionFeePercent, 0) / gateways.length
+    : 2.9;
+
+  const reconItems: ReconciliationItem[] = reconData?.bankTransactions ?? [];
+  const unmatchedCount = reconItems.filter((r) => r.status === 'unmatched').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#3b82f6] to-[#3b82f6]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Payment Integrations"
         subtitle="Manage payment processors, transactions, and settlement reconciliation"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Back Button */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back */}
         <Link href="/integrations">
-          <Button
-            variant="ghost"
-            className="mb-8 text-[#3b82f6] hover:text-[#3b82f6]"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
+          <Button variant="ghost" size="sm" className="mb-6 gap-1.5 text-wl-text-tertiary hover:text-wl-text-secondary">
+            <ChevronLeft className="w-4 h-4" />
             Back to Integrations
           </Button>
         </Link>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-[#3b82f6]/10 to-[#3b82f6]/5 border-[#3b82f6]/30">
-            <CardContent className="pt-6">
-              <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                Total Volume
-              </p>
-              <p className="text-3xl font-bold text-[#3b82f6] mt-2">
-                ${totalVolume.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-              </p>
-              <p className="text-xs text-[#3b82f6] mt-2">
-                Across all providers
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/30">
-            <CardContent className="pt-6">
-              <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                Total Fees
-              </p>
-              <p className="text-3xl font-bold text-blue-400 mt-2">
-                ${totalFees.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-              </p>
-              <p className="text-xs text-[#3b82f6] mt-2">
-                {((totalFees / totalVolume) * 100).toFixed(2)}% of volume
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/30">
-            <CardContent className="pt-6">
-              <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                Connected Providers
-              </p>
-              <p className="text-3xl font-bold text-green-400 mt-2">
-                {providers.filter((p) => p.status === "connected").length}/{providers.length}
-              </p>
-              <p className="text-xs text-[#3b82f6] mt-2">
-                Active integrations
-              </p>
-            </CardContent>
-          </Card>
+        {/* KPI strip */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            {
+              label: 'Connected Gateways',
+              value: gwLoading ? '…' : `${connectedCount}/${gateways.length}`,
+              sub: 'active integrations',
+              color: 'text-emerald-400',
+            },
+            {
+              label: 'Total Volume',
+              value: sumLoading ? '…' : fmtAmt(totalRevenue),
+              sub: 'lifetime processed',
+              color: 'text-wl-text-primary',
+            },
+            {
+              label: 'Total Transactions',
+              value: sumLoading ? '…' : totalTxns.toLocaleString(),
+              sub: 'all time',
+              color: 'text-wl-text-primary',
+            },
+            {
+              label: 'Avg Gateway Fee',
+              value: `${totalFeesPct.toFixed(2)}%`,
+              sub: 'across providers',
+              color: 'text-amber-400',
+            },
+          ].map(({ label, value, sub, color }) => (
+            <div
+              key={label}
+              className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-5"
+            >
+              <p className="text-xs font-medium text-wl-text-tertiary uppercase tracking-wide mb-2">{label}</p>
+              <p className={cn('text-2xl font-bold font-mono', color)}>{value}</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">{sub}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Providers Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("providers")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#3b82f6]">
-                Payment Providers
-              </h2>
-              <Badge variant="primary" className="bg-[#3b82f6]/30 text-[#3b82f6]">
-                {providers.filter((p) => p.status === "connected").length} connected
-              </Badge>
+        {/* ── Gateways ─────────────────────────────────────────────── */}
+        <Section
+          label="Payment Gateways"
+          badge={
+            <Badge variant="success" className="bg-emerald-500/15 text-emerald-400 text-xs">
+              {connectedCount} connected
+            </Badge>
+          }
+          expanded={sections.gateways}
+          onToggle={() => toggle('gateways')}
+        >
+          {gwLoading ? (
+            <TableSkeleton rows={3} columns={4} />
+          ) : gwError ? (
+            <ErrorState title="Failed to load gateways" onRetry={gwRefetch} />
+          ) : gateways.length === 0 ? (
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-10 text-center">
+              <CreditCard className="w-8 h-8 text-wl-text-tertiary mx-auto mb-3" />
+              <p className="text-sm font-medium text-wl-text-secondary mb-1">No payment gateways configured</p>
+              <p className="text-xs text-wl-text-tertiary mb-4">Connect Stripe, PayPal, Square, or other providers</p>
+              <Link href="/settings/payments">
+                <Button variant="primary" size="sm">
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Add Gateway
+                </Button>
+              </Link>
             </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-[#3b82f6] transition-transform",
-                expandedSections.providers ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.providers && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {providers.map((provider) => (
-                <Card key={provider.id} className="hover:border-[#3b82f6]/50">
-                  <CardContent className="pt-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-6">
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {gateways.map((gw) => (
+                <Card key={gw.id} className="bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong transition-all">
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between mb-5">
                       <div className="flex items-center gap-3">
-                        <div className="text-[#3b82f6] text-2xl">{provider.icon}</div>
+                        <div className="w-10 h-10 rounded-lg bg-wl-bg-elevated border border-wl-border-default flex items-center justify-center text-wl-text-secondary">
+                          {gatewayIcon(gw.code)}
+                        </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-[#3b82f6]">
-                            {provider.name}
-                          </h3>
-                          <p className="text-xs text-[#3b82f6] mt-1">
-                            {provider.status === "connected" && `Connected on ${provider.connectedAt}`}
-                            {provider.status === "disconnected" && "Not connected"}
-                            {provider.status === "error" && "Connection error"}
+                          <h3 className="font-semibold text-wl-text-primary">{gw.name}</h3>
+                          <p className="text-xs text-wl-text-tertiary mt-0.5">
+                            {gw.transactionFeePercent}% + ${(gw.fixedFeeInCents / 100).toFixed(2)} per txn
                           </p>
                         </div>
                       </div>
-                      <Badge
-                        variant={
-                          provider.status === "connected"
-                            ? "success"
-                            : provider.status === "error"
-                              ? "danger"
-                              : "default"
-                        }
-                        className={cn(
-                          provider.status === "connected" && "bg-green-500/20 text-green-400 border border-green-500/50",
-                          provider.status === "error" && "bg-red-500/20 text-red-400 border border-red-500/50"
+                      <div className="flex items-center gap-2">
+                        {gw.isDefault && (
+                          <Badge variant="info" className="text-xs bg-blue-500/10 text-blue-400">Default</Badge>
                         )}
-                      >
-                        {provider.status === "connected" && (
-                          <>
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Connected
-                          </>
-                        )}
-                        {provider.status === "disconnected" && "Disconnected"}
-                        {provider.status === "error" && (
-                          <>
-                            <AlertCircle className="w-3 h-3 mr-1" />
-                            Error
-                          </>
-                        )}
-                      </Badge>
+                        <Badge
+                          variant={gw.status === 'connected' ? 'success' : gw.status === 'error' ? 'danger' : 'default'}
+                          className="text-xs"
+                        >
+                          {gw.status === 'connected' && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                          {gw.status === 'error' && <AlertCircle className="w-3 h-3 mr-1" />}
+                          <span className="capitalize">{gw.status}</span>
+                        </Badge>
+                      </div>
                     </div>
 
-                    {/* Stats Grid */}
-                    {provider.status === "connected" && (
-                      <>
-                        <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[#3b82f6]">
-                          <div>
-                            <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                              Txns
-                            </p>
-                            <p className="text-lg font-bold text-[#3b82f6] mt-1">
-                              {provider.transactions?.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                              Volume
-                            </p>
-                            <p className="text-lg font-bold text-green-400 mt-1">
-                              {provider.volume}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                              Fees
-                            </p>
-                            <p className="text-lg font-bold text-[#3b82f6] mt-1">
-                              {provider.fees}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mb-6">
-                          <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                            Last Sync
-                          </p>
-                          <p className="text-sm text-[#3b82f6] mt-1 flex items-center gap-2">
-                            <Clock className="w-3 h-3 text-green-500" />
-                            {provider.lastSync}
-                          </p>
-                        </div>
-                      </>
+                    {gw.status === 'connected' && (
+                      <div className="flex items-center gap-2 mb-4 text-xs text-wl-text-tertiary">
+                        <Clock className="w-3 h-3" />
+                        Health score: <span className="text-emerald-400 font-medium">{gw.healthScore}/100</span>
+                        {gw.config?.lastDigits && (
+                          <span className="ml-auto">•••• {gw.config.lastDigits}</span>
+                        )}
+                      </div>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      {provider.status === "connected" ? (
+                    <div className="flex gap-2 pt-3 border-t border-wl-border-default">
+                      {gw.status === 'connected' ? (
                         <>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
-                          >
-                            <Settings className="w-4 h-4 mr-2" />
-                            Configure
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                          >
-                            <Power className="w-4 h-4 mr-2" />
+                          <Link href="/settings/payments" className="flex-1">
+                            <Button variant="secondary" size="sm" className="w-full">
+                              <Settings className="w-4 h-4 mr-1.5" />
+                              Configure
+                            </Button>
+                          </Link>
+                          <Button variant="danger" size="sm" className="flex-1">
+                            <Power className="w-4 h-4 mr-1.5" />
                             Disconnect
                           </Button>
                         </>
-                      ) : provider.status === "error" ? (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
-                        >
-                          <AlertCircle className="w-4 h-4 mr-2" />
-                          Reconnect
-                        </Button>
                       ) : (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Connect
-                        </Button>
+                        <Link href="/settings/payments" className="flex-1">
+                          <Button variant="primary" size="sm" className="w-full">
+                            <Plus className="w-4 h-4 mr-1.5" />
+                            {gw.status === 'error' ? 'Reconnect' : 'Connect'}
+                          </Button>
+                        </Link>
                       )}
                     </div>
                   </CardContent>
@@ -666,488 +371,222 @@ export default function PaymentsPage() {
               ))}
             </div>
           )}
-        </div>
+        </Section>
 
-        {/* Transactions Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("transactions")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#3b82f6]">
-                Recent Transactions
-              </h2>
-              <Badge variant="info" className="bg-blue-500/20 text-blue-400">
-                {transactions.length} transactions
-              </Badge>
+        {/* ── Recent Transactions ───────────────────────────────────── */}
+        <Section
+          label="Recent Transactions"
+          badge={
+            <Badge variant="info" className="bg-blue-500/10 text-blue-400 text-xs">
+              Last 10
+            </Badge>
+          }
+          expanded={sections.transactions}
+          onToggle={() => toggle('transactions')}
+        >
+          {txLoading ? (
+            <TableSkeleton rows={5} columns={5} />
+          ) : txError ? (
+            <ErrorState title="Failed to load transactions" onRetry={txRefetch} />
+          ) : transactions.length === 0 ? (
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-10 text-center">
+              <Activity className="w-8 h-8 text-wl-text-tertiary mx-auto mb-3" />
+              <p className="text-sm font-medium text-wl-text-secondary mb-1">No transactions yet</p>
+              <p className="text-xs text-wl-text-tertiary">Transactions will appear once payments are processed</p>
             </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-[#3b82f6] transition-transform",
-                expandedSections.transactions ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.transactions && (
-            <Card className="bg-[#3b82f6]">
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  {transactions.map((txn) => {
-                    const statusColor =
-                      txn.status === "successful"
-                        ? "bg-green-500/20 text-green-400"
-                        : txn.status === "pending"
-                          ? "bg-yellow-500/20 text-yellow-400"
-                          : "bg-red-500/20 text-red-400";
-                    return (
-                      <div
-                        key={txn.id}
-                        className="flex items-start justify-between p-4 bg-[#3b82f6] rounded-lg border border-[#3b82f6] hover:border-[#3b82f6]/50"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-[#3b82f6] capitalize">
-                              {txn.type}
-                            </h4>
-                            <Badge variant="default" className="text-xs font-mono">
-                              {txn.provider}
-                            </Badge>
-                            <Badge variant="default" className={cn("text-xs capitalize", statusColor)}>
-                              {txn.status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-[#3b82f6] mb-1">
-                            {txn.customer} • {txn.description}
-                          </p>
-                          <p className="text-xs text-[#3b82f6]">
-                            {txn.paymentMethod} • {txn.date}
-                          </p>
-                          {txn.reference && (
-                            <p className="text-xs text-[#3b82f6] mt-1 font-mono">
-                              Ref: {txn.reference}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right flex-shrink-0 ml-4">
-                          <p className={cn(
-                            "text-lg font-bold",
-                            txn.type === "refund" ? "text-red-400" : "text-green-400"
-                          )}>
-                            {txn.type === "refund" ? "-" : ""}{txn.amount.toFixed(2)} {txn.currency}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Payment Methods Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("methods")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#3b82f6]">
-                Payment Methods
-              </h2>
-              <Badge variant="default" className="bg-[#3b82f6]">
-                {paymentMethods.filter((m) => m.status === "active").length} active
-              </Badge>
-            </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-[#3b82f6] transition-transform",
-                expandedSections.methods ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.methods && (
-            <div className="space-y-4">
-              {paymentMethods.map((method) => (
-                <Card key={method.id} className="bg-[#3b82f6]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div className="w-12 h-12 rounded-lg bg-[#3b82f6] flex items-center justify-center text-[#3b82f6]">
-                          {method.type === "card" && <CreditCard className="w-6 h-6" />}
-                          {method.type === "ach" && <DollarSign className="w-6 h-6" />}
-                          {method.type === "wallet" && <Activity className="w-6 h-6" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-[#3b82f6]">
-                            {method.label}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            {method.type === "card" && (
-                              <>
-                                <p className="text-sm text-[#3b82f6]">
-                                  •••• {method.last4}
-                                </p>
-                                <span className="text-xs text-[#3b82f6]">
-                                  Expires {method.expiryDate}
-                                </span>
-                              </>
-                            )}
-                            {method.type === "ach" && (
-                              <p className="text-sm text-[#3b82f6]">
-                                {method.bankName} • {method.routingNumber}
-                              </p>
-                            )}
-                            {method.type === "wallet" && (
-                              <p className="text-sm text-[#3b82f6]">
-                                Added {method.addedDate}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <div className="text-right">
-                          {method.isDefault && (
-                            <Badge variant="success" className="bg-green-500/20 text-green-400 mb-2">
-                              Default
-                            </Badge>
-                          )}
-                          <Badge
-                            variant={method.status === "active" ? "success" : "danger"}
-                            className={cn(
-                              method.status === "active"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-red-500/20 text-red-400"
-                            )}
-                          >
-                            {method.status}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="bg-[#3b82f6] hover:bg-[#3b82f6]"
-                        >
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              <Button
-                variant="primary"
-                className="w-full bg-[#3b82f6] hover:bg-[#3b82f6]/90"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Payment Method
-              </Button>
+          ) : (
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-wl-border-default">
+                    {['Date', 'Method', 'Amount', 'Status', 'Reference'].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left text-xs font-medium text-wl-text-tertiary uppercase tracking-wide">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-wl-border-default">
+                  {transactions.map((txn) => (
+                    <tr key={txn.id} className="hover:bg-wl-bg-elevated transition-colors">
+                      <td className="px-4 py-3 text-wl-text-secondary text-xs">
+                        {new Date(txn.createdAt).toLocaleString('en-US', {
+                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                        })}
+                      </td>
+                      <td className="px-4 py-3 text-wl-text-secondary text-xs">{methodLabel(txn.method)}</td>
+                      <td className={cn('px-4 py-3 font-semibold font-mono text-sm', txn.type === 'REFUND' ? 'text-red-400' : 'text-wl-text-primary')}>
+                        {txn.type === 'REFUND' ? '-' : ''}{fmtAmt(txn.amount)}
+                      </td>
+                      <td className="px-4 py-3">{txStatusBadge(txn.status)}</td>
+                      <td className="px-4 py-3 text-wl-text-tertiary text-xs font-mono">
+                        {txn.reference ?? txn.id.slice(0, 8)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-4 py-3 border-t border-wl-border-default flex justify-end">
+                <Link href="/payments">
+                  <Button variant="ghost" size="sm" className="text-xs gap-1 text-wl-text-tertiary hover:text-wl-text-secondary">
+                    View all transactions
+                    <ChevronLeft className="w-3 h-3 rotate-180" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
-        </div>
+        </Section>
 
-        {/* Refunds & Chargebacks Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("refunds")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#3b82f6]">
-                Refunds & Chargebacks
-              </h2>
-              <Badge variant="warning" className="bg-yellow-500/20 text-yellow-400">
-                {refundsAndChargebacks.filter((r) => r.status === "pending" || r.status === "investigating").length} pending
-              </Badge>
+        {/* ── Payment Methods ───────────────────────────────────────── */}
+        <Section
+          label="Payment Methods"
+          badge={
+            <Badge variant="default" className="text-xs">
+              {paymentMethods.length} configured
+            </Badge>
+          }
+          expanded={sections.methods}
+          onToggle={() => toggle('methods')}
+        >
+          {pmLoading ? (
+            <TableSkeleton rows={3} columns={3} />
+          ) : pmError ? (
+            <ErrorState title="Failed to load payment methods" onRetry={pmRefetch} />
+          ) : paymentMethods.length === 0 ? (
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-8 text-center">
+              <CreditCard className="w-7 h-7 text-wl-text-tertiary mx-auto mb-3" />
+              <p className="text-sm font-medium text-wl-text-secondary mb-1">No payment methods saved</p>
+              <p className="text-xs text-wl-text-tertiary mb-4">Add credit cards, bank accounts, or digital wallets</p>
+              <Link href="/settings/payments">
+                <Button variant="primary" size="sm"><Plus className="w-4 h-4 mr-1.5" />Add Method</Button>
+              </Link>
             </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-[#3b82f6] transition-transform",
-                expandedSections.refunds ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.refunds && (
-            <div className="space-y-4">
-              {refundsAndChargebacks.map((case_) => (
-                <Card key={case_.id} className="bg-[#3b82f6]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-[#3b82f6] capitalize">
-                            {case_.type}
-                          </h3>
-                          <Badge
-                            variant={case_.type === "refund" ? "success" : "danger"}
-                            className={cn(
-                              "text-xs",
-                              case_.type === "refund" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
-                            )}
-                          >
-                            {case_.type}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-[#3b82f6]">
-                          {case_.customer} • {case_.date}
-                        </p>
-                        <p className="text-xs text-[#3b82f6] mt-1 font-mono">
-                          Txn: {case_.transactionId}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-xl font-bold text-red-400 mb-2">
-                          -${case_.amount.toFixed(2)}
-                        </p>
-                        <Badge
-                          variant={case_.status === "completed" ? "success" : case_.status === "pending" ? "warning" : "default"}
-                          className={cn(
-                            "text-xs capitalize",
-                            case_.status === "completed" && "bg-green-500/20 text-green-400",
-                            case_.status === "pending" && "bg-yellow-500/20 text-yellow-400",
-                            case_.status === "investigating" && "bg-blue-500/20 text-blue-400"
-                          )}
-                        >
-                          {case_.status}
-                        </Badge>
-                      </div>
+          ) : (
+            <div className="space-y-3">
+              {paymentMethods.map((pm) => (
+                <div key={pm.id} className="flex items-center justify-between rounded-xl bg-wl-bg-surface border border-wl-border-default px-5 py-4 hover:border-wl-border-strong transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-wl-bg-elevated border border-wl-border-default flex items-center justify-center text-wl-text-secondary">
+                      {gatewayIcon(pm.type)}
                     </div>
-
-                    <div className="mb-4 pb-4 border-b border-[#3b82f6]">
-                      <p className="text-xs font-medium text-[#3b82f6] uppercase mb-2">
-                        Reason
+                    <div>
+                      <p className="text-sm font-medium text-wl-text-primary">{pm.displayName}</p>
+                      <p className="text-xs text-wl-text-tertiary mt-0.5">
+                        {pm.lastDigits ? `•••• ${pm.lastDigits}` : methodLabel(pm.type)}
+                        {pm.expiryDate && ` · Exp ${pm.expiryDate}`}
                       </p>
-                      <p className="text-sm text-[#3b82f6]">{case_.reason}</p>
-                      {case_.notes && (
-                        <p className="text-xs text-[#3b82f6] mt-2 italic">
-                          Note: {case_.notes}
-                        </p>
-                      )}
                     </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Details
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {pm.isDefault && (
+                      <Badge variant="success" className="text-xs bg-emerald-500/10 text-emerald-400">Default</Badge>
+                    )}
+                    <Link href="/settings/payments">
+                      <Button variant="ghost" size="sm" className="text-wl-text-tertiary hover:text-wl-text-secondary">
+                        <Settings className="w-4 h-4" />
                       </Button>
-                      {case_.status === "pending" || case_.status === "investigating" ? (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
-                        >
-                          Respond
-                        </Button>
-                      ) : null}
-                    </div>
-                  </CardContent>
-                </Card>
+                    </Link>
+                  </div>
+                </div>
               ))}
+              <Link href="/settings/payments">
+                <Button variant="secondary" className="w-full mt-2">
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Add Payment Method
+                </Button>
+              </Link>
             </div>
           )}
-        </div>
+        </Section>
 
-        {/* Settlement Reports Section */}
-        <div className="mb-8">
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("settlement")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#3b82f6]">
-                Settlement Reports
-              </h2>
-              <Badge variant="success" className="bg-green-500/20 text-green-400">
-                Week of Mar 6
+        {/* ── Reconciliation ────────────────────────────────────────── */}
+        <Section
+          label="Reconciliation"
+          badge={
+            unmatchedCount > 0 ? (
+              <Badge variant="warning" className="bg-amber-500/10 text-amber-400 text-xs">
+                {unmatchedCount} unmatched
               </Badge>
+            ) : (
+              <Badge variant="success" className="bg-emerald-500/10 text-emerald-400 text-xs">All matched</Badge>
+            )
+          }
+          expanded={sections.reconciliation}
+          onToggle={() => toggle('reconciliation')}
+        >
+          {reconLoading ? (
+            <TableSkeleton rows={4} columns={4} />
+          ) : reconError ? (
+            <ErrorState title="Failed to load reconciliation data" onRetry={reconRefetch} />
+          ) : reconItems.length === 0 ? (
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-8 text-center">
+              <CheckCircle2 className="w-7 h-7 text-emerald-400 mx-auto mb-3" />
+              <p className="text-sm font-medium text-wl-text-secondary">No reconciliation issues</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">All transactions are matched</p>
             </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-[#3b82f6] transition-transform",
-                expandedSections.settlement ? "rotate-90" : ""
-              )}
-            />
-          </div>
-
-          {expandedSections.settlement && (
-            <div className="space-y-4">
-              {settlementReports.map((report) => (
-                <Card key={report.id} className="bg-[#3b82f6]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-semibold text-[#3b82f6]">
-                          {report.provider}
-                        </h3>
-                        <p className="text-xs text-[#3b82f6] mt-1">
-                          {report.period}
-                        </p>
-                      </div>
-                      <Badge
-                        variant={report.status === "reconciled" ? "success" : report.status === "settled" ? "info" : "default"}
-                        className={cn(
-                          "capitalize",
-                          report.status === "reconciled" && "bg-green-500/20 text-green-400",
-                          report.status === "settled" && "bg-blue-500/20 text-blue-400"
+          ) : (
+            <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-wl-border-default">
+                    {['Date', 'Description', 'Amount', 'Status', ''].map((h, i) => (
+                      <th key={i} className="px-4 py-3 text-left text-xs font-medium text-wl-text-tertiary uppercase tracking-wide">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-wl-border-default">
+                  {reconItems.map((item) => (
+                    <tr key={item.id} className="hover:bg-wl-bg-elevated transition-colors">
+                      <td className="px-4 py-3 text-xs text-wl-text-tertiary">
+                        {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </td>
+                      <td className="px-4 py-3 text-wl-text-secondary max-w-xs truncate">{item.description}</td>
+                      <td className="px-4 py-3 font-mono text-sm text-wl-text-primary">{fmtAmt(item.amount)}</td>
+                      <td className="px-4 py-3">
+                        {item.status === 'matched' ? (
+                          <Badge variant="success" className="text-xs bg-emerald-500/10 text-emerald-400">Matched</Badge>
+                        ) : (
+                          <Badge variant="warning" className="text-xs bg-amber-500/10 text-amber-400">Unmatched</Badge>
                         )}
-                      >
-                        {report.status}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-4 mb-4 pb-4 border-b border-[#3b82f6]">
-                      <div>
-                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                          Txns
-                        </p>
-                        <p className="text-lg font-bold text-[#3b82f6] mt-1">
-                          {report.totalTransactions}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                          Volume
-                        </p>
-                        <p className="text-lg font-bold text-green-400 mt-1">
-                          ${report.totalVolume.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                          Fees
-                        </p>
-                        <p className="text-lg font-bold text-[#3b82f6] mt-1">
-                          ${report.totalFees.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
-                          Net
-                        </p>
-                        <p className="text-lg font-bold text-[#3b82f6] mt-1">
-                          ${report.netSettlement.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        View
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Button variant="ghost" size="sm" className="text-xs text-wl-text-tertiary hover:text-wl-text-secondary">
+                          <Eye className="w-3 h-3 mr-1" />
+                          Details
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-4 py-3 border-t border-wl-border-default flex items-center justify-between">
+                <p className="text-xs text-wl-text-tertiary">Last 30 days</p>
+                <Button variant="ghost" size="sm" className="text-xs gap-1 text-wl-text-tertiary hover:text-wl-text-secondary">
+                  <Download className="w-3 h-3 mr-1" />
+                  Export CSV
+                </Button>
+              </div>
             </div>
           )}
-        </div>
+        </Section>
 
-        {/* Reconciliation Issues Section */}
-        <div>
-          <div
-            className="flex items-center justify-between mb-6 cursor-pointer"
-            onClick={() => toggleSection("reconciliation")}
-          >
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#3b82f6]">
-                Reconciliation Issues
-              </h2>
-              <Badge variant="warning" className="bg-yellow-500/20 text-yellow-400">
-                {reconciliationIssues.filter((r) => r.status !== "resolved").length} open
-              </Badge>
-            </div>
-            <ChevronLeft
-              className={cn(
-                "w-5 h-5 text-[#3b82f6] transition-transform",
-                expandedSections.reconciliation ? "rotate-90" : ""
-              )}
-            />
+        {/* Footer CTA */}
+        <div className="mt-2 flex items-center justify-between rounded-xl bg-wl-bg-surface border border-wl-border-default px-5 py-4">
+          <div>
+            <p className="text-sm font-medium text-wl-text-primary">Need another payment provider?</p>
+            <p className="text-xs text-wl-text-tertiary mt-0.5">Browse the marketplace for Stripe, PayPal, Square and 20+ more</p>
           </div>
-
-          {expandedSections.reconciliation && (
-            <div className="space-y-4">
-              {reconciliationIssues.map((issue) => (
-                <Card key={issue.id} className={cn(
-                  "bg-[#3b82f6]",
-                  issue.status === "open" && "border-yellow-500/50"
-                )}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-[#3b82f6]">
-                          {issue.type}
-                        </h3>
-                        <p className="text-sm text-[#3b82f6] mt-1">
-                          {issue.description}
-                        </p>
-                        <p className="text-xs text-[#3b82f6] mt-2">
-                          {issue.provider} • {issue.date}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-xl font-bold text-[#3b82f6] mb-2">
-                          ${issue.amount.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                        </p>
-                        <Badge
-                          variant={issue.status === "resolved" ? "success" : issue.status === "investigating" ? "info" : "warning"}
-                          className={cn(
-                            "capitalize",
-                            issue.status === "resolved" && "bg-green-500/20 text-green-400",
-                            issue.status === "investigating" && "bg-blue-500/20 text-blue-400",
-                            issue.status === "open" && "bg-yellow-500/20 text-yellow-400"
-                          )}
-                        >
-                          {issue.status}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
-                      >
-                        <Activity className="w-4 h-4 mr-2" />
-                        Investigate
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" className="gap-1 text-wl-text-tertiary hover:text-wl-text-secondary">
+              <RefreshCw className="w-3.5 h-3.5" />
+              Sync All
+            </Button>
+            <Link href="/integrations/marketplace">
+              <Button variant="primary" size="sm">
+                <Plus className="w-4 h-4 mr-1.5" />
+                Add Provider
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -77,13 +77,13 @@ function IntegrationRow({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-[#1e1e2e] last:border-b-0">
+    <div className="border-b border-wl-border-default last:border-b-0">
       <button
         onClick={onToggle}
-        className="w-full px-5 py-4 hover:bg-[#1a1a2e] transition-colors flex items-center justify-between text-left"
+        className="w-full px-5 py-4 hover:bg-wl-bg-elevated transition-colors flex items-center justify-between text-left"
       >
         <div className="flex items-center gap-4 flex-1">
-          <div className="p-2 bg-[#1a1a2e] rounded-lg">
+          <div className="p-2 bg-wl-bg-elevated rounded-lg">
             <CategoryIcon category={integration.category} />
           </div>
           <div className="flex-1">
@@ -113,7 +113,7 @@ function IntegrationRow({
       </button>
 
       {expanded && (
-        <div className="px-5 py-4 bg-[#1a1a2e] border-t border-[#1e1e2e]">
+        <div className="px-5 py-4 bg-wl-bg-elevated border-t border-wl-border-default">
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Performance Metrics</p>
@@ -209,7 +209,7 @@ export default function IntegrationsPage() {
     : "0";
 
   return (
-    <div className="min-h-screen bg-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-surface">
       <Header
         title="Integration Health"
         subtitle="Monitor connected integrations and sync status across all stores"
@@ -265,7 +265,7 @@ export default function IntegrationsPage() {
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  !selectedCategory ? "bg-blue-600 text-white" : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                  !selectedCategory ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
                 )}
               >
                 All ({allIntegrations.length})
@@ -276,7 +276,7 @@ export default function IntegrationsPage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
                   )}
                 >
                   {cat.label} ({cat.count})

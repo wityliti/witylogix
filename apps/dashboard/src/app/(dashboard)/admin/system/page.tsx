@@ -77,7 +77,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
   const Icon = iconMap[service.name] || Server;
 
   return (
-    <Card className="border border-[#1e1e2e]">
+    <Card className="border border-wl-border-default">
       <CardContent className="pt-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -92,7 +92,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           <StatusBadge status={service.status} />
         </div>
 
-        <div className="grid grid-cols-3 gap-3 py-4 border-t border-[#1e1e2e]">
+        <div className="grid grid-cols-3 gap-3 py-4 border-t border-wl-border-default">
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wider">24h Uptime</p>
             <p className="text-sm font-semibold text-white mt-1">{service.uptime24h}%</p>
@@ -107,7 +107,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           </div>
         </div>
 
-        <div className="text-xs text-gray-400 pt-3 border-t border-[#1e1e2e]">
+        <div className="text-xs text-gray-400 pt-3 border-t border-wl-border-default">
           Last checked: {new Date(service.lastChecked).toLocaleTimeString()}
         </div>
       </CardContent>
@@ -181,7 +181,7 @@ export default function SystemPage() {
   const degradedServices = services.filter(s => s.status !== "healthy");
 
   return (
-    <div className="min-h-screen bg-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-surface">
       <Header
         title="System Health"
         subtitle="Monitor service status, uptime, and system metrics"

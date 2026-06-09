@@ -75,7 +75,7 @@ export default function FuelPage() {
         actions={<Button variant="primary" size="md">Manage Fuel Cards</Button>}
       />
 
-      <main className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
+      <main className="min-h-screen bg-wl-bg-root p-6 space-y-6">
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
           <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} change={{ value: 8.5, label: 'vs last month' }} accentColor="var(--wl-primary-500)" index={0} />
@@ -86,7 +86,7 @@ export default function FuelPage() {
 
         {/* Anomaly Alerts */}
         {analytics.anomalies.length > 0 && (
-          <Card className="bg-[#12121a] border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-red-500/30">
             <CardHeader>
               <CardTitle className="text-sm text-red-400 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
@@ -96,7 +96,7 @@ export default function FuelPage() {
             <CardContent>
               <div className="space-y-2">
                 {analytics.anomalies.slice(0, 3).map((anomaly) => (
-                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-[#1e1e2e]">
+                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default">
                     <div>
                       <p className="text-sm font-medium text-white">Anomaly Detected</p>
                       <p className="text-xs text-gray-400">{formatCurrency(anomaly.amount)} • {anomaly.gallons.toFixed(1)} gal • {formatDate(anomaly.date)}</p>
@@ -111,7 +111,7 @@ export default function FuelPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Top Consumers */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-sm text-white">Top Fuel Consumers</CardTitle>
             </CardHeader>
@@ -126,7 +126,7 @@ export default function FuelPage() {
                         <p className="text-sm font-medium text-white">{idx + 1}. Vehicle {idx + 1}</p>
                         <p className="text-xs font-semibold text-gray-400">{formatCurrency(item.spend)}</p>
                       </div>
-                      <div className="h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
+                      <div className="h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style={{ width: `${percentage}%` }} />
                       </div>
                     </div>
@@ -137,7 +137,7 @@ export default function FuelPage() {
           </Card>
 
           {/* Cost Breakdown */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-sm text-white">Cost Breakdown</CardTitle>
             </CardHeader>
@@ -160,14 +160,14 @@ export default function FuelPage() {
           </Card>
 
           {/* Fuel Cards */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-sm text-white">Fuel Cards Status</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {['Shell ****1234', 'Chevron ****5678', 'Shell ****9012'].map((card, idx) => (
-                  <div key={card} className="p-3 bg-[#1a1a2e] rounded-md border border-[#1e1e2e]">
+                  <div key={card} className="p-3 bg-wl-bg-elevated rounded-md border border-wl-border-default">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-white">{card}</p>
                       <Badge variant={idx === 2 ? 'danger' : 'success'}>{idx === 2 ? 'Blocked' : 'Active'}</Badge>
@@ -181,11 +181,11 @@ export default function FuelPage() {
         </div>
 
         {/* Transactions Table */}
-        <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Date</th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Vehicle</th>
                   <th className="p-3 px-4 text-center font-semibold text-gray-400">Station</th>
@@ -198,7 +198,7 @@ export default function FuelPage() {
               </thead>
               <tbody>
                 {paginatedTransactions.map((tx, idx) => (
-                  <tr key={tx.id} className={cn('border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e]', idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]')}>
+                  <tr key={tx.id} className={cn('border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken')}>
                     <td className="p-3 px-4 text-gray-400 text-xs">{formatDate(tx.date)}</td>
                     <td className="p-3 px-4 text-white font-semibold">
                       <div className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export default function FuelPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400">
+          <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-400">
             <div>
               Showing {paginatedTransactions.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
               {Math.min(currentPage * pageSize, transactions.length)} of {transactions.length}

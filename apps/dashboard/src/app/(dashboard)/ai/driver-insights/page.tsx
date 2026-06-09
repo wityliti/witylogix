@@ -147,7 +147,7 @@ export default function DriverInsightsPage() {
             { label: 'Avg On-Time',     value: loading ? '…' : avgOnTime.toFixed(1),       suffix: '%',    icon: Target,   accent: '#34d399', sub: `${toScoringPeriod(period)} window` },
             { label: 'Platinum Tier',   value: loading ? '…' : entries.filter((e) => e.tier === 'platinum').length, icon: Star, accent: '#f472b6', sub: 'scoring ≥ 90' },
           ].map(({ label, value, suffix, icon: Icon, accent, sub }) => (
-            <div key={label} className="relative overflow-hidden rounded-xl bg-[#111118] border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all">
+            <div key={label} className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all">
               <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-80 transition-opacity" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
               <div className="flex items-start justify-between mb-3">
                 <span className="text-[13px] font-medium text-white/40 tracking-wide">{label}</span>
@@ -165,7 +165,7 @@ export default function DriverInsightsPage() {
         </div>
 
         {/* Leaderboard table */}
-        <div className="rounded-xl bg-[#111118] border border-white/[0.06] overflow-hidden">
+        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide">Performance Leaderboard</h3>
             <div className="flex items-center gap-1">

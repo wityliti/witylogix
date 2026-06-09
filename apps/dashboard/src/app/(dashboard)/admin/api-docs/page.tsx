@@ -307,7 +307,7 @@ function EndpointCard({
     <Card className="mb-4">
       <button
         onClick={onToggle}
-        className="w-full px-5 py-4 hover:bg-[#1a1a2e] transition-colors flex items-start justify-between text-left"
+        className="w-full px-5 py-4 hover:bg-wl-bg-elevated transition-colors flex items-start justify-between text-left"
       >
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -332,7 +332,7 @@ function EndpointCard({
       </button>
 
       {expanded && (
-        <div className="px-5 py-4 border-t border-[#1e1e2e] space-y-6">
+        <div className="px-5 py-4 border-t border-wl-border-default space-y-6">
           {/* Parameters */}
           {endpoint.parameters && endpoint.parameters.length > 0 && (
             <div>
@@ -343,7 +343,7 @@ function EndpointCard({
                 {endpoint.parameters.map((param, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
+                    className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <code className="text-sm font-mono text-blue-500">
@@ -372,7 +372,7 @@ function EndpointCard({
                 Request Body
               </h4>
               <div className="relative">
-                <pre className="p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] overflow-x-auto text-xs text-gray-400">
+                <pre className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default overflow-x-auto text-xs text-gray-400">
                   <code>
                     {JSON.stringify(endpoint.requestBody.example, null, 2)}
                   </code>
@@ -383,7 +383,7 @@ function EndpointCard({
                       JSON.stringify(endpoint.requestBody?.example, null, 2)
                     )
                   }
-                  className="absolute top-2 right-2 p-2 hover:bg-[#1a1a2e] rounded transition-colors"
+                  className="absolute top-2 right-2 p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                 >
                   <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
                 </button>
@@ -427,12 +427,12 @@ function EndpointCard({
                       onClick={() =>
                         handleCopy(JSON.stringify(response.example, null, 2))
                       }
-                      className="p-2 hover:bg-[#1a1a2e] rounded transition-colors"
+                      className="p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                     >
                       <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
                     </button>
                   </div>
-                  <pre className="p-3 bg-[#1a1a2e] rounded text-xs text-gray-400 overflow-x-auto">
+                  <pre className="p-3 bg-wl-bg-elevated rounded text-xs text-gray-400 overflow-x-auto">
                     <code>{JSON.stringify(response.example, null, 2)}</code>
                   </pre>
                 </div>
@@ -457,7 +457,7 @@ function EndpointCard({
                   placeholder="Enter your Bearer token"
                   value={authToken}
                   onChange={(e) => setAuthToken(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-gray-500 focus:outline-none focus:border-[#1e1e2e]-focus"
+                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated border border-wl-border-default text-white placeholder-gray-500 focus:outline-none focus:border-wl-border-default-focus"
                 />
               </div>
 
@@ -466,12 +466,12 @@ function EndpointCard({
                   cURL Command
                 </label>
                 <div className="relative">
-                  <pre className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] text-xs text-gray-400 overflow-x-auto">
+                  <pre className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default text-xs text-gray-400 overflow-x-auto">
                     <code>{curlCommand}</code>
                   </pre>
                   <button
                     onClick={() => handleCopy(curlCommand)}
-                    className="absolute top-2 right-2 p-2 hover:bg-[#1a1a2e] rounded transition-colors"
+                    className="absolute top-2 right-2 p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                   >
                     <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
                   </button>
@@ -505,7 +505,7 @@ export default function ApiDocsPage() {
     : API_ENDPOINTS;
 
   return (
-    <div className="min-h-screen bg-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-surface">
       <Header
         title="API Documentation"
         subtitle="Witylogix Logistics API v1.0"
@@ -571,7 +571,7 @@ export default function ApiDocsPage() {
               "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
               !selectedTag
                 ? "bg-blue-600 text-white"
-                : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
             )}
           >
             All Endpoints ({API_ENDPOINTS.length})
@@ -584,7 +584,7 @@ export default function ApiDocsPage() {
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                 selectedTag === tag
                   ? "bg-blue-600 text-white"
-                  : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                  : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
               )}
             >
               {tag} (

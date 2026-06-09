@@ -373,7 +373,7 @@ export default function LastMileIntegrationPage() {
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
@@ -491,7 +491,7 @@ export default function LastMileIntegrationPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="p-3 text-left font-semibold text-gray-400">
                       Provider
                     </th>
@@ -514,8 +514,8 @@ export default function LastMileIntegrationPage() {
                     <tr
                       key={idx}
                       className={cn(
-                        "border-b border-[#1e1e2e]",
-                        idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]/30"
+                        "border-b border-wl-border-default",
+                        idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated/30"
                       )}
                     >
                       <td className="p-3 text-white font-semibold">
@@ -556,7 +556,7 @@ export default function LastMileIntegrationPage() {
                       "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
                       deliveryFilterStatus === status
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                        : "bg-transparent text-gray-400 border-wl-border-default"
                     )}
                   >
                     {status === "all" ? "All" : status === "in_transit" ? "Transit" : status}
@@ -607,7 +607,7 @@ export default function LastMileIntegrationPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-[#1e1e2e] text-xs">
+                    <div className="flex items-center justify-between pt-2 border-t border-wl-border-default text-xs">
                       <span className="text-gray-400">
                         {delivery.actualTime ? `${delivery.actualTime}` : delivery.estimatedTime}
                       </span>
@@ -634,7 +634,7 @@ export default function LastMileIntegrationPage() {
                       "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
                       driverFilterStatus === status
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                        : "bg-transparent text-gray-400 border-wl-border-default"
                     )}
                   >
                     {status === "all"
@@ -657,7 +657,7 @@ export default function LastMileIntegrationPage() {
                         ? "border-emerald-500/20 bg-emerald-500/20"
                         : driver.status === "on_delivery"
                         ? "border-amber-500/20 bg-amber-500/20"
-                        : "border-neutral-600/20 bg-[#1a1a2e]/20"
+                        : "border-neutral-600/20 bg-wl-bg-elevated/20"
                     )}
                   >
                     <div className="flex items-start justify-between mb-2">

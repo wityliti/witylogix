@@ -23,7 +23,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
   return (
     <div className="space-y-4">
       {routes.map((route) => (
-        <Card key={route.id} className="bg-[#1a1a2e]">
+        <Card key={route.id} className="bg-wl-bg-elevated">
           <CardContent className="pt-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-4 flex-1">
@@ -33,9 +33,9 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
                   </p>
                 </div>
                 <div className="flex-1 flex items-center justify-center">
-                  <div className="flex-1 h-px bg-[#1e1e2e]" />
+                  <div className="flex-1 h-px bg-wl-bg-elevated" />
                   <Send className="w-4 h-4 text-blue-500 mx-3" />
-                  <div className="flex-1 h-px bg-[#1e1e2e]" />
+                  <div className="flex-1 h-px bg-wl-bg-elevated" />
                 </div>
                 <div className="text-left min-w-max">
                   <p className="text-sm font-semibold text-white">
@@ -53,7 +53,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
               </div>
             </div>
 
-            <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
+            <div className="mb-4 pb-4 border-b border-wl-border-default">
               <p className="text-xs font-medium text-gray-500 uppercase mb-2">
                 Conditions
               </p>
@@ -62,7 +62,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
                   <Badge
                     key={idx}
                     variant="default"
-                    className="bg-[#12121a] text-white font-mono text-xs"
+                    className="bg-wl-bg-surface text-white font-mono text-xs"
                   >
                     {condition}
                   </Badge>
@@ -74,7 +74,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Edit

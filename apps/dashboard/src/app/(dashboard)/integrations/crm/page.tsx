@@ -179,7 +179,7 @@ export default function CRMIntegrationPage() {
             {providersLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i} className="p-4">
-                  <div className="h-32 bg-[#1a1a2e]/50 rounded animate-pulse" />
+                  <div className="h-32 bg-wl-bg-elevated/50 rounded animate-pulse" />
                 </Card>
               ))
             ) : providers.length === 0 ? (
@@ -287,7 +287,7 @@ export default function CRMIntegrationPage() {
                         {formatCurrency(stage.value)}
                       </span>
                     </div>
-                    <div className="w-full bg-[#12121a] rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-wl-bg-surface rounded-full h-2 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full transition-all"
                         style={{ width: `${percentage}%` }}
@@ -296,7 +296,7 @@ export default function CRMIntegrationPage() {
                   </div>
                 );
               })}
-              <div className="border-t border-[#1e1e2e] pt-3 mt-3">
+              <div className="border-t border-wl-border-default pt-3 mt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-semibold text-white">Total Pipeline</span>
                   <span className="text-lg font-bold text-blue-400">
@@ -329,11 +329,11 @@ export default function CRMIntegrationPage() {
                     onChange={(e) => setAutoSyncEnabled(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-10 h-6 bg-[#12121a] border border-[#1e1e2e] rounded-full peer peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all" />
+                  <div className="w-10 h-6 bg-wl-bg-surface border border-wl-border-default rounded-full peer peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all" />
                 </label>
               </div>
 
-              <div className="border-t border-[#1e1e2e] pt-4">
+              <div className="border-t border-wl-border-default pt-4">
                 <h4 className="text-sm font-semibold text-white mb-3">
                   Conflict Resolution
                 </h4>
@@ -341,7 +341,7 @@ export default function CRMIntegrationPage() {
                   {(['witylogix', 'crm', 'manual'] as const).map((option) => (
                     <label
                       key={option}
-                      className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[#1a1a2e]"
+                      className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-wl-bg-elevated"
                     >
                       <input
                         type="radio"
@@ -378,7 +378,7 @@ export default function CRMIntegrationPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="p-3 text-left font-semibold text-gray-400">
                       Witylogix Field
                     </th>
@@ -399,8 +399,8 @@ export default function CRMIntegrationPage() {
                     <tr
                       key={mapping.id}
                       className={cn(
-                        'border-b border-[#1e1e2e]',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-[#1a1a2e]/30'
+                        'border-b border-wl-border-default',
+                        idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-elevated/30'
                       )}
                     >
                       <td className="p-3 text-white font-medium">
@@ -451,7 +451,7 @@ export default function CRMIntegrationPage() {
                     'px-3 py-1 text-xs font-semibold rounded-md border capitalize transition-all',
                     syncFilterType === type
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-transparent text-gray-400 border-[#1e1e2e] hover:border-[#1e1e2e]'
+                      : 'bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-default'
                   )}
                 >
                   {type === 'all' ? 'All' : type}
@@ -463,7 +463,7 @@ export default function CRMIntegrationPage() {
             <div className="space-y-3">
               {logsLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-12 bg-[#1a1a2e]/50 rounded animate-pulse" />
+                  <div key={i} className="h-12 bg-wl-bg-elevated/50 rounded animate-pulse" />
                 ))
               ) : filteredLogs.length === 0 ? (
                 <p className="text-center text-gray-400">No sync logs</p>

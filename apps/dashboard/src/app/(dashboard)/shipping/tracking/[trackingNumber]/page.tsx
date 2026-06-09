@@ -89,8 +89,8 @@ export default function TrackingDetailPage() {
     return (
       <>
         <Header title="Tracking Not Found" subtitle={trackingNumber} />
-        <div className="p-6 bg-[#0a0a0f] min-h-screen">
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <div className="p-6 bg-wl-bg-root min-h-screen">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
               <p className="text-gray-400">
                 No shipment found with tracking number{' '}
@@ -115,9 +115,9 @@ export default function TrackingDetailPage() {
         subtitle={shipment.trackingNumber ?? shipment.shipmentNumber}
       />
 
-      <main className="min-h-screen bg-[#0a0a0f] p-6 max-w-2xl mx-auto space-y-6">
+      <main className="min-h-screen bg-wl-bg-root p-6 max-w-2xl mx-auto space-y-6">
         {/* Status Card */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white">Shipment Status</CardTitle>
           </CardHeader>
@@ -173,7 +173,7 @@ export default function TrackingDetailPage() {
 
         {/* Activity Timeline */}
         {shipment.activityLogs && shipment.activityLogs.length > 0 && (
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Tracking Timeline</CardTitle>
             </CardHeader>
@@ -184,7 +184,7 @@ export default function TrackingDetailPage() {
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 rounded-full bg-blue-500" />
                       {idx < shipment.activityLogs.length - 1 && (
-                        <div className="w-0.5 h-12 bg-[#1e1e2e] mt-2" />
+                        <div className="w-0.5 h-12 bg-wl-bg-elevated mt-2" />
                       )}
                     </div>
                     <div className="pb-4">

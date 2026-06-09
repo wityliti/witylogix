@@ -5,7 +5,7 @@ import { BarChart3 } from 'lucide-react';
 
 export function VariantMapping() {
   return (
-    <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-elevated border-wl-border-default">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5" />
@@ -33,7 +33,7 @@ export function VariantMapping() {
           ].map((variant, idx) => (
             <div
               key={idx}
-              className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
+              className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default"
             >
               <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
                 {variant.attribute}

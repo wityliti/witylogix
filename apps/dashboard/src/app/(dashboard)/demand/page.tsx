@@ -269,9 +269,9 @@ export default function DemandPage() {
     : 0;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
+    <div className="flex flex-col min-h-screen bg-wl-bg-root">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
         <div className="px-8 py-6">
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
@@ -280,7 +280,7 @@ export default function DemandPage() {
             </div>
             <div className="flex gap-2 items-center">
               {/* Charts / Map toggle */}
-              <div className="flex rounded-lg border border-[#1e1e2e] overflow-hidden">
+              <div className="flex rounded-lg border border-wl-border-default overflow-hidden">
                 <button
                   onClick={() => setViewMode('charts')}
                   className={cn(
@@ -329,7 +329,7 @@ export default function DemandPage() {
                 onChange={(e) => setSelectedZone(e.target.value)}
                 className={cn(
                   'px-3 py-2 rounded-md text-sm font-medium',
-                  'bg-[#1a1a2e] border border-[#1e1e2e]',
+                  'bg-wl-bg-elevated border border-wl-border-default',
                   'text-white',
                   'focus:outline-none focus:ring-2 focus:ring-blue-500',
                   'cursor-pointer hover:border-blue-500/50 transition-colors'
@@ -356,7 +356,7 @@ export default function DemandPage() {
                 onChange={(e) => setDateRange(e.target.value as any)}
                 className={cn(
                   'px-3 py-2 rounded-md text-sm font-medium',
-                  'bg-[#1a1a2e] border border-[#1e1e2e]',
+                  'bg-wl-bg-elevated border border-wl-border-default',
                   'text-white',
                   'focus:outline-none focus:ring-2 focus:ring-blue-500',
                   'cursor-pointer hover:border-blue-500/50 transition-colors'
@@ -389,13 +389,13 @@ export default function DemandPage() {
               />
             </WLMap>
           ) : (
-            <div className="h-full flex items-center justify-center bg-[#0a0a0f]">
+            <div className="h-full flex items-center justify-center bg-wl-bg-root">
               <p className="text-gray-400 text-sm">Loading zone map…</p>
             </div>
           )}
 
           {/* Map legend */}
-          <div className="absolute bottom-6 left-6 bg-[#12121a]/90 backdrop-blur border border-[#1e1e2e] rounded-xl p-4 text-xs">
+          <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs">
             <p className="font-semibold text-white mb-2">Demand Intensity</p>
             {[
               { color: '#3b82f6', label: 'Low' },
@@ -412,7 +412,7 @@ export default function DemandPage() {
           </div>
 
           {/* Zone summary overlay */}
-          <div className="absolute top-4 right-4 bg-[#12121a]/90 backdrop-blur border border-[#1e1e2e] rounded-xl p-4 max-w-xs">
+          <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 max-w-xs">
             <p className="text-xs font-semibold text-white mb-3">Zone Summary</p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {zones.slice(0, 8).map((z) => (
@@ -441,7 +441,7 @@ export default function DemandPage() {
         <div className="space-y-6 max-w-7xl">
           {/* KPI Metric Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Predicted</p>
               <p className="text-3xl font-bold text-white mt-3">
                 {(metrics?.totalPredicted || 0 / 1000).toFixed(0)}k
@@ -449,7 +449,7 @@ export default function DemandPage() {
               <p className="text-xs text-gray-500 mt-2">Volume units</p>
             </Card>
 
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current Actual</p>
               <p className="text-3xl font-bold text-white mt-3">
                 {(metrics?.totalActual || 0 / 1000).toFixed(0)}k
@@ -469,13 +469,13 @@ export default function DemandPage() {
               </div>
             </Card>
 
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Avg Confidence</p>
               <p className="text-3xl font-bold text-white mt-3">{metrics?.avgConfidence}%</p>
               <p className="text-xs text-gray-500 mt-2">Prediction accuracy</p>
             </Card>
 
-            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Anomalies Detected</p>
               <p className="text-3xl font-bold text-white mt-3">{metrics?.anomalyCount}</p>
               <Badge variant="warning" className="mt-2 text-xs">
@@ -485,7 +485,7 @@ export default function DemandPage() {
           </div>
 
           {/* Chart Section */}
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4">Predicted vs Actual Volume</h2>
             <div className="flex items-end gap-6">
               <div className="flex-1 overflow-x-auto">{renderForecastChart()}</div>
@@ -509,18 +509,18 @@ export default function DemandPage() {
           </Card>
 
           {/* Heatmap Section */}
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4">Demand Intensity by Zone</h2>
             {renderHeatmap()}
           </Card>
 
           {/* Zone Performance Table */}
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] overflow-hidden">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden">
             <h2 className="text-lg font-semibold text-white mb-4">Zone Performance</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="text-left px-4 py-3 font-semibold text-gray-400">Zone</th>
                     <th className="text-right px-4 py-3 font-semibold text-gray-400">Predicted</th>
                     <th className="text-right px-4 py-3 font-semibold text-gray-400">Actual</th>
@@ -534,8 +534,8 @@ export default function DemandPage() {
                     <tr
                       key={zone.id}
                       className={cn(
-                        'border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors',
-                        idx % 2 === 0 ? 'bg-[#0f0f14]' : 'bg-transparent'
+                        'border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors',
+                        idx % 2 === 0 ? 'bg-wl-bg-sunken' : 'bg-transparent'
                       )}
                     >
                       <td className="px-4 py-3 font-medium text-white">{zone.name}</td>
@@ -576,7 +576,7 @@ export default function DemandPage() {
           </Card>
 
           {/* Anomaly Alerts */}
-          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
               Anomaly Alerts
@@ -626,7 +626,7 @@ export default function DemandPage() {
                           <p className="text-sm text-gray-300">{anomaly.description}</p>
 
                           {isExpanded && (
-                            <div className="mt-3 pt-3 border-t border-[#1e1e2e] text-xs text-gray-500">
+                            <div className="mt-3 pt-3 border-t border-wl-border-default text-xs text-gray-500">
                               <p>Detected: {timestamp.toLocaleString()}</p>
                               <div className="mt-2 flex gap-2">
                                 <Button variant="ghost" size="sm">

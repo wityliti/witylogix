@@ -36,7 +36,7 @@ export function DeliveryStatsCard({
   action,
 }: DeliveryStatsCardProps) {
   return (
-    <Card className={`bg-[#1a1a2e] border-[#1e1e2e] ${cardBorders[variant]}`}>
+    <Card className={`bg-wl-bg-elevated border-wl-border-default ${cardBorders[variant]}`}>
       <CardContent className="pt-6">
         <h4 className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-3">
           {title}
