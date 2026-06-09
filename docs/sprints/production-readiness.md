@@ -39,6 +39,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-523 | feat/WIT-523-notification-templates-profile | Notification templates list: TEMPLATES[8] hardcoded array → real useApiList('/api/v4/notification-templates'); delete/toggle via api.delete/api.patch; WL design tokens; loading/empty states. Profile: 3 fake sessions (192.168.1.x, San Francisco CA, Chrome/Safari/Firefox) → current-session-only display; WL design tokens throughout. WIT-521 notifications/preferences + settings/notifications + products/sync + template [id]: all fake setTimeout replaced with real API calls | 11 mocks | 2026-06-04 |
 | WIT-350 | feat/WIT-350-dashboard-zones-drivers-delivery | zones/[id]: remove NEXT_PUBLIC_FEATURE_ZONES_MAP gate + LegacyNotice; LoadingSkeleton + ErrorState with retry; useRouter navigation; Promise.all with proper error propagation; active/inactive badge. zones/new: remove feature flag gate; remove maptilerKey prop; replace alert() with submitError state in sidebar; try/catch/finally for submit | 0 mocks | 2026-06-05 |
 | WIT-533 | feat/WIT-533-routes-design-tokens-plan-map | Routes 6 pages: 105+ hex CSS → WL design tokens; routes/plan List↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer on optimized stop sequence); routes/[id]/edit Save Changes fix (useApiMutation); removed getPriorityColor() hex helper | 105 CSS signals | 2026-06-08 |
+| WIT-534 | feat/WIT-534-dashboard-ai-analytics-design-tokens | AI pages (3) + Analytics pages (3): 31 hex CSS → WL design tokens; ai/driver-insights List↔Map toggle (WLMap + DriverLayer tier-coloured); ai/route-efficiency Score↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); analytics/route-performance legend hex → CSS vars | 31 CSS signals + 2 map views | 2026-06-08 |
 
 ---
 
@@ -172,14 +173,19 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Analytics (14 → 0 mock signals) ✅ WIT-512
-| Page | Route | Mock Before | Mock After | Status |
-|------|-------|------------|-----------|--------|
-| Analytics Overview | `/analytics` | DEMO_METRICS, DEMO_HOURLY, DEMO_WEEKLY, DEMO_TOP_ZONES, DEMO_DRIVERS_PERF (5 consts) | 0 | ✅ WIT-512 |
-| Dashboards | `/analytics/dashboards` | 0 | 0 | ✅ |
-| ETA Accuracy | `/analytics/eta-accuracy` | DEMO_METRICS, DEMO_FEATURES, DEMO_REPORT, mkDemo (4 consts) | 0 | ✅ WIT-512 |
-| Reports | `/analytics/reports` | 0 | 0 | ✅ |
-| Route Performance | `/analytics/route-performance` | 0 (API all Math.random()) | 0 + Map view | ✅ WIT-512 |
+## Analytics (14 → 0 mock signals) ✅ WIT-512 + WIT-534
+| Page | Route | Mock Before | Mock After | Map | Status |
+|------|-------|------------|-----------|-----|--------|
+| Analytics Overview | `/analytics` | DEMO_METRICS, 5 consts; 7×bg-[#111118], 1×bg-[#1a1a28] | 0 | — | ✅ WIT-512 + WIT-534 tokens |
+| Dashboards | `/analytics/dashboards` | 0 | 0 | — | ✅ |
+| ETA Accuracy | `/analytics/eta-accuracy` | DEMO_METRICS, 4 consts; 5×bg-[#111118] | 0 | — | ✅ WIT-512 + WIT-534 tokens |
+| Reports | `/analytics/reports` | 0 | 0 | — | ✅ |
+| Route Performance | `/analytics/route-performance` | 0 (API Math.random()); 4 inline hex legend colors | 0 + Map view; CSS vars | ✅ WLMap + DeliveryPerformanceLayer | ✅ WIT-512 + WIT-534 tokens |
+
+**WIT-534 analytics changes**:
+- `analytics/page.tsx`: `bg-[#111118]` ×7 → `bg-wl-bg-surface`; `bg-[#1a1a28]` ×1 (chart tooltip) → `bg-wl-bg-elevated`
+- `analytics/eta-accuracy/page.tsx`: `bg-[#111118]` ×5 → `bg-wl-bg-surface`
+- `analytics/route-performance/page.tsx`: legend inline hex colors (`#10b981`, `#ef4444`, `#f59e0b`, `#6b7280`) → `var(--wl-success-500)`, `var(--wl-error-500)`, `var(--wl-warning-500)`, `var(--wl-text-tertiary)`
 
 **WIT-512 changes**:
 - `analytics/page.tsx`: Removed `DEMO_METRICS`, `DEMO_HOURLY`, `DEMO_WEEKLY`, `DEMO_TOP_ZONES`, `DEMO_DRIVERS_PERF` fallbacks; replaced with loading skeletons + empty states
@@ -192,14 +198,19 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## AI Features (0 mock signals) ✅
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| AI Overview | `/ai` | 0 | ✅ |
-| Route Efficiency | `/ai/route-efficiency` | 0 | ✅ |
-| Copilot | `/ai/copilot` | 0 | ✅ |
-| Driver Insights | `/ai/driver-insights` | 0 | ✅ |
-| Slot Optimizer | `/ai/slots` | 0 | ✅ |
+## AI Features (0 mock signals) ✅ WIT-534
+| Page | Route | Mock Before | Mock After | Map | Status |
+|------|-------|------------|-----------|-----|--------|
+| AI Overview | `/ai` | 0 | 0 | — | ✅ |
+| Route Efficiency | `/ai/route-efficiency` | 8×bg-[#111118], 1×bg-[#0e0e15] | 0 | ✅ WLMap + RoutePolylineLayer + RouteStopMarkersLayer | ✅ WIT-534 |
+| Copilot | `/ai/copilot` | 0 | 0 | — | ✅ |
+| Driver Insights | `/ai/driver-insights` | 2×bg-[#111118] | 0 | ✅ WLMap + DriverLayer tier-coloured | ✅ WIT-534 |
+| Slot Optimizer | `/ai/slots` | 5×bg-[#111118], 3×bg-[#0e0e15] | 0 | — | ✅ WIT-534 |
+
+**WIT-534 AI changes**:
+- `ai/driver-insights/page.tsx`: `bg-[#111118]` ×2 → `bg-wl-bg-surface`; added List/Map toggle; Map view fetches `/api/v4/dispatch/drivers` + cross-references leaderboard entries; `DriverLayer` with tier colour mapping (platinum=available/green, gold=busy/amber, silver=break/purple, bronze=offline/grey); no-location empty state
+- `ai/route-efficiency/page.tsx`: `bg-[#111118]` ×8 → `bg-wl-bg-surface`; search input `bg-[#0e0e15]` → `bg-wl-bg-sunken`; added Score/Map toggle on right panel; Map view fetches `/api/v4/routes/:id` for stop coordinates; `RoutePolylineLayer` (planned variant, auto-fit) + `RouteStopMarkersLayer`; no-coordinates empty state
+- `ai/slots/page.tsx`: `bg-[#111118]` ×5 → `bg-wl-bg-surface`; `bg-[#0e0e15]` ×3 → `bg-wl-bg-sunken` (form inputs + containers)
 
 ---
 
@@ -567,7 +578,9 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-530 | `feat/WIT-530-dashboard-drivers-production-ready` | Notifications Log (`/notifications/log`): replace `NOTIFICATION_LOGS[7]` with real `useApiList('/api/v4/notifications/log')`; add Order link column; real stats cards; TableSkeleton + ErrorState + empty state; client CSV export. API: new `GET /log` (filters: channel/status/dateFrom/dateTo + groupBy stats) + `GET /delivery-log` (wires the previously-broken delivery-log page) + `POST /delivery-log/export` stub | `GET /api/v4/notifications/log` (new), `GET /api/v4/notifications/delivery-log` (new) | 7→0 | open |
 | WIT-341 | `feat/WIT-341-dashboard-map-production` | Map page (`/map`): replaced DIY SVG canvas + NYC-hardcoded bounds + pseudoLatLng fallbacks with real `WLMap` (MapLibre, keyless CARTO) + `OrderLayer` + `DriverLayer` + `useFitBounds`; layer toggles (Orders/Drivers/Routes); collapsible sidebar with item list + detail panel; loading/empty/error states; stats strip | existing `GET /api/v4/orders`, `GET /api/v4/dispatch/drivers`, `GET /api/v4/routes` | SVG canvas→WLMap; 0 mock signals | merged #284 |
 | WIT-531 | `feat/WIT-531-fleet-vehicles-map-integrations-fuel-collab` | Fleet vehicles: new `FleetVehiclesMapView` component (WLMap + VehicleMarkerLayer, status-coloured markers, useFitBounds, vehicle detail panel, GPS stats overlay); List/Map toggle with dynamic SSR-disabled import; API limit raised to 100. Integrations/fuel: 7 hardcoded arrays → `useApiList` connections (fuel/fleet category) + fuel transactions; KPIs from real data. Integrations/collaboration: 5 hardcoded arrays → `useApiList` messaging connections + team members + notification stats | `GET /api/v4/fleet/vehicles` (existing, limit 100), `GET /api/v4/fleet/fuel-transactions` (existing), `GET /api/v4/integrations/connections` (existing), `GET /api/v4/settings/team` (existing), `GET /api/v4/notifications/stats` (existing) | 12 mock signals → 0 | #283 |
-| WIT-532 | `feat/WIT-532-integration-health-real-api` | Integration health hooks: complete rewrite of `use-integration-health.ts` — root cause was raw `fetch()` without auth headers causing 401→demo fallback with `Math.random()`; switched to `api.get()` (auth cookie). `useIntegrationHealth`: `/api/v4/integrations` → transforms to `IntegrationHealthData`. `useProviderDetail`: same endpoint filtered by slug. `useWebhookMonitor`: parallel `/api/v4/outbound-webhooks` + `/api/v4/webhook-deliveries` → real latency from `durationMs`. `useCredentialManager`: derived from integrations list + expiry projection. `useIntegrationAlerts`: derived from degraded/error statuses. `partner-sla-indicator.tsx`: stable-trend sparkline now deterministic (was `Math.random()*3`). `webhook-config.tsx`: secret regeneration now uses `crypto.getRandomValues()`. `use-crm-connection.ts`: OAuth state uses `crypto.getRandomValues()`. `SAMPLE_DATA` renamed to `TEMPLATE_PREVIEW_VALUES` in templates/[id] and template-manager. | `GET /api/v4/integrations` (existing), `GET /api/v4/outbound-webhooks` (existing), `GET /api/v4/webhook-deliveries` (existing) | 8 Math.random() calls→0; 2 SAMPLE_DATA→renamed | open |
+| WIT-532 | `feat/WIT-532-integration-health-real-api` | Integration health hooks: complete rewrite of `use-integration-health.ts` — root cause was raw `fetch()` without auth headers causing 401→demo fallback with `Math.random()`; switched to `api.get()` (auth cookie). `useIntegrationHealth`: `/api/v4/integrations` → transforms to `IntegrationHealthData`. `useProviderDetail`: same endpoint filtered by slug. `useWebhookMonitor`: parallel `/api/v4/outbound-webhooks` + `/api/v4/webhook-deliveries` → real latency from `durationMs`. `useCredentialManager`: derived from integrations list + expiry projection. `useIntegrationAlerts`: derived from degraded/error statuses. `partner-sla-indicator.tsx`: stable-trend sparkline now deterministic (was `Math.random()*3`). `webhook-config.tsx`: secret regeneration now uses `crypto.getRandomValues()`. `use-crm-connection.ts`: OAuth state uses `crypto.getRandomValues()`. `SAMPLE_DATA` renamed to `TEMPLATE_PREVIEW_VALUES` in templates/[id] and template-manager. | `GET /api/v4/integrations` (existing), `GET /api/v4/outbound-webhooks` (existing), `GET /api/v4/webhook-deliveries` (existing) | 8 Math.random() calls→0; 2 SAMPLE_DATA→renamed | merged |
+| WIT-533 | `feat/WIT-533-routes-design-tokens-plan-map` | Routes 6 pages: 105 hex CSS → WL design tokens; routes/plan List↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); routes/[id]/edit Save Changes fix; removed getPriorityColor() hex helper | existing route endpoints | 105 CSS signals | merged #287 |
+| WIT-534 | `feat/WIT-534-dashboard-ai-analytics-design-tokens` | AI 3 pages + Analytics 3 pages: 31 hex CSS → WL design tokens; ai/driver-insights List↔Map toggle (WLMap + DriverLayer tier-coloured); ai/route-efficiency Score↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); analytics/route-performance legend hex → CSS vars | `GET /api/v4/dispatch/drivers` (existing), `GET /api/v4/routes/:id` (existing) | 31 CSS signals; 2 new map views | open |
 
 ---
 
