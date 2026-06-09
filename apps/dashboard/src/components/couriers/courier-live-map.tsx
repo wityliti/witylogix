@@ -218,8 +218,8 @@ export function CourierLiveMap({
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Draw direction arrow
-      const angle = (Math.random() * Math.PI * 2); // In real app, calculate from bearing
+      // Draw direction arrow — heading not yet in DriverPosition; default to north (0)
+      const angle = 0;
       const arrowLength = 8;
       const arrowX = point.x + Math.cos(angle) * arrowLength;
       const arrowY = point.y + Math.sin(angle) * arrowLength;
