@@ -81,21 +81,53 @@ export default async function paymentRoutes(
           }
         }
 
-        // Fetch payments
-        const [payments, total] = await Promise.all([
+        // Fetch payments with order context when available
+        const [rawPayments, total] = await Promise.all([
           request.tenantDb.paymentTransaction.findMany({
             where,
             skip,
             take: limit ?? 25,
             orderBy: { createdAt: "desc" },
             include: {
-              shop: {
-                select: { id: true, name: true },
-              },
+              paymentMethod: { select: { type: true, displayName: true, lastDigits: true } },
             },
           }),
           request.tenantDb.paymentTransaction.count({ where }),
         ]);
+
+        // Normalize to dashboard-friendly shape
+        const PROVIDER_TO_METHOD: Record<string, string> = {
+          stripe: "card",
+          square: "card",
+          paypal: "bank_transfer",
+          cod: "cash",
+          cash: "cash",
+          check: "check",
+        };
+
+        const payments = rawPayments.map((p) => {
+          const methodRaw =
+            p.paymentMethod?.type?.toLowerCase() ||
+            p.providerName?.toLowerCase() ||
+            "bank_transfer";
+          const method = PROVIDER_TO_METHOD[methodRaw] ?? "bank_transfer";
+
+          return {
+            id: p.id,
+            invoiceNumber: p.orderId
+              ? `ORD-${p.orderId.slice(0, 8).toUpperCase()}`
+              : p.providerTxnId?.slice(0, 12) ?? p.id.slice(0, 8).toUpperCase(),
+            customerName:
+              p.paymentMethod?.displayName ??
+              (p.providerName ? `${p.providerName} payment` : "Direct payment"),
+            amount: Number(p.amount) / 100,
+            method,
+            status: p.status.toLowerCase(),
+            date: p.createdAt.toISOString(),
+            reference: p.providerRef ?? p.providerTxnId ?? p.id,
+            metadata: p.metadata,
+          };
+        });
 
         const totalPages = Math.ceil(total / (limit ?? 25));
 
