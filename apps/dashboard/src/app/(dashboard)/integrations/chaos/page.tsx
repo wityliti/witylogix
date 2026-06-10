@@ -8,14 +8,14 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useApiList } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   useChaosScenarios,
   useChaosExecution,
   useChaosHistory,
   type ChaosScenario,
   type ChaosExecution,
-  type ChaosResult,
 } from '@/hooks/use-chaos-testing';
 
 const PROVIDERS = ['Stripe', 'PayPal', 'Square', 'Adyen', 'AWS S3'];
@@ -58,9 +58,9 @@ export default function ChaosDashboard() {
     time: '02:00',
   });
 
-  const { scenarios, executeScenario, createScenario } = useChaosScenarios();
+  const { scenarios, executeScenario, createScenario, isLoading: scenariosLoading, error: scenariosError, fetchScenarios } = useChaosScenarios();
   const { execution: currentExecution } = useChaosExecution(selectedExecution || '');
-  const { results, fetchHistory } = useChaosHistory();
+  const { fetchHistory, error: historyError } = useChaosHistory();
 
   const handleCreateScenario = async (useTemplate?: string) => {
     const payload: Omit<ChaosScenario, 'id' | 'createdAt'> = useTemplate
@@ -101,12 +101,15 @@ export default function ChaosDashboard() {
     }
   };
 
+  if (scenariosLoading) return <LoadingSkeleton />;
+  if (scenariosError) return <ErrorState message={scenariosError} onRetry={fetchScenarios} />;
+
   return (
     <div className="flex h-screen flex-col bg-wl-bg-root">
       {/* Header */}
       <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
         <h1 className="text-3xl font-bold text-white">Chaos Testing Dashboard</h1>
-        <p className="mt-2 text-gray-400">
+        <p className="mt-2 text-wl-text-secondary">
           Test provider resilience with controlled fault injection
         </p>
       </div>
@@ -307,7 +310,9 @@ export default function ChaosDashboard() {
         )}
 
         {activeTab === 'history' && (
-          <HistoryTable scenarios={scenarios} onExecute={handleExecuteScenario} />
+          historyError
+            ? <ErrorState message={historyError} onRetry={fetchHistory} />
+            : <HistoryTable scenarios={scenarios} onExecute={handleExecuteScenario} />
         )}
       </div>
     </div>
