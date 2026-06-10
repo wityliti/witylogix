@@ -14,6 +14,8 @@ import {
   Package,
   Warehouse,
 } from 'lucide-react';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   useInventory,
   useOrders,
@@ -45,8 +47,33 @@ export default function SupplyChainPage() {
   const warehouse = useWarehouseOps();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
 
+  const isLoading = inventory.loading || orders.loading || fulfillment.loading || demand.loading || warehouse.loading;
+  const anyError = inventory.error || orders.error || fulfillment.error || demand.error || warehouse.error;
+
+  const handleRetry = () => {
+    inventory.refetch();
+    orders.refetch();
+    fulfillment.refetch();
+    demand.refetch();
+    warehouse.refetch();
+  };
+
   const totalOrders = orders.orders.length;
   const deliveredOrders = orders.orders.filter((o) => o.status === 'delivered').length;
+
+  const backlogOrders = fulfillment.pipelineStats.received + fulfillment.pipelineStats.picked + fulfillment.pipelineStats.packed;
+
+  const onTimeRate = totalOrders > 0 ? Math.round((deliveredOrders / totalOrders) * 100) : 0;
+
+  const avgProcessTime = useMemo(() => {
+    const items = fulfillment.items.filter((i) => i.startTime && i.estCompletionTime);
+    if (items.length === 0) return null;
+    const avgMs = items.reduce((sum, i) => {
+      const ms = new Date(i.estCompletionTime).getTime() - new Date(i.startTime).getTime();
+      return sum + Math.max(0, ms);
+    }, 0) / items.length;
+    return (avgMs / 86_400_000).toFixed(1);
+  }, [fulfillment.items]);
 
   const kpiMetrics = useMemo(() => {
     const fillRate = totalOrders > 0 ? (deliveredOrders / totalOrders) * 100 : 0;
@@ -91,6 +118,9 @@ export default function SupplyChainPage() {
     { stage: 'Shipped', count: fulfillment.pipelineStats.shipped, percentage: totalPipelineOrders > 0 ? Math.round((fulfillment.pipelineStats.shipped / totalPipelineOrders) * 100) : 0, status: 'healthy' },
     { stage: 'Delivered', count: fulfillment.pipelineStats.delivered, percentage: totalPipelineOrders > 0 ? Math.round((fulfillment.pipelineStats.delivered / totalPipelineOrders) * 100) : 0, status: 'healthy' },
   ];
+
+  if (isLoading) return <TableSkeleton rows={6} columns={4} />;
+  if (anyError) return <ErrorState message={anyError.message} onRetry={handleRetry} />;
 
   return (
     <div className="flex flex-col min-h-screen bg-wl-bg-root">
@@ -179,15 +209,15 @@ export default function SupplyChainPage() {
                     </div>
                     <div>
                       <span className="text-gray-400">Avg Process Time:</span>
-                      <p className="font-semibold text-white mt-1">2.3 days</p>
+                      <p className="font-semibold text-white mt-1">{avgProcessTime !== null ? `${avgProcessTime} days` : '—'}</p>
                     </div>
                     <div>
                       <span className="text-gray-400">On-Time Rate:</span>
-                      <p className="font-semibold text-white mt-1">94.2%</p>
+                      <p className="font-semibold text-white mt-1">{onTimeRate}%</p>
                     </div>
                     <div>
                       <span className="text-gray-400">Backlog:</span>
-                      <p className="font-semibold text-white mt-1">12 orders</p>
+                      <p className="font-semibold text-white mt-1">{backlogOrders} orders</p>
                     </div>
                   </div>
                 </div>

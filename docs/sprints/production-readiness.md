@@ -42,6 +42,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-534 | feat/WIT-534-dashboard-ai-analytics-design-tokens | AI pages (3) + Analytics pages (3): 31 hex CSS → WL design tokens; ai/driver-insights List↔Map toggle (WLMap + DriverLayer tier-coloured); ai/route-efficiency Score↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); analytics/route-performance legend hex → CSS vars | 31 CSS signals + 2 map views | 2026-06-08 |
 | WIT-535 | feat/WIT-535-dashboard-integrations-design-tokens | integrations/payments full rewrite (5 real endpoints: gateways/summary/transactions/methods/reconciliation); integrations/eld full rewrite (5 real endpoints: connections/drivers/violations/dvir/compliance); integrations/overview CATEGORIES→useApiList; integrations/supply-chain warehouse/inventory→real API; 13 integrations sub-pages CSS-only pass; 179 dashboard pages total: all Tailwind arbitrary hex class values (bg-[#...]/border-[#...]/text-[#...]) eliminated codebase-wide; TableSkeleton cols→columns fix; Map→MapIcon lucide rename | 179 files, ~1900 CSS signals, 4 pages real API | 2026-06-09 |
 | WIT-536 | feat/WIT-536-nav-ui-design-token-cleanup | Navigation (sidebar: text-[#f5a623]→text-wl-primary-500 x6 + bg-[#0a0a0e]→bg-wl-bg-sidebar; page-header: bg-[#0f0f14]→bg-wl-bg-surface); UI components (dialog: bg-[#13131a]→bg-wl-bg-elevated; card: bg-[#13131a]+bg-[#161620]→bg-wl-bg-elevated+bg-wl-bg-overlay); global-error (bg-[#0a0a0f]+bg-[#1a1a20]→WL tokens); shipments-map-view (border-[#1e1e2e]→border-wl-border-subtle); courier-live-map (Math.random bearing→deterministic 0); provider-comparison (Math.random metrics→real provider.metrics.averageLatencyMs/successRate; hardcoded features matrix→real credentialConfig/webhookConfig/rateLimit flags); rate-limit-display (Math.random sparkline→deterministic sine wave) | 9 files, 18 signals → 0 | 2026-06-09 |
+| WIT-537 | feat/WIT-537-dashboard-returns-detail-map | Returns: NEW `/returns/[id]` detail page (RMA lifecycle: status pipeline, items table, action buttons approve/reject/receive/inspect/refund, timeline, customer+order sidebar, Detail/Map toggle); `/returns` list upgrades (stats row, List↔Map toggle, row navigation, status filter pills); Fixed `use-returns.ts` bugs (wrong paths + PATCH→POST); NEW `returns-map-view.tsx` (WLMap+PinLayer for list) + `return-location-map.tsx` (WLMap+PinLayer for detail) | `GET /api/v4/returns/:id`, action endpoints × 5, `GET /api/v4/returns/stats` | 5 files, 0 mocks, 2 map views | 2026-06-10 |
+| WIT-538 | feat/WIT-538-supplychain-crm-quality-hardening | supply-chain/page: added loading skeleton + error state for all 5 hooks; replaced 3 hardcoded Pipeline Summary metrics ("2.3 days", "94.2%", "12 orders") with real computed values from fulfillment/orders data. crm/page: removed dead `useState<SyncEvent[]>([])` (setter never called); replaced with `useMemo` deriving sync events from each CRM integration's `lastSyncAt`+`healthStatus`; Failed Syncs stat now reflects real UNHEALTHY integrations | no new endpoints | 2 files, 3 hardcoded strings → 0 | 2026-06-10 |
 
 ---
 
@@ -367,6 +369,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 **WIT-519 changes**: Supply Chain Overview: removed `KPI_METRICS` (hardcoded fill rate/backorder/lead-time/turns), `INVENTORY_DISTRIBUTION` (hardcoded class counts), `demandSupplyData` (hardcoded Week 1/2/3), and hardcoded pipeline percentages. All now derived from live hooks: fill rate from `useOrders()` delivered counts, ABC distribution from `useInventory()` items, demand/supply from `useDemandPlanning()` items, pipeline percentages from real fulfillment counts.
 
+**WIT-538 changes**: Supply Chain Overview: added `isLoading` + `anyError` guard (covers all 5 hooks: inventory/orders/fulfillment/demand/warehouse) → `TableSkeleton` while loading, `ErrorState` with handleRetry when any hook fails. Replaced 3 hardcoded Pipeline Summary metrics: `"2.3 days"` → `avgProcessTime` computed from `fulfillment.items[].startTime/estCompletionTime` (shows `—` when no data); `"94.2%"` → `onTimeRate` = delivered/total orders; `"12 orders"` → `backlogOrders` = received+picked+packed pipeline sum.
+
 ---
 
 ## Healthcare (6 → 0 mock signals) ✅ WIT-514
@@ -530,7 +534,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Notifications | `/notifications` | ✅ |
 | Notifications Log | `/notifications/log` | ✅ WIT-530 (NOTIFICATION_LOGS[7]→real API) |
 | Notifications Delivery Log | `/notifications/delivery-log` | ✅ WIT-530 (endpoint was missing; now added) |
-| CRM | `/crm` | ✅ |
+| CRM | `/crm` | ✅ WIT-538 (dead useState<SyncEvent[]>→derived memo from crmIntegrations) |
 | Collaboration | `/collaboration` | ✅ |
 | POS | `/pos` | ✅ |
 | Locations | `/locations` | ✅ WIT-519 (map view added) |
