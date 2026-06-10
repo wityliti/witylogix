@@ -274,15 +274,13 @@ export function useSDKReference(providerId: string) {
 export function useWebhookCatalog() {
   const searchEvents = useMemo(
     () =>
-      (query: string, providerFilter?: string): { provider: string; event: WebhookEvent }[] => {
-        const catalogs = providerFilter
-          ? WEBHOOK_CATALOGS.filter((c) => c.provider.toLowerCase() === providerFilter.toLowerCase())
+      (query: string, provider?: string) => {
+        const catalogs = provider
+          ? WEBHOOK_CATALOGS.filter((c) => c.provider.toLowerCase() === provider.toLowerCase())
           : WEBHOOK_CATALOGS;
         const lq = query.toLowerCase();
         return catalogs.flatMap((c) =>
-          c.events
-            .filter((e) => e.type.includes(lq) || e.description.toLowerCase().includes(lq))
-            .map((e) => ({ provider: c.provider, event: e })),
+          c.events.filter((e) => e.type.includes(lq) || e.description.toLowerCase().includes(lq)),
         );
       },
     [],
