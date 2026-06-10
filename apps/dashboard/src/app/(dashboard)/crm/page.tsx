@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
@@ -95,11 +95,25 @@ export default function CrmDashboardPage() {
   const { data: integrationsData, loading, error, refetch } = useApiQuery<IntegrationsResponse>(
     "/api/v4/integrations"
   );
-  const [syncEvents] = useState<SyncEvent[]>([]);
-
   const crmIntegrations = useMemo(
     () => (integrationsData?.integrations ?? []).filter((i) => CRM_SLUGS.has(i.slug)),
     [integrationsData]
+  );
+
+  const syncEvents = useMemo<SyncEvent[]>(
+    () =>
+      crmIntegrations
+        .filter((i) => i.lastSyncAt)
+        .map((i) => ({
+          id: `${i.slug}-last-sync`,
+          timestamp: i.lastSyncAt!,
+          type: 'sync',
+          direction: 'in' as const,
+          status: i.healthStatus === 'UNHEALTHY' ? ('failed' as const) : ('success' as const),
+          recordsAffected: 0,
+          details: `${i.name} last sync`,
+        })),
+    [crmIntegrations]
   );
 
   const aggregateStats = useMemo(() => {
