@@ -1,14 +1,7 @@
 'use client';
 
-/**
- * Return-specific API hooks for the dashboard
- */
-
 import { useApiMutation, useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiMutationResult, UseApiListResult } from './use-api';
 
-/**
- * Return status enum
- */
 export enum ReturnStatus {
   INITIATED = 'initiated',
   APPROVED = 'approved',
@@ -16,43 +9,10 @@ export enum ReturnStatus {
   PICKED_UP = 'picked_up',
   IN_TRANSIT = 'in_transit',
   RECEIVED = 'received',
+  INSPECTED = 'inspected',
   REFUNDED = 'refunded',
 }
 
-/**
- * Return type
- */
-export interface Return {
-  id: string;
-  orderId: string;
-  customerId: string;
-  customerName: string;
-  customerEmail?: string;
-  status: ReturnStatus | string;
-  reason: string;
-  description?: string;
-  items: ReturnItem[];
-  totalRefundAmount?: number;
-  refundAmount?: number;
-  refundStatus?: 'pending' | 'processed' | 'failed';
-  refundDate?: string;
-  createdAt: string;
-  updatedAt?: string;
-  initiatedAt?: string;
-  requestedAt?: string;
-  approvedAt?: string;
-  receivedAt?: string;
-  refundedAt?: string;
-  rejectedAt?: string;
-  rejectionReason?: string;
-  pickupDate?: string;
-  notes?: string | null;
-  timeline?: unknown[];
-}
-
-/**
- * Return item
- */
 export interface ReturnItem {
   id: string;
   orderItemId?: string;
@@ -65,93 +25,97 @@ export interface ReturnItem {
   refundAmount?: number;
 }
 
-/**
- * Return statistics
- */
-export interface ReturnStats {
-  totalReturns: number;
-  pendingApprovals: number;
-  approvedReturns: number;
-  refundedReturns: number;
-  totalRefunded: number;
-  averageRefundAmount: number;
-  returnRate: number;
-  topReturnReasons: Array<{
-    reason: string;
-    count: number;
-  }>;
+export interface ReturnOrder {
+  id: string;
+  externalOrderNumber?: string | null;
+  customerName?: string | null;
+  customerEmail?: string | null;
+  totalPrice?: number | null;
+  deliveryLat?: number | null;
+  deliveryLng?: number | null;
 }
 
-/**
- * Return filters
- */
+export interface Return {
+  id: string;
+  orderId: string;
+  customerId: string;
+  customerName: string;
+  customerEmail?: string;
+  status: ReturnStatus | string;
+  reason: string;
+  reasonDetails?: string;
+  description?: string;
+  items: ReturnItem[];
+  totalRefundAmount?: number;
+  refundAmount?: number;
+  restockingFee?: number;
+  refundStatus?: 'pending' | 'processed' | 'failed';
+  refundDate?: string;
+  shippingLabelUrl?: string | null;
+  trackingNumber?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  receivedAt?: string | null;
+  refundedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+  pickupDate?: string | null;
+  notes?: string | null;
+  order?: ReturnOrder | null;
+}
+
+export interface ReturnStats {
+  counts: {
+    requested: number;
+    approved: number;
+    rejected: number;
+    received: number;
+    inspected: number;
+    refunded: number;
+    closed: number;
+  };
+  totalRefundAmount: number;
+  totalReturns: number;
+}
+
 export interface ReturnFilters extends ApiFilters {
-  status?: ReturnStatus;
+  status?: ReturnStatus | string;
   customerId?: string;
   orderId?: string;
   dateFrom?: string;
   dateTo?: string;
 }
 
-/**
- * Hook to fetch paginated returns with filtering and sorting
- * @param filters - Return filter options
- * @returns List of returns with pagination
- */
-export function useReturns(
-  filters?: ReturnFilters,
-): UseApiListResult<Return> {
+export function useReturns(filters?: ReturnFilters): UseApiListResult<Return> {
   return useApiList<Return>('/api/v4/returns', filters);
 }
 
-/**
- * Hook to fetch a single return by ID
- * @param id - Return ID
- * @returns Single return
- */
-export function useReturn(
-  id: string | null,
-): UseApiQueryResult<Return> {
-  return useApiQuery<Return>(id ? `/returns/${id}` : null);
+export function useReturn(id: string | null): UseApiQueryResult<Return> {
+  return useApiQuery<Return>(id ? `/api/v4/returns/${id}` : null);
 }
 
-/**
- * Hook to approve a return
- * @param id - Return ID
- * @returns Mutation to approve return
- */
-export function useApproveReturn(
-  id: string,
-): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('PATCH', `/returns/${id}/approve`);
+export function useApproveReturn(id: string): UseApiMutationResult<Return> {
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/approve`);
 }
 
-/**
- * Hook to reject a return
- * @param id - Return ID
- * @returns Mutation to reject return
- */
-export function useRejectReturn(
-  id: string,
-): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('PATCH', `/returns/${id}/reject`);
+export function useRejectReturn(id: string): UseApiMutationResult<Return> {
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/reject`);
 }
 
-/**
- * Hook to process refund for a return
- * @param id - Return ID
- * @returns Mutation to process refund
- */
-export function useProcessRefund(
-  id: string,
-): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('POST', `/returns/${id}/refund`);
+export function useReceiveReturn(id: string): UseApiMutationResult<Return> {
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/receive`);
 }
 
-/**
- * Hook to fetch return statistics for dashboard widgets
- * @returns Return stats (totals, rates, top reasons)
- */
+export function useInspectReturn(id: string): UseApiMutationResult<Return> {
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/inspect`);
+}
+
+export function useProcessRefund(id: string): UseApiMutationResult<Return> {
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/refund`);
+}
+
 export function useReturnStats(): UseApiQueryResult<ReturnStats> {
   return useApiQuery<ReturnStats>('/api/v4/returns/stats');
 }
