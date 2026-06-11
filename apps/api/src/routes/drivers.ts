@@ -324,6 +324,51 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
     }
   });
 
+  // ── DRIVER LOCATIONS (for map display) ───────────────────
+
+  fastify.get("/locations", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const rows = await (request as any).tenantDb.$queryRaw<
+        Array<{
+          id: string;
+          name: string;
+          status: string;
+          heading: number | null;
+          last_location_at: Date | null;
+          latitude: number | null;
+          longitude: number | null;
+        }>
+      >`
+        SELECT
+          id::text,
+          name,
+          status,
+          heading,
+          last_location_at,
+          ST_Y(current_location::geometry) AS latitude,
+          ST_X(current_location::geometry) AS longitude
+        FROM drivers
+        WHERE shop_id = ${(request as any).shopId}::uuid
+          AND is_active = true
+          AND current_location IS NOT NULL
+      `;
+
+      return reply.send({
+        data: rows.map((r) => ({
+          id: r.id,
+          name: r.name,
+          status: r.status,
+          heading: r.heading != null ? Number(r.heading) : null,
+          lastLocationAt: r.last_location_at?.toISOString() ?? null,
+          latitude: r.latitude != null ? Number(r.latitude) : null,
+          longitude: r.longitude != null ? Number(r.longitude) : null,
+        })),
+      });
+    } catch (err) {
+      throw err;
+    }
+  });
+
   // ── FIND NEARBY DRIVERS ───────────────────────────────────
 
   fastify.get("/nearby", async (request: FastifyRequest, reply: FastifyReply) => {
