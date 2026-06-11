@@ -110,21 +110,26 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Customers (0 mock signals) ✅ WIT-526
+## Customers (0 mock signals) ✅ WIT-526 + WIT-343
 | Page | Route | Mock Before | Mock After | Map | Status |
 |------|-------|------------|-----------|-----|--------|
-| Customer List | `/customers` | 0 | 0 (+ real stats) | — | ✅ WIT-526 |
-| Customer Detail | `/customers/[id]` | n/a (page missing) | 0 (new page) | ✅ Delivery-pin WLMap | ✅ WIT-526 |
+| Customer List | `/customers` | hook had fake name/status/tier/totalOrders fields | 0 + real stats + tier/status filters | ✅ WLMap + CustomerDensityLayer (tier-coloured, auto-fit) | ✅ WIT-343 |
+| Customer Detail | `/customers/[id]` | n/a (page missing) | 0 (new page) | ✅ WLMap + PinLayer delivery locations | ✅ WIT-526 + WIT-343 |
+| Customer Segments | `/customers/segments` | n/a (page missing) | 0 (new page) | — (geo table) | ✅ WIT-343 |
 | Customer Create | `/customers/create` | 0 | 0 | — | ✅ |
 
-**WIT-526 changes**:
-- NEW: `customers/[id]/page.tsx` — full customer detail page with profile card, stat tiles (total orders, total spent, avg order value, last order), order history table (click-through to `/orders/:id`), loading skeleton, error/not-found states
-- Map: `WLMap` + `PinLayer` showing past delivery locations from customer orders (auto-fit bounds via `useFitBounds`); status-coloured pins (in_transit=delivered, delayed=failed, open=pending, assigned=others)
-- Fixed `useCustomer` hook: path corrected `/customers/${id}` → `/api/v4/customers/${id}`; `useApiQuery` correctly extracts the data envelope
-- New hooks: `useCustomerOrders(id)` — `GET /api/v4/customers/:id/orders`; `useCustomerStats()` — `GET /api/v4/customers/stats`
-- Customer list: "View" button + full row now navigate to `/customers/:id`; stat cards use `useCustomerStats()` for accurate server-side totals
+**WIT-343 changes**:
+- NEW: `customers/segments/page.tsx` — tier overview (enterprise/premium/standard cards with computed count/revenue/avg-orders/avg-spend), engagement status bars, tier criteria reference, geo tab with top cities table + revenue-by-tier + count-by-tier progress bars
+- UPDATED: `customers/page.tsx` — added List↔Map view toggle; map view uses new `CustomerDensityLayer` (MapLibreGL GeoJSON circles, tier-coloured: amber=enterprise/blue=premium/grey=standard, auto-fit via `useFitBounds`, click popup with name/tier/city/orders/spend); stat cards use real `/api/v4/customers/stats` (total + totalPrev trend, activeCount, topSpenderAmount, avgOrderCount); tier/status filter pills with server-side filtering
+- FIXED: `use-customers.ts` — `Customer` interface fully aligned to Prisma schema (`firstName`/`lastName`/`ordersCount`/`externalCustomerId`/`marketingConsent`/`lastSyncAt`/`tags`); removed fake `name`/`status`/`tier`/`totalOrders` interface fields; `normalizeCustomer()` now maps to correct Prisma fields + computes `tier` (spend-based) and `status` (orders > 0 → active); `CustomerAddress` interface updated to Shopify address shape (`address1`/`province`/`latitude`/`longitude`)
+- FIXED: `customers/[id]/page.tsx` — fixed address rendering (`addr.street`→`addr.address1`, `addr.state`→`addr.province`); removed non-existent `customer.company` reference
+- NEW: `components/map/customer-density-layer.tsx` — MapLibreGL layer; GeoJSON source; enterprise=amber/premium=blue/standard=grey; click handler (`onCustomerClick`); initial-label layer for enterprise tier; auto-cleanup on unmount
+- NEW: `customers/components/customers-map-view.tsx` — dynamic-imported wrapper (MapLibre, SSR-disabled): `WLMap` + inner `MapLayers` component using `useWLMap()` + `useFitBounds`, customer count badge, tier legend, selected-customer popup, empty state
+- API UPDATED: `customers.ts` — normalizes list/get responses (adds `name`/`totalOrders`/`tier`/`status` derived fields); supports `tier` + `status` query params with app-layer filtering; stats endpoint adds `totalPrev`/`activeCount`/`topSpenderAmount` for trend display
+- NEW API: `GET /api/v4/customers/locations` — extracts lat/lng from addresses JSON (Shopify address format), returns up to 2,000 customer pins with tier/orders/spend
+- NEW API: `GET /api/v4/customers/segment-stats` — aggregates tier buckets (count/totalSpent/totalOrders), status buckets (active/inactive), top-15 cities with customer count/revenue/avg-orders
 
-**Endpoints used**: `GET /api/v4/customers/:id` (existing), `GET /api/v4/customers/:id/orders` (existing), `GET /api/v4/customers/stats` (existing)
+**Endpoints**: `GET /api/v4/customers` (tier+status filters added), `GET /api/v4/customers/stats` (trend data added), `GET /api/v4/customers/locations` (NEW), `GET /api/v4/customers/segment-stats` (NEW), `GET /api/v4/customers/:id` (normalized), `GET /api/v4/customers/:id/orders` (wired)
 
 ---
 

@@ -48,9 +48,9 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
   const defaultCenter: [number, number] = [-74.006, 40.7128];
 
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden border border-wl-border-default">
+    <div className="relative w-full h-full rounded-xl overflow-hidden border border-[#1e1e2e]">
       {customers.length === 0 ? (
-        <div className="w-full h-full bg-wl-bg-root flex flex-col items-center justify-center gap-3">
+        <div className="w-full h-full bg-[#0a0a0f] flex flex-col items-center justify-center gap-3">
           <MapIcon className="w-10 h-10 text-gray-600" />
           <div className="text-center">
             <p className="text-sm font-medium text-gray-300">No geo-located customers yet</p>
@@ -70,7 +70,7 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
           </WLMap>
 
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg p-3 z-10">
+          <div className="absolute bottom-4 left-4 bg-[#0d0d14]/90 backdrop-blur-sm border border-[#1e1e2e] rounded-lg p-3 z-10">
             <p className="text-[10px] font-semibold text-gray-500 uppercase mb-2 tracking-wide">Tier</p>
             <div className="space-y-1.5">
               {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
@@ -88,7 +88,7 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
           </div>
 
           {/* Count badge */}
-          <div className="absolute top-4 left-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg px-3 py-1.5 z-10">
+          <div className="absolute top-4 left-4 bg-[#0d0d14]/90 backdrop-blur-sm border border-[#1e1e2e] rounded-lg px-3 py-1.5 z-10">
             <span className="text-xs font-semibold text-gray-300">
               {customers.length} customer{customers.length !== 1 ? 's' : ''} on map
             </span>
@@ -96,7 +96,7 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
 
           {/* Selected customer card */}
           {selectedCustomer && (
-            <div className="absolute top-4 right-4 bg-wl-bg-root/95 backdrop-blur-sm border border-wl-border-default rounded-lg p-4 z-10 min-w-52">
+            <div className="absolute top-4 right-4 bg-[#0d0d14]/95 backdrop-blur-sm border border-[#1e1e2e] rounded-lg p-4 z-10 min-w-52">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-semibold text-white">{selectedCustomer.name}</p>
                 <button
