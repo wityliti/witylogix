@@ -12,7 +12,6 @@ import {
   Calendar,
   Package,
   MapPin,
-  Tag,
   ChevronRight,
   TrendingUp,
   Clock,
@@ -312,14 +311,6 @@ export default function CustomerDetailPage() {
                     <span className="text-white/60">{customer.phone}</span>
                   </div>
                 )}
-                {customer.company && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="w-7 h-7 rounded bg-white/[0.05] flex items-center justify-center shrink-0">
-                      <Package className="w-3.5 h-3.5 text-white/40" />
-                    </div>
-                    <span className="text-white/60">{customer.company}</span>
-                  </div>
-                )}
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-7 h-7 rounded bg-white/[0.05] flex items-center justify-center shrink-0">
                     <Calendar className="w-3.5 h-3.5 text-white/40" />
@@ -369,7 +360,7 @@ export default function CustomerDetailPage() {
                   {customer.addresses.slice(0, 3).map((addr, i) => (
                     <div key={addr.id ?? i} className="flex items-start gap-2 text-xs text-white/50">
                       <MapPin className="w-3 h-3 mt-0.5 shrink-0 text-white/30" />
-                      <span>{[addr.street, addr.city, addr.state, addr.country].filter(Boolean).join(', ')}</span>
+                      <span>{[addr.address1, addr.city, addr.province, addr.country].filter(Boolean).join(', ')}</span>
                     </div>
                   ))}
                 </div>
