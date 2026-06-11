@@ -1,63 +1,61 @@
 'use client';
 
-/**
- * Customer-specific API hooks for the dashboard
- */
-
 import { useMemo } from 'react';
-import { useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiListResult } from './use-api';
-
-export interface CustomerAddress {
-  id?: string;
-  type?: 'billing' | 'shipping' | 'default';
-  street?: string;
-  address1?: string;
-  city?: string;
-  province?: string;
-  state?: string;
-  zip?: string;
-  zipCode?: string;
-  country?: string;
-  country_code?: string;
-  isDefault?: boolean;
-}
-
-export interface OrderSummary {
-  id: string;
-  externalOrderNumber?: string | null;
-  status: string;
-  totalPrice: number | null;
-  city?: string | null;
-  country?: string | null;
-  deliveryDate?: string | null;
-  createdAt: string;
-}
+import { useApiList, useApiQuery, type ApiFilters, type UseApiQueryResult, type UseApiListResult } from './use-api';
+import type { CustomerLocation } from '@/components/map/customer-density-layer';
 
 export interface Customer {
   id: string;
-  name: string;
+  shopId: string;
+  externalCustomerId: string;
+  source: string;
   email: string | null;
   phone: string | null;
-  status: 'active' | 'inactive';
-  tier: 'standard' | 'premium' | 'enterprise';
-  totalOrders: number;
+  firstName: string | null;
+  lastName: string | null;
+  ordersCount: number;
   totalSpent: number;
-  lastOrderDate?: string | null;
-  lastSyncAt?: string | null;
+  tags: string[];
+  addresses: CustomerAddress[];
+  marketingConsent: boolean;
+  notes: string | null;
+  lastSyncAt: string;
   createdAt: string;
   updatedAt: string;
-  tags?: string[];
-  addresses?: CustomerAddress[];
-  recentOrders?: OrderSummary[];
-  notes?: string | null;
-  marketingConsent?: boolean;
-  source?: string;
-  externalCustomerId?: string | null;
+  // Derived fields normalised by the API
+  name: string;
+  totalOrders: number;
+  tier: 'standard' | 'premium' | 'enterprise';
+  status: 'active' | 'inactive';
 }
+
+export interface CustomerAddress {
+  id?: number;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  zip?: string;
+  phone?: string;
+  latitude?: number;
+  longitude?: number;
+  default?: boolean;
+}
+
 
 export interface CustomerFilters extends ApiFilters {
   status?: 'active' | 'inactive';
   tier?: 'standard' | 'premium' | 'enterprise';
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface CustomerSegmentStats {
+  total: number;
+  tiers: Record<string, { count: number; totalSpent: number; totalOrders: number }>;
+  statuses: { active: number; inactive: number };
+  topCities: Array<{ city: string; count: number; totalSpent: number; avgOrders: number }>;
 }
 
 /**
@@ -101,20 +99,26 @@ function normalizeCustomer(raw: unknown): Customer {
 
   return {
     id: str(r.id),
+    shopId: str(r.shopId),
+    externalCustomerId: str(r.externalCustomerId),
+    source: str(r.source) || 'SHOPIFY',
     name,
-    email: str(r.email),
-    phone: str(r.phone),
-    avatar: r.avatar ? str(r.avatar) : undefined,
-    company: r.company ? str(r.company) : undefined,
+    email: r.email ? str(r.email) : null,
+    phone: r.phone ? str(r.phone) : null,
+    firstName: r.firstName ? str(r.firstName) : null,
+    lastName: r.lastName ? str(r.lastName) : null,
+    ordersCount: num(r.ordersCount),
     status,
     tier,
     totalOrders: num(r.ordersCount ?? r.totalOrders),
     totalSpent: num(r.totalSpent),
-    lastOrderDate: r.lastOrderDate ? str(r.lastOrderDate) : undefined,
+    tags: Array.isArray(r.tags) ? (r.tags as string[]) : [],
+    addresses: Array.isArray(r.addresses) ? (r.addresses as CustomerAddress[]) : [],
+    marketingConsent: Boolean(r.marketingConsent),
+    notes: r.notes ? str(r.notes) : null,
+    lastSyncAt: str(r.lastSyncAt),
     createdAt: str(r.createdAt),
     updatedAt: str(r.updatedAt),
-    addresses: Array.isArray(r.addresses) ? (r.addresses as CustomerAddress[]) : undefined,
-    orderHistory: undefined,
   };
 }
 
@@ -167,16 +171,18 @@ export interface CustomerOrdersResult {
 
 export interface CustomerStats {
   total: number;
+  totalPrev: number;
+  activeCount: number;
   syncedToday: number;
   avgOrderCount: number;
-  totalRevenue: string | number;
+  totalRevenue: number;
+  topSpenderAmount: number;
   lastSync: string | null;
   topSpenders: Array<{
     id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-    totalSpent: string | number;
+    name: string;
+    totalSpent: number;
+    ordersCount: number;
   }>;
 }
 
@@ -213,10 +219,14 @@ export function useCustomerOrders(id: string | null): CustomerOrdersResult {
   };
 }
 
-/**
- * Hook to fetch overall customer stats.
- * useApiQuery extracts `.data` from the wrapper, so result.data IS the stats.
- */
 export function useCustomerStats(): UseApiQueryResult<CustomerStats> {
   return useApiQuery<CustomerStats>('/api/v4/customers/stats');
+}
+
+export function useCustomerLocations(): UseApiQueryResult<CustomerLocation[]> {
+  return useApiQuery<CustomerLocation[]>('/api/v4/customers/locations');
+}
+
+export function useCustomerSegmentStats(): UseApiQueryResult<CustomerSegmentStats> {
+  return useApiQuery<CustomerSegmentStats>('/api/v4/customers/segment-stats');
 }
