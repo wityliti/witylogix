@@ -9,6 +9,7 @@ Legend: ✅ done · 🔄 in-progress · ⬜ not started
 |-----|---------|-------|-----------|-----------------------|-------------------|-------|
 | WIT-340 | Analytics + Orders | analytics/, analytics/eta-accuracy, orders/board | ZoneAnalyticsMap (zone-heat-layer + WLMap) | /api/v4/analytics/*, /api/v4/orders | many → 0 | Introduced WLMap (keyless CARTO/Leaflet) |
 | WIT-341 | Zones + Payments + Billing | zones/, payments/, billing/ | ZonePolygonLayer on zones page (polygon + circle fallback, auto-fit) | /api/v4/zones (existing), /api/v4/payments (normalized), /api/v4/billing/quotas (new), /api/v4/billing/plans (shape fix), /api/v4/billing/invoices (shape fix), /api/v4/billing/subscription (wired), /api/v4/payment-methods/payment-methods (wired) | ZONES const + MOCK_PAYMENTS + MONTHLY_REVENUE + mock plan/quota/invoice fallbacks → 0 | |
+| WIT-342 | Drivers | drivers/, drivers/[id], drivers/performance | DriverLocationLayer (status-coloured circle markers, popup, auto-fit) on drivers/ map toggle | /api/v4/drivers/locations (new PostGIS + JSON fallback), /api/v4/driver-scoring/leaderboard (fixed URL), /api/v4/driver-scoring/:id (shape fixed), /api/v4/drivers/:id (profile wired) | DEMO_SCORE_RESPONSE + DEMO_HISTORY (8 fake entries) → 0 | |
 
 ## Remaining ⬜
 
@@ -16,7 +17,7 @@ Legend: ✅ done · 🔄 in-progress · ⬜ not started
 
 | Section | Pages | Geographic? | Notes |
 |---------|-------|-------------|-------|
-| ⬜ Drivers | drivers/, drivers/[id], drivers/scoring | ✅ Yes | Driver locations map, route history |
+| ✅ Drivers | drivers/, drivers/[id], drivers/performance | ✅ Yes | WIT-342 — DriverLocationLayer + map toggle, DEMO data removed |
 | ⬜ Customers | customers/, customers/[id], customers/segments | ✅ Yes | Customer density map |
 | ⬜ Delivery | delivery/, delivery/[id], delivery/attempts | ✅ Yes | Live delivery tracking map |
 | ⬜ Returns | returns/, returns/[id] | No | Return status workflows |
@@ -40,6 +41,7 @@ Legend: ✅ done · 🔄 in-progress · ⬜ not started
 - `apps/dashboard/src/components/map/wl-map.tsx` — keyless Leaflet + CARTO dark basemap, no API key
 - `apps/dashboard/src/components/map/zone-heat-layer.tsx` — circle heatmap for zone analytics
 - `apps/dashboard/src/components/map/zone-polygon-layer.tsx` — polygon/circle rendering for zone management
+- `apps/dashboard/src/components/map/driver-location-layer.tsx` — status-coloured driver markers, popup with last-seen/heading, auto-fit bounds
 - `apps/dashboard/src/components/analytics/components/zone-analytics-map.tsx` — analytics map
 
 ## Build / CI Status
