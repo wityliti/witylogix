@@ -243,9 +243,9 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
 }
 
 export default function ESignaturesPage() {
-  const { items: envelopes, loading: envelopesLoading } = useEnvelopes();
-  const { data: analytics, loading: analyticsLoading } = useEsigAnalytics();
-  const { items: signingTemplates } = useTemplates();
+  const { items: envelopes, loading: envelopesLoading, error: envelopesError } = useEnvelopes();
+  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useEsigAnalytics();
+  const { items: signingTemplates, loading: templatesLoading, error: templatesError } = useTemplates();
 
   const templateData = signingTemplates.map((t: { name: string; usageCount: number }) => ({ name: t.name, count: t.usageCount }));
 
