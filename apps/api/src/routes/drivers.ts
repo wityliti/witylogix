@@ -8,6 +8,7 @@
  *   PATCH  /:id           Update driver profile
  *   PATCH  /:id/status    Update driver availability status
  *   POST   /:id/location  Update driver GPS location (from mobile app)
+ *   GET    /locations     Get all active driver lat/lng for map view
  *   GET    /nearby        Find nearby available drivers (PostGIS + Redis GEO)
  *   DELETE /:id           Deactivate driver (soft delete)
  */
@@ -104,6 +105,80 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
           error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
         });
       }
+      throw err;
+    }
+  });
+
+  // ── DRIVER LOCATIONS MAP ──────────────────────────────────
+  // Returns lat/lng for all active drivers with a known location.
+  // Uses PostGIS ST_X/ST_Y; on error (PostGIS unavailable) returns empty.
+
+  fastify.get("/locations", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+
+      type DriverLocRow = {
+        id: string;
+        name: string;
+        status: string;
+        heading: number | null;
+        last_location_at: Date | null;
+        lat: number | null;
+        lng: number | null;
+      };
+
+      let rows: DriverLocRow[] = [];
+      try {
+        rows = await request.tenantDb.$queryRaw<DriverLocRow[]>`
+          SELECT
+            id::text,
+            name,
+            status,
+            heading,
+            last_location_at,
+            ST_Y(current_location::geometry)::float AS lat,
+            ST_X(current_location::geometry)::float AS lng
+          FROM drivers
+          WHERE shop_id = ${request.shopId}::uuid
+            AND is_active = true
+            AND current_location IS NOT NULL
+        `;
+      } catch {
+        // PostGIS unavailable — fall back to Prisma JSON field
+        const drivers = await request.tenantDb.driver.findMany({
+          where: { isActive: true, lastLocationAt: { not: null } },
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            heading: true,
+            lastLocationAt: true,
+            currentLocation: true,
+          },
+        });
+        rows = drivers.map((d) => {
+          let lat: number | null = null;
+          let lng: number | null = null;
+          if (d.currentLocation && typeof d.currentLocation === "object") {
+            const loc = d.currentLocation as Record<string, unknown>;
+            lat = typeof loc.latitude === "number" ? loc.latitude : null;
+            lng = typeof loc.longitude === "number" ? loc.longitude : null;
+          }
+          return {
+            id: d.id,
+            name: d.name,
+            status: d.status,
+            heading: d.heading,
+            last_location_at: d.lastLocationAt,
+            lat,
+            lng,
+          };
+        });
+      }
+
+      const located = rows.filter((r) => r.lat !== null && r.lng !== null);
+      return { data: located };
+    } catch (err) {
       throw err;
     }
   });
