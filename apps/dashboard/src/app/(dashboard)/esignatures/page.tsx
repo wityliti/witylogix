@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEnvelopes, useEsigAnalytics, useTemplates, type Envelope } from "@/hooks/use-esignatures";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 /**
  * E-Signatures Page - Professional Dark Theme
@@ -241,9 +243,9 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
 }
 
 export default function ESignaturesPage() {
-  const { items: envelopes, loading: envelopesLoading } = useEnvelopes();
-  const { data: analytics, loading: analyticsLoading } = useEsigAnalytics();
-  const { items: signingTemplates } = useTemplates();
+  const { items: envelopes, loading: envelopesLoading, error: envelopesError } = useEnvelopes();
+  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useEsigAnalytics();
+  const { items: signingTemplates, loading: templatesLoading, error: templatesError } = useTemplates();
 
   const templateData = signingTemplates.map((t: { name: string; usageCount: number }) => ({ name: t.name, count: t.usageCount }));
 
@@ -252,22 +254,16 @@ export default function ESignaturesPage() {
       label: "Envelopes Sent",
       value: analytics?.totalEnvelopes || 0,
       icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-      trend: "up",
-      trendValue: "12%",
     },
     {
       label: "Pending Signatures",
       value: analytics?.pendingEnvelopes || 0,
       icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-      trend: "down",
-      trendValue: "4%",
     },
     {
       label: "Completed",
       value: analytics?.completedEnvelopes || 0,
       icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-      trend: "up",
-      trendValue: "8%",
     },
     {
       label: "Avg Sign Time",
@@ -276,6 +272,26 @@ export default function ESignaturesPage() {
       icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     },
   ];
+
+  if (envelopesLoading || analyticsLoading || templatesLoading) {
+    return (
+      <div className="p-6">
+        <TableSkeleton rows={6} columns={4} />
+      </div>
+    );
+  }
+
+  const anyError = envelopesError || analyticsError || templatesError;
+  if (anyError) {
+    return (
+      <div className="p-6">
+        <ErrorState
+          message={anyError instanceof Error ? anyError.message : "Failed to load e-signatures data"}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={cn("p-6 space-y-6 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))]")}>
