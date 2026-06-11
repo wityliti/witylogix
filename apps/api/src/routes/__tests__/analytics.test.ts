@@ -33,6 +33,8 @@ describe("Analytics Routes", () => {
     fastify = {
       addHook: vi.fn(),
       get: vi.fn(),
+      post: vi.fn(),
+      delete: vi.fn(),
       log: { info: vi.fn(), error: vi.fn() },
     } as any;
 
