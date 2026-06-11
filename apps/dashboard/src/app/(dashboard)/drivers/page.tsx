@@ -15,7 +15,6 @@ import Link from 'next/link';
 import { MessageCircle, Eye, Plus, Phone, Truck, Map as MapIcon, LayoutGrid, MapPin } from 'lucide-react';
 import type { DriverLocation } from '@/components/map/driver-location-layer';
 
-// Lazy-load map to avoid SSR issues
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
   { ssr: false, loading: () => <div className="h-full bg-[#0d0d14] rounded-xl animate-pulse" /> },
@@ -24,10 +23,6 @@ const DriverLocationLayer = dynamic(
   () => import('@/components/map/driver-location-layer').then((m) => ({ default: m.DriverLocationLayer })),
   { ssr: false },
 );
-
-/* ═══════════════════════════════════════════════════════════
-   DRIVERS PAGE — Driver management with live map view
-   ═══════════════════════════════════════════════════════════ */
 
 interface ApiDriver {
   id: string;
@@ -72,7 +67,7 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
     .toUpperCase();
 
   return (
-    <Card hover className="group">
+    <Card hover className="group cursor-pointer transition-all">
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/[0.05]">
           <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -108,14 +103,21 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
           </div>
         </div>
 
+        {driver.lastLocationAt && (
+          <div className="flex items-center gap-1 text-xs text-gray-500 mb-4">
+            <MapPin className="w-3 h-3" />
+            <span>Last seen {new Date(driver.lastLocationAt).toLocaleTimeString()}</span>
+          </div>
+        )}
+
         <div className="flex gap-2">
-          <Link href={`/drivers/${driver.id}`} className="flex-1">
+          <Link href={`/drivers/${driver.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
             <Button variant="secondary" size="sm" className="w-full">
               <Eye className="w-4 h-4" />
               View
             </Button>
           </Link>
-          <Button variant="secondary" size="sm" className="flex-1">
+          <Button variant="secondary" size="sm" className="flex-1" onClick={(e) => e.stopPropagation()}>
             <MessageCircle className="w-4 h-4" />
             Message
           </Button>
@@ -236,7 +238,6 @@ export default function DriversPage() {
         subtitle={`${filteredDrivers.length} of ${driversData.length} drivers`}
         actions={
           <div className="flex items-center gap-2">
-            {/* View toggle */}
             <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
@@ -267,7 +268,6 @@ export default function DriversPage() {
         }
       />
 
-      {/* Status filter tabs */}
       <div className="mb-6">
         <Tabs
           tabs={driverTabs}
@@ -278,7 +278,6 @@ export default function DriversPage() {
         />
       </div>
 
-      {/* Map view */}
       {viewMode === 'map' && (
         <div className="mb-6">
           <DriverMapView selectedId={selectedDriverId} onSelect={setSelectedDriverId} />
@@ -293,8 +292,7 @@ export default function DriversPage() {
         </div>
       )}
 
-      {/* Grid / empty state */}
-      {viewMode === 'grid' || filteredDrivers.length === 0 ? (
+      {viewMode === 'grid' && (
         filteredDrivers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <Truck className="w-10 h-10 text-white/10" />
@@ -319,7 +317,7 @@ export default function DriversPage() {
             ))}
           </div>
         )
-      ) : null}
+      )}
     </>
   );
 }

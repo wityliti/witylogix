@@ -61,7 +61,6 @@ export function DriverLocationLayer({
       const map = getMapById(mapId);
       if (!map) return;
 
-      // Remove previous markers
       (layersRef.current as L.Layer[]).forEach((l) => map.removeLayer(l));
       layersRef.current = [];
 
@@ -110,7 +109,6 @@ export function DriverLocationLayer({
         bounds.push([driver.lat, driver.lng]);
       });
 
-      // Auto-fit bounds on first render (when no selection active)
       if (bounds.length > 0 && !selectedDriverId) {
         try {
           map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [40, 40], maxZoom: 14 });
