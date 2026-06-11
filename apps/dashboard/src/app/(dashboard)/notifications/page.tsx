@@ -33,6 +33,7 @@ import {
   type NotificationCategory,
   type NotificationChannel,
 } from "@/hooks/use-notifications";
+import { ErrorState } from "@/components/ui/error-state";
 
 /**
  * Notification Inbox Page - Professional Dark Theme
@@ -140,6 +141,28 @@ export default function NotificationsPage() {
     await loadMore();
     setIsLoadingMore(false);
   }, [loadMore]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-wl-bg-root">
+        <Header
+          title="Notifications"
+          subtitle="Manage and view all your notifications"
+          actions={
+            <Link href="/notifications/preferences">
+              <Button variant="secondary" size="sm">Preferences</Button>
+            </Link>
+          }
+        />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorState
+            message={error instanceof Error ? error.message : "Failed to load notifications"}
+            onRetry={() => window.location.reload()}
+          />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-wl-bg-root">
