@@ -46,6 +46,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-538 | feat/WIT-538-supplychain-crm-quality-hardening | supply-chain/page: added loading skeleton + error state for all 5 hooks; replaced 3 hardcoded Pipeline Summary metrics ("2.3 days", "94.2%", "12 orders") with real computed values from fulfillment/orders data. crm/page: removed dead `useState<SyncEvent[]>([])` (setter never called); replaced with `useMemo` deriving sync events from each CRM integration's `lastSyncAt`+`healthStatus`; Failed Syncs stat now reflects real UNHEALTHY integrations | no new endpoints | 2 files, 3 hardcoded strings → 0 | 2026-06-10 |
 | WIT-539 | feat/WIT-539-integration-hooks-auth-chaos-api | use-integration-status: raw `fetch()` → `api.get/post/delete`; removed `DEMO_CONNECTIONS` (5 hardcoded carriers/Shopify/Stripe). use-chaos-testing: removed `DEMO_CHAOS_SCENARIOS`/`DEMO_CHAOS_RESULTS`; wired to new `/api/v4/chaos/*`. use-integration-docs: static carrier reference docs (SDK methods, webhooks, rate limits, playbooks) — removed non-existent API calls, converted to pure `useMemo`. New `apps/api/src/routes/chaos.ts`: scenarios in `shop.settings`, executions in ActivityLog. chaos/page.tsx: LoadingSkeleton + ErrorState guards | NEW `/api/v4/chaos/*` (5 routes) | 5 hook/page files + 1 API route, DEMO_ fallbacks → 0 | 2026-06-10 |
 | WIT-540 | feat/WIT-540-dashboard-campaigns-production | Campaigns: list row-click + ExternalLink navigate to `/campaigns/:id`; CreateCampaignModal (POST /api/v4/campaigns); Pause/Resume/Delete/Duplicate buttons wired via `api.post/delete`; List↔Reach Map toggle. Campaign detail: 4 tabs — Overview (donut chart), Events (GET /:id/events), Recipients (GET /:id/recipients), Reach Map; Send Now / Pause / Resume / Archive action buttons; back nav. NEW `campaign-reach-map.tsx`: WLMap + ZoneLayer fetching `GET /api/v4/zones?format=geojson`, auto-fit bounds via useFitBounds inner-component, health-colour legend | existing campaign + zone endpoints | 3 files, 0 mocks, 1 map view | 2026-06-10 |
+| WIT-541 | feat/WIT-541-analytics-dashboards-reports-heatmap | analytics/dashboards page: fixed endpoint (?view=dashboards→/api/v4/analytics/dashboards); Create modal (POST name/desc/layout/isPublic); per-item Delete; empty/error states. analytics/reports page: fixed endpoint (?view=reports→/api/v4/analytics/reports); Create modal (POST with frequency/format/recipients multi-input); Delete; next-run date display. analytics/page.tsx: Charts↔Heatmap toggle; AnalyticsHeatmapView (WLMap+HeatmapLayer+AutoFit+density legend). use-dashboard-stats.ts: removed NYC hardcoded 404-fallback bounds; useDeliveryHeatmap wired directly to real endpoint. NEW `analytics/components/analytics-heatmap-view.tsx`. API: GET/POST/DELETE `/api/v4/analytics/dashboards` (shop.settings backed); GET/POST/DELETE `/api/v4/analytics/reports` (shop.settings backed); NEW `GET /api/v4/analytics/heatmap` (Prisma deliveryLocation → 0.01° grid clustering → real heatmap points) | 7 NEW API routes | 6 files, 1 hardcoded NYC fallback → 0, 1 map view | 2026-06-11 |
 | WIT-542 | feat/WIT-542-dashboard-stores-pos-notifications-quality | Quality hardening for 3 pages: supply-chain/orders — Header + TableSkeleton + ErrorState (loading/error guards on useOrders+useFulfillment); esignatures — ErrorState for all 3 hooks (useEnvelopes/useEsigAnalytics/useTemplates), loading skeleton, removed 3 hardcoded trend percentages ("12%"/"4%"/"8%") from KPI cards; notifications — ErrorState guard added (error from useNotifications) | no new endpoints | 3 files, 3 hardcoded trends → 0, 0 error states → 3 | 2026-06-11 |
 
 ---
@@ -185,13 +186,13 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Analytics (14 → 0 mock signals) ✅ WIT-512 + WIT-534
+## Analytics (14 → 0 mock signals) ✅ WIT-512 + WIT-534 + WIT-541
 | Page | Route | Mock Before | Mock After | Map | Status |
 |------|-------|------------|-----------|-----|--------|
-| Analytics Overview | `/analytics` | DEMO_METRICS, 5 consts; 7×bg-[#111118], 1×bg-[#1a1a28] | 0 | — | ✅ WIT-512 + WIT-534 tokens |
-| Dashboards | `/analytics/dashboards` | 0 | 0 | — | ✅ |
+| Analytics Overview | `/analytics` | DEMO_METRICS, 5 consts; 7×bg-[#111118], 1×bg-[#1a1a28] | 0 + Heatmap map view | ✅ WLMap + HeatmapLayer (Charts↔Heatmap toggle) | ✅ WIT-512 + WIT-534 + WIT-541 |
+| Dashboards | `/analytics/dashboards` | wrong endpoint (?view=dashboards) | 0 + Create/Delete modal | — | ✅ WIT-541 |
 | ETA Accuracy | `/analytics/eta-accuracy` | DEMO_METRICS, 4 consts; 5×bg-[#111118] | 0 | — | ✅ WIT-512 + WIT-534 tokens |
-| Reports | `/analytics/reports` | 0 | 0 | — | ✅ |
+| Reports | `/analytics/reports` | wrong endpoint (?view=reports) | 0 + Create/Delete modal | — | ✅ WIT-541 |
 | Route Performance | `/analytics/route-performance` | 0 (API Math.random()); 4 inline hex legend colors | 0 + Map view; CSS vars | ✅ WLMap + DeliveryPerformanceLayer | ✅ WIT-512 + WIT-534 tokens |
 
 **WIT-534 analytics changes**:
