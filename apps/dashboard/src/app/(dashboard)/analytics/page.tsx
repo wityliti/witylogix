@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
+import { useDeliveryHeatmap } from '@/hooks/use-dashboard-stats';
 import {
   TrendingUp,
   TrendingDown,
@@ -15,7 +17,14 @@ import {
   Activity,
   Zap,
   RefreshCw,
+  MapPin,
+  BarChart2,
 } from 'lucide-react';
+
+const AnalyticsHeatmapView = dynamic(
+  () => import('./components/analytics-heatmap-view'),
+  { ssr: false, loading: () => <div className="h-[560px] rounded-2xl bg-wl-bg-surface animate-pulse" /> }
+);
 
 // ── Types matching the real /api/v4/analytics/overview response ─
 interface AnalyticsOverview {
@@ -158,8 +167,10 @@ function EmptyChart({ label }: { label: string }) {
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('7d');
+  const [viewMode, setViewMode] = useState<'charts' | 'heatmap'>('charts');
 
   const { data, loading } = useApiQuery<AnalyticsOverview>(`/api/v4/analytics/overview?range=${timeRange}`);
+  const { data: heatmapData, loading: heatmapLoading } = useDeliveryHeatmap();
 
   const metrics = data?.metrics;
   const hourly  = data?.hourly ?? [];
@@ -180,25 +191,66 @@ export default function AnalyticsPage() {
             <h1 className="text-2xl font-bold text-white/90 tracking-tight">Analytics</h1>
             <p className="text-sm text-white/35 mt-0.5">Monitor dashboards, reports, and data sources</p>
           </div>
-          <div className="flex items-center gap-2">
-            {(['today', '7d', '30d'] as const).map((r) => (
+          <div className="flex items-center gap-3">
+            {/* View toggle */}
+            <div className="flex items-center gap-1 rounded-lg bg-white/[0.05] border border-white/[0.08] p-1">
               <button
-                key={r}
-                onClick={() => setTimeRange(r)}
+                onClick={() => setViewMode('charts')}
                 className={cn(
-                  'px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all',
-                  timeRange === r
-                    ? 'bg-white/10 text-white/80 border border-white/[0.12]'
-                    : 'text-white/30 hover:text-white/50 border border-transparent'
+                  'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all',
+                  viewMode === 'charts'
+                    ? 'bg-white/10 text-white/80'
+                    : 'text-white/30 hover:text-white/50'
                 )}
               >
-                {r === 'today' ? 'Today' : r === '7d' ? '7 Days' : '30 Days'}
+                <BarChart2 className="w-3.5 h-3.5" />
+                Charts
               </button>
-            ))}
+              <button
+                onClick={() => setViewMode('heatmap')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all',
+                  viewMode === 'heatmap'
+                    ? 'bg-white/10 text-white/80'
+                    : 'text-white/30 hover:text-white/50'
+                )}
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                Heatmap
+              </button>
+            </div>
+            {/* Time range */}
+            <div className="flex items-center gap-1">
+              {(['today', '7d', '30d'] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setTimeRange(r)}
+                  className={cn(
+                    'px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all',
+                    timeRange === r
+                      ? 'bg-white/10 text-white/80 border border-white/[0.12]'
+                      : 'text-white/30 hover:text-white/50 border border-transparent'
+                  )}
+                >
+                  {r === 'today' ? 'Today' : r === '7d' ? '7 Days' : '30 Days'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
+      {viewMode === 'heatmap' && (
+        <div className="px-6 lg:px-8 pb-8">
+          <AnalyticsHeatmapView
+            points={(heatmapData as any)?.data?.points ?? []}
+            loading={heatmapLoading}
+            total={(heatmapData as any)?.data?.total ?? 0}
+          />
+        </div>
+      )}
+
+      {viewMode === 'charts' && (
       <div className="px-6 lg:px-8 pb-8 space-y-5">
         {/* KPI Grid */}
         {loading ? (
@@ -373,6 +425,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
