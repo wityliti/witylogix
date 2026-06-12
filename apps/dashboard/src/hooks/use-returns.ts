@@ -66,20 +66,20 @@ export interface ReturnItem {
 }
 
 /**
- * Return statistics
+ * Return statistics — shape returned by GET /api/v4/returns/stats
  */
 export interface ReturnStats {
+  counts: {
+    requested: number;
+    approved: number;
+    rejected: number;
+    received: number;
+    inspected: number;
+    refunded: number;
+    closed: number;
+  };
+  totalRefundAmount: number;
   totalReturns: number;
-  pendingApprovals: number;
-  approvedReturns: number;
-  refundedReturns: number;
-  totalRefunded: number;
-  averageRefundAmount: number;
-  returnRate: number;
-  topReturnReasons: Array<{
-    reason: string;
-    count: number;
-  }>;
 }
 
 /**
@@ -112,40 +112,25 @@ export function useReturns(
 export function useReturn(
   id: string | null,
 ): UseApiQueryResult<Return> {
-  return useApiQuery<Return>(id ? `/returns/${id}` : null);
+  return useApiQuery<Return>(id ? `/api/v4/returns/${id}` : null);
 }
 
-/**
- * Hook to approve a return
- * @param id - Return ID
- * @returns Mutation to approve return
- */
 export function useApproveReturn(
   id: string,
 ): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('PATCH', `/returns/${id}/approve`);
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/approve`);
 }
 
-/**
- * Hook to reject a return
- * @param id - Return ID
- * @returns Mutation to reject return
- */
 export function useRejectReturn(
   id: string,
 ): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('PATCH', `/returns/${id}/reject`);
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/reject`);
 }
 
-/**
- * Hook to process refund for a return
- * @param id - Return ID
- * @returns Mutation to process refund
- */
 export function useProcessRefund(
   id: string,
 ): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('POST', `/returns/${id}/refund`);
+  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/refund`);
 }
 
 /**
