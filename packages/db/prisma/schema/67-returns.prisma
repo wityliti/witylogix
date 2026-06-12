@@ -1,0 +1,88 @@
+// ─── RETURN REQUESTS (RMA) ────────────────────────────────────────────────────
+// Tracks merchant → carrier return lifecycle: PENDING → APPROVED → RECEIVED →
+// INSPECTED → REFUNDED. Each return is scoped to one shop via RLS.
+
+enum ReturnRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RECEIVED
+  INSPECTED
+  REFUNDED
+  CLOSED
+}
+
+enum ReturnReason {
+  DEFECTIVE
+  DAMAGED
+  WRONG_ITEM
+  NOT_AS_DESCRIBED
+  CHANGED_MIND
+  OTHER
+}
+
+model ReturnRequest {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId String @map("shop_id") @db.Uuid
+
+  orderId String @map("order_id") @db.Uuid
+
+  // Customer snapshot
+  customerId    String? @map("customer_id") @db.Uuid
+  customerName  String  @map("customer_name")
+  customerEmail String? @map("customer_email")
+
+  status ReturnRequestStatus @default(PENDING)
+  reason ReturnReason
+
+  reasonDetails String  @map("reason_details") @db.VarChar(1000)
+  refundAmount  Decimal @default(0) @map("refund_amount") @db.Decimal(14, 2)
+  refundStatus  String  @default("pending") @map("refund_status") // pending | processed | failed
+  refundedAt    DateTime? @map("refunded_at")
+
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  rejectedAt      DateTime? @map("rejected_at")
+  rejectionReason String?   @map("rejection_reason")
+  receivedAt      DateTime? @map("received_at")
+  inspectedAt     DateTime? @map("inspected_at")
+
+  shippingLabelUrl String? @map("shipping_label_url")
+  trackingNumber   String? @map("tracking_number")
+
+  notes    String?
+  metadata Json    @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop  Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  items ReturnRequestItem[]
+
+  @@index([shopId, status])
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([orderId])
+  @@map("return_requests")
+}
+
+model ReturnRequestItem {
+  id              String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  returnRequestId String @map("return_request_id") @db.Uuid
+
+  orderItemId String? @map("order_item_id") @db.Uuid
+  productId   String? @map("product_id") @db.Uuid
+  productName String  @map("product_name")
+  quantity    Int
+  unitPrice   Decimal @map("unit_price") @db.Decimal(14, 2)
+  returnReason String @map("return_reason")
+  condition   String // new | opened | damaged | defective
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  returnRequest ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+
+  @@index([returnRequestId])
+  @@map("return_request_items")
+}

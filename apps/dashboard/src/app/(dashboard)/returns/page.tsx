@@ -1,262 +1,359 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useReturns, Return } from '@/hooks/use-returns';
-import { Plus, ChevronRight } from 'lucide-react';
+import { useReturns, useReturnStats, type Return } from '@/hooks/use-returns';
+import { Plus, ChevronRight, Package, RefreshCw } from 'lucide-react';
 
-/* ═══════════════════════════════════════════════════════════
-   RETURNS MANAGEMENT PAGE — RMA lifecycle with status pipeline
-   Clean, data-focused design emphasizing return workflow stages
-   ═══════════════════════════════════════════════════════════ */
+type ReturnStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'RECEIVED'
+  | 'INSPECTED'
+  | 'REFUNDED'
+  | 'CLOSED';
 
-type ReturnStatus = 'requested' | 'approved' | 'shipped_back' | 'received' | 'inspected' | 'refunded';
-
-const statusConfig: Record<ReturnStatus, { badge: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'; label: string }> = {
-  requested: { badge: 'info', label: 'Requested' },
-  approved: { badge: 'primary', label: 'Approved' },
-  shipped_back: { badge: 'primary', label: 'Shipped Back' },
-  received: { badge: 'warning', label: 'Received' },
-  inspected: { badge: 'warning', label: 'Inspected' },
-  refunded: { badge: 'success', label: 'Refunded' },
+const STATUS_CONFIG: Record<
+  ReturnStatus,
+  { badge: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'; label: string }
+> = {
+  PENDING: { badge: 'info', label: 'Pending' },
+  APPROVED: { badge: 'primary', label: 'Approved' },
+  REJECTED: { badge: 'danger', label: 'Rejected' },
+  RECEIVED: { badge: 'warning', label: 'Received' },
+  INSPECTED: { badge: 'warning', label: 'Inspected' },
+  REFUNDED: { badge: 'success', label: 'Refunded' },
+  CLOSED: { badge: 'default', label: 'Closed' },
 };
 
-const normalizeStatus = (status: string): ReturnStatus => {
-  const s = status.toLowerCase().replace(/_/g, '_');
-  if (s === 'requested' || s === 'initiated') return 'requested';
-  if (s === 'approved') return 'approved';
-  if (s === 'shipped_back' || s === 'picked_up' || s === 'in_transit') return 'shipped_back';
-  if (s === 'received') return 'received';
-  if (s === 'inspected') return 'inspected';
-  if (s === 'refunded') return 'refunded';
-  return 'requested';
+const normalizeStatus = (s: string): ReturnStatus => {
+  const up = s.toUpperCase() as ReturnStatus;
+  if (up in STATUS_CONFIG) return up;
+  if (s.toLowerCase() === 'initiated' || s.toLowerCase() === 'requested') return 'PENDING';
+  if (s.toLowerCase() === 'picked_up' || s.toLowerCase() === 'in_transit') return 'APPROVED';
+  return 'PENDING';
 };
 
-// Mock returns data for development
-const MOCK_RETURNS: Return[] = [
-  {
-    id: "RET-2024-001",
-    orderId: "ORD-2024-115",
-    customerId: "CUST-001",
-    customerName: "John Smith",
-    customerEmail: "john.smith@email.com",
-    status: "requested",
-    reason: "Product arrived damaged",
-    items: [{ id: "I-1", name: "Blue Wireless Headphones", quantity: 1, condition: "damaged" }],
-    refundAmount: 89.99,
-    createdAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
-    notes: "Customer reports broken cable connector",
-    timeline: [],
-  },
-  {
-    id: "RET-2024-002",
-    orderId: "ORD-2024-114",
-    customerId: "CUST-002",
-    customerName: "Sarah Johnson",
-    customerEmail: "sarah.j@email.com",
-    status: "approved",
-    reason: "Wrong size",
-    items: [{ id: "I-2", name: "Wool Winter Jacket (L)", quantity: 1, condition: "good" }],
-    refundAmount: 159.99,
-    createdAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
-    approvedAt: new Date(Date.now() - 4 * 24 * 3600000).toISOString(),
-    notes: "Customer ordered size L but needed M",
-    timeline: [],
-  },
-  {
-    id: "RET-2024-003",
-    orderId: "ORD-2024-113",
-    customerId: "CUST-003",
-    customerName: "Emily Davis",
-    customerEmail: "emily.davis@email.com",
-    status: "received",
-    reason: "Defective unit",
-    items: [{ id: "I-3", name: "Portable Phone Charger 20K", quantity: 2, condition: "defective" }],
-    refundAmount: 119.98,
-    createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString(),
-    approvedAt: new Date(Date.now() - 6 * 24 * 3600000).toISOString(),
-    receivedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
-    notes: "Units won't charge. Package received on 3/17.",
-    timeline: [],
-  },
-  {
-    id: "RET-2024-004",
-    orderId: "ORD-2024-112",
-    customerId: "CUST-004",
-    customerName: "Michael Brown",
-    customerEmail: "m.brown@email.com",
-    status: "refunded",
-    reason: "Changed mind",
-    items: [{ id: "I-4", name: "Gaming Mouse RGB", quantity: 1, condition: "good" }],
-    refundAmount: 74.99,
-    createdAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
-    requestedAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
-    approvedAt: new Date(Date.now() - 9 * 24 * 3600000).toISOString(),
-    receivedAt: new Date(Date.now() - 3 * 24 * 3600000).toISOString(),
-    refundedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
-    notes: "Quick return and refund processed",
-    timeline: [],
-  },
+const PIPELINE_STAGES: ReturnStatus[] = [
+  'PENDING',
+  'APPROVED',
+  'RECEIVED',
+  'INSPECTED',
+  'REFUNDED',
 ];
 
-const StatusPipeline = ({ returns }: { returns: Return[] }) => {
-  const statuses: ReturnStatus[] = ['requested', 'approved', 'shipped_back', 'received', 'inspected', 'refunded'];
+// ─── Stats pipeline ───────────────────────────────────────────
 
-  const countByStatus = statuses.reduce(
-    (acc, status) => {
-      acc[status] = returns.filter((r) => normalizeStatus(r.status as string) === status).length;
-      return acc;
-    },
-    {} as Record<ReturnStatus, number>
-  );
+type StatsCounts = Record<string, number>;
+
+const StatsSkeleton = () => (
+  <Card className="mb-8">
+    <CardContent className="p-6">
+      <div className="flex items-center gap-3 overflow-x-auto pb-2">
+        {PIPELINE_STAGES.map((s) => (
+          <div key={s} className="flex items-center gap-3 flex-shrink-0">
+            <Skeleton className="h-16 w-24 rounded-lg" />
+            {s !== 'REFUNDED' && <Skeleton className="h-4 w-4 rounded" />}
+          </div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const StatusPipeline = ({
+  counts,
+  totalRefundAmount,
+  loading,
+}: {
+  counts: StatsCounts;
+  totalRefundAmount: number;
+  loading: boolean;
+}) => {
+  if (loading) return <StatsSkeleton />;
 
   return (
     <Card className="mb-8">
       <CardContent className="p-6">
         <div className="flex items-center gap-3 overflow-x-auto pb-2">
-          {statuses.map((status, idx) => {
-            const config = statusConfig[status];
-            const count = countByStatus[status];
+          {PIPELINE_STAGES.map((status, idx) => {
+            const config = STATUS_CONFIG[status];
+            const count = counts[status.toLowerCase()] ?? 0;
 
             return (
               <div key={status} className="flex items-center gap-3 flex-shrink-0">
-                <div className="flex flex-col items-center gap-2">
-                  <div className={cn('px-4 py-2 rounded-lg border border-white/[0.08] text-center')}>
-                    <div className="text-xs font-medium text-wl-text-secondary uppercase tracking-wider">{status.replace(/_/g, ' ')}</div>
-                    <div className="text-lg font-semibold text-wl-text-primary mt-1">{count}</div>
+                <div className="px-4 py-2 rounded-lg border border-white/[0.08] text-center min-w-[80px]">
+                  <div className="text-xs font-medium text-wl-text-secondary uppercase tracking-wider">
+                    {config.label}
                   </div>
+                  <div className="text-lg font-semibold text-wl-text-primary mt-1">{count}</div>
                 </div>
-                {idx < statuses.length - 1 && (
+                {idx < PIPELINE_STAGES.length - 1 && (
                   <ChevronRight className="w-4 h-4 text-wl-border-default flex-shrink-0" />
                 )}
               </div>
             );
           })}
+
+          <div className="ml-auto flex-shrink-0 px-4 py-2 rounded-lg border border-white/[0.08] text-center">
+            <div className="text-xs font-medium text-wl-text-secondary uppercase tracking-wider">
+              Total Refunded
+            </div>
+            <div className="text-lg font-semibold text-wl-success-400 mt-1">
+              ${totalRefundAmount.toFixed(2)}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 };
 
-const ReturnsTable = ({ returns }: { returns: Return[] }) => {
-  return (
-    <div className="bg-[#13131a] border border-white/[0.08] rounded-xl overflow-hidden">
-      {/* Table header */}
-      <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.08] bg-white/[0.02]">
-        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Return #</div>
-        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Order #</div>
-        <div className="col-span-2 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Customer</div>
-        <div className="col-span-2 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Reason</div>
-        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Status</div>
-        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Refund</div>
-        <div className="col-span-1 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Date</div>
-        <div className="col-span-2 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">Actions</div>
-      </div>
+// ─── Table skeleton / empty ───────────────────────────────────
 
-      {/* Table rows */}
-      <div className="divide-y divide-white/[0.05]">
-        {returns.map((ret) => {
-          const status = normalizeStatus(ret.status as string);
-          const config = statusConfig[status];
-          const date = new Date(ret.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          const amount = ret.refundAmount ?? ret.totalRefundAmount ?? 0;
+const TableSkeleton = () => (
+  <div className="bg-[#13131a] border border-white/[0.08] rounded-xl overflow-hidden">
+    <div className="divide-y divide-white/[0.05]">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="grid grid-cols-12 gap-4 px-6 py-4">
+          {Array.from({ length: 8 }).map((_, j) => (
+            <div key={j} className="col-span-1">
+              <Skeleton className="h-4 w-full rounded" />
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
-          return (
-            <div key={ret.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
-              {/* Mobile header */}
-              <div className="md:hidden col-span-1 text-sm font-semibold text-wl-text-primary">{ret.id}</div>
+const EmptyState = () => (
+  <div className="flex flex-col items-center justify-center py-20 text-center">
+    <div className="w-16 h-16 rounded-full bg-white/[0.05] flex items-center justify-center mb-4">
+      <Package className="w-8 h-8 text-wl-text-tertiary" />
+    </div>
+    <h3 className="text-lg font-semibold text-wl-text-primary mb-2">No returns yet</h3>
+    <p className="text-sm text-wl-text-secondary mb-6 max-w-xs">
+      When customers initiate returns or RMAs they will appear here for review and processing.
+    </p>
+  </div>
+);
 
-              {/* Return # */}
-              <div className="col-span-1">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Return #</div>
-                <div className="text-sm font-medium text-wl-primary-400">{ret.id}</div>
-              </div>
+// ─── Returns table ────────────────────────────────────────────
 
-              {/* Order # */}
-              <div className="col-span-1">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Order #</div>
-                <div className="text-sm text-wl-text-secondary">{ret.orderId}</div>
-              </div>
+const ReturnsTable = ({ returns }: { returns: Return[] }) => (
+  <div className="bg-[#13131a] border border-white/[0.08] rounded-xl overflow-hidden">
+    <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.08] bg-white/[0.02]">
+      {(
+        [
+          ['Return #', 1],
+          ['Order #', 1],
+          ['Customer', 2],
+          ['Reason', 2],
+          ['Status', 1],
+          ['Refund', 1],
+          ['Date', 1],
+          ['Actions', 2],
+        ] as [string, number][]
+      ).map(([label, span]) => (
+        <div
+          key={label}
+          className={`col-span-${span} text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider`}
+        >
+          {label}
+        </div>
+      ))}
+    </div>
 
-              {/* Customer */}
-              <div className="col-span-2">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Customer</div>
-                <div className="text-sm text-wl-text-primary">{ret.customerName}</div>
-                {ret.customerEmail && (
-                  <div className="text-xs text-wl-text-tertiary mt-0.5">{ret.customerEmail}</div>
-                )}
-              </div>
+    <div className="divide-y divide-white/[0.05]">
+      {returns.map((ret) => {
+        const status = normalizeStatus(ret.status as string);
+        const config = STATUS_CONFIG[status];
+        const date = new Date(ret.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
+        const amount = Number(ret.refundAmount ?? ret.totalRefundAmount ?? 0);
+        const reason = (ret.reason as string)
+          .replace(/_/g, ' ')
+          .toLowerCase()
+          .replace(/\b\w/g, (c) => c.toUpperCase());
 
-              {/* Reason */}
-              <div className="col-span-2">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Reason</div>
-                <div className="text-sm text-wl-text-secondary">{ret.reason}</div>
-              </div>
-
-              {/* Status */}
-              <div className="col-span-1">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Status</div>
-                <Badge variant={config.badge}>{config.label}</Badge>
-              </div>
-
-              {/* Refund amount */}
-              <div className="col-span-1">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Refund</div>
-                <div className="text-sm font-semibold text-wl-success-400">${Number(amount).toFixed(2)}</div>
-              </div>
-
-              {/* Date */}
-              <div className="col-span-1">
-                <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Date</div>
-                <div className="text-sm text-wl-text-secondary">{date}</div>
-              </div>
-
-              {/* Actions */}
-              <div className="col-span-2 flex gap-2">
-                <Button variant="ghost" size="sm" className="flex-1">
-                  View
-                </Button>
-                <Button variant="secondary" size="sm" className="flex-1">
-                  Edit
-                </Button>
+        return (
+          <div
+            key={ret.id}
+            className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors"
+          >
+            <div className="col-span-1">
+              <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Return #</div>
+              <div className="text-sm font-medium text-wl-primary-400 truncate">
+                {ret.id.slice(0, 8)}…
               </div>
             </div>
-          );
-        })}
-      </div>
+
+            <div className="col-span-1">
+              <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Order #</div>
+              <div className="text-sm text-wl-text-secondary truncate">
+                {ret.orderId.slice(0, 8)}…
+              </div>
+            </div>
+
+            <div className="col-span-2">
+              <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Customer</div>
+              <div className="text-sm text-wl-text-primary truncate">{ret.customerName}</div>
+              {ret.customerEmail && (
+                <div className="text-xs text-wl-text-tertiary mt-0.5 truncate">
+                  {ret.customerEmail}
+                </div>
+              )}
+            </div>
+
+            <div className="col-span-2">
+              <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Reason</div>
+              <div className="text-sm text-wl-text-secondary">{reason}</div>
+              {ret.description && (
+                <div className="text-xs text-wl-text-tertiary mt-0.5 line-clamp-1">
+                  {ret.description}
+                </div>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Status</div>
+              <Badge variant={config.badge}>{config.label}</Badge>
+            </div>
+
+            <div className="col-span-1">
+              <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Refund</div>
+              <div className="text-sm font-semibold text-wl-success-400">${amount.toFixed(2)}</div>
+            </div>
+
+            <div className="col-span-1">
+              <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Date</div>
+              <div className="text-sm text-wl-text-secondary">{date}</div>
+            </div>
+
+            <div className="col-span-2 flex gap-2">
+              <Link href={`/returns/${ret.id}`} className="flex-1">
+                <Button variant="ghost" size="sm" className="w-full">
+                  View
+                </Button>
+              </Link>
+            </div>
+          </div>
+        );
+      })}
     </div>
-  );
-};
+  </div>
+);
+
+// ─── Page ─────────────────────────────────────────────────────
 
 export default function ReturnsPage() {
-  const { items: apiReturns } = useReturns();
-  const returnsData = apiReturns.length > 0 ? apiReturns : MOCK_RETURNS;
+  const [filterStatus, setFilterStatus] = useState<ReturnStatus | 'ALL'>('ALL');
+
+  const { items, loading, error, refetch } = useReturns(
+    filterStatus !== 'ALL' ? { status: filterStatus as any } : undefined,
+  );
+
+  const { data: statsRaw, loading: statsLoading } = useReturnStats();
+  const statsData = (statsRaw as any)?.data as
+    | { counts?: StatsCounts; totalRefundAmount?: number }
+    | undefined;
+  const counts: StatsCounts = statsData?.counts ?? {};
+  const totalRefundAmount = Number(statsData?.totalRefundAmount ?? 0);
+
+  const totalCount = statsData?.counts?.total ?? (statsLoading ? null : items.length);
+
+  if (error) {
+    return (
+      <>
+        <Header
+          title="Returns & RMA"
+          subtitle="Return lifecycle management"
+          actions={
+            <Button variant="primary" size="md">
+              <Plus className="w-4 h-4" />
+              Create Return
+            </Button>
+          }
+        />
+        <ErrorState
+          error={error}
+          onRetry={() => { refetch(); }}
+          title="Failed to load returns"
+          message="Could not fetch return requests. Please check your connection and try again."
+        />
+      </>
+    );
+  }
 
   return (
     <>
-      {/* Header */}
       <Header
         title="Returns & RMA"
-        subtitle={`${returnsData.length} active returns`}
+        subtitle={
+          totalCount !== null ? `${totalCount} total returns` : 'Return lifecycle management'
+        }
         actions={
-          <Button variant="primary" size="md">
-            <Plus className="w-4 h-4" />
-            Create Return
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={refetch}>
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+            <Button variant="primary" size="md">
+              <Plus className="w-4 h-4" />
+              Create Return
+            </Button>
+          </div>
         }
       />
 
-      {/* Status pipeline */}
-      <StatusPipeline returns={returnsData} />
+      <StatusPipeline counts={counts} totalRefundAmount={totalRefundAmount} loading={statsLoading} />
 
-      {/* Returns table */}
-      <ReturnsTable returns={returnsData} />
+      {/* Status filter tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+        {(['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'RECEIVED', 'INSPECTED', 'REFUNDED', 'CLOSED'] as const).map(
+          (s) => {
+            const label = s === 'ALL' ? 'All' : STATUS_CONFIG[s as ReturnStatus].label;
+            const count =
+              s !== 'ALL' ? (counts[(s as string).toLowerCase()] ?? 0) : undefined;
+            return (
+              <button
+                key={s}
+                onClick={() => setFilterStatus(s)}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
+                  filterStatus === s
+                    ? 'bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30'
+                    : 'bg-white/[0.04] text-wl-text-secondary hover:bg-white/[0.08] border border-transparent',
+                )}
+              >
+                {label}
+                {count !== undefined && (
+                  <span className="ml-1 opacity-60">{count}</span>
+                )}
+              </button>
+            );
+          },
+        )}
+      </div>
+
+      {loading ? (
+        <TableSkeleton />
+      ) : items.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <ReturnsTable returns={items} />
+      )}
     </>
   );
 }

@@ -7,6 +7,7 @@ import {
   Trash2,
   Eye,
   Check,
+  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -15,16 +16,20 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
+import { useApiList } from '@/hooks/use-api';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 
 interface Customer {
   id: string;
   name: string;
-  email: string;
-  address: string;
+  email?: string;
+  phone?: string;
+  city?: string;
+  country?: string;
 }
 
 interface LineItem {
@@ -35,42 +40,29 @@ interface LineItem {
   taxable: boolean;
 }
 
-const MOCK_CUSTOMERS: Customer[] = [
-  {
-    id: "cust-001",
-    name: "Acme Corporation",
-    email: "billing@acme.com",
-    address: "123 Business Ave, New York, NY 10001",
-  },
-  {
-    id: "cust-002",
-    name: "Beta Inc",
-    email: "finance@beta.com",
-    address: "456 Commerce St, San Francisco, CA 94105",
-  },
-  {
-    id: "cust-003",
-    name: "Gamma Ltd",
-    email: "accounting@gamma.co.uk",
-    address: "789 Enterprise Rd, London, UK EC1A 1BB",
-  },
-  {
-    id: "cust-004",
-    name: "Delta Logistics",
-    email: "billing@delta.com",
-    address: "321 Logistics Way, Chicago, IL 60601",
-  },
-  {
-    id: "cust-005",
-    name: "Echo Distribution",
-    email: "invoices@echo.com",
-    address: "654 Distribution Blvd, Los Angeles, CA 90001",
-  },
-];
+function normalizeCustomer(raw: any): Customer {
+  return {
+    id: raw.id,
+    name: raw.name ?? raw.customerName ?? raw.externalCustomerId ?? raw.id,
+    email: raw.email ?? raw.customerEmail ?? undefined,
+    phone: raw.phone ?? raw.customerPhone ?? undefined,
+    city: raw.city ?? undefined,
+    country: raw.country ?? undefined,
+  };
+}
 
 export default function CreateInvoicePage() {
   const router = useRouter();
   const { addToast } = useToast();
+
+  const { items: rawCustomers, loading: customersLoading } = useApiList<any>(
+    '/api/v4/customers',
+    { limit: 100 },
+  );
+  const customers: Customer[] = useMemo(
+    () => rawCustomers.map(normalizeCustomer),
+    [rawCustomers],
+  );
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -96,14 +88,14 @@ export default function CreateInvoicePage() {
 
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return MOCK_CUSTOMERS;
+    if (!customerSearch) return customers;
     const search = customerSearch.toLowerCase();
-    return MOCK_CUSTOMERS.filter(
+    return customers.filter(
       (c) =>
         c.name.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search)
+        (c.email ?? '').toLowerCase().includes(search)
     );
-  }, [customerSearch]);
+  }, [customers, customerSearch]);
 
   // Calculate totals
   const subtotal = useMemo(() => {
@@ -317,12 +309,14 @@ export default function CreateInvoicePage() {
                   <p className="font-semibold text-white">
                     {selectedCustomer.name}
                   </p>
-                  <p className="text-sm text-gray-400">
-                    {selectedCustomer.email}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    {selectedCustomer.address}
-                  </p>
+                  {selectedCustomer.email && (
+                    <p className="text-sm text-gray-400">{selectedCustomer.email}</p>
+                  )}
+                  {selectedCustomer.city && (
+                    <p className="text-sm text-gray-400">
+                      {[selectedCustomer.city, selectedCustomer.country].filter(Boolean).join(', ')}
+                    </p>
+                  )}
                 </div>
                 <Button
                   variant="ghost"
@@ -704,9 +698,15 @@ export default function CreateInvoicePage() {
               icon={null}
             />
 
-            {filteredCustomers.length === 0 ? (
+            {customersLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-14 w-full rounded" />
+                ))}
+              </div>
+            ) : filteredCustomers.length === 0 ? (
               <p className="text-center py-6 text-gray-400">
-                No customers found
+                {customers.length === 0 ? 'No customers in your account yet' : 'No customers found'}
               </p>
             ) : (
               <div className="space-y-2">
@@ -719,9 +719,14 @@ export default function CreateInvoicePage() {
                     <p className="font-medium text-white">
                       {customer.name}
                     </p>
-                    <p className="text-sm text-gray-400">
-                      {customer.email}
-                    </p>
+                    {customer.email && (
+                      <p className="text-sm text-gray-400">{customer.email}</p>
+                    )}
+                    {customer.city && (
+                      <p className="text-xs text-gray-500">
+                        {[customer.city, customer.country].filter(Boolean).join(', ')}
+                      </p>
+                    )}
                   </button>
                 ))}
               </div>
@@ -742,8 +747,14 @@ export default function CreateInvoicePage() {
               {selectedCustomer && (
                 <div>
                   <p className="font-bold text-lg">{selectedCustomer.name}</p>
-                  <p className="text-sm">{selectedCustomer.email}</p>
-                  <p className="text-sm">{selectedCustomer.address}</p>
+                  {selectedCustomer.email && (
+                    <p className="text-sm">{selectedCustomer.email}</p>
+                  )}
+                  {selectedCustomer.city && (
+                    <p className="text-sm">
+                      {[selectedCustomer.city, selectedCustomer.country].filter(Boolean).join(', ')}
+                    </p>
+                  )}
                 </div>
               )}
 
