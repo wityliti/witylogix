@@ -1,84 +1,105 @@
 'use client';
 
-/**
- * Customer-specific API hooks for the dashboard
- */
-
 import { useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiListResult } from './use-api';
 
-/**
- * Customer type
- */
+/** Matches the Customer model in 25-cache-models.prisma */
 export interface Customer {
   id: string;
-  name: string;
-  email: string;
-  phone: string;
-  avatar?: string;
-  company?: string;
-  status: 'active' | 'inactive' | 'blocked';
-  tier: 'standard' | 'premium' | 'enterprise';
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate?: string;
+  shopId: string;
+  externalCustomerId: string;
+  source: string;
+  email: string | null;
+  phone: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  ordersCount: number;
+  totalSpent: string; // Decimal serialised as string
+  tags: string[];
+  addresses: unknown[]; // JSON array of address objects
+  marketingConsent: boolean;
+  notes: string | null;
+  lastSyncAt: string;
   createdAt: string;
   updatedAt: string;
-  addresses?: CustomerAddress[];
-  orderHistory?: OrderSummary[];
 }
 
-/**
- * Customer address
- */
+export function customerName(c: Customer): string {
+  const parts = [c.firstName, c.lastName].filter(Boolean);
+  return parts.length ? parts.join(' ') : c.email ?? c.externalCustomerId;
+}
+
 export interface CustomerAddress {
-  id: string;
-  type: 'billing' | 'shipping' | 'default';
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  isDefault: boolean;
+  address1?: string;
+  city?: string;
+  province?: string;
+  zip?: string;
+  country?: string;
+  default?: boolean;
 }
 
-/**
- * Order summary for customer history
- */
-export interface OrderSummary {
+export interface CustomerOrder {
   id: string;
+  externalOrderNumber: string | null;
   status: string;
-  totalAmount: number;
+  totalPrice: string | null;
+  itemCount: number;
+  city: string | null;
+  deliveryDate: string | null;
+  actualDelivery: string | null;
   createdAt: string;
+  driver: { id: string; name: string } | null;
 }
 
-/**
- * Customer filters
- */
+export interface CustomerStats {
+  total: number;
+  syncedToday: number;
+  recentlyActive: number;
+  topSpenders: Array<{
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    totalSpent: string;
+    ordersCount: number;
+  }>;
+  avgOrderCount: number;
+  totalRevenue: string;
+  topSpent: string;
+  lastSync: string | null;
+}
+
+export interface CustomerGeoPoint {
+  city: string;
+  province: string | null;
+  country: string | null;
+  count: number;
+  lat: number;
+  lng: number;
+}
+
 export interface CustomerFilters extends ApiFilters {
-  status?: 'active' | 'inactive' | 'blocked';
-  tier?: 'standard' | 'premium' | 'enterprise';
-  minSpent?: number;
-  maxSpent?: number;
+  sortBy?: 'firstName' | 'email' | 'totalSpent' | 'lastSyncAt' | 'ordersCount';
+  sortOrder?: 'asc' | 'desc';
 }
 
-/**
- * Hook to fetch paginated customers with filtering and sorting
- * @param filters - Customer filter options
- * @returns List of customers with pagination
- */
-export function useCustomers(
-  filters?: CustomerFilters,
-): UseApiListResult<Customer> {
+export function useCustomers(filters?: CustomerFilters): UseApiListResult<Customer> {
   return useApiList<Customer>('/api/v4/customers', filters);
 }
 
-/**
- * Hook to fetch a single customer by ID with order history
- * @param id - Customer ID
- * @returns Single customer with addresses and order history
- */
-export function useCustomer(
-  id: string | null,
-): UseApiQueryResult<Customer> {
-  return useApiQuery<Customer>(id ? `/customers/${id}` : null);
+export function useCustomer(id: string | null): UseApiQueryResult<Customer> {
+  return useApiQuery<Customer>(id ? `/api/v4/customers/${id}` : null);
+}
+
+export function useCustomerStats(): UseApiQueryResult<CustomerStats> {
+  return useApiQuery<CustomerStats>('/api/v4/customers/stats');
+}
+
+export function useCustomerOrders(
+  customerId: string | null,
+): UseApiQueryResult<{ customer: Customer; orders: CustomerOrder[] }> {
+  return useApiQuery(customerId ? `/api/v4/customers/${customerId}/orders` : null);
+}
+
+export function useCustomerGeo(): UseApiQueryResult<CustomerGeoPoint[]> {
+  return useApiQuery<CustomerGeoPoint[]>('/api/v4/customers/geo');
 }
