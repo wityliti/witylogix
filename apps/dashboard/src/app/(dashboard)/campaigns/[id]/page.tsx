@@ -1,241 +1,391 @@
-"use client";
+'use client';
 
-import { use, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/ui/stat-card";
-import { cn, formatNumber, formatRelativeTime } from "@/lib/utils";
-import { useApiQuery } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { use, useState, useCallback } from 'react';
+import Link from 'next/link';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { StatCard } from '@/components/ui/stat-card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { formatNumber, formatRelativeTime } from '@/lib/utils';
+import { useApiQuery } from '@/hooks/use-api';
+import dynamic from 'next/dynamic';
 import {
   Edit,
   Copy,
   Archive,
   Mail,
-  CheckCircle,
-  AlertCircle,
-  LogOut,
-  BarChart3,
-} from "lucide-react";
+  MessageSquare,
+  MessageCircle,
+  Bell,
+  Layers,
+  ArrowLeft,
+  Map,
+} from 'lucide-react';
 
-type CampaignType = "EMAIL" | "SMS" | "WHATSAPP" | "PUSH";
-type CampaignStatus = "DRAFT" | "SCHEDULED" | "SENDING" | "COMPLETED";
-type EventType = "sent" | "delivered" | "opened" | "clicked" | "bounced" | "unsubscribed";
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false, loading: () => <Skeleton className="w-full h-full rounded-xl" /> }
+);
+
+const CampaignReachLayer = dynamic(
+  () =>
+    import('@/components/map/campaign-reach-layer').then((m) => ({
+      default: m.CampaignReachLayer,
+    })),
+  { ssr: false }
+);
+
+// ─── Types ─────────────────────────────────────────────────
+
+type CampaignType = 'EMAIL' | 'SMS' | 'WHATSAPP' | 'PUSH' | 'MULTI_CHANNEL';
+type CampaignStatus =
+  | 'DRAFT'
+  | 'SCHEDULED'
+  | 'SENDING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED';
 
 interface Campaign {
   id: string;
   name: string;
   type: CampaignType;
   status: CampaignStatus;
-  created_at: string;
-  sent_at?: string;
-  completed_at?: string;
-  stats: {
-    delivered: number;
-    opened: number;
-    clicked: number;
-    failed: number;
-    total_events: number;
-  };
+  sentCount: number;
+  deliveredCount: number;
+  openedCount: number;
+  clickedCount: number;
+  failedCount: number;
+  bouncedCount: number;
+  unsubscribedCount: number;
+  audienceFilter: Record<string, unknown>;
+  scheduledAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
 }
 
-const statusVariant = (s: CampaignStatus): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
-  const map: Record<CampaignStatus, "success" | "warning" | "danger" | "info" | "primary" | "default"> = {
-    DRAFT: "default",
-    SCHEDULED: "info",
-    SENDING: "warning",
-    COMPLETED: "success",
-  };
-  return map[s] ?? "default";
+interface ReachPoint {
+  city: string;
+  country: string | null;
+  customerCount: number;
+  orderCount: number;
+  lat: number;
+  lng: number;
+}
+
+// ─── Config ────────────────────────────────────────────────
+
+const TYPE_CONFIG: Record<
+  CampaignType,
+  { variant: 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'; icon: React.ReactNode; label: string }
+> = {
+  EMAIL: { variant: 'info', icon: <Mail size={13} />, label: 'Email' },
+  SMS: { variant: 'success', icon: <MessageSquare size={13} />, label: 'SMS' },
+  WHATSAPP: { variant: 'primary', icon: <MessageCircle size={13} />, label: 'WhatsApp' },
+  PUSH: { variant: 'warning', icon: <Bell size={13} />, label: 'Push' },
+  MULTI_CHANNEL: { variant: 'default', icon: <Layers size={13} />, label: 'Multi-channel' },
 };
 
-const typeVariant = (t: CampaignType): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
-  const map: Record<CampaignType, "success" | "warning" | "danger" | "info" | "primary" | "default"> = {
-    EMAIL: "info",
-    SMS: "success",
-    WHATSAPP: "primary",
-    PUSH: "warning",
-  };
-  return map[t] ?? "default";
+const STATUS_CONFIG: Record<
+  CampaignStatus,
+  { variant: 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'; label: string }
+> = {
+  DRAFT: { variant: 'default', label: 'Draft' },
+  SCHEDULED: { variant: 'info', label: 'Scheduled' },
+  SENDING: { variant: 'warning', label: 'Sending' },
+  PAUSED: { variant: 'warning', label: 'Paused' },
+  COMPLETED: { variant: 'success', label: 'Completed' },
+  FAILED: { variant: 'danger', label: 'Failed' },
+  CANCELLED: { variant: 'default', label: 'Cancelled' },
 };
 
-const eventTypeIcon = (type: EventType) => {
-  const icons: Record<EventType, React.ReactNode> = {
-    sent: <Mail size={16} />,
-    delivered: <CheckCircle size={16} />,
-    opened: <Mail size={16} />,
-    clicked: <BarChart3 size={16} />,
-    bounced: <AlertCircle size={16} />,
-    unsubscribed: <LogOut size={16} />,
-  };
-  return icons[type] ?? null;
-};
+// ─── Loading skeleton ──────────────────────────────────────
 
-export default function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const { data: campaign, loading, error } = useApiQuery<Campaign>(`/api/v4/campaigns/${id}`);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-wl-bg-primary p-8">
-        <TableSkeleton rows={6} />
+function CampaignSkeleton() {
+  return (
+    <>
+      <Header title="Campaign" subtitle="Loading…" />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-24 rounded-xl" />
+        ))}
       </div>
-    );
-  }
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-64 rounded-xl" />
+      </div>
+    </>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────
+
+export default function CampaignDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const [mapId, setMapId] = useState<string | null>(null);
+  const handleMapReady = useCallback((mid: string) => setMapId(mid), []);
+
+  const {
+    data: campaign,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<Campaign>(`/api/v4/campaigns/${id}`);
+
+  // API returns { data: ReachPoint[] }; useApiQuery unwraps to ReachPoint[]
+  const { data: reachPoints, loading: geoLoading } = useApiQuery<ReachPoint[]>(
+    `/api/v4/campaigns/${id}/geo`
+  );
+
+  if (loading) return <CampaignSkeleton />;
 
   if (error || !campaign) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary p-8">
-        <ErrorState message="Failed to load campaign." />
-      </div>
+      <>
+        <Header
+          title="Campaign"
+          subtitle="Not found"
+          actions={
+            <Link href="/campaigns">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Campaigns
+              </Button>
+            </Link>
+          }
+        />
+        <ErrorState
+          error={error ?? undefined}
+          onRetry={() => { refetch(); }}
+          title="Failed to load campaign"
+          message="This campaign could not be loaded. It may have been deleted or you may not have access."
+        />
+      </>
     );
   }
 
-  const sent = campaign.stats.total_events || 0;
-  const delivered = campaign.stats.delivered || 0;
-  const opened = campaign.stats.opened || 0;
-  const clicked = campaign.stats.clicked || 0;
-  const failed = campaign.stats.failed || 0;
+  const typeConf = TYPE_CONFIG[campaign.type] ?? TYPE_CONFIG.EMAIL;
+  const statusConf = STATUS_CONFIG[campaign.status] ?? STATUS_CONFIG.DRAFT;
 
-  const deliveryRate = sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
-  const openRate = delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : "0.0";
-  const clickRate = opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
+  const sent = campaign.sentCount ?? 0;
+  const delivered = campaign.deliveredCount ?? 0;
+  const opened = campaign.openedCount ?? 0;
+  const clicked = campaign.clickedCount ?? 0;
+  const failed = campaign.failedCount ?? 0;
 
-  const audienceBreakdown = [
-    { label: "Delivered", value: delivered, color: "#22c55e", percentage: sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0" },
-    { label: "Failed", value: failed, color: "#ef4444", percentage: sent > 0 ? ((failed / sent) * 100).toFixed(1) : "0" },
+  const deliveryRate = sent > 0 ? ((delivered / sent) * 100).toFixed(1) : '0.0';
+  const openRate = delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : '0.0';
+  const clickRate = opened > 0 ? ((clicked / opened) * 100).toFixed(1) : '0.0';
+
+  const funnel = [
+    { label: 'Sent', value: sent, color: '#818cf8' },
+    { label: 'Delivered', value: delivered, color: '#60a5fa', rate: `${deliveryRate}%` },
+    { label: 'Opened', value: opened, color: '#34d399', rate: `${openRate}%` },
+    { label: 'Clicked', value: clicked, color: '#f97316', rate: `${clickRate}%` },
   ];
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <>
       <Header
         title={campaign.name}
-        subtitle={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.created_at)}`}
-      />
-
-      <div className="p-8 w-full mx-auto">
-        {/* Header with Status */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Badge variant={typeVariant(campaign.type)}>{campaign.type}</Badge>
-            <Badge variant={statusVariant(campaign.status)}>{campaign.status}</Badge>
-            {campaign.sent_at && (
-              <span className="text-sm text-wl-text-secondary">
-                Sent {formatRelativeTime(campaign.sent_at)}
-              </span>
-            )}
-          </div>
-          <div className="flex gap-2">
+        subtitle={`${typeConf.label} campaign · Created ${formatRelativeTime(campaign.createdAt)}`}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link href="/campaigns">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+            </Link>
             <Button variant="secondary" size="md">
-              <Edit size={16} />
+              <Edit size={15} />
               Edit
             </Button>
             <Button variant="secondary" size="md">
-              <Copy size={16} />
+              <Copy size={15} />
               Duplicate
             </Button>
-            <Button variant="secondary" size="md">
-              <Archive size={16} />
+            <Button variant="ghost" size="md">
+              <Archive size={15} />
               Archive
             </Button>
           </div>
-        </div>
+        }
+      />
 
-        {/* Performance Stats */}
-        <div className="grid gap-4 mb-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
-          <StatCard
-            label="Sent"
-            value={formatNumber(sent)}
-            accentColor="var(--wl-primary-500)"
-            index={0}
-          />
-          <StatCard
-            label="Delivered"
-            value={formatNumber(delivered)}
-            change={{ value: parseInt(deliveryRate), label: "delivery rate" }}
-            accentColor="var(--wl-success-500)"
-            index={1}
-          />
-          <StatCard
-            label="Opened"
-            value={formatNumber(opened)}
-            change={{ value: parseInt(openRate), label: "open rate" }}
-            accentColor="var(--wl-info-500)"
-            index={2}
-          />
-          <StatCard
-            label="Clicked"
-            value={formatNumber(clicked)}
-            change={{ value: parseInt(clickRate), label: "click rate" }}
-            accentColor="var(--wl-warning-500)"
-            index={3}
-          />
-          <StatCard
-            label="Failed"
-            value={formatNumber(failed)}
-            accentColor="var(--wl-danger-500)"
-            index={4}
-          />
-        </div>
+      {/* Status bar */}
+      <div className="flex items-center gap-3 mb-8">
+        <Badge variant={typeConf.variant} className="inline-flex items-center gap-1">
+          {typeConf.icon}
+          {typeConf.label}
+        </Badge>
+        <Badge variant={statusConf.variant}>{statusConf.label}</Badge>
+        {campaign.startedAt && (
+          <span className="text-sm text-wl-text-secondary">
+            Started {formatRelativeTime(campaign.startedAt)}
+          </span>
+        )}
+        {campaign.completedAt && (
+          <span className="text-sm text-wl-text-secondary">
+            · Completed {formatRelativeTime(campaign.completedAt)}
+          </span>
+        )}
+        {campaign.scheduledAt && campaign.status === 'SCHEDULED' && (
+          <span className="text-sm text-wl-text-secondary">
+            Scheduled for {new Date(campaign.scheduledAt).toLocaleDateString()}
+          </span>
+        )}
+      </div>
 
-        {/* Audience Breakdown */}
+      {/* Performance stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <StatCard
+          label="Sent"
+          value={formatNumber(sent)}
+          accentColor="var(--wl-primary-500)"
+          index={0}
+        />
+        <StatCard
+          label="Delivered"
+          value={formatNumber(delivered)}
+          change={{ value: parseFloat(deliveryRate), label: 'delivery rate' }}
+          accentColor="var(--wl-info-500)"
+          index={1}
+        />
+        <StatCard
+          label="Opened"
+          value={formatNumber(opened)}
+          change={{ value: parseFloat(openRate), label: 'open rate' }}
+          accentColor="var(--wl-success-500)"
+          index={2}
+        />
+        <StatCard
+          label="Clicked"
+          value={formatNumber(clicked)}
+          change={{ value: parseFloat(clickRate), label: 'click rate' }}
+          accentColor="var(--wl-warning-500)"
+          index={3}
+        />
+        <StatCard
+          label="Failed"
+          value={formatNumber(failed)}
+          accentColor="var(--wl-danger-500)"
+          index={4}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Funnel */}
         <Card>
           <CardHeader>
-            <CardTitle>Audience Breakdown</CardTitle>
+            <CardTitle>Engagement Funnel</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center mb-6 h-40">
-              <svg
-                width="140"
-                height="140"
-                viewBox="0 0 140 140"
-                style={{ transform: "rotate(-90deg)" }}
-              >
-                {audienceBreakdown.reduce((acc, item, idx, arr) => {
-                  const prev = arr.slice(0, idx).reduce((sum, p) => sum + parseFloat(p.percentage), 0);
-                  const startAngle = (prev / 100) * 360;
-                  const endAngle = ((prev + parseFloat(item.percentage)) / 100) * 360;
-                  const startRad = (startAngle * Math.PI) / 180;
-                  const endRad = (endAngle * Math.PI) / 180;
-                  const x1 = 70 + 60 * Math.cos(startRad);
-                  const y1 = 70 + 60 * Math.sin(startRad);
-                  const x2 = 70 + 60 * Math.cos(endRad);
-                  const y2 = 70 + 60 * Math.sin(endRad);
-                  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-                  return [
-                    ...acc,
-                    <path
-                      key={`slice-${idx}`}
-                      d={`M 70,70 L ${x1},${y1} A 60,60 0 ${largeArc},1 ${x2},${y2} Z`}
-                      fill={item.color}
-                      style={{ opacity: 0.8 }}
-                    />,
-                  ];
-                }, [] as React.ReactNode[])}
-              </svg>
-            </div>
-            <div className="flex flex-col gap-2">
-              {audienceBreakdown.map((item) => (
-                <div key={item.label} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm" style={{ background: item.color }} />
-                    <span className="text-sm">{item.label}</span>
+            {sent === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <Mail className="w-8 h-8 text-wl-text-tertiary mb-3" />
+                <p className="text-sm text-wl-text-secondary">
+                  No messages sent yet for this campaign.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {funnel.map((step, idx) => (
+                  <div key={step.label} className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 w-20 flex-shrink-0">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ background: step.color }}
+                      />
+                      <span className="text-xs text-wl-text-secondary">{step.label}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div
+                        className="h-2.5 rounded-full"
+                        style={{
+                          background: step.color,
+                          width: sent > 0 ? `${Math.max(2, (step.value / sent) * 100)}%` : '2%',
+                          opacity: 0.7,
+                        }}
+                      />
+                    </div>
+                    <div className="text-sm font-medium text-wl-text-primary w-16 text-right flex-shrink-0">
+                      {formatNumber(step.value)}
+                    </div>
+                    {step.rate && (
+                      <div className="text-xs text-wl-text-tertiary w-10 text-right flex-shrink-0">
+                        {step.rate}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex gap-3 items-center">
-                    <span className="text-sm font-medium">{formatNumber(item.value)}</span>
-                    <span className="text-xs text-wl-text-secondary text-right" style={{ minWidth: "35px" }}>
-                      {item.percentage}%
-                    </span>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Audience details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Map size={16} className="text-wl-text-secondary" />
+              Audience Reach
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="relative h-[260px]">
+              {geoLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              )}
+              <WLMap className="w-full h-full rounded-b-xl" onReady={handleMapReady} />
+              {mapId && !geoLoading && (reachPoints?.length ?? 0) > 0 && (
+                <CampaignReachLayer mapId={mapId} points={reachPoints ?? []} />
+              )}
+              {!geoLoading && (reachPoints?.length ?? 0) === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <p className="text-xs text-wl-text-tertiary bg-wl-bg-primary/80 px-3 py-1.5 rounded-lg">
+                    No geographic data available
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Metadata */}
+      {campaign.audienceFilter && Object.keys(campaign.audienceFilter).length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Audience Filter</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {Object.entries(campaign.audienceFilter).map(([key, val]) => (
+                <div key={key}>
+                  <div className="text-xs text-wl-text-tertiary mb-1 uppercase tracking-wider">
+                    {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}
+                  </div>
+                  <div className="text-sm text-wl-text-primary">
+                    {Array.isArray(val) ? val.join(', ') : String(val ?? '—')}
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
