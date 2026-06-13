@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Download,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,11 +20,15 @@ import { Card } from '@/components/ui/card';
 import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { WLMap } from '@/components/map/wl-map';
+import { DemandZoneLayer, type DemandZone } from '@/components/map/demand-zone-layer';
 
 interface DemandData {
   zones: Array<{
     id: string;
     name: string;
+    lat: number | null;
+    lng: number | null;
     predictedVolume: number;
     actualVolume: number;
     confidence: number;
@@ -61,6 +66,8 @@ export default function DemandPage() {
   const [selectedZone, setSelectedZone] = useState<string>('all');
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'nextweek' | 'custom'>('week');
   const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
+  const [mapId, setMapId] = useState<string | null>(null);
+  const [mapMetric, setMapMetric] = useState<'predicted' | 'actual'>('predicted');
 
   const { data, loading, error } = useApiQuery<DemandData>('/api/v4/analytics/demand');
 
@@ -72,6 +79,23 @@ export default function DemandPage() {
     if (selectedZone === 'all') return zones;
     return zones.filter((z) => z.id === selectedZone);
   }, [zones, selectedZone]);
+
+  const mapZones = useMemo<DemandZone[]>(
+    () =>
+      filteredZones
+        .filter((z) => z.lat != null && z.lng != null)
+        .map((z) => ({
+          id: z.id,
+          name: z.name,
+          lat: z.lat!,
+          lng: z.lng!,
+          predictedVolume: z.predictedVolume,
+          actualVolume: z.actualVolume,
+          confidence: z.confidence,
+          trend: z.trend,
+        })),
+    [filteredZones]
+  );
 
   const toggleAnomalyExpansion = useCallback((anomalyId: string) => {
     setExpandedAnomalies((prev) => {
@@ -401,6 +425,86 @@ export default function DemandPage() {
                   <span className="text-wl-text-secondary">Actual</span>
                 </div>
               </div>
+            </div>
+          </Card>
+
+          {/* Demand Zone Map */}
+          <Card className="bg-[#12121a] border border-[#1e1e2e] overflow-hidden">
+            <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-[#1e1e2e]">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Map className="w-5 h-5 text-blue-400" />
+                Demand Zone Map
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setMapMetric('predicted')}
+                  className={cn(
+                    'px-3 py-1.5 rounded text-xs font-medium transition-colors',
+                    mapMetric === 'predicted'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-[#1a1a2e] text-gray-400 hover:bg-[#242436]'
+                  )}
+                >
+                  Predicted
+                </button>
+                <button
+                  onClick={() => setMapMetric('actual')}
+                  className={cn(
+                    'px-3 py-1.5 rounded text-xs font-medium transition-colors',
+                    mapMetric === 'actual'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-[#1a1a2e] text-gray-400 hover:bg-[#242436]'
+                  )}
+                >
+                  Actual
+                </button>
+              </div>
+            </div>
+            <div style={{ height: 380 }} className="relative">
+              {mapZones.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                  <div className="text-center">
+                    <MapPin className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p>No zone boundary data available</p>
+                    <p className="text-xs mt-1 text-gray-600">Add boundary coordinates to zones to see the map</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <WLMap
+                    center={[40.7128, -74.006]}
+                    zoom={10}
+                    className="w-full h-full"
+                    onReady={setMapId}
+                  />
+                  {mapId && (
+                    <DemandZoneLayer
+                      mapId={mapId}
+                      zones={mapZones}
+                      metric={mapMetric}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+            <div className="px-6 py-3 border-t border-[#1e1e2e] flex items-center gap-6 text-xs text-gray-400">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500 opacity-60" />
+                Low demand
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500 opacity-60" />
+                Medium
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-orange-500 opacity-60" />
+                High
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500 opacity-60" />
+                Very high
+              </div>
+              <span className="ml-auto text-gray-600">Circle size = volume, color = intensity</span>
             </div>
           </Card>
 
