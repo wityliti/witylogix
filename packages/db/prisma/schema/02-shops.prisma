@@ -31,6 +31,7 @@ model Shop {
   timeSlots               TimeSlot[]
   routes                  Route[]
   notificationLogs        NotificationLog[]
+  tenantNotifications     TenantNotification[]
   carrierServices         CarrierService[]
   webhookSubscriptions    WebhookSubscription[]
   routingMeterEvents      RoutingMeterEvent[]
@@ -70,6 +71,7 @@ model Shop {
   coldChainAlerts             ColdChainAlert[]
   deliveryOTPs                DeliveryOTP[]
   deliveryAuditLogs           DeliveryAuditLog[]
+  returnRequests              ReturnRequest[]
 
   @@index([orgId])
   @@map("shops")

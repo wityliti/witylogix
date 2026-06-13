@@ -65,6 +65,7 @@ model Order {
   customerDeliveryPreferences CustomerDeliveryPreferences?
   deliveryOTPs                DeliveryOTP[]
   deliveryAuditLogs           DeliveryAuditLog[]
+  returnRequests              ReturnRequest[]
 
   @@unique([shopId, externalOrderId, source])
   @@index([shopId, status, createdAt(sort: Desc)])

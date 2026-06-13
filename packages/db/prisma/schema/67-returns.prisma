@@ -1,0 +1,51 @@
+// ─── RETURN REQUESTS (RMA) ────────────────────────────────
+// Full lifecycle: PENDING → APPROVED/REJECTED → RECEIVED → INSPECTED → REFUNDED
+
+model ReturnRequest {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String              @map("shop_id") @db.Uuid
+  tenantId    String              @map("tenant_id") @db.Uuid
+  orderId     String              @map("order_id") @db.Uuid
+  customerId  String?             @map("customer_id") @db.Uuid
+  status      ReturnRequestStatus @default(PENDING)
+  reason      ReturnReason
+  reasonDetails String?           @map("reason_details") @db.Text
+  notes       String?             @db.Text
+  items       Json                @default("[]") // [{orderItemId, productName, quantity, condition, refundAmount}]
+  refundAmount Decimal?           @map("refund_amount") @db.Decimal(10, 2)
+  refundStatus String?            @map("refund_status") // pending | processed | failed
+  refundedAt  DateTime?           @map("refunded_at")
+  approvedAt  DateTime?           @map("approved_at")
+  rejectedAt  DateTime?           @map("rejected_at")
+  rejectionReason String?         @map("rejection_reason") @db.Text
+  receivedAt  DateTime?           @map("received_at")
+  inspectedAt DateTime?           @map("inspected_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  shop  Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([shopId, status])
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([orderId])
+  @@map("return_requests")
+}
+
+enum ReturnRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RECEIVED
+  INSPECTED
+  REFUNDED
+}
+
+enum ReturnReason {
+  DEFECTIVE
+  DAMAGED
+  WRONG_ITEM
+  NOT_AS_DESCRIBED
+  CHANGED_MIND
+  OTHER
+}

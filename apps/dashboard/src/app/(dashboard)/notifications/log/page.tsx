@@ -1,623 +1,317 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Download,
-  Eye,
   Mail,
   MessageSquare,
   Bell,
-  Smartphone,
-  Clock,
+  MessageCircle,
   CheckCircle,
   AlertCircle,
-  RotateCcw,
+  Clock,
+  ChevronDown,
+  X,
 } from "lucide-react";
+import {
+  useDeliveryLog,
+  type NotificationChannel,
+  type DeliveryStatus,
+} from "@/hooks/use-notifications";
 
-type Channel = "email" | "sms" | "whatsapp" | "push";
-type EventType =
-  | "order_confirmed"
-  | "delivery_scheduled"
-  | "out_for_delivery"
-  | "delivery_arriving"
-  | "delivered"
-  | "delivery_failed"
-  | "rescheduled";
-type NotificationStatus = "sent" | "delivered" | "failed" | "bounced" | "pending";
+// ─── Config maps ────────────────────────────────────────────
 
-interface DeliveryAttempt {
-  timestamp: Date;
-  status: NotificationStatus;
-  errorCode?: string;
-  errorMessage?: string;
-}
-
-interface NotificationLog {
-  id: string;
-  timestamp: Date;
-  recipient: string;
-  channel: Channel;
-  eventType: EventType;
-  templateName: string;
-  status: NotificationStatus;
-  messageId?: string;
-  messagePreview: string;
-  cost: number;
-  attempts: DeliveryAttempt[];
-}
-
-const NOTIFICATION_LOGS: NotificationLog[] = [
-  {
-    id: "nlog1",
-    timestamp: new Date("2026-03-11T14:30:00"),
-    recipient: "customer@example.com",
-    channel: "email",
-    eventType: "order_confirmed",
-    templateName: "Order Confirmation",
-    status: "delivered",
-    messageId: "msg_1234567890",
-    messagePreview: "Your order #ORD-123456 has been confirmed",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:30:05"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog2",
-    timestamp: new Date("2026-03-11T14:25:00"),
-    recipient: "+1234567890",
-    channel: "sms",
-    eventType: "out_for_delivery",
-    templateName: "Out for Delivery SMS",
-    status: "delivered",
-    messageId: "msg_1234567891",
-    messagePreview: "Your delivery is on the way! Track: https://track.example.com",
-    cost: 0.05,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:25:10"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog3",
-    timestamp: new Date("2026-03-11T14:20:00"),
-    recipient: "+201012345678",
-    channel: "whatsapp",
-    eventType: "delivery_scheduled",
-    templateName: "Delivery Scheduled",
-    status: "delivered",
-    messageId: "msg_1234567892",
-    messagePreview: "Your delivery is scheduled for March 12, 2026",
-    cost: 0.02,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:20:15"),
-        status: "delivered",
-      },
-    ],
-  },
-  {
-    id: "nlog4",
-    timestamp: new Date("2026-03-11T14:15:00"),
-    recipient: "customer2@example.com",
-    channel: "email",
-    eventType: "delivery_failed",
-    templateName: "Delivery Failed",
-    status: "failed",
-    messageId: "msg_1234567893",
-    messagePreview: "Unfortunately, we couldn't deliver your package",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:15:00"),
-        status: "failed",
-        errorCode: "INVALID_EMAIL",
-        errorMessage: "Email address not found",
-      },
-    ],
-  },
-  {
-    id: "nlog5",
-    timestamp: new Date("2026-03-11T14:10:00"),
-    recipient: "push-token-xyz",
-    channel: "push",
-    eventType: "delivered",
-    templateName: "Delivery Confirmation",
-    status: "sent",
-    messageId: "msg_1234567894",
-    messagePreview: "Your order has been delivered successfully",
-    cost: 0,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:10:05"),
-        status: "sent",
-      },
-    ],
-  },
-  {
-    id: "nlog6",
-    timestamp: new Date("2026-03-11T14:05:00"),
-    recipient: "+9876543210",
-    channel: "sms",
-    eventType: "order_confirmed",
-    templateName: "Order Confirmation SMS",
-    status: "bounced",
-    messageId: "msg_1234567895",
-    messagePreview: "Order confirmed! Track: https://track.example.com",
-    cost: 0.05,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:05:00"),
-        status: "bounced",
-        errorCode: "INVALID_NUMBER",
-        errorMessage: "Phone number no longer valid",
-      },
-    ],
-  },
-  {
-    id: "nlog7",
-    timestamp: new Date("2026-03-11T14:00:00"),
-    recipient: "customer3@example.com",
-    channel: "email",
-    eventType: "rescheduled",
-    templateName: "Rescheduled Notification",
-    status: "pending",
-    messageId: "msg_1234567896",
-    messagePreview: "Your delivery has been rescheduled",
-    cost: 0.01,
-    attempts: [
-      {
-        timestamp: new Date("2026-03-11T14:00:00"),
-        status: "pending",
-      },
-    ],
-  },
-];
-
-const CHANNEL_ICONS: Record<Channel, React.ReactNode> = {
-  email: <Mail className="w-4 h-4" />,
-  sms: <MessageSquare className="w-4 h-4" />,
-  whatsapp: <MessageSquare className="w-4 h-4" />,
-  push: <Bell className="w-4 h-4" />,
+const STATUS_VARIANTS: Record<string, "success" | "danger" | "warning" | "info" | "default"> = {
+  SENT:      "info",
+  DELIVERED: "success",
+  READ:      "success",
+  FAILED:    "danger",
+  BOUNCED:   "danger",
+  PENDING:   "warning",
+  QUEUED:    "warning",
 };
 
-const STATUS_ICONS: Record<NotificationStatus, React.ReactNode> = {
-  sent: <CheckCircle className="w-4 h-4 text-emerald-500" />,
-  delivered: <CheckCircle className="w-4 h-4 text-emerald-500" />,
-  failed: <AlertCircle className="w-4 h-4 text-red-500" />,
-  bounced: <AlertCircle className="w-4 h-4 text-amber-500" />,
-  pending: <Clock className="w-4 h-4 text-gray-400" />,
+const CHANNEL_ICON: Record<string, React.ReactNode> = {
+  EMAIL:    <Mail    size={14} />,
+  SMS:      <MessageSquare size={14} />,
+  PUSH:     <Bell    size={14} />,
+  WHATSAPP: <MessageCircle size={14} />,
 };
 
-const getStatusVariant = (status: NotificationStatus) => {
-  switch (status) {
-    case "delivered":
-    case "sent":
-      return "success";
-    case "failed":
-      return "danger";
-    case "bounced":
-      return "warning";
-    case "pending":
-      return "info";
-  }
-};
-
-interface DetailModalProps {
-  log?: NotificationLog;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
-  if (!isOpen || !log) return null;
-
+function ChannelIcon({ channel }: { channel: string }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
-        <CardHeader>
-          <CardTitle>Notification Details</CardTitle>
-          <CardDescription>Message ID: {log.messageId}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Recipient
-              </p>
-              <p className="text-sm text-white">{log.recipient}</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Channel
-              </p>
-              <p className="text-sm text-white capitalize">
-                {log.channel}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Status
-              </p>
-              <Badge variant={getStatusVariant(log.status) as any}>
-                {log.status}
-              </Badge>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                Cost
-              </p>
-              <p className="text-sm text-white">
-                ${log.cost.toFixed(2)}
-              </p>
-            </div>
-          </div>
+    <span className="text-wl-text-tertiary">
+      {CHANNEL_ICON[channel] ?? <Bell size={14} />}
+    </span>
+  );
+}
 
-          <div className="border-t border-[#1e1e2e] pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-              Message Preview
-            </p>
-            <div className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
-              <p className="text-sm text-white whitespace-pre-wrap">
-                {log.messagePreview}
-              </p>
-            </div>
-          </div>
+// ─── Detail Panel ────────────────────────────────────────────
 
-          <div className="border-t border-[#1e1e2e] pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-              Delivery Attempts ({log.attempts.length})
-            </p>
-            <div className="space-y-2">
-              {log.attempts.map((attempt, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2">
-                      {STATUS_ICONS[attempt.status]}
-                      <div>
-                        <p className="text-sm font-medium text-white capitalize">
-                          {attempt.status}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {attempt.timestamp.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {attempt.errorMessage && (
-                    <div className="mt-2 text-xs">
-                      <p className="text-red-500">
-                        Error: {attempt.errorMessage}
-                      </p>
-                      <p className="text-gray-400">
-                        Code: {attempt.errorCode}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="w-full mt-4 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#252541] transition-colors"
-          >
-            Close
+function DetailPanel({ entry, onClose }: { entry: any; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <Card className="w-full max-w-md bg-[#12121a] border-[#1e1e2e]">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Delivery Detail</CardTitle>
+          <button onClick={onClose} className="text-wl-text-tertiary hover:text-wl-text-primary">
+            <X size={18} />
           </button>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-wl-text-tertiary uppercase mb-1">Recipient</p>
+              <p className="text-wl-text-primary break-all">{entry.recipient}</p>
+            </div>
+            <div>
+              <p className="text-xs text-wl-text-tertiary uppercase mb-1">Channel</p>
+              <div className="flex items-center gap-1.5">
+                <ChannelIcon channel={entry.channel} />
+                <span className="text-wl-text-primary capitalize">{entry.channel.toLowerCase()}</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-wl-text-tertiary uppercase mb-1">Status</p>
+              <Badge variant={STATUS_VARIANTS[entry.status] ?? "default"}>{entry.status}</Badge>
+            </div>
+            <div>
+              <p className="text-xs text-wl-text-tertiary uppercase mb-1">Sent</p>
+              <p className="text-wl-text-primary">
+                {new Date(entry.timestamp).toLocaleString()}
+              </p>
+            </div>
+            {entry.deliveredAt && (
+              <div>
+                <p className="text-xs text-wl-text-tertiary uppercase mb-1">Delivered</p>
+                <p className="text-wl-text-primary">{new Date(entry.deliveredAt).toLocaleString()}</p>
+              </div>
+            )}
+            {entry.orderNumber && (
+              <div>
+                <p className="text-xs text-wl-text-tertiary uppercase mb-1">Order</p>
+                <p className="text-wl-text-primary">{entry.orderNumber}</p>
+              </div>
+            )}
+          </div>
+          {entry.message && (
+            <div className="border-t border-white/[0.06] pt-3">
+              <p className="text-xs text-wl-text-tertiary uppercase mb-2">Message</p>
+              <div className="p-3 bg-[#0a0a0f] rounded-lg border border-white/[0.06]">
+                <p className="text-wl-text-secondary whitespace-pre-wrap">{entry.message}</p>
+              </div>
+            </div>
+          )}
+          {entry.error && (
+            <div className="border-t border-white/[0.06] pt-3">
+              <p className="text-xs text-wl-danger-400 uppercase mb-1">Error</p>
+              <p className="text-wl-danger-300 text-xs">{entry.error}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
-};
+}
+
+// ─── Page ─────────────────────────────────────────────────
 
 export default function NotificationLogPage() {
-  const [logs, setLogs] = useState<NotificationLog[]>(NOTIFICATION_LOGS);
-  const [selectedLog, setSelectedLog] = useState<NotificationLog>();
-  const [showDetail, setShowDetail] = useState(false);
-  const [filterChannel, setFilterChannel] = useState<Channel | "all">("all");
-  const [filterStatus, setFilterStatus] = useState<NotificationStatus | "all">(
-    "all"
-  );
-  const [filterDateRange, setFilterDateRange] = useState({ from: "", to: "" });
+  const {
+    entries,
+    isLoading,
+    error,
+    hasMore,
+    searchQuery,
+    filters,
+    setSearchQuery,
+    setFilters,
+    loadMore,
+    exportCSV,
+    refetch,
+  } = useDeliveryLog();
 
-  const filteredLogs = logs.filter((log) => {
-    if (filterChannel !== "all" && log.channel !== filterChannel) return false;
-    if (filterStatus !== "all" && log.status !== filterStatus) return false;
-    return true;
-  });
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const stats = {
-    totalSent: logs.length,
-    deliveryRate:
-      logs.length > 0
-        ? (
-            ((logs.filter((l) => l.status === "delivered" || l.status === "sent")
-              .length /
-              logs.length) *
-              100)
-          ).toFixed(1)
-        : "0",
-    bounceRate:
-      logs.length > 0
-        ? (((logs.filter((l) => l.status === "bounced").length / logs.length) * 100).toFixed(1))
-        : "0",
-    totalCost: logs.reduce((sum, log) => sum + log.cost, 0).toFixed(2),
-  };
+  const selectedEntry = entries.find((e) => e.id === expandedId);
+
+  const handleExport = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      await exportCSV();
+    } finally {
+      setIsExporting(false);
+    }
+  }, [exportCSV]);
+
+  const handleLoadMore = useCallback(async () => {
+    setIsLoadingMore(true);
+    try {
+      await loadMore();
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [loadMore]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <>
       <Header
         title="Notification Log"
-        subtitle="Track sent notifications and delivery status"
+        subtitle="Outbound message delivery history"
+        actions={
+          <Button variant="secondary" size="sm" onClick={handleExport} disabled={isExporting}>
+            <Download size={14} className="mr-1" />
+            {isExporting ? "Exporting…" : "Export CSV"}
+          </Button>
+        }
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Total Sent
-              </p>
-              <p className="text-2xl font-bold text-white">
-                {stats.totalSent}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Delivery Rate
-              </p>
-              <p className="text-2xl font-bold text-emerald-500">
-                {stats.deliveryRate}%
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Bounce Rate
-              </p>
-              <p className="text-2xl font-bold text-amber-500">
-                {stats.bounceRate}%
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Total Cost
-              </p>
-              <p className="text-2xl font-bold text-white">
-                ${stats.totalCost}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
+      <div className="space-y-6">
         {/* Filters */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  Channel
-                </label>
-                <select
-                  value={filterChannel}
-                  onChange={(e) =>
-                    setFilterChannel(e.target.value as typeof filterChannel)
-                  }
-                  className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
-                >
-                  <option value="all">All Channels</option>
-                  <option value="email">Email</option>
-                  <option value="sms">SMS</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="push">Push</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  Status
-                </label>
-                <select
-                  value={filterStatus}
-                  onChange={(e) =>
-                    setFilterStatus(e.target.value as typeof filterStatus)
-                  }
-                  className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
-                >
-                  <option value="all">All Status</option>
-                  <option value="sent">Sent</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="failed">Failed</option>
-                  <option value="bounced">Bounced</option>
-                  <option value="pending">Pending</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  From Date
-                </label>
-                <Input
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                placeholder="Search by recipient…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1"
+              />
+              <select
+                value={(filters as any).channel ?? ""}
+                onChange={(e) => setFilters({ ...filters, channel: e.target.value || undefined })}
+                className="px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
+              >
+                <option value="">All Channels</option>
+                {["EMAIL", "SMS", "WHATSAPP", "PUSH"].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <select
+                value={(filters as any).status ?? ""}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value || undefined })}
+                className="px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
+              >
+                <option value="">All Statuses</option>
+                {["QUEUED", "SENT", "DELIVERED", "FAILED", "BOUNCED"].map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <div className="flex gap-2">
+                <input
                   type="date"
-                  value={filterDateRange.from}
-                  onChange={(e) =>
-                    setFilterDateRange({
-                      ...filterDateRange,
-                      from: e.target.value,
-                    })
-                  }
-                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                  value={(filters as any).dateFrom ?? ""}
+                  onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
+                  className="px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
                 />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
-                  To Date
-                </label>
-                <Input
+                <input
                   type="date"
-                  value={filterDateRange.to}
-                  onChange={(e) =>
-                    setFilterDateRange({
-                      ...filterDateRange,
-                      to: e.target.value,
-                    })
-                  }
-                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
+                  value={(filters as any).dateTo ?? ""}
+                  onChange={(e) => setFilters({ ...filters, dateTo: e.target.value || undefined })}
+                  className="px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Logs Table */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a]">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <CardTitle>
-                  {filteredLogs.length} Notification
-                  {filteredLogs.length !== 1 ? "s" : ""}
-                </CardTitle>
-              </div>
-              <Button variant="secondary" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Recipient</TableHead>
-                    <TableHead>Channel</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Template</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredLogs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        <p className="text-gray-400 text-sm">
-                          No notifications found
-                        </p>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Clock className="w-3 h-3" />
-                            {log.timestamp.toLocaleString()}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white truncate max-w-xs">
-                            {log.recipient}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-400">
-                              {CHANNEL_ICONS[log.channel]}
-                            </span>
-                            <span className="text-sm capitalize text-white">
-                              {log.channel}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white">
-                            {log.eventType
-                              .replace(/_/g, " ")
-                              .replace(/\b\w/g, (l) => l.toUpperCase())}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-gray-400">
-                            {log.templateName}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {STATUS_ICONS[log.status]}
-                            <Badge variant={getStatusVariant(log.status) as any}>
-                              {log.status}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-white">
-                            ${log.cost.toFixed(2)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedLog(log);
-                              setShowDetail(true);
-                            }}
-                            className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
-                          >
-                            <Eye className="w-4 h-4 text-gray-400" />
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </table>
-            </div>
+        {/* Table */}
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-6"><TableSkeleton rows={8} columns={5} /></div>
+            ) : error ? (
+              <div className="p-6"><ErrorState message={error.message} onRetry={refetch} /></div>
+            ) : entries.length === 0 ? (
+              <EmptyState
+                title="No delivery logs"
+                description="Outbound notification events will appear here."
+              />
+            ) : (
+              <>
+                {/* Header */}
+                <div className="hidden md:grid grid-cols-12 px-6 py-3 border-b border-[#1e1e2e] bg-white/[0.02]">
+                  {['Message', 'Channel', 'Recipient', 'Status', 'Sent', ''].map((h, i) => (
+                    <div key={i} className={cn(
+                      'text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider',
+                      i === 0 ? 'col-span-4' : i === 2 ? 'col-span-2' : i === 4 ? 'col-span-2' : 'col-span-1',
+                      i === 5 ? 'col-span-1' : ''
+                    )}>
+                      {h}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="divide-y divide-white/[0.04]">
+                  {entries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="grid grid-cols-1 md:grid-cols-12 gap-2 px-6 py-4 hover:bg-white/[0.02] transition-colors cursor-pointer"
+                      onClick={() => setExpandedId(entry.id)}
+                    >
+                      <div className="col-span-4 text-sm text-wl-text-secondary truncate">
+                        {entry.message}
+                      </div>
+                      <div className="col-span-1 flex items-center gap-1.5">
+                        <ChannelIcon channel={entry.channel} />
+                        <span className="text-xs text-wl-text-tertiary uppercase">{entry.channel}</span>
+                      </div>
+                      <div className="col-span-2 text-sm text-wl-text-primary truncate">{entry.recipient}</div>
+                      <div className="col-span-2">
+                        <Badge variant={STATUS_VARIANTS[entry.status] ?? "default"} className="text-xs">
+                          {entry.status}
+                        </Badge>
+                      </div>
+                      <div className="col-span-2 text-xs text-wl-text-tertiary">
+                        {new Date(entry.timestamp).toLocaleString('en-US', {
+                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                        })}
+                      </div>
+                      <div className="col-span-1 flex justify-end">
+                        <ChevronDown size={14} className="text-wl-text-tertiary" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {hasMore && (
+                  <div className="flex justify-center p-4 border-t border-white/[0.06]">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleLoadMore}
+                      disabled={isLoadingMore}
+                    >
+                      {isLoadingMore ? "Loading…" : "Load More"}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
+      </div>
 
-        {/* Detail Modal */}
-        <DetailModal
-          log={selectedLog}
-          isOpen={showDetail}
-          onClose={() => setShowDetail(false)}
-        />
-      </main>
-    </div>
+      {/* Detail panel */}
+      {expandedId && selectedEntry && (
+        <DetailPanel entry={selectedEntry} onClose={() => setExpandedId(null)} />
+      )}
+    </>
   );
 }

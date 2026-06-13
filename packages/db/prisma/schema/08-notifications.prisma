@@ -1,3 +1,52 @@
+// ─── TENANT NOTIFICATION INBOX ──────────────────────────────
+// Admin-facing notification inbox (e.g. "New order from John", "Driver offline")
+// Distinct from NotificationLog which tracks outbound delivery events.
+
+model TenantNotification {
+  id         String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String                     @map("shop_id") @db.Uuid
+  title      String
+  message    String                     @db.Text
+  category   TenantNotificationCategory @default(SYSTEM)
+  channel    TenantNotificationChannel  @default(PUSH)
+  status     TenantNotificationStatus   @default(UNREAD)
+  actionUrl  String?                    @map("action_url")
+  metadata   Json                       @default("{}")
+  createdAt  DateTime                   @default(now()) @map("created_at")
+  readAt     DateTime?                  @map("read_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, status])
+  @@index([shopId, createdAt(sort: Desc)])
+  @@map("tenant_notifications")
+}
+
+enum TenantNotificationCategory {
+  ORDERS
+  DELIVERIES
+  DRIVERS
+  PAYMENTS
+  SYSTEM
+  ALERTS
+}
+
+enum TenantNotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  WHATSAPP
+  WEBHOOK
+  SLACK
+}
+
+enum TenantNotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+  DISMISSED
+}
+
 // ─── NOTIFICATION LOG ───────────────────────────────────────
 
 model NotificationLog {
