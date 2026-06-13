@@ -43,6 +43,7 @@ export default function NotificationsPage() {
   const {
     notifications,
     isLoading,
+    error,
     hasMore,
     unreadCount,
     loadMore,
@@ -146,11 +147,23 @@ export default function NotificationsPage() {
         title="Notifications"
         subtitle="Manage and view all your notifications"
         actions={
-          <Link href="/notifications/preferences">
-            <Button variant="secondary" size="sm">
-              Preferences
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={markAllAsRead}
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Mark All Read
+              </Button>
+            )}
+            <Link href="/notifications/preferences">
+              <Button variant="secondary" size="sm">
+                Preferences
+              </Button>
+            </Link>
+          </div>
         }
       />
 
@@ -217,11 +230,17 @@ export default function NotificationsPage() {
           {/* Notifications List */}
           <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
             <CardContent className="p-0">
-              {filteredNotifications.length === 0 ? (
+              {error ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Bell className="w-12 h-12 text-red-500 mb-3" />
+                  <p className="text-red-400 font-medium">Failed to load notifications</p>
+                  <p className="text-gray-500 text-sm mt-1">Check your connection and try again</p>
+                </div>
+              ) : filteredNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Bell className="w-12 h-12 text-gray-400 mb-3" />
                   <p className="text-gray-400">
-                    No notifications to display
+                    {isLoading ? "Loading notifications…" : "No notifications to display"}
                   </p>
                 </div>
               ) : (

@@ -19,6 +19,7 @@ import { ChevronRight, Send } from "lucide-react";
 import Link from "next/link";
 import {
   useNotificationPreferences,
+  useSendTestNotification,
   type NotificationChannel,
   type NotificationCategory,
   type DigestFrequency,
@@ -60,6 +61,7 @@ export default function NotificationPreferencesPage() {
     updatePreferences,
     toggleChannelCategory,
   } = useNotificationPreferences();
+  const testMutation = useSendTestNotification();
 
   const [isSendingTest, setIsSendingTest] = useState<
     NotificationChannel | null
@@ -129,14 +131,14 @@ export default function NotificationPreferencesPage() {
     async (channel: NotificationChannel) => {
       setIsSendingTest(channel);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await testMutation.execute({ channel });
         setTestResult({
           channel,
           success: true,
-          message: `Test notification sent via ${channel}`,
+          message: `Test notification queued via ${channel}`,
         });
         setTimeout(() => setTestResult(null), 3000);
-      } catch (err) {
+      } catch {
         setTestResult({
           channel,
           success: false,
@@ -146,18 +148,21 @@ export default function NotificationPreferencesPage() {
         setIsSendingTest(null);
       }
     },
-    []
+    [testMutation]
   );
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f]">
-        <Header title="Notification Preferences" subtitle="Coming soon..." />
+        <Header
+          title="Notification Preferences"
+          subtitle="Configure how and when you receive notifications"
+        />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <p className="text-gray-300">
-              Loading preferences...
-            </p>
+          <div className="space-y-6">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-40 bg-[#12121a] border border-[#1e1e2e] rounded-xl animate-pulse" />
+            ))}
           </div>
         </main>
       </div>
