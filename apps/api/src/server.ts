@@ -271,6 +271,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/cold-chain/cold-chain.js"), { prefix: "/api/v4/cold-chain" });
 
 
+  await safeRegister(import("./routes/field-service.js"), { prefix: "/api/v4/field-service" });
   await safeRegister(import("./routes/ai/eta-recalculate.js"), { prefix: "/api/v4/ai/eta/recalculate" });
   await safeRegister(import("./routes/finance-cod.js"), { prefix: "/api/v4/finance/cod" });
   await safeRegister(import("./routes/ai/copilot.js"), { prefix: "/api/v4/ai/copilot" });
