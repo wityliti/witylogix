@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useApiQuery } from '@/hooks/use-api';
-import { api } from '@/lib/api';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { useToast } from '@/components/ui/toast';
 import {
   Smartphone,
@@ -40,9 +40,17 @@ interface NotificationSetting {
   enabled: boolean;
 }
 
+interface ShopData {
+  id: string;
+  settings: Record<string, unknown> | null;
+}
+
 export default function MobileConfigPage() {
   const { addToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+
+  const { data: shopResp, loading: shopLoading } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
+  const saveMutation = useApiMutation<unknown>('PATCH', '/api/v4/shops/me');
 
   // Branding state
   const [appName, setAppName] = useState("Witylogix Driver");
@@ -130,6 +138,26 @@ export default function MobileConfigPage() {
   const [syncInterval, setSyncInterval] = useState("5m");
   const [autoRetry, setAutoRetry] = useState(true);
 
+  // Load saved config from shop settings
+  useEffect(() => {
+    const cfg = (shopResp?.data?.settings as any)?.mobileConfig;
+    if (!cfg) return;
+    if (cfg.appName) setAppName(cfg.appName);
+    if (cfg.primaryColor) setPrimaryColor(cfg.primaryColor);
+    if (cfg.logoUrl) setLogoUrl(cfg.logoUrl);
+    if (cfg.features) setFeatures(cfg.features);
+    if (cfg.navigationMap) setNavigationMap(cfg.navigationMap);
+    if (cfg.notifications) setNotifications(cfg.notifications);
+    if (cfg.trackingInterval) setTrackingInterval(cfg.trackingInterval);
+    if (cfg.batteryMode) setBatteryMode(cfg.batteryMode);
+    if (cfg.backgroundTracking !== undefined) setBackgroundTracking(cfg.backgroundTracking);
+    if (cfg.cacheSize) setCacheSize(cfg.cacheSize);
+    if (cfg.syncInterval) setSyncInterval(cfg.syncInterval);
+    if (cfg.autoRetry !== undefined) setAutoRetry(cfg.autoRetry);
+  }, [shopResp]);
+
+  if (shopLoading) return <TableSkeleton rows={8} columns={2} />;
+
   // Toggle feature
   const toggleFeature = (featureId: string) => {
     setFeatures(
@@ -153,19 +181,14 @@ export default function MobileConfigPage() {
     if (isSaving) return;
     setIsSaving(true);
     try {
-      await api.patch('/api/v4/mobile-config', {
-        appName,
-        primaryColor,
-        logoUrl,
-        features,
-        navigationMap,
-        notifications,
-        trackingInterval,
-        batteryMode,
-        backgroundTracking,
-        cacheSize,
-        syncInterval,
-        autoRetry,
+      await saveMutation.execute({
+        settings: {
+          mobileConfig: {
+            appName, primaryColor, logoUrl, features, navigationMap,
+            notifications, trackingInterval, batteryMode, backgroundTracking,
+            cacheSize, syncInterval, autoRetry,
+          },
+        },
       });
       addToast({
         type: 'success',

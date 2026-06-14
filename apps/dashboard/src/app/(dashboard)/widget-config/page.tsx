@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import {
   Code,
   Eye,
@@ -23,6 +24,11 @@ import {
   TypeIcon,
   Layout,
 } from "lucide-react";
+
+interface ShopData {
+  id: string;
+  settings: Record<string, unknown> | null;
+}
 
 export default function WidgetConfigPage() {
   const [cartSelectorEnabled, setCartSelectorEnabled] = useState(true);
@@ -40,7 +46,27 @@ export default function WidgetConfigPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const { data: shopResp, loading: shopLoading } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
   const saveMutation = useApiMutation<{ settings: Record<string, unknown> }>('PATCH', '/api/v4/shops/me');
+
+  useEffect(() => {
+    const cfg = (shopResp?.data?.settings as any)?.widgetConfig;
+    if (!cfg) return;
+    if (cfg.cartSelectorEnabled !== undefined) setCartSelectorEnabled(cfg.cartSelectorEnabled);
+    if (cfg.shippingCalcEnabled !== undefined) setShippingCalcEnabled(cfg.shippingCalcEnabled);
+    if (cfg.position) setWidgetPosition(cfg.position);
+    if (cfg.fontFamily) setFontFamily(cfg.fontFamily);
+    if (cfg.language) setLanguage(cfg.language);
+    if (cfg.width) setWidgetWidth(cfg.width);
+    if (cfg.height) setWidgetHeight(cfg.height);
+    if (cfg.primaryColor) setPrimaryColor(cfg.primaryColor);
+    if (cfg.backgroundColor) setBackgroundColor(cfg.backgroundColor);
+    if (cfg.textColor) setTextColor(cfg.textColor);
+    if (cfg.borderRadius) setBorderRadius(cfg.borderRadius);
+    if (cfg.shadowEnabled !== undefined) setShadowEnabled(cfg.shadowEnabled);
+  }, [shopResp]);
+
+  if (shopLoading) return <TableSkeleton rows={6} columns={2} />;
 
   const handleSave = async () => {
     try {
