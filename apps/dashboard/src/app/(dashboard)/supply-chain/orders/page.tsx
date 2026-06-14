@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useOrders, useFulfillment } from '@/hooks/use-supply-chain';
 import { useApiList } from '@/hooks/use-api';
+import { Header } from '@/components/layout/header';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 interface FilterOptions {
   status: string;
@@ -93,8 +96,32 @@ export default function OrdersPage() {
 
   const stats = getPipelineStats();
 
+  if (orders.loading || fulfillment.loading) {
+    return (
+      <>
+        <Header title="Supply Chain Orders" subtitle="Order pipeline and fulfillment" />
+        <div className="p-6">
+          <TableSkeleton rows={8} columns={6} />
+        </div>
+      </>
+    );
+  }
+
+  if (orders.error) {
+    return (
+      <>
+        <Header title="Supply Chain Orders" subtitle="Order pipeline and fulfillment" />
+        <div className="p-6">
+          <ErrorState message="Failed to load orders" onRetry={() => window.location.reload()} />
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <>
+      <Header title="Supply Chain Orders" subtitle={`${orders.orders.length} orders in pipeline`} />
+    <div className="space-y-8 p-6">
       {/* Order Pipeline Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
@@ -508,5 +535,6 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
