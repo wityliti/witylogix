@@ -74,14 +74,12 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
         value: stats.activeCouriers,
         icon: <Truck className="w-5 h-5" />,
         color: "primary",
-        trend: { value: 12, direction: "up" },
       },
       {
         label: "Pending",
         value: stats.pendingDeliveries,
         icon: <Package className="w-5 h-5" />,
         color: "danger",
-        trend: { value: 3, direction: "down" },
       },
       {
         label: "In Transit",
@@ -94,7 +92,6 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
         value: stats.completedToday,
         icon: <CheckCircle2 className="w-5 h-5" />,
         color: "success",
-        trend: { value: 8, direction: "up" },
       },
       {
         label: "Avg Delivery Time",
@@ -102,7 +99,6 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
         unit: "min",
         icon: <Clock className="w-5 h-5" />,
         color: "info",
-        trend: { value: 5, direction: "down" },
       },
     ],
     [stats]
