@@ -131,7 +131,6 @@ export default function CRMIntegrationPage() {
           <StatCard
             label="Connected Providers"
             value={connectedCount}
-            change={{ value: 0, label: `of ${providers.length} available` }}
             accentColor="#10b981"
             index={0}
           />
