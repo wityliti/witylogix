@@ -379,28 +379,24 @@ export default function LastMileIntegrationPage() {
           <StatCard
             label="Deliveries Today"
             value={totalDeliveriesToday}
-            change={{ value: 22.5, label: "vs yesterday" }}
             accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Total Revenue"
             value={formatCurrency(totalRevenuToday)}
-            change={{ value: 18.3, label: "vs yesterday" }}
             accentColor="#10b981"
             index={1}
           />
           <StatCard
             label="On-Time Rate"
             value={`${avgOnTimeRate.toFixed(1)}%`}
-            change={{ value: 2.1, label: "vs avg" }}
             accentColor="#f59e0b"
             index={2}
           />
           <StatCard
             label="Total Commissions"
             value={formatCurrency(totalCommissions)}
-            change={{ value: -1.5, label: "vs target" }}
             accentColor="#60a5fa"
             index={3}
           />

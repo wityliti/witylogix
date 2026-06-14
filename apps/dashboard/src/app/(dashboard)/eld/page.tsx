@@ -111,7 +111,6 @@ export default function ELDOverviewPage() {
           value={complianceScore.toFixed(1)}
           unit="%"
           icon={<TrendingUp className="w-5 h-5 text-wl-success-400" />}
-          trend={{ direction: "up", value: 2.3 }}
           isLoading={complianceLoading}
           className={cn(scoreColor)}
         />
@@ -120,7 +119,6 @@ export default function ELDOverviewPage() {
           value={statusCounts.compliant}
           unit={`/ ${drivers.length}`}
           icon={<CheckCircle className="w-5 h-5 text-wl-success-400" />}
-          trend={{ direction: "neutral", value: 0 }}
           isLoading={driversLoading}
         />
         <StatCard
@@ -128,7 +126,6 @@ export default function ELDOverviewPage() {
           value={compliance?.activeViolations ?? 0}
           unit="drivers"
           icon={<AlertTriangle className="w-5 h-5 text-wl-danger-400" />}
-          trend={{ direction: "down", value: 1 }}
           isLoading={complianceLoading}
         />
         <StatCard
@@ -136,7 +133,6 @@ export default function ELDOverviewPage() {
           value={(compliance?.dvirCompletionRate ?? 0).toFixed(1)}
           unit="%"
           icon={<Wrench className="w-5 h-5 text-wl-info-400" />}
-          trend={{ direction: "up", value: 3.1 }}
           isLoading={complianceLoading}
         />
       </div>
