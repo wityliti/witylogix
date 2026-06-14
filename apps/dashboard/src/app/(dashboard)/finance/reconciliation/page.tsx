@@ -43,6 +43,21 @@ export default function ReconciliationPage() {
   const bankTx = data?.bankTransactions || [];
   const internalRecs = data?.internalRecords || [];
 
+  if (!loading && bankTx.length === 0 && internalRecs.length === 0) {
+    return (
+      <div className="flex flex-col min-h-screen bg-wl-bg-root items-center justify-center gap-4 p-6">
+        <Link2 className="w-12 h-12 text-wl-text-tertiary" />
+        <h2 className="text-xl font-semibold text-white">No transactions to reconcile</h2>
+        <p className="text-wl-text-secondary text-sm text-center max-w-sm">
+          Bank and internal records will appear here once payment data is available.
+        </p>
+        <Button variant="primary" size="md" onClick={() => window.location.reload()}>
+          Refresh
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-wl-bg-root">
       <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
