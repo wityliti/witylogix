@@ -481,8 +481,8 @@ function MigrationProgress({ migrationId, migrations }: { migrationId: string; m
             <span className="text-sm font-medium text-white">Overall Progress</span>
             <span className="text-sm font-semibold text-white">{migration.progress}%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
-            <div className="h-full w-2/3 bg-wl-bg-root" />
+          <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-elevated">
+            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${migration.progress}%` }} />
           </div>
         </div>
 
