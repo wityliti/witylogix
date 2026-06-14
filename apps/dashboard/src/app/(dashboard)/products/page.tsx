@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 
@@ -56,6 +57,10 @@ export default function ProductsPage() {
   const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
+  const [syncInfo, setSyncInfo] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const pageSize = 10;
 
@@ -163,28 +168,24 @@ export default function ProductsPage() {
           <StatCard
             label="Total Products"
             value={items.length}
-            change={{ value: 8.5, label: "vs last month" }}
             accentColor="var(--wl-primary-500)"
             index={0}
           />
           <StatCard
             label="Synced Today"
             value={syncedToday}
-            change={{ value: 22.0, label: "vs yesterday" }}
             accentColor="var(--wl-success-400)"
             index={1}
           />
           <StatCard
             label="Missing Weight"
             value={missingWeight}
-            change={{ value: -15.3, label: "vs last week" }}
             accentColor="var(--wl-warning-400)"
             index={2}
           />
           <StatCard
             label="Missing Type"
             value={missingType}
-            change={{ value: 0, label: "no change" }}
             accentColor="var(--wl-info-400)"
             index={3}
           />
@@ -277,37 +278,85 @@ export default function ProductsPage() {
           )}
         </div>
 
+        {/* Sync info banner */}
+        {syncInfo && (
+          <div className={cn("mb-4 p-3 rounded-md bg-blue-500/10 border border-blue-500/30 flex items-center justify-between")}>
+            <span className="text-blue-300 text-sm">{syncInfo}</span>
+            <button onClick={() => setSyncInfo(null)} className="text-blue-400 hover:text-blue-200 text-xs ml-4">✕</button>
+          </div>
+        )}
+
         {/* Bulk Actions Bar */}
         {selectedProducts.size > 0 && (
-          <Card className={cn("mb-5 p-4 bg-blue-500 border border-blue-600")}>
-            <div className="flex gap-4 items-center justify-between">
-              <div className="text-white text-sm font-semibold">
-                {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""} selected
+          <Card className={cn("mb-5 p-4 border", deleteConfirm ? "bg-red-900/30 border-red-600" : "bg-blue-500 border-blue-600")}>
+            {deleteConfirm ? (
+              <div className="flex gap-4 items-center justify-between">
+                <div className="text-white text-sm font-semibold">
+                  Delete {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""}? This cannot be undone.
+                </div>
+                <div className="flex gap-2 items-center">
+                  {deleteError && <span className="text-red-300 text-xs">{deleteError}</span>}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={deleteLoading}
+                    onClick={() => { setDeleteConfirm(false); setDeleteError(null); }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    disabled={deleteLoading}
+                    onClick={async () => {
+                      setDeleteLoading(true);
+                      setDeleteError(null);
+                      try {
+                        await Promise.all(
+                          Array.from(selectedProducts).map((id) =>
+                            api.delete(`/api/v4/products/${id}`)
+                          )
+                        );
+                        setSelectedProducts(new Set());
+                        setDeleteConfirm(false);
+                        refetch();
+                      } catch {
+                        setDeleteError("Failed to delete some products. Please try again.");
+                      } finally {
+                        setDeleteLoading(false);
+                      }
+                    }}
+                  >
+                    {deleteLoading ? "Deleting…" : "Confirm Delete"}
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    alert(`Re-syncing ${selectedProducts.size} products...`);
-                    setSelectedProducts(new Set());
-                  }}
-                >
-                  Re-sync
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => {
-                    if (confirm(`Delete ${selectedProducts.size} product(s)?`)) {
+            ) : (
+              <div className="flex gap-4 items-center justify-between">
+                <div className="text-white text-sm font-semibold">
+                  {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""} selected
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setSyncInfo("Product sync is triggered from Shopify. Visit your Shopify admin to force a product sync.");
                       setSelectedProducts(new Set());
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
+                    }}
+                  >
+                    Re-sync
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setDeleteConfirm(true)}
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </Card>
         )}
 

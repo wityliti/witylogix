@@ -25,14 +25,16 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
     data.companyLogo || null
   );
   const [dragActive, setDragActive] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogoUpload = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file");
+      setLogoError("Please upload an image file");
       return;
     }
 
+    setLogoError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
@@ -182,6 +184,9 @@ export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
               className="hidden"
             />
           </div>
+        )}
+        {logoError && (
+          <p className="text-xs text-red-400 mt-2">{logoError}</p>
         )}
       </div>
 
