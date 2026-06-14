@@ -135,7 +135,7 @@ export default function JobsPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { items: allOrders, loading, error, refetch } = useApiList<WorkOrder>(
-    '/api/v4/orders?type=field-service&view=jobs'
+    '/api/v4/field-service/jobs'
   );
 
   if (loading) return <LoadingSkeleton />;
