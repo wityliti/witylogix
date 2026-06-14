@@ -442,7 +442,7 @@ export default function PartnerDetailPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
                     Max Delivery Time
                   </span>
                   <p className="text-2xl font-bold text-white mt-2">
@@ -450,7 +450,7 @@ export default function PartnerDetailPage() {
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
                     Max Distance
                   </span>
                   <p className="text-2xl font-bold text-white mt-2">
