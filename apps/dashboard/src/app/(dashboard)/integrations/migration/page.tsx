@@ -233,7 +233,7 @@ export default function MigrationWizard() {
         )}
 
         {activeTab === 'progress' && selectedMigration && (
-          <MigrationProgress migrationId={selectedMigration} />
+          <MigrationProgress migrationId={selectedMigration} migrations={migrations} />
         )}
 
         {activeTab === 'history' && (
@@ -459,7 +459,20 @@ function ReviewCutover({
   );
 }
 
-function MigrationProgress({ migrationId }: { migrationId: string }) {
+function MigrationProgress({ migrationId, migrations }: { migrationId: string; migrations: Migration[] }) {
+  const migration = migrations.find((m) => m.id === migrationId);
+
+  if (!migration) {
+    return (
+      <Card className="border border-wl-border-default bg-wl-bg-root p-6">
+        <p className="text-sm text-gray-400">Migration not found.</p>
+      </Card>
+    );
+  }
+
+  const latencyDelta = migration.latencyComparison.targetAvg - migration.latencyComparison.sourceAvg;
+  const latencyLabel = latencyDelta >= 0 ? `+${latencyDelta.toFixed(0)}ms` : `${latencyDelta.toFixed(0)}ms`;
+
   return (
     <Card className="border border-wl-border-default bg-wl-bg-root p-6">
       <h3 className="mb-6 text-lg font-semibold text-white">Migration in Progress</h3>
@@ -467,17 +480,17 @@ function MigrationProgress({ migrationId }: { migrationId: string }) {
         <div>
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-white">Overall Progress</span>
-            <span className="text-sm font-semibold text-white">65%</span>
+            <span className="text-sm font-semibold text-white">{migration.progress}%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
-            <div className="h-full w-2/3 bg-wl-bg-root" />
+          <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-elevated">
+            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${migration.progress}%` }} />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <MetricCard label="Requests Migrated" value="2,450 / 3,750" />
-          <MetricCard label="Error Rate" value="0.2%" />
-          <MetricCard label="Latency Δ" value="+12ms" />
+          <MetricCard label="Requests Migrated" value={migration.requestsMigrated.toLocaleString()} />
+          <MetricCard label="Error Rate" value={`${(migration.errorRate * 100).toFixed(2)}%`} />
+          <MetricCard label="Latency Δ" value={latencyLabel} />
         </div>
 
         <Button variant="danger">Rollback to Source</Button>
