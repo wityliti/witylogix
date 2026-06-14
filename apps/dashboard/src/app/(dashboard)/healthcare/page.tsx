@@ -142,37 +142,6 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
   );
 }
 
-function ProviderSummaryCard() {
-  const providers = [
-    { name: "Dr. Sarah Johnson", specialty: "Internal Medicine", patients: 45 },
-    { name: "Dr. Michael Chen", specialty: "Cardiology", patients: 32 },
-    { name: "Dr. Emily Watson", specialty: "Pediatrics", patients: 28 },
-  ];
-
-  return (
-    <Card className="bg-wl-bg-surface border-wl-border-default">
-      <CardHeader>
-        <CardTitle className="text-white">Provider Summary</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {providers.map((prov) => (
-            <div
-              key={prov.name}
-              className="flex items-center justify-between p-3 hover:bg-wl-bg-elevated rounded-lg transition-colors"
-            >
-              <div>
-                <p className="text-sm font-medium text-white">{prov.name}</p>
-                <p className="text-xs text-gray-500">{prov.specialty}</p>
-              </div>
-              <Badge variant="info">{prov.patients}</Badge>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 interface LocalPatient {
   id: string;
@@ -207,37 +176,13 @@ export default function HealthcarePage() {
     outstandingIssues: 0,
   };
 
-  // Simulate additional metrics
   const activePatients = patients.filter((p) => p.status === "ACTIVE").length;
-  const totalEncounters = 128;
-  const labResultsThisMonth = 42;
-  const pendingAlerts = 3;
 
   const kpiCards: KPICard[] = [
     {
       label: "Active Patients",
       value: activePatients,
       icon: "patients",
-      trend: "up",
-      trendValue: "3%",
-    },
-    {
-      label: "Encounters",
-      value: totalEncounters,
-      icon: "encounters",
-      trend: "up",
-      trendValue: "8%",
-    },
-    {
-      label: "Lab Results",
-      value: labResultsThisMonth,
-      unit: "This Month",
-      icon: "lab",
-    },
-    {
-      label: "Pending Alerts",
-      value: pendingAlerts,
-      icon: "alerts",
     },
   ];
 
@@ -270,9 +215,6 @@ export default function HealthcarePage() {
           <ComplianceStatusCard compliance={compliance} />
         </div>
       </div>
-
-      {/* Provider Summary */}
-      <ProviderSummaryCard />
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

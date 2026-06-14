@@ -93,7 +93,7 @@ const CATEGORIES: { key: Category; label: string; count: number }[] = [
 const ALL_PROVIDERS: Provider[] = [
   // CRM
   { id: "crm-1", slug: "hubspot", name: "HubSpot", category: "CRM", description: "Customer relationship management platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-15", connected: false },
-  { id: "crm-2", slug: "salesforce", name: "Salesforce", category: "CRM", description: "Enterprise CRM solution", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-10", connected: true },
+  { id: "crm-2", slug: "salesforce", name: "Salesforce", category: "CRM", description: "Enterprise CRM solution", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-10", connected: false },
   { id: "crm-3", slug: "pipedrive", name: "Pipedrive", category: "CRM", description: "Sales pipeline management", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-05-20", connected: false },
   { id: "crm-4", slug: "freshsales", name: "Freshsales", category: "CRM", description: "Modern CRM for teams", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-05-15", connected: false },
   { id: "crm-5", slug: "zoho-crm", name: "Zoho CRM", category: "CRM", description: "Cloud CRM software", status: "BETA", authType: "oauth2", popular: false, addedDate: "2025-06-01", connected: false },
@@ -102,9 +102,9 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "crm-8", slug: "copper", name: "Copper", category: "CRM", description: "AI-powered CRM for Gmail", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-05-10", connected: false },
 
   // EMAIL
-  { id: "email-1", slug: "sendgrid", name: "SendGrid", category: "EMAIL", description: "Transactional email delivery", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "email-1", slug: "sendgrid", name: "SendGrid", category: "EMAIL", description: "Transactional email delivery", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "email-2", slug: "mailgun", name: "Mailgun", category: "EMAIL", description: "Email API for developers", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-18", connected: false },
-  { id: "email-3", slug: "aws-ses", name: "AWS SES", category: "EMAIL", description: "Amazon email service", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-12", connected: true },
+  { id: "email-3", slug: "aws-ses", name: "AWS SES", category: "EMAIL", description: "Amazon email service", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-12", connected: false },
   { id: "email-4", slug: "resend", name: "Resend", category: "EMAIL", description: "Modern email API", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-05", connected: false },
   { id: "email-5", slug: "sparkpost", name: "SparkPost", category: "EMAIL", description: "Email delivery platform", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-05-28", connected: false },
   { id: "email-6", slug: "mandrill", name: "Mandrill", category: "EMAIL", description: "Transactional email service", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-05-22", connected: false },
@@ -116,23 +116,23 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "email-12", slug: "getresponse", name: "GetResponse", category: "EMAIL", description: "Integrated marketing platform", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-10", connected: false },
 
   // SMS
-  { id: "sms-1", slug: "twilio", name: "Twilio", category: "SMS", description: "Programmable SMS & voice", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "sms-1", slug: "twilio", name: "Twilio", category: "SMS", description: "Programmable SMS & voice", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "sms-2", slug: "vonage", name: "Vonage", category: "SMS", description: "Communications APIs", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-18", connected: false },
-  { id: "sms-3", slug: "aws-sns", name: "AWS SNS", category: "SMS", description: "AWS messaging service", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-15", connected: true },
+  { id: "sms-3", slug: "aws-sns", name: "AWS SNS", category: "SMS", description: "AWS messaging service", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-15", connected: false },
   { id: "sms-4", slug: "messagebind", name: "MessageBind", category: "SMS", description: "SMS API provider", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-08", connected: false },
   { id: "sms-5", slug: "telnyx", name: "Telnyx", category: "SMS", description: "Telecom APIs platform", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-05", connected: false },
   { id: "sms-6", slug: "bandwidth", name: "Bandwidth", category: "SMS", description: "Carrier-grade communications", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-02", connected: false },
 
   // PUSH
-  { id: "push-1", slug: "firebase-fcm", name: "Firebase Cloud Messaging", category: "PUSH", description: "Cross-platform push notifications", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "push-1", slug: "firebase-fcm", name: "Firebase Cloud Messaging", category: "PUSH", description: "Cross-platform push notifications", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "push-2", slug: "onesignal", name: "OneSignal", category: "PUSH", description: "Multi-channel notifications", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "push-3", slug: "braze", name: "Braze", category: "PUSH", description: "Customer engagement platform", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-15", connected: false },
   { id: "push-4", slug: "urban-airship", name: "Airship", category: "PUSH", description: "Customer journey platform", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-10", connected: false },
   { id: "push-5", slug: "apptivo", name: "Apptivo", category: "PUSH", description: "Business management suite", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-05", connected: false },
 
   // ROUTING
-  { id: "routing-1", slug: "mapbox", name: "Mapbox", category: "ROUTING", description: "Maps, routing & optimization", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: true },
-  { id: "routing-2", slug: "google-maps", name: "Google Maps", category: "ROUTING", description: "Industry-standard maps", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-18", connected: true },
+  { id: "routing-1", slug: "mapbox", name: "Mapbox", category: "ROUTING", description: "Maps, routing & optimization", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: false },
+  { id: "routing-2", slug: "google-maps", name: "Google Maps", category: "ROUTING", description: "Industry-standard maps", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "routing-3", slug: "here-maps", name: "HERE Maps", category: "ROUTING", description: "Enterprise location services", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-12", connected: false },
   { id: "routing-4", slug: "osrm", name: "OSRM", category: "ROUTING", description: "Open source routing", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-08", connected: false },
   { id: "routing-5", slug: "graphhopper", name: "GraphHopper", category: "ROUTING", description: "Routing engine as API", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-05", connected: false },
@@ -140,7 +140,7 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "routing-7", slug: "vroom", name: "VROOM", category: "ROUTING", description: "Route optimization engine", status: "COMING_SOON", authType: "api_key", popular: false, addedDate: "2025-07-01", connected: false },
 
   // TELEMATICS
-  { id: "telematics-1", slug: "geotab", name: "Geotab", category: "TELEMATICS", description: "Fleet telematics platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "telematics-1", slug: "geotab", name: "Geotab", category: "TELEMATICS", description: "Fleet telematics platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "telematics-2", slug: "samsara", name: "Samsara", category: "TELEMATICS", description: "Fleet operations software", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "telematics-3", slug: "verizon-connect", name: "Verizon Connect", category: "TELEMATICS", description: "Fleet management solution", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-15", connected: false },
   { id: "telematics-4", slug: "teletrac", name: "TELETRAC SIRCO", category: "TELEMATICS", description: "Fleet tracking & safety", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-10", connected: false },
@@ -148,18 +148,18 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "telematics-6", slug: "motive", name: "Motive", category: "TELEMATICS", description: "Digital operations platform", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-05", connected: false },
 
   // SHIPPING
-  { id: "shipping-1", slug: "easypost", name: "EasyPost", category: "SHIPPING", description: "Shipping API with 100+ carriers", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "shipping-1", slug: "easypost", name: "EasyPost", category: "SHIPPING", description: "Shipping API with 100+ carriers", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "shipping-2", slug: "shipstation", name: "ShipStation", category: "SHIPPING", description: "Multi-carrier shipping", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "shipping-3", slug: "aftership", name: "AfterShip", category: "SHIPPING", description: "Tracking & notifications", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-15", connected: false },
   { id: "shipping-4", slug: "fedex", name: "FedEx", category: "SHIPPING", description: "Shipping & tracking API", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-12", connected: false },
   { id: "shipping-5", slug: "ups", name: "UPS", category: "SHIPPING", description: "UPS shipping API", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-10", connected: false },
-  { id: "shipping-6", slug: "usps", name: "USPS", category: "SHIPPING", description: "US postal service API", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-08", connected: true },
+  { id: "shipping-6", slug: "usps", name: "USPS", category: "SHIPPING", description: "US postal service API", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-08", connected: false },
   { id: "shipping-7", slug: "dhl", name: "DHL", category: "SHIPPING", description: "DHL shipping services", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-05", connected: false },
   { id: "shipping-8", slug: "stamps", name: "Stamps.com", category: "SHIPPING", description: "Shipping software", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-03", connected: false },
   { id: "shipping-9", slug: "pirate-ship", name: "Pirate Ship", category: "SHIPPING", description: "Shipping labels & rates", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-01", connected: false },
 
   // INVENTORY
-  { id: "inventory-1", slug: "shopify", name: "Shopify", category: "INVENTORY", description: "E-commerce platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "inventory-1", slug: "shopify", name: "Shopify", category: "INVENTORY", description: "E-commerce platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "inventory-2", slug: "woocommerce", name: "WooCommerce", category: "INVENTORY", description: "WordPress e-commerce", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "inventory-3", slug: "magento", name: "Magento", category: "INVENTORY", description: "Enterprise e-commerce", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-15", connected: false },
   { id: "inventory-4", slug: "cin7", name: "Cin7 Omni", category: "INVENTORY", description: "Inventory management", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-12", connected: false },
@@ -168,7 +168,7 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "inventory-7", slug: "trackobject", name: "TrackObject", category: "INVENTORY", description: "Inventory tracking", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-05", connected: false },
 
   // PAYMENTS (8 providers)
-  { id: "payment-1", slug: "stripe", name: "Stripe", category: "PAYMENTS", description: "Payment processing", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "payment-1", slug: "stripe", name: "Stripe", category: "PAYMENTS", description: "Payment processing", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "payment-2", slug: "paypal", name: "PayPal", category: "PAYMENTS", description: "Payment platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "payment-3", slug: "square", name: "Square", category: "PAYMENTS", description: "Payments & POS", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-15", connected: false },
   { id: "payment-4", slug: "braintree", name: "Braintree", category: "PAYMENTS", description: "Payment solutions", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-12", connected: false },
@@ -178,7 +178,7 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "payment-8", slug: "mollie", name: "Mollie", category: "PAYMENTS", description: "European payment gateway", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-05", connected: false },
 
   // ANALYTICS (6)
-  { id: "analytics-1", slug: "google-analytics", name: "Google Analytics", category: "ANALYTICS", description: "Website analytics", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "analytics-1", slug: "google-analytics", name: "Google Analytics", category: "ANALYTICS", description: "Website analytics", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "analytics-2", slug: "mixpanel", name: "Mixpanel", category: "ANALYTICS", description: "Product analytics", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "analytics-3", slug: "amplitude", name: "Amplitude", category: "ANALYTICS", description: "Digital analytics", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-15", connected: false },
   { id: "analytics-4", slug: "segment", name: "Segment", category: "ANALYTICS", description: "Customer data platform", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-12", connected: false },
@@ -186,7 +186,7 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "analytics-6", slug: "tableau", name: "Tableau", category: "ANALYTICS", description: "Data visualization", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-08", connected: false },
 
   // ECOMMERCE (11)
-  { id: "ecom-1", slug: "bigcommerce", name: "BigCommerce", category: "ECOMMERCE", description: "E-commerce platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "ecom-1", slug: "bigcommerce", name: "BigCommerce", category: "ECOMMERCE", description: "E-commerce platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "ecom-2", slug: "wix", name: "Wix", category: "ECOMMERCE", description: "Website builder", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-18", connected: false },
   { id: "ecom-3", slug: "squarespace", name: "Squarespace", category: "ECOMMERCE", description: "Website platform", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-15", connected: false },
   { id: "ecom-4", slug: "prestashop", name: "PrestaShop", category: "ECOMMERCE", description: "E-commerce solution", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-12", connected: false },
@@ -206,7 +206,7 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "erp-5", slug: "odoo", name: "Odoo", category: "ERP", description: "Business management", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-10", connected: false },
 
   // COLLABORATION (4)
-  { id: "collab-1", slug: "slack", name: "Slack", category: "COLLABORATION", description: "Team messaging platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: true },
+  { id: "collab-1", slug: "slack", name: "Slack", category: "COLLABORATION", description: "Team messaging platform", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: false },
   { id: "collab-2", slug: "microsoft-teams", name: "Microsoft Teams", category: "COLLABORATION", description: "Enterprise chat", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-18", connected: false },
   { id: "collab-3", slug: "discord", name: "Discord", category: "COLLABORATION", description: "Chat & community", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-15", connected: false },
   { id: "collab-4", slug: "mattermost", name: "Mattermost", category: "COLLABORATION", description: "Open-source chat", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-12", connected: false },
@@ -269,6 +269,9 @@ export default function MarketplacePage() {
   const [isSearching, setIsSearching] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  const { items: connections } = useApiList<{ slug: string }>('/api/v4/integrations/connections');
+  const connectedSlugs = useMemo(() => new Set(connections.map((c) => c.slug)), [connections]);
+
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -323,7 +326,7 @@ export default function MarketplacePage() {
       case "popularity":
         items.sort((a, b) => {
           if (a.popular !== b.popular) return b.popular ? 1 : -1;
-          return b.connected ? 1 : -1;
+          return (connectedSlugs.has(b.slug) ? 1 : 0) - (connectedSlugs.has(a.slug) ? 1 : 0);
         });
         break;
       case "recently_added":
@@ -547,6 +550,7 @@ export default function MarketplacePage() {
                     provider={provider}
                     index={idx}
                     layout={view}
+                    isConnected={connectedSlugs.has(provider.slug)}
                   />
                 ))}
               </div>
@@ -563,9 +567,10 @@ interface ProviderCardProps {
   provider: Provider;
   index: number;
   layout: "grid" | "list";
+  isConnected?: boolean;
 }
 
-function ProviderCard({ provider, index, layout }: ProviderCardProps) {
+function ProviderCard({ provider, index, layout, isConnected = false }: ProviderCardProps) {
   const statusColor =
     provider.status === "CONNECTED"
       ? "success"
@@ -582,7 +587,7 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
       <Card
         className={cn(
           "flex items-center justify-between p-4 hover:border-blue-500 transition-all",
-          provider.connected && "border-emerald-500/30"
+          isConnected && "border-emerald-500/30"
         )}
         style={{ animationDelay } as React.CSSProperties}
       >
@@ -628,7 +633,7 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
       <Card
         className={cn(
           "h-full flex flex-col hover:border-blue-500 cursor-pointer transition-all",
-          provider.connected && "border-emerald-500/30"
+          isConnected && "border-emerald-500/30"
         )}
         style={{ animationDelay } as React.CSSProperties}
         hover
@@ -674,7 +679,7 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
           <Button variant="secondary" size="sm" className="flex-1">
             View Details
           </Button>
-          {provider.connected && (
+          {isConnected && (
             <Button variant="ghost" size="sm" className="flex-1">
               Manage
             </Button>
