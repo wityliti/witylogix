@@ -126,25 +126,21 @@ export default function RoutePerformancePage() {
     {
       label: "On-Time Rate",
       value: summary?.onTimePercentage != null ? `${summary.onTimePercentage.toFixed(1)}%` : "—",
-      change: { value: 0, label: "vs planned" },
       accentColor: "var(--wl-success-400)",
     },
     {
       label: "Avg Delivery Time",
       value: summary?.avgDeliveryTime != null ? `${summary.avgDeliveryTime}m` : "—",
-      change: { value: 0, label: "vs planned" },
       accentColor: "var(--wl-info-400)",
     },
     {
       label: "CO₂ Saved",
       value: summary?.co2Savings != null ? `${summary.co2Savings}kg` : "—",
-      change: { value: 0, label: "vs baseline" },
       accentColor: "var(--wl-success-500)",
     },
     {
       label: "SLA Compliance",
       value: summary?.slaCompliance != null ? `${summary.slaCompliance.toFixed(1)}%` : "—",
-      change: { value: 0, label: "vs target" },
       accentColor: "var(--wl-primary-400)",
     },
   ];
