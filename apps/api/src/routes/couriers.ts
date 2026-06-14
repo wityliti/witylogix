@@ -706,6 +706,39 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
       },
     });
   });
+
+  // ── GET /couriers/partner-stats — Per-provider delivery stats ────
+
+  app.get("/partner-stats", async (request: FastifyRequest, reply: FastifyReply) => {
+    const tenantId = request.tenantId!;
+
+    const partners = await prisma.courierPartner.findMany({
+      where: { tenantId },
+      select: { id: true, provider: true },
+    });
+
+    const stats = await Promise.all(
+      partners.map(async (p) => {
+        const [active, total, delivered] = await Promise.all([
+          prisma.courierDelivery.count({
+            where: { partnerId: p.id, status: { in: ["PENDING", "PICKED_UP", "IN_TRANSIT"] } },
+          }),
+          prisma.courierDelivery.count({ where: { partnerId: p.id } }),
+          prisma.courierDelivery.count({
+            where: { partnerId: p.id, status: "DELIVERED" },
+          }),
+        ]);
+        return {
+          provider: p.provider,
+          activeDeliveries: active,
+          totalDeliveries: total,
+          successRate: total > 0 ? Math.round((delivered / total) * 100) : null,
+        };
+      })
+    );
+
+    return reply.send({ stats });
+  });
 }
 
 // ─── Helper Functions ────────────────────────────────────────────
