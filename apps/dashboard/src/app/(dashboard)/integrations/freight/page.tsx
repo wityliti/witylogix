@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Truck } from 'lucide-react';
 
 export default function FreightIntegrationsPage() {
   return (
@@ -14,485 +12,72 @@ export default function FreightIntegrationsPage() {
       <Header
         title="Freight Integrations"
         subtitle="Manage load boards, rates, bookings, and compliance"
-        actions={
-          <Link href="/integrations/marketplace">
-            <Button variant="primary" size="sm">Browse Marketplace</Button>
-          </Link>
-        }
+        actions={<Button variant="primary">Add Provider</Button>}
       />
 
-      <div className={cn("p-6 bg-wl-bg-root")}>
-        {/* Top Stats */}
-        <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
-          <StatCard
-            label="Available Loads"
-            value={totalLoadsAvailable.toLocaleString()}
-            icon={<Truck size={16} />}
-            accentColor="#3b82f6"
-            index={0}
-          />
-          <StatCard
-            label="Booked This Month"
-            value={totalLoadsBooked}
-            icon={<CheckCircle size={16} />}
-            accentColor="#3b82f6"
-            index={1}
-          />
-          <StatCard
-            label="Best Rate"
-            value={`$${bestRate}/mi`}
-            icon={<TrendingDown size={16} />}
-            accentColor="#3b82f6"
-            index={2}
-          />
-          <StatCard
-            label="Avg Market Rate"
-            value={`$${avgRate}/mi`}
-            icon={<TrendingUp size={16} />}
-            accentColor="#3b82f6"
-            index={3}
-          />
+      <div className={cn("p-6 bg-wl-bg-root space-y-6")}>
+        <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Available Loads</CardTitle>
+            </CardHeader>
+            <div className={cn("p-4 pt-0")}>
+              <div className={cn("text-2xl font-bold text-white")}>0</div>
+              <p className={cn("text-xs text-gray-500 mt-1")}>across all providers</p>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Booked This Month</CardTitle>
+            </CardHeader>
+            <div className={cn("p-4 pt-0")}>
+              <div className={cn("text-2xl font-bold text-white")}>0</div>
+              <p className={cn("text-xs text-gray-500 mt-1")}>loads booked</p>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Connected Providers</CardTitle>
+            </CardHeader>
+            <div className={cn("p-4 pt-0")}>
+              <div className={cn("text-2xl font-bold text-white")}>0</div>
+              <p className={cn("text-xs text-gray-500 mt-1")}>load boards active</p>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Avg Market Rate</CardTitle>
+            </CardHeader>
+            <div className={cn("p-4 pt-0")}>
+              <div className={cn("text-2xl font-bold text-gray-500")}>—</div>
+              <p className={cn("text-xs text-gray-500 mt-1")}>no active providers</p>
+            </div>
+          </Card>
         </div>
 
-        {error && (
-          <ErrorState
-            title="Failed to load integrations"
-            error={error}
-            onRetry={fetchInstalled}
-          />
-        )}
-
-        {/* Provider Status */}
-        <div>
-          <h2 className={cn('text-sm font-semibold text-white mb-3')}>Load Board Providers</h2>
-          {loading ? (
-            <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-3')}>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="p-3 space-y-2">
-                  <Skeleton type="text" className="w-full h-4" />
-                  <Skeleton type="text" className="w-2/3 h-4" />
-                  <Skeleton type="text" className="w-full h-8 mt-2" />
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-3')}>
-              {FREIGHT_PROVIDERS.map((provider) => (
-                <ProviderStatusCard key={provider.slug} provider={provider} installed={installed} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* View Toggle */}
-        <div className={cn("flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit flex-wrap")}>
-          {(["loads", "rates", "bookings", "compliance"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={cn(
-                'px-3 py-1 rounded-sm text-xs font-semibold cursor-pointer capitalize transition-colors',
-                view === v ? 'bg-blue-500 text-white' : 'bg-transparent text-gray-300 hover:text-white',
-              )}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
-
-        {/* All operational views show empty states until real freight integrations are connected */}
-        {view === 'loads' && (
-          <div>
-            <div className={cn('flex items-center justify-between mb-4')}>
-              <h3 className={cn('text-sm font-semibold text-white')}>Aggregated Load Board</h3>
-              <Button variant="secondary" size="sm" disabled={connectedProviders.length === 0}>
-                <Filter size={14} className={cn('mr-1')} />
-                Filter
-              </Button>
-            </div>
-
-            {AGGREGATED_LOADS.map((load, idx) => {
-              const isExpanded = expandedLoad === load.id;
-              const pcpm = (load.bestRate / load.distance).toFixed(2);
-
-              return (
-                <Card
-                  key={load.id}
-                  className={cn(
-                    "cursor-pointer transition-all blue-500",
-                    isExpanded && "ring-1 ring-blue-400"
-                  )}
-                  style={{ animationDelay: `${idx * 40}ms` }}
-                  onClick={() => setExpandedLoad(isExpanded ? null : load.id)}
-                >
-                  <div className={cn("p-4")}>
-                    <div className={cn("flex items-start justify-between mb-3")}>
-                      <div className={cn("flex-1 min-w-0")}>
-                        <div className={cn("flex items-center gap-2 mb-1")}>
-                          <Map size={14} className={cn("text-blue-400 shrink-0")} />
-                          <p className={cn("text-sm font-semibold text-white truncate")}>
-                            {load.origin} → {load.destination}
-                          </p>
-                        </div>
-                        <p className={cn("text-xs text-gray-300")}>
-                          {load.distance} mi • {load.weight.toLocaleString()} lbs • {load.equipment}
-                        </p>
-                      </div>
-                      <div className={cn("text-right shrink-0")}>
-                        <p className={cn("text-xl font-bold text-blue-400")}>
-                          ${load.bestRate.toLocaleString()}
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>
-                          ${pcpm}/mi
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className={cn("flex items-center gap-2 mb-3")}>
-                      {load.sources.map((source) => {
-                        const prov = FREIGHT_PROVIDERS.find((p) => p.slug === source);
-                        return (
-                          <span
-                            key={source}
-                            className={cn(
-                              "text-xs px-1.5 py-0.5 rounded bg-wl-bg-surface text-gray-300 font-medium"
-                            )}
-                          >
-                            {prov?.name.split(" ")[0]}
-                          </span>
-                        );
-                      })}
-                      <span className={cn("text-xs text-gray-300 ml-auto")}>
-                        {load.posted}
-                      </span>
-                    </div>
-
-                    {isExpanded && (
-                      <div className={cn("border-t border-wl-border-default pt-3 mt-3 space-y-3")}>
-                        <div className={cn("grid grid-cols-4 gap-2 text-xs")}>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-gray-300 mb-1")}>Best Rate</p>
-                            <p className={cn("font-bold text-blue-400")}>
-                              ${load.bestRate.toLocaleString()}
-                            </p>
-                          </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-gray-300 mb-1")}>Avg Rate</p>
-                            <p className={cn("font-bold text-white")}>
-                              ${load.avgRate.toLocaleString()}
-                            </p>
-                          </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-gray-300 mb-1")}>Carriers</p>
-                            <p className={cn("font-bold text-white")}>
-                              {load.carriers}
-                            </p>
-                          </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-gray-300 mb-1")}>Pickup</p>
-                            <p className={cn("font-bold text-white text-xs")}>
-                              {load.pickup}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className={cn("flex gap-2")}>
-                          <Button variant="primary" size="sm">
-                            <Zap size={14} className={cn("mr-1")} />
-                            Book Now
-                          </Button>
-                          <Button variant="secondary" size="sm">
-                            View Details
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Eye size={14} />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              );
-            })}
+        <Card>
+          <CardHeader>
+            <CardTitle>Freight Load Boards</CardTitle>
+          </CardHeader>
+          <div className={cn("p-12 text-center")}>
+            <p className={cn("text-gray-400 mb-2")}>No freight providers connected</p>
+            <p className={cn("text-sm text-gray-500 mb-6")}>
+              Connect DAT, Truckstop, 123Loadboard, Direct Freight, and more from the Marketplace to aggregate loads and compare rates.
+            </p>
+            <Button variant="primary">Browse Marketplace</Button>
           </div>
-        )}
+        </Card>
 
-        {/* Rates View */}
-        {view === "rates" && (
-          <div className={cn("space-y-4")}>
-            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
-              Rate Comparison Matrix
-            </h3>
-
-            {/* Lane Selection */}
-            <div className={cn("flex gap-2 mb-4 flex-wrap")}>
-              {RATE_COMPARISONS.map((comp) => (
-                <button
-                  key={comp.lane}
-                  onClick={() => setSelectedLane(comp.lane)}
-                  className={cn(
-                    "px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all",
-                    selectedLane === comp.lane
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "border-wl-border-default text-gray-300 hover:border-blue-400"
-                  )}
-                >
-                  {comp.lane}
-                </button>
-              ))}
-            </div>
-
-            {/* Selected Lane Details */}
-            {RATE_COMPARISONS.map((comp) => {
-              if (selectedLane !== comp.lane) return null;
-
-              return (
-                <Card
-                  key={`rate-detail-${comp.lane}`}
-                  className={cn("mb-6 blue-500")}
-                >
-                  <div className={cn("p-4")}>
-                    <div className={cn("flex items-center justify-between mb-4")}>
-                      <div>
-                        <p className={cn("text-sm font-semibold text-white")}>
-                          {comp.origin} → {comp.destination}
-                        </p>
-                        <p className={cn("text-xs text-gray-300 mt-1")}>
-                          {comp.count_last_30} loads in last 30 days
-                        </p>
-                      </div>
-                      <div className={cn("text-right")}>
-                        <p className={cn("text-2xl font-bold text-white")}>
-                          ${comp.market_avg.toLocaleString()}
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>Market Avg</p>
-                      </div>
-                    </div>
-
-                    <div className={cn("grid grid-cols-2 md:grid-cols-4 gap-3 mb-4")}>
-                      {[
-                        { name: "DAT", rate: comp.mat_rate },
-                        { name: "Truckstop", rate: comp.truckstop_rate },
-                        { name: "123Load", rate: comp.loadboard123_rate },
-                        { name: "Direct Freight", rate: comp.directfreight_rate },
-                      ].map((source) => {
-                        const diff = source.rate - comp.market_avg;
-                        const diffPercent = ((diff / comp.market_avg) * 100).toFixed(1);
-                        const isAbove = diff > 0;
-
-                        return (
-                          <div
-                            key={source.name}
-                            className={cn(
-                              "p-3 rounded border",
-                              isAbove
-                                ? "border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]"
-                                : "border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]"
-                            )}
-                          >
-                            <p className={cn("text-xs font-semibold text-white")}>
-                              {source.name}
-                            </p>
-                            <p className={cn("text-lg font-bold text-white mt-1")}>
-                              ${source.rate.toLocaleString()}
-                            </p>
-                            <p
-                              className={cn(
-                                "text-xs font-semibold mt-1",
-                                isAbove ? "text-red-500" : "text-emerald-500"
-                              )}
-                            >
-                              {isAbove ? "+" : "-"}${Math.abs(diff).toLocaleString()} ({diffPercent}%)
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className={cn("flex gap-2")}>
-                      <Button variant="secondary" size="sm">
-                        View Trend
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        Set Price Alert
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-
-            {/* Market Trends */}
-            <div className={cn("mt-6")}>
-              <h3 className={cn("text-sm font-semibold text-white mb-4")}>
-                Market Rate Trends
-              </h3>
-
-              {MARKET_TRENDS.map((trend, idx) => (
-                <Card
-                  key={`trend-${trend.lane}`}
-                  className={cn("mb-3 blue-500")}
-                  style={{ animationDelay: `${(RATE_COMPARISONS.length + idx) * 40}ms` }}
-                >
-                  <div className={cn("p-3 flex items-center justify-between")}>
-                    <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-white")}>
-                        {trend.lane}
-                      </p>
-                      <p className={cn("text-xs text-gray-300 mt-0.5")}>
-                        {trend.volume} loads
-                      </p>
-                    </div>
-                    <div className={cn("flex items-center gap-6 text-right shrink-0")}>
-                      <div>
-                        <p className={cn("text-lg font-bold text-white")}>
-                          ${trend.current.toLocaleString()}
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>Current</p>
-                      </div>
-                      <div>
-                        <p
-                          className={cn(
-                            "font-bold text-sm",
-                            trend.change_week < 0 ? "text-emerald-500" : "text-red-500"
-                          )}
-                        >
-                          {trend.change_week > 0 ? "+" : ""}{trend.change_week}%
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>Week</p>
-                      </div>
-                      <div>
-                        <p
-                          className={cn(
-                            "font-bold text-sm",
-                            trend.change_month < 0 ? "text-emerald-500" : "text-red-500"
-                          )}
-                        >
-                          {trend.change_month > 0 ? "+" : ""}{trend.change_month}%
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>Month</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Bookings</CardTitle>
+          </CardHeader>
+          <div className={cn("p-12 text-center")}>
+            <p className={cn("text-gray-500 text-sm")}>No bookings yet</p>
           </div>
-        )}
-
-        {view === 'bookings' && (
-          <div>
-            <div className={cn('flex items-center justify-between mb-4')}>
-              <h3 className={cn('text-sm font-semibold text-white')}>Recent Bookings</h3>
-              <Button variant="primary" size="sm">
-                <Plus size={14} className={cn('mr-1')} />
-                New Booking
-              </Button>
-            </div>
-
-            {RECENT_BOOKINGS.map((booking, idx) => (
-              <Card
-                key={booking.id}
-                className={cn("blue-500")}
-                style={{ animationDelay: `${idx * 40}ms` }}
-              >
-                <div className={cn("p-4")}>
-                  <div className={cn("flex items-start justify-between mb-3")}>
-                    <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-white")}>
-                        {booking.carrier}
-                      </p>
-                      <p className={cn("text-xs text-gray-300 mt-1")}>
-                        {booking.origin} → {booking.destination}
-                      </p>
-                    </div>
-                    <div className={cn("text-right shrink-0")}>
-                      <p className={cn("text-lg font-bold text-blue-400")}>
-                        ${booking.rate.toLocaleString()}
-                      </p>
-                      <Badge variant={bookingStatusVariant(booking.status)} dot>
-                        {booking.status}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
-                    <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
-                      <div>
-                        <p className={cn("text-gray-300 mb-1")}>Booked</p>
-                        <p className={cn("font-semibold text-white")}>
-                          {booking.booked}
-                        </p>
-                      </div>
-                      <div>
-                        <p className={cn("text-gray-300 mb-1")}>Pickup</p>
-                        <p className={cn("font-semibold text-white")}>
-                          {booking.pickup}
-                        </p>
-                      </div>
-                      <div>
-                        <p className={cn("text-gray-300 mb-1")}>Delivery</p>
-                        <p className={cn("font-semibold text-white")}>
-                          {booking.delivery}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {booking.confirmation !== "PENDING" && (
-                    <div className={cn("mb-3 p-2 rounded bg-[rgba(16,185,129,0.1)] border border-emerald-400 border-opacity-30")}>
-                      <p className={cn("text-xs text-emerald-500 font-semibold")}>
-                        <CheckCircle size={12} className={cn("inline mr-1")} />
-                        Confirmed: {booking.confirmation}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className={cn("flex gap-2")}>
-                    <Button variant="secondary" size="sm">
-                      {booking.documents > 0 ? (
-                        <>
-                          <Download size={14} className={cn("mr-1")} />
-                          Documents ({booking.documents})
-                        </>
-                      ) : (
-                        "Upload Documents"
-                      )}
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {view === 'compliance' && (
-          <div>
-            <div className={cn('flex items-center justify-between mb-4')}>
-              <h3 className={cn('text-sm font-semibold text-white')}>Compliance Documentation</h3>
-              <Button variant="primary" size="sm">
-                <Download size={14} className={cn('mr-1')} />
-                Upload Document
-              </Button>
-            </div>
-            <EmptySectionState view="compliance" />
-            <div className={cn('mt-4 p-4 rounded bg-blue-500/10 border border-blue-400/30')}>
-              <p className={cn('text-xs text-blue-400 font-semibold')}>
-                Keep compliance documents current — expired documents may block load access.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Link href="/integrations/marketplace">
-                  <Button variant="ghost">Browse Marketplace</Button>
-                </Link>
-                <Link href="/support">
-                  <Button variant="primary">Request Access</Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
         </Card>
       </div>
     </>
