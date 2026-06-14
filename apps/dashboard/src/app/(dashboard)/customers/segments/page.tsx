@@ -18,7 +18,7 @@ import {
 // Leaflet map for top-city visualization
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
-  { ssr: false, loading: () => <div className="h-full bg-[#0d0d14] rounded-xl animate-pulse" /> },
+  { ssr: false, loading: () => <div className="h-full bg-wl-bg-root rounded-xl animate-pulse" /> },
 );
 
 const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -70,12 +70,12 @@ export default function CustomerSegmentsPage() {
                 <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back
               </Button>
             </Link>
-            <div className="flex rounded-md border border-[#1e1e2e] overflow-hidden">
+            <div className="flex rounded-md border border-wl-border-default overflow-hidden">
               <button
                 onClick={() => setActiveView('cards')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  activeView === 'cards' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  activeView === 'cards' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-wl-text-primary',
                 )}
               >
                 <BarChart2 className="w-3.5 h-3.5" /> Tiers
@@ -84,7 +84,7 @@ export default function CustomerSegmentsPage() {
                 onClick={() => setActiveView('geo')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  activeView === 'geo' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  activeView === 'geo' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-wl-text-primary',
                 )}
               >
                 <MapIcon className="w-3.5 h-3.5" /> Geography
@@ -229,7 +229,7 @@ export default function CustomerSegmentsPage() {
                   { tier: 'premium', rule: 'Lifetime spend $1,000 – $4,999', color: 'text-blue-400' },
                   { tier: 'standard', rule: 'Lifetime spend < $1,000', color: 'text-gray-400' },
                 ] as const).map(({ tier, rule, color }) => (
-                  <div key={tier} className="flex items-center justify-between py-2 border-b border-[#1e1e2e] last:border-0">
+                  <div key={tier} className="flex items-center justify-between py-2 border-b border-wl-border-default last:border-0">
                     <div className="flex items-center gap-2">
                       <span className={cn('w-2 h-2 rounded-full', TIER_CONFIG[tier].dotClass)} />
                       <span className="capitalize font-medium text-white">{TIER_CONFIG[tier].label}</span>
@@ -249,7 +249,7 @@ export default function CustomerSegmentsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Top cities table */}
             <Card className="overflow-hidden p-0">
-              <div className="p-4 border-b border-[#1e1e2e]">
+              <div className="p-4 border-b border-wl-border-default">
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-gray-500" /> Top Cities
                 </h3>
@@ -272,7 +272,7 @@ export default function CustomerSegmentsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-[#1e1e2e] bg-[#111118]">
+                      <tr className="border-b border-wl-border-default bg-wl-bg-surface">
                         <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">#</th>
                         <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">City</th>
                         <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Customers</th>
@@ -287,8 +287,8 @@ export default function CustomerSegmentsPage() {
                           <tr
                             key={city.city}
                             className={cn(
-                              'border-b border-[#1e1e2e] hover:bg-[#1a1a2e]/30 transition-colors',
-                              i % 2 === 0 ? 'bg-transparent' : 'bg-[#111118]/40',
+                              'border-b border-wl-border-default hover:bg-wl-bg-elevated/30 transition-colors',
+                              i % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-surface/40',
                             )}
                           >
                             <td className="p-3 px-4 text-xs text-gray-500 font-mono">{i + 1}</td>
@@ -348,7 +348,7 @@ export default function CustomerSegmentsPage() {
                                 {fmt.format(seg.totalSpent)} ({pct.toFixed(1)}%)
                               </span>
                             </div>
-                            <div className="h-2 bg-[#1e1e2e] rounded-full overflow-hidden">
+                            <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%`, backgroundColor: cfg.color }}
@@ -389,7 +389,7 @@ export default function CustomerSegmentsPage() {
                                 {seg.count.toLocaleString()} ({pct.toFixed(1)}%)
                               </span>
                             </div>
-                            <div className="h-2 bg-[#1e1e2e] rounded-full overflow-hidden">
+                            <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%`, backgroundColor: cfg.color }}
