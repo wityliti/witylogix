@@ -45,6 +45,7 @@ export default function InstalledAppsPage() {
   const [error, setError] = useState<Error | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [revokeError, setRevokeError] = useState<string | null>(null);
+  const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
 
   const fetchInstallations = useCallback(async () => {
     try {
@@ -64,13 +65,6 @@ export default function InstalledAppsPage() {
   }, [fetchInstallations]);
 
   const handleRevoke = async (installation: InstalledApp) => {
-    if (
-      !confirm(
-        `Uninstall ${installation.client.name}? Its access tokens will be revoked immediately and any webhooks it registered will stop firing.`,
-      )
-    ) {
-      return;
-    }
     setRevokingId(installation.id);
     try {
       await api.delete(`/api/v4/oauth/installations/${installation.id}`);
@@ -167,16 +161,42 @@ export default function InstalledAppsPage() {
                       day: 'numeric',
                     })}
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleRevoke(installation)}
-                    disabled={isRevoking}
-                    className="w-full"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    {isRevoking ? 'Uninstalling…' : 'Uninstall'}
-                  </Button>
+                  {confirmRevokeId === installation.id ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-wl-text-secondary">
+                        Uninstall <strong>{client.name}</strong>? Access tokens will be revoked and webhooks will stop.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => setConfirmRevokeId(null)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          className="flex-1"
+                          disabled={isRevoking}
+                          onClick={() => { setConfirmRevokeId(null); handleRevoke(installation); }}
+                        >
+                          {isRevoking ? 'Uninstalling…' : 'Confirm'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setConfirmRevokeId(installation.id)}
+                      className="w-full"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Uninstall
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );

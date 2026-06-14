@@ -240,6 +240,7 @@ export default function CampaignsPage() {
   );
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingDeleteCampaignId, setPendingDeleteCampaignId] = useState<string | null>(null);
 
   const filteredCampaigns = useMemo(
     () =>
@@ -615,32 +616,39 @@ export default function CampaignsPage() {
                                   </Button>
                                 )}
                                 {campaign.status === "DRAFT" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="p-1.5"
-                                    title="Delete"
-                                    disabled={actionLoading === campaign.id}
-                                    onClick={(e) =>
-                                      runAction(
-                                        campaign.id,
-                                        async () => {
-                                          if (
-                                            !confirm(
-                                              "Delete this draft campaign?",
-                                            )
-                                          )
-                                            return;
-                                          await api.delete(
-                                            `/api/v4/campaigns/${campaign.id}`,
-                                          );
-                                        },
-                                        e,
-                                      )
-                                    }
-                                  >
-                                    <Trash2 size={13} className="text-wl-danger-400" />
-                                  </Button>
+                                  pendingDeleteCampaignId === campaign.id ? (
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        className="text-xs px-1.5 py-0.5 rounded text-wl-text-secondary hover:text-wl-text-primary border border-wl-border-default"
+                                        onClick={(e) => { e.stopPropagation(); setPendingDeleteCampaignId(null); }}
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        className="text-xs px-1.5 py-0.5 rounded bg-red-600 text-white hover:bg-red-700"
+                                        disabled={actionLoading === campaign.id}
+                                        onClick={(e) => {
+                                          setPendingDeleteCampaignId(null);
+                                          runAction(campaign.id, async () => {
+                                            await api.delete(`/api/v4/campaigns/${campaign.id}`);
+                                          }, e);
+                                        }}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="p-1.5"
+                                      title="Delete"
+                                      disabled={actionLoading === campaign.id}
+                                      onClick={(e) => { e.stopPropagation(); setPendingDeleteCampaignId(campaign.id); }}
+                                    >
+                                      <Trash2 size={13} className="text-wl-danger-400" />
+                                    </Button>
+                                  )
                                 )}
                               </div>
                             </td>
