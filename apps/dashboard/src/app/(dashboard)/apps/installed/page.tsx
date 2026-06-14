@@ -44,6 +44,7 @@ export default function InstalledAppsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [revokeError, setRevokeError] = useState<string | null>(null);
 
   const fetchInstallations = useCallback(async () => {
     try {
@@ -73,9 +74,10 @@ export default function InstalledAppsPage() {
     setRevokingId(installation.id);
     try {
       await api.delete(`/api/v4/oauth/installations/${installation.id}`);
+      setRevokeError(null);
       await fetchInstallations();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to uninstall app');
+      setRevokeError(err instanceof Error ? err.message : 'Failed to uninstall app');
     } finally {
       setRevokingId(null);
     }
@@ -91,6 +93,11 @@ export default function InstalledAppsPage() {
       <div className="p-6 space-y-6">
         {loading && <TableSkeleton rows={3} />}
         {error && <ErrorState message={error.message} onRetry={fetchInstallations} />}
+        {revokeError && (
+          <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
+            {revokeError}
+          </div>
+        )}
 
         {!loading && !error && installations.length === 0 && (
           <EmptyState
