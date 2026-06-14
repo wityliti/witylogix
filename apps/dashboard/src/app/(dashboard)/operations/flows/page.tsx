@@ -39,6 +39,7 @@ type EntityFilter = 'ALL' | 'SHIPMENT' | 'ORDER';
 export default function ActivityFlowsPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<EntityFilter>('ALL');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const path =
     filter === 'ALL'
       ? '/api/v4/operations/flows'
@@ -61,9 +62,10 @@ export default function ActivityFlowsPage() {
     }
     try {
       await api.delete(`/api/v4/operations/flows/${id}`);
+      setDeleteError(null);
       refetch();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete flow');
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete flow');
     }
   };
 
@@ -105,6 +107,11 @@ export default function ActivityFlowsPage() {
 
         {loading && <TableSkeleton rows={4} />}
         {error && <ErrorState message={error.message} onRetry={refetch} />}
+        {deleteError && (
+          <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
+            {deleteError}
+          </div>
+        )}
 
         {!loading && !error && flows.length === 0 && (
           <EmptyState
