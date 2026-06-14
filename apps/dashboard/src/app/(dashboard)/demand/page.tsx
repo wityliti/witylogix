@@ -444,7 +444,7 @@ export default function DemandPage() {
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Predicted</p>
               <p className="text-3xl font-bold text-white mt-3">
-                {(metrics?.totalPredicted || 0 / 1000).toFixed(0)}k
+                {((metrics?.totalPredicted ?? 0) / 1000).toFixed(1)}k
               </p>
               <p className="text-xs text-gray-500 mt-2">Volume units</p>
             </Card>
@@ -452,7 +452,7 @@ export default function DemandPage() {
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current Actual</p>
               <p className="text-3xl font-bold text-white mt-3">
-                {(metrics?.totalActual || 0 / 1000).toFixed(0)}k
+                {((metrics?.totalActual ?? 0) / 1000).toFixed(1)}k
               </p>
               <div className="flex items-center gap-2 mt-2">
                 {volumeDeviation >= 0 ? (
