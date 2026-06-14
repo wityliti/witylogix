@@ -1,179 +1,39 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "../../../../components/layout/header";
 import { StatCard } from "../../../../components/ui/stat-card";
-import { Card, CardHeader, CardTitle, CardContent } from "../../../../components/ui/card";
+import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
+import { Skeleton } from "../../../../components/ui/loading-skeleton";
 import { ArrowRight, Activity, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useApiList } from '@/hooks/use-api';
-
-/* ═══════════════════════════════════════════════════════════
-   WORKFLOW EXECUTIONS PAGE — Monitor and manage workflow runs
-   ═══════════════════════════════════════════════════════════ */
+import { useApiQuery } from '@/hooks/use-api';
 
 interface WorkflowExecution {
-  id: string;
   executionId: string;
   workflowName: string;
-  status: "running" | "completed" | "failed" | "compensating";
-  totalSteps: number;
-  completedSteps: number;
+  status: "running" | "completed" | "failed" | "compensating" | "compensated";
   startedAt: string;
-  duration: string;
-  createdBy?: string;
-  tenantId?: string;
+  completedAt: string | null;
+  durationMs: number | null;
+  error: string | null;
+  orderId?: string | null;
+  driverId?: string | null;
 }
 
-const WORKFLOW_EXECUTIONS: WorkflowExecution[] = [
-  {
-    id: "exec-001",
-    executionId: "EXE-2026-00001",
-    workflowName: "Order Processing Pipeline",
-    status: "completed",
-    totalSteps: 8,
-    completedSteps: 8,
-    startedAt: "2026-03-07T08:00:00Z",
-    duration: "2m 34s",
-    createdBy: "system",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-002",
-    executionId: "EXE-2026-00002",
-    workflowName: "Inventory Sync",
-    status: "running",
-    totalSteps: 12,
-    completedSteps: 7,
-    startedAt: "2026-03-07T09:15:00Z",
-    duration: "45s",
-    createdBy: "automation",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-003",
-    executionId: "EXE-2026-00003",
-    workflowName: "Customer Notification",
-    status: "completed",
-    totalSteps: 5,
-    completedSteps: 5,
-    startedAt: "2026-03-07T08:45:00Z",
-    duration: "1m 12s",
-    createdBy: "webhook",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-004",
-    executionId: "EXE-2026-00004",
-    workflowName: "Payment Processing",
-    status: "failed",
-    totalSteps: 6,
-    completedSteps: 4,
-    startedAt: "2026-03-07T07:30:00Z",
-    duration: "3m 45s",
-    createdBy: "system",
-    tenantId: "tenant-789",
-  },
-  {
-    id: "exec-005",
-    executionId: "EXE-2026-00005",
-    workflowName: "Order Processing Pipeline",
-    status: "completed",
-    totalSteps: 8,
-    completedSteps: 8,
-    startedAt: "2026-03-07T06:00:00Z",
-    duration: "2m 18s",
-    createdBy: "system",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-006",
-    executionId: "EXE-2026-00006",
-    workflowName: "Compliance Check",
-    status: "compensating",
-    totalSteps: 9,
-    completedSteps: 5,
-    startedAt: "2026-03-07T09:45:00Z",
-    duration: "2m 10s",
-    createdBy: "system",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-007",
-    executionId: "EXE-2026-00007",
-    workflowName: "Data Export",
-    status: "completed",
-    totalSteps: 4,
-    completedSteps: 4,
-    startedAt: "2026-03-07T05:30:00Z",
-    duration: "58s",
-    createdBy: "automation",
-    tenantId: "tenant-101",
-  },
-  {
-    id: "exec-008",
-    executionId: "EXE-2026-00008",
-    workflowName: "Inventory Sync",
-    status: "completed",
-    totalSteps: 12,
-    completedSteps: 12,
-    startedAt: "2026-03-07T04:15:00Z",
-    duration: "5m 22s",
-    createdBy: "webhook",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-009",
-    executionId: "EXE-2026-00009",
-    workflowName: "Customer Notification",
-    status: "failed",
-    totalSteps: 5,
-    completedSteps: 2,
-    startedAt: "2026-03-07T03:00:00Z",
-    duration: "4m 51s",
-    createdBy: "automation",
-    tenantId: "tenant-789",
-  },
-  {
-    id: "exec-010",
-    executionId: "EXE-2026-00010",
-    workflowName: "Payment Processing",
-    status: "completed",
-    totalSteps: 6,
-    completedSteps: 6,
-    startedAt: "2026-03-07T02:45:00Z",
-    duration: "2m 05s",
-    createdBy: "webhook",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-011",
-    executionId: "EXE-2026-00011",
-    workflowName: "Order Processing Pipeline",
-    status: "running",
-    totalSteps: 8,
-    completedSteps: 3,
-    startedAt: "2026-03-07T09:58:00Z",
-    duration: "2s",
-    createdBy: "system",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-012",
-    executionId: "EXE-2026-00012",
-    workflowName: "Compliance Check",
-    status: "completed",
-    totalSteps: 9,
-    completedSteps: 9,
-    startedAt: "2026-03-07T01:30:00Z",
-    duration: "8m 15s",
-    createdBy: "automation",
-    tenantId: "tenant-789",
-  },
-];
+interface WorkflowResponse {
+  executions: WorkflowExecution[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
 
 const formatDateTime = (isoStr: string): string => {
   const date = new Date(isoStr);
@@ -187,53 +47,66 @@ const formatDateTime = (isoStr: string): string => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 };
 
+const formatDuration = (ms: number | null): string => {
+  if (ms === null) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}m ${rem}s`;
+};
+
 const getStatusBadgeVariant = (
-  status: "running" | "completed" | "failed" | "compensating"
+  status: WorkflowExecution["status"]
 ): "info" | "success" | "danger" | "warning" => {
   switch (status) {
-    case "running":
-      return "info";
-    case "completed":
-      return "success";
-    case "failed":
-      return "danger";
+    case "running": return "info";
+    case "completed": return "success";
+    case "failed": return "danger";
     case "compensating":
-      return "warning";
-    default:
-      return "default" as any;
+    case "compensated": return "warning";
+    default: return "info" as any;
   }
 };
 
-const getStatusLabel = (status: "running" | "completed" | "failed" | "compensating"): string => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-};
+const getStatusLabel = (status: WorkflowExecution["status"]): string =>
+  status.charAt(0).toUpperCase() + status.slice(1);
 
 export default function WorkflowExecutionsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "running" | "completed" | "failed" | "compensating">("all");
 
-  // Calculate stats
-  const totalRuns = WORKFLOW_EXECUTIONS.length;
-  const activeRuns = WORKFLOW_EXECUTIONS.filter((e) => e.status === "running").length;
-  const completedRuns = WORKFLOW_EXECUTIONS.filter((e) => e.status === "completed").length;
-  const failedRuns = WORKFLOW_EXECUTIONS.filter((e) => e.status === "failed").length;
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  // Filter executions
-  const filtered = useMemo(() => {
-    let result = WORKFLOW_EXECUTIONS;
+  const apiUrl = useMemo(() => {
+    const params = new URLSearchParams({ limit: "100" });
+    if (activeTab !== "all") params.set("status", activeTab);
+    if (debouncedSearch) params.set("workflowName", debouncedSearch);
+    return `/api/workflow/executions?${params.toString()}`;
+  }, [activeTab, debouncedSearch]);
 
-    if (activeTab !== "all") {
-      result = result.filter((e) => e.status === activeTab);
-    }
+  const { data: response, loading, error, refetch } = useApiQuery<WorkflowResponse>(apiUrl);
 
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter((e) => e.workflowName.toLowerCase().includes(q) || e.executionId.toLowerCase().includes(q));
-    }
+  const executions = response?.executions ?? [];
 
-    return result;
-  }, [search, activeTab]);
+  const totalRuns = executions.length;
+  const activeRuns = executions.filter((e) => e.status === "running").length;
+  const completedRuns = executions.filter((e) => e.status === "completed").length;
+  const failedRuns = executions.filter((e) => e.status === "failed").length;
+
+  const tabCounts = useMemo(() => ({
+    all: executions.length,
+    running: executions.filter((e) => e.status === "running").length,
+    completed: executions.filter((e) => e.status === "completed").length,
+    failed: executions.filter((e) => e.status === "failed").length,
+    compensating: executions.filter((e) => e.status === "compensating" || e.status === "compensated").length,
+  }), [executions]);
 
   return (
     <>
@@ -253,7 +126,7 @@ export default function WorkflowExecutionsPage() {
           <StatCard
             label="Total Runs"
             value={totalRuns}
-            change={{ value: 12.5, label: "this month" }}
+            isLoading={loading}
             accentColor="var(--blue-600)"
             icon={<Activity size={18} />}
             index={0}
@@ -261,6 +134,7 @@ export default function WorkflowExecutionsPage() {
           <StatCard
             label="Active"
             value={activeRuns}
+            isLoading={loading}
             accentColor="var(--blue-500)"
             icon={<Clock size={18} />}
             index={1}
@@ -268,7 +142,7 @@ export default function WorkflowExecutionsPage() {
           <StatCard
             label="Completed"
             value={completedRuns}
-            change={{ value: 8.3, label: "success rate" }}
+            isLoading={loading}
             accentColor="var(--emerald-500)"
             icon={<CheckCircle2 size={18} />}
             index={2}
@@ -276,7 +150,7 @@ export default function WorkflowExecutionsPage() {
           <StatCard
             label="Failed"
             value={failedRuns}
-            change={{ value: -2.1, label: "vs last month" }}
+            isLoading={loading}
             accentColor="var(--red-500)"
             icon={<AlertCircle size={18} />}
             index={3}
@@ -286,12 +160,7 @@ export default function WorkflowExecutionsPage() {
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-5 border-b border-wl-border-default pb-4">
           {(["all", "running", "completed", "failed", "compensating"] as const).map((tab) => {
-            const count =
-              tab === "all"
-                ? WORKFLOW_EXECUTIONS.length
-                : WORKFLOW_EXECUTIONS.filter((e) => e.status === tab).length;
             const isActive = activeTab === tab;
-
             return (
               <button
                 key={tab}
@@ -304,7 +173,9 @@ export default function WorkflowExecutionsPage() {
                 )}
               >
                 {tab === "all" ? "All" : tab}
-                <span className="ml-1.5 opacity-60">({count})</span>
+                {!loading && (
+                  <span className="ml-1.5 opacity-60">({tabCounts[tab]})</span>
+                )}
               </button>
             );
           })}
@@ -314,15 +185,52 @@ export default function WorkflowExecutionsPage() {
         <div className="mb-5">
           <input
             type="text"
-            placeholder="Search workflow name or execution ID..."
+            placeholder="Search workflow name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search workflows"
             className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10"
           />
         </div>
 
+        {/* Error */}
+        {error && !loading && (
+          <Card className="p-6 text-center bg-wl-bg-surface border border-wl-border-default mb-5">
+            <AlertCircle size={32} className="mx-auto mb-2 text-red-400" />
+            <p className="text-sm text-gray-400 mb-3">Failed to load workflow executions</p>
+            <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+          </Card>
+        )}
+
         {/* Executions Table */}
-        {filtered.length > 0 ? (
+        {loading ? (
+          <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-wl-border-default bg-wl-bg-root">
+                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Workflow Name</th>
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
+                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Started</th>
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Duration</th>
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i} className="border-b border-wl-border-default">
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <td key={j} className="p-3 px-4">
+                          <Skeleton type="text" className="h-4 w-full" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        ) : !error && executions.length > 0 ? (
           <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
@@ -333,9 +241,6 @@ export default function WorkflowExecutionsPage() {
                     </th>
                     <th className="p-3 px-4 text-center font-semibold text-gray-400">
                       Status
-                    </th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
-                      Steps
                     </th>
                     <th className="p-3 px-4 text-left font-semibold text-gray-400">
                       Started
@@ -349,37 +254,39 @@ export default function WorkflowExecutionsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((execution, idx) => (
+                  {executions.map((execution, idx) => (
                     <tr
-                      key={execution.id}
-                      className="border-b border-wl-border-default transition-colors cursor-pointer hover:bg-wl-bg-elevated"
-                      style={{
-                        background: idx % 2 === 0 ? "transparent" : "#12121a",
-                      }}
-                      onClick={() => router.push(`/admin/workflows/${execution.id}`)}
+                      key={execution.executionId}
+                      className={cn(
+                        "border-b border-wl-border-default transition-colors cursor-pointer hover:bg-wl-bg-elevated",
+                        idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-surface",
+                      )}
+                      onClick={() => router.push(`/admin/workflows/${execution.executionId}`)}
                     >
-                      <td className="p-3 px-4 text-white font-medium">
-                        {execution.workflowName}
+                      <td className="p-3 px-4">
+                        <div className="font-medium text-white">{execution.workflowName}</div>
+                        <div className="text-[11px] text-gray-500 font-mono mt-0.5">{execution.executionId}</div>
                       </td>
                       <td className="p-3 px-4 text-center">
                         <Badge variant={getStatusBadgeVariant(execution.status)} dot>
                           {getStatusLabel(execution.status)}
                         </Badge>
                       </td>
-                      <td className="p-3 px-4 text-center text-white font-medium">
-                        {execution.completedSteps}/{execution.totalSteps}
-                      </td>
                       <td className="p-3 px-4 text-gray-400">
                         {formatDateTime(execution.startedAt)}
                       </td>
                       <td className="p-3 px-4 text-center text-gray-400">
-                        {execution.duration}
+                        {formatDuration(execution.durationMs)}
                       </td>
                       <td className="p-3 px-4 text-center">
-                        <Button variant="ghost" size="sm" onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          router.push(`/admin/workflows/${execution.id}`);
-                        }}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            router.push(`/admin/workflows/${execution.executionId}`);
+                          }}
+                        >
                           View
                           <ArrowRight size={14} />
                         </Button>
@@ -390,7 +297,7 @@ export default function WorkflowExecutionsPage() {
               </table>
             </div>
           </Card>
-        ) : (
+        ) : !error ? (
           <Card className="text-center p-8 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-gray-400">
               <Activity size={40} className="mx-auto mb-3 opacity-50" />
@@ -398,11 +305,13 @@ export default function WorkflowExecutionsPage() {
                 No executions found
               </h3>
               <p className="text-sm m-0 text-gray-400">
-                {search ? "Try adjusting your search criteria" : "Start a new workflow to see executions here"}
+                {search || activeTab !== "all"
+                  ? "Try adjusting your filters"
+                  : "Start a new workflow to see executions here"}
               </p>
             </div>
           </Card>
-        )}
+        ) : null}
       </div>
     </>
   );
