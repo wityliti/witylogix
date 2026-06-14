@@ -285,7 +285,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
 }
 
 export default function EnvelopesPage() {
-  const { items: data, loading, error, refetch } = useApiList<Envelope>('/api/v4/esignatures/envelopes');
+  const { items: data, loading, error, refetch } = useApiList<Envelope>('/api/v4/envelopes');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
 
   const statusOptions = [
