@@ -22,7 +22,7 @@ const CustomersMapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full bg-[#0a0a0f] rounded-xl border border-[#1e1e2e] flex items-center justify-center">
+      <div className="w-full h-full bg-wl-bg-root rounded-xl border border-wl-border-default flex items-center justify-center">
         <div className="text-center">
           <div className="w-6 h-6 rounded-full border-2 border-gray-600 border-t-white animate-spin mx-auto mb-2" />
           <p className="text-xs text-gray-500">Loading map…</p>
@@ -121,7 +121,7 @@ export default function CustomersPage() {
         }
         actions={
           <div className="flex gap-2">
-            <div className="flex rounded-md border border-[#1e1e2e] overflow-hidden">
+            <div className="flex rounded-md border border-wl-border-default overflow-hidden">
               <button
                 onClick={() => setView('grid')}
                 className={cn(
@@ -180,7 +180,7 @@ export default function CustomersPage() {
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             aria-label="Search customers"
-            className="w-72 px-4 py-2 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm outline-none focus:border-blue-500/50 transition-colors"
+            className="w-72 px-4 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm outline-none focus:border-blue-500/50 transition-colors"
           />
 
           <div className="flex gap-1">
@@ -192,7 +192,7 @@ export default function CustomersPage() {
                   'px-3 py-1.5 rounded-full text-xs font-semibold border transition-all capitalize',
                   statusFilter === s
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-transparent text-gray-400 border-[#1e1e2e] hover:border-gray-500',
+                    : 'bg-transparent text-gray-400 border-wl-border-default hover:border-gray-500',
                 )}
               >
                 {s === 'all' ? 'All' : s}
@@ -209,7 +209,7 @@ export default function CustomersPage() {
                   'px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5',
                   tierFilter === t
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-transparent text-gray-400 border-[#1e1e2e] hover:border-gray-500',
+                    : 'bg-transparent text-gray-400 border-wl-border-default hover:border-gray-500',
                 )}
               >
                 {t !== 'all' && (
@@ -225,7 +225,7 @@ export default function CustomersPage() {
         {view === 'map' && (
           <div className="h-[520px]">
             {locLoading ? (
-              <div className="w-full h-full bg-[#0a0a0f] rounded-xl border border-[#1e1e2e] flex items-center justify-center">
+              <div className="w-full h-full bg-wl-bg-root rounded-xl border border-wl-border-default flex items-center justify-center">
                 <div className="text-center">
                   <div className="w-6 h-6 rounded-full border-2 border-gray-600 border-t-white animate-spin mx-auto mb-2" />
                   <p className="text-sm text-gray-400">Loading customer locations…</p>
@@ -243,7 +243,7 @@ export default function CustomersPage() {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e] bg-[#111118]">
+                  <tr className="border-b border-wl-border-default bg-wl-bg-surface">
                     <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
                     <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Contact</th>
                     <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Orders</th>
@@ -256,7 +256,7 @@ export default function CustomersPage() {
                 <tbody>
                   {loading
                     ? Array.from({ length: 8 }).map((_, i) => (
-                        <tr key={i} className="border-b border-[#1e1e2e]">
+                        <tr key={i} className="border-b border-wl-border-default">
                           {Array.from({ length: 7 }).map((_, j) => (
                             <td key={j} className="p-3 px-4">
                               <Skeleton type="text" className="h-4 w-full" />
@@ -285,8 +285,8 @@ export default function CustomersPage() {
                           <tr
                             key={c.id}
                             className={cn(
-                              'border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e]/40',
-                              idx % 2 === 0 ? 'bg-transparent' : 'bg-[#111118]/40',
+                              'border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated/40',
+                              idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-surface/40',
                             )}
                           >
                             <td className="p-3 px-4">
@@ -332,7 +332,7 @@ export default function CustomersPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#111118] text-xs text-gray-400">
+            <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-surface text-xs text-gray-400">
               <span>{pagination.total} total customers</span>
               <div className="flex items-center gap-2">
                 <Button
