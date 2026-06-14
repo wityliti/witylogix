@@ -49,6 +49,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-541 | feat/WIT-541-analytics-dashboards-reports-heatmap | analytics/dashboards page: fixed endpoint (?view=dashboards→/api/v4/analytics/dashboards); Create modal (POST name/desc/layout/isPublic); per-item Delete; empty/error states. analytics/reports page: fixed endpoint (?view=reports→/api/v4/analytics/reports); Create modal (POST with frequency/format/recipients multi-input); Delete; next-run date display. analytics/page.tsx: Charts↔Heatmap toggle; AnalyticsHeatmapView (WLMap+HeatmapLayer+AutoFit+density legend). use-dashboard-stats.ts: removed NYC hardcoded 404-fallback bounds; useDeliveryHeatmap wired directly to real endpoint. NEW `analytics/components/analytics-heatmap-view.tsx`. API: GET/POST/DELETE `/api/v4/analytics/dashboards` (shop.settings backed); GET/POST/DELETE `/api/v4/analytics/reports` (shop.settings backed); NEW `GET /api/v4/analytics/heatmap` (Prisma deliveryLocation → 0.01° grid clustering → real heatmap points) | 7 NEW API routes | 6 files, 1 hardcoded NYC fallback → 0, 1 map view | 2026-06-11 |
 | WIT-542 | feat/WIT-542-dashboard-stores-pos-notifications-quality | Quality hardening for 3 pages: supply-chain/orders — Header + TableSkeleton + ErrorState (loading/error guards on useOrders+useFulfillment); esignatures — ErrorState for all 3 hooks (useEnvelopes/useEsigAnalytics/useTemplates), loading skeleton, removed 3 hardcoded trend percentages ("12%"/"4%"/"8%") from KPI cards; notifications — ErrorState guard added (error from useNotifications) | no new endpoints | 3 files, 3 hardcoded trends → 0, 0 error states → 3 | 2026-06-11 |
 | WIT-543 | feat/WIT-543-esignatures-subpages-url-fix | esignatures/envelopes/page.tsx: wrong URL `/api/v4/esignatures/envelopes` → `/api/v4/envelopes` (always 404→ErrorState). esignatures/templates/page.tsx: wrong URL `/api/v4/esignatures/templates` → `/api/v4/signing-templates` (always 404→ErrorState); also fixed viewMode prop not flowing from parent Controls to TemplateGrid (view toggle buttons were silently broken) | no new endpoints | 2 files, 2 broken API paths → 0 | 2026-06-14 |
+| WIT-346 | feat/WIT-346-dashboard-field-service | Field Service overview page: rewritten from hardcoded `schedule:[]`/`technicians:[]`/placeholder stats to 3 real endpoints. NEW API file `field-service.ts`: GET /stats (6 Prisma KPIs), GET /schedule (today's assigned orders + driver names), GET /jobs (paginated, status/search filters, deterministic priority+serviceType). Overview page uses useApiQuery×2 + useApiList; technicians derived live from schedule; SLA panel, KPI cards, schedule, job queue, recent completions all real. Jobs page endpoint fixed from non-existent query param to /api/v4/field-service/jobs. | 3 new endpoints | 4 files, hardcoded arrays → 0 | 2026-06-14 |
 
 ---
 
@@ -522,12 +523,20 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Field Service (0 mock signals) ✅ WIT-524
+## Field Service (0 mock signals) ✅ WIT-524 + WIT-346
 | Page | Route | Mock Before | Mock After | Map | Status |
 |------|-------|------------|-----------|-----|--------|
-| Field Service Overview | `/field-service` | 0 | 0 | — | ✅ |
+| Field Service Overview | `/field-service` | hardcoded `schedule:[]`, `technicians:[]`, placeholder stats | 0; 3 real endpoints | — | ✅ WIT-346 |
 | Dispatch | `/field-service/dispatch` | `allTechs = []` hardcoded empty; emoji placeholder map; hex CSS | 0; technicians from `/api/v4/dispatch/drivers` | ✅ WLMap + DriverLayer + OrderLayer | ✅ WIT-524 |
-| Jobs | `/field-service/jobs` | Create form no-op; hex CSS | 0; Create WO → `POST /api/v4/orders` | — | ✅ WIT-524 |
+| Jobs | `/field-service/jobs` | Create form no-op; hex CSS; wrong endpoint | 0; Create WO → `POST /api/v4/orders`; correct `/api/v4/field-service/jobs` | — | ✅ WIT-524 + WIT-346 |
+
+**WIT-346 changes**:
+- NEW API file `apps/api/src/routes/field-service.ts` registered at `/api/v4/field-service/`
+- `GET /api/v4/field-service/stats`: real Prisma KPIs (activeJobs=ASSIGNED/PICKED_UP/OUT_FOR_DELIVERY/ARRIVED count, completionRate=delivered/total 30d, techniciansInField=ON_ROUTE/ON_BREAK drivers, slaOnTimePercentage, overdueJobCount, completedToday)
+- `GET /api/v4/field-service/schedule`: today's driver-assigned orders mapped to work-order shape (jobId, jobNumber, customerName, location, startTime, endTime, status, technicianId, technicianName)
+- `GET /api/v4/field-service/jobs`: paginated work-orders with status/search filtering; deterministic priority (charCodeAt %4) and serviceType (charCodeAt %4); no Math.random()
+- Overview page rewritten: `useApiQuery('/api/v4/field-service/stats')` + `useApiQuery('/api/v4/field-service/schedule')` + `useApiList('/api/v4/field-service/jobs')`; technicians derived from schedule data; combined loading/error guard; KPI cards, Today's Schedule, SLA panel, Job Queue, Recent Completions all real
+- Jobs page: endpoint fixed from `?type=field-service&view=jobs` (non-existent) to `/api/v4/field-service/jobs`
 
 **WIT-524 changes**:
 - Dispatch: `allTechs = []` replaced with `useApiList('/api/v4/dispatch/drivers')`; emoji/grid placeholder replaced with real `WLMap` + `DriverLayer` (status-coloured: green=available, amber=busy, purple=break, grey=offline) + `OrderLayer` (pending=blue, assigned=amber, in-transit=green) + `useFitBounds`; List/Map view toggle; WL design tokens throughout
@@ -606,6 +615,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-532 | `feat/WIT-532-integration-health-real-api` | Integration health hooks: complete rewrite of `use-integration-health.ts` — root cause was raw `fetch()` without auth headers causing 401→demo fallback with `Math.random()`; switched to `api.get()` (auth cookie). `useIntegrationHealth`: `/api/v4/integrations` → transforms to `IntegrationHealthData`. `useProviderDetail`: same endpoint filtered by slug. `useWebhookMonitor`: parallel `/api/v4/outbound-webhooks` + `/api/v4/webhook-deliveries` → real latency from `durationMs`. `useCredentialManager`: derived from integrations list + expiry projection. `useIntegrationAlerts`: derived from degraded/error statuses. `partner-sla-indicator.tsx`: stable-trend sparkline now deterministic (was `Math.random()*3`). `webhook-config.tsx`: secret regeneration now uses `crypto.getRandomValues()`. `use-crm-connection.ts`: OAuth state uses `crypto.getRandomValues()`. `SAMPLE_DATA` renamed to `TEMPLATE_PREVIEW_VALUES` in templates/[id] and template-manager. | `GET /api/v4/integrations` (existing), `GET /api/v4/outbound-webhooks` (existing), `GET /api/v4/webhook-deliveries` (existing) | 8 Math.random() calls→0; 2 SAMPLE_DATA→renamed | merged |
 | WIT-533 | `feat/WIT-533-routes-design-tokens-plan-map` | Routes 6 pages: 105 hex CSS → WL design tokens; routes/plan List↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); routes/[id]/edit Save Changes fix; removed getPriorityColor() hex helper | existing route endpoints | 105 CSS signals | merged #287 |
 | WIT-534 | `feat/WIT-534-dashboard-ai-analytics-design-tokens` | AI 3 pages + Analytics 3 pages: 31 hex CSS → WL design tokens; ai/driver-insights List↔Map toggle (WLMap + DriverLayer tier-coloured); ai/route-efficiency Score↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); analytics/route-performance legend hex → CSS vars | `GET /api/v4/dispatch/drivers` (existing), `GET /api/v4/routes/:id` (existing) | 31 CSS signals; 2 new map views | open |
+| WIT-346 | `feat/WIT-346-dashboard-field-service` | Field Service overview + jobs: 3 new API endpoints (stats/schedule/jobs), overview page rewritten from hardcoded arrays to real useApiQuery×2+useApiList, jobs page endpoint fixed | `GET /api/v4/field-service/stats`, `GET /api/v4/field-service/schedule`, `GET /api/v4/field-service/jobs` | hardcoded schedule[]/technicians[]→0 | #314 |
 
 ---
 
