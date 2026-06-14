@@ -80,7 +80,7 @@ export default function FuelPage() {
           <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} accentColor="var(--wl-primary-500)" index={0} />
           <StatCard label="Average MPG" value={`${analytics.avgMpg}`} accentColor="var(--wl-warning-500)" index={1} />
           <StatCard label="Avg Price/Gallon" value={formatCurrency(analytics.pricePerGallon)} accentColor="var(--wl-danger-400)" index={2} />
-          <StatCard label="Flagged Transactions" value={analytics.anomalies.length} accentColor="var(--wl-info-500)" index={3} />
+          <StatCard label="Idle Time" value={`${analytics.idleTimePercent}%`} accentColor="var(--wl-info-500)" index={3} />
         </div>
 
         {/* Anomaly Alerts */}
