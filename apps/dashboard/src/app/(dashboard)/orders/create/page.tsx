@@ -66,6 +66,7 @@ export default function CreateOrderPage() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [lineItemError, setLineItemError] = useState<string | null>(null);
 
   const { items: customers, setSearch: setCustomerSearchApi } = useApiList<ApiCustomer>('/api/v4/customers', { limit: 10 });
   const { items: products } = useApiList<ApiProduct>('/api/v4/products', { limit: 50 });
@@ -73,9 +74,10 @@ export default function CreateOrderPage() {
 
   const addLineItem = () => {
     if (!newLineItem.productName || newLineItem.quantity <= 0 || newLineItem.unitPrice <= 0) {
-      alert('Please fill all line item fields');
+      setLineItemError('Please fill product name, quantity, and unit price');
       return;
     }
+    setLineItemError(null);
     const lineItem: LineItem = {
       id: Date.now().toString(),
       productName: newLineItem.productName,
@@ -131,7 +133,7 @@ export default function CreateOrderPage() {
 
   const handleCreateOrder = async () => {
     if (!customer.name || !customer.email || !address.street || lineItems.length === 0) {
-      alert('Please fill all required fields and add at least one line item');
+      setSubmitError('Please fill all required fields and add at least one line item');
       return;
     }
     setSubmitError(null);
@@ -147,7 +149,7 @@ export default function CreateOrderPage() {
 
   const handleSaveDraft = async () => {
     if (!customer.name) {
-      alert('Please enter customer name');
+      setSubmitError('Please enter customer name');
       return;
     }
     setSubmitError(null);
@@ -523,6 +525,9 @@ export default function CreateOrderPage() {
             </button>
           </div>
         </div>
+        {lineItemError && (
+          <p className="text-red-400 text-xs -mt-2 mb-3">{lineItemError}</p>
+        )}
 
         {lineItems.length > 0 && (
           <table className="w-full border-collapse mt-4 mb-5">
