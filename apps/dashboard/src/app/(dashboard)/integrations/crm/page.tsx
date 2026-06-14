@@ -150,21 +150,18 @@ export default function CRMIntegrationPage() {
           <StatCard
             label="Total Contacts"
             value={totalContacts.toLocaleString()}
-            change={{ value: 8.3, label: 'vs last month' }}
             accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Active Deals"
             value={totalDeals}
-            change={{ value: 12.5, label: 'vs last month' }}
             accentColor="#f59e0b"
             index={2}
           />
           <StatCard
             label="Sync Success Rate"
             value={`${syncSuccessRate}%`}
-            change={{ value: 2.1, label: 'avg success rate' }}
             accentColor="#0ea5e9"
             index={3}
           />
