@@ -35,9 +35,8 @@ const categoryColors: Record<string, 'primary' | 'success' | 'info' | 'warning' 
   CUSTOM: "default",
 };
 
-function TemplateGrid({ templates }: { templates: Template[] }) {
+function TemplateGrid({ templates, viewMode }: { templates: Template[]; viewMode: 'grid' | 'list' }) {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   if (viewMode === "list") {
     return (
@@ -264,7 +263,7 @@ function TemplateDetailCard({
 }
 
 export default function TemplatesPage() {
-  const { items: data, loading, error, refetch } = useApiList<Template>('/api/v4/esignatures/templates');
+  const { items: data, loading, error, refetch } = useApiList<Template>('/api/v4/signing-templates');
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
 
@@ -397,7 +396,7 @@ export default function TemplatesPage() {
 
       {/* Templates */}
       {filteredTemplates.length > 0 ? (
-        <TemplateGrid templates={filteredTemplates} />
+        <TemplateGrid templates={filteredTemplates} viewMode={viewMode} />
       ) : (
         <Card className="bg-wl-bg-surface border-wl-border-default text-center py-12">
           <CardContent className="space-y-4">
