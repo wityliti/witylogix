@@ -55,8 +55,14 @@ export default function EventsPage() {
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<FilterState>({});
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (loading && data.length === 0) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
+  const last24hCount = data.filter((e) => new Date(e.timestamp).getTime() >= cutoff24h).length;
+  const errorCount = data.filter((e) =>
+    e.action?.toLowerCase().includes("fail") || e.action?.toLowerCase().includes("error")
+  ).length;
 
   const toggleEventSelection = (eventId: string) => {
     const newSelected = new Set(selectedEvents);
@@ -95,9 +101,9 @@ export default function EventsPage() {
       {/* Stats Bar */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Total Events" value={data.length} color="primary" />
-        <StatCard label="Last 24h" value={Math.floor(data.length * 0.3)} color="info" />
+        <StatCard label="Last 24h" value={last24hCount} color="info" />
         <StatCard label="Event Types" value={new Set(data.map((e) => e.action)).size} color="success" />
-        <StatCard label="Pending" value="2" color="warning" />
+        <StatCard label="Errors" value={errorCount} color={errorCount > 0 ? "danger" : "success"} />
       </div>
 
       {/* Filters and Controls */}

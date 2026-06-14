@@ -17,10 +17,6 @@ import {
   type PartnerCategory,
 } from "@/components/partners";
 
-/* ═══════════════════════════════════════════════════════════
-   PARTNERS PAGE — Courier integrations via /api/v4/integrations
-   ═══════════════════════════════════════════════════════════ */
-
 interface InstalledIntegration {
   slug: string;
   name: string;
@@ -40,6 +36,17 @@ interface IntegrationsResponse {
   counts: Record<string, number>;
 }
 
+interface PartnerStat {
+  provider: string;
+  activeDeliveries: number;
+  totalDeliveries: number;
+  successRate: number | null;
+}
+
+interface PartnerStatsResponse {
+  stats: PartnerStat[];
+}
+
 interface Partner {
   id: string;
   name: string;
@@ -55,23 +62,36 @@ interface Partner {
 
 const ROUTING_SLUGS = new Set(["onfleet", "stuart", "uber-direct", "lalamove", "doordash-drive"]);
 
-function integrationToPartner(i: InstalledIntegration): Partner {
+function healthToSuccessRate(healthStatus: string | null): number {
+  switch (healthStatus) {
+    case "HEALTHY": return 100;
+    case "DEGRADED": return 75;
+    case "UNHEALTHY": case "ERROR": return 50;
+    default: return 0;
+  }
+}
+
+function integrationToPartner(
+  i: InstalledIntegration,
+  statsByProvider: Map<string, PartnerStat>
+): Partner {
   const cfg = (i.config ?? {}) as Record<string, unknown>;
+  const stat = statsByProvider.get(i.slug) ?? statsByProvider.get(i.slug.replace(/-/g, "_"));
   return {
     id: i.slug,
     name: i.name,
     category: "courier" as PartnerCategory,
     status: i.isEnabled
-      ? i.healthStatus === "UNHEALTHY"
+      ? i.healthStatus === "UNHEALTHY" || i.healthStatus === "ERROR"
         ? "inactive"
         : "active"
       : ("inactive" as PartnerStatus),
     logoUrl: i.logoUrl,
     averageDeliveryTime: typeof cfg.maxDeliveryTime === "number" ? cfg.maxDeliveryTime : 30,
-    successRate: 95,
-    activeDeliveries: 0,
-    rating: 4.5,
-    totalRatings: 0,
+    successRate: stat?.successRate ?? healthToSuccessRate(i.healthStatus),
+    activeDeliveries: stat?.activeDeliveries ?? 0,
+    rating: typeof cfg.rating === "number" ? cfg.rating : 0,
+    totalRatings: typeof cfg.totalRatings === "number" ? cfg.totalRatings : 0,
   };
 }
 
@@ -79,23 +99,38 @@ type ViewMode = "grid" | "list";
 type SortBy = "name" | "rating" | "deliveries";
 
 export default function PartnersPage() {
-  // All hooks MUST be before any conditional returns
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<PartnerStatus | "">("");
   const [sortBy, setSortBy] = useState<SortBy>("name");
 
-  const { data: integrationsData, loading, error, refetch } = useApiQuery<IntegrationsResponse>(
-    "/api/v4/integrations"
-  );
+  const {
+    data: integrationsData,
+    loading: integrationsLoading,
+    error: integrationsError,
+    refetch,
+  } = useApiQuery<IntegrationsResponse>("/api/v4/integrations");
+
+  const {
+    data: partnerStatsData,
+    loading: statsLoading,
+  } = useApiQuery<PartnerStatsResponse>("/api/v4/couriers/partner-stats");
+
+  const statsByProvider = useMemo<Map<string, PartnerStat>>(() => {
+    const map = new Map<string, PartnerStat>();
+    for (const stat of partnerStatsData?.stats ?? []) {
+      map.set(stat.provider, stat);
+    }
+    return map;
+  }, [partnerStatsData]);
 
   const partners = useMemo<Partner[]>(() => {
     const installed = integrationsData?.integrations ?? [];
     return installed
       .filter((i) => i.category === "ROUTING" || ROUTING_SLUGS.has(i.slug))
-      .map(integrationToPartner);
-  }, [integrationsData]);
+      .map((i) => integrationToPartner(i, statsByProvider));
+  }, [integrationsData, statsByProvider]);
 
   const filtered = useMemo(() => {
     let result = partners;
@@ -125,12 +160,15 @@ export default function PartnersPage() {
   const stats = useMemo(() => {
     const active = partners.filter((p) => p.status === "active").length;
     const totalDeliveries = partners.reduce((sum, p) => sum + p.activeDeliveries, 0);
-    const avgCost = active > 0 ? (totalDeliveries * 3.5) / active : 0;
+    const avgSuccessRate =
+      partners.length > 0
+        ? partners.reduce((sum, p) => sum + p.successRate, 0) / partners.length
+        : 0;
     return {
       totalPartners: partners.length,
       activeCouriers: active,
       deliveriesThisMonth: totalDeliveries,
-      averageCostPerDelivery: avgCost,
+      averageCostPerDelivery: avgSuccessRate,
     };
   }, [partners]);
 
@@ -151,8 +189,10 @@ export default function PartnersPage() {
     [router]
   );
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  const loading = integrationsLoading || statsLoading;
+
+  if (loading && !integrationsData) return <TableSkeleton rows={10} columns={6} />;
+  if (integrationsError) return <ErrorState message={integrationsError.message} onRetry={refetch} />;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -160,7 +200,7 @@ export default function PartnersPage() {
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-white">Courier Partners</h1>
-          <p className="text-gray-300">Manage and monitor your delivery partners</p>
+          <p className="text-wl-text-secondary">Manage and monitor your delivery partners</p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" size="lg" onClick={handleCompare}>
@@ -180,7 +220,7 @@ export default function PartnersPage() {
         activeCouriers={stats.activeCouriers}
         deliveriesThisMonth={stats.deliveriesThisMonth}
         averageCostPerDelivery={stats.averageCostPerDelivery}
-        isLoading={false}
+        isLoading={loading}
       />
 
       {/* Filters & Controls */}
@@ -226,7 +266,7 @@ export default function PartnersPage() {
                 "p-1.5 rounded transition-colors",
                 viewMode === "grid"
                   ? "bg-blue-500/20 text-blue-400"
-                  : "text-gray-300 hover:text-white"
+                  : "text-wl-text-secondary hover:text-white"
               )}
               title="Grid view"
             >
@@ -238,7 +278,7 @@ export default function PartnersPage() {
                 "p-1.5 rounded transition-colors",
                 viewMode === "list"
                   ? "bg-blue-500/20 text-blue-400"
-                  : "text-gray-300 hover:text-white"
+                  : "text-wl-text-secondary hover:text-white"
               )}
               title="List view"
             >
@@ -251,10 +291,10 @@ export default function PartnersPage() {
       {/* Partners Grid/List */}
       {filtered.length === 0 ? (
         <Card className="flex flex-col items-center justify-center gap-4 py-16">
-          <Filter className="w-12 h-12 text-gray-300/50" />
+          <Filter className="w-12 h-12 text-wl-text-tertiary" />
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-300">No partners found</h3>
-            <p className="text-sm text-gray-300/75">
+            <h3 className="text-lg font-semibold text-white">No partners found</h3>
+            <p className="text-sm text-wl-text-secondary">
               {partners.length === 0
                 ? "Add a courier partner to get started"
                 : "Try adjusting your search filters"}
@@ -298,9 +338,9 @@ export default function PartnersPage() {
                 )}
                 <div className="flex-1">
                   <h3 className="font-semibold text-white">{partner.name}</h3>
-                  <p className="text-sm text-gray-300">
+                  <p className="text-sm text-wl-text-secondary">
                     {partner.activeDeliveries} active deliveries · {partner.successRate}% success
-                    rate · {partner.rating.toFixed(1)}★
+                    rate{partner.rating > 0 ? ` · ${partner.rating.toFixed(1)}★` : ""}
                   </p>
                 </div>
               </div>
@@ -317,7 +357,7 @@ export default function PartnersPage() {
         </div>
       )}
 
-      <div className="text-sm text-gray-300 text-center">
+      <div className="text-sm text-wl-text-secondary text-center">
         Showing {filtered.length} of {partners.length} partners
       </div>
     </div>
