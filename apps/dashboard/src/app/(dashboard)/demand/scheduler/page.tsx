@@ -204,7 +204,7 @@ export default function SchedulerPage() {
                   <thead>
                     <tr className="border-b border-wl-border-default">
                       <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary min-w-32">Driver</th>
-                      {[0, 1, 2, 3, 4, 5].map((hour) => (
+                      {[8, 10, 12, 14, 16, 18, 20].map((hour) => (
                         <th key={hour} className="text-center px-4 py-3 font-semibold text-wl-text-secondary">
                           {hour}:00
                         </th>
@@ -218,7 +218,7 @@ export default function SchedulerPage() {
                         idx % 2 === 0 ? 'bg-wl-bg-surface' : 'bg-transparent'
                       )}>
                         <td className="px-4 py-3 font-medium text-wl-text-primary">{driver.driverName}</td>
-                        {[0, 1, 2, 3, 4, 5].map((hour) => {
+                        {[8, 10, 12, 14, 16, 18, 20].map((hour) => {
                           const slot = driver.timeSlots.find((s) => s.hour === hour);
                           const statusColor =
                             slot?.status === 'scheduled'

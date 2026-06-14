@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useCallback, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   TrendingUp,
   TrendingDown,
@@ -11,6 +12,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Download,
+  Map as MapIcon,
+  LayoutGrid,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +22,16 @@ import { Card } from '@/components/ui/card';
 import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import type { ZonePoint } from '@/components/map/zone-heat-layer';
+
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false, loading: () => <div className="h-full bg-[#0d0d14] rounded-xl animate-pulse" /> },
+);
+const ZoneHeatLayer = dynamic(
+  () => import('@/components/map/zone-heat-layer').then((m) => ({ default: m.ZoneHeatLayer })),
+  { ssr: false },
+);
 
 interface DemandData {
   zones: Array<{
@@ -61,8 +74,11 @@ export default function DemandPage() {
   const [selectedZone, setSelectedZone] = useState<string>('all');
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'nextweek' | 'custom'>('week');
   const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'data' | 'map'>('data');
+  const [mapId, setMapId] = useState<string | null>(null);
 
   const { data, loading, error } = useApiQuery<DemandData>('/api/v4/analytics/demand');
+  const { data: heatmapPoints } = useApiQuery<ZonePoint[]>('/api/v4/analytics/demand-heatmap');
 
   const zones = data?.zones || [];
   const anomalies = data?.anomalies || [];
@@ -263,7 +279,29 @@ export default function DemandPage() {
               <h1 className="text-3xl font-bold text-white">Demand Forecast</h1>
               <p className="text-sm text-gray-400 mt-1">Real-time demand predictions and analytics</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('data')}
+                  className={cn(
+                    'p-1.5 rounded transition-colors',
+                    viewMode === 'data' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60',
+                  )}
+                  aria-label="Data view"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={cn(
+                    'p-1.5 rounded transition-colors',
+                    viewMode === 'map' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60',
+                  )}
+                  aria-label="Map view"
+                >
+                  <MapIcon className="w-4 h-4" />
+                </button>
+              </div>
               <Button variant="secondary" size="md">
                 <Download className="w-4 h-4 mr-2" />
                 Report
@@ -332,7 +370,30 @@ export default function DemandPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Map View */}
+      {viewMode === 'map' && (
+        <div className="px-8 py-6">
+          <div className="relative h-[560px] rounded-xl overflow-hidden border border-white/[0.06]">
+            {!heatmapPoints || heatmapPoints.length === 0 ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d0d14] z-10 gap-2">
+                <MapIcon className="w-8 h-8 text-white/10" />
+                <p className="text-sm text-white/30">No city-level demand data yet</p>
+                <p className="text-xs text-white/20">Data appears once orders have city addresses</p>
+              </div>
+            ) : null}
+            <WLMap center={[20, 0]} zoom={2} className="w-full h-full" onReady={setMapId} />
+            {mapId && heatmapPoints && heatmapPoints.length > 0 && (
+              <ZoneHeatLayer mapId={mapId} zones={heatmapPoints} />
+            )}
+          </div>
+          <p className="mt-2 text-xs text-white/20 text-center">
+            Demand intensity by city — bubble size and opacity reflect order volume in the last 7 days
+          </p>
+        </div>
+      )}
+
+      {/* Data View */}
+      {viewMode === 'data' && (
       <div className="flex-1 overflow-auto px-8 py-6">
         <div className="space-y-6 max-w-7xl">
           {/* KPI Metric Cards */}
@@ -340,7 +401,7 @@ export default function DemandPage() {
             <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Predicted</p>
               <p className="text-3xl font-bold text-white mt-3">
-                {(metrics?.totalPredicted || 0 / 1000).toFixed(0)}k
+                {((metrics?.totalPredicted ?? 0) / 1000).toFixed(1)}k
               </p>
               <p className="text-xs text-gray-500 mt-2">Volume units</p>
             </Card>
@@ -348,7 +409,7 @@ export default function DemandPage() {
             <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current Actual</p>
               <p className="text-3xl font-bold text-white mt-3">
-                {(metrics?.totalActual || 0 / 1000).toFixed(0)}k
+                {((metrics?.totalActual ?? 0) / 1000).toFixed(1)}k
               </p>
               <div className="flex items-center gap-2 mt-2">
                 {volumeDeviation >= 0 ? (
@@ -548,6 +609,7 @@ export default function DemandPage() {
           </Card>
         </div>
       </div>
+      )}
     </div>
   );
 }
