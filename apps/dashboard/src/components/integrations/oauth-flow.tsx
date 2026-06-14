@@ -46,6 +46,7 @@ export function OAuthFlow({
   className,
 }: OAuthFlowProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const config = PROVIDER_CONFIG[provider];
 
   const steps: OAuthStep[] = ['configure', 'authorize', 'callback', 'connected'];
@@ -123,9 +124,12 @@ export function OAuthFlow({
   };
 
   const handleDisconnect = () => {
-    if (window.confirm(`Are you sure you want to disconnect ${config.displayName}?`)) {
-      onDisconnect?.();
+    if (!confirmDisconnect) {
+      setConfirmDisconnect(true);
+      return;
     }
+    setConfirmDisconnect(false);
+    onDisconnect?.();
   };
 
   const timeUntilExpiry = expiresAt ? Math.floor((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
@@ -295,16 +299,40 @@ export function OAuthFlow({
               {isLoading ? 'Refreshing...' : 'Refresh Token'}
             </button>
 
-            <button
-              onClick={handleDisconnect}
-              className={cn(
-                'flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors',
-                'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
-                'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
-              )}
-            >
-              Disconnect
-            </button>
+            {confirmDisconnect ? (
+              <div className="flex-1 flex gap-2">
+                <button
+                  onClick={() => setConfirmDisconnect(false)}
+                  className={cn(
+                    'flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors',
+                    'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle'
+                  )}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDisconnect}
+                  className={cn(
+                    'flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors',
+                    'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+                    'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+                  )}
+                >
+                  Confirm Disconnect
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleDisconnect}
+                className={cn(
+                  'flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors',
+                  'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+                  'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+                )}
+              >
+                Disconnect
+              </button>
+            )}
           </>
         )}
       </div>
