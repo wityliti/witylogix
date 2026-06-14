@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { Header } from '@/components/layout/header';
@@ -186,41 +186,35 @@ export default function FreightIntegrationsPage() {
 
       <div className={cn("p-6 bg-wl-bg-root")}>
         {/* Top Stats */}
-        <div className={cn('grid grid-cols-1 md:grid-cols-4 gap-4')}>
-          <Card className="p-4">
-            <div className={cn('flex items-center justify-between mb-2')}>
-              <span className={cn('text-xs text-gray-400 font-medium')}>Connected</span>
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
-            </div>
-            {loading ? <Skeleton type="text" className="w-16 h-8" /> : (
-              <div className={cn('text-2xl font-bold text-white')}>{connectedProviders.length}</div>
-            )}
-            <p className={cn('text-xs text-gray-400 mt-1')}>load board providers</p>
-          </Card>
-          <Card className="p-4">
-            <div className={cn('flex items-center justify-between mb-2')}>
-              <span className={cn('text-xs text-gray-400 font-medium')}>Available Loads</span>
-              <Truck className="w-4 h-4 text-blue-400" />
-            </div>
-            <div className={cn('text-2xl font-bold text-gray-500')}>—</div>
-            <p className={cn('text-xs text-gray-400 mt-1')}>connect a provider</p>
-          </Card>
-          <Card className="p-4">
-            <div className={cn('flex items-center justify-between mb-2')}>
-              <span className={cn('text-xs text-gray-400 font-medium')}>Best Rate</span>
-              <Map className="w-4 h-4 text-purple-400" />
-            </div>
-            <div className={cn('text-2xl font-bold text-gray-500')}>—</div>
-            <p className={cn('text-xs text-gray-400 mt-1')}>no rate data</p>
-          </Card>
-          <Card className="p-4">
-            <div className={cn('flex items-center justify-between mb-2')}>
-              <span className={cn('text-xs text-gray-400 font-medium')}>Avg Market Rate</span>
-              <AlertCircle className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className={cn('text-2xl font-bold text-gray-500')}>—</div>
-            <p className={cn('text-xs text-gray-400 mt-1')}>no market data</p>
-          </Card>
+        <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
+          <StatCard
+            label="Available Loads"
+            value={totalLoadsAvailable.toLocaleString()}
+            icon={<Truck size={16} />}
+            accentColor="#3b82f6"
+            index={0}
+          />
+          <StatCard
+            label="Booked This Month"
+            value={totalLoadsBooked}
+            icon={<CheckCircle size={16} />}
+            accentColor="#3b82f6"
+            index={1}
+          />
+          <StatCard
+            label="Best Rate"
+            value={`$${bestRate}/mi`}
+            icon={<TrendingDown size={16} />}
+            accentColor="#3b82f6"
+            index={2}
+          />
+          <StatCard
+            label="Avg Market Rate"
+            value={`$${avgRate}/mi`}
+            icon={<TrendingUp size={16} />}
+            accentColor="#3b82f6"
+            index={3}
+          />
         </div>
 
         {error && (

@@ -155,10 +155,30 @@ export default function DriverPerformancePage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
-          <StatCard label="Average Score"    value={avgScore}          accentColor="var(--blue-500)"   index={0} />
-          <StatCard label="Avg On-Time %"    value={`${avgOnTime}%`}   accentColor="var(--emerald-500)" index={1} />
-          <StatCard label="Total Deliveries" value={totalDeliveries}   accentColor="var(--blue-500)"   index={2} />
-          <StatCard label="Top Tier Drivers" value={topTierCount}      accentColor="var(--amber-500)"  index={3} />
+          <StatCard
+            label="Average Score"
+            value={avgScore}
+            accentColor="var(--blue-500)"
+            index={0}
+          />
+          <StatCard
+            label="Avg On-Time %"
+            value={`${avgOnTime}%`}
+            accentColor="var(--emerald-500)"
+            index={1}
+          />
+          <StatCard
+            label="Total Deliveries"
+            value={totalDeliveries}
+            accentColor="var(--blue-500)"
+            index={2}
+          />
+          <StatCard
+            label="Top Tier Drivers"
+            value={drivers.filter((d) => d.tier === "platinum" || d.tier === "gold").length}
+            accentColor="var(--amber-500)"
+            index={3}
+          />
         </div>
 
         {/* Empty state */}

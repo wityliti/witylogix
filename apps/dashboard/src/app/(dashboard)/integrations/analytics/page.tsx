@@ -200,7 +200,6 @@ export default function AnalyticsIntegrationsPage() {
           <StatCard
             label="Connected Dashboards"
             value={totalDashboards}
-            change={{ value: 12, label: 'this month' }}
             icon={<TrendingUp size={16} />}
             accentColor="#3b82f6"
             index={1}
@@ -208,7 +207,6 @@ export default function AnalyticsIntegrationsPage() {
           <StatCard
             label="Connections"
             value={connections.length}
-            change={{ value: 0, label: 'configured' }}
             icon={<RefreshCw size={16} />}
             accentColor="#0284c7"
             index={2}
@@ -216,7 +214,6 @@ export default function AnalyticsIntegrationsPage() {
           <StatCard
             label="Total Embeds"
             value={totalEmbeds}
-            change={{ value: 24, label: 'vs last week' }}
             icon={<Eye size={16} />}
             accentColor="#d97706"
             index={3}
