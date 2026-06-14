@@ -48,6 +48,7 @@ export function TemplateManager({ templates, onSave, onDelete, className }: Temp
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(templates[0]?.id || null);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+  const [pendingDeleteTemplateId, setPendingDeleteTemplateId] = useState<string | null>(null);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
 
@@ -67,9 +68,12 @@ export function TemplateManager({ templates, onSave, onDelete, className }: Temp
   };
 
   const handleDelete = (templateId: string) => {
-    if (window.confirm('Are you sure you want to delete this template?')) {
-      onDelete?.(templateId);
+    if (pendingDeleteTemplateId !== templateId) {
+      setPendingDeleteTemplateId(templateId);
+      return;
     }
+    setPendingDeleteTemplateId(null);
+    onDelete?.(templateId);
   };
 
   const current = editingTemplate || selectedTemplate;
@@ -291,16 +295,40 @@ export function TemplateManager({ templates, onSave, onDelete, className }: Temp
                 >
                   Edit
                 </button>
-                <button
-                  onClick={() => handleDelete(current.id)}
-                  className={cn(
-                    'flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
-                    'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
-                    'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
-                  )}
-                >
-                  Delete
-                </button>
+                {pendingDeleteTemplateId === current.id ? (
+                  <>
+                    <button
+                      onClick={() => setPendingDeleteTemplateId(null)}
+                      className={cn(
+                        'flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
+                        'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle'
+                      )}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleDelete(current.id)}
+                      className={cn(
+                        'flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
+                        'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+                        'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+                      )}
+                    >
+                      Confirm Delete
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleDelete(current.id)}
+                    className={cn(
+                      'flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors',
+                      'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+                      'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+                    )}
+                  >
+                    Delete
+                  </button>
+                )}
               </>
             )}
           </div>

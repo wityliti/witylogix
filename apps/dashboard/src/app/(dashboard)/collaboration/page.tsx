@@ -53,6 +53,7 @@ function TeamCollaborationPage() {
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState("");
   const [newChannelCategory, setNewChannelCategory] = useState<Channel["category"]>("general");
+  const [pendingDeleteMsgId, setPendingDeleteMsgId] = useState<string | null>(null);
 
   const mentionInputRef = useRef<HTMLDivElement>(null);
 
@@ -139,15 +140,18 @@ function TeamCollaborationPage() {
 
   const handleDeleteMessage = useCallback(
     async (messageId: string) => {
-      if (!window.confirm("Delete this message?")) return;
-
+      if (pendingDeleteMsgId !== messageId) {
+        setPendingDeleteMsgId(messageId);
+        return;
+      }
+      setPendingDeleteMsgId(null);
       try {
         await collaboration.deleteMessage(messageId);
       } catch (error) {
         console.error("Failed to delete message:", error);
       }
     },
-    [collaboration]
+    [collaboration, pendingDeleteMsgId]
   );
 
   const handlePinMessage = useCallback(
@@ -260,6 +264,27 @@ function TeamCollaborationPage() {
               onDelete={handleDeleteMessage}
               onThreadOpen={handleOpenThread}
             />
+
+            {/* Delete confirmation banner */}
+            {pendingDeleteMsgId && (
+              <div className="px-4 py-2 flex items-center justify-between gap-3 bg-red-900/20 border-t border-red-500/30">
+                <span className="text-xs text-red-400">Delete this message?</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPendingDeleteMsgId(null)}
+                    className="text-xs px-2 py-1 rounded border border-wl-border-default text-wl-text-secondary hover:text-wl-text-primary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMessage(pendingDeleteMsgId)}
+                    className="text-xs px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Typing Indicators */}
             {collaboration.typingUsers.length > 0 && (

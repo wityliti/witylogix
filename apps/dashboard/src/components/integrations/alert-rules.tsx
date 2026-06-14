@@ -45,6 +45,7 @@ export function AlertRules({ rules, onSave, onDelete, onToggle, className }: Ale
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(rules[0]?.id || null);
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
   const [expandedAlertId, setExpandedAlertId] = useState<string | null>(null);
+  const [confirmDeleteRule, setConfirmDeleteRule] = useState(false);
 
   const selectedRule = rules.find((r) => r.id === selectedRuleId);
   const current = editingRule || selectedRule;
@@ -399,21 +400,40 @@ export function AlertRules({ rules, onSave, onDelete, onToggle, className }: Ale
               >
                 Cancel
               </button>
-              <button
-                onClick={() => {
-                  if (window.confirm('Delete this rule?')) {
-                    onDelete?.(current.id);
-                    setEditingRule(null);
-                  }
-                }}
-                className={cn(
-                  'px-4 py-2 rounded-lg font-medium text-sm transition-colors',
-                  'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
-                  'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
-                )}
-              >
-                Delete
-              </button>
+              {confirmDeleteRule ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setConfirmDeleteRule(false)}
+                    className={cn(
+                      'px-3 py-2 rounded-lg font-medium text-sm transition-colors',
+                      'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle'
+                    )}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => { setConfirmDeleteRule(false); onDelete?.(current.id); setEditingRule(null); }}
+                    className={cn(
+                      'px-3 py-2 rounded-lg font-medium text-sm transition-colors',
+                      'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+                      'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+                    )}
+                  >
+                    Confirm Delete
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDeleteRule(true)}
+                  className={cn(
+                    'px-4 py-2 rounded-lg font-medium text-sm transition-colors',
+                    'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+                    'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+                  )}
+                >
+                  Delete
+                </button>
+              )}
             </div>
           )}
         </div>

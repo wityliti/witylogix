@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 import type { UpdateDeliveryZone } from '@witylogix/validators';
 
@@ -173,10 +174,7 @@ function ConfigureForm({
   onDelete: () => void;
   onEditGeometry: () => void;
 }) {
-  const handleDelete = () => {
-    // eslint-disable-next-line no-alert
-    if (confirm('Delete this zone? This is permanent.')) onDelete();
-  };
+  const [confirmDelete, setConfirmDelete] = useState(false);
   return (
     <div className="flex flex-col gap-2">
       <Field label="Base rate" name="baseRate" defaultValue={zone.baseRate} onSave={onSave} />
@@ -203,13 +201,32 @@ function ConfigureForm({
       >
         Edit geometry
       </button>
-      <button
-        onClick={handleDelete}
-        className="mt-3 text-[11px] text-left"
-        style={{ color: 'var(--wl-danger-400)' }}
-      >
-        Delete zone
-      </button>
+      {confirmDelete ? (
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="flex-1 text-[11px] rounded py-1 border"
+            style={{ borderColor: 'var(--wl-neutral-800)', color: 'var(--wl-neutral-200)' }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onDelete}
+            className="flex-1 text-[11px] rounded py-1"
+            style={{ background: 'var(--wl-danger-600)', color: '#fff' }}
+          >
+            Confirm Delete
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setConfirmDelete(true)}
+          className="mt-3 text-[11px] text-left"
+          style={{ color: 'var(--wl-danger-400)' }}
+        >
+          Delete zone
+        </button>
+      )}
     </div>
   );
 }
