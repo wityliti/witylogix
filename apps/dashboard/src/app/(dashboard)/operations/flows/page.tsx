@@ -40,6 +40,7 @@ export default function ActivityFlowsPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<EntityFilter>('ALL');
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const path =
     filter === 'ALL'
       ? '/api/v4/operations/flows'
@@ -53,19 +54,14 @@ export default function ActivityFlowsPage() {
   }, [flows]);
 
   const handleDelete = async (id: string) => {
-    if (
-      !confirm(
-        'Delete this activity flow? Entities using it will fall back to the default flow.',
-      )
-    ) {
-      return;
-    }
     try {
       await api.delete(`/api/v4/operations/flows/${id}`);
       setDeleteError(null);
+      setPendingDeleteId(null);
       refetch();
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : 'Failed to delete flow');
+      setPendingDeleteId(null);
     }
   };
 
@@ -165,24 +161,50 @@ export default function ActivityFlowsPage() {
                 <div className="text-xs text-wl-text-tertiary">
                   {flow.graph?.stages?.length ?? 0} stages · v{flow.version}
                 </div>
-                <div className="flex gap-2">
-                  <Link
-                    href={`/operations/flows/${flow.id}`}
-                    className="flex-1"
-                  >
-                    <Button variant="secondary" className="w-full">
-                      Edit
+                {pendingDeleteId === flow.id ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-wl-text-secondary">
+                      Delete this flow? Entities using it will fall back to the default flow.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => setPendingDeleteId(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleDelete(flow.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/operations/flows/${flow.id}`}
+                      className="flex-1"
+                    >
+                      <Button variant="secondary" className="w-full">
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPendingDeleteId(flow.id)}
+                      aria-label="Delete flow"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(flow.id)}
-                    aria-label="Delete flow"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
