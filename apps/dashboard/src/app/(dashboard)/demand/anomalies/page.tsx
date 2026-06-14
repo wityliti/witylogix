@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 
@@ -48,9 +48,10 @@ export default function AnomaliesPage() {
   const [selectedZone, setSelectedZone] = useState<string>('all');
   const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
 
-  const { items: anomalies, loading, error } = useApiList<AnomalyEvent>(
+  const { data: rawData, loading, error } = useApiQuery<{ items: AnomalyEvent[]; total: number }>(
     '/api/v4/analytics/demand-anomalies'
   );
+  const anomalies = rawData?.items ?? [];
 
   const filteredAnomalies = useMemo(() => {
     return anomalies.filter((a) => {

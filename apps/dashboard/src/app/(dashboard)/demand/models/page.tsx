@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 
@@ -42,9 +42,10 @@ interface ModelMetric {
 export default function ModelsPage() {
   const [expandedModel, setExpandedModel] = useState<string | null>(null);
 
-  const { items: models, loading, error } = useApiList<ModelMetric>(
+  const { data: rawData, loading, error } = useApiQuery<{ items: ModelMetric[]; total: number }>(
     '/api/v4/analytics/demand-models'
   );
+  const models = rawData?.items ?? [];
 
   const stats = useMemo(() => {
     return {
