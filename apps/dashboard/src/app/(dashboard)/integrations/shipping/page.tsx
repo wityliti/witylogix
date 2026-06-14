@@ -59,28 +59,24 @@ export default function ShippingIntegrationsPage() {
           <StatCard
             label="Shipments Today"
             value={totalShipsToday}
-            change={{ value: 15.8, label: "vs yesterday" }}
             accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Total Cost"
             value={formatCurrency(totalCostToday)}
-            change={{ value: 5.2, label: "vs yesterday" }}
             accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Success Rate"
             value={`${avgSuccessRate.toFixed(1)}%`}
-            change={{ value: 0.8, label: "vs avg" }}
             accentColor="#3b82f6"
             index={2}
           />
           <StatCard
             label="Avg Cost per Package"
             value={formatCurrency(totalCostToday / totalShipsToday)}
-            change={{ value: -2.1, label: "vs target" }}
             accentColor="#3b82f6"
             index={3}
           />
