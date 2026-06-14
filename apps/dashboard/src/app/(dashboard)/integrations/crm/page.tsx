@@ -44,13 +44,6 @@ interface FieldMapping {
   customMapping?: boolean;
 }
 
-const DEAL_PIPELINE_STAGES = [
-  { name: 'Lead', count: 342, value: 0 },
-  { name: 'Qualified', count: 156, value: 78000 },
-  { name: 'Proposal', count: 89, value: 445000 },
-  { name: 'Negotiation', count: 34, value: 170000 },
-  { name: 'Closed Won', count: 78, value: 390000 },
-];
 
 const getStatusColor = (status: string): 'success' | 'danger' | 'warning' | 'default' => {
   switch (status) {
@@ -78,9 +71,6 @@ const formatDateTime = (isoStr: string): string => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-};
 
 export default function CRMIntegrationPage() {
   const [selectedProvider, setSelectedProvider] = useState<string | null>('salesforce');
@@ -109,8 +99,6 @@ export default function CRMIntegrationPage() {
       }),
     [syncFilterType, syncLogs]
   );
-
-  const pipelineValue = DEAL_PIPELINE_STAGES.reduce((sum, stage) => sum + stage.value, 0);
 
   if (providersError) {
     return (
@@ -143,7 +131,6 @@ export default function CRMIntegrationPage() {
           <StatCard
             label="Connected Providers"
             value={connectedCount}
-            change={{ value: 0, label: `of ${providers.length} available` }}
             accentColor="#10b981"
             index={0}
           />
@@ -259,51 +246,6 @@ export default function CRMIntegrationPage() {
             )}
           </div>
         </div>
-
-        {/* Deal Pipeline View */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Deal Pipeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {DEAL_PIPELINE_STAGES.map((stage, idx) => {
-                const percentage = (stage.value / pipelineValue) * 100;
-                return (
-                  <div key={idx}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-sm font-semibold text-white">
-                          {stage.name}
-                        </span>
-                        <span className="text-xs text-gray-500 ml-2">
-                          {stage.count} deals
-                        </span>
-                      </div>
-                      <span className="text-sm font-semibold text-blue-400">
-                        {formatCurrency(stage.value)}
-                      </span>
-                    </div>
-                    <div className="w-full bg-wl-bg-surface rounded-full h-2 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full transition-all"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              <div className="border-t border-wl-border-default pt-3 mt-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-white">Total Pipeline</span>
-                  <span className="text-lg font-bold text-blue-400">
-                    {formatCurrency(pipelineValue)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Sync Settings */}
         <Card className="mb-6">
