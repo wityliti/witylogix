@@ -551,6 +551,10 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
   app.get("/connections", async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const shopId = request.shopId;
+      const query = request.query as { category?: string; page?: string; limit?: string };
+      const page = Math.max(1, Number(query.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+      const categoryFilter = query.category?.toLowerCase();
 
       const installed = await prisma.integration.findMany({
         where: { shopId },
@@ -580,42 +584,58 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
         countMap.set(row.integrationId, existing);
       }
 
-      const connections = installed.map((integration) => {
-        const counts = countMap.get(integration.id) ?? { api: 0, errors: 0 };
+      const allConnections = installed
+        .filter((integration) =>
+          !categoryFilter || integration.app.category.toLowerCase() === categoryFilter
+        )
+        .map((integration) => {
+          const counts = countMap.get(integration.id) ?? { api: 0, errors: 0 };
 
-        let status: "connected" | "disconnected" | "error" | "pending";
-        if (!integration.isEnabled) {
-          status = "disconnected";
-        } else if (integration.healthStatus === "ERROR") {
-          status = "error";
-        } else if (integration.healthStatus === "UNKNOWN") {
-          status = "pending";
-        } else {
-          status = "connected";
-        }
+          let status: "connected" | "disconnected" | "error" | "pending";
+          if (!integration.isEnabled) {
+            status = "disconnected";
+          } else if (integration.healthStatus === "ERROR") {
+            status = "error";
+          } else if (integration.healthStatus === "UNKNOWN") {
+            status = "pending";
+          } else {
+            status = "connected";
+          }
 
-        const uptime =
-          integration.healthStatus === "DEGRADED"
-            ? 95
-            : integration.healthStatus === "ERROR"
-              ? 0
-              : 100;
+          const uptime =
+            integration.healthStatus === "DEGRADED"
+              ? 95
+              : integration.healthStatus === "ERROR"
+                ? 0
+                : 100;
 
-        return {
-          id: integration.appSlug,
-          providerId: integration.appSlug,
-          providerName: integration.app.name,
-          status,
-          lastSyncTime: integration.lastSyncAt?.toISOString(),
-          apiCallsCount: counts.api,
-          errorCount: counts.errors,
-          uptime,
-          category: integration.app.category.toLowerCase(),
-          icon: integration.app.logoUrl ?? integration.appSlug,
-        };
+          return {
+            id: integration.appSlug,
+            providerId: integration.appSlug,
+            providerName: integration.app.name,
+            status,
+            lastSyncTime: integration.lastSyncAt?.toISOString(),
+            apiCallsCount: counts.api,
+            errorCount: counts.errors,
+            uptime,
+            category: integration.app.category.toLowerCase(),
+            icon: integration.app.logoUrl ?? integration.appSlug,
+          };
+        });
+
+      const total = allConnections.length;
+      const offset = (page - 1) * limit;
+      const connections = allConnections.slice(offset, offset + limit);
+
+      return reply.send({
+        data: connections,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
       });
-
-      return reply.send({ connections });
     } catch (err) {
       throw err;
     }
