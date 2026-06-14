@@ -1417,6 +1417,197 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
       throw error;
     }
   });
+
+  // ── GET HEATMAP — delivery concentration by geographic location ──────────────
+  fastify.get("/heatmap", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = dateRangeSchema.parse(request.query);
+      const { from, to } = getDateRange(query.dateFrom, query.dateTo);
+
+      // Pull delivered shipments that have a deliveryLocation GeoJSON point
+      const shipments = await (request as any).tenantDb.shipment.findMany({
+        where: {
+          shopId: (request as any).shopId,
+          status: { in: ["DELIVERED", "OUT_FOR_DELIVERY", "IN_TRANSIT"] },
+          createdAt: { gte: from, lte: to },
+        },
+        select: { deliveryLocation: true },
+      });
+
+      const points: Array<{ lng: number; lat: number; count: number }> = [];
+      for (const s of shipments) {
+        const loc = s.deliveryLocation as any;
+        if (!loc) continue;
+        // GeoJSON Point: { type: "Point", coordinates: [lng, lat] }
+        if (loc?.type === "Point" && Array.isArray(loc.coordinates) && loc.coordinates.length === 2) {
+          const [lng, lat] = loc.coordinates as [number, number];
+          if (typeof lng === "number" && typeof lat === "number" && !isNaN(lng) && !isNaN(lat)) {
+            points.push({ lng, lat, count: 1 });
+          }
+        } else if (typeof loc?.lng === "number" && typeof loc?.lat === "number") {
+          points.push({ lng: loc.lng, lat: loc.lat, count: 1 });
+        }
+      }
+
+      // Cluster nearby points into a grid (0.01° ≈ 1km squares)
+      const grid = new Map<string, { lng: number; lat: number; count: number }>();
+      const CELL = 0.01;
+      for (const p of points) {
+        const key = `${Math.round(p.lng / CELL)},${Math.round(p.lat / CELL)}`;
+        if (grid.has(key)) {
+          grid.get(key)!.count += 1;
+        } else {
+          grid.set(key, {
+            lng: Math.round(p.lng / CELL) * CELL,
+            lat: Math.round(p.lat / CELL) * CELL,
+            count: 1,
+          });
+        }
+      }
+
+      const clustered = Array.from(grid.values());
+      const lngs = clustered.map((c) => c.lng);
+      const lats = clustered.map((c) => c.lat);
+
+      return reply.send({
+        data: {
+          points: clustered,
+          bounds: clustered.length > 0
+            ? { west: Math.min(...lngs), east: Math.max(...lngs), south: Math.min(...lats), north: Math.max(...lats) }
+            : null,
+          total: shipments.length,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  // ── ANALYTICS DASHBOARDS (shop.settings backed) ──────────────────────────────
+  fastify.get("/dashboards", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shop = await (request as any).tenantDb.shop.findUnique({
+      where: { id: (request as any).shopId },
+      select: { settings: true },
+    });
+    const settings = (shop?.settings as any) || {};
+    const dashboards: any[] = settings.analyticsDashboards ?? [];
+    return reply.send({ data: dashboards, total: dashboards.length });
+  });
+
+  fastify.post("/dashboards", async (request: FastifyRequest, reply: FastifyReply) => {
+    const bodySchema = z.object({
+      name: z.string().min(1).max(120),
+      description: z.string().max(500).optional().default(""),
+      isPublic: z.boolean().optional().default(false),
+      layout: z.number().int().min(1).max(4).optional().default(2),
+    });
+    const body = bodySchema.parse(request.body);
+    const shop = await (request as any).tenantDb.shop.findUnique({
+      where: { id: (request as any).shopId },
+      select: { settings: true },
+    });
+    const settings = (shop?.settings as any) || {};
+    const dashboards: any[] = settings.analyticsDashboards ?? [];
+    const newDashboard = {
+      id: `dash_${Date.now()}`,
+      name: body.name,
+      description: body.description,
+      isPublic: body.isPublic,
+      layout: body.layout,
+      widgets: [],
+      owner: (request as any).user?.id ?? "system",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    dashboards.push(newDashboard);
+    await (request as any).tenantDb.shop.update({
+      where: { id: (request as any).shopId },
+      data: { settings: { ...settings, analyticsDashboards: dashboards } },
+    });
+    return reply.code(201).send({ data: newDashboard });
+  });
+
+  fastify.delete("/dashboards/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const shop = await (request as any).tenantDb.shop.findUnique({
+      where: { id: (request as any).shopId },
+      select: { settings: true },
+    });
+    const settings = (shop?.settings as any) || {};
+    const dashboards: any[] = (settings.analyticsDashboards ?? []).filter((d: any) => d.id !== id);
+    await (request as any).tenantDb.shop.update({
+      where: { id: (request as any).shopId },
+      data: { settings: { ...settings, analyticsDashboards: dashboards } },
+    });
+    return reply.code(204).send();
+  });
+
+  // ── ANALYTICS REPORTS (shop.settings backed) ──────────────────────────────────
+  fastify.get("/reports", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shop = await (request as any).tenantDb.shop.findUnique({
+      where: { id: (request as any).shopId },
+      select: { settings: true },
+    });
+    const settings = (shop?.settings as any) || {};
+    const reports: any[] = settings.analyticsReports ?? [];
+    return reply.send({ data: reports, total: reports.length });
+  });
+
+  fastify.post("/reports", async (request: FastifyRequest, reply: FastifyReply) => {
+    const bodySchema = z.object({
+      name: z.string().min(1).max(120),
+      description: z.string().max(500).optional().default(""),
+      frequency: z.enum(["daily", "weekly", "monthly", "oneTime"]).default("weekly"),
+      format: z.enum(["pdf", "csv", "xlsx"]).default("csv"),
+      recipients: z.array(z.string().email()).optional().default([]),
+    });
+    const body = bodySchema.parse(request.body);
+    const shop = await (request as any).tenantDb.shop.findUnique({
+      where: { id: (request as any).shopId },
+      select: { settings: true },
+    });
+    const settings = (shop?.settings as any) || {};
+    const reports: any[] = settings.analyticsReports ?? [];
+    const now = new Date();
+    const nextMap: Record<string, number> = { daily: 1, weekly: 7, monthly: 30, oneTime: 0 };
+    const nextDays = nextMap[body.frequency] ?? 7;
+    const nextDate = new Date(now.getTime() + nextDays * 24 * 60 * 60 * 1000);
+    const newReport = {
+      id: `rpt_${Date.now()}`,
+      name: body.name,
+      description: body.description,
+      frequency: body.frequency,
+      format: body.format,
+      recipients: body.recipients,
+      status: "active",
+      owner: (request as any).user?.id ?? "system",
+      lastGenerated: null,
+      nextGenerated: body.frequency === "oneTime" ? null : nextDate.toISOString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    };
+    reports.push(newReport);
+    await (request as any).tenantDb.shop.update({
+      where: { id: (request as any).shopId },
+      data: { settings: { ...settings, analyticsReports: reports } },
+    });
+    return reply.code(201).send({ data: newReport });
+  });
+
+  fastify.delete("/reports/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const shop = await (request as any).tenantDb.shop.findUnique({
+      where: { id: (request as any).shopId },
+      select: { settings: true },
+    });
+    const settings = (shop?.settings as any) || {};
+    const reports: any[] = (settings.analyticsReports ?? []).filter((r: any) => r.id !== id);
+    await (request as any).tenantDb.shop.update({
+      where: { id: (request as any).shopId },
+      data: { settings: { ...settings, analyticsReports: reports } },
+    });
+    return reply.code(204).send();
+  });
 }
 
 export default analyticsRoutes;
