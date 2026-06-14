@@ -149,7 +149,7 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
       },
     });
 
-    return reply.send(partners);
+    return reply.send({ data: partners });
   });
 
   // ── POST /couriers/partners — Register new partner ───────────────
@@ -622,13 +622,15 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
     ]);
 
     return reply.send({
-      total,
-      delivered,
-      failed,
-      cancelled,
-      pending: total - delivered - failed - cancelled,
-      successRate: total > 0 ? ((delivered / total) * 100).toFixed(2) + "%" : "0%",
-      averageCost: avgCost._avg.actualCost,
+      data: {
+        total,
+        delivered,
+        failed,
+        cancelled,
+        pending: total - delivered - failed - cancelled,
+        successRate: total > 0 ? ((delivered / total) * 100).toFixed(2) + "%" : "0%",
+        averageCost: avgCost._avg.actualCost,
+      },
     });
   });
 
@@ -662,7 +664,47 @@ export default async function courierRoutes(app: FastifyInstance): Promise<void>
       })
     );
 
-    return reply.send({ stats });
+    return reply.send({ data: { stats } });
+  });
+
+  // ── GET /couriers/deliveries — List courier deliveries ───────────
+
+  app.get("/deliveries", async (request: FastifyRequest, reply: FastifyReply) => {
+    const tenantId = request.tenantId!;
+    const { status, partnerId, page = "1", limit = "20" } = request.query as Record<string, string>;
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+    const skip = (pageNum - 1) * limitNum;
+
+    const where: Prisma.CourierDeliveryWhereInput = {
+      tenantId,
+      ...(status ? { status: status.toUpperCase() as any } : {}),
+      ...(partnerId ? { partnerId } : {}),
+    };
+
+    const [deliveries, total] = await Promise.all([
+      prisma.courierDelivery.findMany({
+        where,
+        include: {
+          partner: { select: { name: true, provider: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limitNum,
+      }),
+      prisma.courierDelivery.count({ where }),
+    ]);
+
+    return reply.send({
+      data: deliveries,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
   });
 }
 
