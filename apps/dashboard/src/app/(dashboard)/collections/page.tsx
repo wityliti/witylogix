@@ -118,28 +118,24 @@ export default function CollectionsPage() {
           <StatCard
             label="Total Collections"
             value={totalCollections}
-            change={{ value: 2.5, label: "vs last month" }}
             accentColor="var(--wl-primary-500)"
             index={0}
           />
           <StatCard
             label="Total Products"
             value={totalProducts}
-            change={{ value: 18.3, label: "vs last month" }}
             accentColor="var(--wl-success-400)"
             index={1}
           />
           <StatCard
             label="Auto Collections"
             value={autoCollections}
-            change={{ value: 0, label: "no change" }}
             accentColor="var(--wl-info-400)"
             index={2}
           />
           <StatCard
             label="Manual Collections"
             value={manualCollections}
-            change={{ value: 2.5, label: "vs last month" }}
             accentColor="var(--wl-warning-400)"
             index={3}
           />
