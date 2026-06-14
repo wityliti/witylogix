@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -502,7 +501,6 @@ export default function FreightIntegrationsPage() {
           <StatCard
             label="Available Loads"
             value={totalLoadsAvailable.toLocaleString()}
-            change={{ value: 18, label: "this week" }}
             icon={<Truck size={16} />}
             accentColor="#3b82f6"
             index={0}
@@ -510,7 +508,6 @@ export default function FreightIntegrationsPage() {
           <StatCard
             label="Booked This Month"
             value={totalLoadsBooked}
-            change={{ value: 22, label: "vs last month" }}
             icon={<CheckCircle size={16} />}
             accentColor="#3b82f6"
             index={1}
@@ -518,7 +515,6 @@ export default function FreightIntegrationsPage() {
           <StatCard
             label="Best Rate"
             value={`$${bestRate}/mi`}
-            change={{ value: -4, label: "vs avg" }}
             icon={<TrendingDown size={16} />}
             accentColor="#3b82f6"
             index={2}
@@ -526,7 +522,6 @@ export default function FreightIntegrationsPage() {
           <StatCard
             label="Avg Market Rate"
             value={`$${avgRate}/mi`}
-            change={{ value: 2, label: "vs week ago" }}
             icon={<TrendingUp size={16} />}
             accentColor="#3b82f6"
             index={3}
