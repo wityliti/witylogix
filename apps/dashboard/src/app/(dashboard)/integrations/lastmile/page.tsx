@@ -172,30 +172,26 @@ export default function LastMileIntegrationPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
-            label="Providers Connected"
-            value={connectedCount}
-            isLoading={isLoading}
+            label="Deliveries Today"
+            value={totalDeliveriesToday}
             accentColor="#3b82f6"
             index={0}
           />
           <StatCard
-            label="Total Deliveries"
-            value={overallStats?.total ?? 0}
-            isLoading={isLoading}
+            label="Total Revenue"
+            value={formatCurrency(totalRevenuToday)}
             accentColor="#10b981"
             index={1}
           />
           <StatCard
-            label="Success Rate"
-            value={overallStats?.successRate ?? '—'}
-            isLoading={isLoading}
+            label="On-Time Rate"
+            value={`${avgOnTimeRate.toFixed(1)}%`}
             accentColor="#f59e0b"
             index={2}
           />
           <StatCard
-            label="Active Now"
-            value={totalActiveDeliveries}
-            isLoading={statsLoading}
+            label="Total Commissions"
+            value={formatCurrency(totalCommissions)}
             accentColor="#60a5fa"
             index={3}
           />
