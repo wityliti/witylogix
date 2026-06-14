@@ -142,28 +142,24 @@ export default function DriverPerformancePage() {
           <StatCard
             label="Average Score"
             value={avgScore}
-            change={{ value: 2.1, label: "vs last period" }}
             accentColor="var(--blue-500)"
             index={0}
           />
           <StatCard
             label="Avg On-Time %"
             value={`${avgOnTime}%`}
-            change={{ value: 1.3, label: "vs last period" }}
             accentColor="var(--emerald-500)"
             index={1}
           />
           <StatCard
             label="Total Deliveries"
             value={totalDeliveries}
-            change={{ value: 8.5, label: "this period" }}
             accentColor="var(--blue-500)"
             index={2}
           />
           <StatCard
             label="Top Tier Drivers"
             value={drivers.filter((d) => d.tier === "platinum" || d.tier === "gold").length}
-            change={{ value: 0.5, label: "vs last period" }}
             accentColor="var(--amber-500)"
             index={3}
           />

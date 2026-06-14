@@ -156,14 +156,12 @@ export default function CrmDashboardPage() {
             <StatCard
               label="Connected Platforms"
               value={aggregateStats.activeConnections}
-              change={{ value: 0, label: `of ${aggregateStats.totalConnections} installed` }}
               accentColor="var(--wl-primary-500)"
               index={0}
             />
             <StatCard
               label="Total Installed"
               value={aggregateStats.totalConnections}
-              change={{ value: 0, label: "CRM integrations" }}
               accentColor="var(--wl-info-400)"
               index={1}
             />
