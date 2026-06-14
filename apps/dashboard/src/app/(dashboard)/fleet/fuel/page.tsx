@@ -78,10 +78,10 @@ export default function FuelPage() {
       <main className="min-h-screen bg-wl-bg-root p-6 space-y-6">
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
-          <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} change={{ value: 8.5, label: 'vs last month' }} accentColor="var(--wl-primary-500)" index={0} />
-          <StatCard label="Average MPG" value={`${analytics.avgMpg}`} change={{ value: -2.1, label: 'efficiency decline' }} accentColor="var(--wl-warning-500)" index={1} />
-          <StatCard label="Avg Price/Gallon" value={formatCurrency(analytics.pricePerGallon)} change={{ value: 3.2, label: 'increase' }} accentColor="var(--wl-danger-400)" index={2} />
-          <StatCard label="Idle Time" value={`${analytics.idleTimePercent}%`} change={{ value: -1.5, label: 'improvement' }} accentColor="var(--wl-info-500)" index={3} />
+          <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} accentColor="var(--wl-primary-500)" index={0} />
+          <StatCard label="Average MPG" value={`${analytics.avgMpg}`} accentColor="var(--wl-warning-500)" index={1} />
+          <StatCard label="Avg Price/Gallon" value={formatCurrency(analytics.pricePerGallon)} accentColor="var(--wl-danger-400)" index={2} />
+          <StatCard label="Idle Time" value={`${analytics.idleTimePercent}%`} accentColor="var(--wl-info-500)" index={3} />
         </div>
 
         {/* Anomaly Alerts */}
