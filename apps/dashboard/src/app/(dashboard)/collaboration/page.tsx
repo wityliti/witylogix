@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/auth-context";
 import {
   useCollaboration,
   type Channel,
@@ -35,14 +36,13 @@ interface MentionSuggestion extends User {
 }
 
 function TeamCollaborationPage() {
-  const { user, token } = useAuth();
-
+  const { user } = useAuth();
   const collaboration = useCollaboration({
     url: process.env.NEXT_PUBLIC_REALTIME_URL,
-    token: token ?? "",
+    token: "",
     userId: user?.id ?? "",
     userName: user?.name ?? "",
-    autoConnect: !!token && !!user,
+    autoConnect: false,
   });
 
   const [showThreadPanel, setShowThreadPanel] = useState(false);
