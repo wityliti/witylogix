@@ -26,24 +26,35 @@ export default function EcommerceIntegrationsPage() {
             </div>
           </Card>
 
-        {/* Tab Navigation */}
-        <div className="flex gap-1 bg-wl-bg-elevated rounded-lg p-1 mb-8">
-          {(['overview', 'mapping', 'webhooks', 'conflict'] as const).map(
-            (tab) => (
-              <button
-                key={tab}
-                onClick={() => setSelectedTab(tab)}
-                className={cn(
-                  'px-4 py-2 rounded-md text-sm font-medium transition-all',
-                  selectedTab === tab
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-500 hover:text-gray-400'
-                )}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            )
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Products Synced</CardTitle>
+            </CardHeader>
+            <div className={cn('p-4 pt-0')}>
+              <div className={cn('text-2xl font-bold text-white')}>0</div>
+              <p className={cn('text-xs text-gray-500 mt-1')}>across all platforms</p>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Orders Synced</CardTitle>
+            </CardHeader>
+            <div className={cn('p-4 pt-0')}>
+              <div className={cn('text-2xl font-bold text-white')}>0</div>
+              <p className={cn('text-xs text-gray-500 mt-1')}>across all platforms</p>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Active Webhooks</CardTitle>
+            </CardHeader>
+            <div className={cn('p-4 pt-0')}>
+              <div className={cn('text-2xl font-bold text-white')}>0</div>
+              <p className={cn('text-xs text-gray-500 mt-1')}>event listeners</p>
+            </div>
+          </Card>
         </div>
 
         <Card>
