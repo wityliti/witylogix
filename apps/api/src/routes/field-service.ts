@@ -241,44 +241,31 @@ async function fieldServiceRoutes(fastify: FastifyInstance): Promise<void> {
           deliveryDate: true,
           driverId: true,
           estimatedArrival: true,
-          deliveryLocation: true,
           driver: { select: { id: true, name: true } },
         },
       }),
       request.tenantDb.order.count({ where }),
     ]);
 
-    const mapped = orders.map((o) => {
-      const loc =
-        o.deliveryLocation &&
-        typeof o.deliveryLocation === 'object' &&
-        'lat' in (o.deliveryLocation as object) &&
-        'lng' in (o.deliveryLocation as object)
-          ? (o.deliveryLocation as { lat: number; lng: number })
-          : null;
-
-      return {
-        id: o.id,
-        jobNumber: o.externalOrderNumber ? `#${o.externalOrderNumber}` : `#${o.id.slice(0, 6).toUpperCase()}`,
-        customerName: o.customerName ?? 'Unknown Customer',
-        customerPhone: o.customerPhone ?? '',
-        status: toWorkStatus(o.status),
-        priority: derivePriority(o.id),
-        serviceType: deriveServiceType(o.id),
-        location: [o.addressLine1, o.city].filter(Boolean).join(', ') || 'Address unknown',
-        description: o.notes ?? 'Standard service job',
-        estimatedDuration: 60,
-        requiredSkills: [],
-        assignedTechId: o.driverId,
-        assignedTechName: o.driver?.name ?? null,
-        eta: o.estimatedArrival
-          ? new Date(o.estimatedArrival).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-          : null,
-        notes: [],
-        lat: loc?.lat ?? null,
-        lng: loc?.lng ?? null,
-      };
-    });
+    const mapped = orders.map((o) => ({
+      id: o.id,
+      jobNumber: o.externalOrderNumber ? `#${o.externalOrderNumber}` : `#${o.id.slice(0, 6).toUpperCase()}`,
+      customerName: o.customerName ?? 'Unknown Customer',
+      customerPhone: o.customerPhone ?? '',
+      status: toWorkStatus(o.status),
+      priority: derivePriority(o.id),
+      serviceType: deriveServiceType(o.id),
+      location: [o.addressLine1, o.city].filter(Boolean).join(', ') || 'Address unknown',
+      description: o.notes ?? 'Standard service job',
+      estimatedDuration: 60,
+      requiredSkills: [],
+      assignedTechId: o.driverId,
+      assignedTechName: o.driver?.name ?? null,
+      eta: o.estimatedArrival
+        ? new Date(o.estimatedArrival).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+        : null,
+      notes: [],
+    }));
 
     return {
       data: mapped,
