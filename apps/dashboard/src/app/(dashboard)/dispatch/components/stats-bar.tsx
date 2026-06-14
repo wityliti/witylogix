@@ -28,27 +28,23 @@ export function StatsBar({ stats, isLoading = false }: StatsBarProps) {
         label: "Active Drivers",
         value: stats.activeDrivers,
         icon: <Truck className="w-5 h-5" />,
-        trend: { value: 2, direction: "up" },
       },
       {
         label: "Total Stops",
         value: stats.totalStops,
         icon: <MapPin className="w-5 h-5" />,
-        trend: { value: 5, direction: "up" },
       },
       {
         label: "Total Distance",
         value: stats.totalDistance.toFixed(1),
         unit: "km",
         icon: <Clock className="w-5 h-5" />,
-        trend: { value: 3, direction: "down" },
       },
       {
         label: "Est. Time",
         value: stats.estimatedHours,
         unit: "hrs",
         icon: <Package className="w-5 h-5" />,
-        trend: { value: 1, direction: "down" },
       },
     ],
     [stats]
