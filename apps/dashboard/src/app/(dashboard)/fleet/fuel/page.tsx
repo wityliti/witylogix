@@ -62,7 +62,6 @@ export default function FuelPage() {
     totalSpend,
     avgMpg: parseFloat(avgMpg.toFixed(1)),
     pricePerGallon: parseFloat(pricePerGallon.toFixed(2)),
-    idleTimePercent: 8,
     anomalies,
     topConsumers,
   };
@@ -81,7 +80,7 @@ export default function FuelPage() {
           <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} accentColor="var(--wl-primary-500)" index={0} />
           <StatCard label="Average MPG" value={`${analytics.avgMpg}`} accentColor="var(--wl-warning-500)" index={1} />
           <StatCard label="Avg Price/Gallon" value={formatCurrency(analytics.pricePerGallon)} accentColor="var(--wl-danger-400)" index={2} />
-          <StatCard label="Idle Time" value={`${analytics.idleTimePercent}%`} accentColor="var(--wl-info-500)" index={3} />
+          <StatCard label="Flagged Transactions" value={analytics.anomalies.length} accentColor="var(--wl-info-500)" index={3} />
         </div>
 
         {/* Anomaly Alerts */}
@@ -136,24 +135,24 @@ export default function FuelPage() {
             </CardContent>
           </Card>
 
-          {/* Cost Breakdown */}
+          {/* Fuel Cost Summary */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-sm text-white">Cost Breakdown</CardTitle>
+              <CardTitle className="text-sm text-white">Fuel Cost Summary</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Fuel Spend</p>
-                  <p className="text-lg font-bold text-white">{formatCurrency(12000)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Total Fuel Spend</p>
+                  <p className="text-lg font-bold text-white">{formatCurrency(analytics.totalSpend)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Maintenance</p>
-                  <p className="text-lg font-bold text-white">{formatCurrency(3000)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Transactions</p>
+                  <p className="text-lg font-bold text-white">{transactions.length}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Insurance (Monthly)</p>
-                  <p className="text-lg font-bold text-white">{formatCurrency(500)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Flagged</p>
+                  <p className="text-lg font-bold text-white">{analytics.anomalies.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -165,16 +164,9 @@ export default function FuelPage() {
               <CardTitle className="text-sm text-white">Fuel Cards Status</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {['Shell ****1234', 'Chevron ****5678', 'Shell ****9012'].map((card, idx) => (
-                  <div key={card} className="p-3 bg-wl-bg-elevated rounded-md border border-wl-border-default">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium text-white">{card}</p>
-                      <Badge variant={idx === 2 ? 'danger' : 'success'}>{idx === 2 ? 'Blocked' : 'Active'}</Badge>
-                    </div>
-                    <p className="text-xs text-gray-400">Daily: {formatCurrency(500 + idx * 100)} • Monthly: {formatCurrency(10000 + idx * 2000)}</p>
-                  </div>
-                ))}
+              <div className="flex flex-col items-center justify-center py-6 text-center gap-3">
+                <p className="text-sm text-gray-400">No fuel cards configured</p>
+                <p className="text-xs text-gray-500">Connect a fuel card provider to manage cards and limits</p>
               </div>
             </CardContent>
           </Card>
