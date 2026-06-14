@@ -20,28 +20,24 @@ export default function POSIntegrationsPage() {
           <StatCard
             label="Total Locations"
             value={totalLocations}
-            change={{ value: 12.5, label: "vs last month" }}
             accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Orders Today"
             value={totalOrdersToday}
-            change={{ value: 18.3, label: "vs yesterday" }}
             accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Revenue Today"
             value={formatCurrency(totalRevenueToday)}
-            change={{ value: 15.7, label: "vs yesterday" }}
             accentColor="#3b82f6"
             index={2}
           />
           <StatCard
             label="Avg Order Value"
             value={formatCurrency(totalRevenueToday / totalOrdersToday)}
-            change={{ value: 3.2, label: "vs avg" }}
             accentColor="#3b82f6"
             index={3}
           />

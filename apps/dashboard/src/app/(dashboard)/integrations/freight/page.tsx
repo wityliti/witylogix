@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { Header } from '@/components/layout/header';
@@ -17,43 +18,35 @@ export default function FreightIntegrationsPage() {
 
       <div className={cn("p-6 bg-wl-bg-root")}>
         {/* Top Stats */}
-        <div className={cn('grid grid-cols-1 md:grid-cols-4 gap-4')}>
-          <Card className="p-4">
-            <div className={cn('flex items-center justify-between mb-2')}>
-              <span className={cn('text-xs text-gray-400 font-medium')}>Connected</span>
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Booked This Month</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-white")}>0</div>
-              <p className={cn("text-xs text-gray-500 mt-1")}>loads booked</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Connected Providers</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-white")}>0</div>
-              <p className={cn("text-xs text-gray-500 mt-1")}>load boards active</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Avg Market Rate</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-gray-500")}>—</div>
-              <p className={cn("text-xs text-gray-500 mt-1")}>no active providers</p>
-            </div>
-          </Card>
+        <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
+          <StatCard
+            label="Available Loads"
+            value={totalLoadsAvailable.toLocaleString()}
+            icon={<Truck size={16} />}
+            accentColor="#3b82f6"
+            index={0}
+          />
+          <StatCard
+            label="Booked This Month"
+            value={totalLoadsBooked}
+            icon={<CheckCircle size={16} />}
+            accentColor="#3b82f6"
+            index={1}
+          />
+          <StatCard
+            label="Best Rate"
+            value={`$${bestRate}/mi`}
+            icon={<TrendingDown size={16} />}
+            accentColor="#3b82f6"
+            index={2}
+          />
+          <StatCard
+            label="Avg Market Rate"
+            value={`$${avgRate}/mi`}
+            icon={<TrendingUp size={16} />}
+            accentColor="#3b82f6"
+            index={3}
+          />
         </div>
 
         {error && (
