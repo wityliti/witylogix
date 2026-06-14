@@ -101,28 +101,24 @@ export default function POSPage() {
           <StatCard
             label="Today's Sales"
             value={`$${overview.todaysSales.toFixed(2)}`}
-            change={{ value: 12.5, label: "vs yesterday" }}
             accentColor="var(--wl-success-400)"
             index={0}
           />
           <StatCard
             label="Transactions"
             value={overview.transactionCount}
-            change={{ value: 5.2, label: "vs average" }}
             accentColor="var(--wl-primary-500)"
             index={1}
           />
           <StatCard
             label="Avg Ticket"
             value={`$${overview.avgTicket.toFixed(2)}`}
-            change={{ value: 3.1, label: "increase" }}
             accentColor="var(--wl-info-400)"
             index={2}
           />
           <StatCard
             label="Terminals"
             value={`${terminals.filter((t) => t.status === "online").length}/${terminals.length}`}
-            change={{ value: 0, label: "online" }}
             accentColor="var(--wl-warning-400)"
             index={3}
           />
