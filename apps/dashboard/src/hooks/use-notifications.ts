@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useApiList, useApiQuery, useApiMutation, ApiFilters, UseApiListResult, UseApiQueryResult, UseApiMutationResult } from './use-api';
+import { api } from '@/lib/api';
 
 export type NotificationChannel =
   | "EMAIL"
@@ -94,9 +95,6 @@ export function useNotificationsList(filters?: ApiFilters): UseApiListResult<Not
 /** Rich composite hook used by the notifications inbox page */
 export function useNotifications(filters?: ApiFilters) {
   const listResult = useApiList<Notification>('/api/v4/notifications', filters);
-  const markReadMutation = useApiMutation<Notification>('PATCH', '/api/v4/notifications/:id/read');
-  const markUnreadMutation = useApiMutation<Notification>('PATCH', '/api/v4/notifications/:id/unread');
-  const deleteMutation = useApiMutation<void>('DELETE', '/api/v4/notifications/:id');
   const markAllReadMutation = useApiMutation<void>('POST', '/api/v4/notifications/mark-all-read');
   const deleteBulkMutation = useApiMutation<void>('POST', '/api/v4/notifications/delete-bulk');
 
@@ -112,10 +110,19 @@ export function useNotifications(filters?: ApiFilters) {
     pagination: listResult.pagination,
     refetch: listResult.refetch,
     loadMore: async () => { listResult.setPage(listResult.pagination.page + 1); },
-    markAsRead: async (id: string) => { await markReadMutation.execute({ id }); listResult.refetch(); },
-    markAsUnread: async (id: string) => { await markUnreadMutation.execute({ id }); listResult.refetch(); },
+    markAsRead: async (id: string) => {
+      await api.patch(`/api/v4/notifications/${id}/read`);
+      listResult.refetch();
+    },
+    markAsUnread: async (id: string) => {
+      await api.patch(`/api/v4/notifications/${id}/unread`);
+      listResult.refetch();
+    },
     markAllAsRead: async () => { await markAllReadMutation.execute({}); listResult.refetch(); },
-    deleteNotification: async (id: string) => { await deleteMutation.execute({ id }); listResult.refetch(); },
+    deleteNotification: async (id: string) => {
+      await api.delete(`/api/v4/notifications/${id}`);
+      listResult.refetch();
+    },
     deleteBulk: async (ids: string[]) => { await deleteBulkMutation.execute({ ids }); listResult.refetch(); },
   };
 }
@@ -181,6 +188,10 @@ export function useNotificationPreferences() {
 
 export function useUpdateNotificationPreferences(): UseApiMutationResult<NotificationPreferences> {
   return useApiMutation<NotificationPreferences>('PATCH', '/api/v4/notification-preferences');
+}
+
+export function useSendTestNotification(): UseApiMutationResult<{ success: boolean; message: string }> {
+  return useApiMutation<{ success: boolean; message: string }>('POST', '/api/v4/notifications/test');
 }
 
 /** Base list hook */
