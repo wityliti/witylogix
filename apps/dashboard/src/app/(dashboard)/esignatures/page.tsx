@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEnvelopes, useEsigAnalytics, type Envelope } from "@/hooks/use-esignatures";
+import { useEnvelopes, useEsigAnalytics, useTemplates, type Envelope } from "@/hooks/use-esignatures";
 
 /**
  * E-Signatures Page - Professional Dark Theme
@@ -243,12 +243,9 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
 export default function ESignaturesPage() {
   const { items: envelopes, loading: envelopesLoading } = useEnvelopes();
   const { data: analytics, loading: analyticsLoading } = useEsigAnalytics();
+  const { items: templates } = useTemplates();
 
-  const mockTemplates = [
-    { name: "Service Agreement", count: 12 },
-    { name: "NDA", count: 8 },
-    { name: "Proposal Form", count: 15 },
-  ];
+  const templateUsage = templates.map((t) => ({ name: t.name, count: t.usageCount }));
 
   const kpiCards: KPICard[] = [
     {
@@ -310,7 +307,7 @@ export default function ESignaturesPage() {
           <CompletionRateChart rate={analytics?.completionRate || 0} />
         </div>
         <div>
-          <TemplateUsageCard templates={mockTemplates} />
+          <TemplateUsageCard templates={templateUsage} />
         </div>
       </div>
 
@@ -351,7 +348,7 @@ export default function ESignaturesPage() {
               Active Templates
             </p>
             <p className={cn("text-2xl font-bold text-white")}>
-              {mockTemplates.length}
+              {templates.length}
             </p>
             <p className={cn("text-xs text-gray-400 mt-2")}>
               Ready to use
