@@ -5,6 +5,7 @@ import { ChevronDown, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useApiList } from "@/hooks/use-api";
 
 interface EventFiltersProps {
   filters: {
@@ -41,13 +42,6 @@ const SEVERITY_LEVELS = [
   { id: "error", label: "Error", color: "var(--wl-danger-400)" },
 ];
 
-const SAMPLE_USERS = [
-  { id: "user-1", name: "Sarah Chen" },
-  { id: "user-2", name: "Marcus Liu" },
-  { id: "user-3", name: "Alex Johnson" },
-  { id: "system", name: "System" },
-];
-
 export function EventFilters({
   filters,
   setFilters,
@@ -57,6 +51,10 @@ export function EventFilters({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [dateMode, setDateMode] = useState<"start" | "end">("start");
+
+  const { items: users, loading: usersLoading } = useApiList<{ id: string; name: string }>(
+    '/api/v4/users?limit=100'
+  );
 
   const handleTypeToggle = (typeId: string) => {
     setFilters({
@@ -311,22 +309,28 @@ export function EventFilters({
         </button>
 
         {showUserDropdown && (
-          <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
+          <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48 max-h-56 overflow-y-auto">
             <div className="p-3 space-y-2">
-              {SAMPLE_USERS.map((user) => (
-                <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
-                  <input
-                    type="radio"
-                    name="user"
-                    checked={filters.userId === user.id}
-                    onChange={() => handleUserSelect(user.id)}
-                    className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
-                  />
-                  <span className="text-sm text-wl-text-primary">
-                    {user.name}
-                  </span>
-                </label>
-              ))}
+              {usersLoading ? (
+                <p className="text-xs text-wl-text-secondary px-2 py-1">Loading users…</p>
+              ) : users.length === 0 ? (
+                <p className="text-xs text-wl-text-secondary px-2 py-1">No users found</p>
+              ) : (
+                users.map((user) => (
+                  <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
+                    <input
+                      type="radio"
+                      name="user"
+                      checked={filters.userId === user.id}
+                      onChange={() => handleUserSelect(user.id)}
+                      className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
+                    />
+                    <span className="text-sm text-wl-text-primary">
+                      {user.name}
+                    </span>
+                  </label>
+                ))
+              )}
             </div>
           </div>
         )}
