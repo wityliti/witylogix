@@ -9,7 +9,9 @@ import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
 import { ArrowRight, Activity, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 /* ═══════════════════════════════════════════════════════════
    WORKFLOW EXECUTIONS PAGE — Monitor and manage workflow runs
@@ -20,160 +22,15 @@ interface WorkflowExecution {
   executionId: string;
   workflowName: string;
   status: "running" | "completed" | "failed" | "compensating";
-  totalSteps: number;
-  completedSteps: number;
   startedAt: string;
-  duration: string;
-  createdBy?: string;
-  tenantId?: string;
+  durationMs: number | null;
+  error?: string | null;
 }
 
-const WORKFLOW_EXECUTIONS: WorkflowExecution[] = [
-  {
-    id: "exec-001",
-    executionId: "EXE-2026-00001",
-    workflowName: "Order Processing Pipeline",
-    status: "completed",
-    totalSteps: 8,
-    completedSteps: 8,
-    startedAt: "2026-03-07T08:00:00Z",
-    duration: "2m 34s",
-    createdBy: "system",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-002",
-    executionId: "EXE-2026-00002",
-    workflowName: "Inventory Sync",
-    status: "running",
-    totalSteps: 12,
-    completedSteps: 7,
-    startedAt: "2026-03-07T09:15:00Z",
-    duration: "45s",
-    createdBy: "automation",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-003",
-    executionId: "EXE-2026-00003",
-    workflowName: "Customer Notification",
-    status: "completed",
-    totalSteps: 5,
-    completedSteps: 5,
-    startedAt: "2026-03-07T08:45:00Z",
-    duration: "1m 12s",
-    createdBy: "webhook",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-004",
-    executionId: "EXE-2026-00004",
-    workflowName: "Payment Processing",
-    status: "failed",
-    totalSteps: 6,
-    completedSteps: 4,
-    startedAt: "2026-03-07T07:30:00Z",
-    duration: "3m 45s",
-    createdBy: "system",
-    tenantId: "tenant-789",
-  },
-  {
-    id: "exec-005",
-    executionId: "EXE-2026-00005",
-    workflowName: "Order Processing Pipeline",
-    status: "completed",
-    totalSteps: 8,
-    completedSteps: 8,
-    startedAt: "2026-03-07T06:00:00Z",
-    duration: "2m 18s",
-    createdBy: "system",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-006",
-    executionId: "EXE-2026-00006",
-    workflowName: "Compliance Check",
-    status: "compensating",
-    totalSteps: 9,
-    completedSteps: 5,
-    startedAt: "2026-03-07T09:45:00Z",
-    duration: "2m 10s",
-    createdBy: "system",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-007",
-    executionId: "EXE-2026-00007",
-    workflowName: "Data Export",
-    status: "completed",
-    totalSteps: 4,
-    completedSteps: 4,
-    startedAt: "2026-03-07T05:30:00Z",
-    duration: "58s",
-    createdBy: "automation",
-    tenantId: "tenant-101",
-  },
-  {
-    id: "exec-008",
-    executionId: "EXE-2026-00008",
-    workflowName: "Inventory Sync",
-    status: "completed",
-    totalSteps: 12,
-    completedSteps: 12,
-    startedAt: "2026-03-07T04:15:00Z",
-    duration: "5m 22s",
-    createdBy: "webhook",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-009",
-    executionId: "EXE-2026-00009",
-    workflowName: "Customer Notification",
-    status: "failed",
-    totalSteps: 5,
-    completedSteps: 2,
-    startedAt: "2026-03-07T03:00:00Z",
-    duration: "4m 51s",
-    createdBy: "automation",
-    tenantId: "tenant-789",
-  },
-  {
-    id: "exec-010",
-    executionId: "EXE-2026-00010",
-    workflowName: "Payment Processing",
-    status: "completed",
-    totalSteps: 6,
-    completedSteps: 6,
-    startedAt: "2026-03-07T02:45:00Z",
-    duration: "2m 05s",
-    createdBy: "webhook",
-    tenantId: "tenant-123",
-  },
-  {
-    id: "exec-011",
-    executionId: "EXE-2026-00011",
-    workflowName: "Order Processing Pipeline",
-    status: "running",
-    totalSteps: 8,
-    completedSteps: 3,
-    startedAt: "2026-03-07T09:58:00Z",
-    duration: "2s",
-    createdBy: "system",
-    tenantId: "tenant-456",
-  },
-  {
-    id: "exec-012",
-    executionId: "EXE-2026-00012",
-    workflowName: "Compliance Check",
-    status: "completed",
-    totalSteps: 9,
-    completedSteps: 9,
-    startedAt: "2026-03-07T01:30:00Z",
-    duration: "8m 15s",
-    createdBy: "automation",
-    tenantId: "tenant-789",
-  },
-];
+interface WorkflowExecutionsResponse {
+  executions: WorkflowExecution[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
 
 const formatDateTime = (isoStr: string): string => {
   const date = new Date(isoStr);
@@ -213,27 +70,23 @@ export default function WorkflowExecutionsPage() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "running" | "completed" | "failed" | "compensating">("all");
 
-  // Calculate stats
-  const totalRuns = WORKFLOW_EXECUTIONS.length;
-  const activeRuns = WORKFLOW_EXECUTIONS.filter((e) => e.status === "running").length;
-  const completedRuns = WORKFLOW_EXECUTIONS.filter((e) => e.status === "completed").length;
-  const failedRuns = WORKFLOW_EXECUTIONS.filter((e) => e.status === "failed").length;
+  const { data, loading, error, refetch } = useApiQuery<WorkflowExecutionsResponse>('/api/v4/workflow/executions');
+  const executions: WorkflowExecution[] = data?.executions ?? [];
 
-  // Filter executions
+  const totalRuns = executions.length;
+  const activeRuns = executions.filter((e) => e.status === "running").length;
+  const completedRuns = executions.filter((e) => e.status === "completed").length;
+  const failedRuns = executions.filter((e) => e.status === "failed").length;
+
   const filtered = useMemo(() => {
-    let result = WORKFLOW_EXECUTIONS;
-
-    if (activeTab !== "all") {
-      result = result.filter((e) => e.status === activeTab);
-    }
-
+    let result = executions;
+    if (activeTab !== "all") result = result.filter((e) => e.status === activeTab);
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((e) => e.workflowName.toLowerCase().includes(q) || e.executionId.toLowerCase().includes(q));
     }
-
     return result;
-  }, [search, activeTab]);
+  }, [executions, search, activeTab]);
 
   return (
     <>
@@ -288,8 +141,8 @@ export default function WorkflowExecutionsPage() {
           {(["all", "running", "completed", "failed", "compensating"] as const).map((tab) => {
             const count =
               tab === "all"
-                ? WORKFLOW_EXECUTIONS.length
-                : WORKFLOW_EXECUTIONS.filter((e) => e.status === tab).length;
+                ? executions.length
+                : executions.filter((e) => e.status === tab).length;
             const isActive = activeTab === tab;
 
             return (
@@ -322,7 +175,11 @@ export default function WorkflowExecutionsPage() {
         </div>
 
         {/* Executions Table */}
-        {filtered.length > 0 ? (
+        {loading && executions.length === 0 ? (
+          <LoadingSkeleton />
+        ) : error && executions.length === 0 ? (
+          <ErrorState message={error.message} onRetry={refetch} />
+        ) : filtered.length > 0 ? (
           <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
@@ -333,9 +190,6 @@ export default function WorkflowExecutionsPage() {
                     </th>
                     <th className="p-3 px-4 text-center font-semibold text-gray-400">
                       Status
-                    </th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
-                      Steps
                     </th>
                     <th className="p-3 px-4 text-left font-semibold text-gray-400">
                       Started
@@ -351,12 +205,12 @@ export default function WorkflowExecutionsPage() {
                 <tbody>
                   {filtered.map((execution, idx) => (
                     <tr
-                      key={execution.id}
+                      key={execution.executionId}
                       className="border-b border-[#1e1e2e] transition-colors cursor-pointer hover:bg-[#1a1a2e]"
                       style={{
                         background: idx % 2 === 0 ? "transparent" : "#12121a",
                       }}
-                      onClick={() => router.push(`/admin/workflows/${execution.id}`)}
+                      onClick={() => router.push(`/admin/workflows/${execution.executionId}`)}
                     >
                       <td className="p-3 px-4 text-white font-medium">
                         {execution.workflowName}
@@ -366,19 +220,16 @@ export default function WorkflowExecutionsPage() {
                           {getStatusLabel(execution.status)}
                         </Badge>
                       </td>
-                      <td className="p-3 px-4 text-center text-white font-medium">
-                        {execution.completedSteps}/{execution.totalSteps}
-                      </td>
                       <td className="p-3 px-4 text-gray-400">
                         {formatDateTime(execution.startedAt)}
                       </td>
                       <td className="p-3 px-4 text-center text-gray-400">
-                        {execution.duration}
+                        {execution.durationMs != null ? `${(execution.durationMs / 1000).toFixed(1)}s` : '—'}
                       </td>
                       <td className="p-3 px-4 text-center">
                         <Button variant="ghost" size="sm" onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
-                          router.push(`/admin/workflows/${execution.id}`);
+                          router.push(`/admin/workflows/${execution.executionId}`);
                         }}>
                           View
                           <ArrowRight size={14} />

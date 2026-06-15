@@ -19,9 +19,9 @@ import {
   BarChart3,
   Mail,
 } from "lucide-react";
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 
 interface Integration {
   id: string;
@@ -32,114 +32,49 @@ interface Integration {
   successRate: number;
   errorCount: number;
   totalSyncs: number;
-  errors: Array<{
-    timestamp: string;
-    message: string;
-    code: string;
-  }>;
+  errors: Array<{ timestamp: string; message: string; code: string }>;
 }
 
-const mockIntegrations: Integration[] = [
-  {
-    id: "stripe-001",
-    name: "Stripe Payments",
-    category: "payment",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:28:45",
-    successRate: 99.95,
-    errorCount: 2,
-    totalSyncs: 4521,
-    errors: [
-      {
-        timestamp: "2026-03-10 11:23:12",
-        message: "Rate limit exceeded",
-        code: "RATE_LIMIT",
-      },
-      {
-        timestamp: "2026-03-09 08:15:33",
-        message: "Connection timeout",
-        code: "TIMEOUT",
-      },
-    ],
-  },
-  {
-    id: "shippo-001",
-    name: "Shippo Logistics",
-    category: "shipping",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:32:10",
-    successRate: 99.88,
-    errorCount: 5,
-    totalSyncs: 3245,
-    errors: [
-      {
-        timestamp: "2026-03-11 16:45:22",
-        message: "Invalid address format",
-        code: "VALIDATION_ERROR",
-      },
-      {
-        timestamp: "2026-03-10 09:12:15",
-        message: "Service unavailable",
-        code: "SERVICE_UNAVAILABLE",
-      },
-    ],
-  },
-  {
-    id: "google-analytics",
-    name: "Google Analytics",
-    category: "analytics",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:15:00",
-    successRate: 99.99,
-    errorCount: 0,
-    totalSyncs: 8912,
+interface RawIntegration {
+  slug: string;
+  name: string;
+  category: string;
+  isEnabled: boolean;
+  healthStatus: string | null;
+  lastSyncAt: string | null;
+}
+
+function mapCategory(cat: string): Integration["category"] {
+  const m: Record<string, Integration["category"]> = {
+    PAYMENT: "payment",
+    ROUTING: "shipping",
+    ORDER_MANAGEMENT: "shipping",
+    COMMUNICATION: "notification",
+    INVENTORY: "inventory",
+    ANALYTICS: "analytics",
+  };
+  return m[cat] ?? "analytics";
+}
+
+function mapStatus(raw: RawIntegration): Integration["status"] {
+  if (!raw.isEnabled) return "disconnected";
+  if (raw.healthStatus === "HEALTHY" || raw.healthStatus === "healthy" || !raw.healthStatus) return "connected";
+  return "error";
+}
+
+function mapIntegration(raw: RawIntegration): Integration {
+  return {
+    id: raw.slug,
+    name: raw.name,
+    category: mapCategory(raw.category),
+    status: mapStatus(raw),
+    lastSyncTime: raw.lastSyncAt ? new Date(raw.lastSyncAt).toLocaleString() : "—",
+    successRate: mapStatus(raw) === "error" ? 0 : 100,
+    errorCount: mapStatus(raw) === "error" ? 1 : 0,
+    totalSyncs: 0,
     errors: [],
-  },
-  {
-    id: "sendgrid-001",
-    name: "SendGrid Email",
-    category: "notification",
-    status: "error",
-    lastSyncTime: "2026-03-12 13:45:30",
-    successRate: 87.43,
-    errorCount: 156,
-    totalSyncs: 1203,
-    errors: [
-      {
-        timestamp: "2026-03-12 14:12:45",
-        message: "Authentication failed",
-        code: "AUTH_ERROR",
-      },
-      {
-        timestamp: "2026-03-12 13:58:10",
-        message: "Invalid API key",
-        code: "INVALID_KEY",
-      },
-      {
-        timestamp: "2026-03-12 13:45:30",
-        message: "API key rotated - please update credentials",
-        code: "CREDENTIALS_EXPIRED",
-      },
-    ],
-  },
-  {
-    id: "shopify-inventory",
-    name: "Shopify Inventory Sync",
-    category: "inventory",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:30:05",
-    successRate: 98.76,
-    errorCount: 12,
-    totalSyncs: 892,
-    errors: [
-      {
-        timestamp: "2026-03-11 10:33:44",
-        message: "Stock level mismatch",
-        code: "INVENTORY_MISMATCH",
-      },
-    ],
-  },
-];
+  };
+}
 
 function StatusBadge({ status }: { status: "connected" | "disconnected" | "error" }) {
   const variants: Record<typeof status, any> = {
@@ -348,22 +283,33 @@ export default function IntegrationsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categories = [
-    { id: "payment", label: "Payment", count: mockIntegrations.filter(i => i.category === "payment").length },
-    { id: "shipping", label: "Shipping", count: mockIntegrations.filter(i => i.category === "shipping").length },
-    { id: "analytics", label: "Analytics", count: mockIntegrations.filter(i => i.category === "analytics").length },
-    { id: "notification", label: "Notifications", count: mockIntegrations.filter(i => i.category === "notification").length },
-    { id: "inventory", label: "Inventory", count: mockIntegrations.filter(i => i.category === "inventory").length },
-  ];
+  const { data: rawData, loading, error, refetch } = useApiQuery<{ integrations: RawIntegration[] }>('/api/v4/integrations');
+  const integrations: Integration[] = useMemo(
+    () => (rawData?.integrations ?? []).map(mapIntegration),
+    [rawData]
+  );
+
+  const categories = useMemo(() => [
+    { id: "payment", label: "Payment", count: integrations.filter(i => i.category === "payment").length },
+    { id: "shipping", label: "Shipping", count: integrations.filter(i => i.category === "shipping").length },
+    { id: "analytics", label: "Analytics", count: integrations.filter(i => i.category === "analytics").length },
+    { id: "notification", label: "Notifications", count: integrations.filter(i => i.category === "notification").length },
+    { id: "inventory", label: "Inventory", count: integrations.filter(i => i.category === "inventory").length },
+  ], [integrations]);
 
   const filteredIntegrations = useMemo(() => {
-    if (!selectedCategory) return mockIntegrations;
-    return mockIntegrations.filter(i => i.category === selectedCategory);
-  }, [selectedCategory]);
+    if (!selectedCategory) return integrations;
+    return integrations.filter(i => i.category === selectedCategory);
+  }, [integrations, selectedCategory]);
 
   const connectedCount = filteredIntegrations.filter(i => i.status === "connected").length;
   const errorCount = filteredIntegrations.filter(i => i.status === "error").length;
-  const avgSuccessRate = (filteredIntegrations.reduce((sum, i) => sum + i.successRate, 0) / filteredIntegrations.length).toFixed(2);
+  const avgSuccessRate = filteredIntegrations.length > 0
+    ? (filteredIntegrations.reduce((sum, i) => sum + i.successRate, 0) / filteredIntegrations.length).toFixed(2)
+    : "0.00";
+
+  if (loading && integrations.length === 0) return <LoadingSkeleton />;
+  if (error && integrations.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-[#12121a]">
@@ -440,7 +386,7 @@ export default function IntegrationsPage() {
                 : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
             )}
           >
-            All ({mockIntegrations.length})
+            All ({integrations.length})
           </button>
           {categories.map(cat => (
             <button
