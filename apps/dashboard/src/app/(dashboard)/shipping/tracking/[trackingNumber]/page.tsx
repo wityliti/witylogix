@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +10,19 @@ import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
+import { MapPin } from 'lucide-react';
+
+const ShipmentLocationMap = dynamic(
+  () => import('@/components/shipments/shipment-location-map'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="w-7 h-7 rounded-full border-2 border-wl-border-strong border-t-blue-500 animate-spin" />
+      </div>
+    ),
+  },
+);
 
 interface ShipmentDetail {
   id: string;
@@ -24,6 +38,7 @@ interface ShipmentDetail {
   postalCode: string | null;
   deliveryMethod: string;
   recipientName: string | null;
+  deliveryLocation: { lat: number; lng: number } | null;
   order: { id: string; shopifyOrderNumber: string | null } | null;
   activityLogs: Array<{ id: string; action: string; timestamp: string }>;
 }
@@ -168,6 +183,36 @@ export default function TrackingDetailPage() {
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Delivery Location Map */}
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
+          <CardHeader>
+            <CardTitle className="text-white">Delivery Location</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {shipment.deliveryLocation &&
+            typeof shipment.deliveryLocation.lat === 'number' &&
+            typeof shipment.deliveryLocation.lng === 'number' ? (
+              <div className="h-64 rounded-b-xl overflow-hidden">
+                <ShipmentLocationMap
+                  shipmentId={shipment.id}
+                  label={shipment.trackingNumber ?? shipment.shipmentNumber}
+                  lat={shipment.deliveryLocation.lat}
+                  lng={shipment.deliveryLocation.lng}
+                  status={shipment.status}
+                />
+              </div>
+            ) : (
+              <div className="h-48 flex flex-col items-center justify-center gap-2 text-gray-400 px-4 pb-6">
+                <MapPin className="w-7 h-7 opacity-30" />
+                <p className="text-sm font-medium text-wl-text-primary">No location data</p>
+                <p className="text-xs text-center">
+                  {[shipment.city, shipment.province].filter(Boolean).join(', ') || 'Delivery coordinates not available for this shipment.'}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
