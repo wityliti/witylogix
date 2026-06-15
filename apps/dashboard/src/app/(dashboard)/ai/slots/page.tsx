@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   CalendarDays,
   Clock,
@@ -14,9 +14,14 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useApiMutation } from '@/hooks/use-api';
+import { useApiMutation, useApiList } from '@/hooks/use-api';
 
 // ── Types ────────────────────────────────────────────────────────
+
+interface Zone {
+  id: string;
+  name: string;
+}
 
 interface ScoredSlot {
   id: string;
@@ -41,49 +46,6 @@ interface RecommendResponse {
   count: number;
   timestamp: string;
 }
-
-// ── Demo data ────────────────────────────────────────────────────
-
-const DEMO_ZONES = [
-  { id: 'zone-downtown', name: 'Downtown Core' },
-  { id: 'zone-midtown',  name: 'Midtown' },
-  { id: 'zone-west',     name: 'Westside' },
-  { id: 'zone-harbor',   name: 'Harbor District' },
-  { id: 'zone-suburb',   name: 'Suburbs' },
-];
-
-const DEMO_SLOTS: ScoredSlot[] = [
-  {
-    id: 'slot-1', name: 'Morning Express', startTime: '09:00', endTime: '12:00', zoneId: 'zone-downtown', score: 94,
-    reasoning: ['Matches customer preference for morning delivery', 'Low demand predicted — high success rate', 'Strong driver availability in this zone'],
-    demandForecast: { predicted: 18, confidence: 0.87 },
-    driverAvailability: { available: 8, total: 10 },
-  },
-  {
-    id: 'slot-2', name: 'Midday Window',   startTime: '12:00', endTime: '15:00', zoneId: 'zone-downtown', score: 81,
-    reasoning: ['Moderate demand during lunch peak', 'Good driver coverage', 'Slight delay risk at 12–13h due to traffic'],
-    demandForecast: { predicted: 34, confidence: 0.79 },
-    driverAvailability: { available: 6, total: 10 },
-  },
-  {
-    id: 'slot-3', name: 'Afternoon Run',   startTime: '15:00', endTime: '18:00', zoneId: 'zone-downtown', score: 73,
-    reasoning: ['Higher demand predicted', 'Adequate driver count', 'Evening traffic may extend windows'],
-    demandForecast: { predicted: 41, confidence: 0.74 },
-    driverAvailability: { available: 5, total: 10 },
-  },
-  {
-    id: 'slot-4', name: 'Early Morning',   startTime: '06:00', endTime: '09:00', zoneId: 'zone-downtown', score: 68,
-    reasoning: ['Very low demand — high success probability', 'Limited driver availability at this hour', 'Customer has no preference data for this window'],
-    demandForecast: { predicted: 8, confidence: 0.92 },
-    driverAvailability: { available: 3, total: 10 },
-  },
-  {
-    id: 'slot-5', name: 'Evening Premium', startTime: '18:00', endTime: '21:00', zoneId: 'zone-downtown', score: 61,
-    reasoning: ['Premium surcharge applies', 'Demand spike after 18h', 'Fewer available drivers'],
-    demandForecast: { predicted: 52, confidence: 0.68 },
-    driverAvailability: { available: 4, total: 10 },
-  },
-];
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -111,29 +73,36 @@ function ScoreRing({ score, isTop }: { score: number; isTop: boolean }) {
 
 export default function SlotAIPage() {
   const [customerId, setCustomerId] = useState('');
-  const [zoneId, setZoneId] = useState(DEMO_ZONES[0].id);
+  const [zoneId, setZoneId] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [hasSearched, setHasSearched] = useState(false);
+
+  const { items: zones, loading: zonesLoading } = useApiList<Zone>('/api/v4/zones');
+
+  useEffect(() => {
+    if (zones.length > 0 && !zoneId) {
+      setZoneId(zones[0].id);
+    }
+  }, [zones, zoneId]);
 
   const { data, loading, execute } = useApiMutation<RecommendResponse>(
     'POST',
     '/api/v4/ai/slots/recommend',
   );
 
-  const slots: ScoredSlot[] = data?.recommendations ?? (hasSearched ? DEMO_SLOTS : []);
+  const slots: ScoredSlot[] = data?.recommendations ?? [];
 
   const handleSearch = async () => {
     setHasSearched(true);
-    if (!customerId) return; // use demo data
     try {
       await execute({
-        customerId,
+        customerId: customerId || undefined,
         zoneId,
         date: new Date(date).toISOString(),
         maxSlots: 5,
       });
     } catch {
-      // fall through to demo data
+      // error displayed via empty state
     }
   };
 
@@ -175,11 +144,18 @@ export default function SlotAIPage() {
               <select
                 value={zoneId}
                 onChange={(e) => setZoneId(e.target.value)}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors"
+                disabled={zonesLoading}
+                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
               >
-                {DEMO_ZONES.map((z) => (
-                  <option key={z.id} value={z.id}>{z.name}</option>
-                ))}
+                {zonesLoading ? (
+                  <option>Loading zones…</option>
+                ) : zones.length === 0 ? (
+                  <option value="">No zones available</option>
+                ) : (
+                  zones.map((z) => (
+                    <option key={z.id} value={z.id}>{z.name}</option>
+                  ))
+                )}
               </select>
             </div>
 
@@ -197,7 +173,7 @@ export default function SlotAIPage() {
 
           <button
             onClick={handleSearch}
-            disabled={loading}
+            disabled={loading || !zoneId}
             className="mt-4 flex items-center gap-2 px-4 py-2 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 text-teal-300 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
             {loading ? (
@@ -232,6 +208,11 @@ export default function SlotAIPage() {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
                 ))}
+              </div>
+            ) : slots.length === 0 ? (
+              <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
+                <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                <p className="text-sm text-white/25">No slot recommendations available for this zone and date</p>
               </div>
             ) : (
               slots.map((slot, idx) => {
