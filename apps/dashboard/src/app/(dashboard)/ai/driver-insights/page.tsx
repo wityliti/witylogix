@@ -42,18 +42,6 @@ interface LeaderboardResponse {
   timestamp: string;
 }
 
-// ── Demo data ────────────────────────────────────────────────────
-
-const DEMO_ENTRIES: LeaderboardEntry[] = [
-  { rank: 1, driverId: 'd1', driverName: 'Marcus Chen',    compositeScore: 94.2, onTimePercent: 97.3, routeEfficiencyAvg: 93.1, customerRatingAvg: 4.9, deliverySuccessPercent: 98.4, badge: 'elite',    trend: 'up',     trendPercent: 2.1 },
-  { rank: 2, driverId: 'd2', driverName: 'Priya Sharma',   compositeScore: 91.8, onTimePercent: 96.1, routeEfficiencyAvg: 90.5, customerRatingAvg: 4.8, deliverySuccessPercent: 97.2, badge: 'elite',    trend: 'up',     trendPercent: 1.4 },
-  { rank: 3, driverId: 'd3', driverName: 'James Wilson',   compositeScore: 88.5, onTimePercent: 94.5, routeEfficiencyAvg: 87.8, customerRatingAvg: 4.7, deliverySuccessPercent: 96.1, badge: 'gold',     trend: 'stable', trendPercent: 0.2 },
-  { rank: 4, driverId: 'd4', driverName: 'Aisha Mohammed', compositeScore: 87.1, onTimePercent: 95.8, routeEfficiencyAvg: 85.0, customerRatingAvg: 4.8, deliverySuccessPercent: 95.8, badge: 'gold',     trend: 'up',     trendPercent: 3.0 },
-  { rank: 5, driverId: 'd5', driverName: 'Carlos Rivera',  compositeScore: 83.4, onTimePercent: 93.2, routeEfficiencyAvg: 82.1, customerRatingAvg: 4.6, deliverySuccessPercent: 94.3, badge: 'silver',   trend: 'down',   trendPercent: 1.2 },
-  { rank: 6, driverId: 'd6', driverName: 'Sam Okafor',     compositeScore: 80.9, onTimePercent: 91.0, routeEfficiencyAvg: 80.5, customerRatingAvg: 4.5, deliverySuccessPercent: 93.0, badge: 'silver',   trend: 'up',     trendPercent: 0.8 },
-  { rank: 7, driverId: 'd7', driverName: 'Li Wei',         compositeScore: 76.2, onTimePercent: 88.4, routeEfficiencyAvg: 77.9, customerRatingAvg: 4.3, deliverySuccessPercent: 91.2, badge: 'bronze',   trend: 'down',   trendPercent: 2.4 },
-  { rank: 8, driverId: 'd8', driverName: 'Diana Flores',   compositeScore: 73.8, onTimePercent: 86.7, routeEfficiencyAvg: 75.1, customerRatingAvg: 4.2, deliverySuccessPercent: 90.4, badge: 'bronze',   trend: 'stable', trendPercent: 0.1 },
-];
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -95,7 +83,7 @@ export default function DriverInsightsPage() {
     `/api/v4/ai/analytics/leaderboard?period=${period}`,
   );
 
-  const rawEntries: LeaderboardEntry[] = data?.data?.entries ?? DEMO_ENTRIES;
+  const rawEntries: LeaderboardEntry[] = data?.data?.entries ?? [];
 
   const entries = [...rawEntries].sort((a, b) => {
     switch (sortBy) {

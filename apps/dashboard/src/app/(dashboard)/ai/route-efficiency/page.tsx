@@ -54,35 +54,6 @@ interface RouteListItem {
   date: string;
 }
 
-// ── Demo data ────────────────────────────────────────────────────
-
-const DEMO_ROUTES: RouteListItem[] = [
-  { id: 'rt-001', name: 'Downtown Morning Run', status: 'COMPLETED', driverName: 'Marcus Chen',  stopCount: 14, date: '2026-04-06' },
-  { id: 'rt-002', name: 'Midtown Afternoon',    status: 'COMPLETED', driverName: 'Priya Sharma', stopCount: 11, date: '2026-04-06' },
-  { id: 'rt-003', name: 'Harbor District Loop', status: 'COMPLETED', driverName: 'James Wilson', stopCount: 9,  date: '2026-04-05' },
-  { id: 'rt-004', name: 'Westside Express',     status: 'COMPLETED', driverName: 'Aisha Mohammed',stopCount: 16, date: '2026-04-05' },
-  { id: 'rt-005', name: 'Suburb Sweep',         status: 'COMPLETED', driverName: 'Carlos Rivera', stopCount: 8,  date: '2026-04-04' },
-];
-
-const DEMO_SCORE: RouteEfficiencyScore = {
-  score: 87.4,
-  percentileRank: 78,
-  breakdown: {
-    distanceEfficiency: 0.91,
-    timeEfficiency: 0.85,
-    stopEfficiency: 0.88,
-    idleTimeRatio: 0.12,
-    deviationCount: 2,
-  },
-  metrics: {
-    actualDistance: 48200,
-    plannedDistance: 45000,
-    actualDuration: 134,
-    plannedDuration: 120,
-    idleTime: 11,
-    deviations: 2,
-  },
-};
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -167,28 +138,31 @@ function GaugeDial({ score, accent }: { score: number; accent: string }) {
 // ── Page ─────────────────────────────────────────────────────────
 
 export default function RouteEfficiencyPage() {
-  const [selectedRouteId, setSelectedRouteId] = useState<string>(DEMO_ROUTES[0].id);
+  const [selectedRouteId, setSelectedRouteId] = useState<string>('');
   const [search, setSearch] = useState('');
 
   const { items: routesData, loading: routesLoading } = useApiList<RouteListItem>(
     '/api/v4/routes?status=COMPLETED&limit=20',
   );
 
-  const routes = (routesData?.length ? routesData : DEMO_ROUTES).filter((r) =>
+  const routes = routesData.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase()) ||
     r.driverName?.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const firstRouteId = routesData[0]?.id ?? '';
+  const activeId = selectedRouteId || firstRouteId;
+
   const { data: efficiencyData, loading: efficiencyLoading } = useApiQuery<RouteEfficiencyResponse>(
-    selectedRouteId ? `/api/v4/ai/analytics/route-efficiency/${selectedRouteId}` : null!,
+    activeId ? `/api/v4/ai/analytics/route-efficiency/${activeId}` : null!,
   );
 
-  const score: RouteEfficiencyScore = efficiencyData?.data ?? DEMO_SCORE;
-  const accent = scoreAccent(score.score);
-  const selectedRoute = routes.find((r) => r.id === selectedRouteId) ?? DEMO_ROUTES[0];
+  const score: RouteEfficiencyScore | null = efficiencyData?.data ?? null;
+  const accent = score ? scoreAccent(score.score) : '#60a5fa';
+  const selectedRoute = routes.find((r) => r.id === activeId) ?? routes[0] ?? null;
 
-  const distDiff = score.metrics.actualDistance - score.metrics.plannedDistance;
-  const timeDiff = score.metrics.actualDuration - score.metrics.plannedDuration;
+  const distDiff = score ? (score.metrics.actualDistance - score.metrics.plannedDistance) : 0;
+  const timeDiff = score ? (score.metrics.actualDuration - score.metrics.plannedDuration) : 0;
 
   return (
     <div className="min-h-screen">
@@ -267,7 +241,7 @@ export default function RouteEfficiencyPage() {
           <div className="space-y-4">
             {efficiencyLoading ? (
               <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 animate-pulse" />
-            ) : (
+            ) : score ? (
               <>
                 {/* Score card */}
                 <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-6">
@@ -405,6 +379,13 @@ export default function RouteEfficiencyPage() {
                   </div>
                 </div>
               </>
+            ) : (
+              <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
+                <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                <p className="text-sm text-white/25">
+                  {!activeId ? 'Select a route from the list to view its efficiency score' : 'No efficiency data available for this route'}
+                </p>
+              </div>
             )}
           </div>
         </div>
