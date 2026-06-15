@@ -27,6 +27,16 @@ import { tenantContext } from "../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
 import { getRedis } from "../lib/redis.js";
 import {
+  getNotificationQueue,
+  getOptimizationQueue,
+  getWebhookQueue,
+  getMaintenanceQueue,
+  getIntegrationQueue,
+  getGeofenceQueue,
+  getFailedDeliveryQueue,
+  getWCWebhookQueue,
+} from "../lib/queue.js";
+import {
   NotFoundError,
   ValidationError,
   ConflictError,
@@ -731,6 +741,149 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       return { data: { revoked: true } };
     },
   );
+  // ── GET /queues — BullMQ queue stats ──────────────────────────
+
+  fastify.get("/queues", async (_request: FastifyRequest, _reply: FastifyReply) => {
+    const QUEUE_FACTORIES: [string, () => any][] = [
+      ["notifications", getNotificationQueue],
+      ["optimization", getOptimizationQueue],
+      ["webhooks", getWebhookQueue],
+      ["maintenance", getMaintenanceQueue],
+      ["integration", getIntegrationQueue],
+      ["geofence", getGeofenceQueue],
+      ["failed-delivery", getFailedDeliveryQueue],
+      ["wc-webhooks", getWCWebhookQueue],
+    ];
+
+    const stats = await Promise.all(
+      QUEUE_FACTORIES.map(async ([name, getQueue]) => {
+        try {
+          const queue = getQueue();
+          const counts = await queue.getJobCounts("waiting", "active", "completed", "failed", "delayed", "paused");
+          const isPaused = await queue.isPaused();
+          return {
+            name,
+            active: counts.active ?? 0,
+            waiting: counts.waiting ?? 0,
+            completed: counts.completed ?? 0,
+            failed: counts.failed ?? 0,
+            delayed: counts.delayed ?? 0,
+            paused: isPaused,
+            throughputPerMin: 0,
+            avgProcessingTimeMs: 0,
+            errorRate: counts.completed > 0
+              ? Math.round((counts.failed / (counts.completed + counts.failed)) * 10000) / 100
+              : 0,
+          };
+        } catch {
+          return { name, active: 0, waiting: 0, completed: 0, failed: 0, delayed: 0, paused: false, throughputPerMin: 0, avgProcessingTimeMs: 0, errorRate: 0 };
+        }
+      }),
+    );
+
+    return { data: stats };
+  });
+
+  // ── GET /queues/jobs — recent jobs across all queues ──────────
+
+  fastify.get("/queues/jobs", async (_request: FastifyRequest, _reply: FastifyReply) => {
+    const QUEUE_FACTORIES: [string, () => any][] = [
+      ["notifications", getNotificationQueue],
+      ["optimization", getOptimizationQueue],
+      ["webhooks", getWebhookQueue],
+      ["maintenance", getMaintenanceQueue],
+    ];
+
+    const allJobs: any[] = [];
+    for (const [, getQueue] of QUEUE_FACTORIES) {
+      try {
+        const queue = getQueue();
+        const jobs = await queue.getJobs(["active", "waiting", "failed"], 0, 10, true).catch(() => []);
+        for (const job of jobs) {
+          allJobs.push({
+            id: String(job.id),
+            name: job.name,
+            status: job.finishedOn ? "completed" : job.processedOn ? "active" : job.failedReason ? "failed" : "waiting",
+            progress: typeof job.progress === "number" ? job.progress : 0,
+            attempts: job.attemptsMade ?? 0,
+            maxAttempts: job.opts?.attempts ?? 3,
+            createdAt: job.timestamp ? new Date(job.timestamp).toISOString() : new Date().toISOString(),
+            processedAt: job.processedOn ? new Date(job.processedOn).toISOString() : undefined,
+          });
+        }
+      } catch {
+        // queue not available
+      }
+    }
+
+    return { data: allJobs.slice(0, 50), pagination: { page: 1, limit: 50, total: allJobs.length, totalPages: 1 } };
+  });
+
+  // ── GET /queues/scheduled — recurring/scheduled jobs ─────────
+
+  fastify.get("/queues/scheduled", async (_request: FastifyRequest, _reply: FastifyReply) => {
+    const SCHEDULED_QUEUES: [string, () => any][] = [
+      ["maintenance", getMaintenanceQueue],
+      ["geofence", getGeofenceQueue],
+    ];
+
+    const scheduled: any[] = [];
+    for (const [queueName, getQueue] of SCHEDULED_QUEUES) {
+      try {
+        const queue = getQueue();
+        const repeatable = await queue.getRepeatableJobs().catch(() => []);
+        for (const job of repeatable) {
+          scheduled.push({
+            id: job.key,
+            name: job.name,
+            pattern: job.cron ?? job.every ?? "unknown",
+            enabled: true,
+            nextRunAt: job.next ? new Date(job.next).toISOString() : null,
+            lastRunStatus: "success",
+            lastRunTime: null,
+            queue: queueName,
+          });
+        }
+      } catch {
+        // queue not available
+      }
+    }
+
+    return { data: scheduled };
+  });
+
+  // ── GET /queues/dlq — dead letter queue items ─────────────────
+
+  fastify.get("/queues/dlq", async (_request: FastifyRequest, _reply: FastifyReply) => {
+    const QUEUE_FACTORIES: [string, () => any][] = [
+      ["failed-delivery", getFailedDeliveryQueue],
+      ["wc-webhooks", getWCWebhookQueue],
+      ["notifications", getNotificationQueue],
+      ["webhooks", getWebhookQueue],
+    ];
+
+    const dlqItems: any[] = [];
+    for (const [queueName, getQueue] of QUEUE_FACTORIES) {
+      try {
+        const queue = getQueue();
+        const failed = await queue.getFailed(0, 10).catch(() => []);
+        for (const job of failed) {
+          dlqItems.push({
+            jobId: String(job.id),
+            jobName: job.name,
+            queue: queueName,
+            failedReason: job.failedReason ?? "Unknown error",
+            category: "system",
+            failedAt: job.finishedOn ? new Date(job.finishedOn).toISOString() : new Date().toISOString(),
+          });
+        }
+      } catch {
+        // queue not available
+      }
+    }
+
+    return { data: dlqItems };
+  });
 }
 
 export default adminRoutes;

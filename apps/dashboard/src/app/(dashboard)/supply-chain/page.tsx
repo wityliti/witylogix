@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { StatCard } from '@/components/ui/stat-card';
 import { Badge } from '@/components/ui/badge';
@@ -36,51 +36,6 @@ interface DemandSupplyData {
   variance: number;
 }
 
-const KPI_METRICS = [
-  {
-    id: 'kpi-1',
-    name: 'Fill Rate',
-    value: '96.8',
-    unit: '%',
-    trend: 2.3,
-    trendLabel: 'vs last week',
-    color: 'success' as const,
-  },
-  {
-    id: 'kpi-2',
-    name: 'Backorder Rate',
-    value: '3.2',
-    unit: '%',
-    trend: -1.5,
-    trendLabel: 'reduction',
-    color: 'success' as const,
-  },
-  {
-    id: 'kpi-3',
-    name: 'Avg Lead Time',
-    value: '4.2',
-    unit: 'days',
-    trend: -0.8,
-    trendLabel: 'faster',
-    color: 'success' as const,
-  },
-  {
-    id: 'kpi-4',
-    name: 'Inventory Turns',
-    value: '6.8',
-    unit: '/year',
-    trend: 0.5,
-    trendLabel: 'improvement',
-    color: 'primary' as const,
-  },
-];
-
-const INVENTORY_DISTRIBUTION = [
-  { category: 'Class A Items', count: 12, percentage: 15, description: 'High value, critical' },
-  { category: 'Class B Items', count: 34, percentage: 42, description: 'Medium value' },
-  { category: 'Class C Items', count: 39, percentage: 43, description: 'Low value, frequent' },
-];
-
 export default function SupplyChainPage() {
   const inventory = useInventory();
   const orders = useOrders();
@@ -88,6 +43,32 @@ export default function SupplyChainPage() {
   const demand = useDemandPlanning();
   const warehouse = useWarehouseOps();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
+
+  const kpiMetrics = useMemo(() => {
+    const total = inventory.items.length;
+    const inStock = inventory.items.filter(i => i.status === 'in-stock').length;
+    const outOfStock = inventory.items.filter(i => i.status === 'out-of-stock').length;
+    const fillRate = total > 0 ? ((inStock / total) * 100).toFixed(1) : '—';
+    const backorderRate = total > 0 ? ((outOfStock / total) * 100).toFixed(1) : '—';
+    return [
+      { id: 'kpi-1', name: 'Fill Rate', value: fillRate, unit: '%', color: 'success' as const },
+      { id: 'kpi-2', name: 'Backorder Rate', value: backorderRate, unit: '%', color: 'success' as const },
+      { id: 'kpi-3', name: 'Total SKUs', value: String(total), unit: '', color: 'success' as const },
+      { id: 'kpi-4', name: 'Orders (page)', value: String(orders.orders.length), unit: '', color: 'primary' as const },
+    ];
+  }, [inventory.items, orders.orders]);
+
+  const inventoryDistribution = useMemo(() => {
+    const total = inventory.items.length || 1;
+    const classA = inventory.items.filter(i => i.abcClass === 'A').length;
+    const classB = inventory.items.filter(i => i.abcClass === 'B').length;
+    const classC = inventory.items.filter(i => i.abcClass === 'C').length;
+    return [
+      { category: 'Class A Items', count: classA, percentage: Math.round((classA / total) * 100), description: 'High value, critical' },
+      { category: 'Class B Items', count: classB, percentage: Math.round((classB / total) * 100), description: 'Medium value' },
+      { category: 'Class C Items', count: classC, percentage: Math.round((classC / total) * 100), description: 'Low value, frequent' },
+    ];
+  }, [inventory.items]);
 
   const pipelineStages: PipelineStage[] = [
     {
@@ -122,11 +103,12 @@ export default function SupplyChainPage() {
     },
   ];
 
-  const demandSupplyData: DemandSupplyData[] = [
-    { period: 'Week 1', demand: 4500, supply: 5200, variance: 15.6 },
-    { period: 'Week 2', demand: 5100, supply: 5200, variance: 2.0 },
-    { period: 'Week 3', demand: 6200, supply: 5200, variance: -16.1 },
-  ];
+  const demandSupplyData: DemandSupplyData[] = demand.items.map(d => ({
+    period: d.period,
+    demand: d.demand,
+    supply: d.supply,
+    variance: d.variance,
+  }));
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
@@ -157,15 +139,11 @@ export default function SupplyChainPage() {
         <div className="space-y-6 max-w-7xl">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {KPI_METRICS.map((metric, idx) => (
+            {kpiMetrics.map((metric, idx) => (
               <StatCard
                 key={metric.id}
                 label={metric.name}
                 value={metric.value}
-                change={{
-                  value: metric.trend,
-                  label: metric.trendLabel,
-                }}
                 accentColor={`var(--wl-${metric.color}-500)`}
                 index={idx}
               />
@@ -315,7 +293,7 @@ export default function SupplyChainPage() {
               Inventory ABC Distribution
             </h2>
             <div className="space-y-4">
-              {INVENTORY_DISTRIBUTION.map((item) => (
+              {inventoryDistribution.map((item) => (
                 <div key={item.category}>
                   <div className="flex items-center justify-between mb-2">
                     <div>

@@ -10,7 +10,6 @@ import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
 import {
   Truck,
-  TrendingUp,
   AlertTriangle,
   Plus,
   BarChart3,
@@ -38,6 +37,8 @@ export default function FreightPage() {
     const exceptions = shipments.filter((l) => l.status === 'Exception').length;
     const avgCostPerMile = shipments.length > 0 ? Math.round((shipments.reduce((sum, l) => sum + l.rate, 0) / shipments.length) * 100) / 100 : 0;
 
+    const totalSpend = Math.round(shipments.reduce((sum, s) => sum + (s.rate ?? 0), 0));
+
     return {
       booked,
       inTransit,
@@ -45,6 +46,7 @@ export default function FreightPage() {
       exceptions,
       avgCostPerMile,
       totalLoadVolume: shipments.length,
+      totalSpend,
     };
   }, [shipments]);
 
@@ -65,8 +67,6 @@ export default function FreightPage() {
       .slice(0, 5)
       .map((c) => ({ ...c, avgRate: Math.round(c.rate / c.count) }));
   }, [shipments]);
-
-  const totalSavings = 15000;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
@@ -128,9 +128,9 @@ export default function FreightPage() {
             </Card>
 
             <Card className="p-4 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Savings</p>
-              <p className="text-3xl font-bold text-emerald-400 mt-2">${(totalSavings / 1000).toFixed(0)}k</p>
-              <TrendingUp className="w-4 h-4 text-emerald-500 mt-1" />
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Spend</p>
+              <p className="text-3xl font-bold text-white mt-2">${(stats.totalSpend / 1000).toFixed(1)}k</p>
+              <DollarSign className="w-4 h-4 text-gray-500 mt-1" />
             </Card>
           </div>
 
@@ -208,10 +208,10 @@ export default function FreightPage() {
                 <p className="text-2xl font-bold text-white">${(stats.avgCostPerMile * stats.totalLoadVolume).toLocaleString()}</p>
                 <p className="text-xs text-gray-500 mt-1">For {stats.totalLoadVolume} loads</p>
               </div>
-              <div className="p-4 rounded-lg bg-[#1a1a2e] border border-emerald-500/30">
-                <p className="text-xs font-medium text-emerald-400 mb-2">NEGOTIATED SAVINGS</p>
-                <p className="text-2xl font-bold text-emerald-400">${totalSavings.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">{((totalSavings / (stats.avgCostPerMile * stats.totalLoadVolume)) * 100).toFixed(1)}% reduction</p>
+              <div className="p-4 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
+                <p className="text-xs font-medium text-gray-400 mb-2">TOTAL SPEND</p>
+                <p className="text-2xl font-bold text-white">${stats.totalSpend.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-1">All shipments</p>
               </div>
               <div className="p-4 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
                 <p className="text-xs font-medium text-gray-400 mb-2">AVG COST PER MILE</p>
