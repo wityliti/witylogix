@@ -185,3 +185,29 @@ export function useReorderAlerts(filters?: ApiFilters): UseApiListResult<Reorder
 export function useStockGauges(filters?: ApiFilters): UseApiListResult<StockGauge> {
   return useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges', filters);
 }
+
+export interface WavePlan {
+  waveId: string;
+  createdDate: string;
+  ordersCount: number;
+  itemsCount: number;
+  status: 'planned' | 'picking' | 'completed';
+  estimatedCompletionTime: string;
+}
+
+export interface BatchTask {
+  batchId: string;
+  waveId: string;
+  location: string;
+  itemCount: number;
+  status: 'pending' | 'in-progress' | 'completed';
+  completionRate: number;
+}
+
+export function useWaves(filters?: ApiFilters): UseApiListResult<WavePlan> {
+  return useApiList<WavePlan>('/api/v4/supply-chain/waves', filters);
+}
+
+export function useBatches(filters?: ApiFilters): UseApiListResult<BatchTask> {
+  return useApiList<BatchTask>('/api/v4/supply-chain/batches', filters);
+}

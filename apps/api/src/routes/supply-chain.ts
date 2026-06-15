@@ -389,6 +389,80 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
 
     return { data: gauges, pagination: { page: 1, limit: gauges.length, total: gauges.length, totalPages: 1 } };
   });
+
+  // ── WAVES ─────────────────────────────────────────────────────────
+
+  fastify.get("/waves", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const shopId = request.shopId;
+    const since = new Date();
+    since.setDate(since.getDate() - 14);
+
+    const orders = await request.tenantDb.order.findMany({
+      where: { shopId, createdAt: { gte: since } },
+      select: { status: true, itemCount: true, createdAt: true, deliveryDate: true },
+      orderBy: { createdAt: "desc" as const },
+    });
+
+    // Group by calendar day
+    const dayMap = new Map<string, { statuses: string[]; itemsCount: number; deliveryDate: Date | null }>();
+    for (const o of orders) {
+      const day = o.createdAt.toISOString().slice(0, 10);
+      const existing = dayMap.get(day) ?? { statuses: [], itemsCount: 0, deliveryDate: null };
+      existing.statuses.push(String(o.status));
+      existing.itemsCount += o.itemCount;
+      if (!existing.deliveryDate && o.deliveryDate) existing.deliveryDate = o.deliveryDate;
+      dayMap.set(day, existing);
+    }
+
+    const waves = Array.from(dayMap.entries())
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([day, { statuses, itemsCount, deliveryDate }], idx) => {
+        const allDone = statuses.every((s) => s === "DELIVERED" || s === "CANCELLED");
+        const anyActive = statuses.some((s) => ["IN_TRANSIT", "PICKED_UP", "ASSIGNED"].includes(s));
+        const waveNum = String(dayMap.size - idx).padStart(4, "0");
+        const estCompletion = deliveryDate ?? new Date(new Date(day).getTime() + 18 * 3600000);
+        return {
+          waveId: `WAVE-${day.replace(/-/g, "")}-${waveNum}`,
+          createdDate: `${day}T06:00:00Z`,
+          ordersCount: statuses.length,
+          itemsCount,
+          status: allDone ? "completed" : anyActive ? "picking" : "planned",
+          estimatedCompletionTime: estCompletion instanceof Date ? estCompletion.toISOString() : new Date(estCompletion).toISOString(),
+        };
+      });
+
+    return { data: waves, pagination: { page: 1, limit: waves.length, total: waves.length, totalPages: 1 } };
+  });
+
+  // ── BATCHES ───────────────────────────────────────────────────────
+
+  fastify.get("/batches", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const shopId = request.shopId;
+
+    const orders = await request.tenantDb.order.findMany({
+      where: { shopId, status: { notIn: ["DELIVERED", "CANCELLED"] as any } },
+      take: 30,
+      orderBy: { createdAt: "desc" as const },
+      select: { id: true, status: true, itemCount: true, createdAt: true, fulfillmentId: true },
+    });
+
+    const batches = orders.map((o) => {
+      const s = String(o.status);
+      const batchStatus = s === "PICKED_UP" ? "completed" : ["IN_TRANSIT", "ASSIGNED"].includes(s) ? "in-progress" : "pending";
+      const completionRate = batchStatus === "completed" ? 100 : batchStatus === "in-progress" ? 60 : 0;
+      const day = o.createdAt.toISOString().slice(0, 10).replace(/-/g, "");
+      return {
+        batchId: o.fulfillmentId ?? `BATCH-${o.id.slice(0, 8)}`,
+        waveId: `WAVE-${day}-0001`,
+        location: "Main Warehouse",
+        itemCount: o.itemCount,
+        status: batchStatus as "pending" | "in-progress" | "completed",
+        completionRate,
+      };
+    });
+
+    return { data: batches, pagination: { page: 1, limit: batches.length, total: batches.length, totalPages: 1 } };
+  });
 }
 
 // ─── Status Mappers ──────────────────────────────────────────────────
