@@ -119,84 +119,117 @@ export default function TrackingPage() {
       />
 
       <main className="min-h-screen bg-wl-bg-root p-6 space-y-6">
-        {/* Filter Tabs */}
+        {/* Toolbar: filters + view toggle */}
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="pt-4">
-            <div className="flex gap-2 flex-wrap">
-              {FILTER_OPTIONS.map((status) => {
-                const count =
-                  status === 'ALL'
-                    ? shipments.length
-                    : shipments.filter((s) => s.status === status).length;
-                return (
-                  <button
-                    key={status}
-                    onClick={() => setFilterStatus(status)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      filterStatus === status
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-wl-bg-elevated text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {status.replace(/_/g, ' ')}
-                    <span className="ml-1.5 text-xs opacity-70">({count})</span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              {/* Status filters */}
+              <div className="flex gap-2 flex-wrap">
+                {FILTER_OPTIONS.map((status) => {
+                  const count =
+                    status === 'ALL'
+                      ? shipments.length
+                      : shipments.filter((s) => s.status === status).length;
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => setFilterStatus(status)}
+                      className={cn(
+                        'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                        filterStatus === status
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-wl-bg-elevated text-gray-400 hover:text-white',
+                      )}
+                    >
+                      {status.replace(/_/g, ' ')}
+                      <span className="ml-1.5 text-xs opacity-70">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* List / Map toggle */}
+              <div className="flex items-center gap-1 p-1 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
+                <button
+                  onClick={() => setView('list')}
+                  aria-label="List view"
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+                    view === 'list'
+                      ? 'bg-wl-primary text-white'
+                      : 'text-wl-text-muted hover:text-wl-text-primary',
+                  )}
+                >
+                  <LayoutList className="w-3.5 h-3.5" />
+                  List
+                </button>
+                <button
+                  onClick={() => setView('map')}
+                  aria-label="Map view"
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+                    view === 'map'
+                      ? 'bg-wl-primary text-white'
+                      : 'text-wl-text-muted hover:text-wl-text-primary',
+                  )}
+                >
+                  <Map className="w-3.5 h-3.5" />
+                  Map
+                  {mappableCount > 0 && (
+                    <span className="ml-1 text-[10px] opacity-60">{mappableCount}</span>
+                  )}
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Tracking Table */}
-        <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Recipient</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Last Known Location</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">ETA</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredShipments.map((shipment, idx) => (
-                  <tr
-                    key={shipment.id}
-                    className={`border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated ${idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken'}`}
-                  >
-                    <td className="p-3 px-4 text-white font-mono text-xs">
-                      {shipment.trackingNumber ?? shipment.shipmentNumber}
-                    </td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">
-                      {shipment.recipientName ?? '—'}
-                    </td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">
-                      {shipment.carrier ?? '—'}
-                    </td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">
-                      {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
-                    </td>
-                    <td className="p-3 px-4 text-center">
-                      <Badge variant={getStatusColor(shipment.status)}>
-                        {shipment.status.replace(/_/g, ' ')}
-                      </Badge>
-                    </td>
-                    <td className="p-3 px-4 text-center text-gray-400 text-sm">
-                      {shipment.estimatedArrival
-                        ? new Date(shipment.estimatedArrival).toLocaleDateString()
-                        : '—'}
-                    </td>
-                    <td className="p-3 px-4 text-center">
-                      <Link
-                        href={
-                          shipment.trackingNumber
-                            ? `/shipping/tracking/${shipment.trackingNumber}`
-                            : `/shipments/${shipment.id}`
-                        }
+        {view === 'map' ? (
+          /* ── Map view ────────────────────────────────────── */
+          <div className="h-[600px] rounded-xl overflow-hidden">
+            {mappableCount === 0 ? (
+              <div className="w-full h-full bg-wl-bg-overlay border border-wl-border-default rounded-xl flex items-center justify-center">
+                <div className="text-center text-gray-400">
+                  <Map className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm font-semibold text-wl-text-primary mb-1">No location data</p>
+                  <p className="text-xs">Shipments need delivery coordinates to appear on the map.</p>
+                </div>
+              </div>
+            ) : (
+              <ShipmentsMapView
+                shipments={filteredShipments as any}
+                selectedId={selectedShipmentId}
+                onShipmentClick={(id) =>
+                  setSelectedShipmentId((prev) => (prev === id ? null : id))
+                }
+              />
+            )}
+          </div>
+        ) : (
+          /* ── List view ───────────────────────────────────── */
+          <>
+            <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Recipient</th>
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Last Known Location</th>
+                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
+                      <th className="p-3 px-4 text-center font-semibold text-gray-400">ETA</th>
+                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredShipments.map((shipment, idx) => (
+                      <tr
+                        key={shipment.id}
+                        className={cn(
+                          'border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated',
+                          idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken',
+                        )}
                       >
                         <td className="p-3 px-4 text-white font-mono text-xs">
                           {shipment.trackingNumber ?? shipment.shipmentNumber}
