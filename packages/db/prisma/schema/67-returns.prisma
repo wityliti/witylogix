@@ -1,0 +1,65 @@
+// ─── Returns / RMA ───────────────────────────────────────────────────────────
+
+enum ReturnRequestStatus {
+  PENDING    @map("pending")
+  APPROVED   @map("approved")
+  REJECTED   @map("rejected")
+  RECEIVED   @map("received")
+  INSPECTED  @map("inspected")
+  REFUNDED   @map("refunded")
+}
+
+enum ReturnReason {
+  DEFECTIVE        @map("defective")
+  DAMAGED          @map("damaged")
+  WRONG_ITEM       @map("wrong_item")
+  NOT_AS_DESCRIBED @map("not_as_described")
+  CHANGED_MIND     @map("changed_mind")
+  OTHER            @map("other")
+}
+
+model ReturnRequest {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String               @map("shop_id") @db.Uuid
+  orderId      String               @map("order_id") @db.Uuid
+  customerId   String?              @map("customer_id")
+  customerName String?              @map("customer_name")
+  customerEmail String?             @map("customer_email")
+  status       ReturnRequestStatus  @default(PENDING)
+  reason       ReturnReason         @default(OTHER)
+  description  String?
+  refundAmount Decimal?             @map("refund_amount") @db.Decimal(10, 2)
+  notes        String?
+  approvedAt   DateTime?            @map("approved_at")
+  rejectedAt   DateTime?            @map("rejected_at")
+  rejectionReason String?           @map("rejection_reason")
+  receivedAt   DateTime?            @map("received_at")
+  refundedAt   DateTime?            @map("refunded_at")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  shop  Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  items ReturnRequestItem[]
+
+  @@index([shopId])
+  @@index([orderId])
+  @@index([status])
+  @@map("return_requests")
+}
+
+model ReturnRequestItem {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  returnRequestId String        @map("return_request_id") @db.Uuid
+  productId       String?       @map("product_id")
+  productName     String        @map("product_name")
+  quantity        Int
+  condition       String        @default("good")
+  notes           String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  returnRequest ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+
+  @@index([returnRequestId])
+  @@map("return_request_items")
+}

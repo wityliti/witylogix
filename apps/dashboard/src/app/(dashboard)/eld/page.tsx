@@ -6,17 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
-import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
-import { useApiList } from "@/hooks/use-api";
+import { useFleetCompliance, useViolations, useELDEvents, type DutyStatus } from "@/hooks/use-eld";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { useRouter } from "next/navigation";
+import { useDrivers } from "@/hooks/use-drivers";
 
-interface ELDRecord {
-  id: string;
-  driverId: string;
-  [key: string]: unknown;
-}
+import type { Driver as ApiDriver } from "@/hooks/use-drivers";
 import {
   TrendingUp,
   AlertTriangle,
@@ -68,14 +63,40 @@ const dutyStatusIcon: Record<DutyStatus, string> = {
   ON_DUTY: "📋",
 };
 
-const MOCK_DRIVERS: DriverStatusInfo[] = [
-  { driverId: "drv-1", name: "Carlos Martinez", status: "COMPLIANT", currentDuty: "DRIVING", drivingRemaining: 5.5, breakStatus: "TAKEN", violations: 0, lastUpdate: "2 min ago" },
-  { driverId: "drv-2", name: "Sofia Lindberg", status: "WARNING", currentDuty: "ON_DUTY", drivingRemaining: 2.1, breakStatus: "REQUIRED", violations: 1, lastUpdate: "5 min ago" },
-  { driverId: "drv-3", name: "James Brown", status: "COMPLIANT", currentDuty: "OFF_DUTY", drivingRemaining: 11.0, breakStatus: "TAKEN", violations: 0, lastUpdate: "1 hr ago" },
-  { driverId: "drv-4", name: "Aisha Patel", status: "VIOLATION", currentDuty: "DRIVING", drivingRemaining: 0.5, breakStatus: "REQUIRED", violations: 2, lastUpdate: "1 min ago" },
-  { driverId: "drv-5", name: "Tom Eriksson", status: "OFFLINE", currentDuty: "SLEEPER", drivingRemaining: 11.0, breakStatus: "TAKEN", violations: 0, lastUpdate: "3 hr ago" },
-  { driverId: "drv-6", name: "Maria Gonzalez", status: "COMPLIANT", currentDuty: "DRIVING", drivingRemaining: 7.2, breakStatus: "TAKEN", violations: 0, lastUpdate: "4 min ago" },
-];
+function toDriverStatusInfo(d: ApiDriver): DriverStatusInfo {
+  const dutyMap: Record<string, DutyStatus> = {
+    on_delivery: "DRIVING",
+    online: "ON_DUTY",
+    on_break: "OFF_DUTY",
+    offline: "SLEEPER",
+    unavailable: "OFF_DUTY",
+  };
+  const eldStatus: DriverStatus =
+    d.status === "offline" || d.status === "unavailable"
+      ? "OFFLINE"
+      : d.status === "on_break"
+        ? "WARNING"
+        : "COMPLIANT";
+
+  const lastSeenStr = d.lastSeen
+    ? (() => {
+        const diff = Date.now() - new Date(d.lastSeen).getTime();
+        const mins = Math.round(diff / 60000);
+        return mins < 60 ? `${mins} min ago` : `${Math.round(mins / 60)} hr ago`;
+      })()
+    : "Unknown";
+
+  return {
+    driverId: d.id,
+    name: d.name,
+    status: eldStatus,
+    currentDuty: dutyMap[d.status] ?? "OFF_DUTY",
+    drivingRemaining: 11,
+    breakStatus: d.status === "on_break" ? "REQUIRED" : "TAKEN",
+    violations: 0,
+    lastUpdate: lastSeenStr,
+  };
+}
 
 const dutyStatusColor = (duty: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {
@@ -88,7 +109,7 @@ const dutyStatusColor = (duty: DutyStatus): string => {
 };
 
 export default function ELDOverviewPage() {
-  const { items, loading, error, refetch } = useApiList<ELDRecord>('/api/v4/eld');
+  const { items: rawDrivers, loading: driversLoading, error: driversError, refetch } = useDrivers({ limit: 50 });
   const complianceResult = useFleetCompliance();
   const violationsResult = useViolations(undefined);
   const eventsResult = useELDEvents(undefined);
@@ -101,8 +122,10 @@ export default function ELDOverviewPage() {
   const events = eventsResult.items;
   const eventsLoading = eventsResult.loading;
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  const eldDrivers = useMemo(() => rawDrivers.map(toDriverStatusInfo), [rawDrivers]);
+
+  if (driversLoading && rawDrivers.length === 0) return <TableSkeleton rows={10} columns={6} />;
+  if (driversError) return <ErrorState message={driversError.message} onRetry={refetch} />;
 
   const complianceScore = compliance?.compliancePercentage ?? 0;
   const scoreColor =
@@ -114,12 +137,12 @@ export default function ELDOverviewPage() {
 
   const statusCounts = useMemo(() => {
     return {
-      compliant: MOCK_DRIVERS.filter((d) => d.status === "COMPLIANT").length,
-      warning: MOCK_DRIVERS.filter((d) => d.status === "WARNING").length,
-      violation: MOCK_DRIVERS.filter((d) => d.status === "VIOLATION").length,
-      offline: MOCK_DRIVERS.filter((d) => d.status === "OFFLINE").length,
+      compliant: eldDrivers.filter((d) => d.status === "COMPLIANT").length,
+      warning: eldDrivers.filter((d) => d.status === "WARNING").length,
+      violation: eldDrivers.filter((d) => d.status === "VIOLATION").length,
+      offline: eldDrivers.filter((d) => d.status === "OFFLINE").length,
     };
-  }, []);
+  }, [eldDrivers]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] space-y-6 p-6">
@@ -137,10 +160,10 @@ export default function ELDOverviewPage() {
         <StatCard
           label="Compliant Drivers"
           value={statusCounts.compliant}
-          unit={`/ ${MOCK_DRIVERS.length}`}
+          unit={`/ ${eldDrivers.length}`}
           icon={<CheckCircle className="w-5 h-5 text-wl-success-400" />}
           trend={{ direction: "neutral", value: 0 }}
-          isLoading={false}
+          isLoading={driversLoading}
         />
         <StatCard
           label="Active Violations"
@@ -182,7 +205,18 @@ export default function ELDOverviewPage() {
 
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {MOCK_DRIVERS.map((driver) => (
+                {driversLoading && eldDrivers.length === 0 ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="p-3 rounded-lg border border-[#1e1e2e] animate-pulse">
+                      <div className="h-4 bg-white/10 rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-white/5 rounded w-1/2" />
+                    </div>
+                  ))
+                ) : eldDrivers.length === 0 ? (
+                  <div className="col-span-2 text-center py-8 text-wl-text-secondary text-sm">
+                    No drivers found
+                  </div>
+                ) : eldDrivers.map((driver) => (
                   <button
                     key={driver.driverId}
                     onClick={() => setSelectedDriver(driver.driverId)}
