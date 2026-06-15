@@ -51,36 +51,6 @@ interface AuditResponse {
   };
 }
 
-// ── Demo data ────────────────────────────────────────────────────
-
-function makeDemo(overrides: Partial<AuditEntry> & Pick<AuditEntry, 'action' | 'resource_type' | 'resource_id' | 'created_at'>): AuditEntry {
-  return {
-    id: Math.random().toString(36).slice(2),
-    shop_id: 'shop-123',
-    user_id: '00000000-0000-0000-0000-00000000000' + Math.floor(Math.random() * 9 + 1),
-    ip_address: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-    user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-    changes: null,
-    metadata: null,
-    ...overrides,
-  };
-}
-
-const DEMO_DATA: AuditEntry[] = [
-  makeDemo({ action: 'CREATE', resource_type: 'order',   resource_id: 'ord-001', created_at: '2026-04-06T14:32:11Z', metadata: { user_email: 'admin@shop.io' } }),
-  makeDemo({ action: 'UPDATE', resource_type: 'driver',  resource_id: 'drv-042', created_at: '2026-04-06T14:18:05Z', changes: { status: ['AVAILABLE', 'ON_ROUTE'] } }),
-  makeDemo({ action: 'DELETE', resource_type: 'route',   resource_id: 'rte-017', created_at: '2026-04-06T13:55:22Z' }),
-  makeDemo({ action: 'EXPORT', resource_type: 'report',  resource_id: 'rpt-003', created_at: '2026-04-06T13:40:00Z', metadata: { format: 'csv', rows: 4820 } }),
-  makeDemo({ action: 'UPDATE', resource_type: 'settings',resource_id: 'settings', created_at: '2026-04-06T13:22:44Z', changes: { timezone: ['UTC', 'America/New_York'] } }),
-  makeDemo({ action: 'CREATE', resource_type: 'user',    resource_id: 'usr-091', created_at: '2026-04-06T12:58:10Z', metadata: { user_email: 'new.driver@shop.io', role: 'DRIVER' } }),
-  makeDemo({ action: 'READ',   resource_type: 'billing', resource_id: 'inv-2026-03', created_at: '2026-04-06T12:30:00Z' }),
-  makeDemo({ action: 'UPDATE', resource_type: 'zone',    resource_id: 'zne-005', created_at: '2026-04-06T12:12:38Z', changes: { capacity: [50, 65] } }),
-  makeDemo({ action: 'CREATE', resource_type: 'webhook', resource_id: 'wh-014', created_at: '2026-04-06T11:48:55Z' }),
-  makeDemo({ action: 'DELETE', resource_type: 'user',    resource_id: 'usr-013', created_at: '2026-04-06T11:30:00Z', metadata: { reason: 'offboarding' } }),
-  makeDemo({ action: 'UPDATE', resource_type: 'order',   resource_id: 'ord-098', created_at: '2026-04-06T11:10:20Z', changes: { status: ['PENDING', 'ASSIGNED'] } }),
-  makeDemo({ action: 'EXPORT', resource_type: 'audit',   resource_id: 'audit', created_at: '2026-04-06T10:45:00Z' }),
-];
-
 // ── Helpers ──────────────────────────────────────────────────────
 
 const ACTION_META: Record<AuditAction, { label: string; color: string; icon: typeof Plus }> = {
@@ -156,8 +126,8 @@ export default function AuditTrailPage() {
 
   const { data, loading, refetch } = useApiQuery<AuditResponse>(`/api/v4/audit?${qs}`);
 
-  const entries: AuditEntry[] = data?.data ?? DEMO_DATA;
-  const pagination = data?.pagination ?? { page: 1, limit: PAGE_SIZE, total: DEMO_DATA.length, pages: 1 };
+  const entries: AuditEntry[] = data?.data ?? [];
+  const pagination = data?.pagination ?? { page: 1, limit: PAGE_SIZE, total: 0, pages: 1 };
 
   const filtered = useMemo(() => {
     if (!search.trim()) return entries;
