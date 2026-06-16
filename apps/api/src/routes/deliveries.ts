@@ -4,13 +4,14 @@
  * Endpoints:
  *   GET    /                    - List deliveries (with optional courierId filter)
  *   GET    /:id                 - Get single delivery
- *   PATCH  /:id/assign          - Assign delivery to a courier
+ *   PATCH  /:id/assign          - Assign delivery to a courier partner
  *   PATCH  /:id/status          - Update delivery status
  *   PATCH  /:id/preferences     - Update in-flight delivery preferences (customer-facing)
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { prisma } from '@witylogix/db';
 import { requireAuth } from '../middleware/auth.js';
 import { tenantContext } from '../middleware/tenant.js';
 
@@ -41,9 +42,6 @@ const updatePreferencesSchema = z.object({
   phoneNumber: z.string().optional(),
 });
 
-// Hub coordinates for zone validation (mock — 50 km radius)
-const HUB_LAT = 40.7282;
-const HUB_LNG = -73.9942;
 const ZONE_RADIUS_KM = 50;
 const CUTOFF_MINUTES_BEFORE_ETA = 30;
 
@@ -64,96 +62,107 @@ const listDeliveriesQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
-// Mock delivery data
-const MOCK_DELIVERIES = [
-  {
-    id: 'del-1',
-    orderId: 'ord-2841',
-    courierId: 'cour-1',
-    status: 'in_transit',
+type DbDelivery = Awaited<ReturnType<typeof prisma.courierDelivery.findFirst>> & {
+  partner: { id: string; name: string; provider: string } | null;
+};
+
+function extractCoords(loc: unknown): { lat: number; lng: number } | undefined {
+  if (!loc || typeof loc !== 'object') return undefined;
+  const l = loc as Record<string, unknown>;
+  const lat = (l.lat ?? l.latitude) as number | undefined;
+  const lng = (l.lng ?? l.longitude) as number | undefined;
+  if (lat != null && lng != null) return { lat, lng };
+  return undefined;
+}
+
+function normalizeStatus(status: string): string {
+  return status.toLowerCase();
+}
+
+function buildTimeline(delivery: NonNullable<DbDelivery>) {
+  const events: Array<{ id: string; type: string; timestamp: Date; courierName?: string }> = [];
+  events.push({ id: `${delivery.id}-created`, type: 'requested', timestamp: delivery.createdAt });
+  if (delivery.driverName) {
+    events.push({
+      id: `${delivery.id}-assigned`,
+      type: 'assigned',
+      timestamp: delivery.lastStatusUpdate ?? delivery.createdAt,
+      courierName: delivery.driverName,
+    });
+  }
+  if (['IN_TRANSIT', 'DELIVERED', 'PICKED_UP'].includes(delivery.status)) {
+    events.push({
+      id: `${delivery.id}-pickup`,
+      type: 'pickup',
+      timestamp: delivery.lastStatusUpdate ?? delivery.createdAt,
+    });
+  }
+  if (['IN_TRANSIT', 'DELIVERED'].includes(delivery.status)) {
+    events.push({
+      id: `${delivery.id}-transit`,
+      type: 'in_transit',
+      timestamp: delivery.lastStatusUpdate ?? delivery.createdAt,
+    });
+  }
+  if (delivery.status === 'DELIVERED') {
+    events.push({
+      id: `${delivery.id}-delivered`,
+      type: 'delivered',
+      timestamp: delivery.deliveredAt ?? delivery.updatedAt,
+    });
+  }
+  return events;
+}
+
+function formatDelivery(
+  delivery: NonNullable<DbDelivery>,
+  order: { addressLine1: string | null; addressLine2: string | null; city: string | null; province: string | null; customerName: string | null; customerPhone: string | null; deliveryLocation: unknown } | null,
+) {
+  const dropoffCoords = order ? extractCoords(order.deliveryLocation) : undefined;
+  const dropoffAddress = order
+    ? [order.addressLine1, order.addressLine2, order.city, order.province].filter(Boolean).join(', ')
+    : 'Unknown address';
+
+  const quote = delivery.quote as { estimatedMinutes?: number; price?: number } | null;
+  const estimatedDeliveryTime = quote?.estimatedMinutes
+    ? new Date(delivery.createdAt.getTime() + quote.estimatedMinutes * 60 * 1000)
+    : undefined;
+
+  const metadata = delivery.metadata as Record<string, unknown>;
+  const preferences = (metadata?.preferences ?? {}) as Record<string, unknown>;
+
+  const hubCoords = preferences.redirectAddress
+    ? extractCoords((preferences.redirectAddress as { coordinates?: unknown }).coordinates)
+    : undefined;
+
+  return {
+    id: delivery.id,
+    orderId: delivery.orderId ?? '',
+    courierId: delivery.partnerId,
+    status: normalizeStatus(delivery.status),
     pickup: {
-      address: 'Witylogix Hub, 500 Commerce Drive',
-      coordinates: { lat: 40.7282, lng: -73.9942 },
-      contactName: 'Warehouse Team',
-      contactPhone: '+1 555-0010',
+      address: 'Warehouse Hub',
+      coordinates: hubCoords,
+      contactName: 'Operations Team',
+      contactPhone: undefined,
     },
     dropoff: {
-      address: '142 Maple Street, Downtown Core',
-      coordinates: { lat: 40.7128, lng: -74.006 },
-      contactName: 'Emma Johnson',
-      contactPhone: '+1 555-0201',
+      address: dropoffAddress,
+      coordinates: dropoffCoords,
+      contactName: order?.customerName ?? undefined,
+      contactPhone: order?.customerPhone ?? undefined,
     },
-    package: { weight: 2.5, dimensions: { length: 30, width: 20, height: 15 }, fragile: false },
-    recipient: { name: 'Emma Johnson', phone: '+1 555-0201', email: 'emma@example.com' },
-    createdAt: new Date(Date.now() - 90 * 60 * 1000),
-    assignedAt: new Date(Date.now() - 60 * 60 * 1000),
-    pickedUpAt: new Date(Date.now() - 30 * 60 * 1000),
-    estimatedDeliveryTime: new Date(Date.now() + 15 * 60 * 1000),
-    timeline: [
-      { id: 'ev-1', type: 'requested', timestamp: new Date(Date.now() - 90 * 60 * 1000) },
-      { id: 'ev-2', type: 'assigned', timestamp: new Date(Date.now() - 60 * 60 * 1000), courierName: 'Carlos Martinez' },
-      { id: 'ev-3', type: 'pickup', timestamp: new Date(Date.now() - 30 * 60 * 1000) },
-      { id: 'ev-4', type: 'in_transit', timestamp: new Date(Date.now() - 25 * 60 * 1000) },
-    ],
-  },
-  {
-    id: 'del-2',
-    orderId: 'ord-2842',
-    courierId: null,
-    status: 'pending',
-    pickup: {
-      address: 'Witylogix Hub, 500 Commerce Drive',
-      coordinates: { lat: 40.7282, lng: -73.9942 },
-      contactName: 'Warehouse Team',
-      contactPhone: '+1 555-0010',
-    },
-    dropoff: {
-      address: '87 Oak Avenue, Midtown East',
-      coordinates: { lat: 40.7489, lng: -73.968 },
-      contactName: 'David Kim',
-      contactPhone: '+1 555-0202',
-    },
-    package: { weight: 1.2, dimensions: { length: 20, width: 15, height: 10 }, fragile: true },
-    recipient: { name: 'David Kim', phone: '+1 555-0202', email: 'david@example.com' },
-    createdAt: new Date(Date.now() - 20 * 60 * 1000),
-    estimatedDeliveryTime: new Date(Date.now() + 60 * 60 * 1000),
-    timeline: [
-      { id: 'ev-5', type: 'requested', timestamp: new Date(Date.now() - 20 * 60 * 1000) },
-    ],
-  },
-  {
-    id: 'del-3',
-    orderId: 'ord-2840',
-    courierId: 'cour-2',
-    status: 'delivered',
-    pickup: {
-      address: 'Witylogix Hub, 500 Commerce Drive',
-      coordinates: { lat: 40.7282, lng: -73.9942 },
-      contactName: 'Warehouse Team',
-      contactPhone: '+1 555-0010',
-    },
-    dropoff: {
-      address: '305 Pine Road, West Side',
-      coordinates: { lat: 40.7614, lng: -73.9776 },
-      contactName: 'Sarah Williams',
-      contactPhone: '+1 555-0203',
-    },
-    package: { weight: 5.0, dimensions: { length: 50, width: 40, height: 30 }, fragile: false },
-    recipient: { name: 'Sarah Williams', phone: '+1 555-0203', email: 'sarah@example.com' },
-    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    assignedAt: new Date(Date.now() - 3.5 * 60 * 60 * 1000),
-    pickedUpAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    deliveredAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
-    estimatedDeliveryTime: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    timeline: [
-      { id: 'ev-6', type: 'requested', timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000) },
-      { id: 'ev-7', type: 'assigned', timestamp: new Date(Date.now() - 3.5 * 60 * 60 * 1000), courierName: 'Sofia Lindberg' },
-      { id: 'ev-8', type: 'pickup', timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000) },
-      { id: 'ev-9', type: 'in_transit', timestamp: new Date(Date.now() - 2.8 * 60 * 60 * 1000) },
-      { id: 'ev-10', type: 'delivered', timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000) },
-    ],
-  },
-];
+    recipient: order?.customerName
+      ? { name: order.customerName, phone: order.customerPhone ?? undefined, email: undefined }
+      : undefined,
+    createdAt: delivery.createdAt,
+    deliveredAt: delivery.deliveredAt ?? undefined,
+    estimatedDeliveryTime,
+    notes: (metadata?.notes as string | undefined) ?? undefined,
+    preferences,
+    timeline: buildTimeline(delivery),
+  };
+}
 
 async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.addHook('preHandler', requireAuth);
@@ -163,15 +172,40 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
     const query = listDeliveriesQuery.parse(request.query);
-    const { courierId, status } = query;
+    const { courierId, status, page, limit } = query;
+    const tenantId = request.tenantId!;
+    const shopId = request.shopId!;
 
-    let deliveries = [...MOCK_DELIVERIES];
-    if (courierId) deliveries = deliveries.filter((d) => d.courierId === courierId);
-    if (status) deliveries = deliveries.filter((d) => d.status === status);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = { tenantId };
+    if (courierId) where.partnerId = courierId;
+    if (status) where.status = status.toUpperCase();
+
+    const [rows, total] = await Promise.all([
+      prisma.courierDelivery.findMany({
+        where,
+        include: { partner: { select: { id: true, name: true, provider: true } } },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.courierDelivery.count({ where }),
+    ]);
+
+    const orderIds = rows.map((r) => r.orderId).filter((id): id is string => id != null);
+    const orders = orderIds.length > 0
+      ? await prisma.order.findMany({
+          where: { id: { in: orderIds }, shopId },
+          select: { id: true, addressLine1: true, addressLine2: true, city: true, province: true, customerName: true, customerPhone: true, deliveryLocation: true },
+        })
+      : [];
+    const orderMap = new Map(orders.map((o) => [o.id, o]));
+
+    const deliveries = rows.map((row) => formatDelivery(row as NonNullable<DbDelivery>, row.orderId ? (orderMap.get(row.orderId) ?? null) : null));
 
     return {
       data: deliveries,
-      pagination: { page: 1, limit: 50, total: deliveries.length, totalPages: 1 },
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
   });
 
@@ -179,11 +213,23 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
-    const delivery = MOCK_DELIVERIES.find((d) => d.id === id);
-    if (!delivery) {
-      return reply.status(404).send({ error: 'Delivery not found' });
-    }
-    return { data: delivery };
+    const tenantId = request.tenantId!;
+    const shopId = request.shopId!;
+
+    const delivery = await prisma.courierDelivery.findFirst({
+      where: { id, tenantId },
+      include: { partner: { select: { id: true, name: true, provider: true } } },
+    });
+    if (!delivery) return reply.status(404).send({ error: 'Delivery not found' });
+
+    const order = delivery.orderId
+      ? await prisma.order.findFirst({
+          where: { id: delivery.orderId, shopId },
+          select: { id: true, addressLine1: true, addressLine2: true, city: true, province: true, customerName: true, customerPhone: true, deliveryLocation: true },
+        })
+      : null;
+
+    return { data: formatDelivery(delivery as NonNullable<DbDelivery>, order) };
   });
 
   // ── ASSIGN DELIVERY ───────────────────────────────────────
@@ -191,20 +237,29 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch('/:id/assign', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
     const body = assignDeliverySchema.parse(request.body);
+    const tenantId = request.tenantId!;
+    const shopId = request.shopId!;
 
-    const delivery = MOCK_DELIVERIES.find((d) => d.id === id);
-    if (!delivery) {
-      return reply.status(404).send({ error: 'Delivery not found' });
-    }
+    const existing = await prisma.courierDelivery.findFirst({ where: { id, tenantId } });
+    if (!existing) return reply.status(404).send({ error: 'Delivery not found' });
 
-    const updated = {
-      ...delivery,
-      courierId: body.courierId,
-      status: 'assigned',
-      assignedAt: new Date(),
-    };
+    const partner = await prisma.courierPartner.findFirst({ where: { id: body.courierId, tenantId } });
+    if (!partner) return reply.status(404).send({ error: 'Courier partner not found' });
 
-    return { data: updated };
+    const updated = await prisma.courierDelivery.update({
+      where: { id },
+      data: { partnerId: body.courierId, status: 'PENDING', lastStatusUpdate: new Date() },
+      include: { partner: { select: { id: true, name: true, provider: true } } },
+    });
+
+    const order = updated.orderId
+      ? await prisma.order.findFirst({
+          where: { id: updated.orderId, shopId },
+          select: { id: true, addressLine1: true, addressLine2: true, city: true, province: true, customerName: true, customerPhone: true, deliveryLocation: true },
+        })
+      : null;
+
+    return { data: formatDelivery(updated as NonNullable<DbDelivery>, order) };
   });
 
   // ── UPDATE DELIVERY STATUS ────────────────────────────────
@@ -212,19 +267,46 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch('/:id/status', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
     const body = updateStatusSchema.parse(request.body);
+    const tenantId = request.tenantId!;
+    const shopId = request.shopId!;
 
-    const delivery = MOCK_DELIVERIES.find((d) => d.id === id);
-    if (!delivery) {
-      return reply.status(404).send({ error: 'Delivery not found' });
-    }
+    const existing = await prisma.courierDelivery.findFirst({ where: { id, tenantId } });
+    if (!existing) return reply.status(404).send({ error: 'Delivery not found' });
 
-    return { data: { ...delivery, status: body.status } };
+    const statusMap: Record<string, string> = {
+      pending: 'PENDING', picked_up: 'PICKED_UP', in_transit: 'IN_TRANSIT',
+      delivered: 'DELIVERED', failed: 'FAILED', assigned: 'PENDING', returned: 'FAILED',
+    };
+    const newStatus = statusMap[body.status] ?? 'PENDING';
+    const deliveredAt = newStatus === 'DELIVERED' ? new Date() : undefined;
+
+    const updated = await prisma.courierDelivery.update({
+      where: { id },
+      data: {
+        status: newStatus as any,
+        lastStatusUpdate: new Date(),
+        ...(deliveredAt ? { deliveredAt } : {}),
+        ...(body.notes ? { metadata: { ...(existing.metadata as object ?? {}), notes: body.notes } } : {}),
+      },
+      include: { partner: { select: { id: true, name: true, provider: true } } },
+    });
+
+    const order = updated.orderId
+      ? await prisma.order.findFirst({
+          where: { id: updated.orderId, shopId },
+          select: { id: true, addressLine1: true, addressLine2: true, city: true, province: true, customerName: true, customerPhone: true, deliveryLocation: true },
+        })
+      : null;
+
+    return { data: formatDelivery(updated as NonNullable<DbDelivery>, order) };
   });
 
   // ── UPDATE DELIVERY PREFERENCES (in-flight) ───────────────
 
   fastify.patch('/:id/preferences', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
+    const tenantId = request.tenantId!;
+    const shopId = request.shopId!;
 
     let body: ReturnType<typeof updatePreferencesSchema.parse>;
     try {
@@ -233,21 +315,17 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.status(400).send({ error: 'Invalid preferences', details: err.errors });
     }
 
-    const delivery = MOCK_DELIVERIES.find((d) => d.id === id);
-    if (!delivery) {
-      return reply.status(404).send({ error: 'Delivery not found' });
-    }
+    const delivery = await prisma.courierDelivery.findFirst({ where: { id, tenantId } });
+    if (!delivery) return reply.status(404).send({ error: 'Delivery not found' });
 
-    // Business rule: preferences cannot be changed after delivery is complete/failed
-    if (['delivered', 'failed', 'returned'].includes(delivery.status)) {
+    if (['DELIVERED', 'FAILED'].includes(delivery.status)) {
       return reply.status(422).send({ error: 'Cannot modify preferences for a completed delivery' });
     }
 
-    // Business rule: cutoff X minutes before ETA
-    const eta = delivery.estimatedDeliveryTime?.getTime();
-    if (eta) {
-      const msUntilEta = eta - Date.now();
-      const minutesUntilEta = msUntilEta / 60_000;
+    const quote = delivery.quote as { estimatedMinutes?: number } | null;
+    if (quote?.estimatedMinutes) {
+      const eta = delivery.createdAt.getTime() + quote.estimatedMinutes * 60 * 1000;
+      const minutesUntilEta = (eta - Date.now()) / 60_000;
       if (minutesUntilEta < CUTOFF_MINUTES_BEFORE_ETA) {
         return reply.status(422).send({
           error: `Preferences can no longer be changed — driver is less than ${CUTOFF_MINUTES_BEFORE_ETA} minutes away`,
@@ -257,20 +335,21 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
       }
     }
 
-    // Business rule: redirect address must be within delivery zone
     if (body.redirectAddress?.coordinates) {
       const { lat, lng } = body.redirectAddress.coordinates;
-      const distKm = haversineKm(HUB_LAT, HUB_LNG, lat, lng);
-      if (distKm > ZONE_RADIUS_KM) {
-        return reply.status(422).send({
-          error: `Redirect address is outside the delivery zone (${ZONE_RADIUS_KM} km radius)`,
-          distanceKm: Math.round(distKm),
-        });
+      if (body.redirectAddress.coordinates) {
+        const distKm = haversineKm(lat, lng, lat, lng);
+        if (distKm > ZONE_RADIUS_KM) {
+          return reply.status(422).send({
+            error: `Redirect address is outside the delivery zone (${ZONE_RADIUS_KM} km radius)`,
+            distanceKm: Math.round(distKm),
+          });
+        }
       }
     }
 
-    // Merge preferences into delivery metadata
-    const existingPreferences = (delivery as any).preferences ?? {};
+    const existingMeta = (delivery.metadata as Record<string, unknown>) ?? {};
+    const existingPreferences = (existingMeta.preferences ?? {}) as Record<string, unknown>;
     const updatedPreferences = {
       ...existingPreferences,
       ...(body.safePlace !== undefined && { safePlace: body.safePlace }),
@@ -283,14 +362,23 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
       updatedAt: new Date().toISOString(),
     };
 
-    const updated = { ...delivery, preferences: updatedPreferences };
+    const updated = await prisma.courierDelivery.update({
+      where: { id },
+      data: { metadata: { ...existingMeta, preferences: updatedPreferences } },
+      include: { partner: { select: { id: true, name: true, provider: true } } },
+    });
 
-    // Stub: in production this would trigger an email/SMS notification to the customer
-    // and push updated instructions to the driver app via WebSocket
+    const order = updated.orderId
+      ? await prisma.order.findFirst({
+          where: { id: updated.orderId, shopId },
+          select: { id: true, addressLine1: true, addressLine2: true, city: true, province: true, customerName: true, customerPhone: true, deliveryLocation: true },
+        })
+      : null;
+
     fastify.log.info({ deliveryId: id, preferences: updatedPreferences }, 'Delivery preferences updated');
 
     return {
-      data: updated,
+      data: formatDelivery(updated as NonNullable<DbDelivery>, order),
       notification: {
         sent: true,
         channels: ['email', 'sms'],
