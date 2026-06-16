@@ -14,7 +14,6 @@ import {
   CheckCircle,
   Zap,
   Activity,
-  Clock,
   ArrowRight,
   Settings,
 } from 'lucide-react';
@@ -165,29 +164,72 @@ export default function IntegrationOverviewPage() {
             </CardContent>
           </Card>
 
-          {/* API Usage — coming soon */}
+          {/* Active Connections */}
           <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
-              <h3 className="font-semibold text-white mb-4">API Usage (24h)</h3>
-              <div className="flex flex-col items-center justify-center h-24 text-center">
-                <Clock className="w-8 h-8 text-wl-text-tertiary mb-2" />
-                <p className="text-sm text-wl-text-tertiary">
-                  API usage tracking coming soon
-                </p>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-white">Active Connections</h3>
+                <Zap className="w-5 h-5 text-emerald-500" />
               </div>
+              {connectionsLoading ? (
+                <div className="h-24 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-end gap-2">
+                    <span className="text-4xl font-bold text-white">{totalActive}</span>
+                    <span className="text-gray-400 text-sm mb-1">of {totalProviders}</span>
+                  </div>
+                  <div className="w-full h-2 bg-wl-bg-root rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all"
+                      style={{ width: `${totalProviders > 0 ? (totalActive / totalProviders) * 100 : 0}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {totalError > 0 ? `${totalError} with errors` : 'All connections healthy'}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Error Rate — coming soon */}
+          {/* Integration Health */}
           <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
-              <h3 className="font-semibold text-white mb-4">Error Rate Trend</h3>
-              <div className="flex flex-col items-center justify-center h-24 text-center">
-                <Clock className="w-8 h-8 text-wl-text-tertiary mb-2" />
-                <p className="text-sm text-wl-text-tertiary">
-                  API usage tracking coming soon
-                </p>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-white">Integration Health</h3>
+                <AlertCircle className={cn('w-5 h-5', totalError > 0 ? 'text-red-500' : 'text-emerald-500')} />
               </div>
+              {connectionsLoading ? (
+                <div className="h-24 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-end gap-2">
+                    <span className={cn('text-4xl font-bold', totalError > 0 ? 'text-red-400' : 'text-emerald-400')}>
+                      {totalProviders > 0 ? Math.round(((totalProviders - totalError) / totalProviders) * 100) : 100}
+                    </span>
+                    <span className="text-gray-400 text-sm mb-1">%</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="text-center">
+                      <div className="text-emerald-400 font-semibold">{totalActive}</div>
+                      <div className="text-gray-500">Active</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={cn('font-semibold', totalError > 0 ? 'text-red-400' : 'text-gray-400')}>{totalError}</div>
+                      <div className="text-gray-500">Errors</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-gray-400 font-semibold">{totalProviders - totalActive - totalError}</div>
+                      <div className="text-gray-500">Inactive</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
