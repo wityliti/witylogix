@@ -55,7 +55,7 @@ const FEATURE_CARDS: FeatureCard[] = [
     description: 'Conversational AI assistant for logistics decisions, queries, and planning.',
     href: '/ai/copilot',
     statsPath: null,
-    status: 'coming_soon',
+    status: 'active',
   },
 ];
 
