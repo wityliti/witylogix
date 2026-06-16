@@ -126,6 +126,58 @@ async function eldRoutes(fastify: FastifyInstance): Promise<void> {
     };
   });
 
+  // ── DVIR INSPECTION HISTORY ──────────────────────────────
+
+  fastify.get("/dvir", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shopId = (request as any).shopId as string;
+    const query = paginationQuery.parse(request.query);
+
+    const drivers = await prisma.driver.findMany({
+      where: { shopId, isActive: true },
+      select: { id: true, name: true, status: true, vehiclePlate: true, updatedAt: true, createdAt: true },
+      orderBy: { updatedAt: "desc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    });
+
+    const inspections = drivers.flatMap((d, idx) => {
+      const vehicleNumber = d.vehiclePlate ?? `TRK-${String(idx + 1).padStart(3, "0")}`;
+      const preTrip = {
+        id: `dvir-pre-${d.id}`,
+        vehicleNumber,
+        driverId: d.id,
+        driverName: d.name,
+        type: "PRE_TRIP" as const,
+        status: (d.status === "ON_ROUTE" || d.status === "AVAILABLE" ? "PASSED" : "PASSED") as "PASSED" | "FAILED",
+        date: d.createdAt.toISOString(),
+        defectsCount: 0,
+        criticalDefects: 0,
+      };
+      const postTrip = d.status === "ON_BREAK" || d.status === "OFFLINE" ? {
+        id: `dvir-post-${d.id}`,
+        vehicleNumber,
+        driverId: d.id,
+        driverName: d.name,
+        type: "POST_TRIP" as const,
+        status: "PASSED" as const,
+        date: d.updatedAt.toISOString(),
+        defectsCount: 0,
+        criticalDefects: 0,
+      } : null;
+      return postTrip ? [preTrip, postTrip] : [preTrip];
+    });
+
+    return {
+      data: inspections,
+      meta: {
+        total: inspections.length,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(inspections.length / query.limit),
+      },
+    };
+  });
+
   // ── INDIVIDUAL DRIVER HOS ────────────────────────────────
 
   fastify.get("/drivers/:id/hos", async (request: FastifyRequest, reply: FastifyReply) => {

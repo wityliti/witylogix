@@ -16,13 +16,9 @@ import {
   CheckCircle,
   AlertTriangle,
   Calendar,
-  Search,
-  Plus,
   Eye,
-  Download,
-  Filter,
   Wrench,
-  TrendingDown,
+  Plus,
 } from "lucide-react";
 
 type DefectStatus = "REPORTED" | "ACKNOWLEDGED" | "REPAIRED" | "CERTIFIED";
@@ -40,72 +36,44 @@ interface InspectionHistory {
   criticalDefects: number;
 }
 
-const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
-  {
-    id: "ins-1",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "PRE_TRIP",
-    status: "PASSED",
-    date: new Date(Date.now() - 86400000).toISOString(),
-    defectsCount: 0,
-    criticalDefects: 0,
-  },
-  {
-    id: "ins-2",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "POST_TRIP",
-    status: "FAILED",
-    date: new Date(Date.now() - 43200000).toISOString(),
-    defectsCount: 2,
-    criticalDefects: 0,
-  },
-];
-
 export default function DVIRPage() {
+  // All hooks must be called before any early returns
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: data, loading, error, refetch, pagination } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
+  const { items: inspections, loading, error, refetch } = useApiList<InspectionHistory>("/api/v4/eld/dvir");
   const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const [showForm, setShowForm] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<string>("WTY-4501");
+  const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [inspectionType, setInspectionType] = useState<"PRE_TRIP" | "POST_TRIP">("PRE_TRIP");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
 
-  const filteredDefects = useMemo(() => {
-    let result = defects;
-    if (filterStatus !== "ALL") {
-      result = result.filter((d) => d.status === filterStatus);
-    }
-    if (searchQuery) {
-      result = result.filter(
-        (d) =>
-          d.component.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          d.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    return result;
-  }, [defects, filterStatus, searchQuery]);
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const filteredHistory = useMemo(() => {
-    let result = MOCK_INSPECTION_HISTORY;
-    if (selectedVehicle) {
-      result = result.filter((h) => h.vehicleNumber === selectedVehicle);
+  const uniqueVehicles = Array.from(
+    new Map(inspections.map(i => [i.vehicleNumber, { id: i.vehicleNumber, number: i.vehicleNumber }])).values()
+  );
+
+  const filteredDefects = defects.filter((d) => {
+    if (filterStatus !== "ALL" && d.status !== filterStatus) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!d.component.toLowerCase().includes(q) && !d.description.toLowerCase().includes(q)) return false;
     }
-    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedVehicle]);
+    return true;
+  });
+
+  const filteredHistory = inspections
+    .filter(h => !selectedVehicle || h.vehicleNumber === selectedVehicle)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
+
+  const activeVehicle = selectedVehicle || (uniqueVehicles[0]?.number ?? "");
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] space-y-6 p-6">
@@ -268,36 +236,47 @@ export default function DVIRPage() {
               </div>
 
               {/* Vehicle selector */}
-              <div className="mt-4 relative">
-                <button
-                  onClick={() => setShowVehicleSearch(!showVehicleSearch)}
-                  className="w-full h-9 px-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-left flex items-center justify-between hover:bg-[#0a0a0f] transition-colors text-sm"
-                >
-                  <span>Vehicle: {selectedVehicle}</span>
-                </button>
+              {uniqueVehicles.length > 0 && (
+                <div className="mt-4 relative">
+                  <button
+                    onClick={() => setShowVehicleSearch(!showVehicleSearch)}
+                    className="w-full h-9 px-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-left flex items-center justify-between hover:bg-[#0a0a0f] transition-colors text-sm"
+                  >
+                    <span>Vehicle: {activeVehicle}</span>
+                  </button>
 
-                {showVehicleSearch && (
-                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
-                    {data.map((vehicle) => (
+                  {showVehicleSearch && (
+                    <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
                       <button
-                        key={vehicle.id}
-                        onClick={() => {
-                          setSelectedVehicle(vehicle.number);
-                          setShowVehicleSearch(false);
-                        }}
+                        onClick={() => { setSelectedVehicle(""); setShowVehicleSearch(false); }}
                         className={cn(
-                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
-                          selectedVehicle === vehicle.number
-                            ? "bg-blue-500/10 text-blue-400"
-                            : "text-gray-400 hover:bg-[#0a0a0f]"
+                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e]",
+                          !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-[#0a0a0f]"
                         )}
                       >
-                        {vehicle.number}
+                        All Vehicles
                       </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      {uniqueVehicles.map((vehicle) => (
+                        <button
+                          key={vehicle.id}
+                          onClick={() => {
+                            setSelectedVehicle(vehicle.number);
+                            setShowVehicleSearch(false);
+                          }}
+                          className={cn(
+                            "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
+                            selectedVehicle === vehicle.number
+                              ? "bg-blue-500/10 text-blue-400"
+                              : "text-gray-400 hover:bg-[#0a0a0f]"
+                          )}
+                        >
+                          {vehicle.number}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </CardHeader>
 
             <CardContent>
@@ -366,9 +345,9 @@ export default function DVIRPage() {
         <>
           {/* Form mode */}
           <DVIRForm
-            vehicleNumber={selectedVehicle}
-            driverId="drv-1"
-            driverName="Carlos Martinez"
+            vehicleNumber={activeVehicle}
+            driverId=""
+            driverName=""
             inspectionType={inspectionType}
             onSubmit={async (data) => {
               try {

@@ -17,6 +17,8 @@ import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
+import { useApiList } from '@/hooks/use-api';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 
@@ -35,42 +37,24 @@ interface LineItem {
   taxable: boolean;
 }
 
-const MOCK_CUSTOMERS: Customer[] = [
-  {
-    id: "cust-001",
-    name: "Acme Corporation",
-    email: "billing@acme.com",
-    address: "123 Business Ave, New York, NY 10001",
-  },
-  {
-    id: "cust-002",
-    name: "Beta Inc",
-    email: "finance@beta.com",
-    address: "456 Commerce St, San Francisco, CA 94105",
-  },
-  {
-    id: "cust-003",
-    name: "Gamma Ltd",
-    email: "accounting@gamma.co.uk",
-    address: "789 Enterprise Rd, London, UK EC1A 1BB",
-  },
-  {
-    id: "cust-004",
-    name: "Delta Logistics",
-    email: "billing@delta.com",
-    address: "321 Logistics Way, Chicago, IL 60601",
-  },
-  {
-    id: "cust-005",
-    name: "Echo Distribution",
-    email: "invoices@echo.com",
-    address: "654 Distribution Blvd, Los Angeles, CA 90001",
-  },
-];
+interface ApiCustomer {
+  id: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  deliveryAddresses?: Array<{ street?: string; city?: string; state?: string; country?: string; postalCode?: string }>;
+}
+
+function toCustomer(c: ApiCustomer): Customer {
+  const addr = c.deliveryAddresses?.[0];
+  const addressStr = addr ? [addr.street, addr.city, addr.state, addr.country].filter(Boolean).join(', ') : '';
+  return { id: c.id, name: c.name ?? 'Unknown', email: c.email ?? '', address: addressStr };
+}
 
 export default function CreateInvoicePage() {
   const router = useRouter();
   const { addToast } = useToast();
+  const { items: apiCustomers, loading: customersLoading } = useApiList<ApiCustomer>('/api/v4/customers');
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -94,16 +78,18 @@ export default function CreateInvoicePage() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
+  const allCustomers = useMemo(() => apiCustomers.map(toCustomer), [apiCustomers]);
+
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return MOCK_CUSTOMERS;
+    if (!customerSearch) return allCustomers;
     const search = customerSearch.toLowerCase();
-    return MOCK_CUSTOMERS.filter(
+    return allCustomers.filter(
       (c) =>
         c.name.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search)
     );
-  }, [customerSearch]);
+  }, [customerSearch, allCustomers]);
 
   // Calculate totals
   const subtotal = useMemo(() => {
@@ -704,7 +690,11 @@ export default function CreateInvoicePage() {
               icon={null}
             />
 
-            {filteredCustomers.length === 0 ? (
+            {customersLoading ? (
+              <div className="space-y-2">
+                {[1,2,3].map(i => <Skeleton key={i} className="h-14 w-full rounded" />)}
+              </div>
+            ) : filteredCustomers.length === 0 ? (
               <p className="text-center py-6 text-gray-400">
                 No customers found
               </p>

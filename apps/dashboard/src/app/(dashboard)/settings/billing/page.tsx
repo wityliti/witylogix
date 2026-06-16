@@ -48,46 +48,9 @@ export default function BillingPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const mockInvoices: Invoice[] = billingData?.invoices ?? [
-  {
-    id: "inv-2026-03",
-    date: "2026-03-01",
-    period: "March 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-03.pdf",
-  },
-  {
-    id: "inv-2026-02",
-    date: "2026-02-01",
-    period: "February 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-02.pdf",
-  },
-  {
-    id: "inv-2026-01",
-    date: "2026-01-01",
-    period: "January 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-01.pdf",
-  },
-  {
-    id: "inv-2025-12",
-    date: "2025-12-01",
-    period: "December 2025",
-    amount: 399.99,
-    status: "paid",
-    downloadUrl: "/invoices/2025-12.pdf",
-  },
-];
+  const invoices: Invoice[] = billingData?.invoices ?? [];
 
-  const usageMetrics = billingData?.usageMetrics ?? [
-    { name: "API Requests", current: 450000, limit: 500000, percentage: 90, unit: "requests" },
-    { name: "Webhooks", current: 1200, limit: 2000, percentage: 60, unit: "calls" },
-    { name: "Storage", current: 4.5, limit: 100, percentage: 4.5, unit: "GB" },
-  ];
+  const usageMetrics = billingData?.usageMetrics ?? [];
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -347,8 +310,11 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {invoices.length === 0 ? (
+              <p className="text-center text-gray-500 py-8 text-sm">No invoices yet.</p>
+            ) : (
             <div className="space-y-2">
-              {mockInvoices.map((invoice) => (
+              {invoices.map((invoice) => (
                 <div
                   key={invoice.id}
                   className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
@@ -398,6 +364,7 @@ export default function BillingPage() {
                 </div>
               ))}
             </div>
+            )}
           </CardContent>
         </Card>
 
