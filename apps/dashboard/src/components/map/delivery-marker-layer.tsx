@@ -62,7 +62,13 @@ export function DeliveryMarkerLayer({ mapId, points, selectedId }: DeliveryMarke
         });
 
         const marker = L.marker([point.latitude, point.longitude], { icon });
-        marker.bindPopup(buildPopup(point, color));
+        marker.bindPopup(
+          `<div style="font-size:12px;line-height:1.5">
+            <b>${point.label}</b><br/>
+            <span style="color:#9ca3af">${point.address}</span><br/>
+            <span style="color:${color};text-transform:uppercase;font-size:10px">${point.status}</span>
+          </div>`
+        );
         marker.addTo(map);
         layersRef.current.push(marker);
       });
@@ -80,26 +86,19 @@ export function DeliveryMarkerLayer({ mapId, points, selectedId }: DeliveryMarke
 
     return () => {
       alive = false;
-      getLeaflet().then(() => {
-        const map = getMapById(mapId);
-        if (map) layersRef.current.forEach((l: any) => map.removeLayer(l));
-        layersRef.current = [];
-      });
     };
   }, [mapId, points, selectedId]);
 
-  return null;
-}
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      const map = getMapById(mapId);
+      if (map) {
+        layersRef.current.forEach((l: any) => { try { map.removeLayer(l); } catch {} });
+        layersRef.current = [];
+      }
+    };
+  }, [mapId]);
 
-function buildPopup(point: DeliveryPoint, color: string): string {
-  return `
-    <div style="font-family:ui-sans-serif,system-ui;min-width:170px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-        <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span>
-        <span style="font-weight:700;font-size:13px;color:#f1f5f9">${point.label}</span>
-      </div>
-      <div style="font-size:11px;color:#94a3b8;margin-bottom:4px;text-transform:capitalize">${point.status.replace('-', ' ')}</div>
-      ${point.address ? `<div style="font-size:10px;color:#64748b">${point.address}</div>` : ''}
-    </div>
-  `;
+  return null;
 }
