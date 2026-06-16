@@ -287,6 +287,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/outbound-webhooks.js"), { prefix: "/api/v4/outbound-webhooks" });
   await safeRegister(import("./routes/oauth.js"), { prefix: "/api/v4/oauth" });
   await safeRegister(import("./routes/operations.js"), { prefix: "/api/v4/operations" });
+  await safeRegister(import("./routes/platform/platform.js"), { prefix: "/api/v4" });
   await safeRegister(import("./routes/payments-v2.js"), { prefix: "/api/v4/payments/v2" });
   await safeRegister(import("./routes/pod.js"), { prefix: "/api/v4/pod" });
   await safeRegister(import("./routes/returns.js"), { prefix: "/api/v4/returns" });
