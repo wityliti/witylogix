@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown, Map, List, MapPin } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,16 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useOrders, Order } from '@/hooks/use-orders';
 import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
+
+const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
+
+function toOrderPinStatus(status: string): OrderPinStatus {
+  const s = status.toLowerCase();
+  if (s === 'assigned') return 'assigned';
+  if (s === 'in_transit') return 'in_transit';
+  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
+  return 'pending';
+}
 
 const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
 
@@ -217,6 +228,24 @@ export default function OrdersPage() {
       })),
   [orders]);
 
+  // Map pins — only orders that have delivery coordinates
+  const orderPins = useMemo<OrderPin[]>(() =>
+    orders
+      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
+        o.deliveryLat != null && o.deliveryLng != null
+      )
+      .map((o) => ({
+        id: o.id,
+        orderNumber: `#${o.id.slice(0, 8)}`,
+        customerName: o.customerName,
+        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
+        status: toOrderPinStatus(o.status),
+        lat: o.deliveryLat,
+        lng: o.deliveryLng,
+        priority: o.status === 'in_transit' ? 'high' : 'medium',
+      })),
+  [orders]);
+
   // Status counts
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { all: orders.length };
@@ -248,13 +277,35 @@ export default function OrdersPage() {
         title="Orders"
         subtitle={`${pagination.total} total orders${orderPins.length > 0 ? ` · ${orderPins.length} on map` : ''}`}
         actions={
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => router.push('/orders/create')}
-          >
-            + Create Order
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg bg-zinc-800 p-0.5">
+              <button
+                onClick={() => setView('list')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                  view === 'list' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
+                )}
+              >
+                <List className="w-3.5 h-3.5" /> List
+              </button>
+              <button
+                onClick={() => setView('map')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                  view === 'map' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
+                )}
+              >
+                <Map className="w-3.5 h-3.5" /> Map
+              </button>
+            </div>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push('/orders/create')}
+            >
+              + Create Order
+            </Button>
+          </div>
         }
       />
 
