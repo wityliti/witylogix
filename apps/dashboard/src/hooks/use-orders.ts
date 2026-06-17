@@ -7,6 +7,57 @@
 import { useMemo } from 'react';
 import { useApiMutation, useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiMutationResult, UseApiListResult } from './use-api';
 
+/**
+ * Order status enum
+ */
+export enum OrderStatus {
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  ASSIGNED = 'assigned',
+  IN_TRANSIT = 'in_transit',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
+}
+
+/**
+ * Order type
+ */
+export interface Order {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
+  deliveryDate: string | null;
+  estimatedDelivery: string | null;
+  totalAmount: number;
+  currency: string;
+  items: OrderItem[];
+  deliveryAddress: Address;
+  driverId?: string;
+  notes?: string;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
+}
+
+/**
+ * Order item
+ */
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+/**
+ * Delivery address
+ */
 export interface Address {
   street: string;
   street2?: string | null;
@@ -146,6 +197,8 @@ function normalizeOrder(raw: unknown): Order {
     deliveryAddress,
     driverId: r.driverId ? str(r.driverId) : undefined,
     notes: r.notes ? str(r.notes) : undefined,
+    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
+    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
   };
 }
 
