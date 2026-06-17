@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useApiList } from '@/hooks/use-api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
 import {
   Package,
   MapPin,
@@ -18,7 +20,14 @@ import {
   ChevronRight,
   Phone,
   Mail,
+  List,
+  Map,
 } from 'lucide-react';
+
+const LocalOrdersMapView = dynamic(
+  () => import('./components/local-orders-map-view'),
+  { ssr: false }
+);
 
 interface ApiDriver {
   id: string;
@@ -56,6 +65,17 @@ interface ApiOrder {
   timeSlot?: ApiTimeSlot | null;
   notes?: string;
   createdAt: string;
+  deliveryLat?: number | null;
+  deliveryLng?: number | null;
+}
+
+function toOrderPinStatus(status: string): OrderPinStatus {
+  const s = status.toUpperCase();
+  if (s === 'PENDING' || s === 'CONFIRMED') return 'pending';
+  if (s === 'ASSIGNED') return 'assigned';
+  if (s === 'IN_TRANSIT' || s === 'OUT_FOR_DELIVERY') return 'in_transit';
+  if (s === 'CANCELLED' || s === 'FAILED' || s === 'RETURNED') return 'delayed';
+  return 'pending';
 }
 
 const STATUS_VARIANT: Record<string, 'success' | 'primary' | 'info' | 'warning' | 'default'> = {
@@ -86,6 +106,7 @@ export default function LocalOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   const { items: orders, loading, error, refetch } = useApiList<ApiOrder>('/api/v4/orders', {
     limit: 100,
@@ -96,6 +117,21 @@ export default function LocalOrdersPage() {
     if (statusFilter === 'all') return orders;
     return orders.filter(o => o.status === statusFilter);
   }, [orders, statusFilter]);
+
+  const orderPins = useMemo<OrderPin[]>(() => {
+    return orders
+      .filter((o) => o.deliveryLat != null && o.deliveryLng != null)
+      .map((o) => ({
+        id: o.id,
+        orderNumber: `#${o.id.slice(0, 8)}`,
+        customerName: o.customerName,
+        address: formatAddress(o.deliveryAddress),
+        status: toOrderPinStatus(o.status),
+        lat: o.deliveryLat!,
+        lng: o.deliveryLng!,
+        priority: o.status === 'in_transit' ? 'high' : 'medium',
+      }));
+  }, [orders]);
 
   const selectedOrder = useMemo(
     () => orders.find(o => o.id === selectedOrderId) ?? null,
@@ -137,10 +173,34 @@ export default function LocalOrdersPage() {
     <div className="p-6 min-h-screen bg-wl-bg-root">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Local Delivery Orders</h1>
-        <p className="text-gray-400 mb-4">{orders.length} orders total</p>
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Local Delivery Orders</h1>
+            <p className="text-gray-400">{orders.length} orders total{orderPins.length > 0 && ` · ${orderPins.length} on map`}</p>
+          </div>
+          <div className="flex rounded overflow-hidden border border-wl-border-default">
+            <button
+              onClick={() => setView('list')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
+                view === 'list' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-gray-400 hover:text-white',
+              )}
+            >
+              <List size={13} /> List
+            </button>
+            <button
+              onClick={() => setView('map')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-wl-border-default',
+                view === 'map' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-gray-400 hover:text-white',
+              )}
+            >
+              <Map size={13} /> Map
+            </button>
+          </div>
+        </div>
 
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-3 flex-wrap mt-4">
           {[
             { key: 'pending', label: 'Pending', color: '#f59e0b' },
             { key: 'assigned', label: 'Assigned', color: '#6366f1' },
@@ -159,8 +219,31 @@ export default function LocalOrdersPage() {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_350px]">
-        {/* Left Column - Orders List */}
+        {/* Left Column - Orders List or Map */}
         <div>
+          {view === 'map' ? (
+            <div
+              className="relative rounded-lg overflow-hidden border border-wl-border-default"
+              style={{ height: 'calc(100vh - 320px)', minHeight: '400px' }}
+            >
+              {orderPins.length === 0 ? (
+                <div className="flex items-center justify-center h-full bg-wl-bg-surface text-gray-400 text-sm">
+                  <div className="text-center">
+                    <MapPin size={28} className="mx-auto mb-2 opacity-40" />
+                    <p>No geocoded orders to display</p>
+                    <p className="text-xs mt-1 opacity-60">Orders need delivery coordinates to appear on the map</p>
+                  </div>
+                </div>
+              ) : (
+                <LocalOrdersMapView
+                  orders={orderPins}
+                  selectedOrderId={selectedOrderId}
+                  onOrderClick={setSelectedOrderId}
+                />
+              )}
+            </div>
+          ) : (
+            <>
           {/* Status filter tabs */}
           <div className="flex gap-2 mb-4 flex-wrap">
             {['all', ...ALL_STATUSES].map(s => (
@@ -249,6 +332,8 @@ export default function LocalOrdersPage() {
                 </Card>
               ))}
             </div>
+          )}
+            </>
           )}
         </div>
 
