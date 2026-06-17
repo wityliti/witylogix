@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown, Map, List, MapPin } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,17 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useOrders, Order } from '@/hooks/use-orders';
+import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
+
+const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
+
+function toOrderPinStatus(status: string): OrderPinStatus {
+  const s = status.toLowerCase();
+  if (s === 'assigned') return 'assigned';
+  if (s === 'in_transit') return 'in_transit';
+  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
+  return 'pending';
+}
 
 /* ═════════════════════════════════════════════════════════════
    PROFESSIONAL ORDERS MANAGEMENT PAGE
@@ -85,6 +97,8 @@ export default function OrdersPage() {
   const [sortBy, setSortBy] = useState('createdAt:desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
+  const [view, setView] = useState<'list' | 'map'>('list');
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const itemsPerPage = 15;
 
@@ -126,6 +140,24 @@ export default function OrdersPage() {
   const endIdx = startIdx + itemsPerPage;
   const paginatedOrders = filtered.slice(startIdx, endIdx);
 
+  // Map pins — only orders that have delivery coordinates
+  const orderPins = useMemo<OrderPin[]>(() =>
+    orders
+      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
+        o.deliveryLat != null && o.deliveryLng != null
+      )
+      .map((o) => ({
+        id: o.id,
+        orderNumber: `#${o.id.slice(0, 8)}`,
+        customerName: o.customerName,
+        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
+        status: toOrderPinStatus(o.status),
+        lat: o.deliveryLat,
+        lng: o.deliveryLng,
+        priority: o.status === 'in_transit' ? 'high' : 'medium',
+      })),
+  [orders]);
+
   // Status counts
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -146,15 +178,37 @@ export default function OrdersPage() {
       {/* Page Header */}
       <Header
         title="Orders"
-        subtitle={`${pagination.total} total orders`}
+        subtitle={`${pagination.total} total orders${orderPins.length > 0 ? ` · ${orderPins.length} on map` : ''}`}
         actions={
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => router.push('/orders/create')}
-          >
-            + Create Order
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg bg-zinc-800 p-0.5">
+              <button
+                onClick={() => setView('list')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                  view === 'list' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
+                )}
+              >
+                <List className="w-3.5 h-3.5" /> List
+              </button>
+              <button
+                onClick={() => setView('map')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                  view === 'map' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
+                )}
+              >
+                <Map className="w-3.5 h-3.5" /> Map
+              </button>
+            </div>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push('/orders/create')}
+            >
+              + Create Order
+            </Button>
+          </div>
         }
       />
 
@@ -308,7 +362,31 @@ export default function OrdersPage() {
           </div>
         </Card>
 
-        {/* Orders Table */}
+        {/* Map View */}
+        {view === 'map' && (
+          <div
+            className="relative rounded-xl overflow-hidden border border-zinc-800"
+            style={{ height: 'calc(100vh - 320px)', minHeight: '480px' }}
+          >
+            {orderPins.length === 0 ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900">
+                <MapPin className="w-10 h-10 mb-3 text-zinc-600" />
+                <p className="text-sm font-medium text-zinc-300">No orders with location data</p>
+                <p className="text-xs mt-1 text-zinc-500">Orders need delivery coordinates to appear on the map</p>
+              </div>
+            ) : (
+              <OrdersMapView
+                orders={orderPins}
+                selectedOrderId={selectedOrderId}
+                onOrderClick={setSelectedOrderId}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Orders Table + Pagination (list view) */}
+        {view === 'list' && (
+        <>
         <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -563,6 +641,8 @@ export default function OrdersPage() {
               </Button>
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
