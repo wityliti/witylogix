@@ -5,6 +5,8 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import { useConflicts, type SyncPlatform, type SyncConflict } from "@/hooks/use-order-sync";
 import { useApiList } from '@/hooks/use-api';
@@ -110,6 +112,9 @@ export default function ConflictsPage() {
   };
 
   const unresolved = conflicts.filter((c) => !c.resolved).length;
+
+  if (isLoading) return <TableSkeleton columns={4} rows={6} />;
+  if (error) return <ErrorState message={String(error)} onRetry={() => window.location.reload()} />;
 
   const headerActions = (
     <Button variant="primary" size="md" onClick={() => window.location.reload()}>

@@ -253,11 +253,11 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
     try {
       locations = await (request.tenantDb as any).location.findMany({
         where: { shopId, isActive: true },
-        select: { id: true, name: true, type: true },
+        select: { id: true, name: true, type: true, city: true, addressLine1: true, country: true, coordinates: true },
       });
     } catch {
       // location model may not exist in all environments
-      locations = [{ id: "default", name: "Main Warehouse", type: "WAREHOUSE" }];
+      locations = [{ id: "default", name: "Main Warehouse", type: "WAREHOUSE", city: null, coordinates: null }];
     }
 
     // For each location get inventory count
@@ -273,12 +273,21 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
 
         const capacity = 10000;
         const utilization = Math.min(totalQty, capacity);
+        const coords = loc.coordinates as { lat?: number; lng?: number } | null;
         return {
           warehouseId: loc.id,
           name: loc.name,
+          type: loc.type ?? "WAREHOUSE",
+          city: loc.city ?? null,
+          address: loc.addressLine1 ?? null,
+          country: loc.country ?? null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           capacity,
           utilization,
           utilizationPercentage: Math.round((utilization / capacity) * 100),
+          itemCount,
+          totalQuantity: totalQty,
           activeOrders: 0,
           pendingPutaway: 0,
           cycleCountsScheduled: 0,

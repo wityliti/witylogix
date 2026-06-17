@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { MetricCard } from '@/components/ui/metric-card';
 import { useApiList } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
 
 type PaymentMethod = 'bank_transfer' | 'card' | 'cash' | 'check';
 type PaymentStatus = 'completed' | 'pending' | 'failed' | 'cancelled';
@@ -348,27 +349,7 @@ export default function PaymentsPage() {
     searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo
   );
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen animate-pulse">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="h-8 w-48 bg-[#1e1e2e] rounded mb-2" />
-            <div className="h-4 w-64 bg-[#1e1e2e] rounded" />
-          </div>
-          <div className="h-9 w-28 bg-[#1e1e2e] rounded" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-[#12121a] border border-[#1e1e2e] rounded-xl" />
-          ))}
-        </div>
-        <div className="h-80 bg-[#12121a] border border-[#1e1e2e] rounded-xl" />
-        <div className="h-48 bg-[#12121a] border border-[#1e1e2e] rounded-xl" />
-      </div>
-    );
-  }
-
+  if (loading) return <TableSkeleton columns={6} rows={10} />;
   if (error) {
     return (
       <ErrorState
