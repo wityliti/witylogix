@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useApiList, useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton, ErrorState } from '@/components/ui/loading';
-import { List, Map as MapIcon, ArrowLeftRight, CalendarSearch } from 'lucide-react';
+import { List, Map as MapIcon } from 'lucide-react';
 
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
@@ -26,7 +26,17 @@ interface SearchFilters {
   abcClass: string;
 }
 
-const WAREHOUSES = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
+interface WarehouseData {
+  warehouseId: string;
+  name: string;
+  type: string;
+  city: string | null;
+  lat: number | null;
+  lng: number | null;
+  itemCount: number;
+  totalQuantity: number;
+  utilizationPercentage: number;
+}
 
 const ABC_CLASSES = [
   { value: 'all', label: 'All Classes' },
@@ -89,6 +99,10 @@ export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
   const { items: stockGauges } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
   const { items: reorderAlerts } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
+  const { data: warehousesData } = useApiQuery<{ data: WarehouseData[] }>('/api/v4/supply-chain/warehouses');
+  const warehouseItems = warehousesData?.data ?? [];
+
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
     searchTerm: '',
     warehouse: 'All',
