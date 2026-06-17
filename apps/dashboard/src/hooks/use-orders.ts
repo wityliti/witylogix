@@ -39,6 +39,8 @@ export interface Order {
   deliveryAddress: Address;
   driverId?: string;
   notes?: string;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
 }
 
 /**
@@ -150,6 +152,8 @@ function normalizeOrder(raw: unknown): Order {
     deliveryAddress,
     driverId: r.driverId ? str(r.driverId) : undefined,
     notes: r.notes ? str(r.notes) : undefined,
+    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
+    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
   };
 }
 
