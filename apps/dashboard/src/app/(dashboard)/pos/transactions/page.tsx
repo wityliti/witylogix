@@ -5,6 +5,8 @@ import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   useTransactions,
@@ -48,7 +50,7 @@ export default function TransactionsPage() {
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [refundReason, setRefundReason] = useState("");
 
-  const { items: allTransactions } = useTransactions();
+  const { items: allTransactions, loading: txnLoading, error: txnError, refetch: refetchTxns } = useTransactions();
   const { refund, loading: refunding } = useRefundTransaction();
   const { exportTransactions: exportData } = useExportTransactions();
 
@@ -86,6 +88,9 @@ export default function TransactionsPage() {
   const handleExport = async (_format: "csv" | "pdf") => {
     await exportData();
   };
+
+  if (txnLoading) return <TableSkeleton columns={6} rows={8} />;
+  if (txnError) return <ErrorState message={txnError.message} onRetry={refetchTxns} />;
 
   return (
     <>

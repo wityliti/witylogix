@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { MetricCard } from '@/components/ui/metric-card';
 import { useApiList } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
 
 type PaymentMethod = 'bank_transfer' | 'card' | 'cash' | 'check';
 type PaymentStatus = 'completed' | 'pending' | 'failed' | 'cancelled';
@@ -306,6 +307,7 @@ export default function PaymentsPage() {
     searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo
   );
 
+  if (loading) return <TableSkeleton columns={6} rows={10} />;
   if (error) {
     return (
       <ErrorState
