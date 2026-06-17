@@ -735,4 +735,74 @@ export default async function paymentRoutes(
       });
     },
   );
+
+  // ── GET /gateways ─────────────────────────────────────────────────────────
+  // Returns payment gateway configs stored in Shop.settings.paymentGateways.
+  // Returns empty array when not configured — UI shows empty state.
+
+  fastify.get("/gateways", async (request: any, reply: FastifyReply) => {
+    const shopId = request.shopId as string;
+    const { prisma } = await import("@witylogix/db");
+
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { settings: true },
+    });
+
+    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
+    const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
+
+    return reply.send({
+      data: gateways,
+      pagination: { page: 1, limit: gateways.length, total: gateways.length, totalPages: 1 },
+    });
+  });
+
+  // ── PATCH /gateways/:id/default ──────────────────────────────────────────
+
+  fastify.patch("/gateways/:id/default", async (request: any, reply: FastifyReply) => {
+    const shopId = request.shopId as string;
+    const { id } = request.params as { id: string };
+    const { prisma } = await import("@witylogix/db");
+
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { settings: true },
+    });
+
+    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
+    const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
+    const updated = (gateways as any[]).map((g: any) => ({ ...g, isDefault: g.id === id }));
+
+    await prisma.shop.update({
+      where: { id: shopId },
+      data: { settings: { ...settings, paymentGateways: updated } },
+    });
+
+    return reply.send({ success: true });
+  });
+
+  // ── DELETE /gateways/:id ─────────────────────────────────────────────────
+
+  fastify.delete("/gateways/:id", async (request: any, reply: FastifyReply) => {
+    const shopId = request.shopId as string;
+    const { id } = request.params as { id: string };
+    const { prisma } = await import("@witylogix/db");
+
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { settings: true },
+    });
+
+    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
+    const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
+    const updated = (gateways as any[]).filter((g: any) => g.id !== id);
+
+    await prisma.shop.update({
+      where: { id: shopId },
+      data: { settings: { ...settings, paymentGateways: updated } },
+    });
+
+    return reply.send({ success: true });
+  });
 }

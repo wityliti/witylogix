@@ -62,6 +62,7 @@ export default function PaymentSettingsPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
+
   const transactionFeesComparison = [
     { gateway: 'Stripe', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
     { gateway: 'PayPal', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },

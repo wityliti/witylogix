@@ -177,15 +177,13 @@ function UsageGauge({
   );
 }
 
-function formatUptime(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
-  return `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h`;
+interface SystemHealthResponse {
+  services: ServiceHealth[];
+  metrics: SystemMetrics & { nodeVersion?: string; platform?: string; uptimeSeconds?: number };
 }
 
 export default function SystemPage() {
-  const { data, loading, error, refetch } = useApiQuery<{ data: SystemHealthData }>('/api/v4/admin/system-health');
+  const { data, loading, error, refetch } = useApiQuery<SystemHealthResponse>('/api/v4/admin/system/health');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const health = data?.data;
@@ -200,21 +198,7 @@ export default function SystemPage() {
     setIsRefreshing(false);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#12121a] p-6">
-        <LoadingSkeleton />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#12121a] p-6">
-        <ErrorState message={error.message} onRetry={refetch} />
-      </div>
-    );
-  }
+  const degradedServices = services.filter(s => s.status !== "healthy");
 
   return (
     <div className="min-h-screen bg-[#12121a]">
@@ -223,12 +207,7 @@ export default function SystemPage() {
         subtitle="Monitor service status, uptime, and system metrics"
         actions={
           <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
+            <Button variant="secondary" size="md" onClick={handleRefresh} disabled={isRefreshing}>
               <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
               Refresh
             </Button>
@@ -237,18 +216,76 @@ export default function SystemPage() {
       />
 
       <div className="p-6 space-y-6">
-        {/* Degraded alert */}
-        {degradedServices.length > 0 && (
-          <Card className="border border-amber-600/30 bg-amber-600/10">
+        {/* Service Status Grid */}
+        <div>
+          <h2 className="text-lg font-bold text-white mb-4">Service Status</h2>
+          {services.length === 0 ? (
+            <p className="text-gray-500 text-sm">No services available</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {services.map((service) => (
+                <ServiceCard key={service.name} service={service} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Response Time Chart */}
+        <ResponseTimeChart />
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <UsageGauge label="Memory Usage" value={metrics?.memoryUsage ?? 0} icon={HardDrive} />
+          <UsageGauge label="CPU Usage" value={metrics?.cpuUsage ?? 0} icon={Cpu} />
+          <Card>
+            <CardContent className="pt-5">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-4">Active Connections</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-white">{(metrics?.activeConnections ?? 0).toLocaleString()}</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-4">Connected clients across all services</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Deployment Info */}
+        {metrics && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Runtime Info</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    Version {metrics.deploymentVersion}
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {metrics.nodeVersion && `Node ${metrics.nodeVersion} · `}
+                    Uptime: {Math.floor((metrics.uptimeSeconds ?? 0) / 3600)}h {Math.floor(((metrics.uptimeSeconds ?? 0) % 3600) / 60)}m
+                  </p>
+                </div>
+                <Button variant="secondary" size="md">
+                  View Changelog
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Health Check Alerts — only shown for real degraded services */}
+        {degradedServices.map(svc => (
+          <Card key={svc.name} className="border border-amber-600/30 bg-amber-600/10">
             <CardContent className="pt-5">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-semibold text-amber-500">
-                    {degradedServices.length} service{degradedServices.length > 1 ? 's' : ''} need attention
+                    {svc.status === "critical" ? "Critical" : "Degraded"} — {svc.name}
                   </h4>
                   <p className="text-sm text-gray-400 mt-1">
-                    {degradedServices.map((s) => s.name).join(', ')} — status: {degradedServices.map((s) => s.status).join(', ')}
+                    Response time: {svc.responseTime}ms · Uptime 24h: {svc.uptime24h}%
                   </p>
                 </div>
               </div>

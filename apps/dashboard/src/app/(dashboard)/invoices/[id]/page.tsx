@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Download,
   Send,
@@ -20,6 +20,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
 import { useApiQuery } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
@@ -76,52 +78,47 @@ interface Invoice {
   terms?: string;
 }
 
-function normalizeApiInvoice(raw: Record<string, unknown>): Invoice {
-  const toDate = (v: unknown) => v ? new Date(v as string) : null;
-  const lineItems = (raw.lineItems as Record<string, unknown>[] | undefined) ?? [];
-  const payments = (raw.payments as Record<string, unknown>[] | undefined) ?? [];
-  const activity = (raw.activity as Record<string, unknown>[] | undefined) ?? [];
+function normalizeInvoice(raw: any): Invoice {
   return {
-    id: raw.id as string,
-    number: (raw.number ?? raw.invoiceNumber ?? raw.id) as string,
-    customerId: (raw.customerId ?? '') as string,
-    customerName: (raw.customerName ?? (raw.customer as Record<string, unknown>)?.name ?? 'Unknown') as string,
-    customerEmail: (raw.customerEmail ?? (raw.customer as Record<string, unknown>)?.email ?? '') as string,
-    customerAddress: (raw.customerAddress ?? (raw.customer as Record<string, unknown>)?.address ?? '') as string,
+    id: raw.id ?? "",
+    number: raw.number ?? raw.invoiceNumber ?? "",
+    customerId: raw.customerId ?? raw.customer?.id ?? "",
+    customerName: raw.customerName ?? raw.customer?.name ?? "",
+    customerEmail: raw.customerEmail ?? raw.customer?.email ?? "",
+    customerAddress: raw.customerAddress ?? raw.customer?.address ?? "",
     amount: Number(raw.amount ?? raw.subtotal ?? 0),
     taxAmount: Number(raw.taxAmount ?? raw.tax ?? 0),
     discountAmount: Number(raw.discountAmount ?? raw.discount ?? 0),
     subtotal: Number(raw.subtotal ?? raw.amount ?? 0),
-    total: Number(raw.total ?? raw.amount ?? 0),
-    status: (raw.status ?? 'draft') as InvoiceStatus,
-    createdDate: toDate(raw.createdDate ?? raw.createdAt ?? raw.issuedAt) ?? new Date(),
-    sentDate: toDate(raw.sentDate ?? raw.sentAt),
-    dueDate: toDate(raw.dueDate ?? raw.dueAt) ?? new Date(),
-    paidDate: toDate(raw.paidDate ?? raw.paidAt),
-    lineItems: lineItems.map((li) => ({
-      id: li.id as string,
-      description: li.description as string,
-      quantity: Number(li.quantity ?? 1),
+    total: Number(raw.total ?? raw.totalAmount ?? 0),
+    status: (raw.status?.toLowerCase() ?? "draft") as InvoiceStatus,
+    createdDate: new Date(raw.createdAt ?? raw.createdDate ?? Date.now()),
+    sentDate: raw.sentAt ? new Date(raw.sentAt) : null,
+    dueDate: new Date(raw.dueDate ?? raw.due_date ?? Date.now()),
+    paidDate: raw.paidAt ? new Date(raw.paidAt) : null,
+    lineItems: (raw.lineItems ?? raw.items ?? []).map((li: any) => ({
+      id: li.id ?? "",
+      description: li.description ?? "",
+      quantity: Number(li.quantity ?? 0),
       rate: Number(li.rate ?? li.unitPrice ?? 0),
       amount: Number(li.amount ?? li.total ?? 0),
       tax: Number(li.tax ?? li.taxAmount ?? 0),
     })),
-    payments: payments.map((p) => ({
-      id: p.id as string,
-      date: toDate(p.date ?? p.createdAt) ?? new Date(),
+    payments: (raw.payments ?? []).map((p: any) => ({
+      id: p.id ?? "",
+      date: new Date(p.paidAt ?? p.date ?? Date.now()),
       amount: Number(p.amount ?? 0),
-      method: (p.method ?? 'bank_transfer') as Payment['method'],
-      reference: (p.reference ?? '') as string,
+      method: (p.method ?? p.paymentMethod ?? "bank_transfer") as Payment["method"],
+      reference: p.reference ?? p.transactionId ?? "",
     })),
-    activity: activity.map((a) => ({
-      id: a.id as string,
-      type: (a.type ?? 'created') as ActivityLog['type'],
-      timestamp: toDate(a.timestamp ?? a.createdAt) ?? new Date(),
-      description: (a.description ?? '') as string,
-      metadata: a.metadata as Record<string, unknown> | undefined,
+    activity: (raw.activity ?? raw.activityLog ?? []).map((a: any) => ({
+      id: a.id ?? "",
+      type: (a.type ?? "created") as ActivityLog["type"],
+      timestamp: new Date(a.createdAt ?? a.timestamp ?? Date.now()),
+      description: a.description ?? a.message ?? "",
     })),
-    notes: raw.notes as string | undefined,
-    terms: raw.terms as string | undefined,
+    notes: raw.notes,
+    terms: raw.terms,
   };
 }
 
@@ -180,14 +177,12 @@ export default function InvoiceDetailPage() {
   const invoiceId = params.id as string;
 
   const { addToast } = useToast();
-  const { data: rawData, loading, error, refetch } = useApiQuery<Record<string, unknown>>(
-    `/api/v4/invoices/${invoiceId}`
-  );
-  const apiInvoice = rawData
-    ? normalizeApiInvoice((rawData.invoice ?? rawData) as Record<string, unknown>)
-    : null;
-  const [localInvoice, setLocalInvoice] = useState<Invoice | null>(null);
-  const invoice = localInvoice ?? apiInvoice;
+  const { data: rawInvoice, loading, error, refetch } = useApiQuery<any>(`/api/v4/invoices/${invoiceId}`);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+
+  useEffect(() => {
+    if (rawInvoice) setInvoice(normalizeInvoice(rawInvoice));
+  }, [rawInvoice]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isVoiding, setIsVoiding] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
@@ -202,18 +197,20 @@ export default function InvoiceDetailPage() {
 
   const daysOverdue = useMemo(() => {
     if (!isOverdue || !invoice) return 0;
-    return Math.floor(
-      (new Date().getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    return Math.floor((new Date().getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24));
   }, [isOverdue, invoice]);
 
   const amountPaid = useMemo(() => {
-    return invoice?.payments.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    return (invoice?.payments ?? []).reduce((sum, p) => sum + p.amount, 0);
   }, [invoice]);
 
   const remainingBalance = useMemo(() => {
     return (invoice?.total ?? 0) - amountPaid;
   }, [invoice, amountPaid]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (!invoice) return <ErrorState message="Invoice not found" onRetry={refetch} />;
 
   const handleDownloadPDF = useCallback(async () => {
     if (isPdfLoading) return;
@@ -233,13 +230,13 @@ export default function InvoiceDetailPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `invoice-${invoice?.number ?? ''}.pdf`;
+      a.download = `invoice-${invoice?.number}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
       addToast({
         type: 'success',
         title: 'PDF downloaded',
-        message: `Invoice ${invoice?.number ?? ''} has been downloaded.`,
+        message: `Invoice ${invoice?.number} has been downloaded.`,
       });
     } catch (err) {
       addToast({
@@ -257,15 +254,15 @@ export default function InvoiceDetailPage() {
     setIsSending(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send`, {});
-      setLocalInvoice((prev) => ({
-        ...(prev ?? apiInvoice!),
+      setInvoice((prev) => prev ? {
+        ...prev,
         status: "sent",
         sentDate: new Date(),
-      }));
+      } : null);
       addToast({
         type: 'success',
         title: 'Invoice sent',
-        message: `Invoice ${invoice?.number ?? ''} has been sent to the customer.`,
+        message: `Invoice ${invoice?.number} has been sent to the customer.`,
       });
     } catch (err) {
       addToast({
@@ -283,33 +280,30 @@ export default function InvoiceDetailPage() {
     setIsMarkingPaid(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/mark-paid`, {});
-      setLocalInvoice((prev) => {
-        const base = prev ?? apiInvoice!;
-        return {
-          ...base,
-          status: "paid",
-          paidDate: new Date(),
-          payments: [
-            ...base.payments,
-            {
-              id: `pay-${Date.now()}`,
-              date: new Date(),
-              amount: base.total,
-              method: "bank_transfer" as const,
-              reference: "MAN-" + Date.now(),
-            },
-          ],
-          activity: [
-            ...base.activity,
-            {
-              id: `act-${Date.now()}`,
-              type: "paid" as const,
-              timestamp: new Date(),
-              description: "Invoice marked as paid",
-            },
-          ],
-        };
-      });
+      setInvoice((prev) => prev ? {
+        ...prev,
+        status: "paid",
+        paidDate: new Date(),
+        payments: [
+          ...prev.payments,
+          {
+            id: `pay-${Date.now()}`,
+            date: new Date(),
+            amount: prev.total,
+            method: "bank_transfer" as const,
+            reference: "MAN-" + Date.now(),
+          },
+        ],
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "paid" as const,
+            timestamp: new Date(),
+            description: "Invoice marked as paid",
+          },
+        ],
+      } : null);
       addToast({
         type: 'success',
         title: 'Invoice marked as paid',
@@ -331,22 +325,19 @@ export default function InvoiceDetailPage() {
     setIsVoiding(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/void`, {});
-      setLocalInvoice((prev) => {
-        const base = prev ?? apiInvoice!;
-        return {
-          ...base,
-          status: "cancelled",
-          activity: [
-            ...base.activity,
-            {
-              id: `act-${Date.now()}`,
-              type: "created" as const,
-              timestamp: new Date(),
-              description: "Invoice voided",
-            },
-          ],
-        };
-      });
+      setInvoice((prev) => prev ? {
+        ...prev,
+        status: "cancelled",
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "created" as const,
+            timestamp: new Date(),
+            description: "Invoice voided",
+          },
+        ],
+      } : null);
       setShowDeleteConfirm(false);
       addToast({
         type: 'success',
@@ -369,21 +360,18 @@ export default function InvoiceDetailPage() {
     setIsSendingReminder(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send-reminder`, {});
-      setLocalInvoice((prev) => {
-        const base = prev ?? apiInvoice!;
-        return {
-          ...base,
-          activity: [
-            ...base.activity,
-            {
-              id: `act-${Date.now()}`,
-              type: "reminder_sent" as const,
-              timestamp: new Date(),
-              description: "Reminder email sent to customer",
-            },
-          ],
-        };
-      });
+      setInvoice((prev) => prev ? {
+        ...prev,
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "reminder_sent" as const,
+            timestamp: new Date(),
+            description: "Reminder email sent to customer",
+          },
+        ],
+      } : null);
       addToast({
         type: 'success',
         title: 'Reminder sent',
@@ -400,10 +388,6 @@ export default function InvoiceDetailPage() {
     }
   }, [invoiceId, invoice?.customerEmail, isSendingReminder, addToast]);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-  if (!invoice) return <ErrorState message="Invoice not found" onRetry={refetch} />;
-
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
       {/* Header */}
@@ -416,7 +400,7 @@ export default function InvoiceDetailPage() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-white">
-                {invoice.number}
+                {invoice?.number}
               </h1>
               <Badge variant={getStatusBadgeVariant(invoice.status)}>
                 {getStatusLabel(invoice.status)}

@@ -61,6 +61,23 @@ interface WorkflowExecutionDetail {
   retryCount: number;
 }
 
+const EMPTY_EXECUTION: WorkflowExecutionDetail = {
+  id: "",
+  executionId: "",
+  workflowName: "",
+  status: "running",
+  totalSteps: 0,
+  completedSteps: 0,
+  failedSteps: 0,
+  startedAt: "",
+  totalDuration: "",
+  createdBy: "",
+  retryCount: 0,
+  input: {},
+  context: {},
+  steps: [],
+};
+
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -256,16 +273,53 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
   );
 }
 
+function normalizeExecution(raw: any): WorkflowExecutionDetail {
+  const steps: WorkflowStep[] = (raw.steps ?? []).map((s: any, i: number) => ({
+    id: s.id ?? `step-${i + 1}`,
+    number: i + 1,
+    name: s.name ?? s.stepName ?? `Step ${i + 1}`,
+    status: s.status ?? "completed",
+    duration: s.durationMs ? `${s.durationMs}ms` : "—",
+    startedAt: s.startedAt ?? raw.startedAt ?? "",
+    input: s.input ?? {},
+    output: s.output ?? {},
+    error: s.error,
+    compensationStatus: s.compensationStatus,
+  }));
+
+  const completedSteps = steps.filter(s => s.status === "completed").length;
+  const failedSteps = steps.filter(s => s.status === "failed").length;
+
+  return {
+    id: raw.executionId ?? raw.id ?? "",
+    executionId: raw.executionId ?? raw.id ?? "",
+    workflowName: raw.workflowName ?? "Workflow",
+    status: raw.status ?? "running",
+    totalSteps: steps.length,
+    completedSteps,
+    failedSteps,
+    startedAt: raw.startedAt ?? "",
+    completedAt: raw.completedAt,
+    totalDuration: raw.durationMs ? `${Math.round(raw.durationMs / 1000)}s` : "—",
+    createdBy: raw.metadata?.triggeredBy ?? "system",
+    retryCount: raw.metadata?.retryCount ?? 0,
+    input: (raw.input as Record<string, any>) ?? {},
+    context: (raw.metadata as Record<string, string>) ?? {},
+    steps,
+  };
+}
+
 export default function WorkflowExecutionDetailPage() {
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
-  const { data, loading, error, refetch } = useApiQuery<WorkflowExecutionDetail>(`/api/v4/workflow/executions/${id ?? params.id}`);
+  const params = useParams();
+  const execId = params.id as string;
+  const { data: raw, loading, error, refetch } = useApiQuery<any>(`/api/v4/workflow/executions/${execId}`);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-  if (!data) return <ErrorState message="Execution not found" onRetry={refetch} />;
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 size={24} className="animate-spin text-blue-500" /></div>;
+  if (error) return <div className="p-6 text-red-400">Error: {error.message}</div>;
+  if (!raw) return null;
 
-  const execution: WorkflowExecutionDetail = ((data as unknown as Record<string, unknown>).execution as WorkflowExecutionDetail | undefined) ?? data;
+  const execution = normalizeExecution(raw);
 
   return (
     <div className="bg-[#0a0a0f] min-h-screen">
