@@ -239,27 +239,35 @@ export default function OrganizationPage() {
                 </div>
               </div>
 
-              <div>
-                <h4 className="text-sm font-semibold text-white mb-4">
-                  Usage Statistics
-                </h4>
-                <div className="space-y-4">
-                  {usageStats.map((stat, idx) => (
-                    <div key={idx}>
-                      <div className="flex justify-between items-end mb-2">
-                        <span className="text-sm text-white">{stat.label}</span>
-                        <span className="text-xs text-gray-400">
-                          {stat.current.toLocaleString()} / {stat.limit.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="w-full bg-wl-bg-root rounded-full h-2">
-                        <div
-                          className={cn("h-2 rounded-full transition-all", stat.color)}
-                          style={{ width: `${Math.min((stat.current / stat.limit) * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+              {usageMetrics.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-4">
+                    Usage Statistics
+                  </h4>
+                  <div className="space-y-4">
+                    {usageMetrics.map((metric) => {
+                      const barColor =
+                        metric.percentage >= 90 ? "bg-red-500"
+                        : metric.percentage >= 70 ? "bg-amber-500"
+                        : "bg-blue-500";
+                      return (
+                        <div key={metric.name}>
+                          <div className="flex justify-between items-end mb-2">
+                            <span className="text-sm text-white">{metric.name}</span>
+                            <span className="text-xs text-gray-400">
+                              {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
+                            </span>
+                          </div>
+                          <div className="w-full bg-wl-bg-root rounded-full h-2">
+                            <div
+                              className={cn("h-2 rounded-full transition-all", barColor)}
+                              style={{ width: `${Math.min(metric.percentage, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </CardContent>
