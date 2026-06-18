@@ -486,15 +486,9 @@ export default function AdminCustomersPage() {
                         <tr
                           key={customer.id}
                           className={cn(
-                            "border-b border-wl-border-default transition-all cursor-pointer",
-                            idx % 2 === 0 ? "bg-wl-bg-root min-h-screen" : "bg-wl-bg-surface"
+                            "border-b border-wl-border-default transition-all cursor-pointer hover:bg-wl-bg-elevated",
+                            idx % 2 === 0 ? "bg-wl-bg-root" : "bg-wl-bg-surface",
                           )}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "#12121a";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "#0a0a0f" : "#12121a";
-                          }}
                           onClick={() => handleCustomerClick(customer)}
                         >
                           <td className="p-3 text-white font-medium">

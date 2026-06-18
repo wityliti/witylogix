@@ -138,11 +138,12 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
           <Card
             onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
-            className="cursor-pointer transition-all bg-wl-bg-surface border border-wl-border-default"
-            style={{
-              borderColor: expandedStep === step.id ? "#3b82f6" : undefined,
-              background: expandedStep === step.id ? "#1a1a2e" : "#12121a",
-            }}
+            className={cn(
+              "cursor-pointer transition-all border",
+              expandedStep === step.id
+                ? "bg-wl-bg-overlay border-wl-info-500"
+                : "bg-wl-bg-surface border-wl-border-default",
+            )}
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">

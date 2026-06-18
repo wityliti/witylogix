@@ -351,8 +351,8 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full"
-                          style={{ width: `${zone.pct}%`, background: `linear-gradient(90deg, #818cf8, #6366f1)`, opacity: 1 - i * 0.12 }}
+                          className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-indigo-500"
+                          style={{ width: `${zone.pct}%`, opacity: 1 - i * 0.12 }}
                         />
                       </div>
                     </div>

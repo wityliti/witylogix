@@ -73,13 +73,10 @@ export default function InventoryPage() {
     }))
   ).slice(0, 20);
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, { backgroundColor: string; color: string }> = {
-      "in-stock": { backgroundColor: "#22c55e", color: "#fff" },
-      "low-stock": { backgroundColor: "#eab308", color: "#000" },
-      "out-of-stock": { backgroundColor: "#ef4444", color: "#fff" },
-    };
-    return styles[status] ?? styles["in-stock"];
+  const getStatusVariant = (status: string): "success" | "warning" | "danger" => {
+    if (status === "in-stock") return "success";
+    if (status === "low-stock") return "warning";
+    return "danger";
   };
 
   return (
@@ -212,7 +209,7 @@ export default function InventoryPage() {
                           <td className={cn("p-3 text-white text-sm text-center font-semibold")}>{item.quantity}</td>
                           <td className={cn("p-3 text-gray-400 text-xs text-center")}>{item.reorderPoint}</td>
                           <td className={cn("p-3")}>
-                            <Badge style={getStatusBadge(item.status)} className="px-2 py-1 text-xs font-semibold">
+                            <Badge variant={getStatusVariant(item.status)} className="px-2 py-1 text-xs font-semibold">
                               {item.status.replace(/-/g, " ").toUpperCase()}
                             </Badge>
                           </td>

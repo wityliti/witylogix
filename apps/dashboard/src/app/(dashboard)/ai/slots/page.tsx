@@ -264,11 +264,11 @@ export default function SlotAIPage() {
                             </div>
                             <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                               <div
-                                className="h-full rounded-full"
-                                style={{
-                                  width: `${driverPct}%`,
-                                  background: driverPct >= 70 ? '#34d399' : driverPct >= 40 ? '#fbbf24' : '#f87171',
-                                }}
+                                className={cn(
+                                  'h-full rounded-full',
+                                  driverPct >= 70 ? 'bg-wl-success-400' : driverPct >= 40 ? 'bg-wl-warning-400' : 'bg-wl-danger-400',
+                                )}
+                                style={{ width: `${driverPct}%` }}
                               />
                             </div>
                           </div>

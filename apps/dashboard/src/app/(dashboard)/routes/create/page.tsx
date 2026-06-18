@@ -141,16 +141,12 @@ export default function CreateRoutePage() {
     }));
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityClass = (priority: string): string => {
     switch (priority) {
-      case "high":
-        return "#ff6b6b";
-      case "medium":
-        return "#ffd93d";
-      case "low":
-        return "#6bcf7f";
-      default:
-        return "#8888a0";
+      case "high":   return "bg-wl-danger-400";
+      case "medium": return "bg-wl-warning-400";
+      case "low":    return "bg-wl-success-400";
+      default:       return "bg-wl-neutral-400";
     }
   };
 
@@ -340,12 +336,12 @@ export default function CreateRoutePage() {
                     {formData.stops.map((stop, idx) => (
                       <div
                         key={stop.id}
-                        className="p-3 rounded-md bg-wl-bg-surface border border-wl-border-default flex items-center gap-3 cursor-grab transition-all"
-                        style={{
-                          backgroundColor: draggedStop === idx ? "#2563eb" : "#12121a",
-                          borderColor: draggedStop === idx ? "#2563eb" : "#1e1e2e",
-                          opacity: draggedStop === idx ? 0.7 : 1,
-                        }}
+                        className={cn(
+                          "p-3 rounded-md flex items-center gap-3 cursor-grab transition-all border",
+                          draggedStop === idx
+                            ? "bg-wl-info-500 border-wl-info-500 opacity-70"
+                            : "bg-wl-bg-surface border-wl-border-default",
+                        )}
                         draggable
                         onDragStart={() => handleDragStart(idx)}
                         onDragOver={handleDragOver}
@@ -437,8 +433,7 @@ export default function CreateRoutePage() {
                         {formData.stops.map((stop, idx) => (
                           <div
                             key={stop.id}
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                            style={{ backgroundColor: getPriorityColor(stop.priority) }}
+                            className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white", getPriorityClass(stop.priority))}
                           >
                             {idx + 1}
                           </div>
@@ -464,10 +459,7 @@ export default function CreateRoutePage() {
                       }}
                     >
                       <div
-                        className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
-                        style={{
-                          backgroundColor: getPriorityColor(stop.priority)
-                        }}
+                        className={cn("w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold", getPriorityClass(stop.priority))}
                       >
                         {idx + 1}
                       </div>

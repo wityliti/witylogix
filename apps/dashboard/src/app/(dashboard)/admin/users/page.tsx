@@ -45,18 +45,12 @@ interface User {
 }
 
 
-const getRoleColor = (role: User["role"]): string => {
+const getRoleClass = (role: User["role"]): string => {
   switch (role) {
-    case "admin":
-      return "#ef4444";
-    case "manager":
-      return "#8b5cf6";
-    case "operator":
-      return "#3b82f6";
-    case "viewer":
-      return "#6b7280";
-    default:
-      return "#6b7280";
+    case "admin":    return "bg-wl-danger-bg text-wl-danger-400 border border-wl-danger-400/40";
+    case "manager":  return "bg-purple-500/10 text-purple-400 border border-purple-500/40";
+    case "operator": return "bg-wl-info-bg text-wl-info-400 border border-wl-info-400/40";
+    default:         return "bg-wl-neutral-700/40 text-wl-neutral-400 border border-wl-neutral-400/40";
   }
 };
 
@@ -119,15 +113,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
                   Role
                 </p>
-                <Badge
-                  variant="default"
-                  style={{
-                    backgroundColor: getRoleColor(user.role) + "20",
-                    color: getRoleColor(user.role),
-                    fontSize: "'0.75rem'",
-                    border: `1px solid ${getRoleColor(user.role)}40`,
-                  }}
-                >
+                <Badge className={getRoleClass(user.role)}>
                   {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                 </Badge>
               </div>
@@ -410,10 +396,10 @@ export default function AdminUsersPage() {
                 {filteredUsers.map((user, idx) => (
                   <tr
                     key={user.id}
-                    className="border-b border-wl-border-default transition-colors duration-200 cursor-pointer"
-                    style={{
-                      backgroundColor: idx % 2 === 0 ? "transparent" : "#1a1a2e",
-                    }}
+                    className={cn(
+                      "border-b border-wl-border-default transition-colors duration-200 cursor-pointer hover:bg-wl-bg-elevated",
+                      idx % 2 !== 0 && "bg-wl-bg-overlay",
+                    )}
                     onClick={() => handleUserClick(user)}
                   >
                     <td className="p-3">
@@ -432,15 +418,7 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                     <td className="p-3">
-                      <Badge
-                        variant="default"
-                        style={{
-                          backgroundColor: getRoleColor(user.role) + "20",
-                          color: getRoleColor(user.role),
-                          fontSize: "'0.75rem'",
-                          border: `1px solid ${getRoleColor(user.role)}40`,
-                        }}
-                      >
+                      <Badge className={getRoleClass(user.role)}>
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </Badge>
                     </td>

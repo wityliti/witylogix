@@ -146,11 +146,8 @@ function FeatureBar({ feature, importance, max }: { feature: string; importance:
       <span className="text-[12px] text-white/50 w-48 truncate shrink-0">{label}</span>
       <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{
-            width: `${pct}%`,
-            background: 'linear-gradient(90deg, #818cf8, #6366f1)',
-          }}
+          className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-indigo-400 to-indigo-500"
+          style={{ width: `${pct}%` }}
         />
       </div>
       <span className="text-[11px] font-mono text-white/40 w-10 text-right shrink-0">
@@ -432,13 +429,11 @@ export default function EtaAccuracyPage() {
                         </span>
                         <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
                           <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${barPct}%`,
-                              background: isGood
-                                ? 'linear-gradient(90deg, #34d399, #10b981)'
-                                : 'linear-gradient(90deg, #fbbf24, #f59e0b)',
-                            }}
+                            className={cn(
+                              'h-full rounded-full transition-all duration-500 bg-gradient-to-r',
+                              isGood ? 'from-emerald-400 to-emerald-500' : 'from-amber-400 to-amber-500',
+                            )}
+                            style={{ width: `${barPct}%` }}
                           />
                         </div>
                         <span
