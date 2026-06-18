@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,7 +48,6 @@ interface ReturnItem {
 
 
 const PRIORITY_OPTIONS = ['All', 'Standard', 'Expedited', 'Backorder'];
-const WAREHOUSE_OPTIONS = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
 const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Delivered'];
 
 export default function OrdersPage() {
@@ -57,6 +56,12 @@ export default function OrdersPage() {
   const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
   const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
   const { items: returnQueue } = useApiList<ReturnItem>('/api/v4/returns');
+  const { items: warehouseItems } = useApiList<{ name: string }>('/api/v4/supply-chain/warehouses');
+
+  const warehouseOptions = useMemo(
+    () => ['All', ...warehouseItems.map((w) => w.name)],
+    [warehouseItems],
+  );
   const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
     priority: 'all',
@@ -217,7 +222,7 @@ export default function OrdersPage() {
                   }
                   className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
-                  {WAREHOUSE_OPTIONS.map((warehouse) => (
+                  {warehouseOptions.map((warehouse) => (
                     <option key={warehouse} value={warehouse.toLowerCase()}>
                       {warehouse}
                     </option>
