@@ -6,6 +6,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   usePOSOverview,
@@ -57,12 +59,16 @@ const DEFAULT_OVERVIEW: POSOverview = {
 };
 
 export default function POSPage() {
-  const { data: overviewData } = usePOSOverview();
-  const { items: liveTransactions } = useTransactions();
-  const { items: terminals } = useTerminals();
+  const { data: overviewData, loading: overviewLoading, error: overviewError, refetch: refetchOverview } = usePOSOverview();
+  const { items: liveTransactions, loading: txnLoading } = useTransactions();
+  const { items: terminals, loading: terminalsLoading } = useTerminals();
   const { items: topItems } = useTopSellingItems();
 
+  const loading = overviewLoading || txnLoading || terminalsLoading;
   const overview = overviewData ?? DEFAULT_OVERVIEW;
+
+  if (loading) return <LoadingSkeleton />;
+  if (overviewError) return <ErrorState message={overviewError.message} onRetry={refetchOverview} />;
 
   const [selectedTerminal, setSelectedTerminal] = useState<string | null>(null);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
