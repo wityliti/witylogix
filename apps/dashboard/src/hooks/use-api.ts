@@ -135,13 +135,13 @@ export function useApiQuery<T>(
 }
 
 /**
- * Hook for POST/PATCH/DELETE mutations with optimistic updates
- * @param method - HTTP method ('POST', 'PATCH', 'DELETE')
+ * Hook for POST/PUT/PATCH/DELETE mutations with optimistic updates
+ * @param method - HTTP method ('POST', 'PUT', 'PATCH', 'DELETE')
  * @param path - API endpoint path
  * @returns Mutation result with execute function
  */
 export function useApiMutation<T>(
-  method: 'POST' | 'PATCH' | 'DELETE',
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
 ): UseApiMutationResult<T> {
   const [data, setData] = useState<T | null>(null);
@@ -160,6 +160,8 @@ export function useApiMutation<T>(
 
         if (method === 'POST') {
           result = await api.post<ApiResponse<T>>(path, payload);
+        } else if (method === 'PUT') {
+          result = await api.put<ApiResponse<T>>(path, payload);
         } else if (method === 'PATCH') {
           result = await api.patch<ApiResponse<T>>(path, payload);
         } else {
