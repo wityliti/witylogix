@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useApiList, useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton, ErrorState } from '@/components/ui/loading';
-import { List, Map as MapIcon } from 'lucide-react';
+import { List, Map as MapIcon, ArrowLeftRight, CalendarSearch } from 'lucide-react';
 
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
@@ -62,17 +62,6 @@ interface InventoryTransfer {
   createdDate: string;
 }
 
-interface CycleCount {
-  id: string;
-  warehouseId: string;
-  status: 'scheduled' | 'in-progress' | 'completed';
-  scheduledDate: string;
-  completionRate: number;
-  itemsCountedCount?: number;
-  totalItems?: number;
-}
-
-
 interface InventoryItem {
   id: string;
   name: string;
@@ -110,6 +99,7 @@ export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
   const { items: stockGauges } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
   const { items: reorderAlerts } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
+  const { items: transfers, loading: transfersLoading } = useApiList<InventoryTransfer>('/api/v4/supply-chain/transfers');
   const { data: warehousesData } = useApiQuery<{ data: WarehouseData[] }>('/api/v4/supply-chain/warehouses');
   const warehouseItems = warehousesData?.data ?? [];
 
@@ -525,46 +515,62 @@ export default function InventoryPage() {
       {/* Transfer Orders */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Transfer Orders</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Transfer Orders</CardTitle>
+            <Badge variant="info">{transfers.length} transfers</Badge>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {/* Transfer data would come from API */}
-            {[].map((transfer: Record<string, unknown>) => (
-              <div
-                key={String(transfer.id)}
-                className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
-              >
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium text-white">
-                    {String(transfer.fromWarehouse)} → {String(transfer.toWarehouse)}
-                  </h4>
-                  <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-gray-400">
-                      SKU: {String(transfer.sku)}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      Qty: {String(transfer.qty)}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      Created: {new Date(String(transfer.createdDate)).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-                <Badge
-                  variant={
-                    transfer.status === 'completed'
-                      ? 'success'
-                      : transfer.status === 'in-transit'
-                      ? 'info'
-                      : 'warning'
-                  }
+          {transfersLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-16 rounded-lg bg-wl-bg-elevated animate-pulse" />
+              ))}
+            </div>
+          ) : transfers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
+              <ArrowLeftRight className="w-8 h-8 mb-3 opacity-30" />
+              <p className="text-sm">No transfer orders yet.</p>
+              <p className="text-xs mt-1 opacity-60">Inventory movements of type TRANSFER will appear here.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {transfers.map((transfer) => (
+                <div
+                  key={transfer.id}
+                  className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
                 >
-                  {String(transfer.status)}
-                </Badge>
-              </div>
-            ))}
-          </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-white">
+                      {transfer.fromWarehouse} → {transfer.toWarehouse}
+                    </h4>
+                    <div className="flex items-center gap-4 mt-2">
+                      <span className="text-xs text-gray-400">
+                        SKU: {transfer.sku}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        Qty: {transfer.qty}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        Created: {new Date(transfer.createdDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  <Badge
+                    variant={
+                      transfer.status === 'completed'
+                        ? 'success'
+                        : transfer.status === 'in-transit'
+                        ? 'info'
+                        : 'warning'
+                    }
+                  >
+                    {transfer.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -574,57 +580,12 @@ export default function InventoryPage() {
           <CardTitle>Cycle Count Scheduling</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {/* Cycle count data would come from API */}
-            {[].map((count: Record<string, unknown>) => (
-              <div key={String(count.id)} className="p-4 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h4 className="text-sm font-medium text-white">
-                      {String(count.warehouseId)}
-                    </h4>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(String(count.scheduledDate)).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={
-                      count.status === 'completed'
-                        ? 'success'
-                        : count.status === 'in-progress'
-                        ? 'info'
-                        : 'warning'
-                    }
-                  >
-                    {String(count.status)}
-                  </Badge>
-                </div>
-
-                {count.status !== 'scheduled' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-300">
-                        Progress
-                      </span>
-                      <span className="text-xs font-semibold text-white">
-                        {String(count.completionRate)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-wl-bg-surface rounded-full h-2">
-                      <div
-                        className="h-full rounded-full bg-blue-500 transition-all"
-                        style={{ width: `${count.completionRate}%` }}
-                      />
-                    </div>
-                    {!!(count.itemsCountedCount && count.totalItems) && (
-                      <p className="text-xs text-gray-400 mt-2">
-                        {String(count.itemsCountedCount)} of {String(count.totalItems)} items counted
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
+            <CalendarSearch className="w-8 h-8 mb-3 opacity-30" />
+            <p className="text-sm">Cycle count scheduling is not yet configured.</p>
+            <p className="text-xs mt-1 opacity-60">
+              Scheduled counts will appear here once the cycle count module is enabled.
+            </p>
           </div>
         </CardContent>
       </Card>
