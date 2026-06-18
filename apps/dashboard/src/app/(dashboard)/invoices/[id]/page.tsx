@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Download,
   Send,
@@ -80,86 +80,42 @@ interface Invoice {
   terms?: string;
 }
 
-// Shape returned by mapDbInvoice in invoice-service.ts
-interface RawApiInvoiceLineItem {
-  id: string;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-}
-
-interface RawApiInvoicePayment {
-  id: string;
-  amount: number;
-  method: string;
-  reference?: string;
-  paidAt: string;
-  createdAt: string;
-}
-
-interface RawApiInvoice {
-  id: string;
-  invoiceNumber: string;
-  customerId: string;
-  status: string;
-  subtotal: number;
-  discountTotal: number;
-  taxTotal: number;
-  total: number;
-  currency: string;
-  issuedAt: string;
-  dueAt: string;
-  paidAt: string | null;
-  voidedAt: string | null;
-  notes?: string;
-  terms?: string;
-  lineItems: RawApiInvoiceLineItem[];
-  payments: RawApiInvoicePayment[];
-}
-
-function normalizeStatus(raw: string): InvoiceStatus {
-  if (raw === "voided") return "cancelled";
-  const allowed: InvoiceStatus[] = ["draft", "sent", "paid", "overdue", "cancelled", "finalized", "voided"];
-  return (allowed.includes(raw as InvoiceStatus) ? raw : "draft") as InvoiceStatus;
-}
-
-function normalizeInvoice(raw: RawApiInvoice): Invoice {
+function normalizeApiInvoice(data: any): Invoice {
   return {
-    id: raw.id,
-    number: raw.invoiceNumber,
-    customerId: raw.customerId,
-    customerName: raw.customerId,
-    customerEmail: "",
-    customerAddress: "",
-    amount: raw.subtotal,
-    taxAmount: raw.taxTotal,
-    discountAmount: raw.discountTotal,
-    subtotal: raw.subtotal,
-    total: raw.total,
-    status: normalizeStatus(raw.status),
-    createdDate: new Date(raw.issuedAt),
-    sentDate: null,
-    dueDate: new Date(raw.dueAt),
-    paidDate: raw.paidAt ? new Date(raw.paidAt) : null,
-    notes: raw.notes,
-    terms: raw.terms,
-    lineItems: raw.lineItems.map((li) => ({
+    id: data.id,
+    number: data.invoiceNumber ?? data.number ?? '',
+    customerId: data.customerId ?? '',
+    customerName: data.customerName ?? '—',
+    customerEmail: data.customerEmail ?? '',
+    customerAddress: data.customerAddress ?? '',
+    amount: data.subtotal ?? 0,
+    taxAmount: parseFloat(data.taxTotal) || 0,
+    discountAmount: parseFloat(data.discountTotal) || 0,
+    subtotal: parseFloat(data.subtotal) || 0,
+    total: parseFloat(data.total) || 0,
+    status: data.status as InvoiceStatus,
+    createdDate: data.issuedAt ? new Date(data.issuedAt) : new Date(),
+    sentDate: data.sentAt ? new Date(data.sentAt) : null,
+    dueDate: data.dueAt ? new Date(data.dueAt) : new Date(),
+    paidDate: data.paidAt ? new Date(data.paidAt) : null,
+    lineItems: (data.lineItems ?? []).map((li: any) => ({
       id: li.id,
-      description: li.description,
-      quantity: li.quantity,
-      rate: li.unitPrice,
-      amount: li.amount,
+      description: li.description ?? '',
+      quantity: parseFloat(li.quantity) || 1,
+      rate: parseFloat(li.unitPrice) || 0,
+      amount: parseFloat(li.amount) || 0,
       tax: 0,
     })),
-    payments: raw.payments.map((p) => ({
+    payments: (data.payments ?? []).map((p: any) => ({
       id: p.id,
-      date: new Date(p.paidAt),
-      amount: p.amount,
-      method: p.method,
-      reference: p.reference ?? "",
+      date: p.paidAt ? new Date(p.paidAt) : new Date(p.createdAt),
+      amount: parseFloat(p.amount) || 0,
+      method: p.method ?? 'bank_transfer',
+      reference: p.reference ?? '',
     })),
     activity: [],
+    notes: data.notes ?? '',
+    terms: '',
   };
 }
 
@@ -221,20 +177,10 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = params.id as string;
 
+  const { data: apiData, loading: invoiceLoading, error: invoiceError, refetch } = useApiQuery<{ invoice: any }>(`/api/v4/invoices/${invoiceId}`);
+
   const { addToast } = useToast();
-
-  const { data: rawInvoice, loading, error, refetch } = useApiQuery<RawApiInvoice>(
-    `/api/v4/invoices/${invoiceId}`,
-  );
-
   const [invoice, setInvoice] = useState<Invoice | null>(null);
-
-  useEffect(() => {
-    if (rawInvoice) {
-      setInvoice(normalizeInvoice(rawInvoice));
-    }
-  }, [rawInvoice]);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isVoiding, setIsVoiding] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
@@ -242,28 +188,33 @@ export default function InvoiceDetailPage() {
   const [isSending, setIsSending] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
 
-  const isOverdue = useMemo(() => {
-    if (!invoice) return false;
+  useEffect(() => {
+    if (apiData?.invoice) {
+      setInvoice(normalizeApiInvoice(apiData.invoice));
+    }
+  }, [apiData]);
+
+  if (invoiceLoading && !invoice) return <LoadingSkeleton />;
+  if (invoiceError && !invoice) return <ErrorState message={invoiceError.message} onRetry={refetch} />;
+  if (!invoice) return <LoadingSkeleton />;
+
+  const isOverdue = (() => {
     return (
       invoice.status !== "paid" &&
       invoice.dueDate < new Date()
     );
-  }, [invoice]);
+  })();
 
-  const daysOverdue = useMemo(() => {
-    if (!isOverdue || !invoice) return 0;
-    return Math.floor((new Date().getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24));
-  }, [isOverdue, invoice]);
+  const daysOverdue = (() => {
+    if (!isOverdue) return 0;
+    return Math.floor(
+      (new Date().getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+  })();
 
-  const amountPaid = useMemo(() => {
-    if (!invoice) return 0;
-    return invoice.payments.reduce((sum, p) => sum + p.amount, 0);
-  }, [invoice]);
+  const amountPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
 
-  const remainingBalance = useMemo(() => {
-    if (!invoice) return 0;
-    return invoice.total - amountPaid;
-  }, [invoice, amountPaid]);
+  const remainingBalance = invoice.total - amountPaid;
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -336,10 +287,7 @@ export default function InvoiceDetailPage() {
     if (isMarkingPaid || !invoice) return;
     setIsMarkingPaid(true);
     try {
-      await api.post(`/api/v4/invoices/${invoiceId}/payment`, {
-        amount: invoice.total,
-        method: 'bank_transfer',
-      });
+      await api.post(`/api/v4/invoices/${invoiceId}/mark-paid`, {});
       setInvoice((prev) => prev ? ({
         ...prev,
         status: "paid",
@@ -384,7 +332,7 @@ export default function InvoiceDetailPage() {
     if (isVoiding || !invoice) return;
     setIsVoiding(true);
     try {
-      await api.post(`/api/v4/invoices/${invoiceId}/void`, { reason: 'Voided by user' });
+      await api.post(`/api/v4/invoices/${invoiceId}/void`, {});
       setInvoice((prev) => prev ? ({
         ...prev,
         status: "cancelled",

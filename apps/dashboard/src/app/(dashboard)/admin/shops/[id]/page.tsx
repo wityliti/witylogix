@@ -65,10 +65,47 @@ function planColor(plan: string) {
   return map[plan?.toUpperCase()] ?? "#6C63FF";
 }
 
+function normalizeShop(raw: any): ShopDetail {
+  const d = raw?.data ?? raw ?? {};
+  const sub = d.subscription ?? {};
+  const usage = d.usage ?? {};
+  return {
+    id: d.id ?? '',
+    name: d.name ?? d.shopifyDomain ?? d.id ?? '—',
+    domain: d.shopifyDomain ?? '—',
+    planTier: (sub.planTier ?? 'free') as ShopDetail['planTier'],
+    status: (d.status === 'SUSPENDED' ? 'suspended' : d.status === 'TRIAL' ? 'trial' : 'active') as ShopDetail['status'],
+    owner: {
+      name: d.ownerName ?? '—',
+      email: d.ownerEmail ?? '—',
+      phone: d.ownerPhone ?? '—',
+      joinDate: d.createdAt ?? new Date().toISOString(),
+    },
+    usage: {
+      orders: usage.orders ?? 0,
+      shipments: usage.shipments ?? 0,
+      drivers: usage.drivers ?? 0,
+      apiCalls: usage.apiCalls ?? 0,
+      apiCallsLimit: usage.apiCallsLimit ?? 1000000,
+    },
+    billing: {
+      currentPlan: sub.planTier ? (sub.planTier.charAt(0).toUpperCase() + sub.planTier.slice(1)) : '—',
+      monthlyFee: sub.monthlyFee ?? 0,
+      nextBillingDate: sub.billingCycleEnd ?? new Date().toISOString(),
+      status: (sub.status ?? 'active') as 'active' | 'overdue' | 'pending',
+    },
+    createdAt: d.createdAt ?? new Date().toISOString(),
+    lastActive: d.updatedAt ?? d.createdAt ?? new Date().toISOString(),
+    uptime: d.uptime ?? 99.9,
+  };
+}
+
 export default function AdminShopDetail() {
   const params = useParams();
-  const id = params?.id as string;
+  const shopId = params.id as string;
+  const { data: raw, loading, error, refetch } = useApiQuery<{data: any}>(`/api/v4/admin/stores/${shopId}`);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [suspendReason, setSuspendReason] = useState("");
 
@@ -115,6 +152,10 @@ export default function AdminShopDetail() {
 
   const planTier = shop.subscription?.planTier || "unknown";
   const isSuspended = shop.status === "SUSPENDED";
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  const shop = normalizeShop(raw);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -285,79 +326,192 @@ export default function AdminShopDetail() {
           </Card>
         </div>
 
-        {/* Admin actions */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
-          <CardHeader>
-            <CardTitle className="text-base text-white">Admin Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              {isSuspended ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleRestore}
-                  disabled={restoring}
-                >
-                  <Activity className="w-4 h-4" />
-                  {restoring ? "Restoring…" : "Restore Store"}
-                </Button>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
-                  className="text-amber-500 border-amber-500/30"
-                >
-                  <Lock className="w-4 h-4" />
-                  Suspend Store
-                </Button>
-              )}
+        {/* API Usage */}
+        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+          <CardContent className="p-5">
+            <h3 className="text-base font-semibold text-white mb-4">
+              API Usage
+            </h3>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <div className="h-2 bg-[#0a0a0f]-root rounded overflow-hidden mb-2">
+                  <div
+                    className="h-full rounded transition-all duration-300 bg-[#3b82f6]"
+                    style={{
+                      width: `${(shop.usage.apiCalls / shop.usage.apiCallsLimit) * 100}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-gray-400 text-xs">
+                  {shop.usage.apiCalls.toLocaleString()} /{" "}
+                  {shop.usage.apiCallsLimit.toLocaleString()} calls
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-white text-sm font-semibold">
+                  {((shop.usage.apiCalls / shop.usage.apiCallsLimit) * 100).toFixed(1)}%
+                </p>
+              </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {showSuspendConfirm && !isSuspended && (
-              <div className="mt-4 p-4 rounded-lg bg-amber-900/20 border border-amber-500/30">
-                <div className="flex items-start gap-3 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-amber-400">
-                    Suspending this store will immediately block all access. Provide a reason below.
+        {/* Billing Section */}
+        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+          <CardContent className="p-5">
+            <div className="mb-5">
+              <h3 className="text-base font-semibold text-white mb-4">
+                Current Billing
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+                <div>
+                  <p className="text-gray-400 mb-1 text-xs">
+                    Current Plan
+                  </p>
+                  <p className="text-white text-sm font-medium">
+                    {shop.billing.currentPlan}
                   </p>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Reason for suspension (optional)"
-                  value={suspendReason}
-                  onChange={(e) => setSuspendReason(e.target.value)}
-                  className="w-full h-9 px-3 text-sm rounded bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-gray-500 mb-3"
-                />
+                <div>
+                  <p className="text-gray-400 mb-1 text-xs">
+                    Monthly Fee
+                  </p>
+                  <p className="text-white text-sm font-medium">
+                    ${shop.billing.monthlyFee}/month
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400 mb-1 text-xs">
+                    Next Billing Date
+                  </p>
+                  <p className="text-white text-sm font-medium">
+                    {new Date(shop.billing.nextBillingDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-400 mb-1 text-xs">
+                    Status
+                  </p>
+                  <Badge
+                    style={{
+                      background: getBillingStatusColor(shop.billing.status) + "20",
+                      color: getBillingStatusColor(shop.billing.status),
+                      border: `1px solid ${getBillingStatusColor(shop.billing.status)}40`,
+                    }}
+                  >
+                    {shop.billing.status.toUpperCase()}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Billing History */}
+            <div className="border-t border-[#1e1e2e] pt-5">
+              <h4 className="text-sm font-semibold text-white mb-3">
+                Billing History
+              </h4>
+              <div className="max-h-80 overflow-y-auto">
+                {([] as BillingRecord[]).length === 0 ? (
+                  <p className="text-sm text-gray-400 py-4 text-center">No billing history available</p>
+                ) : null}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Admin Actions */}
+        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+          <CardContent className="p-5">
+            <h3 className="text-base font-semibold text-white mb-4">
+              Admin Actions
+            </h3>
+            <div className="flex gap-3 flex-wrap">
+              <Button className="bg-blue-600 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90">
+                <Crown size={16} />
+                Upgrade Plan
+              </Button>
+
+              <button
+                onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
+                className="bg-amber-500 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90"
+              >
+                <Lock size={16} />
+                Suspend Shop
+              </button>
+
+              <Button className="bg-blue-600 bg-opacity-10 text-blue-600 border border-blue-600 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80">
+                <Zap size={16} />
+                Impersonate
+              </Button>
+
+              <button
+                onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
+                className="bg-red-500 bg-opacity-10 text-red-500 border border-red-500 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80"
+              >
+                <Trash2 size={16} />
+                Delete Account
+              </button>
+            </div>
+
+            {/* Confirmation Dialogs */}
+            {showSuspendConfirm && (
+              <div className="mt-4 p-3 bg-[#0a0a0f]-root rounded">
+                <div className="flex gap-2 items-start mb-3">
+                  <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
+                  <p className="text-white m-0 text-sm">
+                    Suspending this shop will disable all access and API calls. This action can be reversed.
+                  </p>
+                </div>
                 <div className="flex gap-2">
-                  <Button variant="primary" size="sm" onClick={handleSuspend} disabled={suspending}
-                    className="bg-red-600 hover:bg-red-700">
-                    {suspending ? "Suspending…" : "Confirm Suspend"}
-                  </Button>
-                  <Button variant="secondary" size="sm" onClick={() => setShowSuspendConfirm(false)}>
+                  <button className="bg-amber-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
+                    Confirm Suspension
+                  </button>
+                  <button
+                    onClick={() => setShowSuspendConfirm(false)}
+                    className="bg-[#1e1e2e] text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                  >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}
 
-            {isSuspended && store.usage.suspension && (
-              <div className="mt-4 p-3 rounded-lg bg-red-900/20 border border-red-500/30">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-red-500 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-red-400 font-semibold">Suspended</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Since {new Date(store.usage.suspension.suspendedAt).toLocaleString()}
-                    </p>
-                    {store.usage.suspension.reason && (
-                      <p className="text-xs text-gray-500 mt-0.5">Reason: {store.usage.suspension.reason}</p>
-                    )}
-                  </div>
+            {showDeleteConfirm && (
+              <div className="mt-4 p-3 bg-[#0a0a0f]-root rounded">
+                <div className="flex gap-2 items-start mb-3">
+                  <AlertTriangle size={16} className="text-red-500 flex-shrink-0" />
+                  <p className="text-white m-0 text-sm">
+                    Deleting this account is permanent and cannot be undone. All data will be lost.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button className="bg-red-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
+                    Confirm Delete
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="bg-[#1e1e2e] text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Activity Log */}
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <CardContent className="p-5">
+            <h3 className="text-base font-semibold text-white mb-4">
+              Activity Log
+            </h3>
+            <div className="max-h-96 overflow-y-auto">
+              {([] as ActivityLog[]).length === 0 ? (
+                <p className="text-sm text-gray-400 py-4 text-center">No activity logs available</p>
+              ) : null}
+            </div>
           </CardContent>
         </Card>
       </div>
