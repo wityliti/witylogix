@@ -41,18 +41,9 @@ interface SystemMetrics {
   uptimeSeconds: number;
 }
 
-interface SystemApiResponse {
+interface SystemHealthData {
   services: ServiceHealth[];
   metrics: SystemMetrics;
-}
-
-function formatUptime(seconds: number): string {
-  const d = Math.floor(seconds / 86400);
-  const h = Math.floor((seconds % 86400) / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (d > 0) return `${d}d ${h}h`;
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
 }
 
 function StatusBadge({ status }: { status: "healthy" | "degraded" | "critical" }) {
@@ -153,7 +144,7 @@ function formatUptime(seconds: number): string {
 }
 
 export default function SystemPage() {
-  const { data: raw, loading, error, refetch } = useApiQuery<SystemApiResponse>('/api/v4/admin/system');
+  const { data: healthData, loading, error, refetch } = useApiQuery<SystemHealthData>('/api/v4/admin/system/health');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => { refetch(); }, [refetch]);
@@ -172,6 +163,13 @@ export default function SystemPage() {
   const services: ServiceHealth[] = (raw as any)?.services ?? [];
   const metrics: SystemMetrics = (raw as any)?.metrics ?? { memoryUsage: 0, cpuUsage: 0, activeConnections: 0, deploymentTime: new Date().toISOString(), deploymentVersion: 'v1.0.0' };
   const degradedServices = services.filter((s) => s.status !== 'healthy');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const services = healthData?.services ?? [];
+  const metrics = healthData?.metrics ?? null;
+  const degradedServices = services.filter((s) => s.status !== "healthy");
 
   return (
     <div className="min-h-screen bg-wl-bg-surface">
@@ -192,11 +190,17 @@ export default function SystemPage() {
           <h2 className="text-lg font-bold text-white mb-4">
             Service Status
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {services.map((service) => (
-              <ServiceCard key={service.name} service={service} />
-            ))}
-          </div>
+          {services.length === 0 ? (
+            <p className="text-gray-400 text-sm py-4 text-center">
+              No service health data available.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {services.map((service) => (
+                <ServiceCard key={service.name} service={service} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Response Time Chart */}
@@ -234,70 +238,49 @@ export default function SystemPage() {
         </div>
 
         {/* Deployment Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Last Deployment</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-white flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  Version {metrics.deploymentVersion}
-                </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Deployed on {new Date(metrics.deploymentTime).toLocaleString()}
-                </p>
-              </div>
-              <Button variant="secondary" size="md">
-                View Changelog
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Health Check Alerts */}
-        {degradedServices.length > 0 ? (
-          <div className="space-y-3">
-            {degradedServices.map((svc) => (
-              <Card key={svc.name} className={cn(
-                "border",
-                svc.status === "critical"
-                  ? "border-red-600/30 bg-red-600/10"
-                  : "border-amber-600/30 bg-amber-600/10"
-              )}>
-                <CardContent className="pt-5">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className={cn(
-                      "w-5 h-5 flex-shrink-0 mt-0.5",
-                      svc.status === "critical" ? "text-red-500" : "text-amber-500"
-                    )} />
-                    <div className="flex-1">
-                      <h4 className={cn(
-                        "text-sm font-semibold",
-                        svc.status === "critical" ? "text-red-500" : "text-amber-500"
-                      )}>
-                        {svc.status === "critical" ? "Critical" : "Degraded"}: {svc.name}
-                      </h4>
-                      <p className="text-sm text-gray-400 mt-1">
-                        Response time {svc.responseTime}ms · 24h uptime {svc.uptime24h}% · Last checked {svc.lastChecked}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="border border-emerald-600/30 bg-emerald-600/10">
-            <CardContent className="pt-5">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <p className="text-sm font-semibold text-emerald-500">All services are operating normally</p>
+        {metrics && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Last Deployment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    Version {metrics.deploymentVersion}
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Deployed on {new Date(metrics.deploymentTime).toLocaleString()}
+                  </p>
+                </div>
+                <Button variant="secondary" size="md">
+                  View Changelog
+                </Button>
               </div>
             </CardContent>
           </Card>
         )}
+
+        {/* Health Check Alerts — only for degraded services */}
+        {degradedServices.map((service) => (
+          <Card key={service.name} className="border border-amber-600/30 bg-amber-600/40">
+            <CardContent className="pt-5">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-amber-500">
+                    {service.status === "critical" ? "Critical" : "Degraded"} — {service.name}
+                  </h4>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Response time: {service.responseTime}ms. Last checked:{" "}
+                    {new Date(service.lastChecked).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

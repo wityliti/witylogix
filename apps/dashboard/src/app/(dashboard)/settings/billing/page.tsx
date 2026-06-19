@@ -70,29 +70,8 @@ export default function BillingPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const addr = addressForm ?? billing?.billingAddress ?? {};
-  const invoices = billing?.invoices ?? [];
-  const usageMetrics = billing?.usageMetrics ?? [];
-
-  const handleAddressSave = async () => {
-    setSavingAddress(true);
-    try {
-      await api.put('/api/v4/billing/address', addr);
-      setAddressForm(null);
-      refetch();
-    } finally {
-      setSavingAddress(false);
-    }
-  };
-
-  const invoiceStatusVariant = (status: string) => {
-    if (status === 'paid' || status === 'completed') return 'success';
-    if (status === 'pending') return 'warning';
-    return 'danger';
-  };
-
-  const invoiceStatusLabel = (status: string) =>
-    status === 'completed' ? 'Paid' : status.charAt(0).toUpperCase() + status.slice(1);
+  const invoices: Invoice[] = billingData?.invoices ?? [];
+  const usageMetrics = billingData?.usageMetrics ?? [];
 
   return (
     <div className="min-h-screen bg-wl-bg-root">
@@ -156,38 +135,44 @@ export default function BillingPage() {
         </Card>
 
         {/* Usage Metrics */}
-        {usageMetrics.length > 0 && (
-          <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <TrendingUp className="w-5 h-5" />
-                Usage This Month
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {usageMetrics.map((metric) => (
+        <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <TrendingUp className="w-5 h-5" />
+              Usage This Month
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {usageMetrics.length === 0 ? (
+              <p className="text-gray-400 text-sm py-4 text-center">
+                No usage metrics available.
+              </p>
+            ) : (
+              usageMetrics.map((metric) => (
                 <div key={metric.name}>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="font-medium text-white">{metric.name}</p>
+                    <p className="font-medium text-white">
+                      {metric.name}
+                    </p>
                     <span className="text-sm text-gray-500">
-                      {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
+                      {metric.current.toLocaleString()} / {metric.limit.toLocaleString()}{" "}
+                      {metric.unit}
                     </span>
                   </div>
-                  <div className="w-full bg-wl-bg-elevated rounded-full h-2">
+                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
                     <div
-                      className={cn(
-                        'h-2 rounded-full transition-all',
-                        metric.percentage >= 90 ? 'bg-red-500' : metric.percentage >= 70 ? 'bg-amber-500' : 'bg-blue-500',
-                      )}
+                      className="bg-blue-500 h-2 rounded-full transition-all"
                       style={{ width: `${metric.percentage}%` }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{metric.percentage.toFixed(1)}% of limit used</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {metric.percentage}% of limit used
+                  </p>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+              ))
+            )}
+          </CardContent>
+        </Card>
 
         {/* Payment Method */}
         <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
@@ -303,28 +288,54 @@ export default function BillingPage() {
           </CardHeader>
           <CardContent>
             {invoices.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">No invoices yet.</p>
+              <p className="text-gray-400 text-sm py-4 text-center">
+                No invoices found.
+              </p>
             ) : (
               <div className="space-y-2">
                 {invoices.map((invoice) => (
                   <div
                     key={invoice.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
+                    className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-white">{invoice.period}</p>
+                      <p className="font-medium text-white">
+                        {invoice.period}
+                      </p>
                       <p className="text-sm text-gray-500">
                         {new Date(invoice.date).toLocaleDateString()}
                       </p>
                     </div>
+
                     <div className="flex items-center gap-6">
                       <div className="text-right">
-                        <p className="font-medium text-white">${invoice.amount.toFixed(2)}</p>
-                        <Badge variant={invoiceStatusVariant(invoice.status)}>
-                          {invoiceStatusLabel(invoice.status)}
+                        <p className="font-medium text-white">
+                          ${invoice.amount.toFixed(2)}
+                        </p>
+                        <Badge
+                          variant={
+                            invoice.status === "paid"
+                              ? "success"
+                              : invoice.status === "pending"
+                                ? "warning"
+                                : "danger"
+                          }
+                          className={
+                            invoice.status === "paid"
+                              ? "bg-emerald-500 text-white"
+                              : ""
+                          }
+                        >
+                          {invoice.status.charAt(0).toUpperCase() +
+                            invoice.status.slice(1)}
                         </Badge>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-blue-400 hover:bg-wl-bg-elevated">
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-400 hover:bg-[#1a1a2e]"
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">Download</span>
                       </Button>

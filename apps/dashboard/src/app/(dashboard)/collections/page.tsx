@@ -280,18 +280,7 @@ export default function CollectionsPage() {
                                         <p className="text-sm text-white m-0 font-medium">{product.title}</p>
                                         <p className="text-xs text-gray-400 m-0 mt-1">SKU: {product.sku}</p>
                                       </div>
-                                      <Button
-                                        variant="danger"
-                                        size="sm"
-                                        onClick={() =>
-                                          api
-                                            .delete(`/api/v4/collections/${collection.id}/products`, {
-                                              body: JSON.stringify({ productIds: [product.id] }),
-                                            } as RequestInit)
-                                            .then(() => refetch())
-                                            .catch(console.error)
-                                        }
-                                      >
+                                      <Button variant="danger" size="sm" onClick={() => alert(`Removing ${product.title}`)}>
                                         Remove
                                       </Button>
                                     </div>

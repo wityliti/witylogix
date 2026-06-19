@@ -5,25 +5,18 @@ import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useDashboardStats } from '@/hooks/use-dashboard-stats';
-import { useApiList } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useOrderStats } from '@/hooks/use-orders';
+import { useDrivers, Driver, DriverStatus } from '@/hooks/use-drivers';
 
-// Shapes matching the real API responses
-interface ApiOrder {
+interface Order {
   id: string;
-  customerName: string | null;
-  status: string;
-  addressLine1: string | null;
-  city: string | null;
-  estimatedArrival: string | null;
-  createdAt: string;
-}
-
-interface ApiDriver {
-  id: string;
-  name: string;
-  status: string; // OFFLINE | AVAILABLE | ON_ROUTE | ON_BREAK
-  _count: { orders: number };
+  customerId: string;
+  status: 'pending' | 'confirmed' | 'dispatched' | 'in_transit' | 'delivered';
+  eta?: string;
+  destination?: string;
+  createdAt: Date;
 }
 
 function Icon({ d, size = 24, className = '' }: { d: string; size?: number; className?: string }) {
@@ -150,8 +143,15 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
 
   if (!driver) return null;
 
-  const config = DRIVER_STATUS_CONFIG[driver.status] ?? DRIVER_STATUS_CONFIG.OFFLINE;
-  const activeDeliveries = driver._count?.orders ?? 0;
+  const statusColors: Record<string, { bg: string; border: string; text: string; dot: string }> = {
+    [DriverStatus.ONLINE]: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/50', text: 'text-emerald-400', dot: '#10b981' },
+    [DriverStatus.ON_DELIVERY]: { bg: 'bg-amber-500/20', border: 'border-amber-500/50', text: 'text-amber-400', dot: '#f59e0b' },
+    [DriverStatus.ON_BREAK]: { bg: 'bg-blue-500/20', border: 'border-blue-500/50', text: 'text-blue-400', dot: '#3b82f6' },
+    [DriverStatus.OFFLINE]: { bg: 'bg-gray-500/20', border: 'border-gray-500/50', text: 'text-gray-400', dot: '#6b7280' },
+    [DriverStatus.UNAVAILABLE]: { bg: 'bg-gray-500/20', border: 'border-gray-500/50', text: 'text-gray-400', dot: '#6b7280' },
+  };
+
+  const config = statusColors[driver.status] ?? statusColors[DriverStatus.OFFLINE];
 
   return (
     <div className={cn('bg-zinc-900 border border-zinc-800 rounded-lg p-4 transition-all duration-200 hover:border-zinc-700', config.bg)}>
@@ -164,8 +164,24 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
           </div>
         </div>
         <div className="text-right">
-          <p className="text-sm font-bold text-gray-100">{activeDeliveries}</p>
-          <p className="text-xs text-gray-500">Active</p>
+          <p className="text-sm font-bold text-gray-100">{driver.totalDeliveries}</p>
+          <p className="text-xs text-gray-500">Total</p>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-500">Utilization</span>
+          <span className="text-xs font-semibold text-gray-300">{Math.round(driver.completionRate)}%</span>
+        </div>
+        <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${Math.round(driver.completionRate)}%`,
+              backgroundColor: driver.completionRate > 80 ? '#ef4444' : driver.completionRate > 60 ? '#f59e0b' : '#10b981',
+            }}
+          />
         </div>
       </div>
     </div>
@@ -177,10 +193,51 @@ export default function HomePage() {
   const { items: recentOrders, loading: ordersLoading } = useApiList<ApiOrder>('/api/v4/orders', { limit: 5 });
   const { items: drivers, loading: driversLoading } = useApiList<ApiDriver>('/api/v4/drivers', { limit: 8 });
 
-  const driverUtilization =
-    drivers.length > 0
-      ? Math.round((drivers.filter((d) => d.status !== 'OFFLINE').length / drivers.length) * 100)
-      : 0;
+  // Mock recent orders
+  const recentOrders: Order[] = [
+    {
+      id: 'ORD-001',
+      customerId: 'CUST-123',
+      status: 'in_transit',
+      eta: '2:30 PM',
+      destination: '123 Main St, Downtown',
+      createdAt: new Date(Date.now() - 5 * 60000),
+    },
+    {
+      id: 'ORD-002',
+      customerId: 'CUST-124',
+      status: 'confirmed',
+      destination: '456 Oak Ave, Midtown',
+      createdAt: new Date(Date.now() - 15 * 60000),
+    },
+    {
+      id: 'ORD-003',
+      customerId: 'CUST-125',
+      status: 'dispatched',
+      eta: '3:15 PM',
+      destination: '789 Pine Rd, Uptown',
+      createdAt: new Date(Date.now() - 22 * 60000),
+    },
+    {
+      id: 'ORD-004',
+      customerId: 'CUST-126',
+      status: 'pending',
+      destination: '321 Elm St, Westside',
+      createdAt: new Date(Date.now() - 35 * 60000),
+    },
+    {
+      id: 'ORD-005',
+      customerId: 'CUST-127',
+      status: 'delivered',
+      destination: '654 Spruce Ln, Eastside',
+      createdAt: new Date(Date.now() - 120 * 60000),
+    },
+  ];
+
+  const totalOrders = orderStats?.totalOrders ?? 124;
+  const activeDeliveries = recentOrders.filter((o) => o.status === 'in_transit' || o.status === 'dispatched').length;
+  const driverUtilization = drivers.length > 0 ? Math.round((drivers.filter((d) => d.status !== 'offline').length / drivers.length) * 100) : 0;
+  const todayRevenue = orderStats?.totalRevenue != null ? `$${(orderStats.totalRevenue / 100).toFixed(2)}` : '—';
 
   return (
     <div className="bg-zinc-950 min-h-screen">
@@ -320,14 +377,7 @@ export default function HomePage() {
                 <div className="grid gap-4">
                   {driversLoading
                     ? Array.from({ length: 4 }).map((_, i) => <DriverStatusCard key={i} loading={true} />)
-                    : drivers.length > 0
-                      ? drivers.slice(0, 4).map((driver) => <DriverStatusCard key={driver.id} driver={driver} />)
-                      : (
-                        <div className="text-center py-6">
-                          <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" size={32} className="mx-auto text-gray-600 mb-2" />
-                          <p className="text-sm text-gray-500">No drivers found</p>
-                        </div>
-                      )}
+                    : drivers.length > 0 ? drivers.slice(0, 4).map((driver) => <DriverStatusCard key={driver.id} driver={driver} />) : <p className="text-sm text-gray-400 text-center py-4">No drivers found</p>}
                 </div>
                 {drivers.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-zinc-800">

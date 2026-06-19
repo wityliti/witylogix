@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useApiQuery } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
 import { useApiQuery } from "@/hooks/use-api";
@@ -63,6 +64,26 @@ function isErrorEvent(e: IntegrationEvent): boolean {
   return t === "ERROR" || t === "HEALTH_CHECK" && (e.metadata as Record<string, unknown>)?.healthy === false;
 }
 
+interface IntegrationStatsData {
+  usageMetrics: UsageMetric[];
+  activityLog: ActivityLogEntry[];
+  errors: ErrorEntry[];
+}
+
+/**
+ * Single Integration Detail/Management Page
+ *
+ * Displays:
+ * - Connection status with uptime
+ * - Usage meters
+ * - Recent activity log
+ * - Error log with stack traces
+ * - Configuration panel
+ * - Sync controls
+ * - Webhook URL and subscriptions
+ * - Test Connection
+ * - Disconnect
+ */
 export default function IntegrationDetailPage() {
   const params = useParams();
   const connectionId = params.providerId as string;
@@ -71,19 +92,9 @@ export default function IntegrationDetailPage() {
     useIntegrationStatus({ enablePolling: true });
   const connection = getStatus(connectionId);
 
-  const { data: usageData } = useApiQuery<{ usage: UsageMetric[] }>(
-    connection ? `/api/v4/integrations/${connectionId}/usage` : null,
+  const { data: statsData } = useApiQuery<IntegrationStatsData>(
+    `/api/v4/integrations/${connectionId}/stats`
   );
-  const { data: activityData } = useApiQuery<{ activity: ActivityLogEntry[] }>(
-    connection ? `/api/v4/integrations/${connectionId}/activity` : null,
-  );
-  const { data: errorsData } = useApiQuery<{ errors: ErrorEntry[] }>(
-    connection ? `/api/v4/integrations/${connectionId}/errors` : null,
-  );
-
-  const usageMetrics: UsageMetric[] = usageData?.usage ?? [];
-  const activityLog: ActivityLogEntry[] = activityData?.activity ?? [];
-  const errorLog: ErrorEntry[] = errorsData?.errors ?? [];
 
   const [expandedErrors, setExpandedErrors] = useState<Set<string>>(new Set());
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
@@ -91,6 +102,10 @@ export default function IntegrationDetailPage() {
     success: boolean;
     message: string;
   } | null>(null);
+
+  const usageMetrics: UsageMetric[] = statsData?.usageMetrics ?? [];
+  const activityLog: ActivityLogEntry[] = statsData?.activityLog ?? [];
+  const errors: ErrorEntry[] = statsData?.errors ?? [];
 
   if (!connection) {
     const isLoading = connections.length === 0;
@@ -180,28 +195,30 @@ export default function IntegrationDetailPage() {
       </div>
 
       {/* Usage Meters Grid */}
-      {usageMetrics.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {usageMetrics.map((metric) => (
-            <Card
-              key={`${metric.label}-${metric.period}`}
-              className="bg-wl-bg-elevated border-wl-border-default"
-            >
-              <CardContent className="pt-6">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                  {metric.label} ({metric.period})
-                </div>
-                <div className="text-2xl font-bold text-white">
-                  {metric.value.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {metric.unit}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {usageMetrics.length === 0 ? (
+          <div className="col-span-5">
+            <p className="text-gray-400 text-sm py-4 text-center">No usage data available.</p>
+          </div>
+        ) : usageMetrics.map((metric) => (
+          <Card
+            key={`${metric.label}-${metric.period}`}
+            className="bg-[#1a1a2e] border-[#1e1e2e]"
+          >
+            <CardContent className="pt-6">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                {metric.label} ({metric.period})
+              </div>
+              <div className="text-2xl font-bold text-white">
+                {metric.value.toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {metric.unit}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
@@ -315,32 +332,30 @@ export default function IntegrationDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {activityLog.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">No activity recorded yet.</p>
-              ) : (
-                activityLog.map((entry) => {
-                  const time = new Date(entry.timestamp);
-                  const diffMs = new Date().getTime() - time.getTime();
-                  const diffMins = Math.floor(diffMs / 60000);
-                  const diffHours = Math.floor(diffMins / 60);
+                <p className="text-gray-400 text-sm py-4 text-center">No recent activity.</p>
+              ) : activityLog.map((entry) => {
+                const time = new Date(entry.timestamp);
+                const diffMs = new Date().getTime() - time.getTime();
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
 
-                  let timeStr = `${diffMins}m ago`;
-                  if (diffHours > 0) timeStr = `${diffHours}h ago`;
-                  if (diffMins < 1) timeStr = "just now";
+                let timeStr = `${diffMins}m ago`;
+                if (diffHours > 0) timeStr = `${diffHours}h ago`;
+                if (diffMins < 1) timeStr = "just now";
 
-                  return (
-                    <div
-                      key={entry.id}
-                      className={cn(
-                        "p-3 rounded-lg border-l-2",
-                        entry.status === "success"
-                          ? "border-l-emerald-500 bg-emerald-500/5"
-                          : "border-l-amber-500 bg-amber-500/5"
-                      )}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {entry.type.replace(/_/g, " ")}
+                return (
+                  <div
+                    key={entry.id}
+                    className="p-3 rounded-lg border-l-2 border-l-emerald-500 bg-emerald-500/5"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          {eventLabel(entry.eventType)}
+                        </p>
+                        {entry.metadata && typeof entry.metadata === 'object' && 'description' in entry.metadata && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {String(entry.metadata.description)}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
                             {entry.description}
@@ -358,8 +373,8 @@ export default function IntegrationDetailPage() {
           </Card>
 
           {/* Error Log */}
-          {errorLog.length > 0 && (
-            <Card className="bg-wl-bg-elevated border-wl-border-default">
+          {errors.length > 0 && (
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-500">
                   <AlertTriangle className="w-5 h-5" />
@@ -367,7 +382,7 @@ export default function IntegrationDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {errorLog.map((error) => {
+                {errors.map((error) => {
                   const isExpanded = expandedErrors.has(error.id);
 
                   return (

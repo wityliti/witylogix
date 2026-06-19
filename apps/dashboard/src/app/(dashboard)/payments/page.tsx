@@ -43,24 +43,6 @@ interface MonthlyRevenue {
   payments: number;
 }
 
-const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function buildMonthlyRevenue(payments: Payment[]): MonthlyRevenue[] {
-  const map = new Map<string, MonthlyRevenue>();
-  for (const p of payments) {
-    if (p.status !== 'completed') continue;
-    const d = new Date(p.date);
-    const key = MONTH_ABBR[d.getMonth()];
-    const existing = map.get(key);
-    if (existing) {
-      existing.revenue += p.amount;
-      existing.payments += 1;
-    } else {
-      map.set(key, { month: key, revenue: p.amount, payments: 1 });
-    }
-  }
-  return Array.from(map.values());
-}
 
 const getStatusBadgeVariant = (
   status: PaymentStatus
@@ -210,6 +192,22 @@ export default function PaymentsPage() {
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-6)
       .map(([, v]) => ({ month: (v as any)._label, revenue: v.revenue, payments: v.payments }));
+  }, [payments]);
+
+  // Compute monthly revenue from real payments data
+  const monthlyRevenue = useMemo((): MonthlyRevenue[] => {
+    const monthMap: Record<string, { revenue: number; payments: number }> = {};
+    for (const p of payments) {
+      if (p.status !== 'completed') continue;
+      const d = new Date(p.date);
+      const key = d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+      if (!monthMap[key]) monthMap[key] = { revenue: 0, payments: 0 };
+      monthMap[key].revenue += p.amount;
+      monthMap[key].payments += 1;
+    }
+    return Object.entries(monthMap)
+      .map(([month, vals]) => ({ month: month.split(' ')[0], revenue: vals.revenue, payments: vals.payments }))
+      .slice(-6);
   }, [payments]);
 
   // Filter payments
@@ -407,6 +405,10 @@ export default function PaymentsPage() {
           <TrendingUp className="w-5 h-5" />
           Monthly Revenue
         </h2>
+        {monthlyRevenue.length === 0 ? (
+          <p className="text-gray-400 text-sm text-center py-12">No completed payments yet</p>
+        ) : (
+        <>
         <div className="h-80 flex items-end justify-center">
           <RevenueChart data={monthlyRevenue} />
         </div>
@@ -423,18 +425,9 @@ export default function PaymentsPage() {
                 {item.payments} payments
               </p>
             </div>
-            <div className="mt-6 grid grid-cols-3 gap-4">
-              {monthlyRevenue.map((item) => (
-                <div key={item.month} className="text-center">
-                  <p className="text-sm text-gray-400 mb-1">{item.month}</p>
-                  <p className="text-lg font-bold text-white">
-                    ${item.revenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </p>
-                  <p className="text-xs text-gray-400">{item.payments} payments</p>
-                </div>
-              ))}
-            </div>
-          </>
+          ))}
+        </div>
+        </>
         )}
       </Card>
 

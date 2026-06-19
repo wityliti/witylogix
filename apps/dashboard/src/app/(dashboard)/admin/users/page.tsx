@@ -44,8 +44,7 @@ interface User {
   authProviders: string[];
 }
 
-
-const getRoleClass = (role: User["role"]): string => {
+const getRoleColor = (role: User["role"]): string => {
   switch (role) {
     case "admin":    return "bg-wl-danger-bg text-wl-danger-400 border border-wl-danger-400/40";
     case "manager":  return "bg-purple-500/10 text-purple-400 border border-purple-500/40";
