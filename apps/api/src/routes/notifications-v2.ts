@@ -281,4 +281,93 @@ export default async function notificationsV2Routes(app: FastifyInstance) {
   app.get('/status', async (_req, reply) => {
     return reply.send({ status: 'ok' });
   });
+
+  // ── GET /stats ────────────────────────────────────────────────────────────
+
+  app.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const shopId = request.shopId;
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      type DailyRow = { date: Date; count: bigint };
+      type ChannelRow = { channel: string; count: bigint };
+      type TemplateRow = { event_type: string; failure_count: bigint; total_count: bigint };
+
+      const [dailyRows, channelRows, templateRows, totalSent, failedCount, deliveredCount] =
+        await Promise.all([
+          prisma.$queryRaw<DailyRow[]>`
+            SELECT DATE(created_at) AS date, COUNT(*)::bigint AS count
+            FROM notification_logs
+            WHERE shop_id = ${shopId}::uuid
+              AND created_at >= ${sevenDaysAgo}
+            GROUP BY DATE(created_at)
+            ORDER BY date
+          `,
+          prisma.$queryRaw<ChannelRow[]>`
+            SELECT channel, COUNT(*)::bigint AS count
+            FROM notification_logs
+            WHERE shop_id = ${shopId}::uuid
+              AND created_at >= ${sevenDaysAgo}
+            GROUP BY channel
+          `,
+          prisma.$queryRaw<TemplateRow[]>`
+            SELECT event_type,
+              COUNT(CASE WHEN status IN ('FAILED','BOUNCED') THEN 1 END)::bigint AS failure_count,
+              COUNT(*)::bigint AS total_count
+            FROM notification_logs
+            WHERE shop_id = ${shopId}::uuid
+              AND created_at >= ${sevenDaysAgo}
+            GROUP BY event_type
+            HAVING COUNT(CASE WHEN status IN ('FAILED','BOUNCED') THEN 1 END) > 0
+            ORDER BY failure_count DESC
+            LIMIT 5
+          `,
+          prisma.notificationLog.count({ where: { shopId, createdAt: { gte: sevenDaysAgo } } }),
+          prisma.notificationLog.count({ where: { shopId, createdAt: { gte: sevenDaysAgo }, status: { in: ['FAILED', 'BOUNCED'] } } }),
+          prisma.notificationLog.count({ where: { shopId, createdAt: { gte: sevenDaysAgo }, status: 'DELIVERED' } }),
+        ]);
+
+      const dailyStats = dailyRows.map((r) => ({
+        date: r.date.toISOString().split('T')[0],
+        count: Number(r.count),
+      }));
+
+      const channelTotal = channelRows.reduce((s, r) => s + Number(r.count), 0) || 1;
+      const channelBreakdown = {
+        email: { count: 0, percentage: 0 },
+        sms: { count: 0, percentage: 0 },
+        whatsapp: { count: 0, percentage: 0 },
+        push: { count: 0, percentage: 0 },
+      };
+      channelRows.forEach((r) => {
+        const key = r.channel.toLowerCase() as keyof typeof channelBreakdown;
+        if (key in channelBreakdown) {
+          channelBreakdown[key] = {
+            count: Number(r.count),
+            percentage: Math.round((Number(r.count) / channelTotal) * 100),
+          };
+        }
+      });
+
+      const failedTemplates = templateRows.map((r) => ({
+        name: r.event_type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()),
+        failureCount: Number(r.failure_count),
+        failureRate: Number(r.total_count) > 0
+          ? Math.round((Number(r.failure_count) / Number(r.total_count)) * 1000) / 10
+          : 0,
+      }));
+
+      return reply.send({
+        dailyStats,
+        channelBreakdown,
+        failedTemplates,
+        totalSent,
+        deliveredCount,
+        failedCount,
+      });
+    } catch (error) {
+      app.log.error(error, 'notifications stats error');
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
 }
