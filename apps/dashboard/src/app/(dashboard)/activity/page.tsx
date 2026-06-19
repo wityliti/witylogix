@@ -48,13 +48,6 @@ export interface ActivityEvent {
   metadata?: Record<string, any>;
 }
 
-// Mock data generator (for now - will be replaced with API data)
-const generateMockEvents = (): ActivityEvent[] => {
-  const now = new Date();
-  const events: ActivityEvent[] = [];
-  return events;
-};
-
 export default function ActivityPage() {
   const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,14 +60,17 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
-  const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasMore, setHasMore] = useState(true);
+
+  useEffect(() => {
+    if (apiEvents.length > 0) setEvents(apiEvents);
+  }, [apiEvents]);
+
+  if (loading && events.length === 0) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   // Filter and search logic
   const filteredEvents = useCallback(() => {
@@ -122,45 +118,12 @@ export default function ActivityPage() {
 
   const displayedEvents = filteredEvents();
 
-  // Live mode updates
+  // Live mode: poll the API every 30 seconds for new events
   useEffect(() => {
     if (!isLiveMode) return;
-
-    const interval = setInterval(() => {
-      // Simulate new event arrival every 30 seconds
-      const eventTypes: ActivityEvent["type"][] = [
-        "order",
-        "shipment",
-        "driver",
-        "system",
-        "webhook",
-        "workflow",
-      ];
-      const severities: ActivityEvent["severity"][] = [
-        "info",
-        "warning",
-        "error",
-        "success",
-      ];
-
-      const newEvent: ActivityEvent = {
-        id: `evt-${Date.now()}`,
-        type: eventTypes[Math.floor(Math.random() * eventTypes.length)],
-        severity: severities[Math.floor(Math.random() * severities.length)],
-        title: "New Activity Detected",
-        description: "Real-time event from system monitoring",
-        timestamp: new Date().toISOString(),
-        user: {
-          id: "system",
-          name: "System",
-        },
-      };
-
-      setEvents((prev) => [newEvent, ...prev]);
-    }, 30000);
-
+    const interval = setInterval(() => { refetch(); }, 30_000);
     return () => clearInterval(interval);
-  }, [isLiveMode]);
+  }, [isLiveMode, refetch]);
 
   // Debounced search
   const handleSearchChange = (value: string) => {

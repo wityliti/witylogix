@@ -122,7 +122,13 @@ export default function WebhooksDebuggerPage() {
     setStats({
       successRate,
       avgDeliveryTime,
-      eventsPerHour: filteredEvents.length * 30, // Mock calculation
+      eventsPerHour: (() => {
+          if (filteredEvents.length < 2) return filteredEvents.length;
+          const oldest = new Date(filteredEvents[filteredEvents.length - 1].timestamp).getTime();
+          const newest = new Date(filteredEvents[0].timestamp).getTime();
+          const spanHours = Math.max((newest - oldest) / 3_600_000, 1 / 60);
+          return filteredEvents.length / spanHours;
+        })(),
       totalEvents: filteredEvents.length,
     });
   }, [filteredEvents]);
