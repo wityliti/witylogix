@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,6 @@ interface SearchFilters {
   status: string;
   abcClass: string;
 }
-
-// Mock data
-const WAREHOUSES = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
 
 const ABC_CLASSES = [
   { value: 'all', label: 'All Classes' },
@@ -88,6 +85,14 @@ interface ReorderAlert {
 
 export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
+  const { items: stockGauges, loading: gaugesLoading } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
+  const { items: reorderAlerts, loading: alertsLoading } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
+
+  const warehouses = useMemo(
+    () => ['All', ...Array.from(new Set(inventory.map((i) => i.warehouse).filter(Boolean)))],
+    [inventory],
+  );
+
   const [filters, setFilters] = useState<SearchFilters>({
     searchTerm: '',
     warehouse: 'All',
@@ -96,10 +101,6 @@ export default function InventoryPage() {
   });
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [showTransferForm, setShowTransferForm] = useState(false);
-
-  // Mock data for stock gauges and alerts (would come from API in production)
-  const stockGauges: StockGauge[] = [];
-  const reorderAlerts: ReorderAlert[] = [];
 
   // Filter inventory
   const filteredInventory = inventory.filter((item) => {
@@ -145,6 +146,11 @@ export default function InventoryPage() {
           <CardTitle>Stock Level Gauges</CardTitle>
         </CardHeader>
         <CardContent>
+          {gaugesLoading ? (
+            <LoadingSkeleton className="h-32" />
+          ) : stockGauges.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-6">No stock gauge data available</p>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {stockGauges.map((gauge) => {
               const gaugePercentage = (gauge.current / gauge.maximum) * 100;
@@ -219,6 +225,7 @@ export default function InventoryPage() {
               );
             })}
           </div>
+          )}
         </CardContent>
       </Card>
 
@@ -231,6 +238,11 @@ export default function InventoryPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {alertsLoading ? (
+            <LoadingSkeleton className="h-24" />
+          ) : reorderAlerts.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-6">No reorder alerts — all items are sufficiently stocked</p>
+          ) : (
           <div className="space-y-3">
             {reorderAlerts.map((alert) => (
               <div
@@ -271,6 +283,7 @@ export default function InventoryPage() {
               </div>
             ))}
           </div>
+          )}
         </CardContent>
       </Card>
 
@@ -300,7 +313,7 @@ export default function InventoryPage() {
                 }
                 className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
               >
-                {WAREHOUSES.map((wh) => (
+                {warehouses.map((wh) => (
                   <option key={wh} value={wh}>
                     {wh}
                   </option>

@@ -47,6 +47,21 @@ const formatDateTime = (isoStr: string): string => {
 
 export default function CollectionsPage() {
   const { items, loading, error, refetch, pagination } = useApiList<Collection>('/api/v4/collections');
+  const [removingProductId, setRemovingProductId] = useState<string | null>(null);
+
+  const handleRemoveProduct = async (collectionId: string, productId: string) => {
+    setRemovingProductId(productId);
+    try {
+      await fetch(`/api/v4/collections/${collectionId}/products`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productIds: [productId] }),
+      });
+      await refetch();
+    } finally {
+      setRemovingProductId(null);
+    }
+  };
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -268,8 +283,13 @@ export default function CollectionsPage() {
                                         <p className="text-sm text-white m-0 font-medium">{product.title}</p>
                                         <p className="text-xs text-gray-400 m-0 mt-1">SKU: {product.sku}</p>
                                       </div>
-                                      <Button variant="danger" size="sm" onClick={() => alert(`Removing ${product.title} (mock)`)}>
-                                        Remove
+                                      <Button
+                                        variant="danger"
+                                        size="sm"
+                                        disabled={removingProductId === product.id}
+                                        onClick={() => handleRemoveProduct(collection.id, product.id)}
+                                      >
+                                        {removingProductId === product.id ? 'Removing…' : 'Remove'}
                                       </Button>
                                     </div>
                                   ))}

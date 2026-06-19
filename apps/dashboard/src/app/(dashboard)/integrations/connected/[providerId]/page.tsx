@@ -1,14 +1,16 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
+import { useApiQuery } from "@/hooks/use-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import {
   ChevronLeft,
   CheckCircle,
@@ -19,60 +21,62 @@ import {
   Copy,
   ExternalLink,
   Trash2,
-  Gauge,
   AlertTriangle,
-  Activity,
   Settings,
   ArrowRight,
   CheckCheck,
-  X,
 } from "lucide-react";
 
-interface UsageMetric {
-  label: string;
-  value: number;
-  unit: string;
-  period: string;
-}
-
-interface ActivityLogEntry {
+interface IntegrationEvent {
   id: string;
-  type: string;
-  description: string;
+  appSlug: string;
+  eventType: string;
+  metadata: Record<string, unknown> | null;
   timestamp: string;
-  status: "success" | "warning" | "error";
 }
 
-interface ErrorEntry {
-  id: string;
-  timestamp: string;
-  error: string;
-  stackTrace: string;
-  context?: string;
+interface EventsResponse {
+  events: IntegrationEvent[];
+  total: number;
 }
 
-/**
- * Single Integration Detail/Management Page
- *
- * Displays:
- * - Connection status with uptime
- * - Usage meters
- * - Recent activity log
- * - Error log with stack traces
- * - Configuration panel
- * - Sync controls
- * - Webhook URL and subscriptions
- * - Test Connection
- * - Disconnect
- */
+interface MeterResponse {
+  total: number;
+  bySlug: Record<string, number>;
+  events: IntegrationEvent[];
+}
+
+function relativeTime(ts: string): string {
+  const diffMs = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  const hours = Math.floor(mins / 60);
+  if (mins < 1) return "just now";
+  if (hours > 0) return `${hours}h ago`;
+  return `${mins}m ago`;
+}
+
+function eventLabel(eventType: string): string {
+  return eventType.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function isErrorEvent(e: IntegrationEvent): boolean {
+  const t = e.eventType.toUpperCase();
+  return t === "ERROR" || t === "HEALTH_CHECK" && (e.metadata as Record<string, unknown>)?.healthy === false;
+}
+
 export default function IntegrationDetailPage() {
   const params = useParams();
   const connectionId = params.providerId as string;
 
-  const { connections, getStatus, pauseSync, resumeSync, forceSync, disconnect } =
+  const { getStatus, pauseSync, resumeSync, forceSync, disconnect } =
     useIntegrationStatus({ enablePolling: true });
-
   const connection = getStatus(connectionId);
+
+  const { data: eventsData, loading: eventsLoading } =
+    useApiQuery<EventsResponse>(`/api/v4/integrations/${connectionId}/events?limit=10`);
+
+  const { data: meterData, loading: meterLoading } =
+    useApiQuery<MeterResponse>(`/api/v4/integrations/meter?appSlug=${connectionId}`);
 
   const [expandedErrors, setExpandedErrors] = useState<Set<string>>(new Set());
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
@@ -81,56 +85,17 @@ export default function IntegrationDetailPage() {
     message: string;
   } | null>(null);
 
-  // Mock data for development
-  const mockUsageMetrics: UsageMetric[] = [
-    { label: "API Calls", value: 4230, unit: "calls", period: "today" },
-    { label: "API Calls", value: 28950, unit: "calls", period: "week" },
-    { label: "API Calls", value: 125400, unit: "calls", period: "month" },
-    { label: "Data Synced", value: 2.5, unit: "GB", period: "month" },
-    { label: "Webhooks", value: 892, unit: "events", period: "today" },
-  ];
+  const activityLog = useMemo(
+    () => (eventsData?.events ?? []).filter((e) => !isErrorEvent(e)),
+    [eventsData],
+  );
+  const errorLog = useMemo(
+    () => (eventsData?.events ?? []).filter(isErrorEvent),
+    [eventsData],
+  );
 
-  const mockActivityLog: ActivityLogEntry[] = [
-    {
-      id: "1",
-      type: "sync_completed",
-      description: "Full sync completed successfully",
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      status: "success",
-    },
-    {
-      id: "2",
-      type: "webhook_delivered",
-      description: "Webhook event delivered",
-      timestamp: new Date(Date.now() - 1800000).toISOString(),
-      status: "success",
-    },
-    {
-      id: "3",
-      type: "api_call",
-      description: "API call to /api/orders",
-      timestamp: new Date(Date.now() - 900000).toISOString(),
-      status: "success",
-    },
-  ];
-
-  const mockErrors: ErrorEntry[] = [
-    {
-      id: "err-1",
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      error: "Connection timeout",
-      stackTrace:
-        "Error: ETIMEDOUT\n  at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1141:23)",
-      context: "During sync operation",
-    },
-    {
-      id: "err-2",
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      error: "Invalid credentials",
-      stackTrace: "UnauthorizedError: API key expired\n  at validateAuth (auth.js:45:12)",
-      context: "OAuth token refresh",
-    },
-  ];
+  const totalApiCalls = meterData?.total ?? 0;
+  const totalWebhooks = meterData?.bySlug ? Object.values(meterData.bySlug).reduce((a, b) => a + b, 0) : 0;
 
   if (!connection) {
     return (
@@ -188,11 +153,8 @@ export default function IntegrationDetailPage() {
               {connection.providerName}
             </h1>
             <div className="flex items-center gap-3 mt-2">
-              <Badge
-                variant={isHealthy ? "success" : "danger"}
-              >
-                {connection.status.charAt(0).toUpperCase() +
-                  connection.status.slice(1)}
+              <Badge variant={isHealthy ? "success" : "danger"}>
+                {connection.status.charAt(0).toUpperCase() + connection.status.slice(1)}
               </Badge>
               <span className="text-sm text-gray-400">
                 Uptime: {connection.uptime}%
@@ -217,27 +179,31 @@ export default function IntegrationDetailPage() {
         </div>
       </div>
 
-      {/* Usage Meters Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {mockUsageMetrics.map((metric) => (
-          <Card
-            key={`${metric.label}-${metric.period}`}
-            className="bg-[#1a1a2e] border-[#1e1e2e]"
-          >
-            <CardContent className="pt-6">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                {metric.label} ({metric.period})
-              </div>
-              <div className="text-2xl font-bold text-white">
-                {metric.value.toLocaleString()}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {metric.unit}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Usage Meters */}
+      {meterLoading ? (
+        <LoadingSkeleton className="h-20" />
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Total Events", value: totalApiCalls, unit: "events", period: "all time" },
+            { label: "Webhook Events", value: totalWebhooks, unit: "events", period: "all time" },
+            { label: "Error Count", value: connection.errorCount, unit: "errors", period: "tracked" },
+            { label: "Sync Operations", value: (eventsData?.events ?? []).filter(e => e.eventType === 'SYNC').length, unit: "syncs", period: "recent" },
+          ].map((metric) => (
+            <Card key={metric.label} className="bg-[#1a1a2e] border-[#1e1e2e]">
+              <CardContent className="pt-6">
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                  {metric.label}
+                </div>
+                <div className="text-2xl font-bold text-white">
+                  {metric.value.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">{metric.unit}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
@@ -282,7 +248,7 @@ export default function IntegrationDetailPage() {
                   onClick={async () => {
                     try {
                       const response = await fetch(
-                        `/api/integrations/connections/${connectionId}/test`,
+                        `/api/v4/integrations/${connectionId}/test`,
                         { method: "POST" }
                       );
                       const result = await response.json();
@@ -309,9 +275,7 @@ export default function IntegrationDetailPage() {
             <Card
               className={cn(
                 "bg-[#1a1a2e] border",
-                showTestResult.success
-                  ? "border-emerald-500/20"
-                  : "border-red-500/20"
+                showTestResult.success ? "border-emerald-500/20" : "border-red-500/20"
               )}
             >
               <CardContent className="pt-6">
@@ -322,9 +286,7 @@ export default function IntegrationDetailPage() {
                     <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm text-white">
-                      {showTestResult.message}
-                    </p>
+                    <p className="text-sm text-white">{showTestResult.message}</p>
                     <button
                       onClick={() => setShowTestResult(null)}
                       className="text-xs text-gray-500 hover:text-gray-400 mt-2"
@@ -342,11 +304,7 @@ export default function IntegrationDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Activity</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                >
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/integrations/logs">
                     View All
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -355,47 +313,39 @@ export default function IntegrationDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockActivityLog.map((entry) => {
-                const time = new Date(entry.timestamp);
-                const diffMs = new Date().getTime() - time.getTime();
-                const diffMins = Math.floor(diffMs / 60000);
-                const diffHours = Math.floor(diffMins / 60);
-
-                let timeStr = `${diffMins}m ago`;
-                if (diffHours > 0) timeStr = `${diffHours}h ago`;
-                if (diffMins < 1) timeStr = "just now";
-
-                return (
+              {eventsLoading ? (
+                <LoadingSkeleton className="h-32" />
+              ) : activityLog.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-6">No activity events yet</p>
+              ) : (
+                activityLog.map((entry) => (
                   <div
                     key={entry.id}
-                    className={cn(
-                      "p-3 rounded-lg border-l-2",
-                      entry.status === "success"
-                        ? "border-l-emerald-500 bg-emerald-500/5"
-                        : "border-l-amber-500 bg-amber-500/5"
-                    )}
+                    className="p-3 rounded-lg border-l-2 border-l-emerald-500 bg-emerald-500/5"
                   >
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-sm font-medium text-white">
-                          {entry.type.replace(/_/g, " ")}
+                          {eventLabel(entry.eventType)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {entry.description}
-                        </p>
+                        {entry.metadata && typeof entry.metadata === 'object' && 'description' in entry.metadata && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {String(entry.metadata.description)}
+                          </p>
+                        )}
                       </div>
                       <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                        {timeStr}
+                        {relativeTime(entry.timestamp)}
                       </span>
                     </div>
                   </div>
-                );
-              })}
+                ))
+              )}
             </CardContent>
           </Card>
 
           {/* Error Log */}
-          {mockErrors.length > 0 && (
+          {errorLog.length > 0 && (
             <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-500">
@@ -404,47 +354,41 @@ export default function IntegrationDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {mockErrors.map((error) => {
-                  const isExpanded = expandedErrors.has(error.id);
+                {errorLog.map((event) => {
+                  const isExpanded = expandedErrors.has(event.id);
+                  const meta = (event.metadata ?? {}) as Record<string, unknown>;
+                  const errorMsg = String(meta.error ?? meta.message ?? eventLabel(event.eventType));
+                  const context = String(meta.context ?? '');
+                  const trace = String(meta.stackTrace ?? meta.stack ?? '');
 
                   return (
-                    <div
-                      key={error.id}
-                      className="border border-red-500/20 rounded-lg bg-red-500/5"
-                    >
+                    <div key={event.id} className="border border-red-500/20 rounded-lg bg-red-500/5">
                       <button
                         onClick={() => {
                           const newSet = new Set(expandedErrors);
-                          if (isExpanded) {
-                            newSet.delete(error.id);
-                          } else {
-                            newSet.add(error.id);
-                          }
+                          if (isExpanded) newSet.delete(event.id);
+                          else newSet.add(event.id);
                           setExpandedErrors(newSet);
                         }}
                         className="w-full p-3 text-left hover:bg-red-500/10 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-sm font-medium text-red-500">
-                              {error.error}
-                            </p>
-                            {error.context && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {error.context}
-                              </p>
+                            <p className="text-sm font-medium text-red-500">{errorMsg}</p>
+                            {context && (
+                              <p className="text-xs text-gray-500 mt-1">{context}</p>
                             )}
                           </div>
                           <span className="text-xs text-gray-500 ml-2">
-                            {new Date(error.timestamp).toLocaleString()}
+                            {new Date(event.timestamp).toLocaleString()}
                           </span>
                         </div>
                       </button>
 
-                      {isExpanded && (
+                      {isExpanded && trace && (
                         <div className="border-t border-red-500/20 p-3 bg-[#0a0a0f]">
                           <pre className="text-xs text-gray-400 font-mono overflow-auto bg-[#1a1a2e] p-2 rounded border border-[#1e1e2e]">
-                            {error.stackTrace}
+                            {trace}
                           </pre>
                         </div>
                       )}
@@ -458,56 +402,6 @@ export default function IntegrationDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Webhook Configuration */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
-            <CardHeader>
-              <CardTitle>Webhook Configuration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide">
-                  Webhook URL
-                </label>
-                <div className="mt-2 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={`https://api.example.com/webhooks/${connectionId}`}
-                    readOnly
-                    className="flex-1 px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-xs text-gray-400 font-mono"
-                  />
-                  <button className="p-2 hover:bg-[#1a1a2e] rounded transition-colors">
-                    <Copy className="w-4 h-4 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">
-                  Subscribed Events
-                </label>
-                <div className="space-y-2">
-                  {["orders.created", "orders.updated", "inventory.changed"].map(
-                    (event) => (
-                      <label
-                        key={event}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="w-4 h-4 rounded"
-                        />
-                        <span className="text-sm text-gray-400">
-                          {event}
-                        </span>
-                      </label>
-                    )
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Connection Info */}
           <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardHeader>
@@ -516,15 +410,11 @@ export default function IntegrationDetailPage() {
             <CardContent className="space-y-3 text-sm">
               <div>
                 <p className="text-gray-500 mb-1">Provider</p>
-                <p className="text-white font-medium">
-                  {connection.providerName}
-                </p>
+                <p className="text-white font-medium">{connection.providerName}</p>
               </div>
               <div>
                 <p className="text-gray-500 mb-1">Category</p>
-                <p className="text-white font-medium">
-                  {connection.category}
-                </p>
+                <p className="text-white font-medium">{connection.category}</p>
               </div>
               <div>
                 <p className="text-gray-500 mb-1">Status</p>
@@ -541,27 +431,47 @@ export default function IntegrationDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Webhook Configuration */}
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+            <CardHeader>
+              <CardTitle>Webhook URL</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v4/webhooks/${connectionId}`}
+                  readOnly
+                  className="flex-1 px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-xs text-gray-400 font-mono"
+                />
+                <button
+                  className="p-2 hover:bg-[#1a1a2e] rounded transition-colors"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}/api/v4/webhooks/${connectionId}`
+                    );
+                  }}
+                >
+                  <Copy className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Documentation */}
           <Card className="bg-blue-500/10 border border-blue-500/20">
             <CardContent className="pt-6">
               <p className="text-sm text-gray-400 mb-4">
                 Need help? Check the integration documentation.
               </p>
-              <Button
-                variant="primary"
-                size="sm"
-                className="w-full"
-                asChild
-              >
-                <a
-                  href={`https://docs.example.com/${connection.providerName.toLowerCase()}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <Button variant="primary" size="sm" className="w-full" asChild>
+                <Link
+                  href="/docs"
                   className="inline-flex items-center justify-center"
                 >
                   View Documentation
                   <ExternalLink className="w-4 h-4 ml-2" />
-                </a>
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -570,10 +480,7 @@ export default function IntegrationDetailPage() {
 
       {/* Disconnect Modal */}
       {showDisconnectModal && (
-        <Modal
-          isOpen={showDisconnectModal}
-          onClose={() => setShowDisconnectModal(false)}
-        >
+        <Modal isOpen={showDisconnectModal} onClose={() => setShowDisconnectModal(false)}>
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-white">
               Disconnect {connection.providerName}?
@@ -596,7 +503,6 @@ export default function IntegrationDetailPage() {
                   try {
                     await disconnect(connectionId);
                     setShowDisconnectModal(false);
-                    // Redirect back
                     window.location.href = "/integrations/connected";
                   } catch (err) {
                     console.error("Disconnect failed:", err);
