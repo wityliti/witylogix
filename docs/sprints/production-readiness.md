@@ -23,6 +23,7 @@ Legend: ✅ done · 🔄 in-progress · ⬜ not started
 | WIT-353 | CRM + Partners + POS (tracker audit) | crm/, partners/, pos/ | None | None new — all three sections already wired to real API hooks before this sprint | None — no MOCK_/DEMO_ constants found; CRM/Partners use useApiQuery(/api/v4/integrations), POS uses custom use-pos hooks | Tracker updated to reflect reality: ⬜ CRM/Partners/POS → ✅; all dashboard pages now production-ready |
 | WIT-354 | Home + ELD + Returns + ESignatures (regression fixes) | home/, eld/, returns/, esignatures/ | None (no geographic data on these pages) | /api/v4/eld/compliance (new, Driver-derived), /api/v4/eld/violations (new), /api/v4/eld/events (new), /api/v4/eld/drivers/:id/hos (new); /api/v4/returns (rewritten — uses real ReturnRequest Prisma model); /api/v4/signing-templates (pre-existing hook now used) | home: mock recentOrders(5) + mockDrivers(8) → 0; eld: MOCK_DRIVERS(6) → 0; returns: MOCK_RETURNS(4 fallback) → 0; esig: mockTemplates(3) → 0 | ReturnRequest+ReturnRequestItem Prisma schema added (67-returns.prisma); migration 20260615_returns_table with RLS; ELD routes new file (eld.ts); all prisma as any hacks in returns.ts replaced with typed calls; RLS 61/61 ✅ |
 | WIT-355 | Final Mock Cleanup | integrations/health, integrations/connected/[id], admin/customers, supply-chain/inventory, activity, settings/webhooks, collections | None (no geographic data) | /api/v4/integrations (health list), /api/v4/integrations/:slug/events (activity log + error log), /api/v4/integrations/meter (usage metrics), /api/v4/integrations/:slug/test (real check-now), /api/v4/supply-chain/stock-gauges (wired), /api/v4/supply-chain/reorder-alerts (wired), DELETE /api/v4/collections/:id/products (remove button) | INTEGRATIONS[](8 hardcoded) + mockUsageMetrics(5) + mockActivityLog(3) + mockErrors(2) + mockCustomers[](8) + stockGauges=[]+reorderAlerts=[] placeholders + generateMockEvents dead fn + eventsPerHour*30 fake calc + alert("mock") → 0 | All 7 pages: real API, loading/empty/error states; mock scan: empty ✅ |
+| WIT-356 | Locations + Tracking | locations/, tracking/ | LocationMarkerLayer (type-coloured circle markers, status ring, popup, auto-fit, grid/map toggle on list; embedded 160px mini-map in detail panel); DriverLocationLayer on tracking map (live driver GPS, click-to-select, status legend) | /api/v4/locations (existing, returns lat/lng); /api/v4/drivers/locations (existing GPS endpoint reused) | locations: hardcoded "Map Placeholder" coordinate text → 0 (real WLMap); tracking: no map at all → live map with driver GPS + driver sidebar; removed `any` cast on Badge variant | New shared layer: location-marker-layer.tsx (WAREHOUSE=blue, STORE=green, HUB=purple, DEPOT=amber, PICKUP=teal; ACTIVE=emerald ring, MAINTENANCE=amber ring, INACTIVE=red ring). Tracking page: list/map toggle, driver sidebar with GPS indicator |
 
 ## Remaining ⬜
 
@@ -48,6 +49,8 @@ Legend: ✅ done · 🔄 in-progress · ⬜ not started
 | ✅ POS | pos/, pos/transactions | No | WIT-353 audit — already wired: usePOSOverview/useTransactions/useTerminals/useTopSellingItems from use-pos hooks; useRefundTransaction/useExportTransactions for mutations; DEFAULT_OVERVIEW is an empty-values fallback struct, not hardcoded mock items |
 | ✅ AI | ai/driver-insights, ai/route-efficiency, ai/slots | No | WIT-350 — DEMO_ arrays removed, missing route registrations fixed, zones from real API |
 | ✅ Admin | admin/activity, admin/users, admin/workflows, admin/queues, admin/integrations, admin/audit | No | WIT-351 (audit: DEMO_DATA removed) + WIT-352 (all remaining mock constants removed, 4 new BullMQ queue endpoints) |
+| ✅ Locations | locations/ | ✅ Yes | WIT-355 — LocationMarkerLayer (type+status coloured), grid/map toggle, detail panel mini-map replaces coordinate-text placeholder |
+| ✅ Tracking | tracking/, tracking/live | ✅ Yes | WIT-355 — live map toggle with DriverLocationLayer (real GPS), driver sidebar with GPS indicator; list view preserved |
 
 ## Map Foundation
 
@@ -58,6 +61,7 @@ Legend: ✅ done · 🔄 in-progress · ⬜ not started
 - `apps/dashboard/src/components/map/delivery-marker-layer.tsx` — delivery point dot markers with status colors
 - `apps/dashboard/src/components/map/customer-density-layer.tsx` — log-scaled bubble markers by city, tier colors, popup with customer/order count, auto-fit bounds
 - `apps/dashboard/src/components/map/campaign-reach-layer.tsx` — orange log-scaled bubble markers by city, audience count popup, auto-fit bounds
+- `apps/dashboard/src/components/map/location-marker-layer.tsx` — warehouse/store/hub/depot/pickup markers; type-coloured fill, status-coloured ring, popup with performance stats, auto-fit bounds
 - `apps/dashboard/src/components/analytics/components/zone-analytics-map.tsx` — analytics map
 
 ## Build / CI Status
