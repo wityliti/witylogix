@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -42,61 +44,40 @@ interface AuthProvider {
   };
 }
 
-const mockProviders: AuthProvider[] = [
-  {
-    id: "auth0-prod",
-    name: "Auth0",
-    type: "auth0",
-    status: "connected",
-    icon: "🔐",
-    capabilities: ["SSO", "MFA", "Social Login", "Role Mapping"],
-    config: {
-      domain: "witylogix.auth0.com",
-      clientId: "abc123***",
-      callbackUrl: "https://app.witylogix.com/auth/callback",
-    },
-  },
-  {
-    id: "clerk-dev",
-    name: "Clerk",
-    type: "clerk",
-    status: "disconnected",
-    icon: "🎫",
-    capabilities: ["SSO", "Multi-org", "Session Management"],
-  },
-  {
-    id: "cognito-dev",
-    name: "AWS Cognito",
-    type: "cognito",
-    status: "disconnected",
-    icon: "☁️",
-    capabilities: ["User Pools", "Identity Federation", "MFA"],
-  },
-  {
-    id: "firebase-test",
-    name: "Firebase Auth",
-    type: "firebase",
-    status: "disconnected",
-    icon: "🔥",
-    capabilities: ["Email/Password", "Social", "Phone Auth"],
-  },
-  {
-    id: "oidc-generic",
-    name: "Generic OIDC",
-    type: "oidc",
-    status: "disconnected",
-    icon: "🔑",
-    capabilities: ["Custom Providers", "Enterprise SSO"],
-  },
-  {
-    id: "saml-enterprise",
-    name: "SAML 2.0",
-    type: "saml",
-    status: "disconnected",
-    icon: "🏢",
-    capabilities: ["Enterprise SSO", "Okta", "Azure AD"],
-  },
-];
+const PROVIDER_ICONS: Record<string, string> = {
+  GOOGLE: "🔐", MICROSOFT: "🪟", OKTA: "🔵", AUTH0: "🔐",
+  CUSTOM_OAUTH: "🔑", SAML: "🏢",
+};
+const PROVIDER_CAPABILITIES: Record<string, string[]> = {
+  GOOGLE: ["SSO", "MFA", "Social Login"],
+  MICROSOFT: ["SSO", "Azure AD", "MFA"],
+  OKTA: ["SSO", "MFA", "Role Mapping"],
+  AUTH0: ["SSO", "MFA", "Social Login", "Role Mapping"],
+  CUSTOM_OAUTH: ["Custom Providers", "Enterprise SSO"],
+  SAML: ["Enterprise SSO", "Okta", "Azure AD"],
+};
+
+interface ApiAuthProvider {
+  id: string;
+  name: string;
+  type: string;
+  enabled: boolean;
+  isDefault: boolean;
+  scopes: string[];
+  createdAt: string;
+}
+
+function normalizeProvider(raw: ApiAuthProvider): AuthProvider {
+  const type = raw.type.toUpperCase();
+  return {
+    id: raw.id,
+    name: raw.name,
+    type: raw.type.toLowerCase() as AuthProvider['type'],
+    status: raw.enabled ? 'connected' : 'disconnected',
+    icon: PROVIDER_ICONS[type] ?? '🔑',
+    capabilities: PROVIDER_CAPABILITIES[type] ?? raw.scopes,
+  };
+}
 
 const roleMapping = [
   { externalRole: "admin", witylogixRole: "SUPER_ADMIN" },
@@ -107,41 +88,51 @@ const roleMapping = [
 ];
 
 export default function AuthProvidersPage() {
-  const [providers, setProviders] = useState<AuthProvider[]>(mockProviders);
+  const { addToast } = useToast();
+  const { items: rawProviders, loading, error, refetch } = useApiList<ApiAuthProvider>('/api/v4/auth-providers');
+  const providers = rawProviders.map(normalizeProvider);
+
   const [activeTab, setActiveTab] = useState("providers");
   const [selectedProvider, setSelectedProvider] = useState<AuthProvider | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isMappingModalOpen, setIsMappingModalOpen] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
-  const [activeProvider, setActiveProvider] = useState<string>("auth0-prod");
+  const [activeProvider, setActiveProvider] = useState<string>("");
   const [testResult, setTestResult] = useState<{ status: "success" | "error"; message: string } | null>(null);
   const [jitProvisioning, setJitProvisioning] = useState(true);
 
-  const handleTestConnection = (providerId: string) => {
-    setTimeout(() => {
-      setTestResult({
-        status: "success",
-        message: "Connection successful! Auth provider is reachable and properly configured.",
-      });
-    }, 1500);
+  const handleTestConnection = async (providerId: string) => {
+    try {
+      await api.post(`/api/v4/auth-providers/${providerId}/test`, {});
+      setTestResult({ status: "success", message: "Connection successful! Auth provider is reachable and properly configured." });
+    } catch {
+      setTestResult({ status: "error", message: "Connection failed. Please check your configuration and try again." });
+    }
   };
 
   const handleConfigSave = () => {
     setIsConfigModalOpen(false);
     if (selectedProvider) {
-      setProviders((prev) =>
-        prev.map((p) => (p.id === selectedProvider.id ? { ...p, status: "connected" } : p))
-      );
       setActiveProvider(selectedProvider.id);
+    }
+    refetch();
+  };
+
+  const handleDeleteProvider = async (providerId: string) => {
+    try {
+      await api.delete(`/api/v4/auth-providers/${providerId}`);
+      addToast({ type: 'success', title: 'Provider removed', message: 'Auth provider has been removed.' });
+      if (activeProvider === providerId) {
+        setActiveProvider('');
+      }
+      refetch();
+    } catch {
+      addToast({ type: 'error', title: 'Failed', message: 'Could not remove auth provider.' });
     }
   };
 
-  const handleDeleteProvider = (providerId: string) => {
-    setProviders((prev) => prev.filter((p) => p.id !== providerId));
-    if (activeProvider === providerId) {
-      setActiveProvider(providers[0]?.id || "");
-    }
-  };
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const tabs = [
     { id: "providers", label: "Providers", count: providers.length },

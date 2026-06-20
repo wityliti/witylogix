@@ -264,6 +264,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/live-tracking.js"), { prefix: "/api/v4/tracking/live" });
   await safeRegister(import("./routes/proof-of-delivery.js"), { prefix: "/api/v4/pod/v2" });
   await safeRegister(import("./routes/supply-chain.js"), { prefix: "/api/v4/supply-chain" });
+  await safeRegister(import("./routes/eld.js"), { prefix: "/api/v4/eld" });
   await safeRegister(import("./routes/inventory.js"), { prefix: "/api/v4/inventory" });
   await safeRegister(import("./routes/warehouse.js"), { prefix: "/api/v4/warehouse" });
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/fleet" });

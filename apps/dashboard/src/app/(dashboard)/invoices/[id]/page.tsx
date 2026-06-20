@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Download,
   Send,
@@ -22,6 +22,8 @@ import { Table } from "@/components/ui/table";
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
@@ -74,79 +76,79 @@ interface Invoice {
   terms?: string;
 }
 
-const MOCK_INVOICE: Invoice = {
-  id: "inv-001",
-  number: "INV-2024-001",
-  customerId: "cust-001",
-  customerName: "Acme Corporation",
-  customerEmail: "billing@acme.com",
-  customerAddress: "123 Business Ave, New York, NY 10001",
-  amount: 2500.0,
-  taxAmount: 250.0,
-  discountAmount: 0,
-  subtotal: 2500.0,
-  total: 2750.0,
-  status: "paid",
-  createdDate: new Date("2024-01-15"),
-  sentDate: new Date("2024-01-15"),
-  dueDate: new Date("2024-02-15"),
-  paidDate: new Date("2024-02-10"),
-  lineItems: [
-    {
-      id: "li-001",
-      description: "Delivery Service - January",
-      quantity: 45,
-      rate: 50.0,
-      amount: 2250.0,
-      tax: 225.0,
-    },
-    {
-      id: "li-002",
-      description: "Rush Delivery Surcharge",
-      quantity: 1,
-      rate: 250.0,
-      amount: 250.0,
-      tax: 25.0,
-    },
-  ],
-  payments: [
-    {
-      id: "pay-001",
-      date: new Date("2024-02-10"),
-      amount: 2750.0,
-      method: "bank_transfer",
-      reference: "TXN-20240210-12345",
-    },
-  ],
-  activity: [
-    {
-      id: "act-001",
-      type: "created",
-      timestamp: new Date("2024-01-15T09:30:00"),
-      description: "Invoice created",
-    },
-    {
-      id: "act-002",
-      type: "sent",
-      timestamp: new Date("2024-01-15T09:45:00"),
-      description: "Invoice sent to customer",
-    },
-    {
-      id: "act-003",
-      type: "viewed",
-      timestamp: new Date("2024-01-16T14:20:00"),
-      description: "Customer viewed invoice",
-    },
-    {
-      id: "act-004",
-      type: "paid",
-      timestamp: new Date("2024-02-10T10:15:00"),
-      description: "Payment received",
-    },
-  ],
-  notes: "Thank you for your business. Please include invoice number with payment.",
-  terms: "Payment due within 30 days. Late payments subject to 1.5% monthly interest.",
-};
+interface ApiLineItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+interface ApiPayment {
+  id: string;
+  amount: number;
+  method: string;
+  reference: string;
+  paidAt?: string;
+  createdAt: string;
+}
+
+interface ApiInvoice {
+  id: string;
+  invoiceNumber: string;
+  customerId: string;
+  status: string;
+  subtotal: number;
+  discountTotal: number;
+  taxTotal: number;
+  total: number;
+  issuedAt: string;
+  dueAt: string;
+  paidAt?: string | null;
+  notes?: string | null;
+  lineItems: ApiLineItem[];
+  payments: ApiPayment[];
+  createdAt: string;
+}
+
+function normalizeInvoice(raw: ApiInvoice): Invoice {
+  return {
+    id: raw.id,
+    number: raw.invoiceNumber,
+    customerId: raw.customerId,
+    customerName: "",
+    customerEmail: "",
+    customerAddress: "",
+    amount: raw.subtotal,
+    taxAmount: raw.taxTotal,
+    discountAmount: raw.discountTotal,
+    subtotal: raw.subtotal,
+    total: raw.total,
+    status: raw.status as InvoiceStatus,
+    createdDate: new Date(raw.createdAt),
+    sentDate: raw.issuedAt ? new Date(raw.issuedAt) : null,
+    dueDate: new Date(raw.dueAt),
+    paidDate: raw.paidAt ? new Date(raw.paidAt) : null,
+    lineItems: (raw.lineItems ?? []).map((li) => ({
+      id: li.id,
+      description: li.description,
+      quantity: li.quantity,
+      rate: li.unitPrice,
+      amount: li.amount,
+      tax: 0,
+    })),
+    payments: (raw.payments ?? []).map((p) => ({
+      id: p.id,
+      date: new Date(p.paidAt ?? p.createdAt),
+      amount: p.amount,
+      method: p.method as Payment["method"],
+      reference: p.reference ?? "",
+    })),
+    activity: [],
+    notes: raw.notes ?? undefined,
+    terms: undefined,
+  };
+}
 
 const getStatusBadgeVariant = (
   status: InvoiceStatus
@@ -203,7 +205,14 @@ export default function InvoiceDetailPage() {
   const invoiceId = params.id as string;
 
   const { addToast } = useToast();
-  const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
+  const { data: invoiceRaw, loading, error, refetch } = useApiQuery<{ invoice: ApiInvoice }>(`/api/v4/invoices/${invoiceId}`);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+
+  useEffect(() => {
+    if (invoiceRaw?.invoice) {
+      setInvoice(normalizeInvoice(invoiceRaw.invoice));
+    }
+  }, [invoiceRaw]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isVoiding, setIsVoiding] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
@@ -212,26 +221,27 @@ export default function InvoiceDetailPage() {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   const isOverdue = useMemo(() => {
-    return (
-      invoice.status !== "paid" &&
-      invoice.dueDate < new Date()
-    );
+    if (!invoice) return false;
+    return invoice.status !== "paid" && invoice.dueDate < new Date();
   }, [invoice]);
 
   const daysOverdue = useMemo(() => {
-    if (!isOverdue) return 0;
+    if (!isOverdue || !invoice) return 0;
     return Math.floor(
       (new Date().getTime() - invoice.dueDate.getTime()) / (1000 * 60 * 60 * 24)
     );
-  }, [isOverdue, invoice.dueDate]);
+  }, [isOverdue, invoice]);
 
   const amountPaid = useMemo(() => {
-    return invoice.payments.reduce((sum, p) => sum + p.amount, 0);
-  }, [invoice.payments]);
+    return (invoice?.payments ?? []).reduce((sum, p) => sum + p.amount, 0);
+  }, [invoice]);
 
   const remainingBalance = useMemo(() => {
-    return invoice.total - amountPaid;
-  }, [invoice.total, amountPaid]);
+    return (invoice?.total ?? 0) - amountPaid;
+  }, [invoice, amountPaid]);
+
+  if (loading || !invoice) return <TableSkeleton rows={6} columns={4} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const handleDownloadPDF = useCallback(async () => {
     if (isPdfLoading) return;
@@ -275,11 +285,11 @@ export default function InvoiceDetailPage() {
     setIsSending(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send`, {});
-      setInvoice((prev) => ({
+      setInvoice((prev) => prev === null ? null : {
         ...prev,
         status: "sent",
         sentDate: new Date(),
-      }));
+      });
       addToast({
         type: 'success',
         title: 'Invoice sent',
@@ -301,7 +311,7 @@ export default function InvoiceDetailPage() {
     setIsMarkingPaid(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/mark-paid`, {});
-      setInvoice((prev) => ({
+      setInvoice((prev) => prev === null ? null : {
         ...prev,
         status: "paid",
         paidDate: new Date(),
@@ -311,7 +321,7 @@ export default function InvoiceDetailPage() {
             id: `pay-${Date.now()}`,
             date: new Date(),
             amount: prev.total,
-            method: "bank_transfer",
+            method: "bank_transfer" as const,
             reference: "MAN-" + Date.now(),
           },
         ],
@@ -324,7 +334,7 @@ export default function InvoiceDetailPage() {
             description: "Invoice marked as paid",
           },
         ],
-      }));
+      });
       addToast({
         type: 'success',
         title: 'Invoice marked as paid',
@@ -346,7 +356,7 @@ export default function InvoiceDetailPage() {
     setIsVoiding(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/void`, {});
-      setInvoice((prev) => ({
+      setInvoice((prev) => prev === null ? null : {
         ...prev,
         status: "cancelled",
         activity: [
@@ -358,7 +368,7 @@ export default function InvoiceDetailPage() {
             description: "Invoice voided",
           },
         ],
-      }));
+      });
       setShowDeleteConfirm(false);
       addToast({
         type: 'success',
@@ -381,7 +391,7 @@ export default function InvoiceDetailPage() {
     setIsSendingReminder(true);
     try {
       await api.post(`/api/v4/invoices/${invoiceId}/send-reminder`, {});
-      setInvoice((prev) => ({
+      setInvoice((prev) => prev === null ? null : {
         ...prev,
         activity: [
           ...prev.activity,
@@ -392,7 +402,7 @@ export default function InvoiceDetailPage() {
             description: "Reminder email sent to customer",
           },
         ],
-      }));
+      });
       addToast({
         type: 'success',
         title: 'Reminder sent',

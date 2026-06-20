@@ -40,36 +40,18 @@ interface InspectionHistory {
   criticalDefects: number;
 }
 
-const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
-  {
-    id: "ins-1",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "PRE_TRIP",
-    status: "PASSED",
-    date: new Date(Date.now() - 86400000).toISOString(),
-    defectsCount: 0,
-    criticalDefects: 0,
-  },
-  {
-    id: "ins-2",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "POST_TRIP",
-    status: "FAILED",
-    date: new Date(Date.now() - 43200000).toISOString(),
-    defectsCount: 2,
-    criticalDefects: 0,
-  },
-];
 
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: data, loading, error, refetch, pagination } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
-  const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
+  const { items: vehicles, loading: vehiclesLoading, error: vehiclesError, refetch: refetchVehicles } = useApiList<{ id: string; number: string; lastInspection?: string }>("/api/v4/eld/dvir");
+  const { items: inspectionHistory, loading: historyLoading, error: historyError, refetch: refetchHistory } = useApiList<InspectionHistory>("/api/v4/eld/dvir/history");
+  const { execute: submitInspection } = useApiMutation<InspectionHistory>('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
+
+  const loading = vehiclesLoading || historyLoading;
+  const error = vehiclesError || historyError;
+  const refetch = () => { refetchVehicles(); refetchHistory(); };
+  const data = vehicles;
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -97,12 +79,12 @@ export default function DVIRPage() {
   }, [defects, filterStatus, searchQuery]);
 
   const filteredHistory = useMemo(() => {
-    let result = MOCK_INSPECTION_HISTORY;
+    let result = inspectionHistory;
     if (selectedVehicle) {
       result = result.filter((h) => h.vehicleNumber === selectedVehicle);
     }
-    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedVehicle]);
+    return result.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [inspectionHistory, selectedVehicle]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
