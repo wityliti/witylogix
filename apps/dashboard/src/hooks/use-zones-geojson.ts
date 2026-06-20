@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import type { FeatureCollection } from 'geojson';
+import { api } from '@/lib/api';
 
 export interface UseZonesGeoJsonResult {
   data: FeatureCollection | null;
@@ -17,9 +18,7 @@ export function useZonesGeoJson(): UseZonesGeoJsonResult {
   const fetchZones = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v4/zones?format=geojson');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const body = (await res.json()) as FeatureCollection;
+      const body = await api.get<FeatureCollection>('/api/v4/zones?format=geojson');
       setData(body);
       setError(null);
     } catch (e) {
