@@ -24,6 +24,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "@/lib/api";
 
 // ─── TYPES ──────────────────────────────────────────────────────────
 
@@ -142,15 +143,10 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
           ...(type && { type }),
         });
 
-        const response = await fetch(`/api/search?${params}`, {
-          signal: abortController.current.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Search failed: ${response.statusText}`);
-        }
-
-        const data = await response.json();
+        const data = await api.get<{ results: SearchResult[] }>(
+          `/api/v4/search?${params}`,
+          { signal: abortController.current.signal },
+        );
         const searchResults = data.results || [];
 
         setResults(searchResults);
@@ -188,20 +184,13 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
 
     try {
       const params = new URLSearchParams({ q, limit: "5" });
-      const response = await fetch(`/api/search/suggestions?${params}`);
-
-      if (!response.ok) {
-        return;
-      }
-
-      const apiSuggestions = await response.json();
-      const suggestionList: SearchSuggestion[] = (apiSuggestions || []).map(
+      const data = await api.get<{ suggestions: string[] }>(`/api/v4/search/suggestions?${params}`);
+      const suggestionList: SearchSuggestion[] = (data.suggestions || []).map(
         (s: string) => ({
           title: s,
           type: "suggestion" as const,
         })
       );
-
       setSuggestions(suggestionList);
     } catch (e) {
       // Silently fail on suggestions
