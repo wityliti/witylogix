@@ -87,7 +87,25 @@ export default function CreateInvoicePage() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  const { items: allCustomers } = useApiList<Customer>('/api/v4/customers', { limit: 200 });
+  const { items: rawCustomers, loading: customersLoading } = useApiList<any>('/api/v4/customers', { limit: 100 });
+
+  const allCustomers: Customer[] = useMemo(
+    () =>
+      rawCustomers.map((c) => ({
+        id: c.id,
+        name: c.name ?? [c.firstName, c.lastName].filter(Boolean).join(" ") || c.email || "Unknown",
+        email: c.email ?? "",
+        address: (c.addresses as any[])?.[0]
+          ? [
+              (c.addresses as any[])[0].address1,
+              (c.addresses as any[])[0].city,
+              (c.addresses as any[])[0].province,
+              (c.addresses as any[])[0].country,
+            ].filter(Boolean).join(", ")
+          : "",
+      })),
+    [rawCustomers]
+  );
 
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {

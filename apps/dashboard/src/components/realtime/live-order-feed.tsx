@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useApiList } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -132,13 +132,12 @@ function OrderCard({
   );
 }
 
-const STATUS_NORMALIZE: Record<string, Order["status"]> = {
+const STATUS_MAP: Record<string, Order["status"]> = {
   PENDING: "pending",
-  CONFIRMED: "assigned",
   ASSIGNED: "assigned",
-  IN_TRANSIT: "in-transit",
+  ON_ROUTE: "in-transit",
   DELIVERED: "delivered",
-  CANCELLED: "cancelled",
+  FAILED: "delivered",
 };
 
 export function LiveOrderFeed({
@@ -150,36 +149,25 @@ export function LiveOrderFeed({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
 
-  const { items: rawOrders, loading: isLoading, refetch } =
-    useApiList<any>('/api/v4/orders', { limit: 10 });
+  const { items: rawOrders, loading: isLoading } = useApiList<any>("/api/v4/orders", {
+    limit: 10,
+    sort: "createdAt",
+    order: "desc",
+  });
 
-  const orders = useMemo<Order[]>(() =>
-    rawOrders.map((o) => ({
-      id: o.id,
-      customerId: o.customerId ?? o.id,
-      customerName: o.customerName ?? "Unknown",
-      status: STATUS_NORMALIZE[o.status] ?? "pending",
-      createdAt: new Date(o.createdAt),
-      amount: o.totalAmount ?? o.totalPrice ?? 0,
-      itemCount: o.itemCount ?? o.items?.length ?? 0,
-    })),
-  [rawOrders]);
-
-  // Poll for new orders every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, [refetch]);
-
-  // Notify when new orders arrive
-  useEffect(() => {
-    if (orders.length > prevCountRef.current && prevCountRef.current > 0) {
-      setNewOrderCount((prev) => (isScrolled ? prev + (orders.length - prevCountRef.current) : 0));
-    }
-    prevCountRef.current = orders.length;
-  }, [orders.length, isScrolled]);
+  const orders = useMemo<Order[]>(
+    () =>
+      rawOrders.map((o) => ({
+        id: o.id,
+        customerId: o.customerId ?? o.customer_id ?? "",
+        customerName: o.customerName ?? o.customer_name ?? o.customerEmail ?? "Customer",
+        status: STATUS_MAP[o.status] ?? "pending",
+        createdAt: new Date(o.createdAt ?? o.created_at ?? Date.now()),
+        amount: Number(o.totalPrice ?? o.total_price ?? 0),
+        itemCount: o.lineItems?.length ?? o.line_items?.length ?? 1,
+      })),
+    [rawOrders]
+  );
 
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
@@ -233,8 +221,6 @@ export function LiveOrderFeed({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        onMouseEnter={() => {/* pause handled by real polling */}}
-        onMouseLeave={() => {}}
         className="flex-1 overflow-y-auto space-y-2 p-5"
       >
         {isLoading ? (

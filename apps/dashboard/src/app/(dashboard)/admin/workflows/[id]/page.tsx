@@ -23,8 +23,7 @@ import {
 } from "lucide-react";
 import { useApiQuery } from '@/hooks/use-api';
 import { useParams } from 'next/navigation';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { Skeleton } from '../../../../../components/ui/skeleton';
 
 /* ═══════════════════════════════════════════════════════════
    WORKFLOW EXECUTION DETAIL PAGE — Monitor step-by-step execution
@@ -58,19 +57,52 @@ interface WorkflowExecutionDetail {
   createdAt: string;
 }
 
-interface ApiExecutionData {
-  executionId: string;
-  workflowName: string;
-  status: "running" | "completed" | "failed" | "compensating";
-  startedAt: string;
-  completedAt?: string;
-  durationMs?: number;
-  input: Record<string, unknown>;
-  output: unknown;
-  error: unknown;
-  steps: WorkflowStep[];
-  metadata: unknown;
-  createdAt: string;
+function formatDuration(ms: number | null | undefined): string {
+  if (!ms) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+}
+
+function normalizeExecution(raw: any): WorkflowExecutionDetail {
+  const d = raw?.data ?? raw;
+  const steps: WorkflowStep[] = Array.isArray(d.steps)
+    ? d.steps.map((s: any, i: number) => ({
+        id: s.id ?? `step-${i + 1}`,
+        number: s.number ?? i + 1,
+        name: s.name ?? `Step ${i + 1}`,
+        status: s.status ?? "completed",
+        duration: s.durationMs ? formatDuration(s.durationMs) : (s.duration ?? "—"),
+        startedAt: s.startedAt ?? d.startedAt ?? new Date().toISOString(),
+        input: s.input ?? {},
+        output: s.output ?? {},
+        error: s.error,
+        compensationStatus: s.compensationStatus,
+      }))
+    : [];
+  const completedSteps = steps.filter((s) => s.status === "completed").length;
+  const failedSteps = steps.filter((s) => s.status === "failed").length;
+  const meta = (d.metadata as Record<string, any>) ?? {};
+  return {
+    id: d.executionId ?? d.id ?? "",
+    executionId: d.executionId ?? d.id ?? "",
+    workflowName: d.workflowName ?? "Workflow",
+    status: (d.status ?? "completed") as WorkflowExecutionDetail["status"],
+    totalSteps: steps.length || meta.totalSteps || 0,
+    completedSteps,
+    failedSteps,
+    startedAt: d.startedAt ?? d.createdAt ?? new Date().toISOString(),
+    completedAt: d.completedAt ?? undefined,
+    totalDuration: formatDuration(d.durationMs),
+    steps,
+    input: (d.input as Record<string, any>) ?? {},
+    context: (meta.context as Record<string, string>) ?? {},
+    createdBy: meta.createdBy ?? meta.triggeredBy ?? "system",
+    retryCount: meta.retryCount ?? 0,
+  };
 }
 
 const getStatusIcon = (status: string) => {
@@ -268,35 +300,38 @@ export default function WorkflowExecutionDetailPage() {
   const params = useParams();
   const executionId = params.id as string;
 
-  const { data: apiData, loading, error, refetch } = useApiQuery<ApiExecutionData>(
-    `/api/v4/workflow/executions/${executionId}`
-  );
+  const { data: rawData, loading, error } = useApiQuery<any>(`/api/v4/workflow/executions/${executionId}`);
 
-  const execution = useMemo((): WorkflowExecutionDetail | null => {
-    if (!apiData) return null;
-    const steps = Array.isArray(apiData.steps) ? apiData.steps : [];
-    return {
-      id: apiData.executionId,
-      executionId: apiData.executionId,
-      workflowName: apiData.workflowName,
-      status: apiData.status,
-      totalSteps: steps.length,
-      completedSteps: steps.filter((s) => s.status === 'completed').length,
-      failedSteps: steps.filter((s) => s.status === 'failed').length,
-      startedAt: apiData.startedAt,
-      completedAt: apiData.completedAt,
-      totalDuration: apiData.durationMs != null ? `${(apiData.durationMs / 1000).toFixed(1)}s` : '—',
-      steps,
-      input: (apiData.input as Record<string, unknown>) ?? {},
-      context: (apiData.metadata as Record<string, string>) ?? {},
-      createdBy: '—',
-      retryCount: 0,
-    };
-  }, [apiData]);
+  const execution = rawData ? normalizeExecution(rawData) : null;
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-  if (!execution) return <ErrorState message="Execution not found" onRetry={refetch} />;
+  if (loading) {
+    return (
+      <div className="bg-[#0a0a0f] min-h-screen p-6 space-y-6">
+        <Skeleton className="h-16 w-full rounded-lg" />
+        <div className="grid grid-cols-4 gap-4">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
+        </div>
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
+    );
+  }
+
+  if (error || !execution) {
+    return (
+      <div className="bg-[#0a0a0f] min-h-screen p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" size="sm" onClick={() => router.push("/admin/workflows")} className="flex items-center gap-1">
+            <ChevronLeft size={18} />
+            Back
+          </Button>
+        </div>
+        <Card className="p-8 text-center bg-[#12121a] border border-[#1e1e2e]">
+          <p className="text-red-400 mb-4">{error?.message ?? "Execution not found"}</p>
+          <Button variant="secondary" onClick={() => router.push("/admin/workflows")}>Back to Workflows</Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-wl-bg-root min-h-screen">

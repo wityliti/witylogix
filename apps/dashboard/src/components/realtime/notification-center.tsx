@@ -126,9 +126,20 @@ function NotificationItem({
   );
 }
 
-const TYPE_MAP: Record<string, Notification["type"]> = {
-  order: "order", shipment: "delivery", delivery: "delivery",
-  driver: "alert", system: "system", webhook: "system", workflow: "system",
+const CATEGORY_TYPE_MAP: Record<string, Notification["type"]> = {
+  order: "order",
+  delivery: "delivery",
+  alert: "alert",
+  system: "system",
+  driver: "alert",
+  payment: "system",
+};
+
+const PRIORITY_SEVERITY_MAP: Record<string, Notification["severity"]> = {
+  HIGH: "critical",
+  MEDIUM: "warning",
+  LOW: "info",
+  CRITICAL: "critical",
 };
 
 export function NotificationCenter({
@@ -136,42 +147,29 @@ export function NotificationCenter({
   onNotificationClick,
 }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [readOverrides, setReadOverrides] = useState<Set<string>>(new Set());
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { items: rawNotifs, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
+  const { items: rawNotifications } = useApiList<any>("/api/v4/notifications", { limit: 20 });
 
-  const apiNotifs = useMemo<Notification[]>(() =>
-    rawNotifs.map((n) => ({
-      id: n.id,
-      type: TYPE_MAP[n.type ?? n.category] ?? "system",
-      title: n.title ?? n.action ?? "Notification",
-      message: n.message ?? n.description ?? "",
-      severity: (n.severity as Notification["severity"]) ?? "info",
-      read: n.read ?? true,
-      timestamp: new Date(n.timestamp ?? n.createdAt ?? Date.now()),
-      actionUrl: n.actionUrl,
-    })),
-  [rawNotifs]);
-
-  // Local overlay for optimistic read/delete operations
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-
-  const notifications = useMemo(() =>
-    apiNotifs
-      .filter((n) => !deletedIds.has(n.id))
-      .map((n) => readIds.has(n.id) ? { ...n, read: true } : n),
-  [apiNotifs, readIds, deletedIds]);
-
-  // Poll for new notifications every 60 seconds
-  useEffect(() => {
-    const interval = setInterval(() => { refetch(); }, 60_000);
-    return () => clearInterval(interval);
-  }, [refetch]);
+  const notifications = useMemo<Notification[]>(
+    () =>
+      rawNotifications.map((n) => ({
+        id: n.id,
+        type: CATEGORY_TYPE_MAP[(n.category ?? "system").toLowerCase()] ?? "system",
+        title: n.title ?? n.subject ?? "",
+        message: n.body ?? n.message ?? "",
+        severity: PRIORITY_SEVERITY_MAP[n.priority ?? "LOW"] ?? "info",
+        read: readOverrides.has(n.id) ? true : n.readAt != null,
+        timestamp: new Date(n.createdAt ?? Date.now()),
+        actionUrl: n.actionUrl ?? undefined,
+      })),
+    [rawNotifications, readOverrides]
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -195,15 +193,11 @@ export function NotificationCenter({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
-    setReadIds((prev) => new Set([...prev, id]));
+    setReadOverrides((prev) => new Set([...prev, id]));
   };
 
   const markAllAsRead = () => {
-    setReadIds(new Set(notifications.map((n) => n.id)));
-  };
-
-  const deleteNotification = (id: string) => {
-    setDeletedIds((prev) => new Set([...prev, id]));
+    setReadOverrides(new Set(rawNotifications.map((n: any) => n.id)));
   };
 
   const handleNotificationClick = (notification: Notification) => {
