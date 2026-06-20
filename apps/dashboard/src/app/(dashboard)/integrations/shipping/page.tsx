@@ -1,83 +1,121 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
+import Link from 'next/link';
 import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
+import { cn } from '@/lib/utils';
+import { Package, CheckCircle2, XCircle, RefreshCw, Plus } from 'lucide-react';
+
+interface CarrierAdapter {
+  name: string;
+  label: string;
+  enabled: boolean;
+  configSource: string;
+}
 
 export default function ShippingIntegrationsPage() {
+  const { items: adapters, loading, error, refetch } = useApiList<CarrierAdapter>(
+    '/api/v4/carriers/adapters',
+    { limit: 100 },
+  );
+
+  const stats = useMemo(() => ({
+    total: adapters.length,
+    enabled: adapters.filter((a) => a.enabled).length,
+    disabled: adapters.filter((a) => !a.enabled).length,
+  }), [adapters]);
+
+  if (loading && adapters.length === 0) return <LoadingSkeleton />;
+  if (error && adapters.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+
   return (
     <>
       <Header
         title="Shipping Integrations"
         subtitle="Manage shipping carriers, labels, and tracking"
-        actions={<Button variant="primary">Add Carrier</Button>}
+        actions={
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={refetch} disabled={loading}>
+              <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
+            </Button>
+            <Link href="/integrations/marketplace?category=ORDER_MANAGEMENT">
+              <Button variant="primary" size="sm">
+                <Plus className="w-4 h-4 mr-1" /> Add Carrier
+              </Button>
+            </Link>
+          </div>
+        }
       />
 
-      <div className={cn('p-6 bg-wl-bg-root space-y-6')}>
-        <div className={cn('grid grid-cols-1 md:grid-cols-4 gap-4')}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Connected Carriers</CardTitle>
-            </CardHeader>
-            <div className={cn('p-4 pt-0')}>
-              <div className={cn('text-2xl font-bold text-white')}>0</div>
-              <p className={cn('text-xs text-gray-500 mt-1')}>active integrations</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Labels Today</CardTitle>
-            </CardHeader>
-            <div className={cn('p-4 pt-0')}>
-              <div className={cn('text-2xl font-bold text-white')}>0</div>
-              <p className={cn('text-xs text-gray-500 mt-1')}>shipping labels generated</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Avg Cost / Package</CardTitle>
-            </CardHeader>
-            <div className={cn('p-4 pt-0')}>
-              <div className={cn('text-2xl font-bold text-gray-500')}>—</div>
-              <p className={cn('text-xs text-gray-500 mt-1')}>no active carriers</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Delivery Success Rate</CardTitle>
-            </CardHeader>
-            <div className={cn('p-4 pt-0')}>
-              <div className={cn('text-2xl font-bold text-gray-500')}>—</div>
-              <p className={cn('text-xs text-gray-500 mt-1')}>no active carriers</p>
-            </div>
-          </Card>
+      <div className="p-6 bg-wl-bg-root space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {[
+            { label: 'Carrier Adapters', value: stats.total, icon: Package, color: 'text-blue-400' },
+            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-emerald-400' },
+            { label: 'Disabled', value: stats.disabled, icon: XCircle, color: 'text-wl-text-muted' },
+          ].map((s) => {
+            const Icon = s.icon;
+            return (
+              <Card key={s.label} className="bg-wl-bg-surface border-wl-border-default">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <Icon className={cn('w-5 h-5 shrink-0', s.color)} />
+                  <div>
+                    <p className="text-xs text-wl-text-muted">{s.label}</p>
+                    <p className="text-xl font-bold text-wl-text-primary">{s.value}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
-        <Card>
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
-            <CardTitle>Shipping Carriers</CardTitle>
+            <CardTitle>Carrier Adapters</CardTitle>
           </CardHeader>
-          <div className={cn('p-12 text-center')}>
-            <p className={cn('text-gray-400 mb-2')}>No shipping carriers connected</p>
-            <p className={cn('text-sm text-gray-500 mb-6')}>
-              Connect Shippo, ShipStation, EasyPost, FedEx, UPS, USPS, DHL, and more from the
-              Marketplace to generate labels, compare rates, and track shipments.
-            </p>
-            <Button variant="primary">Browse Marketplace</Button>
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Shipments</CardTitle>
-          </CardHeader>
-          <div className={cn('p-12 text-center')}>
-            <p className={cn('text-gray-500 text-sm')}>No shipments yet</p>
-          </div>
+          <CardContent className="p-0">
+            {adapters.length === 0 ? (
+              <div className="p-12 text-center">
+                <Package className="w-12 h-12 text-wl-text-muted mx-auto mb-4 opacity-40" />
+                <p className="text-wl-text-secondary mb-1">No carrier adapters configured</p>
+                <p className="text-sm text-wl-text-muted mb-6 max-w-sm mx-auto">
+                  Connect Shippo, ShipStation, EasyPost, FedEx, UPS, USPS, DHL, and more to
+                  generate labels, compare rates, and track shipments.
+                </p>
+                <Link href="/integrations/marketplace?category=ORDER_MANAGEMENT">
+                  <Button variant="primary">Browse Marketplace</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-wl-border-default">
+                {adapters.map((adapter) => (
+                  <div
+                    key={adapter.name}
+                    className="flex items-center justify-between px-5 py-3 hover:bg-wl-bg-overlay transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-wl-bg-overlay flex items-center justify-center text-xs font-bold text-wl-text-secondary uppercase">
+                        {adapter.label.slice(0, 2)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-wl-text-primary">{adapter.label}</p>
+                        <p className="text-xs text-wl-text-muted capitalize">{adapter.configSource} config</p>
+                      </div>
+                    </div>
+                    <Badge variant={adapter.enabled ? 'success' : 'default'} dot>
+                      {adapter.enabled ? 'Enabled' : 'Disabled'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </>

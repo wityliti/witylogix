@@ -1,9 +1,10 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
 import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Truck } from 'lucide-react';
 
 export default function FreightIntegrationsPage() {
   return (
@@ -11,72 +12,37 @@ export default function FreightIntegrationsPage() {
       <Header
         title="Freight Integrations"
         subtitle="Manage load boards, rates, bookings, and compliance"
-        actions={<Button variant="primary">Add Provider</Button>}
+        actions={
+          <Link href="/integrations/marketplace">
+            <Button variant="primary" size="sm">Browse Marketplace</Button>
+          </Link>
+        }
       />
 
-      <div className={cn("p-6 bg-wl-bg-root space-y-6")}>
-        <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Available Loads</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-white")}>0</div>
-              <p className={cn("text-xs text-gray-500 mt-1")}>across all providers</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Booked This Month</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-white")}>0</div>
-              <p className={cn("text-xs text-gray-500 mt-1")}>loads booked</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Connected Providers</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-white")}>0</div>
-              <p className={cn("text-xs text-gray-500 mt-1")}>load boards active</p>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Avg Market Rate</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-gray-500")}>—</div>
-              <p className={cn("text-xs text-gray-500 mt-1")}>no active providers</p>
-            </div>
-          </Card>
-        </div>
-
-        <Card>
+      <div className="p-6 bg-wl-bg-root space-y-6">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle>Freight Load Boards</CardTitle>
           </CardHeader>
-          <div className={cn("p-12 text-center")}>
-            <p className={cn("text-gray-400 mb-2")}>No freight providers connected</p>
-            <p className={cn("text-sm text-gray-500 mb-6")}>
-              Connect DAT, Truckstop, 123Loadboard, Direct Freight, and more from the Marketplace to aggregate loads and compare rates.
-            </p>
-            <Button variant="primary">Browse Marketplace</Button>
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Bookings</CardTitle>
-          </CardHeader>
-          <div className={cn("p-12 text-center")}>
-            <p className={cn("text-gray-500 text-sm")}>No bookings yet</p>
-          </div>
+          <CardContent>
+            <div className="p-12 text-center">
+              <Truck className="w-12 h-12 text-wl-text-muted mx-auto mb-4 opacity-40" />
+              <p className="text-wl-text-secondary mb-1">Freight integrations coming soon</p>
+              <p className="text-sm text-wl-text-muted mb-6 max-w-sm mx-auto">
+                Load board connections for DAT, Truckstop, 123Loadboard, and Direct Freight are
+                not yet available in the marketplace. Check back soon or contact support to
+                request early access.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Link href="/integrations/marketplace">
+                  <Button variant="ghost">Browse Marketplace</Button>
+                </Link>
+                <Link href="/support">
+                  <Button variant="primary">Request Access</Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </>
