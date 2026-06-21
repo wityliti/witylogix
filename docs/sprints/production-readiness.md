@@ -27,11 +27,9 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-356 | Locations + Tracking | locations/, tracking/ | LocationMarkerLayer (type-coloured circle markers, status ring, popup, auto-fit, grid/map toggle on list; embedded 160px mini-map in detail panel); DriverLocationLayer on tracking map (live driver GPS, click-to-select, status legend) | /api/v4/locations (existing, returns lat/lng); /api/v4/drivers/locations (existing GPS endpoint reused) | locations: hardcoded "Map Placeholder" coordinate text → 0 (real WLMap); tracking: no map at all → live map with driver GPS + driver sidebar; removed `any` cast on Badge variant | New shared layer: location-marker-layer.tsx (WAREHOUSE=blue, STORE=green, HUB=purple, DEPOT=amber, PICKUP=teal; ACTIVE=emerald ring, MAINTENANCE=amber ring, INACTIVE=red ring). Tracking page: list/map toggle, driver sidebar with GPS indicator |
 | WIT-357 | Profile + Activity + Time-Slots + Settings cluster | profile/, activity/, time-slots/, settings/auth-providers/, settings/payments/, settings/billing/ | No | 7 dashboard pages; 5 API changes: auth-providers field names fix, /me/sessions new, /payments/gateways new + default endpoint, /billing/subscription response-shape fix | profile: 3 hardcoded sessions → useApiList(/api/v4/users/me/sessions); activity event-filters: SAMPLE_USERS(4) → users prop from /api/v4/users; time-slots: SLOTS(7) → useApiList(/api/v4/time-slots); auth-providers: mockProviders(6) → useApiList(/api/v4/auth-providers) + real test/delete; payments: mockGatewayConfigs(4) + alert() → useApiList(/api/v4/payments/gateways) + inline test; billing: wrong /api/v4/billing root + mockInvoices(4) + usageMetrics(3) + hardcoded Pro/$499.99/April 1/Visa 4242/Sarah Johnson → /subscription + /quotas + /invoices from correct endpoints → 0 | PR #372 |
 
-## Status Legend
-- ✅ **Done** — 0 mock signals, real API wired
-- 🔄 **In-Progress** — current sprint
-- ⬜ **Pending** — not started
-- ⚙️ **No-API-Key** — gated behind missing env key (Stripe/Twilio/maps)
+| WIT-357 | Time Slots + Routes/Plan | time-slots/, routes/plan | None (no geographic data) | /api/v4/time-slots (existing, now wired), /api/v4/drivers (existing, now used for driver selects) | SLOTS[7 hardcoded entries] + hardcoded driver opts (Carlos/Sofia/Ahmed/Priya ×2 steps) + mockSuggestions[5 NYC addresses] → 0 | time-slots: loading/empty/error states; routes/plan: Constraints + Dispatch driver selects now show real drivers with vehicle type; stop-list-editor: removed fake geocoding autocomplete |
+
+## Remaining ⬜
 
 ---
 
