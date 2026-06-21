@@ -5,10 +5,11 @@ import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { formatCurrency } from "@/lib/utils";
+import { useApiList } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useApiList } from "@/hooks/use-api";
 import { Clock } from "lucide-react";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -16,27 +17,27 @@ const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 interface TimeSlot {
   id: string;
   name: string;
-  startTime: string; // "HH:mm"
-  endTime: string;   // "HH:mm"
+  startTime: string;
+  endTime: string;
   daysOfWeek: number[];
   maxCapacity: number;
-  surcharge: string | number;
+  cutoffMinutes: number;
+  surcharge: number | string;
   isActive: boolean;
   deliveryZone?: { id: string; name: string } | null;
-  _count?: { orders?: number; shipments?: number };
 }
 
 function formatTime(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
-  const hour = h % 12 || 12;
-  return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+  const hour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${hour}:${m.toString().padStart(2, "0")} ${period}`;
 }
 
 export default function TimeSlotsPage() {
-  const { items: slots, loading, error, refetch } = useApiList<TimeSlot>("/api/v4/time-slots?limit=50");
+  const { items: slots, loading, error, refetch } = useApiList<TimeSlot>("/api/v4/time-slots", { limit: 100 });
 
-  if (loading) return <LoadingSkeleton />;
+  if (loading) return <TableSkeleton rows={7} columns={4} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
@@ -68,21 +69,21 @@ export default function TimeSlotsPage() {
           <EmptyState
             icon={<Clock className="w-8 h-8" />}
             title="No time slots configured"
-            description="Create delivery time windows to allow customers to choose their preferred delivery slot."
-            action={{ label: "Create Time Slot", onClick: () => {} }}
+            description="Create delivery windows to let customers choose preferred delivery times."
+            action={{ label: "Create Slot", onClick: () => {} }}
           />
         ) : (
           <div className="flex flex-col gap-4">
             {slots.map((slot) => {
-              const currentBookings = (slot._count?.orders ?? 0) + (slot._count?.shipments ?? 0);
-              const usage = slot.maxCapacity > 0 ? (currentBookings / slot.maxCapacity) * 100 : 0;
-              const usageColor = usage > 85 ? "#ef4444" : usage > 60 ? "#f59e0b" : "#10b981";
-              const surcharge = typeof slot.surcharge === "string" ? parseFloat(slot.surcharge) : (slot.surcharge ?? 0);
+              const surcharge = typeof slot.surcharge === "string" ? parseFloat(slot.surcharge) : slot.surcharge;
 
               return (
                 <Card
                   key={slot.id}
-                  className={cn("bg-[#12121a] border border-[#1e1e2e]", !slot.isActive && "opacity-50")}
+                  className={cn(
+                    "bg-[#12121a] border border-[#1e1e2e]",
+                    slot.isActive ? "opacity-100" : "opacity-50"
+                  )}
                 >
                   <div className="p-4 flex items-center gap-5">
                     {/* Time display */}
@@ -134,20 +135,11 @@ export default function TimeSlotsPage() {
                       </span>
                     </div>
 
-                    {/* Capacity bar */}
-                    <div className="w-40 shrink-0">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-xs text-gray-400">Capacity</span>
-                        <span className="text-xs font-mono" style={{ color: usageColor }}>
-                          {currentBookings}/{slot.maxCapacity}
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${Math.min(usage, 100)}%`, backgroundColor: usageColor }}
-                        />
-                      </div>
+                    {/* Capacity */}
+                    <div className="w-36 shrink-0 text-center">
+                      <div className="text-xs text-gray-400 mb-1">Max Capacity</div>
+                      <div className="text-lg font-bold text-white">{slot.maxCapacity}</div>
+                      <div className="text-xs text-gray-400">deliveries</div>
                     </div>
 
                     <Button variant="ghost" size="sm">Edit</Button>
