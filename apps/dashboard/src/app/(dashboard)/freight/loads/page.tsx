@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useApiList } from '@/hooks/use-api';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +9,12 @@ import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { Package, Plus, Upload } from 'lucide-react';
+import { Package, Plus, Upload, Map, LayoutList } from 'lucide-react';
+
+const DeliveryMapView = dynamic(
+  () => import('../../delivery/components/delivery-map-view'),
+  { ssr: false, loading: () => <div className="h-[560px] rounded-xl bg-wl-bg-surface animate-pulse" /> }
+);
 
 interface Shipment {
   id: string;
@@ -16,6 +23,8 @@ interface Shipment {
   addressLine1?: string | null;
   city?: string | null;
   recipientName?: string | null;
+  deliveryLocation?: { lat: number; lng: number } | null;
+  order?: { customerName?: string | null; externalOrderNumber?: string | null } | null;
 }
 
 const statusBadgeVariant = (status: string): 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default' => {
@@ -34,12 +43,15 @@ const statusBadgeVariant = (status: string): 'success' | 'warning' | 'danger' | 
 };
 
 export default function FreightLoadsPage() {
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const { items: shipments, pagination, loading, error, refetch, setPage } = useApiList<Shipment>('/api/v4/shipments?type=freight&view=loads');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const activeLoads = shipments.filter((s) => ['Booked', 'In-Transit', 'IN_TRANSIT', 'PICKED_UP'].includes(s.status)).length;
+  const mappableLoads = shipments.filter((s) => s.deliveryLocation?.lat != null).length;
 
   return (
     <div className="flex flex-col min-h-screen bg-wl-bg-primary p-6">
@@ -50,9 +62,29 @@ export default function FreightLoadsPage() {
             <h1 className="text-2xl font-bold text-wl-text-primary">Load Board</h1>
             <p className="text-sm text-wl-text-secondary mt-0.5">
               {pagination.total} total loads · {activeLoads} active
+              {viewMode === 'map' && mappableLoads > 0 && ` · ${mappableLoads} mapped`}
             </p>
           </div>
           <div className="flex gap-3">
+            {/* List / Map toggle */}
+            <div className="flex rounded-lg overflow-hidden border border-wl-border-default">
+              <Button
+                variant={viewMode === 'list' ? 'primary' : 'secondary'}
+                size="md"
+                onClick={() => setViewMode('list')}
+                className="rounded-none border-0"
+              >
+                <LayoutList className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'map' ? 'primary' : 'secondary'}
+                size="md"
+                onClick={() => setViewMode('map')}
+                className="rounded-none border-0 border-l border-wl-border-default"
+              >
+                <Map className="w-4 h-4" />
+              </Button>
+            </div>
             <Button variant="secondary" size="md">
               <Plus className="w-4 h-4" /> Create Load
             </Button>
@@ -101,7 +133,19 @@ export default function FreightLoadsPage() {
         </Card>
       </div>
 
+      {/* Map View */}
+      {viewMode === 'map' && (
+        <div className="mb-6 h-[560px]">
+          <DeliveryMapView
+            shipments={shipments}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+        </div>
+      )}
+
       {/* Loads Table */}
+      {viewMode === 'list' && (
       <Card className="bg-wl-bg-surface border-wl-border-default overflow-hidden flex-1">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -179,6 +223,7 @@ export default function FreightLoadsPage() {
           </div>
         </div>
       </Card>
+      )}
     </div>
   );
 }
