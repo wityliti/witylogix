@@ -3,22 +3,25 @@
 import { useState } from "react";
 import { ChevronDown, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useApiList } from "@/hooks/use-api";
-
-interface FilterState {
-  types: string[];
-  severities: string[];
-  startDate: Date | null;
-  endDate: Date | null;
-  userId: string | null;
-}
 
 interface EventFiltersProps {
-  filters: FilterState;
-  setFilters: (filters: FilterState) => void;
-  users?: { id: string; name: string }[];
+  filters: {
+    types: string[];
+    severities: string[];
+    startDate: Date | null;
+    endDate: Date | null;
+    userId: string | null;
+  };
+  setFilters: (
+    filters: {
+      types: string[];
+      severities: string[];
+      startDate: Date | null;
+      endDate: Date | null;
+      userId: string | null;
+    }
+  ) => void;
+  users?: Array<{ id: string; name: string }>;
 }
 
 const EVENT_TYPES = [
@@ -37,11 +40,7 @@ const SEVERITY_LEVELS = [
   { id: "error", label: "Error", color: "var(--wl-danger-400)" },
 ];
 
-export function EventFilters({
-  filters,
-  setFilters,
-  users = [],
-}: EventFiltersProps) {
+export function EventFilters({ filters, setFilters, users = [] }: EventFiltersProps) {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -73,25 +72,16 @@ export function EventFilters({
   const handleDateChange = (date: string) => {
     const selectedDate = new Date(date);
     if (dateMode === "start") {
-      setFilters({
-        ...filters,
-        startDate: selectedDate,
-      });
+      setFilters({ ...filters, startDate: selectedDate });
       setDateMode("end");
     } else {
-      setFilters({
-        ...filters,
-        endDate: selectedDate,
-      });
+      setFilters({ ...filters, endDate: selectedDate });
       setShowDatePicker(false);
     }
   };
 
   const handleUserSelect = (userId: string) => {
-    setFilters({
-      ...filters,
-      userId: filters.userId === userId ? null : userId,
-    });
+    setFilters({ ...filters, userId: filters.userId === userId ? null : userId });
     setShowUserDropdown(false);
   };
 
@@ -115,12 +105,7 @@ export function EventFilters({
               {filters.types.length}
             </span>
           )}
-          <ChevronDown
-            className={cn(
-              "w-4 h-4 transition-transform duration-200",
-              showTypeDropdown && "rotate-180"
-            )}
-          />
+          <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showTypeDropdown && "rotate-180")} />
         </button>
 
         {showTypeDropdown && (
@@ -161,35 +146,22 @@ export function EventFilters({
               {filters.severities.length}
             </span>
           )}
-          <ChevronDown
-            className={cn(
-              "w-4 h-4 transition-transform duration-200",
-              showSeverityDropdown && "rotate-180"
-            )}
-          />
+          <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showSeverityDropdown && "rotate-180")} />
         </button>
 
         {showSeverityDropdown && (
           <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
             <div className="p-3 space-y-2">
               {SEVERITY_LEVELS.map((level) => (
-                <label
-                  key={level.id}
-                  className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors"
-                >
+                <label key={level.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     checked={filters.severities.includes(level.id)}
                     onChange={() => handleSeverityToggle(level.id)}
                     className="w-4 h-4 rounded accent-wl-primary-500 cursor-pointer"
                   />
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: level.color }}
-                  />
-                  <span className="text-sm text-wl-text-primary">
-                    {level.label}
-                  </span>
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: level.color }} />
+                  <span className="text-sm text-wl-text-primary">{level.label}</span>
                 </label>
               ))}
             </div>
@@ -217,12 +189,7 @@ export function EventFilters({
               {filters.startDate && filters.endDate ? "2" : "1"}
             </span>
           )}
-          <ChevronDown
-            className={cn(
-              "w-4 h-4 transition-transform duration-200",
-              showDatePicker && "rotate-180"
-            )}
-          />
+          <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showDatePicker && "rotate-180")} />
         </button>
 
         {showDatePicker && (
@@ -241,8 +208,7 @@ export function EventFilters({
                 onChange={(e) => handleDateChange(e.target.value)}
                 className={cn(
                   "w-full px-3 py-2 rounded-md border text-sm",
-                  "bg-wl-bg-surface border-wl-border-subtle",
-                  "text-wl-text-primary",
+                  "bg-wl-bg-surface border-wl-border-subtle text-wl-text-primary",
                   "focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20"
                 )}
               />
@@ -250,20 +216,13 @@ export function EventFilters({
 
             {filters.startDate && filters.endDate && (
               <div className="pt-2 border-t border-wl-border-subtle">
-                <p className="text-xs text-wl-text-secondary mb-2">
-                  Selected range:
-                </p>
+                <p className="text-xs text-wl-text-secondary mb-2">Selected range:</p>
                 <p className="text-sm text-wl-text-primary">
-                  {filters.startDate.toLocaleDateString()} to{" "}
-                  {filters.endDate.toLocaleDateString()}
+                  {filters.startDate.toLocaleDateString()} to {filters.endDate.toLocaleDateString()}
                 </p>
                 <button
                   onClick={() => {
-                    setFilters({
-                      ...filters,
-                      startDate: null,
-                      endDate: null,
-                    });
+                    setFilters({ ...filters, startDate: null, endDate: null });
                     setShowDatePicker(false);
                     setDateMode("start");
                   }}
@@ -277,54 +236,47 @@ export function EventFilters({
         )}
       </div>
 
-      {/* User filter */}
-      <div className="relative">
-        <button
-          onClick={() => setShowUserDropdown(!showUserDropdown)}
-          className={cn(
-            "flex items-center gap-2 px-3 py-2 rounded-md border",
-            "text-sm font-medium transition-all duration-200",
-            "bg-wl-bg-surface border-wl-border-subtle",
-            "hover:border-wl-border-default hover:bg-wl-bg-elevated",
-            showUserDropdown && "border-wl-primary-500 bg-wl-bg-elevated",
-            filters.userId && "border-wl-primary-500/50"
-          )}
-        >
-          <span>User</span>
-          {filters.userId && (
-            <span className="text-xs bg-wl-primary-500/20 text-wl-primary-400 px-1.5 py-0.5 rounded-md">
-              1
-            </span>
-          )}
-          <ChevronDown
+      {/* User filter — only shown when users are available */}
+      {users.length > 0 && (
+        <div className="relative">
+          <button
+            onClick={() => setShowUserDropdown(!showUserDropdown)}
             className={cn(
-              "w-4 h-4 transition-transform duration-200",
-              showUserDropdown && "rotate-180"
+              "flex items-center gap-2 px-3 py-2 rounded-md border",
+              "text-sm font-medium transition-all duration-200",
+              "bg-wl-bg-surface border-wl-border-subtle",
+              "hover:border-wl-border-default hover:bg-wl-bg-elevated",
+              showUserDropdown && "border-wl-primary-500 bg-wl-bg-elevated",
+              filters.userId && "border-wl-primary-500/50"
             )}
-          />
-        </button>
+          >
+            <span>User</span>
+            {filters.userId && (
+              <span className="text-xs bg-wl-primary-500/20 text-wl-primary-400 px-1.5 py-0.5 rounded-md">1</span>
+            )}
+            <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showUserDropdown && "rotate-180")} />
+          </button>
 
-        {showUserDropdown && (
-          <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48 max-h-56 overflow-y-auto">
-            <div className="p-3 space-y-2">
-              {users.map((user) => (
-                <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
-                  <input
-                    type="radio"
-                    name="user"
-                    checked={filters.userId === user.id}
-                    onChange={() => handleUserSelect(user.id)}
-                    className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
-                  />
-                  <span className="text-sm text-wl-text-primary">
-                    {user.name}
-                  </span>
-                </label>
-              ))}
+          {showUserDropdown && (
+            <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
+              <div className="p-3 space-y-2">
+                {users.map((user) => (
+                  <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
+                    <input
+                      type="radio"
+                      name="user"
+                      checked={filters.userId === user.id}
+                      onChange={() => handleUserSelect(user.id)}
+                      className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
+                    />
+                    <span className="text-sm text-wl-text-primary">{user.name}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

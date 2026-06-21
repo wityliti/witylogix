@@ -24,7 +24,7 @@ import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { EventTimeline } from './components/event-timeline';
 import { EventFilters } from './components/event-filters';
-import { useApiList } from '@/hooks/use-api';
+import { useApiList, useApiQuery } from '@/hooks/use-api';
 
 export interface ActivityEvent {
   id: string;
@@ -46,9 +46,12 @@ export interface ActivityEvent {
   metadata?: Record<string, unknown>;
 }
 
+interface ApiUser { id: string; name: string; }
 
 export default function ActivityPage() {
   const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
+  const { data: usersData } = useApiQuery<{ data: ApiUser[] }>('/api/v4/users?limit=50');
+  const userList: ApiUser[] = (usersData as any)?.data ?? [];
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isLiveMode, setIsLiveMode] = useState(true);
@@ -286,7 +289,7 @@ export default function ActivityPage() {
             </div>
 
             {/* Filters */}
-            <EventFilters filters={filters} setFilters={setFilters} users={uniqueUsers} />
+            <EventFilters filters={filters} setFilters={setFilters} users={userList} />
 
             {(filters.types.length > 0 || filters.severities.length > 0 || filters.startDate || filters.endDate || filters.userId) && (
               <div className="flex flex-wrap items-center gap-2">

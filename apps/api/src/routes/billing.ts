@@ -308,7 +308,7 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
         metrics,
       );
 
-      return reply.send(summary);
+      return reply.send({ data: summary });
     },
   );
 
