@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
 import { useDeliveryHeatmap } from '@/hooks/use-dashboard-stats';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   TrendingUp,
   TrendingDown,
@@ -169,7 +170,7 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('7d');
   const [viewMode, setViewMode] = useState<'charts' | 'heatmap'>('charts');
 
-  const { data, loading } = useApiQuery<AnalyticsOverview>(`/api/v4/analytics/overview?range=${timeRange}`);
+  const { data, loading, error, refetch } = useApiQuery<AnalyticsOverview>(`/api/v4/analytics/overview?range=${timeRange}`);
   const { data: heatmapData, loading: heatmapLoading } = useDeliveryHeatmap();
 
   const metrics = data?.metrics;
@@ -181,6 +182,8 @@ export default function AnalyticsPage() {
   const maxHourly = hourly.length > 0
     ? Math.max(...hourly.map((h) => Math.max(h.orders, h.deliveries)), 1)
     : 1;
+
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen">
