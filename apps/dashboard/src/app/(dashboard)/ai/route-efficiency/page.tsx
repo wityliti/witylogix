@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
 import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import type { StopMarker } from '@/components/map/route-stop-markers-layer';
 
 const WLMap = dynamic(
@@ -177,6 +178,8 @@ export default function RouteEfficiencyPage() {
   const { items: routesData, loading: routesLoading, error: routesError, refetch: refetchRoutes } = useApiList<RouteListItem>(
     '/api/v4/routes?status=COMPLETED&limit=20',
   );
+
+  if (routesError) return <ErrorState message={routesError.message} onRetry={refetchRoutes} />;
 
   const routes = (routesData ?? []).filter((r) =>
     r.name?.toLowerCase().includes(search.toLowerCase()) ||
