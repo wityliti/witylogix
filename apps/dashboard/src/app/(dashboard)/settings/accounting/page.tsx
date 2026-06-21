@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -82,9 +83,7 @@ export default function AccountingSettingsPage() {
   async function fetchAccountingStatus() {
     try {
       setLoading(true);
-      const res = await fetch('/api/accounting/status');
-      if (!res.ok) throw new Error('Failed to fetch accounting status');
-      const data = await res.json();
+      const data = await api.get<{ connections: AccountingConnection[]; hasConnections: boolean }>('/api/accounting/status');
       setConnections(data.connections || []);
       setError(undefined);
     } catch (err) {
@@ -98,9 +97,7 @@ export default function AccountingSettingsPage() {
     try {
       const params = new URLSearchParams({ limit: '10', offset: '0' });
       if (provider) params.append('provider', provider);
-      const res = await fetch(`/api/accounting/sync/history?${params}`);
-      if (!res.ok) throw new Error('Failed to fetch sync history');
-      const data = await res.json();
+      const data = await api.get<{ records: SyncRecord[]; total: number }>(`/api/accounting/sync/history?${params}`);
       setSyncHistory(data.records || []);
     } catch (err) {
       console.error('Failed to fetch sync history:', err);
@@ -119,10 +116,7 @@ export default function AccountingSettingsPage() {
   async function handleDisconnect(provider: 'quickbooks' | 'xero') {
     try {
       setDisconnectingProvider(provider);
-      const res = await fetch(`/api/accounting/disconnect/${provider}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) throw new Error('Failed to disconnect');
+      await api.delete(`/api/accounting/disconnect/${provider}`);
       await fetchAccountingStatus();
       setError(undefined);
     } catch (err) {
@@ -139,18 +133,11 @@ export default function AccountingSettingsPage() {
         return;
       }
 
-      const res = await fetch('/api/accounting/sync/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          invoiceIds: [], // In real implementation, would sync pending invoices
-          providers: [manualSyncProvider],
-          force: true,
-        }),
+      await api.post('/api/accounting/sync/batch', {
+        invoiceIds: [],
+        providers: [manualSyncProvider],
+        force: true,
       });
-
-      if (!res.ok) throw new Error('Sync failed');
-      const data = await res.json();
 
       // Refresh history
       await fetchSyncHistory(manualSyncProvider);
