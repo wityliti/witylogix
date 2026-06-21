@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   CalendarDays,
   Clock,
-  TrendingUp,
   Users,
   Star,
   Search,
@@ -12,6 +11,7 @@ import {
   Zap,
   BarChart3,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery, useApiList } from '@/hooks/use-api';
@@ -81,7 +81,7 @@ export default function SlotAIPage() {
 
   const activeZoneId = zoneId || zones[0]?.id || '';
 
-  const { data, loading } = useApiQuery<RecommendResponse>(queryUrl);
+  const { data, loading, error: recommendError, refetch: refetchSlots } = useApiQuery<RecommendResponse>(queryUrl);
 
   const slots: ScoredSlot[] = data?.recommendations ?? [];
 
@@ -178,6 +178,17 @@ export default function SlotAIPage() {
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
             <p className="text-sm text-white/25">Enter a customer ID and click "Get Recommendations"</p>
             <p className="text-xs text-white/15 mt-1">Customer ID is required to personalise slot scoring</p>
+          </div>
+        ) : recommendError ? (
+          <div className="rounded-xl bg-red-500/5 border border-red-500/20 p-8 text-center">
+            <AlertCircle className="w-8 h-8 text-red-400/60 mx-auto mb-3" />
+            <p className="text-sm text-white/50">{recommendError.message}</p>
+            <button
+              onClick={refetchSlots}
+              className="mt-4 text-xs text-red-400/70 hover:text-red-400 transition-colors"
+            >
+              Retry
+            </button>
           </div>
         ) : loading ? (
           <div className="space-y-3">
