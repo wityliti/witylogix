@@ -48,6 +48,7 @@ export default function IntegrationOverviewPage() {
     items: connections,
     loading: connectionsLoading,
     error: connectionsError,
+    refetch: refetchConnections,
   } = useApiList<IntegrationConnection>('/api/v4/integrations/connections');
 
   // Derive category summaries from API data
@@ -97,6 +98,17 @@ export default function IntegrationOverviewPage() {
 
     return items;
   }, [categories, searchQuery, selectedCategory, filterStatus]);
+
+  if (connectionsError && !connectionsLoading) {
+    return (
+      <>
+        <Header title="Integration Hub" subtitle="Manage and monitor all your connected integrations" />
+        <div className="p-6">
+          <ErrorState error={connectionsError} onRetry={refetchConnections} />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

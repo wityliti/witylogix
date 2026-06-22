@@ -13,8 +13,6 @@ import { ErrorState } from '@/components/ui/error-state';
 
 // ─── Types ────────────────────────────────────────────────────
 
-// ─── Types ────────────────────────────────────────────────────
-
 interface ServiceStatus {
   name: string;
   status: 'healthy' | 'degraded' | 'down';
@@ -223,27 +221,32 @@ export default function PlatformHealthPage() {
   const {
     data: statusData,
     loading: statusLoading,
+    error: statusError,
     refetch: refetchStatus,
   } = useApiQuery<PlatformStatus>('/api/v4/platform/status');
 
   const {
     data: integrationsPayload,
     loading: intLoading,
+    error: intError,
     refetch: refetchInt,
   } = useApiQuery<IntegrationsPayload>('/api/v4/platform/integrations');
 
   const {
     data: metricsData,
     loading: metricsLoading,
+    error: metricsError,
     refetch: refetchMetrics,
   } = useApiQuery<PlatformMetrics>('/api/v4/platform/metrics');
 
   const {
     data: alertsPayload,
+    error: alertsError,
     refetch: refetchAlerts,
   } = useApiQuery<AlertsPayload>('/api/v4/platform/alerts');
 
   const loading = statusLoading || intLoading || metricsLoading;
+  const criticalError = statusError || intError || metricsError || alertsError;
   const services = statusData?.services ?? [];
   const healthScore = statusData?.score ?? 0;
   const integrations = integrationsPayload?.integrations ?? [];

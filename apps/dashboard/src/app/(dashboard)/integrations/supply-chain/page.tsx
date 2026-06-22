@@ -116,6 +116,7 @@ export default function SupplyChainIntegrationsPage() {
     items: warehouseConnections,
     loading: warehousesLoading,
     error: warehousesError,
+    refetch: refetchWarehouses,
   } = useApiList<WarehouseConnection>('/api/v4/integrations/connections?category=supply-chain');
 
   const {
