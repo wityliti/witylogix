@@ -16,9 +16,11 @@
  *
  * Routes:
  *   GET    /              List users in current shop
+ *   GET    /me            Get current authenticated user
  *   GET    /:id           Get single user
  *   POST   /              Invite (create) a new user
- *   PATCH  /:id           Update user (name, role)
+ *   PATCH  /me            Self-service profile update (name, email)
+ *   PATCH  /:id           Update user (name, role) — admin only
  *   PATCH  /:id/password  Change user password (admin or self)
  *   DELETE /:id           Deactivate user (soft delete)
  */
@@ -73,6 +75,11 @@ const listQuerySchema = z.object({
   role: z.enum(VALID_ROLES).optional(),
   search: z.string().optional(),
   includeInactive: z.coerce.boolean().default(false),
+});
+
+const selfUpdateSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  email: z.string().email().optional(),
 });
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -476,6 +483,44 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── GET CURRENT USER PROFILE ────────────────────────────────
+
+  // ── SELF-SERVICE PROFILE UPDATE ────────────────────────────
+
+  fastify.patch("/me", async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.auth.userId) {
+      throw new ForbiddenError("This endpoint is only available for dashboard users");
+    }
+
+    const body = selfUpdateSchema.parse(request.body);
+
+    if (body.email) {
+      const existing = await prisma.user.findUnique({
+        where: {
+          shopId_email: { shopId: request.auth.shopId, email: body.email },
+        },
+      });
+      if (existing && existing.id !== request.auth.userId) {
+        throw new ConflictError(`A user with email '${body.email}' already exists`);
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: request.auth.userId },
+      data: body,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        updatedAt: true,
+      },
+    });
+
+    return { data: updated };
+  });
+
+  // ── GET CURRENT USER ────────────────────────────────────────
 
   fastify.get("/me", async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.auth.userId) {
