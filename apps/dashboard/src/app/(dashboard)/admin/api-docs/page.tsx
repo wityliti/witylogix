@@ -45,7 +45,7 @@ const API_ENDPOINTS: ApiEndpoint[] = [
   {
     id: "orders-list",
     method: "GET",
-    path: "/api/v1/orders",
+    path: "/api/v4/orders",
     tag: "Orders",
     description: "Retrieve a list of all orders",
     authentication: "bearer",
@@ -97,7 +97,7 @@ const API_ENDPOINTS: ApiEndpoint[] = [
   {
     id: "orders-create",
     method: "POST",
-    path: "/api/v1/orders",
+    path: "/api/v4/orders",
     tag: "Orders",
     description: "Create a new order",
     authentication: "bearer",
@@ -139,10 +139,10 @@ const API_ENDPOINTS: ApiEndpoint[] = [
   },
   {
     id: "orders-update",
-    method: "PUT",
-    path: "/api/v1/orders/:id",
+    method: "PATCH",
+    path: "/api/v4/orders/:id",
     tag: "Orders",
-    description: "Update an existing order",
+    description: "Partially update an existing order",
     authentication: "bearer",
     parameters: [
       {
@@ -175,7 +175,7 @@ const API_ENDPOINTS: ApiEndpoint[] = [
   {
     id: "routes-create",
     method: "POST",
-    path: "/api/v1/routes",
+    path: "/api/v4/routes",
     tag: "Routes",
     description: "Create an optimized delivery route",
     authentication: "bearer",
@@ -207,7 +207,7 @@ const API_ENDPOINTS: ApiEndpoint[] = [
   {
     id: "webhooks-test",
     method: "POST",
-    path: "/api/v1/webhooks/test",
+    path: "/api/v4/webhooks/test",
     tag: "Webhooks",
     description: "Test a webhook endpoint",
     authentication: "api_key",
@@ -230,7 +230,7 @@ const API_ENDPOINTS: ApiEndpoint[] = [
   {
     id: "health-check",
     method: "GET",
-    path: "/api/v1/health",
+    path: "/api/v4/health",
     tag: "System",
     description: "Check API health status (public endpoint)",
     authentication: "public",

@@ -96,20 +96,25 @@ export default function OrderImportPage() {
       }),
   [connections]);
 
-  const recentSyncJobs: SyncJob[] = [];
-  const failedJobs: SyncJob[] = [];
+  const { data: syncStatus } = useApiQuery<{
+    recentSyncJobs: SyncJob[];
+  }>('/api/v4/orders/sync/status');
 
-  const { data: statsData } = useApiQuery<{ totalOrders: number; pendingOrders: number }>(
-    '/api/v4/dashboard/stats',
-  );
+  const { data: syncMetrics } = useApiQuery<{
+    metrics: { totalOrdersSynced: number; pendingOrders: number; failedOrders: number; activeConflicts: number };
+  }>('/api/v4/orders/sync/metrics');
+
+  const recentSyncJobs: SyncJob[] = syncStatus?.recentSyncJobs ?? [];
+  const failedJobs = recentSyncJobs.filter((j) => j.status === 'failed');
+
   const metrics = useMemo(
     () => ({
-      totalOrdersSynced: statsData?.totalOrders ?? 0,
-      pendingOrders: statsData?.pendingOrders ?? 0,
-      failedOrders: 0,
-      activeConflicts: 0,
+      totalOrdersSynced: syncMetrics?.metrics.totalOrdersSynced ?? 0,
+      pendingOrders: syncMetrics?.metrics.pendingOrders ?? 0,
+      failedOrders: syncMetrics?.metrics.failedOrders ?? 0,
+      activeConflicts: syncMetrics?.metrics.activeConflicts ?? 0,
     }),
-    [statsData],
+    [syncMetrics],
   );
 
   const filteredSyncJobs = recentSyncJobs;
