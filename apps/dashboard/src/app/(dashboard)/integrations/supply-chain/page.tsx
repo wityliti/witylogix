@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,6 +116,7 @@ export default function SupplyChainIntegrationsPage() {
     items: warehouseConnections,
     loading: warehousesLoading,
     error: warehousesError,
+    refetch: refetchWarehouses,
   } = useApiList<WarehouseConnection>('/api/v4/integrations/connections?category=supply-chain');
 
   const {
@@ -138,6 +140,17 @@ export default function SupplyChainIntegrationsPage() {
     () => syncs.reduce((sum, s) => sum + s.itemsTracked, 0),
     [syncs]
   );
+
+  if ((warehousesError || inventoryError) && !warehousesLoading && !inventoryLoading) {
+    return (
+      <>
+        <Header title="Supply Chain Integrations" subtitle="Warehouse and inventory management" />
+        <div className="p-6">
+          <ErrorState error={warehousesError ?? inventoryError} onRetry={refetchWarehouses} />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
