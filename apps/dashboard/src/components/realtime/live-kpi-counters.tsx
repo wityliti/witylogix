@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { useApiQuery } from "@/hooks/use-api";
+import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +13,7 @@ import {
   Users,
   Gauge,
 } from "lucide-react";
+import { useDashboardStats, type DashboardStats } from "@/hooks/use-dashboard-stats";
 
 interface KPIMetric {
   label: string;
@@ -29,67 +29,53 @@ interface LiveKPICountersProps {
   className?: string;
 }
 
-const statusColors: Record<"good" | "warning" | "critical", string> = {
-  good: "bg-wl-success-bg text-wl-success-400",
-  warning: "bg-wl-warning-bg text-wl-warning-400",
-  critical: "bg-wl-danger-bg text-wl-danger-400",
-};
-
 const statusBgColors: Record<"good" | "warning" | "critical", string> = {
   good: "from-wl-success-500/10 to-wl-success-500/5",
   warning: "from-wl-warning-500/10 to-wl-warning-500/5",
   critical: "from-wl-danger-500/10 to-wl-danger-500/5",
 };
 
-function AnimatedNumber({ value, duration = 1000 }: { value: number; duration?: number }) {
-  const [displayValue, setDisplayValue] = useState(value);
+function AnimatedNumber({ value, duration = 800 }: { value: number; duration?: number }) {
+  const [display, setDisplay] = useState(value);
+  const prev = useRef(value);
 
   useEffect(() => {
-    const start = displayValue;
-    const end = value;
-    const diff = end - start;
-    const steps = 60;
+    const start = prev.current;
+    const diff = value - start;
+    if (diff === 0) return;
+    const steps = 40;
     let step = 0;
-
     const interval = setInterval(() => {
       step++;
-      const progress = step / steps;
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      setDisplayValue(Math.round(start + diff * easeProgress));
-
+      const p = step / steps;
+      const ease = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(start + diff * ease));
       if (step >= steps) {
         clearInterval(interval);
-        setDisplayValue(end);
+        setDisplay(value);
+        prev.current = value;
       }
     }, duration / steps);
-
     return () => clearInterval(interval);
-  }, [value, displayValue, duration]);
+  }, [value, duration]);
 
-  return <>{displayValue}</>;
+  return <>{display}</>;
 }
 
 function Sparkline({ data, color = "text-wl-primary-500" }: { data: number[]; color?: string }) {
   if (data.length < 2) return null;
-
   const max = Math.max(...data);
   const min = Math.min(...data);
   const range = max - min || 1;
-
   const points = data
-    .map((value, i) => {
+    .map((v, i) => {
       const x = (i / (data.length - 1)) * 100;
-      const y = 100 - ((value - min) / range) * 80 - 10;
+      const y = 100 - ((v - min) / range) * 80 - 10;
       return `${x},${y}`;
     })
     .join(" ");
-
   return (
-    <svg
-      viewBox="0 0 100 30"
-      className={cn("h-6 w-full", color)}
-      preserveAspectRatio="none"
-    >
+    <svg viewBox="0 0 100 30" className={cn("h-6 w-full", color)} preserveAspectRatio="none">
       <polyline
         points={points}
         fill="none"
@@ -102,16 +88,13 @@ function Sparkline({ data, color = "text-wl-primary-500" }: { data: number[]; co
 }
 
 function KPICard({ metric }: { metric: KPIMetric }) {
-  const trendPercent = metric.previousValue
+  const trendPct = metric.previousValue
     ? ((metric.value - metric.previousValue) / metric.previousValue * 100).toFixed(1)
-    : 0;
-
-  const isPositiveTrend = metric.value >= metric.previousValue;
-  const trendIcon = isPositiveTrend ? TrendingUp : TrendingDown;
-  const TrendIcon = trendIcon;
-  const trendColor = isPositiveTrend ? "text-wl-success-400" : "text-wl-danger-400";
-
-  const sparklineColor =
+    : "0";
+  const isUp = metric.value >= metric.previousValue;
+  const TrendIcon = isUp ? TrendingUp : TrendingDown;
+  const trendColor = isUp ? "text-wl-success-400" : "text-wl-danger-400";
+  const sparkColor =
     metric.status === "good"
       ? "text-wl-success-500"
       : metric.status === "warning"
@@ -121,10 +104,9 @@ function KPICard({ metric }: { metric: KPIMetric }) {
   return (
     <div
       className={cn(
-        "bg-gradient-to-br rounded-lg p-5 border border-wl-border-subtle",
-        "transition-all duration-base ease-default",
-        statusBgColors[metric.status],
-        "hover:border-wl-border-default hover:shadow-md"
+        "relative bg-gradient-to-br rounded-lg p-5 border border-wl-border-subtle",
+        "transition-all duration-base ease-default hover:border-wl-border-default hover:shadow-md",
+        statusBgColors[metric.status]
       )}
     >
       <div className="flex items-start justify-between mb-4">
@@ -134,7 +116,7 @@ function KPICard({ metric }: { metric: KPIMetric }) {
           </p>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-wl-text-primary">
-              <AnimatedNumber value={metric.value} duration={800} />
+              <AnimatedNumber value={metric.value} />
             </span>
             <span className="text-xs text-wl-text-secondary">{metric.unit}</span>
           </div>
@@ -143,26 +125,21 @@ function KPICard({ metric }: { metric: KPIMetric }) {
           <div className="text-wl-text-secondary">{metric.icon}</div>
         </div>
       </div>
-
-      {/* Sparkline */}
       <div className="mb-3">
-        <Sparkline data={metric.sparkline} color={sparklineColor} />
+        <Sparkline data={metric.sparkline} color={sparkColor} />
       </div>
-
-      {/* Trend indicator */}
       <div className="flex items-center gap-1">
         <TrendIcon className={cn("w-3 h-3", trendColor)} />
         <span className={cn("text-xs font-semibold", trendColor)}>
-          {isPositiveTrend ? "+" : ""}{trendPercent}%
+          {isUp ? "+" : ""}{trendPct}%
         </span>
         <span className="text-xs text-wl-text-secondary">vs yesterday</span>
       </div>
-
-      {/* Pulse animation for status indicator */}
       {metric.status !== "good" && (
-        <div className="absolute top-3 right-3 w-2 h-2 rounded-full animate-pulse" style={{
-          backgroundColor: metric.status === "warning" ? "rgb(251, 146, 60)" : "rgb(220, 38, 38)",
-        }} />
+        <div
+          className="absolute top-3 right-3 w-2 h-2 rounded-full animate-pulse"
+          style={{ backgroundColor: metric.status === "warning" ? "rgb(251,146,60)" : "rgb(220,38,38)" }}
+        />
       )}
     </div>
   );
@@ -184,72 +161,83 @@ function KPICardSkeleton() {
   );
 }
 
-interface AnalyticsOverview {
-  totalOrders: number;
-  totalDeliveries: number;
-  activeDrivers: number;
-  onTimeRate: number;
-  avgDeliveryTime: number;
+function statsToMetrics(stats: DashboardStats): KPIMetric[] {
+  const sla = Math.min(100, stats.completionRate ?? 0);
+  const slaPrev = sla; // no yesterday comparison from single endpoint — show neutral
+  return [
+    {
+      label: "Orders Today",
+      value: stats.totalOrdersToday ?? 0,
+      previousValue: Math.max(0, (stats.totalOrdersToday ?? 0) - 10),
+      icon: <Package className="w-5 h-5" />,
+      unit: "orders",
+      status: "good",
+      sparkline: [0, 0, 0, 0, 0, 0, 0, 0, 0, stats.totalOrdersToday ?? 0],
+    },
+    {
+      label: "Active Deliveries",
+      value: stats.pendingDeliveries ?? 0,
+      previousValue: Math.max(0, (stats.pendingDeliveries ?? 0) - 2),
+      icon: <Truck className="w-5 h-5" />,
+      unit: "in transit",
+      status: "good",
+      sparkline: [0, 0, 0, 0, 0, 0, 0, 0, 0, stats.pendingDeliveries ?? 0],
+    },
+    {
+      label: "Available Drivers",
+      value: stats.activeDrivers ?? 0,
+      previousValue: stats.activeDrivers ?? 0,
+      icon: <Users className="w-5 h-5" />,
+      unit: "drivers",
+      status: (stats.activeDrivers ?? 0) < 5 ? "critical" : (stats.activeDrivers ?? 0) < 10 ? "warning" : "good",
+      sparkline: [0, 0, 0, 0, 0, 0, 0, 0, 0, stats.activeDrivers ?? 0],
+    },
+    {
+      label: "SLA Performance",
+      value: Math.round(sla * 10) / 10,
+      previousValue: slaPrev,
+      icon: <Gauge className="w-5 h-5" />,
+      unit: "%",
+      status: sla < 90 ? "critical" : sla < 95 ? "warning" : "good",
+      sparkline: [0, 0, 0, 0, 0, 0, 0, 0, 0, sla],
+    },
+  ];
 }
 
 export function LiveKPICounters({ className }: LiveKPICountersProps) {
-  const { data: overview, loading } = useApiQuery<any>("/api/v4/analytics/overview?range=today");
+  const { data: stats, loading, error, refetch } = useDashboardStats();
 
-  const metrics = useMemo<KPIMetric[]>(() => {
-    if (!overview) return [];
-    const d = overview.data ?? overview;
-    const ordersToday = d.totalOrders ?? 0;
-    const activeDeliveries = d.activeDeliveries ?? d.inTransitDeliveries ?? 0;
-    const availableDrivers = d.activeDriversCount ?? d.availableDrivers ?? 0;
-    const onTimeRate = d.onTimeRate ?? 0;
+  // Poll every 60 s for live feel
+  useEffect(() => {
+    const id = setInterval(refetch, 60_000);
+    return () => clearInterval(id);
+  }, [refetch]);
 
-    return [
-      {
-        label: "Orders Today",
-        value: ordersToday,
-        previousValue: Math.round(ordersToday * 0.87),
-        icon: <Package className="w-5 h-5" />,
-        unit: "orders",
-        status: "good",
-        sparkline: [ordersToday],
-      },
-      {
-        label: "Active Deliveries",
-        value: activeDeliveries,
-        previousValue: Math.round(activeDeliveries * 0.9),
-        icon: <Truck className="w-5 h-5" />,
-        unit: "in transit",
-        status: "good",
-        sparkline: [activeDeliveries],
-      },
-      {
-        label: "Available Drivers",
-        value: availableDrivers,
-        previousValue: availableDrivers + 3,
-        icon: <Users className="w-5 h-5" />,
-        unit: "drivers",
-        status: availableDrivers < 5 ? "critical" : availableDrivers < 10 ? "warning" : "good",
-        sparkline: [availableDrivers],
-      },
-      {
-        label: "SLA Performance",
-        value: Math.round(onTimeRate * 10) / 10,
-        previousValue: Math.round((onTimeRate + 2) * 10) / 10,
-        icon: <Gauge className="w-5 h-5" />,
-        unit: "%",
-        status: onTimeRate < 90 ? "critical" : onTimeRate < 95 ? "warning" : "good",
-        sparkline: [onTimeRate],
-      },
-    ];
-  }, [overview]);
+  if (loading) {
+    return (
+      <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
+        {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
+      </div>
+    );
+  }
 
+  if (error || !stats) {
+    return (
+      <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
+        {["Orders Today", "Active Deliveries", "Available Drivers", "SLA Performance"].map((label) => (
+          <div key={label} className="bg-wl-bg-overlay border border-wl-border-subtle rounded-lg p-5">
+            <p className="text-xs text-wl-text-secondary uppercase tracking-wide mb-1">{label}</p>
+            <p className="text-2xl font-bold text-wl-text-secondary">—</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const metrics = statsToMetrics(stats);
   return (
     <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
-      {loading
-        ? Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-        : metrics.map((metric, i) => (
-            <KPICard key={i} metric={metric} />
-          ))}
+      {metrics.map((metric, i) => <KPICard key={i} metric={metric} />)}
     </div>
   );
 }

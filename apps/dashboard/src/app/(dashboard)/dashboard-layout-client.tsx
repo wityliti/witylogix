@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { NavSidebar } from "@/components/navigation/sidebar";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { ToastProvider } from "@/components/ui/toast";
+import { NotificationCenter } from "@/components/realtime";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -43,30 +44,9 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutProps
         >
           <Breadcrumb />
 
-          {/* Right side - User menu placeholder */}
-          <div className="flex items-center gap-4">
-            <button
-              className={cn(
-                "p-2 rounded-md",
-                "text-wl-text-secondary hover:text-wl-text-primary",
-                "hover:bg-wl-bg-overlay",
-                "transition-colors duration-fast ease-default"
-              )}
-              title="Notifications"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
-              </svg>
-            </button>
+          {/* Right side — notification bell + user avatar */}
+          <div className="flex items-center gap-2">
+            <NotificationCenter />
 
             <button
               className={cn(
@@ -76,6 +56,7 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutProps
                 "transition-colors duration-fast ease-default"
               )}
               title="User menu"
+              aria-label="User menu"
             >
               <svg
                 width="20"
