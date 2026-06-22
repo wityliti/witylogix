@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useIntegrationStatus } from '@/hooks/use-integration-status';
-import { useApiList } from '@/hooks/use-api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   Search,
   Filter,
@@ -43,7 +43,7 @@ interface StatusStats {
  * - Filtering and sorting
  */
 export default function ConnectedIntegrationsPage() {
-  const { connections, isLoading } = useIntegrationStatus({
+  const { connections, isLoading, error, revalidate } = useIntegrationStatus({
     pollInterval: 30000,
     enablePolling: true,
   });
@@ -119,6 +119,14 @@ export default function ConnectedIntegrationsPage() {
       errors: connections.filter((c) => getHealthStatus(c) === "error").length,
     };
   }, [connections]);
+
+  if (error && !isLoading) {
+    return (
+      <div className="space-y-8">
+        <ErrorState message={error} onRetry={revalidate} />
+      </div>
+    );
+  }
 
   // Render empty state
   if (!isLoading && connections.length === 0) {

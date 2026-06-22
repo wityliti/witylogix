@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, Badge, Button } from '@/components/ui';
+import { ErrorState } from '@/components/ui/error-state';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import {
   Package,
   Zap,
@@ -97,7 +100,7 @@ export default function IntegrationHealthPage() {
     Map<string, { lastCheck: Date; responseTime: number }>
   >(new Map());
 
-  const { data, refetch } = useApiQuery<{ integrations: ApiIntegration[] }>(
+  const { data, loading, error, refetch } = useApiQuery<{ integrations: ApiIntegration[] }>(
     "/api/v4/integrations",
   );
 
@@ -124,9 +127,8 @@ export default function IntegrationHealthPage() {
   const handleCheckNow = async (integrationId: string) => {
     setRefreshingId(integrationId);
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
       const start = Date.now();
-      await fetch(`${API_BASE}/api/v4/integrations/${integrationId}/test`, { method: "POST" });
+      await api.post(`/api/v4/integrations/${integrationId}/test`, {});
       const elapsed = Date.now() - start;
 
       setOverrides((prev) => {
@@ -137,7 +139,7 @@ export default function IntegrationHealthPage() {
 
       await refetch();
     } catch {
-      // ignore errors
+      // ignore test errors — stale data still shows
     } finally {
       setRefreshingId(null);
     }
@@ -175,6 +177,28 @@ export default function IntegrationHealthPage() {
         return "Down";
     }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Header title="Integration Health" subtitle="Real-time status and monitoring of connected integrations" />
+        <div className={cn("p-6")}>
+          <LoadingSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header title="Integration Health" subtitle="Real-time status and monitoring of connected integrations" />
+        <div className={cn("p-6")}>
+          <ErrorState error={error} onRetry={refetch} />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
