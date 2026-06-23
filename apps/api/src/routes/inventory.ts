@@ -2,12 +2,13 @@
  * Inventory Management API — InventoryItem records with product enrichment.
  *
  * Routes:
- *   GET  /           List inventory items (joined with product cache for name/SKU)
- *   GET  /:id        Get single inventory item with movements
- *   POST /           Create inventory item
- *   PATCH /:id       Update quantity / reorder point
- *   POST /:id/adjust Record a stock movement (adjust quantity)
- *   GET  /movements  List recent stock movements
+ *   GET  /            List inventory items (joined with product cache for name/SKU)
+ *   GET  /warehouses  Warehouse aggregates with lat/lng for map view
+ *   GET  /:id         Get single inventory item with movements
+ *   POST /            Create inventory item
+ *   PATCH /:id        Update quantity / reorder point
+ *   POST /:id/adjust  Record a stock movement (adjust quantity)
+ *   GET  /movements   List recent stock movements
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -249,6 +250,97 @@ async function inventoryRoutes(fastify: FastifyInstance): Promise<void> {
     ]);
 
     return { data: movements, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+  });
+
+  // ── WAREHOUSE AGGREGATES (map view) ──────────────────────────────
+
+  fastify.get("/warehouses", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const shopId = request.shopId;
+
+    // Aggregate items per locationId
+    const items: Array<{ locationId: string; quantity: number; reorderPoint: number }> =
+      await (request.tenantDb as any).inventoryItem.findMany({
+        where: { shopId },
+        select: { locationId: true, quantity: true, reorderPoint: true },
+      });
+
+    if (items.length === 0) return { data: [] };
+
+    // Group by locationId
+    const groups = new Map<
+      string,
+      { totalQuantity: number; itemCount: number; lowStock: number; outOfStock: number }
+    >();
+    for (const item of items) {
+      const existing = groups.get(item.locationId) ?? {
+        totalQuantity: 0,
+        itemCount: 0,
+        lowStock: 0,
+        outOfStock: 0,
+      };
+      existing.totalQuantity += item.quantity;
+      existing.itemCount++;
+      if (item.quantity <= 0) existing.outOfStock++;
+      else if (item.quantity <= item.reorderPoint) existing.lowStock++;
+      groups.set(item.locationId, existing);
+    }
+
+    const locationIds = Array.from(groups.keys());
+
+    // Fetch locations with lat/lng via raw SQL (Prisma schema uses raw columns)
+    let locations: Array<{
+      id: string;
+      name: string;
+      city: string | null;
+      latitude: string | null;
+      longitude: string | null;
+    }> = [];
+
+    try {
+      locations = await (request.tenantDb as any).$queryRawUnsafe(
+        `SELECT id, name, city, latitude, longitude
+         FROM locations
+         WHERE id = ANY($1::uuid[]) AND shop_id = $2::uuid`,
+        locationIds,
+        shopId
+      );
+    } catch {
+      // Location table may not have rows; return empty
+      return { data: [] };
+    }
+
+    const result = locations
+      .filter(
+        (loc) =>
+          loc.latitude !== null &&
+          loc.longitude !== null &&
+          !isNaN(parseFloat(loc.latitude!)) &&
+          !isNaN(parseFloat(loc.longitude!))
+      )
+      .map((loc) => {
+        const agg = groups.get(loc.id) ?? {
+          totalQuantity: 0,
+          itemCount: 0,
+          lowStock: 0,
+          outOfStock: 0,
+        };
+        const utilizationPercentage =
+          agg.itemCount > 0
+            ? Math.round(((agg.lowStock + agg.outOfStock) / agg.itemCount) * 100)
+            : 0;
+        return {
+          id: loc.id,
+          name: loc.name,
+          city: loc.city ?? null,
+          lat: parseFloat(loc.latitude!),
+          lng: parseFloat(loc.longitude!),
+          totalQuantity: agg.totalQuantity,
+          itemCount: agg.itemCount,
+          utilizationPercentage,
+        };
+      });
+
+    return { data: result };
   });
 }
 
