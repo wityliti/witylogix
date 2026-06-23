@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { api } from '@/lib/api';
 import { useOrders } from '@/hooks/use-orders';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
@@ -119,15 +120,7 @@ export default function BulkOperationsPage() {
 
     for (const orderId of orderIds) {
       try {
-        const res = await fetch(`/api/v4/orders/${orderId}/status`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: statusPayload }),
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body?.message || res.statusText);
-        }
+        await api.patch(`/api/v4/orders/${orderId}/status`, { status: statusPayload });
         details.push({ orderId, status: 'success', message: 'Updated successfully' });
         success++;
       } catch (err) {
