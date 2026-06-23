@@ -1,443 +1,446 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { type MapsSettings } from '@/components/maps/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Header } from '@/components/layout/header';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { CheckCircle2, AlertCircle, Map, Settings2, RefreshCw } from 'lucide-react';
 
-/**
- * Google Maps Settings Page
- * Configure Google Maps API and default settings
- */
+interface MapsConfig {
+  googleMapsApiKey?: string;
+  defaultCenter: { lat: number; lng: number };
+  defaultZoom: number;
+  enableHeatmap: boolean;
+  enableDrawing: boolean;
+}
+
+interface ShopData {
+  settings?: {
+    mapsConfig?: MapsConfig;
+  };
+}
+
+const DEFAULT_CONFIG: MapsConfig = {
+  googleMapsApiKey: '',
+  defaultCenter: { lat: 37.7749, lng: -122.4194 },
+  defaultZoom: 12,
+  enableHeatmap: true,
+  enableDrawing: true,
+};
+
+const WLMap = dynamic(() => import('@/components/map/wl-map').then(m => m.WLMap), { ssr: false });
+
+function maskApiKey(key: string): string {
+  if (!key) return '';
+  if (key.length < 8) return '••••••••';
+  return `${key.substring(0, 4)}${'•'.repeat(key.length - 8)}${key.substring(key.length - 4)}`;
+}
+
 export default function MapsSettingsPage() {
-  const [settings, setSettings] = useState<MapsSettings>({
-    apiKey: '',
-    defaultCenter: { lat: 37.7749, lng: -122.4194 },
-    defaultZoom: 12,
-    mapStyle: 'standard',
-    enableHeatmap: true,
-    enableDrawing: true,
-    enableTraffic: false,
-    enablePublicTransit: false,
-    enableBicycling: false,
-  });
+  const { data: shopData, loading, error, refetch } = useApiQuery<ShopData>('/api/v4/shops/me');
 
-  const [apiKeyMasked, setApiKeyMasked] = useState('');
+  const [config, setConfig] = useState<MapsConfig>(DEFAULT_CONFIG);
   const [isEditingApiKey, setIsEditingApiKey] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>(
-    'idle'
-  );
-  const [connectionError, setConnectionError] = useState('');
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testError, setTestError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Load settings from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('mapsSettings');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setSettings(parsed);
-      setApiKeyMasked(maskApiKey(parsed.apiKey || ''));
+    if (shopData?.settings?.mapsConfig) {
+      setConfig({ ...DEFAULT_CONFIG, ...shopData.settings.mapsConfig });
     }
-  }, []);
+  }, [shopData]);
 
-  // Mask API key for display
-  const maskApiKey = (key: string): string => {
-    if (!key) return '';
-    if (key.length < 8) return '••••••••';
-    return `${key.substring(0, 4)}${'•'.repeat(key.length - 8)}${key.substring(key.length - 4)}`;
+  const maskedKey = useMemo(() => maskApiKey(config.googleMapsApiKey ?? ''), [config.googleMapsApiKey]);
+
+  const handleSettingChange = <K extends keyof MapsConfig>(key: K, value: MapsConfig[K]) => {
+    setConfig(prev => ({ ...prev, [key]: value }));
   };
 
-  // Handle API key update
-  const handleApiKeyChange = (value: string) => {
-    setTempApiKey(value);
-  };
-
-  // Save API key
   const saveApiKey = () => {
     if (tempApiKey.trim()) {
-      setSettings((prev) => ({
-        ...prev,
-        apiKey: tempApiKey,
-      }));
-      setApiKeyMasked(maskApiKey(tempApiKey));
-      setIsEditingApiKey(false);
-      setTempApiKey('');
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
+      setConfig(prev => ({ ...prev, googleMapsApiKey: tempApiKey.trim() }));
+    } else {
+      setConfig(prev => ({ ...prev, googleMapsApiKey: '' }));
     }
+    setIsEditingApiKey(false);
+    setTempApiKey('');
   };
 
-  // Test connection
   const testConnection = async () => {
-    setConnectionStatus('testing');
-    setConnectionError('');
-
-    try {
-      const apiKey = settings.apiKey || tempApiKey;
-      if (!apiKey) {
-        setConnectionStatus('error');
-        setConnectionError('Please enter an API key first');
-        return;
-      }
-
-      // Test by loading a simple geocoding request
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway&key=${apiKey}`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === 'OK') {
-          setConnectionStatus('success');
-        } else {
-          setConnectionStatus('error');
-          setConnectionError(`API Error: ${data.status}`);
-        }
-      } else {
-        setConnectionStatus('error');
-        setConnectionError(`HTTP ${response.status}: ${response.statusText}`);
-      }
-    } catch (error) {
-      setConnectionStatus('error');
-      setConnectionError(error instanceof Error ? error.message : 'Connection failed');
+    const key = (isEditingApiKey ? tempApiKey : config.googleMapsApiKey) ?? '';
+    if (!key) {
+      setTestStatus('error');
+      setTestError('Enter an API key first');
+      return;
     }
-
-    // Reset status after 3 seconds
-    setTimeout(() => setConnectionStatus('idle'), 3000);
-  };
-
-  // Handle setting changes
-  const handleSettingChange = (key: keyof MapsSettings, value: string | boolean | number | { lat: number; lng: number }) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
-  // Save all settings
-  const saveAllSettings = async () => {
-    setIsSaving(true);
-
+    setTestStatus('testing');
+    setTestError('');
     try {
-      // Save to localStorage (in production, this would be a backend call)
-      localStorage.setItem('mapsSettings', JSON.stringify(settings));
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway&key=${key}`
+      );
+      const data = await response.json();
+      if (response.ok && data.status === 'OK') {
+        setTestStatus('success');
+      } else {
+        setTestStatus('error');
+        setTestError(data.error_message ?? data.status ?? 'API returned an error');
+      }
+    } catch (err) {
+      setTestStatus('error');
+      setTestError(err instanceof Error ? err.message : 'Connection failed');
+    }
+    setTimeout(() => setTestStatus('idle'), 4000);
+  };
 
+  const saveSettings = async () => {
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      await api.patch('/api/v4/shops/me', { settings: { mapsConfig: config } });
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
-    } catch (error) {
-      setConnectionError('Failed to save settings');
+      setTimeout(() => setSaveSuccess(false), 3000);
+      refetch();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save settings');
     } finally {
       setIsSaving(false);
     }
   };
 
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   return (
-    <div className="min-h-screen bg-wl-bg-root p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Page Header */}
-        <div>
-        <h1 className="text-3xl font-bold text-white">Google Maps Settings</h1>
-        <p className="text-gray-400 mt-2">
-          Configure your Google Maps API and customize default map behavior
-        </p>
-      </div>
+    <div className="min-h-screen bg-wl-bg-root">
+      <Header
+        title="Map Settings"
+        subtitle="Configure your default map centre, zoom, and optional API keys for enhanced geocoding"
+        actions={
+          <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
+            <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
+            Refresh
+          </Button>
+        }
+      />
 
-      {/* API Key Section */}
-      <section className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 space-y-4">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-white">API Configuration</h2>
-            <p className="text-sm text-gray-400 mt-1">
-              Get your API key from Google Cloud Console
-            </p>
-          </div>
-          <a
-            href="https://console.cloud.google.com/apis/credentials"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-blue-300 font-medium"
-          >
-            Google Cloud Console →
-          </a>
-        </div>
-
-        {/* API Key Input */}
-        <div>
-          <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
-            API Key
-          </label>
-
-          {!isEditingApiKey ? (
-            <div className="flex items-center gap-3">
-              <div className="flex-1 px-4 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-gray-400 font-mono text-sm">
-                {apiKeyMasked || 'No API key configured'}
+      <div className="p-6 max-w-4xl space-y-6">
+        {/* Keyless notice */}
+        <Card className="border border-emerald-600/30 bg-emerald-600/10">
+          <CardContent className="pt-4">
+            <div className="flex items-start gap-3">
+              <Map className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-400">Maps work without an API key</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  All dashboard maps use free CARTO basemaps (MapLibre GL) — no API key required. The
+                  optional Google Maps API key below enables enhanced geocoding, places autocomplete, and
+                  satellite imagery features only.
+                </p>
               </div>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setIsEditingApiKey(true);
-                  setTempApiKey(settings.apiKey);
-                }}
-              >
-                {settings.apiKey ? 'Update' : 'Set'}
-              </Button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <input
-                type="password"
-                value={tempApiKey}
-                onChange={(e) => handleApiKeyChange(e.target.value)}
-                placeholder="Paste your Google Maps API key here..."
-                className={cn(
-                  'w-full px-4 py-2.5 rounded-md',
-                  'bg-wl-bg-root border border-wl-border-default',
-                  'text-white placeholder:text-gray-500',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                  'font-mono text-sm'
-                )}
-              />
-              <div className="flex gap-2">
-                <Button
-                  variant="primary"
-                  onClick={saveApiKey}
-                  disabled={!tempApiKey.trim()}
-                >
-                  Save Key
-                </Button>
+          </CardContent>
+        </Card>
+
+        {/* Optional Google Maps API Key */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Optional: Google Maps API Key</CardTitle>
+              <a
+                href="https://console.cloud.google.com/apis/credentials"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-400 hover:text-blue-300"
+              >
+                Google Cloud Console →
+              </a>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Required only for Places autocomplete, geocoding, and satellite view. Leave empty to use
+              keyless CARTO maps.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                API Key
+              </label>
+              {!isEditingApiKey ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 px-4 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-gray-400 font-mono text-sm">
+                    {maskedKey || <span className="text-gray-500 italic">Not configured (keyless CARTO active)</span>}
+                  </div>
+                  {maskedKey && <Badge variant="success" dot>Configured</Badge>}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setIsEditingApiKey(true);
+                      setTempApiKey('');
+                    }}
+                  >
+                    {maskedKey ? 'Update' : 'Set Key'}
+                  </Button>
+                  {maskedKey && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSettingChange('googleMapsApiKey', '')}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <input
+                    type="password"
+                    value={tempApiKey}
+                    onChange={e => setTempApiKey(e.target.value)}
+                    placeholder="Paste Google Maps API key (or leave blank to clear)"
+                    autoFocus
+                    className={cn(
+                      'w-full px-4 py-2.5 rounded-md',
+                      'bg-wl-bg-root border border-wl-border-default',
+                      'text-white placeholder:text-gray-500',
+                      'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                      'font-mono text-sm'
+                    )}
+                  />
+                  <div className="flex gap-2">
+                    <Button variant="primary" size="sm" onClick={saveApiKey}>
+                      Save Key
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={testConnection}
+                      disabled={testStatus === 'testing'}
+                    >
+                      {testStatus === 'testing' ? 'Testing…' : 'Test'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditingApiKey(false);
+                        setTempApiKey('');
+                        setTestStatus('idle');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Test key button (when not editing) */}
+            {!isEditingApiKey && maskedKey && (
+              <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    setIsEditingApiKey(false);
-                    setTempApiKey('');
-                  }}
+                  size="sm"
+                  onClick={testConnection}
+                  disabled={testStatus === 'testing'}
                 >
-                  Cancel
+                  {testStatus === 'testing' ? 'Testing…' : 'Test Connection'}
                 </Button>
+                {testStatus === 'success' && (
+                  <span className="flex items-center gap-1 text-xs text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Connection OK
+                  </span>
+                )}
+                {testStatus === 'error' && (
+                  <span className="flex items-center gap-1 text-xs text-red-400">
+                    <AlertCircle className="w-3.5 h-3.5" /> {testError}
+                  </span>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Test Connection */}
-        <div className="pt-4 border-t border-wl-border-default">
-          <Button
-            variant="secondary"
-            onClick={testConnection}
-            disabled={connectionStatus === 'testing' || !settings.apiKey}
-            className="flex items-center gap-2"
-          >
-            {connectionStatus === 'testing' && (
-              <div className="w-3 h-3 border-2 border-wl-primary-500 border-t-transparent rounded-full animate-spin" />
             )}
-            {connectionStatus === 'testing' ? 'Testing...' : 'Test Connection'}
-          </Button>
-
-          {/* Connection Status */}
-          {connectionStatus === 'success' && (
-            <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-md flex items-center gap-2">
-              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-sm text-emerald-400">Connection successful!</span>
-            </div>
-          )}
-
-          {connectionStatus === 'error' && (
-            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-md">
-              <p className="text-sm text-red-400">
-                <strong>Connection failed:</strong> {connectionError}
+            {isEditingApiKey && testStatus === 'success' && (
+              <p className="text-xs text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Key is valid
               </p>
-            </div>
-          )}
-        </div>
-      </section>
+            )}
+            {isEditingApiKey && testStatus === 'error' && (
+              <p className="text-xs text-red-400 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" /> {testError}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Default Map Settings */}
-      <section className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-white mb-6">Default Map Settings</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Default Center */}
-          <div>
-            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
-              Default Center - Latitude
-            </label>
-            <input
-              type="number"
-              value={settings.defaultCenter.lat}
-              onChange={(e) =>
-                handleSettingChange('defaultCenter', {
-                  ...settings.defaultCenter,
-                  lat: parseFloat(e.target.value),
-                })
-              }
-              step="0.0001"
-              className={cn(
-                'w-full px-4 py-2.5 rounded-md',
-                'bg-wl-bg-root border border-wl-border-default',
-                'text-white',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              )}
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
-              Default Center - Longitude
-            </label>
-            <input
-              type="number"
-              value={settings.defaultCenter.lng}
-              onChange={(e) =>
-                handleSettingChange('defaultCenter', {
-                  ...settings.defaultCenter,
-                  lng: parseFloat(e.target.value),
-                })
-              }
-              step="0.0001"
-              className={cn(
-                'w-full px-4 py-2.5 rounded-md',
-                'bg-wl-bg-root border border-wl-border-default',
-                'text-white',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              )}
-            />
-          </div>
-
-          {/* Default Zoom */}
-          <div>
-            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
-              Default Zoom Level
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min="1"
-                max="21"
-                value={settings.defaultZoom}
-                onChange={(e) =>
-                  handleSettingChange('defaultZoom', parseInt(e.target.value))
-                }
-                className="flex-1"
-              />
-              <span className="text-sm font-semibold text-white w-12 text-center">
-                {settings.defaultZoom}
-              </span>
-            </div>
-          </div>
-
-          {/* Map Style */}
-          <div>
-            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
-              Map Style
-            </label>
-            <select
-              value={settings.mapStyle}
-              onChange={(e) =>
-                handleSettingChange('mapStyle', e.target.value as 'standard' | 'satellite' | 'terrain')
-              }
-              className={cn(
-                'w-full px-4 py-2.5 rounded-md',
-                'bg-wl-bg-root border border-wl-border-default',
-                'text-white',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              )}
-            >
-              <option value="standard">Standard</option>
-              <option value="satellite">Satellite</option>
-              <option value="terrain">Terrain</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Toggles */}
-      <section className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-white mb-6">Feature Toggles</h2>
-
-        <div className="space-y-3">
-          {[
-            {
-              key: 'enableHeatmap',
-              label: 'Heatmap Layer',
-              description: 'Show delivery density heatmaps on maps',
-            },
-            {
-              key: 'enableDrawing',
-              label: 'Drawing Tools',
-              description: 'Allow zone creation and editing',
-            },
-            {
-              key: 'enableTraffic',
-              label: 'Traffic Layer',
-              description: 'Display real-time traffic information',
-            },
-            {
-              key: 'enablePublicTransit',
-              label: 'Public Transit',
-              description: 'Show public transportation options',
-            },
-            {
-              key: 'enableBicycling',
-              label: 'Bicycling Layer',
-              description: 'Display bike lanes and routes',
-            },
-          ].map((feature) => (
-            <div key={feature.key} className="flex items-center justify-between p-4 rounded-lg bg-wl-bg-root border border-wl-border-default hover:border-blue-500/30 transition-colors">
+        {/* Default Map Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Default Map Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <p className="text-sm font-semibold text-white">{feature.label}</p>
-                <p className="text-xs text-gray-400 mt-1">{feature.description}</p>
-              </div>
-              <label className="flex items-center cursor-pointer">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                  Default Latitude
+                </label>
                 <input
-                  type="checkbox"
-                  checked={settings[feature.key as keyof MapsSettings] as boolean}
-                  onChange={(e) =>
-                    handleSettingChange(feature.key as keyof MapsSettings, e.target.checked)
+                  type="number"
+                  value={config.defaultCenter.lat}
+                  onChange={e =>
+                    handleSettingChange('defaultCenter', {
+                      ...config.defaultCenter,
+                      lat: parseFloat(e.target.value) || 0,
+                    })
                   }
-                  className="w-5 h-5 rounded border-wl-border-default accent-blue-500"
+                  step="0.0001"
+                  className={cn(
+                    'w-full px-4 py-2.5 rounded-md',
+                    'bg-wl-bg-root border border-wl-border-default',
+                    'text-white',
+                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  )}
                 />
-              </label>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                  Default Longitude
+                </label>
+                <input
+                  type="number"
+                  value={config.defaultCenter.lng}
+                  onChange={e =>
+                    handleSettingChange('defaultCenter', {
+                      ...config.defaultCenter,
+                      lng: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  step="0.0001"
+                  className={cn(
+                    'w-full px-4 py-2.5 rounded-md',
+                    'bg-wl-bg-root border border-wl-border-default',
+                    'text-white',
+                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                  Default Zoom Level: <span className="text-white">{config.defaultZoom}</span>
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="18"
+                  value={config.defaultZoom}
+                  onChange={e => handleSettingChange('defaultZoom', parseInt(e.target.value))}
+                  className="w-full accent-blue-500"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>1 — World</span>
+                  <span>10 — City</span>
+                  <span>18 — Street</span>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </CardContent>
+        </Card>
 
-      {/* Save Button */}
-      <div className="flex items-center justify-between">
-        <div>
-          {saveSuccess && (
-            <div className="flex items-center gap-2 text-emerald-400">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-sm font-medium">Settings saved successfully!</span>
+        {/* Feature toggles */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Feature Toggles</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                { key: 'enableHeatmap' as const, label: 'Heatmap Layer', desc: 'Show delivery density heatmaps on analytics maps' },
+                { key: 'enableDrawing' as const, label: 'Drawing Tools', desc: 'Allow zone creation and polygon editing on zone maps' },
+              ].map(({ key, label, desc }) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between p-4 rounded-lg bg-wl-bg-root border border-wl-border-default hover:border-blue-500/30 transition-colors"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-white">{label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                  </div>
+                  <button
+                    role="switch"
+                    aria-checked={config[key]}
+                    onClick={() => handleSettingChange(key, !config[key])}
+                    className={cn(
+                      'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent',
+                      'transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500',
+                      config[key] ? 'bg-blue-600' : 'bg-wl-bg-elevated'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow',
+                        'transform transition duration-200',
+                        config[key] ? 'translate-x-5' : 'translate-x-0'
+                      )}
+                    />
+                  </button>
+                </div>
+              ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Live preview map */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings2 className="w-4 h-4 text-blue-400" />
+              Preview
+            </CardTitle>
+            <p className="text-xs text-gray-400 mt-1">
+              This is how your default map view will appear across the dashboard.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 rounded-lg overflow-hidden border border-wl-border-default">
+              <WLMap
+                center={[config.defaultCenter.lng, config.defaultCenter.lat]}
+                zoom={config.defaultZoom}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Map rendered with free CARTO basemaps (keyless). Adjust lat/lng/zoom above and save to update.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Save footer */}
+        <div className="flex items-center justify-between py-2">
+          {saveSuccess && (
+            <span className="flex items-center gap-2 text-sm text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
+              Settings saved
+            </span>
           )}
-        </div>
-        <Button
-          variant="primary"
-          onClick={saveAllSettings}
-          disabled={isSaving || !settings.apiKey}
-          className="flex items-center gap-2"
-        >
-          {isSaving && (
-            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          {saveError && (
+            <span className="flex items-center gap-2 text-sm text-red-400">
+              <AlertCircle className="w-4 h-4" />
+              {saveError}
+            </span>
           )}
-          {isSaving ? 'Saving...' : 'Save Settings'}
-        </Button>
+          {!saveSuccess && !saveError && <div />}
+          <Button variant="primary" onClick={saveSettings} disabled={isSaving}>
+            {isSaving ? 'Saving…' : 'Save Settings'}
+          </Button>
         </div>
       </div>
     </div>

@@ -267,14 +267,13 @@ export default function IntegrationDetailPage() {
                   className="w-full justify-center"
                   onClick={async () => {
                     try {
-                      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-                      const response = await fetch(
-                        `${API_BASE}/api/v4/integrations/${connectionId}/test`,
-                        { method: "POST" }
+                      const result = await api.post<{ message?: string }>(
+                        `/api/v4/integrations/${connectionId}/test`,
+                        {}
                       );
                       setShowTestResult({
                         success: true,
-                        message: (result as { message?: string }).message ?? "Connection test completed",
+                        message: result.message || "Connection test completed",
                       });
                     } catch (err) {
                       setShowTestResult({

@@ -97,6 +97,17 @@ async function request<T>(
   return res.json();
 }
 
+async function requestBlob(path: string, options: RequestInit = {}): Promise<Blob> {
+  const url = `${API_BASE}${path}`;
+  const headers: Record<string, string> = { ...(options.headers as Record<string, string>) };
+  const token = getAuthToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { ...options, headers, credentials: 'include' });
+  if (res.status === 401) { handleUnauthorized(); throw new ApiError(401, 'Unauthorized. Please log in again.'); }
+  if (!res.ok) throw new ApiError(res.status, `API ${res.status}: ${res.statusText}`);
+  return res.blob();
+}
+
 export const api = {
   get: <T>(path: string, options?: RequestInit) => request<T>(path, options),
   post: <T>(path: string, body?: unknown, options?: RequestInit) =>
@@ -106,4 +117,5 @@ export const api = {
   patch: <T>(path: string, body?: unknown, options?: RequestInit) =>
     request<T>(path, { method: "PATCH", body: body ? JSON.stringify(body) : undefined, ...options }),
   delete: <T>(path: string, options?: RequestInit) => request<T>(path, { method: "DELETE", ...options }),
+  download: (path: string, options?: RequestInit) => requestBlob(path, options),
 };
