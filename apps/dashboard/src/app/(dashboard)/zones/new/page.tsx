@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { WLMap } from '@/components/map/wl-map';
 import { DrawLayer } from '@/components/map/draw-layer';
+import { api } from '@/lib/api';
 import { track } from '@/lib/track';
 import type { ZoneShape } from '@witylogix/validators';
 
@@ -31,23 +32,14 @@ export default function NewZonePage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch('/api/v4/zones', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          shape,
-          baseRate: Number(baseRate),
-          perKmRate: Number(perKmRate),
-          minOrder: Number(minOrder),
-          freeAbove: freeAbove ? Number(freeAbove) : undefined,
-        }),
+      const body = await api.post<{ data: { id: string } }>('/api/v4/zones', {
+        name,
+        shape,
+        baseRate: Number(baseRate),
+        perKmRate: Number(perKmRate),
+        minOrder: Number(minOrder),
+        freeAbove: freeAbove ? Number(freeAbove) : undefined,
       });
-      if (!res.ok) {
-        setSubmitError(`Create failed: HTTP ${res.status}`);
-        return;
-      }
-      const body = (await res.json()) as { data: { id: string } };
       track('zones.created', {
         shape: shape.type,
         baseRate: Number(baseRate),
