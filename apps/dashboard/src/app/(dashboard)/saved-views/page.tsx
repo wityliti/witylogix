@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Copy, Edit2, Trash2, Eye, MoreVertical, RefreshCw } from 'lucide-react';
 import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import { api } from '@/lib/api';
 
 interface FilterCondition {
@@ -127,6 +128,14 @@ export default function SavedViewsPage() {
     await api.patch(`/api/v4/views/${id}/default`, {});
     refetch();
   }, [refetch]);
+
+  if (error && !loading) {
+    return (
+      <div className="w-full bg-wl-bg-root min-h-screen p-6">
+        <ErrorState error={error} onRetry={refetch} />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-wl-bg-root min-h-screen">

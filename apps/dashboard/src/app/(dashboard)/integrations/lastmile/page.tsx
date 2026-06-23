@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useApiQuery, useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -113,7 +114,7 @@ export default function LastMileIntegrationPage() {
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryStatusFilter>('all');
   const [driverFilter, setDriverFilter] = useState<DriverStatusFilter>('all');
 
-  const { data: partners, loading: partnersLoading, error: partnersError } =
+  const { data: partners, loading: partnersLoading, error: partnersError, refetch: refetchPartners } =
     useApiQuery<CourierPartner[]>('/api/v4/couriers/partners');
 
   const { data: partnerStatsData, loading: statsLoading } =
@@ -155,6 +156,17 @@ export default function LastMileIntegrationPage() {
   );
 
   const isLoading = partnersLoading || overallLoading;
+
+  if (partnersError && !isLoading) {
+    return (
+      <>
+        <Header title="Last-Mile Delivery" subtitle="Courier partner management and delivery tracking" />
+        <div className="p-6">
+          <ErrorState error={partnersError} onRetry={refetchPartners} />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

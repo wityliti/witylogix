@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Store, Package, ShoppingCart, Zap, Globe, Settings } from 'lucide-react';
 import { useApiQuery } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 
 interface ShopProfile {
   id: string;
@@ -57,6 +58,14 @@ export default function StoresManagement() {
       default: return 'warning';
     }
   };
+
+  if (shopError && !loading) {
+    return (
+      <div className="bg-wl-bg-root min-h-screen p-6">
+        <ErrorState error={shopError} onRetry={handleRefresh} />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-wl-bg-root min-h-screen">

@@ -25,6 +25,7 @@ import {
   type DigestFrequency,
 } from "@/hooks/use-notifications";
 import { useApiMutation } from "@/hooks/use-api";
+import { ErrorState } from "@/components/ui/error-state";
 
 /**
  * Notification Preferences Page
@@ -59,6 +60,8 @@ export default function NotificationPreferencesPage() {
     preferences,
     isLoading,
     isSaving,
+    error,
+    refetch,
     updatePreferences,
     toggleChannelCategory,
   } = useNotificationPreferences();
@@ -162,6 +165,17 @@ export default function NotificationPreferencesPage() {
         <Header title="Notification Preferences" subtitle="Loading preferences…" />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <LoadingSkeleton />
+        </main>
+      </div>
+    );
+  }
+
+  if (error && !isLoading) {
+    return (
+      <div className="min-h-screen bg-wl-bg-primary">
+        <Header title="Notification Preferences" subtitle="Configure how and when you receive notifications" />
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorState error={error} onRetry={refetch} />
         </main>
       </div>
     );
