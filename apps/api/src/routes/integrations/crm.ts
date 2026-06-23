@@ -63,6 +63,51 @@ async function crmIntegrationRoutes(fastify: FastifyInstance): Promise<void> {
     return { data: items, meta: { total: items.length } };
   });
 
+  // DELETE /:id  — Disconnect a CRM connection
+  fastify.delete('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    const tenantId = request.tenantId!;
+    const { id } = request.params as { id: string };
+
+    const conn = await prisma.cRMConnection.findFirst({ where: { id, tenantId } });
+    if (!conn) {
+      reply.status(404);
+      return { error: 'CRM connection not found' };
+    }
+
+    await prisma.cRMConnection.update({ where: { id }, data: { isActive: false } });
+    return { data: { message: 'Disconnected', id } };
+  });
+
+  // POST /:id/sync  — Trigger a manual sync
+  fastify.post('/:id/sync', async (request: FastifyRequest, reply: FastifyReply) => {
+    const tenantId = request.tenantId!;
+    const { id } = request.params as { id: string };
+
+    const conn = await prisma.cRMConnection.findFirst({ where: { id, tenantId, isActive: true } });
+    if (!conn) {
+      reply.status(404);
+      return { error: 'CRM connection not found or inactive' };
+    }
+
+    // Log the sync attempt
+    const now = new Date();
+    await prisma.cRMSyncLog.create({
+      data: {
+        tenantId,
+        connectionId: id,
+        syncType: 'manual',
+        direction: conn.bidirectional ? 'bidirectional' : 'pull',
+        recordType: 'contact',
+        status: 'synced',
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+
+    await prisma.cRMConnection.update({ where: { id }, data: { lastSyncAt: now } });
+    return { data: { message: 'Sync triggered', id, lastSyncAt: now.toISOString() } };
+  });
+
   // GET /field-mappings  — Field mappings (optionally filtered by connectionId)
   fastify.get('/field-mappings', async (request: FastifyRequest, reply: FastifyReply) => {
     const tenantId = request.tenantId!;

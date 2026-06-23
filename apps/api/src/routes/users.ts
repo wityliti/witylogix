@@ -482,6 +482,46 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
     return { data: { message: "User deactivated", userId: id } };
   });
 
+  // ── UPDATE CURRENT USER PROFILE (self-service) ──────────────
+
+  const selfUpdateSchema = z.object({
+    name: z.string().min(1).max(200).optional(),
+    email: z.string().email().optional(),
+  });
+
+  fastify.patch("/me", async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.auth.userId) {
+      throw new ForbiddenError("This endpoint is only available for dashboard users");
+    }
+
+    const body = selfUpdateSchema.parse(request.body);
+
+    // Check email uniqueness within shop if changing email
+    if (body.email) {
+      const existing = await prisma.user.findFirst({
+        where: {
+          shopId: request.auth.shopId,
+          email: body.email,
+          id: { not: request.auth.userId },
+        },
+      });
+      if (existing) {
+        throw new ConflictError(`Email '${body.email}' is already in use`);
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: request.auth.userId },
+      data: {
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.email !== undefined && { email: body.email }),
+      },
+      select: { id: true, name: true, email: true, role: true },
+    });
+
+    return { data: updated };
+  });
+
   // ── GET CURRENT USER PROFILE ────────────────────────────────
 
   // ── SELF-SERVICE PROFILE UPDATE ────────────────────────────
