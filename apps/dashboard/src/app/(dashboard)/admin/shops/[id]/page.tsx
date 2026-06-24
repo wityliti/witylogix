@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { useApiQuery } from '@/hooks/use-api';
 import { useParams } from 'next/navigation';
+import { LoadingSkeleton } from '../../../../../components/ui/loading-skeleton';
+import { ErrorState } from '../../../../../components/ui/error-state';
 
 interface ShopDetail {
   id: string;
@@ -73,151 +75,27 @@ interface ActivityLog {
   severity: "info" | "warning" | "error";
 }
 
-const mockShopDetail: ShopDetail = {
-  id: "shop_001",
-  name: "Elegant Boutique",
-  domain: "elegantboutique.com",
-  planTier: "enterprise",
-  status: "active",
-  owner: {
-    name: "Sarah Anderson",
-    email: "sarah.anderson@elegantboutique.com",
-    phone: "+1 (555) 123-4567",
-    joinDate: "2024-01-15",
-  },
-  usage: {
-    orders: 4523,
-    shipments: 4456,
-    drivers: 12,
-    apiCalls: 450000,
-    apiCallsLimit: 1000000,
-  },
-  billing: {
-    currentPlan: "Enterprise",
-    monthlyFee: 999,
-    nextBillingDate: "2026-04-06",
-    status: "active",
-  },
-  createdAt: "2024-01-15",
-  lastActive: "2026-03-06 14:32:10",
-  uptime: 99.98,
-};
 
-const mockBillingHistory: BillingRecord[] = [
-  {
-    id: "bill_001",
-    date: "2026-03-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_002",
-    date: "2026-02-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_003",
-    date: "2026-01-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_004",
-    date: "2025-12-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_005",
-    date: "2025-11-06",
-    description: "Enterprise Plan - Monthly",
-    amount: 999,
-    status: "paid",
-  },
-  {
-    id: "bill_006",
-    date: "2025-10-06",
-    description: "Growth Plan - Monthly",
-    amount: 499,
-    status: "paid",
-  },
-];
+interface ShopApiResponse {
+  shop: ShopDetail;
+  billingHistory: BillingRecord[];
+  activityLog: ActivityLog[];
+}
 
-const mockActivityLog: ActivityLog[] = [
-  {
-    id: "act_001",
-    timestamp: "2026-03-06 14:32:10",
-    action: "Order processed",
-    details: "Order #78945 completed successfully",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_002",
-    timestamp: "2026-03-06 13:54:22",
-    action: "Shipment created",
-    details: "245 items shipped via FedEx",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_003",
-    timestamp: "2026-03-06 13:12:08",
-    action: "API call",
-    details: "Bulk inventory sync - 1250 products",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_004",
-    timestamp: "2026-03-06 12:45:33",
-    action: "Settings updated",
-    details: "Shipping zones configuration modified",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_005",
-    timestamp: "2026-03-05 22:18:55",
-    action: "Payment processed",
-    details: "Monthly subscription fee charged",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_006",
-    timestamp: "2026-03-05 20:17:42",
-    action: "API threshold warning",
-    details: "API calls usage at 75% of monthly limit",
-    user: "System",
-    severity: "warning",
-  },
-  {
-    id: "act_007",
-    timestamp: "2026-03-04 18:56:44",
-    action: "Team member added",
-    details: "john.doe@elegantboutique.com added as Manager",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_008",
-    timestamp: "2026-03-03 16:45:50",
-    action: "Backup created",
-    details: "Automatic daily backup completed",
-    user: "System",
-    severity: "info",
-  },
-];
+export default function AdminShopDetail({ params }: { params: { id: string } }) {
+  const { id } = useParams<{ id: string }>();
+  const { data, loading, error, refetch } = useApiQuery<ShopApiResponse>(`/api/v4/admin/stores/${id ?? params.id}`);
 
-export default function AdminShopDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (!data) return <ErrorState message="Shop not found" onRetry={refetch} />;
+
+  const shop = data.shop ?? data as unknown as ShopDetail;
+  const billingHistory: BillingRecord[] = data.billingHistory ?? [];
+  const activityLog: ActivityLog[] = data.activityLog ?? [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -293,30 +171,30 @@ export default function AdminShopDetail() {
             <div className="flex justify-between items-start mb-5">
               <div>
                 <h1 className="text-2xl font-bold text-white mb-2">
-                  {mockShopDetail.name}
+                  {shop.name}
                 </h1>
                 <p className="text-gray-400 text-sm">
-                  {mockShopDetail.domain}
+                  {shop.domain}
                 </p>
               </div>
               <div className="flex gap-3 items-center">
                 <Badge
                   style={{
-                    background: getStatusColor(mockShopDetail.status) + "20",
-                    color: getStatusColor(mockShopDetail.status),
-                    border: `1px solid ${getStatusColor(mockShopDetail.status)}40`,
+                    background: getStatusColor(shop.status) + "20",
+                    color: getStatusColor(shop.status),
+                    border: `1px solid ${getStatusColor(shop.status)}40`,
                   }}
                 >
-                  {mockShopDetail.status.toUpperCase()}
+                  {shop.status.toUpperCase()}
                 </Badge>
                 <Badge
                   style={{
-                    background: getPlanColor(mockShopDetail.planTier) + "20",
-                    color: getPlanColor(mockShopDetail.planTier),
-                    border: `1px solid ${getPlanColor(mockShopDetail.planTier)}40`,
+                    background: getPlanColor(shop.planTier) + "20",
+                    color: getPlanColor(shop.planTier),
+                    border: `1px solid ${getPlanColor(shop.planTier)}40`,
                   }}
                 >
-                  {mockShopDetail.planTier.toUpperCase()}
+                  {shop.planTier.toUpperCase()}
                 </Badge>
               </div>
             </div>
@@ -328,7 +206,7 @@ export default function AdminShopDetail() {
                   Owner Name
                 </p>
                 <p className="text-white text-sm font-medium">
-                  {mockShopDetail.owner.name}
+                  {shop.owner.name}
                 </p>
               </div>
               <div>
@@ -336,7 +214,7 @@ export default function AdminShopDetail() {
                   Email
                 </p>
                 <p className="text-white text-sm font-medium">
-                  {mockShopDetail.owner.email}
+                  {shop.owner.email}
                 </p>
               </div>
               <div>
@@ -344,7 +222,7 @@ export default function AdminShopDetail() {
                   Phone
                 </p>
                 <p className="text-white text-sm font-medium">
-                  {mockShopDetail.owner.phone}
+                  {shop.owner.phone}
                 </p>
               </div>
               <div>
@@ -352,7 +230,7 @@ export default function AdminShopDetail() {
                   Member Since
                 </p>
                 <p className="text-white text-sm font-medium">
-                  {new Date(mockShopDetail.owner.joinDate).toLocaleDateString()}
+                  {new Date(shop.owner.joinDate).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -369,7 +247,7 @@ export default function AdminShopDetail() {
                     Total Orders
                   </p>
                   <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.usage.orders.toLocaleString()}
+                    {shop.usage.orders.toLocaleString()}
                   </p>
                 </div>
                 <ShoppingCart size={24} className="text-blue-600" />
@@ -385,7 +263,7 @@ export default function AdminShopDetail() {
                     Shipments
                   </p>
                   <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.usage.shipments.toLocaleString()}
+                    {shop.usage.shipments.toLocaleString()}
                   </p>
                 </div>
                 <Truck size={24} className="text-purple-500" />
@@ -401,7 +279,7 @@ export default function AdminShopDetail() {
                     Drivers
                   </p>
                   <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.usage.drivers}
+                    {shop.usage.drivers}
                   </p>
                 </div>
                 <Users size={24} className="text-blue-500" />
@@ -417,7 +295,7 @@ export default function AdminShopDetail() {
                     API Uptime
                   </p>
                   <p className="text-2xl font-bold text-white">
-                    {mockShopDetail.uptime}%
+                    {shop.uptime}%
                   </p>
                 </div>
                 <Activity size={24} className="text-emerald-500" />
@@ -438,18 +316,18 @@ export default function AdminShopDetail() {
                   <div
                     className="h-full rounded transition-all duration-300 bg-[#3b82f6]"
                     style={{
-                      width: `${(mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100}%`,
+                      width: `${(shop.usage.apiCalls / shop.usage.apiCallsLimit) * 100}%`,
                     }}
                   />
                 </div>
                 <p className="text-gray-400 text-xs">
-                  {mockShopDetail.usage.apiCalls.toLocaleString()} /{" "}
-                  {mockShopDetail.usage.apiCallsLimit.toLocaleString()} calls
+                  {shop.usage.apiCalls.toLocaleString()} /{" "}
+                  {shop.usage.apiCallsLimit.toLocaleString()} calls
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-white text-sm font-semibold">
-                  {((mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100).toFixed(1)}%
+                  {((shop.usage.apiCalls / shop.usage.apiCallsLimit) * 100).toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -470,7 +348,7 @@ export default function AdminShopDetail() {
                     Current Plan
                   </p>
                   <p className="text-white text-sm font-medium">
-                    {mockShopDetail.billing.currentPlan}
+                    {shop.billing.currentPlan}
                   </p>
                 </div>
                 <div>
@@ -478,7 +356,7 @@ export default function AdminShopDetail() {
                     Monthly Fee
                   </p>
                   <p className="text-white text-sm font-medium">
-                    ${mockShopDetail.billing.monthlyFee}/month
+                    ${shop.billing.monthlyFee}/month
                   </p>
                 </div>
                 <div>
@@ -486,7 +364,7 @@ export default function AdminShopDetail() {
                     Next Billing Date
                   </p>
                   <p className="text-white text-sm font-medium">
-                    {new Date(mockShopDetail.billing.nextBillingDate).toLocaleDateString()}
+                    {new Date(shop.billing.nextBillingDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
@@ -495,12 +373,12 @@ export default function AdminShopDetail() {
                   </p>
                   <Badge
                     style={{
-                      background: getBillingStatusColor(mockShopDetail.billing.status) + "20",
-                      color: getBillingStatusColor(mockShopDetail.billing.status),
-                      border: `1px solid ${getBillingStatusColor(mockShopDetail.billing.status)}40`,
+                      background: getBillingStatusColor(shop.billing.status) + "20",
+                      color: getBillingStatusColor(shop.billing.status),
+                      border: `1px solid ${getBillingStatusColor(shop.billing.status)}40`,
                     }}
                   >
-                    {mockShopDetail.billing.status.toUpperCase()}
+                    {shop.billing.status.toUpperCase()}
                   </Badge>
                 </div>
               </div>
@@ -512,10 +390,10 @@ export default function AdminShopDetail() {
                 Billing History
               </h4>
               <div className="max-h-80 overflow-y-auto">
-                {mockBillingHistory.map((record, index) => (
+                {billingHistory.map((record, index) => (
                   <div
                     key={record.id}
-                    className={cn("py-3 flex justify-between items-center", index < mockBillingHistory.length - 1 && "border-b border-[#1e1e2e]")}
+                    className={cn("py-3 flex justify-between items-center", index < billingHistory.length - 1 && "border-b border-[#1e1e2e]")}
                   >
                     <div>
                       <p className="text-white mb-1 text-sm">
@@ -634,10 +512,10 @@ export default function AdminShopDetail() {
               Activity Log
             </h3>
             <div className="max-h-96 overflow-y-auto">
-              {mockActivityLog.map((log, index) => (
+              {activityLog.map((log, index) => (
                 <div
                   key={log.id}
-                  className={cn("py-3 flex gap-3", index < mockActivityLog.length - 1 && "border-b border-[#1e1e2e]")}
+                  className={cn("py-3 flex gap-3", index < activityLog.length - 1 && "border-b border-[#1e1e2e]")}
                 >
                   <div
                     className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5"

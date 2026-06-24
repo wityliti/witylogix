@@ -44,212 +44,6 @@ interface ApiEndpoint {
   }>;
 }
 
-const mockEndpoints: ApiEndpoint[] = [
-  {
-    id: "orders-list",
-    method: "GET",
-    path: "/api/v1/orders",
-    tag: "Orders",
-    description: "Retrieve a list of all orders",
-    authentication: "bearer",
-    parameters: [
-      {
-        name: "limit",
-        type: "integer",
-        required: false,
-        description: "Maximum number of results to return (default: 20, max: 100)",
-      },
-      {
-        name: "offset",
-        type: "integer",
-        required: false,
-        description: "Number of results to skip",
-      },
-      {
-        name: "status",
-        type: "string",
-        required: false,
-        description: "Filter by order status",
-      },
-    ],
-    responses: [
-      {
-        code: 200,
-        description: "Successful response",
-        example: {
-          data: [
-            {
-              id: "ord-001",
-              orderNumber: "ORD-2026-8945",
-              status: "in_transit",
-              totalAmount: 2450.0,
-              items: 8,
-              createdAt: "2026-03-12T14:32:10Z",
-            },
-          ],
-          pagination: { limit: 20, offset: 0, total: 1245 },
-        },
-      },
-      {
-        code: 401,
-        description: "Unauthorized - Invalid or missing authentication token",
-        example: { error: "Invalid Bearer token" },
-      },
-    ],
-  },
-  {
-    id: "orders-create",
-    method: "POST",
-    path: "/api/v1/orders",
-    tag: "Orders",
-    description: "Create a new order",
-    authentication: "bearer",
-    requestBody: {
-      type: "application/json",
-      example: {
-        customerId: "cust-001",
-        items: [
-          { productId: "prod-123", quantity: 2, price: 450.0 },
-          { productId: "prod-456", quantity: 1, price: 550.0 },
-        ],
-        shippingAddress: {
-          street: "123 Main St",
-          city: "San Francisco",
-          state: "CA",
-          zipCode: "94105",
-          country: "US",
-        },
-      },
-    },
-    responses: [
-      {
-        code: 201,
-        description: "Order created successfully",
-        example: {
-          id: "ord-002",
-          orderNumber: "ORD-2026-8946",
-          status: "pending",
-          totalAmount: 1450.0,
-          createdAt: "2026-03-12T14:35:22Z",
-        },
-      },
-      {
-        code: 400,
-        description: "Invalid request parameters",
-        example: { error: "Missing required field: customerId" },
-      },
-    ],
-  },
-  {
-    id: "orders-update",
-    method: "PUT",
-    path: "/api/v1/orders/:id",
-    tag: "Orders",
-    description: "Update an existing order",
-    authentication: "bearer",
-    parameters: [
-      {
-        name: "id",
-        type: "string",
-        required: true,
-        description: "Order ID to update",
-      },
-    ],
-    requestBody: {
-      type: "application/json",
-      example: {
-        status: "shipped",
-        trackingNumber: "TRACK-123456789",
-      },
-    },
-    responses: [
-      {
-        code: 200,
-        description: "Order updated successfully",
-        example: { success: true, updated: true },
-      },
-      {
-        code: 404,
-        description: "Order not found",
-        example: { error: "Order not found" },
-      },
-    ],
-  },
-  {
-    id: "routes-create",
-    method: "POST",
-    path: "/api/v1/routes",
-    tag: "Routes",
-    description: "Create an optimized delivery route",
-    authentication: "bearer",
-    requestBody: {
-      type: "application/json",
-      example: {
-        driverId: "driver-001",
-        stops: [
-          { address: "123 Main St, SF", orderId: "ord-001", sequence: 1 },
-          { address: "456 Oak Ave, SF", orderId: "ord-002", sequence: 2 },
-        ],
-      },
-    },
-    responses: [
-      {
-        code: 201,
-        description: "Route created successfully",
-        example: {
-          id: "route-001",
-          driverId: "driver-001",
-          stops: 2,
-          totalDistance: 12.5,
-          estimatedDuration: "45m",
-          optimized: true,
-        },
-      },
-    ],
-  },
-  {
-    id: "webhooks-test",
-    method: "POST",
-    path: "/api/v1/webhooks/test",
-    tag: "Webhooks",
-    description: "Test a webhook endpoint",
-    authentication: "api_key",
-    requestBody: {
-      type: "application/json",
-      example: {
-        url: "https://example.com/webhook",
-        event: "order.created",
-        payload: { id: "ord-001" },
-      },
-    },
-    responses: [
-      {
-        code: 200,
-        description: "Webhook test successful",
-        example: { statusCode: 200, responseTime: "145ms" },
-      },
-    ],
-  },
-  {
-    id: "health-check",
-    method: "GET",
-    path: "/api/v1/health",
-    tag: "System",
-    description: "Check API health status (public endpoint)",
-    authentication: "public",
-    responses: [
-      {
-        code: 200,
-        description: "API is healthy",
-        example: {
-          status: "healthy",
-          timestamp: "2026-03-12T14:35:22Z",
-          services: { api: "up", db: "up", cache: "up" },
-        },
-      },
-    ],
-  },
-];
 
 function MethodBadge({ method }: { method: string }) {
   const colors: Record<string, string> = {
@@ -499,13 +293,17 @@ function EndpointCard({
 }
 
 export default function ApiDocsPage() {
+  const { items: endpoints, loading, error, refetch } = useApiList<ApiEndpoint>('/api/v4/admin/api-docs');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const tags = Array.from(new Set(mockEndpoints.map(e => e.tag)));
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const tags = Array.from(new Set(endpoints.map(e => e.tag)));
   const filteredEndpoints = selectedTag
-    ? mockEndpoints.filter(e => e.tag === selectedTag)
-    : mockEndpoints;
+    ? endpoints.filter(e => e.tag === selectedTag)
+    : endpoints;
 
   return (
     <div className="min-h-screen bg-[#12121a]">
@@ -577,7 +375,7 @@ export default function ApiDocsPage() {
                 : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
             )}
           >
-            All Endpoints ({mockEndpoints.length})
+            All Endpoints ({endpoints.length})
           </button>
           {tags.map(tag => (
             <button
@@ -591,7 +389,7 @@ export default function ApiDocsPage() {
               )}
             >
               {tag} (
-              {mockEndpoints.filter(e => e.tag === tag).length})
+              {endpoints.filter(e => e.tag === tag).length})
             </button>
           ))}
         </div>

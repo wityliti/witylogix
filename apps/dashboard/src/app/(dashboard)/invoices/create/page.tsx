@@ -17,6 +17,7 @@ import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
+import { useApiList } from '@/hooks/use-api';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 
@@ -35,38 +36,6 @@ interface LineItem {
   taxable: boolean;
 }
 
-const MOCK_CUSTOMERS: Customer[] = [
-  {
-    id: "cust-001",
-    name: "Acme Corporation",
-    email: "billing@acme.com",
-    address: "123 Business Ave, New York, NY 10001",
-  },
-  {
-    id: "cust-002",
-    name: "Beta Inc",
-    email: "finance@beta.com",
-    address: "456 Commerce St, San Francisco, CA 94105",
-  },
-  {
-    id: "cust-003",
-    name: "Gamma Ltd",
-    email: "accounting@gamma.co.uk",
-    address: "789 Enterprise Rd, London, UK EC1A 1BB",
-  },
-  {
-    id: "cust-004",
-    name: "Delta Logistics",
-    email: "billing@delta.com",
-    address: "321 Logistics Way, Chicago, IL 60601",
-  },
-  {
-    id: "cust-005",
-    name: "Echo Distribution",
-    email: "invoices@echo.com",
-    address: "654 Distribution Blvd, Los Angeles, CA 90001",
-  },
-];
 
 export default function CreateInvoicePage() {
   const router = useRouter();
@@ -94,16 +63,18 @@ export default function CreateInvoicePage() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
+  const { items: allCustomers } = useApiList<Customer>('/api/v4/customers', { limit: 200 });
+
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return MOCK_CUSTOMERS;
+    if (!customerSearch) return allCustomers;
     const search = customerSearch.toLowerCase();
-    return MOCK_CUSTOMERS.filter(
+    return allCustomers.filter(
       (c) =>
         c.name.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search)
     );
-  }, [customerSearch]);
+  }, [customerSearch, allCustomers]);
 
   // Calculate totals
   const subtotal = useMemo(() => {
