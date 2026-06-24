@@ -267,9 +267,9 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     };
   });
 
-  // ── PUT /stores/:id/suspend (Suspend store) ────────────────────
+  // ── POST /stores/:id/suspend (Suspend store) ───────────────────
 
-  fastify.put(
+  fastify.post(
     "/stores/:id/suspend",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
@@ -1026,78 +1026,199 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     return { data: dlqItems };
   });
 
-  // ── GET /system — System health metrics ───────────────────
-  // Returns real process metrics + dependency health checks for the admin system page.
+  // ── GET /system — system health check ─────────────────────────
 
-  fastify.get("/system", async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get("/system", async (_request: FastifyRequest, _reply: FastifyReply) => {
+    const { execSync } = await import("child_process");
+    const { readFileSync } = await import("fs");
+    const { join, dirname } = await import("path");
+    const { fileURLToPath } = await import("url");
+
     const now = Date.now();
-    const API_VERSION = process.env.API_VERSION ?? process.env.npm_package_version ?? "1.0.0";
 
-    const memUsage = process.memoryUsage();
-    const memoryUsage = Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100);
-    const cpuUsage = Math.round(process.cpuUsage().user / 10000) % 100;
-
-    let dbStatus: "healthy" | "degraded" | "critical" = "healthy";
-    let dbLatency = 0;
-    const dbStart = Date.now();
+    // DB health check
+    let dbStatus: "healthy" | "critical" = "healthy";
+    let dbResponseTime = 0;
     try {
+      const t0 = Date.now();
       await prisma.$queryRaw`SELECT 1`;
-      dbLatency = Date.now() - dbStart;
+      dbResponseTime = Date.now() - t0;
     } catch {
       dbStatus = "critical";
     }
 
-    let redisStatus: "healthy" | "degraded" | "critical" = "healthy";
-    const redisLatency = 2;
+    // Redis health check
+    let redisStatus: "healthy" | "critical" = "healthy";
+    let redisResponseTime = 0;
     try {
-      const redis = (request.server as any).redis;
-      if (!redis) redisStatus = "degraded";
+      const redis = getRedis();
+      const t0 = Date.now();
+      await redis.ping();
+      redisResponseTime = Date.now() - t0;
     } catch {
       redisStatus = "degraded";
     }
 
-    const apiLatency = dbLatency > 500 ? dbLatency : Math.max(30, Math.min(80, dbLatency + 20));
-    const services = [
-      {
-        name: "API Server",
-        status: dbStatus === "critical" ? "degraded" : "healthy",
-        uptime24h: 99.9,
-        uptime7d: 99.8,
-        uptime30d: 99.7,
-        responseTime: apiLatency,
-        lastChecked: new Date().toISOString(),
-      },
-      {
-        name: "PostgreSQL",
-        status: dbStatus,
-        uptime24h: dbStatus === "healthy" ? 100.0 : 99.0,
-        uptime7d: dbStatus === "healthy" ? 99.99 : 98.5,
-        uptime30d: dbStatus === "healthy" ? 99.96 : 97.0,
-        responseTime: dbLatency,
-        lastChecked: new Date().toISOString(),
-      },
-      {
-        name: "Redis Cache",
-        status: redisStatus,
-        uptime24h: redisStatus === "healthy" ? 99.99 : 95.0,
-        uptime7d: redisStatus === "healthy" ? 99.98 : 94.0,
-        uptime30d: redisStatus === "healthy" ? 99.97 : 93.0,
-        responseTime: redisLatency,
-        lastChecked: new Date().toISOString(),
-      },
-    ];
+    // Worker queues — sample one queue
+    let workerStatus: "healthy" | "degraded" = "healthy";
+    let activeJobs = 0;
+    try {
+      const q = getNotificationQueue();
+      const counts = await q.getJobCounts("active", "waiting", "failed");
+      activeJobs = (counts.active ?? 0) + (counts.waiting ?? 0);
+      if ((counts.failed ?? 0) > 50) workerStatus = "degraded";
+    } catch {
+      workerStatus = "degraded";
+    }
+
+    // Process memory
+    const mem = process.memoryUsage();
+    const memUsedMB = Math.round(mem.heapUsed / 1024 / 1024);
+    const memTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
+    const memPct = memTotalMB > 0 ? Math.round((memUsedMB / memTotalMB) * 100) : 0;
+
+    // Version
+    let version = "4.x";
+    try {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
+      const pkg = JSON.parse(readFileSync(join(__dirname, "../../../package.json"), "utf8"));
+      version = pkg.version ?? version;
+    } catch {
+      // ignore
+    }
+
+    const checkedAt = new Date(now).toISOString();
 
     return {
       data: {
-        services,
+        services: [
+          {
+            name: "API Server",
+            status: "healthy" as const,
+            responseTime: Date.now() - now,
+            uptime24h: 100,
+            uptime7d: 100,
+            uptime30d: 100,
+            checkedAt,
+          },
+          {
+            name: "PostgreSQL",
+            status: dbStatus,
+            responseTime: dbResponseTime,
+            uptime24h: dbStatus === "healthy" ? 100 : 0,
+            uptime7d: dbStatus === "healthy" ? 100 : 0,
+            uptime30d: dbStatus === "healthy" ? 100 : 0,
+            checkedAt,
+          },
+          {
+            name: "Redis Cache",
+            status: redisStatus,
+            responseTime: redisResponseTime,
+            uptime24h: redisStatus === "healthy" ? 100 : 0,
+            uptime7d: redisStatus === "healthy" ? 100 : 0,
+            uptime30d: redisStatus === "healthy" ? 100 : 0,
+            checkedAt,
+          },
+          {
+            name: "Worker Queues",
+            status: workerStatus,
+            responseTime: 0,
+            uptime24h: workerStatus === "healthy" ? 100 : 95,
+            uptime7d: workerStatus === "healthy" ? 100 : 95,
+            uptime30d: workerStatus === "healthy" ? 100 : 95,
+            activeJobs,
+            checkedAt,
+          },
+        ],
         metrics: {
-          memoryUsage,
-          cpuUsage,
-          activeConnections: 0,
-          deploymentTime: new Date(now - process.uptime() * 1000).toISOString(),
-          deploymentVersion: `v${API_VERSION}`,
+          memoryUsedMB,
+          memoryTotalMB,
+          memoryUsagePct: memPct,
+          processUptimeSec: Math.round(process.uptime()),
+          version,
+          nodeVersion: process.version,
+        },
+        checkedAt,
+      },
+    };
+  });
+
+  // ── GET /stores/:id/billing — store billing history ──────────
+
+  fastify.get("/stores/:id/billing", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const invoices = await (prisma.invoice as any).findMany({
+      where: { shopId: id },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        status: true,
+        dueDate: true,
+        paidAt: true,
+        createdAt: true,
+        lineItems: true,
+        subscription: {
+          select: { plan: { select: { name: true } } },
         },
       },
+    }).catch(() => [] as any[]);
+
+    return {
+      data: invoices.map((inv: any) => ({
+        id: inv.id,
+        date: inv.createdAt,
+        description: inv.subscription?.plan?.name
+          ? `${inv.subscription.plan.name} Plan - Monthly`
+          : "Subscription",
+        amount: Number(inv.amount),
+        currency: inv.currency ?? "usd",
+        status: inv.status === "paid" ? "paid" : inv.status === "failed" ? "failed" : "pending",
+        paidAt: inv.paidAt,
+        dueDate: inv.dueDate,
+      })),
+    };
+  });
+
+  // ── GET /stores/:id/activity — store activity log ─────────────
+
+  fastify.get("/stores/:id/activity", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const logs = await (prisma.activityLog as any).findMany({
+      where: { shopId: id },
+      orderBy: { timestamp: "desc" },
+      take: 30,
+      select: {
+        id: true,
+        entityType: true,
+        action: true,
+        actorType: true,
+        changes: true,
+        metadata: true,
+        timestamp: true,
+      },
+    }).catch(() => [] as any[]);
+
+    return {
+      data: logs.map((log: any) => ({
+        id: log.id,
+        timestamp: log.timestamp,
+        action: `${log.entityType} ${log.action}`.replace(/_/g, " "),
+        details: (() => {
+          const changes = log.changes as Record<string, unknown>;
+          if (changes && Object.keys(changes).length > 0) {
+            return Object.keys(changes).slice(0, 2).join(", ") + " updated";
+          }
+          return `${log.entityType} ${log.action}`;
+        })(),
+        actor: log.actorType ?? "system",
+        severity: (log.action === "deleted" || log.action === "failed") ? "warning" : "info" as const,
+      })),
     };
   });
 }
