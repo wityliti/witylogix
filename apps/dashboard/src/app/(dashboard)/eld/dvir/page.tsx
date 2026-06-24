@@ -16,17 +16,20 @@ import {
   CheckCircle,
   AlertTriangle,
   Calendar,
-  Search,
   Plus,
   Eye,
-  Download,
-  Filter,
   Wrench,
-  TrendingDown,
 } from "lucide-react";
 
 type DefectStatus = "REPORTED" | "ACKNOWLEDGED" | "REPAIRED" | "CERTIFIED";
-type InspectionStatus = "PASSED" | "FAILED";
+
+interface Vehicle {
+  id: string;
+  number: string;
+  driver?: string;
+  vehicleType?: string;
+  lastInspection?: string;
+}
 
 interface InspectionHistory {
   id: string;
@@ -34,17 +37,15 @@ interface InspectionHistory {
   driverId: string;
   driverName: string;
   type: "PRE_TRIP" | "POST_TRIP";
-  status: InspectionStatus;
+  status: "PASSED" | "FAILED";
   date: string;
   defectsCount: number;
   criticalDefects: number;
 }
 
-
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: vehicles, loading: vehiclesLoading, error: vehiclesError, refetch: refetchVehicles } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
-  const { items: inspectionHistory, loading: historyLoading, refetch: refetchHistory } = useApiList<InspectionHistory>("/api/v4/eld/inspections");
+  const { items: vehicles, loading: vehiclesLoading, error: vehiclesError, refetch: refetchVehicles } = useApiList<Vehicle>("/api/v4/eld/dvir");
   const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
 
@@ -55,8 +56,16 @@ export default function DVIRPage() {
   const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
 
+  const { items: historyItems, loading: historyLoading, error: historyError } = useApiList<InspectionHistory>(
+    selectedVehicle ? `/api/v4/eld/dvir/history?vehicleNumber=${encodeURIComponent(selectedVehicle)}` : '/api/v4/eld/dvir/history'
+  );
+
   if (vehiclesLoading) return <TableSkeleton rows={10} columns={6} />;
   if (vehiclesError) return <ErrorState message={vehiclesError.message} onRetry={refetchVehicles} />;
+
+  // Set default vehicle from list
+  const defaultVehicleNumber = vehicles[0]?.number ?? "";
+  const activeVehicle = selectedVehicle || defaultVehicleNumber;
 
   const filteredDefects = useMemo(() => {
     let result = defects;
@@ -73,13 +82,9 @@ export default function DVIRPage() {
     return result;
   }, [defects, filterStatus, searchQuery]);
 
-  const filteredHistory = useMemo(() => {
-    let result = inspectionHistory;
-    if (selectedVehicle) {
-      result = result.filter((h) => h.vehicleNumber === selectedVehicle);
-    }
-    return [...result].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [inspectionHistory, selectedVehicle]);
+  const sortedHistory = useMemo(() => {
+    return [...historyItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [historyItems]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
@@ -147,7 +152,6 @@ export default function DVIRPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <Input
                   placeholder="Search defects..."
@@ -169,7 +173,6 @@ export default function DVIRPage() {
                 </select>
               </div>
 
-              {/* Defects list */}
               {defectsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
@@ -250,11 +253,23 @@ export default function DVIRPage() {
                   onClick={() => setShowVehicleSearch(!showVehicleSearch)}
                   className="w-full h-9 px-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-left flex items-center justify-between hover:bg-[#0a0a0f] transition-colors text-sm"
                 >
-                  <span>Vehicle: {selectedVehicle}</span>
+                  <span>Vehicle: {activeVehicle || 'All Vehicles'}</span>
                 </button>
 
                 {showVehicleSearch && (
                   <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
+                    <button
+                      onClick={() => {
+                        setSelectedVehicle("");
+                        setShowVehicleSearch(false);
+                      }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e]",
+                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-[#0a0a0f]"
+                      )}
+                    >
+                      All Vehicles
+                    </button>
                     {vehicles.map((vehicle) => (
                       <button
                         key={vehicle.id}
@@ -270,6 +285,7 @@ export default function DVIRPage() {
                         )}
                       >
                         {vehicle.number}
+                        {vehicle.driver && <span className="text-gray-500 ml-2">({vehicle.driver})</span>}
                       </button>
                     ))}
                   </div>
@@ -278,7 +294,16 @@ export default function DVIRPage() {
             </CardHeader>
 
             <CardContent>
-              {filteredHistory.length === 0 ? (
+              {historyLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                </div>
+              ) : historyError ? (
+                <div className="flex flex-col items-center justify-center py-8 text-red-400">
+                  <AlertTriangle className="w-8 h-8 mb-2" />
+                  <p className="text-sm">Failed to load history</p>
+                </div>
+              ) : sortedHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                   <Calendar className="w-12 h-12 mb-3 opacity-50" />
                   <p className="text-sm font-medium">No inspections yet</p>
@@ -286,7 +311,7 @@ export default function DVIRPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {filteredHistory.map((inspection) => (
+                  {sortedHistory.map((inspection) => (
                     <div
                       key={inspection.id}
                       className="p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] hover:border-blue-500/30 transition-all"
@@ -343,9 +368,9 @@ export default function DVIRPage() {
         <>
           {/* Form mode */}
           <DVIRForm
-            vehicleNumber={selectedVehicle}
-            driverId=""
-            driverName=""
+            vehicleNumber={activeVehicle || "UNKNOWN"}
+            driverId="current"
+            driverName="Current Driver"
             inspectionType={inspectionType}
             onSubmit={async (data) => {
               try {
