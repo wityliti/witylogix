@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useApiList, useApiQuery } from '@/hooks/use-api';
 import {
   BarChart3,
   Users,
@@ -40,75 +39,72 @@ interface Store {
   totalUsers: number;
 }
 
-// Helper functions
-const getPlanColor = (plan: string): string => {
+interface SystemService {
+  name: string;
+  status: 'healthy' | 'degraded' | 'critical';
+  uptime24h: number;
+  responseTime: number;
+}
+
+interface SystemMetrics {
+  memoryUsage: number;
+  cpuUsage: number;
+  uptimeSeconds: number;
+}
+
+interface SystemData {
+  data: {
+    services: SystemService[];
+    metrics: SystemMetrics;
+  };
+}
+
+// Plan → Badge variant
+const getPlanVariant = (plan: string): 'default' | 'info' | 'warning' | 'success' | 'primary' => {
   switch (plan) {
-    case "free":
-      return "#94a3b8";
-    case "starter":
-      return "#3b82f6";
-    case "growth":
-      return "#8b5cf6";
-    case "enterprise":
-      return "#ec4899";
-    default:
-      return "#6366f1";
+    case 'free':       return 'default';
+    case 'starter':    return 'info';
+    case 'growth':     return 'warning';
+    case 'enterprise': return 'success';
+    default:           return 'primary';
   }
 };
 
-const getStatusColor = (status: string): string => {
-  switch (status) {
-    case "active":
-      return "#10b981";
-    case "suspended":
-      return "#ef4444";
-    case "trial":
-      return "#f59e0b";
-    default:
-      return "#6b7280";
-  }
-};
-
-// Key Metrics Cards
+// Key Metrics Cards — colours use WL design tokens + Tailwind semantic classes
 const MetricsBar = ({ stores }: { stores: Store[] }) => {
-  const totalStores = stores.length;
-  const activeStores = stores.filter((s) => s.status === "active").length;
-  const totalOrders = stores.reduce((sum, s) => sum + s.ordersThisMonth, 0);
-  const totalRevenue = stores.reduce((sum, s) => sum + s.revenue, 0);
-  const activeSubscriptions = stores.filter((s) => s.planTier !== "free").length;
+  const totalStores        = stores.length;
+  const activeStores       = stores.filter((s) => s.status === 'active').length;
+  const totalOrders        = stores.reduce((sum, s) => sum + s.ordersThisMonth, 0);
+  const totalRevenue       = stores.reduce((sum, s) => sum + s.revenue, 0);
+  const activeSubscriptions = stores.filter((s) => s.planTier !== 'free').length;
+
+  const metrics = [
+    { label: 'Total Stores',  value: totalStores.toString(),                      icon: ShoppingCart, iconClass: 'text-indigo-400',         bgClass: 'bg-indigo-400/10'         },
+    { label: 'Active Stores', value: activeStores.toString(),                     icon: CheckCircle2, iconClass: 'text-wl-success-500',      bgClass: 'bg-wl-success-500/10'     },
+    { label: 'Orders (30d)',  value: totalOrders.toLocaleString(),                icon: BarChart3,    iconClass: 'text-wl-warning-500',      bgClass: 'bg-wl-warning-500/10'     },
+    { label: 'Revenue',       value: `$${(totalRevenue / 1000).toFixed(0)}K`,    icon: TrendingUp,   iconClass: 'text-violet-400',          bgClass: 'bg-violet-400/10'         },
+    { label: 'Paid Plans',    value: activeSubscriptions.toString(),              icon: Zap,          iconClass: 'text-wl-info-500',         bgClass: 'bg-wl-info-500/10'        },
+  ];
 
   return (
     <div className="grid gap-4 mb-6 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
-      {[
-        { label: "Total Stores", value: totalStores.toString(), icon: ShoppingCart, color: "#6366f1" },
-        { label: "Active Stores", value: activeStores.toString(), icon: CheckCircle2, color: "#10b981" },
-        { label: "Orders (30d)", value: totalOrders.toLocaleString(), icon: BarChart3, color: "#f59e0b" },
-        { label: "Revenue", value: `$${(totalRevenue / 1000).toFixed(0)}K`, icon: TrendingUp, color: "#8b5cf6" },
-        { label: "Paid Plans", value: activeSubscriptions.toString(), icon: Zap, color: "#3b82f6" },
-      ].map((metric, idx) => {
+      {metrics.map((metric, idx) => {
         const Icon = metric.icon;
         return (
           <Card
             key={idx}
             className="bg-wl-bg-surface border border-wl-border-default"
-            style={{
-              animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
-            }}
+            style={{ animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both` }}
           >
             <CardContent className="p-4 flex gap-3 items-start">
-              <div
-                className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
-                style={{
-                  backgroundColor: metric.color + "15",
-                }}
-              >
-                <Icon style={{ color: metric.color, width: "20px", height: "20px" }} />
+              <div className={cn('p-2 rounded-md flex items-center justify-center flex-shrink-0', metric.bgClass)}>
+                <Icon className={cn('w-5 h-5', metric.iconClass)} />
               </div>
               <div className="flex-1">
-                <p className="text-gray-400 text-xs font-semibold m-0 uppercase tracking-wider">
+                <p className="text-wl-text-tertiary text-xs font-semibold m-0 uppercase tracking-wider">
                   {metric.label}
                 </p>
-                <p className="text-white text-lg font-bold m-0 mt-1">
+                <p className="text-wl-text-primary text-lg font-bold m-0 mt-1">
                   {metric.value}
                 </p>
               </div>
@@ -120,43 +116,88 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
   );
 };
 
-// System Health Section
+// System Health — wired to real GET /api/v4/admin/system
 const SystemHealth = () => {
-  const metrics = [
-    { label: "API Uptime", value: "99.98%", status: "healthy", icon: Server },
-    { label: "DB Connections", value: "245 / 500", status: "healthy", icon: Database },
-    { label: "Queue Depth", value: "1,234 jobs", status: "warning", icon: ActivitySquare },
-    { label: "Cache Hit Rate", value: "94.2%", status: "healthy", icon: Zap },
+  const { data, loading } = useApiQuery<SystemData>('/api/v4/admin/system');
+
+  if (loading) {
+    return (
+      <Card className="bg-wl-bg-surface border border-wl-border-default mb-6 animate-pulse">
+        <CardHeader className="pb-3">
+          <div className="h-5 bg-wl-bg-elevated rounded w-1/4" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <div className="w-10 h-10 rounded-md bg-wl-bg-elevated flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 bg-wl-bg-elevated rounded w-1/2" />
+                  <div className="h-4 bg-wl-bg-elevated rounded w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const services = data?.data?.services ?? [];
+  const sys      = data?.data?.metrics;
+
+  const displayItems = [
+    ...services.map((s) => ({
+      label:  s.name,
+      value:  s.status === 'healthy'
+        ? `${s.uptime24h}% uptime (${s.responseTime}ms)`
+        : s.status,
+      status: s.status === 'healthy' ? ('healthy' as const) : ('warning' as const),
+      icon:   s.name === 'PostgreSQL' ? Database : s.name === 'Redis Cache' ? Zap : Server,
+    })),
+    ...(sys
+      ? [{
+          label:  'Memory',
+          value:  `${sys.memoryUsage}% used`,
+          status: sys.memoryUsage > 90 ? ('warning' as const) : ('healthy' as const),
+          icon:   ActivitySquare,
+        }]
+      : []),
   ];
 
   return (
     <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Server className="w-5 h-5 text-gray-400" />
+          <Server className="w-5 h-5 text-wl-text-tertiary" />
           System Health
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-          {metrics.map((metric, idx) => {
-            const Icon = metric.icon;
+          {displayItems.map((item, idx) => {
+            const Icon = item.icon;
             return (
               <div key={idx} className="flex gap-3 items-start">
                 <div
                   className={cn(
-                    "p-2 rounded-md flex items-center justify-center flex-shrink-0",
-                    metric.status === "healthy" ? "bg-emerald-500/10" : "bg-amber-500/10"
+                    'p-2 rounded-md flex items-center justify-center flex-shrink-0',
+                    item.status === 'healthy' ? 'bg-wl-success-500/10' : 'bg-wl-warning-500/10'
                   )}
                 >
-                  <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
+                  <Icon
+                    className={cn(
+                      'w-[18px] h-[18px]',
+                      item.status === 'healthy' ? 'text-wl-success-500' : 'text-wl-warning-500'
+                    )}
+                  />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 m-0 mb-0.5 font-semibold uppercase">
-                    {metric.label}
+                  <p className="text-xs text-wl-text-tertiary m-0 mb-0.5 font-semibold uppercase">
+                    {item.label}
                   </p>
-                  <p className="text-white font-semibold m-0 text-sm">
-                    {metric.value}
+                  <p className="text-wl-text-primary font-semibold m-0 text-sm">
+                    {item.value}
                   </p>
                 </div>
               </div>
@@ -174,7 +215,7 @@ const QuickActions = () => {
     <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-gray-400" />
+          <Zap className="w-5 h-5 text-wl-text-tertiary" />
           Quick Actions
         </CardTitle>
       </CardHeader>
@@ -213,20 +254,38 @@ const QuickActions = () => {
 };
 
 // Stores Table
-const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[]; loading: boolean; error: Error | null; onRetry: () => void }) => {
+const StoresHealthTable = ({
+  stores,
+  loading,
+  error,
+  onRetry,
+}: {
+  stores: Store[];
+  loading: boolean;
+  error: Error | null;
+  onRetry: () => void;
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredStores = useMemo(() => {
-    return stores.filter(
-      (store) =>
-        store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        store.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        store.owner.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [stores, searchTerm]);
+  const filteredStores = useMemo(
+    () =>
+      stores.filter(
+        (store) =>
+          store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          store.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          store.owner.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [stores, searchTerm]
+  );
 
   if (loading) return <TableSkeleton rows={5} columns={8} className="mb-6" />;
-  if (error) return <ErrorState message={error.message} onRetry={onRetry} />;
+  if (error)
+    return (
+      <Card className="bg-wl-bg-surface border border-wl-border-default mb-6 p-6 text-center">
+        <p className="text-wl-text-tertiary text-sm mb-3">{error.message}</p>
+        <Button variant="secondary" size="sm" onClick={onRetry}>Retry</Button>
+      </Card>
+    );
 
   return (
     <Card className="bg-wl-bg-surface border border-wl-border-default">
@@ -239,9 +298,9 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
               placeholder="Search stores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 pl-8 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
+              className="w-full p-2 pl-8 bg-wl-bg-elevated text-wl-text-primary border border-wl-border-default rounded-md text-sm"
             />
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-tertiary pointer-events-none" />
           </div>
         </div>
       </CardHeader>
@@ -251,71 +310,67 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map((header) => (
-                  <th
-                    key={header}
-                    className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider"
-                  >
-                    {header}
-                  </th>
-                ))}
+                {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map(
+                  (header) => (
+                    <th
+                      key={header}
+                      className="p-3 text-left text-wl-text-tertiary font-semibold text-xs uppercase tracking-wider"
+                    >
+                      {header}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody>
               {filteredStores.map((store, idx) => (
                 <tr
                   key={store.id}
-                  className={cn('border-b border-wl-border-default transition-all duration-200 hover:bg-wl-bg-elevated', {
-                    'bg-wl-bg-root': idx % 2 === 0,
-                    'bg-wl-bg-surface': idx % 2 !== 0,
-                  })}
+                  className={cn(
+                    'border-b border-wl-border-default transition-all duration-200 hover:bg-wl-bg-elevated',
+                    idx % 2 === 0 ? 'bg-wl-bg-root' : 'bg-wl-bg-surface'
+                  )}
                 >
                   <td className="p-3">
                     <Link
                       href={`/admin/shops/${store.id}`}
-                      className="text-blue-500 no-underline font-medium"
+                      className="text-wl-info-400 no-underline font-medium hover:underline"
                     >
                       {store.name}
                     </Link>
-                    <p className="text-gray-400 m-0 mt-0.5 text-xs">
-                      {store.domain}
-                    </p>
+                    <p className="text-wl-text-tertiary m-0 mt-0.5 text-xs">{store.domain}</p>
                   </td>
                   <td className="p-3">
-                    <Badge
-                      variant="default"
-                      style={{
-                        backgroundColor: getPlanColor(store.planTier) + '20',
-                        color: getPlanColor(store.planTier),
-                        fontSize: '0.75rem',
-                        border: `1px solid ${getPlanColor(store.planTier)}40`,
-                      }}
-                    >
-                      {store.planTier.charAt(0).toUpperCase() + store.planTier.slice(1)}
+                    <Badge variant={getPlanVariant(store.planTier)} className="text-xs capitalize">
+                      {store.planTier}
                     </Badge>
                   </td>
-                  <td className="p-3 text-white font-medium">
+                  <td className="p-3 text-wl-text-primary font-medium">
                     {store.ordersThisMonth}
                   </td>
-                  <td className="p-3 text-blue-500 font-semibold">
+                  <td className="p-3 text-wl-info-400 font-semibold">
                     ${store.revenue.toLocaleString()}
                   </td>
-                  <td className="p-3 text-white font-medium">
+                  <td className="p-3 text-wl-text-primary font-medium">
                     {store.totalUsers}
                   </td>
                   <td className="p-3">
                     <Badge
-                      variant={store.status === 'active' ? 'success' : store.status === 'suspended' ? 'danger' : 'info'}
+                      variant={
+                        store.status === 'active'
+                          ? 'success'
+                          : store.status === 'suspended'
+                            ? 'danger'
+                            : 'info'
+                      }
                       className="text-xs capitalize"
                     >
                       {store.status}
                     </Badge>
                   </td>
-                  <td className="p-3 text-gray-400 text-xs">
-                    {store.lastActive}
-                  </td>
+                  <td className="p-3 text-wl-text-tertiary text-xs">{store.lastActive}</td>
                   <td className="p-3 text-center">
-                    <button className="bg-transparent border-0 text-gray-400 cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-white">
+                    <button className="bg-transparent border-0 text-wl-text-tertiary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-wl-text-primary">
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </td>
@@ -343,29 +398,16 @@ export default function AdminDashboardPage() {
       />
 
       <main className="flex-1 p-6 max-w-6xl mx-auto">
-        {/* Key Metrics */}
         <MetricsBar stores={stores} />
-
-        {/* System Health */}
         <SystemHealth />
-
-        {/* Quick Actions */}
         <QuickActions />
-
-        {/* Stores Health Table */}
         <StoresHealthTable stores={stores} loading={loading} error={error} onRetry={refetch} />
       </main>
 
       <style>{`
         @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
