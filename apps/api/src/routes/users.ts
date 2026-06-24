@@ -530,6 +530,63 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
       },
     };
   });
+
+  // ── GET /me/sessions ────────────────────────────────────────
+  // Returns active auth sessions for the current user.
+
+  fastify.get("/me/sessions", async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.auth.userId) {
+      throw new ForbiddenError("This endpoint is only available for dashboard users");
+    }
+
+    const sessions = await (prisma as any).authSession.findMany({
+      where: {
+        userId: request.auth.userId,
+        isRevoked: false,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { lastActivityAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        ipAddress: true,
+        userAgent: true,
+        deviceId: true,
+        lastActivityAt: true,
+        createdAt: true,
+        mfaVerified: true,
+      },
+    }).catch(() => []);
+
+    const parsed = (sessions as any[]).map((s: any) => {
+      const ua = (s.userAgent as string) ?? "";
+      const browser =
+        ua.includes("Chrome") ? "Chrome" :
+        ua.includes("Firefox") ? "Firefox" :
+        ua.includes("Safari") ? "Safari" :
+        ua.includes("Edge") ? "Edge" : "Unknown";
+      const platform =
+        ua.includes("iPhone") || ua.includes("iPad") ? "iOS" :
+        ua.includes("Android") ? "Android" :
+        ua.includes("Mac") ? "Mac OS" :
+        ua.includes("Windows") ? "Windows" :
+        ua.includes("Linux") ? "Linux" : "Unknown";
+      return {
+        id: s.id,
+        browser,
+        platform,
+        ip: s.ipAddress ?? "Unknown",
+        location: "Unknown",
+        lastActive: s.lastActivityAt,
+        current: false,
+      };
+    });
+
+    return {
+      data: parsed,
+      total: parsed.length,
+    };
+  });
 }
 
 export default usersRoutes;

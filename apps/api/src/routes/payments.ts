@@ -843,115 +843,91 @@ export default async function paymentRoutes(
     },
   );
 
-  // ── GET /gateways ─────────────────────────────────────────────────────────
-  // Returns payment gateway configs stored in Shop.settings.paymentGateways.
-  // Returns empty array when not configured — UI shows empty state.
+  // GET /gateways — List configured payment gateways
+  fastify.get("/gateways", async (request: FastifyRequest, reply: FastifyReply) => {
+    const stripeOk = !!(process.env.STRIPE_SECRET_KEY || process.env.STRIPE_PUBLISHABLE_KEY);
+    const paypalOk = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+    const squareOk = !!(process.env.SQUARE_ACCESS_TOKEN);
 
-  fastify.get("/gateways", async (request: any, reply: FastifyReply) => {
-    const shopId = request.shopId as string;
-    const { prisma } = await import("@witylogix/db");
-
-    const shop = await prisma.shop.findUnique({
-      where: { id: shopId },
+    // Fetch shop to determine default gateway from settings
+    const shop = await request.tenantDb.shop.findUnique({
+      where: { id: request.shopId },
       select: { settings: true },
     });
+    const shopSettings = (shop?.settings ?? {}) as Record<string, unknown>;
+    const defaultGateway = (shopSettings.defaultPaymentGateway as string) ?? "stripe";
 
-    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
-    const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
+    const gateways = [
+      {
+        id: "stripe",
+        name: "Stripe",
+        code: "stripe" as const,
+        status: stripeOk ? "connected" : "disconnected",
+        isDefault: defaultGateway === "stripe",
+        isProduction: process.env.NODE_ENV === "production",
+        icon: "💳",
+        supportedMethods: ["card", "apple_pay", "google_pay", "bank_transfer"],
+        transactionFeePercent: 2.9,
+        fixedFeeInCents: 30,
+        healthScore: stripeOk ? 100 : 0,
+      },
+      {
+        id: "paypal",
+        name: "PayPal",
+        code: "paypal" as const,
+        status: paypalOk ? "connected" : "disconnected",
+        isDefault: defaultGateway === "paypal",
+        isProduction: process.env.NODE_ENV === "production",
+        icon: "🅿️",
+        supportedMethods: ["paypal", "card"],
+        transactionFeePercent: 2.9,
+        fixedFeeInCents: 30,
+        healthScore: paypalOk ? 100 : 0,
+      },
+      {
+        id: "square",
+        name: "Square",
+        code: "square" as const,
+        status: squareOk ? "connected" : "disconnected",
+        isDefault: defaultGateway === "square",
+        isProduction: process.env.NODE_ENV === "production",
+        icon: "◻️",
+        supportedMethods: ["card", "apple_pay", "google_pay"],
+        transactionFeePercent: 2.6,
+        fixedFeeInCents: 0,
+        healthScore: squareOk ? 100 : 0,
+      },
+      {
+        id: "cod",
+        name: "Cash on Delivery",
+        code: "cod" as const,
+        status: "connected",
+        isDefault: defaultGateway === "cod",
+        isProduction: true,
+        icon: "💰",
+        supportedMethods: ["cash"],
+        transactionFeePercent: 0,
+        fixedFeeInCents: 0,
+        healthScore: 100,
+      },
+    ];
 
     return reply.send({
       data: gateways,
-      pagination: { page: 1, limit: gateways.length, total: gateways.length, totalPages: 1 },
+      total: gateways.length,
     });
   });
 
-  // ── PATCH /gateways/:id/default ──────────────────────────────────────────
-
-  fastify.patch("/gateways/:id/default", async (request: any, reply: FastifyReply) => {
-    const shopId = request.shopId as string;
+  // PATCH /gateways/:id/default — Set default gateway
+  fastify.patch("/gateways/:id/default", async (request: FastifyRequest, reply: FastifyReply) => {
+    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
     const { id } = request.params as { id: string };
-    const { prisma } = await import("@witylogix/db");
 
-    const shop = await prisma.shop.findUnique({
-      where: { id: shopId },
-      select: { settings: true },
+    await request.tenantDb.shop.update({
+      where: { id: request.shopId },
+      data: { settings: { ...(await request.tenantDb.shop.findUnique({ where: { id: request.shopId }, select: { settings: true } }))?.settings as object, defaultPaymentGateway: id } },
     });
 
-    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
-    const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
-    const updated = (gateways as any[]).map((g: any) => ({ ...g, isDefault: g.id === id }));
-
-    await prisma.shop.update({
-      where: { id: shopId },
-      data: { settings: { ...settings, paymentGateways: updated } },
-    });
-
-    return reply.send({ success: true });
+    return reply.send({ success: true, defaultGateway: id });
   });
-
-  // ── DELETE /gateways/:id ─────────────────────────────────────────────────
-
-  fastify.delete("/gateways/:id", async (request: any, reply: FastifyReply) => {
-    const shopId = request.shopId as string;
-    const { id } = request.params as { id: string };
-    const { prisma } = await import("@witylogix/db");
-
-    const shop = await prisma.shop.findUnique({
-      where: { id: shopId },
-      select: { settings: true },
-    });
-
-    const settings = (shop?.settings ?? {}) as Record<string, unknown>;
-    const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
-    const updated = (gateways as any[]).filter((g: any) => g.id !== id);
-
-    await prisma.shop.update({
-      where: { id: shopId },
-      data: { settings: { ...settings, paymentGateways: updated } },
-    });
-
-    return reply.send({ success: true });
-  });
-}
-
-function getGatewayIcon(type: string): string {
-  const icons: Record<string, string> = {
-    credit_card: "💳",
-    debit_card: "💳",
-    cod: "💰",
-    bank_transfer: "🏦",
-    wallet: "👛",
-    stripe: "💳",
-    paypal: "🅿️",
-    square: "◻️",
-  };
-  return icons[type] ?? "💳";
-}
-
-function getSupportedMethods(type: string): string[] {
-  const methods: Record<string, string[]> = {
-    credit_card: ["card", "apple_pay", "google_pay"],
-    debit_card: ["card"],
-    cod: ["cash"],
-    bank_transfer: ["bank_transfer"],
-    wallet: ["wallet"],
-    stripe: ["card", "apple_pay", "google_pay", "bank_transfer"],
-    paypal: ["paypal", "card"],
-    square: ["card", "apple_pay", "google_pay"],
-  };
-  return methods[type] ?? ["card"];
-}
-
-function getGatewayFee(type: string): { percent: number; fixed: number } {
-  const fees: Record<string, { percent: number; fixed: number }> = {
-    credit_card: { percent: 2.9, fixed: 30 },
-    debit_card: { percent: 2.6, fixed: 0 },
-    cod: { percent: 0, fixed: 0 },
-    bank_transfer: { percent: 0.8, fixed: 25 },
-    wallet: { percent: 1.5, fixed: 0 },
-    stripe: { percent: 2.9, fixed: 30 },
-    paypal: { percent: 2.9, fixed: 30 },
-    square: { percent: 2.6, fixed: 0 },
-  };
-  return fees[type] ?? { percent: 2.9, fixed: 30 };
 }
