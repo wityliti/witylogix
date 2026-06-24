@@ -66,6 +66,7 @@ export default function CreateInvoicePage() {
     null
   );
   const [customerSearch, setCustomerSearch] = useState("");
+  const { items: customerItems } = useApiList<Customer>('/api/v4/customers', customerSearch ? { search: customerSearch, limit: 10 } : { limit: 10 });
   const [billingStartDate, setBillingStartDate] = useState("");
   const [billingEndDate, setBillingEndDate] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -83,15 +84,12 @@ export default function CreateInvoicePage() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return realCustomers;
-    const search = customerSearch.toLowerCase();
-    return realCustomers.filter(
-      (c) =>
-        c.name.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search)
-    );
-  }, [customerSearch, realCustomers]);
+  const filteredCustomers = (customerItems ?? []).map((c: any) => ({
+    id: c.id,
+    name: c.name ?? '',
+    email: c.email ?? '',
+    address: (c.addresses?.[0]?.address1 ?? c.addresses?.[0] ?? ''),
+  })) as Customer[];
 
   // Calculate totals
   const subtotal = useMemo(() => {

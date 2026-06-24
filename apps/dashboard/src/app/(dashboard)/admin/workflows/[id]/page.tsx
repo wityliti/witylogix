@@ -22,7 +22,13 @@ import {
   User,
 } from "lucide-react";
 import { useApiQuery } from '@/hooks/use-api';
-import { api } from '@/lib/api';
+import { useParams } from 'next/navigation';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+
+/* ═══════════════════════════════════════════════════════════
+   WORKFLOW EXECUTION DETAIL PAGE — Monitor step-by-step execution
+   ═══════════════════════════════════════════════════════════ */
 
 interface WorkflowStep {
   id: string;
@@ -52,8 +58,51 @@ interface WorkflowExecutionDetail {
   createdAt: string;
 }
 
-interface ExecutionResponse {
-  data: WorkflowExecutionDetail;
+function formatDuration(ms: number | null): string {
+  if (!ms) return '—';
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes > 0) return `${minutes}m ${remainingSeconds}s`;
+  return `${seconds}s`;
+}
+
+function normalizeExecution(raw: any): WorkflowExecutionDetail {
+  const d = raw?.data ?? raw ?? {};
+  const steps: WorkflowStep[] = (d.steps?.length ? d.steps : d.output?.steps ?? []).map((s: any, i: number) => ({
+    id: s.id ?? `step-${i + 1}`,
+    number: s.number ?? i + 1,
+    name: s.name ?? s.stepName ?? `Step ${i + 1}`,
+    status: s.status ?? 'completed',
+    duration: s.durationMs ? formatDuration(s.durationMs) : (s.duration ?? '—'),
+    startedAt: s.startedAt ?? d.startedAt,
+    input: s.input,
+    output: s.output,
+    error: s.error,
+    compensationStatus: s.compensationStatus,
+  }));
+
+  const completedSteps = steps.filter(s => s.status === 'completed').length;
+  const failedSteps = steps.filter(s => s.status === 'failed').length;
+  const meta = d.metadata ?? {};
+
+  return {
+    id: d.executionId ?? d.id ?? '',
+    executionId: d.executionId ?? d.id ?? '',
+    workflowName: d.workflowName ?? 'Unknown Workflow',
+    status: d.status ?? 'completed',
+    totalSteps: steps.length || 0,
+    completedSteps,
+    failedSteps,
+    startedAt: d.startedAt ?? new Date().toISOString(),
+    completedAt: d.completedAt,
+    totalDuration: formatDuration(d.durationMs),
+    steps,
+    input: d.input ?? {},
+    context: typeof meta === 'object' ? Object.fromEntries(Object.entries(meta).map(([k, v]) => [k, String(v)])) : {},
+    createdBy: meta.createdBy ?? meta.triggeredBy ?? 'system',
+    retryCount: d.retryCount ?? meta.retryCount ?? 0,
+  };
 }
 
 const getStatusIcon = (status: string) => {
@@ -245,46 +294,14 @@ function normalizeExecution(raw: any): WorkflowExecutionDetail {
 }
 
 export default function WorkflowExecutionDetailPage() {
-  const router = useRouter();
   const params = useParams();
-  const id = params?.id as string;
-
-  const { data, loading, error, refetch } = useApiQuery<ExecutionResponse>(
-    id ? `/api/v4/workflow/executions/${id}` : null
-  );
-
-  const execution = data?.data;
-
-  const [cancelling, setCancelling] = useState(false);
-  const [retrying, setRetrying] = useState(false);
-
-  const handleCancel = async () => {
-    if (!execution || cancelling) return;
-    setCancelling(true);
-    try {
-      await api.post(`/api/v4/workflow/executions/${id}/cancel`, {});
-      refetch();
-    } finally {
-      setCancelling(false);
-    }
-  };
-
-  const handleRetry = async () => {
-    if (!execution || retrying) return;
-    setRetrying(true);
-    try {
-      refetch();
-    } finally {
-      setRetrying(false);
-    }
-  };
+  const { data: raw, loading, error, refetch } = useApiQuery<{data: any}>(`/api/v4/workflow/executions/${params.id}`);
+  const router = useRouter();
 
   if (loading) return <LoadingSkeleton />;
-  if (error || !execution) return <ErrorState message={error?.message ?? 'Execution not found'} onRetry={refetch} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const steps = execution.steps ?? [];
-  const completedSteps = steps.filter(s => s.status === 'completed').length;
-  const failedSteps = steps.filter(s => s.status === 'failed').length;
+  const execution = normalizeExecution(raw);
 
   return (
     <div className="bg-wl-bg-root min-h-screen">

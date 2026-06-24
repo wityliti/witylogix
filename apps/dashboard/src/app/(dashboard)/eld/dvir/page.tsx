@@ -40,7 +40,7 @@ interface InspectionHistory {
 
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: history, loading, error, refetch } = useApiList<InspectionHistory>("/api/v4/eld/dvir");
+  const { items: vehicleList, loading, error, refetch } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
   const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
 
@@ -51,24 +51,13 @@ export default function DVIRPage() {
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
   const [selectedVehicleNum, setSelectedVehicleNum] = useState<string | null>(null);
 
-  // Derive unique vehicles from history
-  const vehicles = useMemo(() => {
-    const seen = new Map<string, InspectionHistory>();
-    history.forEach((h) => {
-      if (!seen.has(h.vehicleNumber)) seen.set(h.vehicleNumber, h);
-    });
-    return Array.from(seen.values());
-  }, [history]);
-
-  const selectedVehicle = selectedVehicleNum ?? vehicles[0]?.vehicleNumber ?? null;
+  const { items: historyData, loading: historyLoading } = useApiList<InspectionHistory>(
+    "/api/v4/eld/dvir/history",
+    selectedVehicle ? { vehicleId: selectedVehicle } : {}
+  );
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const loading = defectsLoading && inspectionsLoading;
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (defectsError) return <ErrorState message={defectsError.message} onRetry={refetchDefects} />;
 
   const filteredDefects = useMemo(() => {
     let result = defects;
@@ -86,12 +75,9 @@ export default function DVIRPage() {
   }, [defects, filterStatus, searchQuery]);
 
   const filteredHistory = useMemo(() => {
-    let result = history;
-    if (selectedVehicle) {
-      result = result.filter((h) => h.vehicleNumber === selectedVehicle);
-    }
-    return [...result].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [history, selectedVehicle]);
+    const all = historyData ?? [];
+    return [...all].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [historyData]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
@@ -267,7 +253,9 @@ export default function DVIRPage() {
 
                 {showVehicleSearch && (
                   <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
-                    {vehicles.map((v) => (
+                    {vehicleList.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-gray-500">No vehicles found</div>
+                    ) : vehicleList.map((vehicle) => (
                       <button
                         key={v.vehicleId}
                         onClick={() => {
@@ -293,7 +281,7 @@ export default function DVIRPage() {
             </CardHeader>
 
             <CardContent>
-              {inspectionsLoading ? (
+              {historyLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
                 </div>
@@ -369,9 +357,9 @@ export default function DVIRPage() {
         <>
           {/* Form mode */}
           <DVIRForm
-            vehicleNumber={selectedVehicle ?? ''}
-            driverId={vehicles.find((v) => v.vehicleNumber === selectedVehicle)?.driverId ?? ''}
-            driverName={vehicles.find((v) => v.vehicleNumber === selectedVehicle)?.driverName ?? ''}
+            vehicleNumber={selectedVehicle}
+            driverId=""
+            driverName="Fleet Manager"
             inspectionType={inspectionType}
             onSubmit={async (data) => {
               try {
