@@ -72,10 +72,10 @@ export function StepConfigureSync({
                     className={cn('mt-1')}
                   />
                   <div>
-                    <p className={cn('font-semibold text-white', 'm-0')}>
+                    <p className={cn('font-semibold text-wl-text-primary', 'm-0')}>
                       {option.label}
                     </p>
-                    <p className={cn('text-sm text-gray-400', 'mt-0.5')}>
+                    <p className={cn('text-sm text-wl-text-secondary', 'mt-0.5')}>
                       {option.desc}
                     </p>
                   </div>
@@ -106,7 +106,7 @@ export function StepConfigureSync({
                   }}
                   className={cn('rounded')}
                 />
-                <span className={cn('capitalize text-white', 'font-medium')}>
+                <span className={cn('capitalize text-wl-text-primary', 'font-medium')}>
                   {obj}
                 </span>
               </label>

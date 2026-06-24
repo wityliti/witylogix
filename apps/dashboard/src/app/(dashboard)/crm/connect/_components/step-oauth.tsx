@@ -31,7 +31,7 @@ export function StepOAuth({
             <CardTitle>Connect to {platformName}</CardTitle>
           </CardHeader>
           <CardContent className={cn('space-y-4')}>
-            <p className={cn('text-gray-300')}>
+            <p className={cn('text-wl-text-secondary')}>
               You'll be redirected to {platformName} to authorize
               access. We'll never store your credentials.
             </p>

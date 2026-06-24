@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { api } from '@/lib/api';
 import type { WizardStep, SyncConfig } from './types';
 import { DEFAULT_SYNC_CONFIG, DEFAULT_SYNC_SCHEDULE } from './constants';
 
@@ -24,6 +25,8 @@ export function useWizardState() {
   } | null>(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const [syncSchedule, setSyncSchedule] = useState(DEFAULT_SYNC_SCHEDULE);
+  const [activating, setActivating] = useState(false);
+  const [activateError, setActivateError] = useState<string | null>(null);
 
   // Handle step change with accessibility checks
   const handleStepChange = useCallback(
@@ -70,18 +73,31 @@ export function useWizardState() {
     []
   );
 
-  // Handle test connection
+  // Handle test connection — calls real sync-status endpoint to verify OAuth completed
   const handleTestConnection = useCallback(async () => {
-    setTestResults({ success: true, message: 'Connection test successful!' });
+    setTestResults(null);
+    try {
+      await api.get('/api/v4/crm/sync/status');
+      setTestResults({ success: true, message: 'Connection verified — CRM is accessible.' });
+    } catch {
+      setTestResults({ success: false, message: 'CRM not reachable. Complete the OAuth step first.' });
+    }
   }, []);
 
-  // Handle activation
-  const handleActivate = useCallback(() => {
-    setCompletedSteps((prev) => new Set([...prev, 5]));
-    // In a real implementation, make API call to activate
-    setTimeout(() => {
-      router.push('/dashboard/crm');
-    }, 1500);
+  // Handle activation — triggers initial full sync then navigates
+  const handleActivate = useCallback(async () => {
+    setActivating(true);
+    setActivateError(null);
+    try {
+      await api.post('/api/v4/crm/sync', { recordType: undefined, incremental: false });
+      setCompletedSteps((prev) => new Set([...prev, 5]));
+      router.push('/crm');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Activation failed';
+      setActivateError(msg);
+    } finally {
+      setActivating(false);
+    }
   }, [router]);
 
   return {
@@ -93,6 +109,8 @@ export function useWizardState() {
     testResults,
     isEnabled,
     syncSchedule,
+    activating,
+    activateError,
     // Setters
     setActiveStep,
     setSyncConfig,

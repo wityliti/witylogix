@@ -26,7 +26,7 @@ export function StepTestConnection({
   return (
     <WizardStep stepId={4} title="Test Connection">
       <div className={cn('space-y-6 max-w-2xl')}>
-        <p className={cn('text-gray-300')}>
+        <p className={cn('text-wl-text-secondary')}>
           Verify your connection and pull sample data from your CRM.
         </p>
 

@@ -13,6 +13,8 @@ interface StepReviewActivateProps {
   syncConfig: SyncConfig;
   isEnabled: boolean;
   syncSchedule: string;
+  activating?: boolean;
+  activateError?: string | null;
   onSetIsEnabled: (enabled: boolean) => void;
   onSetSyncSchedule: (schedule: string) => void;
   onActivate: () => void;
@@ -25,6 +27,8 @@ export function StepReviewActivate({
   syncConfig,
   isEnabled,
   syncSchedule,
+  activating,
+  activateError,
   onSetIsEnabled,
   onSetSyncSchedule,
   onActivate,
@@ -44,15 +48,15 @@ export function StepReviewActivate({
           <CardContent className={cn('space-y-4')}>
             <div className={cn('grid grid-cols-2 gap-4')}>
               <div>
-                <p className={cn('text-sm text-gray-400', 'mb-1')}>
+                <p className={cn('text-sm text-wl-text-secondary', 'mb-1')}>
                   Platform
                 </p>
-                <p className={cn('font-semibold text-white')}>
+                <p className={cn('font-semibold text-wl-text-primary')}>
                   {platformName}
                 </p>
               </div>
               <div>
-                <p className={cn('text-sm text-gray-400', 'mb-1')}>
+                <p className={cn('text-sm text-wl-text-secondary', 'mb-1')}>
                   Sync Direction
                 </p>
                 <Badge variant="primary" className="capitalize">
@@ -62,7 +66,7 @@ export function StepReviewActivate({
             </div>
 
             <div>
-              <p className={cn('text-sm text-gray-400', 'mb-2')}>
+              <p className={cn('text-sm text-wl-text-secondary', 'mb-2')}>
                 Objects
               </p>
               <div className={cn('flex gap-2 flex-wrap')}>
@@ -87,14 +91,14 @@ export function StepReviewActivate({
                 checked={isEnabled}
                 onChange={(e) => onSetIsEnabled(e.target.checked)}
               />
-              <span className={cn('text-white', 'font-medium')}>
+              <span className={cn('text-wl-text-primary', 'font-medium')}>
                 Enable this integration
               </span>
             </label>
 
             {isEnabled && (
               <div>
-                <label className={cn('block text-sm text-gray-300 mb-2')}>
+                <label className={cn('block text-sm text-wl-text-secondary mb-2')}>
                   Sync Schedule
                 </label>
                 <select
@@ -103,8 +107,8 @@ export function StepReviewActivate({
                   className={cn(
                     'w-full px-3 py-2 rounded-md',
                     'bg-wl-bg-surface border border-wl-border-default',
-                    'text-white',
-                    'focus:outline-none focus:border-blue-500'
+                    'text-wl-text-primary',
+                    'focus:outline-none focus:border-wl-border-focus'
                   )}
                 >
                   <option value="hourly">Every hour</option>
@@ -117,15 +121,21 @@ export function StepReviewActivate({
           </CardContent>
         </Card>
 
+        {activateError && (
+          <p className="text-sm text-wl-danger-500 bg-wl-danger-bg rounded-md px-4 py-3">
+            {activateError}
+          </p>
+        )}
+
         <div className={cn('flex justify-between gap-3 pt-6')}>
-          <Button variant="ghost" onClick={onBack}>
+          <Button variant="ghost" onClick={onBack} disabled={activating}>
             Back
           </Button>
           <Button
-            disabled={!isEnabled}
+            disabled={!isEnabled || activating}
             onClick={onActivate}
           >
-            Activate Connection
+            {activating ? 'Activating…' : 'Activate Connection'}
           </Button>
         </div>
       </div>
