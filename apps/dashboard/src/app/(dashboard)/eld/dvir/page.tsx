@@ -38,9 +38,14 @@ interface InspectionHistory {
   mileage?: number;
 }
 
+interface DVIRVehicle {
+  id: string;
+  number: string;
+}
+
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: vehicleList, loading, error, refetch } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
+  const { items: vehicles, loading, error, refetch } = useApiList<DVIRVehicle>("/api/v4/eld/dvir");
   const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
 
@@ -74,13 +79,14 @@ export default function DVIRPage() {
     return result;
   }, [defects, filterStatus, searchQuery]);
 
-  const filteredHistory = useMemo(() => {
-    const all = historyData ?? [];
-    return [...all].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [historyData]);
+  // Inspection history is not available from the API yet — show empty state
+  const filteredHistory: InspectionHistory[] = [];
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
@@ -248,10 +254,10 @@ export default function DVIRPage() {
                   onClick={() => setShowVehicleSearch(!showVehicleSearch)}
                   className="w-full h-9 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors text-sm"
                 >
-                  <span>Vehicle: {selectedVehicle ?? 'All'}</span>
+                  <span>{selectedVehicle ? `Vehicle: ${selectedVehicle}` : "Select a vehicle"}</span>
                 </button>
 
-                {showVehicleSearch && (
+                {showVehicleSearch && vehicles.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
                     {vehicleList.length === 0 ? (
                       <div className="px-3 py-2 text-xs text-gray-500">No vehicles found</div>

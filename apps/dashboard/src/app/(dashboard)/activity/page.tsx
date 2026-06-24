@@ -46,6 +46,7 @@ export interface ActivityEvent {
   metadata?: Record<string, unknown>;
 }
 
+
 export default function ActivityPage() {
   const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
   const [searchQuery, setSearchQuery] = useState('');

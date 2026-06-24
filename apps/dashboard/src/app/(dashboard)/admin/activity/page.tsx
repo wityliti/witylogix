@@ -32,7 +32,6 @@ interface ActivityLog {
   metadata?: Record<string, any>;
 }
 
-
 function ActivityIcon({ type }: { type: string }) {
   const icons: Record<string, any> = {
     login: LogIn,

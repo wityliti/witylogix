@@ -5,6 +5,7 @@ import { useApiQuery, useApiMutation } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,26 +43,35 @@ interface AuthProvider {
 
 interface CreateProviderBody {
   name: string;
-  type: string;
-  clientId: string;
-  clientSecret: string;
-  redirectUri?: string;
-  authUrl?: string;
-  tokenUrl?: string;
-  userInfoUrl?: string;
-  scopes?: string[];
-  enabled?: boolean;
+  type: 'GOOGLE' | 'MICROSOFT' | 'OKTA' | 'AUTH0' | 'CUSTOM_OAUTH' | 'SAML';
+  enabled: boolean;
+  isDefault: boolean;
+  scopes: string[];
+  createdAt: string;
+  updatedAt: string;
+  config?: {
+    domain?: string;
+    clientId?: string;
+    clientSecret?: string;
+  };
 }
 
-const PROVIDER_LABELS: Record<string, { label: string; icon: string; capabilities: string[] }> = {
-  auth0:        { label: 'Auth0',          icon: '🔐', capabilities: ['SSO', 'MFA', 'Social Login', 'Role Mapping'] },
-  clerk:        { label: 'Clerk',          icon: '🎫', capabilities: ['SSO', 'Multi-org', 'Session Management'] },
-  cognito:      { label: 'AWS Cognito',    icon: '☁️', capabilities: ['User Pools', 'Identity Federation', 'MFA'] },
-  firebase_auth:{ label: 'Firebase Auth',  icon: '🔥', capabilities: ['Email/Password', 'Social', 'Phone Auth'] },
-  okta:         { label: 'Okta',           icon: '🔒', capabilities: ['Enterprise SSO', 'MFA', 'Lifecycle'] },
-  generic_oidc: { label: 'Generic OIDC',   icon: '🔑', capabilities: ['Custom Providers', 'Enterprise SSO'] },
-  saml:         { label: 'SAML 2.0',       icon: '🏢', capabilities: ['Enterprise SSO', 'Okta', 'Azure AD'] },
-  local:        { label: 'Local Auth',     icon: '🖥️', capabilities: ['Username/Password', 'No external deps'] },
+const PROVIDER_ICON_MAP: Record<string, string> = {
+  GOOGLE: '🔵',
+  MICROSOFT: '🪟',
+  OKTA: '🔑',
+  AUTH0: '🔐',
+  CUSTOM_OAUTH: '🛠️',
+  SAML: '🏢',
+};
+
+const PROVIDER_CAPABILITIES: Record<string, string[]> = {
+  GOOGLE: ['SSO', 'OAuth 2.0', 'Social Login'],
+  MICROSOFT: ['SSO', 'Azure AD', 'MFA'],
+  OKTA: ['SSO', 'MFA', 'Enterprise'],
+  AUTH0: ['SSO', 'MFA', 'Social Login', 'Role Mapping'],
+  CUSTOM_OAUTH: ['Custom Providers', 'Enterprise SSO'],
+  SAML: ['Enterprise SSO', 'Okta', 'Azure AD'],
 };
 
 const ROLE_MAPPING = [
@@ -73,19 +83,16 @@ const ROLE_MAPPING = [
 ];
 
 export default function AuthProvidersPage() {
-  const { data, loading, error, refetch } = useApiQuery<{ data: AuthProvider[]; total: number }>(
-    '/api/v4/auth-providers',
-  );
-
-  const [activeTab, setActiveTab] = useState('providers');
+  const { items: providers, loading, error, refetch } = useApiList<AuthProvider>('/api/v4/auth-providers');
+  const deleteProvider = useApiMutation('DELETE', '/api/v4/auth-providers/:id');
+  const [activeTab, setActiveTab] = useState("providers");
   const [selectedProvider, setSelectedProvider] = useState<AuthProvider | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isMappingModalOpen, setIsMappingModalOpen] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
-  type TestResult = { status: 'success' | 'error'; message: string };
-  const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
-  const [testingId, setTestingId] = useState<string | null>(null);
+  const [activeProvider, setActiveProvider] = useState<string>("");
+  const [testResult, setTestResult] = useState<{ status: "success" | "error"; message: string } | null>(null);
   const [jitProvisioning, setJitProvisioning] = useState(true);
   const [isTesting, setIsTesting] = useState(false);
   const [configForm, setConfigForm] = useState({ domain: '', clientId: '', clientSecret: '' });
@@ -102,64 +109,19 @@ export default function AuthProvidersPage() {
 
   const providers: AuthProvider[] = data?.data ?? [];
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const handleTestConnection = async (provider: AuthProvider) => {
-    setTestingId(provider.id);
-    try {
-      await api.post(`/api/v4/auth-providers/${provider.id}/test`, {});
-      setTestResults((prev: Record<string, TestResult>) => ({
-        ...prev,
-        [provider.id]: { status: 'success', message: 'Connection successful! Provider is reachable and configured.' },
-      }));
-    } catch {
-      setTestResults((prev: Record<string, TestResult>) => ({
-        ...prev,
-        [provider.id]: { status: 'error', message: 'Connection failed. Check your credentials and configuration.' },
-      }));
-    } finally {
-      setTestingId(null);
+  const handleConfigSave = () => {
+    setIsConfigModalOpen(false);
+    if (selectedProvider) {
+      refetch();
+      setActiveProvider(selectedProvider.id);
     }
   };
 
-  const handleDeleteProvider = async (id: string) => {
-    try {
-      await api.delete(`/api/v4/auth-providers/${id}`);
-      refetch();
-    } catch {
-      // Error surfaced by toast/refetch
-    }
-  };
-
-  const handleSetDefault = async (id: string) => {
-    try {
-      await api.put(`/api/v4/auth-providers/${id}/default`, {});
-      refetch();
-    } catch {
-      // Error surfaced
-    }
-  };
-
-  const handleCreateProvider = async () => {
-    setSaving(true);
-    try {
-      const body: CreateProviderBody = {
-        name: newProvider.name,
-        type: newProvider.type,
-        clientId: newProvider.clientId,
-        clientSecret: newProvider.clientSecret,
-        redirectUri: newProvider.redirectUri || undefined,
-        enabled: true,
-      };
-      await api.post('/api/v4/auth-providers', body);
-      setIsAddModalOpen(false);
-      setNewProvider({ name: '', type: 'auth0', clientId: '', clientSecret: '', redirectUri: '' });
-      refetch();
-    } catch {
-      // Error surfaced
-    } finally {
-      setSaving(false);
+  const handleDeleteProvider = async (providerId: string) => {
+    await deleteProvider.execute({ id: providerId });
+    refetch();
+    if (activeProvider === providerId) {
+      setActiveProvider(providers[0]?.id || "");
     }
   };
 
@@ -169,7 +131,8 @@ export default function AuthProvidersPage() {
     { id: 'settings', label: 'Settings' },
   ];
 
-  const defaultProvider = providers.find((p) => p.isDefault);
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-wl-bg-root">
@@ -186,8 +149,30 @@ export default function AuthProvidersPage() {
         {/* PROVIDERS TAB */}
         {activeTab === 'providers' && (
           <div>
-            {defaultProvider && (
-              <Card className="mb-8 border-l-4 border-l-emerald-500 bg-wl-bg-surface border border-wl-border-default">
+            {/* Empty state */}
+            {providers.length === 0 && (
+              <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <Shield className="w-12 h-12 text-gray-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">No auth providers configured</h3>
+                  <p className="text-gray-400 text-sm mb-6">Connect an SSO provider to enable single sign-on for your team.</p>
+                  <Button variant="primary" onClick={() => handleOpenConfig(null)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Auth Provider
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Active Provider Info */}
+            {providers.length === 0 && (
+              <EmptyState
+                title="No auth providers configured"
+                description="Add an authentication provider to enable SSO for your platform."
+              />
+            )}
+            {providers.find((p) => p.id === activeProvider) && (
+              <Card className="mb-8 border-l-4 border-l-emerald-500 bg-[#12121a] border border-[#1e1e2e]">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -204,18 +189,119 @@ export default function AuthProvidersPage() {
               </Card>
             )}
 
-            {providers.length === 0 ? (
-              <Card className="bg-wl-bg-surface border border-wl-border-default">
-                <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
-                  <Shield className="w-12 h-12 text-gray-600" />
-                  <p className="text-lg font-semibold text-white">No auth providers configured</p>
-                  <p className="text-sm text-gray-400 text-center max-w-md">
-                    Connect an SSO provider to enable single sign-on for your team.
-                  </p>
-                  <Button variant="primary" onClick={() => setIsAddModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Provider
-                  </Button>
+            {/* Providers Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {providers.map((provider) => (
+                <Card
+                  key={provider.id}
+                  className={cn(
+                    "bg-[#12121a] border border-[#1e1e2e]",
+                    activeProvider === provider.id && "border-2 border-emerald-500"
+                  )}
+                >
+                  {/* Active Indicator */}
+                  {activeProvider === provider.id && (
+                    <div className="absolute -top-0.5 right-4 bg-emerald-500 text-white px-3 py-1 rounded-b text-xs font-semibold">
+                      ACTIVE
+                    </div>
+                  )}
+
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="text-4xl">{PROVIDER_ICON_MAP[provider.type] ?? '🔑'}</div>
+                      <div>
+                        {provider.enabled ? (
+                          <Badge variant="success">Enabled</Badge>
+                        ) : (
+                          <Badge variant="warning">Disabled</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <CardTitle className="text-xl mb-1 text-white">{provider.name}</CardTitle>
+                    <CardDescription className="text-gray-400">Type: {provider.type}</CardDescription>
+                  </CardHeader>
+
+                  <CardContent>
+                    <div className="mb-6">
+                      <div className="text-sm font-semibold text-gray-400 mb-2">
+                        Capabilities
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(PROVIDER_CAPABILITIES[provider.type] ?? []).map((cap) => (
+                          <Badge key={cap} variant="info" className="text-xs">
+                            {cap}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {provider.scopes.length > 0 && (
+                      <div className="bg-[#1a1a2e] p-4 rounded-lg mb-4">
+                        <div className="text-sm text-gray-400">
+                          <strong>Scopes:</strong> {provider.scopes.join(', ')}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+
+                  <CardFooter className="flex gap-2 pt-0">
+                    <Button
+                      variant={provider.enabled ? "secondary" : "primary"}
+                      onClick={() => {
+                        setSelectedProvider(provider);
+                        setIsConfigModalOpen(true);
+                      }}
+                      className="flex-1"
+                    >
+                      {provider.enabled ? "Reconfigure" : "Connect"}
+                    </Button>
+                    {provider.enabled && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleTestConnection(provider.id)}
+                        className="flex-1 flex items-center justify-center gap-2"
+                      >
+                        <TestTube className="w-4 h-4" />
+                        Test
+                      </Button>
+                    )}
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDeleteProvider(provider.id)}
+                      className="p-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+
+            {/* Test Result */}
+            {testResult && (
+              <Card
+                className={cn(
+                  "mb-8 border-l-4 bg-[#12121a] border border-[#1e1e2e]",
+                  testResult.status === "success"
+                    ? "border-l-emerald-500"
+                    : "border-l-red-500"
+                )}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    {testResult.status === "success" ? (
+                      <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                    )}
+                    <div>
+                      <div className="text-sm font-semibold text-white">
+                        {testResult.status === "success" ? "Connection Successful" : "Connection Failed"}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {testResult.message}
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -453,9 +539,9 @@ export default function AuthProvidersPage() {
 
       {/* Add Provider Modal */}
       <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title="Add Authentication Provider"
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        title={`${selectedProvider?.enabled ? "Reconfigure" : "Connect"} ${selectedProvider?.name}`}
         size="lg"
         footer={
           <div className="flex gap-3 justify-end">

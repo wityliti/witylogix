@@ -19,6 +19,7 @@ import { api } from '@/lib/api';
 import { useApiList } from '@/hooks/use-api';
 import { useToast } from '@/components/ui/toast';
 import { useApiList } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 
@@ -61,6 +62,8 @@ export default function CreateInvoicePage() {
   const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
   const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
 
+  const { items: customerItems, loading: customersLoading } = useApiList<Customer>('/api/v4/customers');
+
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
@@ -84,12 +87,18 @@ export default function CreateInvoicePage() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  const filteredCustomers = (customerItems ?? []).map((c: any) => ({
-    id: c.id,
-    name: c.name ?? '',
-    email: c.email ?? '',
-    address: (c.addresses?.[0]?.address1 ?? c.addresses?.[0] ?? ''),
-  })) as Customer[];
+  const { items: allCustomers } = useApiList<Customer>('/api/v4/customers', { limit: 200 });
+
+  // Filtered customers for search
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearch) return customerItems;
+    const search = customerSearch.toLowerCase();
+    return customerItems.filter(
+      (c) =>
+        c.name.toLowerCase().includes(search) ||
+        c.email.toLowerCase().includes(search)
+    );
+  }, [customerSearch, customerItems]);
 
   // Calculate totals
   const subtotal = useMemo(() => {
@@ -691,9 +700,7 @@ export default function CreateInvoicePage() {
             />
 
             {customersLoading ? (
-              <p className="text-center py-6 text-gray-400">
-                Loading customers...
-              </p>
+              <LoadingSkeleton />
             ) : filteredCustomers.length === 0 ? (
               <p className="text-center py-6 text-gray-400">
                 No customers found

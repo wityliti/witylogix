@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "../../../../../components/ui/card";
 import { StatCard } from "../../../../../components/ui/stat-card";
 import { Badge } from "../../../../../components/ui/badge";
@@ -58,51 +58,19 @@ interface WorkflowExecutionDetail {
   createdAt: string;
 }
 
-function formatDuration(ms: number | null): string {
-  if (!ms) return '—';
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  if (minutes > 0) return `${minutes}m ${remainingSeconds}s`;
-  return `${seconds}s`;
-}
-
-function normalizeExecution(raw: any): WorkflowExecutionDetail {
-  const d = raw?.data ?? raw ?? {};
-  const steps: WorkflowStep[] = (d.steps?.length ? d.steps : d.output?.steps ?? []).map((s: any, i: number) => ({
-    id: s.id ?? `step-${i + 1}`,
-    number: s.number ?? i + 1,
-    name: s.name ?? s.stepName ?? `Step ${i + 1}`,
-    status: s.status ?? 'completed',
-    duration: s.durationMs ? formatDuration(s.durationMs) : (s.duration ?? '—'),
-    startedAt: s.startedAt ?? d.startedAt,
-    input: s.input,
-    output: s.output,
-    error: s.error,
-    compensationStatus: s.compensationStatus,
-  }));
-
-  const completedSteps = steps.filter(s => s.status === 'completed').length;
-  const failedSteps = steps.filter(s => s.status === 'failed').length;
-  const meta = d.metadata ?? {};
-
-  return {
-    id: d.executionId ?? d.id ?? '',
-    executionId: d.executionId ?? d.id ?? '',
-    workflowName: d.workflowName ?? 'Unknown Workflow',
-    status: d.status ?? 'completed',
-    totalSteps: steps.length || 0,
-    completedSteps,
-    failedSteps,
-    startedAt: d.startedAt ?? new Date().toISOString(),
-    completedAt: d.completedAt,
-    totalDuration: formatDuration(d.durationMs),
-    steps,
-    input: d.input ?? {},
-    context: typeof meta === 'object' ? Object.fromEntries(Object.entries(meta).map(([k, v]) => [k, String(v)])) : {},
-    createdBy: meta.createdBy ?? meta.triggeredBy ?? 'system',
-    retryCount: d.retryCount ?? meta.retryCount ?? 0,
-  };
+interface ApiExecutionData {
+  executionId: string;
+  workflowName: string;
+  status: "running" | "completed" | "failed" | "compensating";
+  startedAt: string;
+  completedAt?: string;
+  durationMs?: number;
+  input: Record<string, unknown>;
+  output: unknown;
+  error: unknown;
+  steps: WorkflowStep[];
+  metadata: unknown;
+  createdAt: string;
 }
 
 const getStatusIcon = (status: string) => {
@@ -297,11 +265,38 @@ export default function WorkflowExecutionDetailPage() {
   const params = useParams();
   const { data: raw, loading, error, refetch } = useApiQuery<{data: any}>(`/api/v4/workflow/executions/${params.id}`);
   const router = useRouter();
+  const params = useParams();
+  const executionId = params.id as string;
+
+  const { data: apiData, loading, error, refetch } = useApiQuery<ApiExecutionData>(
+    `/api/v4/workflow/executions/${executionId}`
+  );
+
+  const execution = useMemo((): WorkflowExecutionDetail | null => {
+    if (!apiData) return null;
+    const steps = Array.isArray(apiData.steps) ? apiData.steps : [];
+    return {
+      id: apiData.executionId,
+      executionId: apiData.executionId,
+      workflowName: apiData.workflowName,
+      status: apiData.status,
+      totalSteps: steps.length,
+      completedSteps: steps.filter((s) => s.status === 'completed').length,
+      failedSteps: steps.filter((s) => s.status === 'failed').length,
+      startedAt: apiData.startedAt,
+      completedAt: apiData.completedAt,
+      totalDuration: apiData.durationMs != null ? `${(apiData.durationMs / 1000).toFixed(1)}s` : '—',
+      steps,
+      input: (apiData.input as Record<string, unknown>) ?? {},
+      context: (apiData.metadata as Record<string, string>) ?? {},
+      createdBy: '—',
+      retryCount: 0,
+    };
+  }, [apiData]);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const execution = normalizeExecution(raw);
+  if (!execution) return <ErrorState message="Execution not found" onRetry={refetch} />;
 
   return (
     <div className="bg-wl-bg-root min-h-screen">

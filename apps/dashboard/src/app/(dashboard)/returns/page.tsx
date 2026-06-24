@@ -66,7 +66,8 @@ function normalize(status: string): NormStatus {
   return 'pending';
 }
 
-// ── Stat helpers ──────────────────────────────────────────────────────────────
+const StatusPipeline = ({ returns }: { returns: Return[] }) => {
+  const statuses: ReturnStatus[] = ['requested', 'approved', 'shipped_back', 'received', 'inspected', 'refunded'];
 
 function fmtCurrency(n: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -238,30 +239,8 @@ function ReturnsTable({ returns, onView }: { returns: Return[]; onView: (id: str
 type ViewMode = 'list' | 'map';
 
 export default function ReturnsPage() {
-  const router = useRouter();
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-
-  const { items: returns, loading, error, refetch } = useReturns();
-  const { data: statsData } = useReturnStats();
-
-  const filtered = useMemo(() => {
-    if (statusFilter === 'all') return returns;
-    return returns.filter((r) => normalize(r.status as string) === statusFilter);
-  }, [returns, statusFilter]);
-
-  const returnsWithCoords = useMemo(
-    () => returns.filter((r) => (r as Return & { order?: { deliveryLat?: number } }).order?.deliveryLat != null),
-    [returns],
-  );
-
-  const totalRefunded = statsData?.totalRefundAmount ?? 0;
-  const pendingCount  = statsData?.counts?.requested ?? returns.filter((r) => normalize(r.status as string) === 'pending').length;
-  const refundedCount = statsData?.counts?.refunded  ?? returns.filter((r) => normalize(r.status as string) === 'refunded').length;
-  const totalCount    = statsData?.totalReturns       ?? returns.length;
-
-  if (loading) return <LoadingSkeleton />;
-  if (error)   return <ErrorState message={error.message} onRetry={refetch} />;
+  const { items: apiReturns } = useReturns();
+  const returnsData = apiReturns;
 
   return (
     <>
