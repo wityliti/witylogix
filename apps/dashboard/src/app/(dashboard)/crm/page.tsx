@@ -192,7 +192,7 @@ export default function CrmDashboardPage() {
             <CardContent>
               {crmIntegrations.length === 0 ? (
                 <div className="py-12 text-center">
-                  <p className="text-gray-400 mb-4">No CRM platforms connected yet</p>
+                  <p className="text-wl-text-secondary mb-4">No CRM platforms connected yet</p>
                   <Button onClick={() => router.push("/dashboard/crm/connect")}>
                     Add your first integration
                   </Button>
@@ -206,7 +206,7 @@ export default function CrmDashboardPage() {
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h4 className="text-base font-semibold text-white">{crm.name}</h4>
+                          <h4 className="text-base font-semibold text-wl-text-primary">{crm.name}</h4>
                           <Badge
                             variant={getStatusColor(crm.healthStatus ?? (crm.isEnabled ? "connected" : "error"))}
                             className="mt-2"
@@ -229,21 +229,21 @@ export default function CrmDashboardPage() {
 
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-gray-400 mb-1">Installed</p>
-                          <p className="text-sm text-gray-300">
+                          <p className="text-wl-text-secondary mb-1">Installed</p>
+                          <p className="text-sm text-wl-text-secondary">
                             {new Date(crm.installedAt).toLocaleDateString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 mb-1">Last Sync</p>
-                          <p className="text-sm text-gray-300">
+                          <p className="text-wl-text-secondary mb-1">Last Sync</p>
+                          <p className="text-sm text-wl-text-secondary">
                             {formatRelativeDate(crm.lastSyncAt)}
                           </p>
                         </div>
                       </div>
 
                       {crm.description && (
-                        <p className="text-xs text-gray-400 mt-3 border-t border-wl-border-default pt-3">
+                        <p className="text-xs text-wl-text-secondary mt-3 border-t border-wl-border-default pt-3">
                           {crm.description}
                         </p>
                       )}
@@ -261,7 +261,7 @@ export default function CrmDashboardPage() {
             </CardHeader>
             <CardContent>
               {syncEvents.length === 0 ? (
-                <p className="text-gray-400 text-sm py-4 text-center">
+                <p className="text-wl-text-secondary text-sm py-4 text-center">
                   No sync events yet. Activity will appear here once your CRM integrations sync.
                 </p>
               ) : (
@@ -274,13 +274,13 @@ export default function CrmDashboardPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge variant={getEventStatusColor(event.status)}>{event.status}</Badge>
-                          <span className="text-sm font-medium text-white capitalize">
+                          <span className="text-sm font-medium text-wl-text-primary capitalize">
                             {event.type}
                           </span>
-                          <span className="text-xs text-gray-400">({event.direction.toUpperCase()})</span>
+                          <span className="text-xs text-wl-text-secondary">({event.direction.toUpperCase()})</span>
                         </div>
-                        <p className="text-sm text-gray-400">{event.details}</p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-sm text-wl-text-secondary">{event.details}</p>
+                        <p className="text-xs text-wl-text-secondary mt-1">
                           {formatRelativeDate(event.timestamp)} · {event.recordsAffected} record
                           {event.recordsAffected !== 1 ? "s" : ""}
                         </p>
