@@ -43,6 +43,16 @@ function toOrderPinStatus(status: string): OrderPinStatus {
   return 'pending';
 }
 
+const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
+
+function toOrderPinStatus(status: string): OrderPinStatus {
+  const s = status.toLowerCase();
+  if (s === 'assigned') return 'assigned';
+  if (s === 'in_transit') return 'in_transit';
+  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
+  return 'pending';
+}
+
 const OrderLayer = dynamic(
   () => import('@/components/map/order-layer').then((m) => m.OrderLayer),
   { ssr: false, loading: () => <div className="h-[480px] bg-zinc-900 rounded-lg animate-pulse" /> }
@@ -135,6 +145,24 @@ export default function OrdersPage() {
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIdx = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filtered.slice(startIdx, startIdx + itemsPerPage);
+
+  // Map pins — only orders that have delivery coordinates
+  const orderPins = useMemo<OrderPin[]>(() =>
+    orders
+      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
+        o.deliveryLat != null && o.deliveryLng != null
+      )
+      .map((o) => ({
+        id: o.id,
+        orderNumber: `#${o.id.slice(0, 8)}`,
+        customerName: o.customerName,
+        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
+        status: toOrderPinStatus(o.status),
+        lat: o.deliveryLat,
+        lng: o.deliveryLng,
+        priority: o.status === 'in_transit' ? 'high' : 'medium',
+      })),
+  [orders]);
 
   // Map pins — only orders that have delivery coordinates
   const orderPins = useMemo<OrderPin[]>(() =>

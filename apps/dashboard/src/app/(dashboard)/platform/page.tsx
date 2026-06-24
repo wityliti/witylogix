@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { RefreshCw, Server, Database, Layers } from 'lucide-react';
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
+import { ErrorState } from '@/components/ui/error-state';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -220,27 +221,32 @@ export default function PlatformHealthPage() {
   const {
     data: statusData,
     loading: statusLoading,
+    error: statusError,
     refetch: refetchStatus,
   } = useApiQuery<PlatformStatus>('/api/v4/platform/status');
 
   const {
     data: integrationsPayload,
     loading: intLoading,
+    error: intError,
     refetch: refetchInt,
   } = useApiQuery<IntegrationsPayload>('/api/v4/platform/integrations');
 
   const {
     data: metricsData,
     loading: metricsLoading,
+    error: metricsError,
     refetch: refetchMetrics,
   } = useApiQuery<PlatformMetrics>('/api/v4/platform/metrics');
 
   const {
     data: alertsPayload,
+    error: alertsError,
     refetch: refetchAlerts,
   } = useApiQuery<AlertsPayload>('/api/v4/platform/alerts');
 
   const loading = statusLoading || intLoading || metricsLoading;
+  const criticalError = statusError || intError || metricsError || alertsError;
   const services = statusData?.services ?? [];
   const healthScore = statusData?.score ?? 0;
   const integrations = integrationsPayload?.integrations ?? [];
@@ -256,6 +262,18 @@ export default function PlatformHealthPage() {
   const handleAcknowledge = useCallback(async (alertId: string) => {
     await api.post(`/api/v4/platform/alerts/${alertId}/acknowledge`, {});
   }, []);
+
+  if (criticalError && !loading) {
+    return (
+      <div className="space-y-8 bg-wl-bg-root min-h-screen p-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
+          <p className="text-gray-400 mt-2">Live system status and integration monitoring</p>
+        </div>
+        <ErrorState error={criticalError} onRetry={handleRefresh} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 bg-wl-bg-root min-h-screen p-6">
