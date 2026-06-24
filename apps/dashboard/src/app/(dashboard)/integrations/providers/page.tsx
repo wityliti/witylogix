@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -173,13 +173,42 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
   );
 }
 
+interface ConfigForm {
+  rateLimit: string;
+  timeout: string;
+  retryPolicy: string;
+  circuitBreakerThreshold: string;
+}
+
 export default function ProvidersPage() {
   const [selectedProviderId, setSelectedProviderId] = useState("stripe");
   const [timeRange, setTimeRange] = useState<"1h" | "6h" | "24h" | "7d">("24h");
   const [configMode, setConfigMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [configForm, setConfigForm] = useState<ConfigForm>({
+    rateLimit: "1000",
+    timeout: "5000",
+    retryPolicy: "exponential",
+    circuitBreakerThreshold: "50",
+  });
 
   const { metrics, isLoading, error, updateConfiguration } =
     useProviderDetail(selectedProviderId);
+
+  const handleSaveConfig = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      await updateConfiguration({
+        rateLimit: Number(configForm.rateLimit),
+        timeout: Number(configForm.timeout),
+        retryPolicy: configForm.retryPolicy,
+        circuitBreakerThreshold: Number(configForm.circuitBreakerThreshold),
+      });
+      setConfigMode(false);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [configForm, updateConfiguration]);
 
   const circuitBreakerColor = useMemo(() => {
     if (!metrics) return "text-gray-400";
@@ -450,7 +479,8 @@ export default function ProvidersPage() {
               </label>
               <input
                 type="number"
-                defaultValue="1000"
+                value={configForm.rateLimit}
+                onChange={(e) => setConfigForm((prev) => ({ ...prev, rateLimit: e.target.value }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
@@ -462,7 +492,8 @@ export default function ProvidersPage() {
               </label>
               <input
                 type="number"
-                defaultValue="5000"
+                value={configForm.timeout}
+                onChange={(e) => setConfigForm((prev) => ({ ...prev, timeout: e.target.value }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
@@ -473,7 +504,8 @@ export default function ProvidersPage() {
                 Retry Policy
               </label>
               <select
-                defaultValue="exponential"
+                value={configForm.retryPolicy}
+                onChange={(e) => setConfigForm((prev) => ({ ...prev, retryPolicy: e.target.value }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               >
@@ -489,14 +521,17 @@ export default function ProvidersPage() {
               </label>
               <input
                 type="number"
-                defaultValue="50"
+                value={configForm.circuitBreakerThreshold}
+                onChange={(e) => setConfigForm((prev) => ({ ...prev, circuitBreakerThreshold: e.target.value }))}
                 disabled={!configMode}
                 className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
               />
             </div>
 
             {configMode && (
-              <Button className="w-full">Save Configuration</Button>
+              <Button className="w-full" onClick={handleSaveConfig} disabled={isSaving}>
+                {isSaving ? "Saving…" : "Save Configuration"}
+              </Button>
             )}
           </div>
         </CardContent>

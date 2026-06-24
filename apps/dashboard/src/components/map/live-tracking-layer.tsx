@@ -129,9 +129,11 @@ export function LiveTrackingLayer({ mapId, orders, selectedId, onOrderClick }: L
         const isDelivered = order.status === 'delivered' || order.status === 'cancelled';
         const size = isSelected ? 22 : 14;
 
-        // Add slight jitter to avoid overlapping markers in same city
-        const jitterLat = lat + (Math.random() - 0.5) * 0.05;
-        const jitterLng = lng + (Math.random() - 0.5) * 0.05;
+        // Deterministic offset so markers in the same city don't overlap.
+        // Hash the order ID into a small ±0.025° shift — stable across renders.
+        const h = order.id.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) & 0xffff, 0);
+        const jitterLat = lat + ((h & 0xff) / 255 - 0.5) * 0.05;
+        const jitterLng = lng + (((h >> 8) & 0xff) / 255 - 0.5) * 0.05;
 
         bounds.push([jitterLat, jitterLng]);
 

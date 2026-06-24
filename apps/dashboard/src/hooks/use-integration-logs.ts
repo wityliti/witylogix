@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "@/lib/api";
 
 export interface IntegrationLogEntry {
   id: string;
@@ -115,7 +116,6 @@ export function useIntegrationLogs(
   );
 
   const wsRef = useRef<WebSocket | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
    * Fetch logs from API
@@ -139,19 +139,9 @@ export function useIntegrationLogs(
         ...(filters.searchQuery && { q: filters.searchQuery }),
       });
 
-      const response = await fetch(`/api/integrations/logs?${params}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        signal: abortControllerRef.current?.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch logs: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await api.get<{ logs: IntegrationLogEntry[]; total: number }>(
+        `/api/v4/integrations/logs?${params}`
+      );
       setLogs(data.logs || []);
       setTotal(data.total || 0);
       setPage(pageNum);
@@ -291,23 +281,10 @@ export function useIntegrationLogs(
         ...(filters.endDate && { endDate: filters.endDate }),
       });
 
-      const response = await fetch(`/api/integrations/logs/export?${params}`, {
-        method: "GET",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Export failed: ${response.statusText}`);
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `integration-logs-${new Date().toISOString().split("T")[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      await api.download(
+        `/api/v4/integrations/logs/export?${params}`,
+        `integration-logs-${new Date().toISOString().split("T")[0]}.csv`
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Export failed";
       setError(message);
@@ -322,19 +299,10 @@ export function useIntegrationLogs(
     try {
       setError(undefined);
 
-      const response = await fetch(`/api/integrations/logs/${logId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch log details: ${response.statusText}`);
-      }
-
-      const { log } = await response.json();
-      return log as IntegrationLogEntry;
+      const { log } = await api.get<{ log: IntegrationLogEntry }>(
+        `/api/v4/integrations/logs/${logId}`
+      );
+      return log;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Fetch failed";
       setError(message);
@@ -347,13 +315,8 @@ export function useIntegrationLogs(
    */
   useEffect(() => {
     if (!liveTailEnabled) {
-      abortControllerRef.current = new AbortController();
       fetchLogs(page);
     }
-
-    return () => {
-      abortControllerRef.current?.abort();
-    };
   }, [page, filters, liveTailEnabled, fetchLogs]);
 
   return {
