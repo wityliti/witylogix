@@ -56,6 +56,53 @@ const listOrdersQuery = paginationSchema.extend({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+// ─── Response Transformer ───────────────────────────────────
+// Maps Prisma Order fields → the shape the dashboard frontend expects.
+// Keeps field names stable across schema refactors.
+function transformOrder(order: any) {
+  return {
+    id: order.id,
+    orderNumber: order.externalOrderNumber ?? order.externalOrderId,
+    externalOrderId: order.externalOrderId,
+    source: order.source,
+    status: order.status,
+    customerName: order.customerName ?? '',
+    customerEmail: order.customerEmail ?? '',
+    customerPhone: order.customerPhone ?? '',
+    deliveryAddress: {
+      street: order.addressLine1 ?? '',
+      street2: order.addressLine2 ?? null,
+      city: order.city ?? '',
+      state: order.province ?? '',
+      zipCode: order.postalCode ?? '',
+      country: order.country ?? '',
+    },
+    // Expose city/country at top level for map geocoding
+    city: order.city ?? '',
+    province: order.province ?? '',
+    country: order.country ?? '',
+    totalAmount: order.totalPrice ? parseFloat(order.totalPrice.toString()) : 0,
+    totalWeight: order.totalWeight ? parseFloat(order.totalWeight.toString()) : null,
+    currency: 'USD',
+    items: Array.isArray(order.lineItems) ? order.lineItems : [],
+    itemCount: order.itemCount ?? 0,
+    tags: order.tags ?? [],
+    notes: order.notes ?? null,
+    deliveryDate: order.deliveryDate?.toISOString() ?? null,
+    estimatedDelivery: order.estimatedArrival?.toISOString() ?? null,
+    actualDelivery: order.actualDelivery?.toISOString() ?? null,
+    driverId: order.driverId ?? null,
+    driver: order.driver ?? null,
+    timeSlot: order.timeSlot ?? null,
+    proofOfDelivery: order.proofOfDelivery ?? null,
+    trackingToken: order.trackingToken ?? null,
+    requireOTPConfirmation: order.requireOTPConfirmation ?? false,
+    metadata: order.metadata ?? {},
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+  };
+}
+
 // ─── Route Plugin ───────────────────────────────────────────
 
 async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
@@ -109,7 +156,7 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
     ]);
 
       return {
-        data: orders,
+        data: orders.map(transformOrder),
         pagination: {
           page,
           limit,
@@ -179,7 +226,7 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError("Order", id);
       }
 
-      return { data: order };
+      return { data: transformOrder(order) };
     } catch (err) {
       throw err;
     }

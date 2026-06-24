@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ChevronLeft, ChevronRight, Search, Map, List } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,183 +10,188 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useOrders, Order } from '@/hooks/use-orders';
+import Link from 'next/link';
 
-/* ═════════════════════════════════════════════════════════════
-   PROFESSIONAL ORDERS MANAGEMENT PAGE
-   Logistics-focused interface with filtering, pagination, and actions
-   ═════════════════════════════════════════════════════════════ */
+const OrderLayer = dynamic(
+  () => import('@/components/map/order-layer').then((m) => m.OrderLayer),
+  { ssr: false, loading: () => <div className="h-[480px] bg-zinc-900 rounded-lg animate-pulse" /> }
+);
 
 const STATUS_TABS = [
   { key: 'all', label: 'All Orders' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'confirmed', label: 'Confirmed' },
-  { key: 'in_transit', label: 'In Transit' },
-  { key: 'delivered', label: 'Delivered' },
-  { key: 'cancelled', label: 'Cancelled' },
+  { key: 'PENDING', label: 'Pending' },
+  { key: 'ACCEPTED', label: 'Accepted' },
+  { key: 'ASSIGNED', label: 'Assigned' },
+  { key: 'PICKED_UP', label: 'Picked Up' },
+  { key: 'OUT_FOR_DELIVERY', label: 'Out for Delivery' },
+  { key: 'DELIVERED', label: 'Delivered' },
+  { key: 'CANCELLED', label: 'Cancelled' },
 ];
 
 const SORT_OPTIONS = [
   { key: 'createdAt:desc', label: 'Newest First' },
   { key: 'createdAt:asc', label: 'Oldest First' },
-  { key: 'totalAmount:desc', label: 'Highest Value' },
-  { key: 'totalAmount:asc', label: 'Lowest Value' },
+  { key: 'totalPrice:desc', label: 'Highest Value' },
+  { key: 'totalPrice:asc', label: 'Lowest Value' },
 ];
 
-const getStatusVariant = (
-  status: string
-): 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default' => {
-  const map: Record<
-    string,
-    'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'
-  > = {
-    delivered: 'success',
-    in_transit: 'primary',
-    confirmed: 'info',
-    pending: 'warning',
-    cancelled: 'danger',
-  };
-  return map[status.toLowerCase()] ?? 'default';
+const STATUS_COLOR_MAP: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'> = {
+  DELIVERED: 'success',
+  OUT_FOR_DELIVERY: 'primary',
+  PICKED_UP: 'info',
+  ASSIGNED: 'info',
+  ACCEPTED: 'warning',
+  PENDING: 'warning',
+  CANCELLED: 'danger',
+  FAILED: 'danger',
+  RETURNED: 'default',
 };
 
-const getAvatarInitials = (name: string): string => {
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-};
+function statusVariant(status: string): 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default' {
+  return STATUS_COLOR_MAP[status.toUpperCase()] ?? 'default';
+}
 
-const getAvatarBgColor = (name: string): string => {
-  const colors = [
-    'bg-blue-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-amber-500',
-    'bg-green-500',
-    'bg-cyan-500',
-    'bg-red-500',
-    'bg-indigo-500',
-  ];
-  const index = name.charCodeAt(0) % colors.length;
-  return colors[index];
-};
+function avatarInitials(name: string): string {
+  return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+}
 
-const truncateAddress = (address: string, maxLength: number = 40): string => {
-  return address.length > maxLength ? `${address.slice(0, maxLength)}…` : address;
-};
+function avatarColor(name: string): string {
+  const colors = ['bg-blue-500','bg-purple-500','bg-pink-500','bg-amber-500','bg-green-500','bg-cyan-500','bg-red-500','bg-indigo-500'];
+  return colors[name.charCodeAt(0) % colors.length];
+}
 
-type OrderDisplay = Order;
+function truncate(s: string, max = 40): string {
+  return s.length > max ? `${s.slice(0, max)}…` : s;
+}
+
+type ViewMode = 'list' | 'map';
 
 export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt:desc');
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
 
   const itemsPerPage = 15;
 
-  // Fetch orders with filters
   const { items: orders, loading, error, refetch, pagination } = useOrders({
     search: search || undefined,
-    sort: sortBy,
+    sortBy: sortBy.split(':')[0] as any,
+    sortOrder: (sortBy.split(':')[1] as 'asc' | 'desc') ?? 'desc',
     limit: 100,
   });
 
-  // Filter orders by status
   const filtered = useMemo(() => {
     let result = orders;
-
     if (statusFilter !== 'all') {
-      result = result.filter(
-        (o) => o.status.toLowerCase() === statusFilter.toLowerCase()
-      );
+      result = result.filter((o) => o.status.toUpperCase() === statusFilter);
     }
-
-    if (dateRange?.from || dateRange?.to) {
-      const fromDate = dateRange?.from ? new Date(dateRange.from) : null;
-      const toDate = dateRange?.to ? new Date(dateRange.to) : null;
-
-      result = result.filter((o) => {
-        const createdDate = new Date(o.createdAt);
-        if (fromDate && createdDate < fromDate) return false;
-        if (toDate && createdDate > toDate) return false;
-        return true;
-      });
+    if (dateRange.from) {
+      const from = new Date(dateRange.from);
+      result = result.filter((o) => new Date(o.createdAt) >= from);
     }
-
+    if (dateRange.to) {
+      const to = new Date(dateRange.to);
+      result = result.filter((o) => new Date(o.createdAt) <= to);
+    }
     return result;
-  }, [statusFilter, orders, dateRange]);
+  }, [orders, statusFilter, dateRange]);
 
-  // Pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = startIdx + itemsPerPage;
-  const paginatedOrders = filtered.slice(startIdx, endIdx);
+  const paginatedOrders = filtered.slice(startIdx, startIdx + itemsPerPage);
 
-  // Status counts
   const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
+    const counts: Record<string, number> = { all: orders.length };
     STATUS_TABS.forEach((tab) => {
-      if (tab.key === 'all') {
-        counts[tab.key] = orders.length;
-      } else {
-        counts[tab.key] = orders.filter(
-          (o) => o.status.toLowerCase() === tab.key
-        ).length;
+      if (tab.key !== 'all') {
+        counts[tab.key] = orders.filter((o) => o.status.toUpperCase() === tab.key).length;
       }
     });
     return counts;
   }, [orders]);
 
+  const mapOrders = useMemo(
+    () =>
+      filtered.map((o) => ({
+        id: o.id,
+        orderNumber: o.orderNumber ?? undefined,
+        status: o.status,
+        customerName: o.customerName,
+        city: o.city,
+        country: o.country,
+        addressLine1: o.deliveryAddress.street,
+      })),
+    [filtered]
+  );
+
   return (
     <div className="min-h-screen bg-zinc-950">
-      {/* Page Header */}
       <Header
         title="Orders"
         subtitle={`${pagination.total} total orders`}
         actions={
-          <Button variant="primary" size="md">
-            + Create Order
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center rounded-lg border border-zinc-700 bg-zinc-900 p-0.5">
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                  viewMode === 'list'
+                    ? 'bg-zinc-700 text-white'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                )}
+              >
+                <List className="w-3.5 h-3.5" />
+                List
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                  viewMode === 'map'
+                    ? 'bg-zinc-700 text-white'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                )}
+              >
+                <Map className="w-3.5 h-3.5" />
+                Map
+              </button>
+            </div>
+            <Button variant="primary" size="md">
+              + Create Order
+            </Button>
+          </div>
         }
       />
 
       <div className="p-6 space-y-6">
-        {/* Error State */}
+        {/* Error banner */}
         {error && (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-red-500 rounded-full" />
-                <p className="text-sm text-red-200">Failed to load orders</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => refetch()}
-                className="text-red-300 hover:text-red-100"
-              >
-                Retry
-              </Button>
+          <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg flex items-center justify-between animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-red-500 rounded-full" />
+              <p className="text-sm text-red-200">Failed to load orders</p>
             </div>
+            <Button variant="ghost" size="sm" onClick={() => refetch()} className="text-red-300 hover:text-red-100">
+              Retry
+            </Button>
           </div>
         )}
 
-        {/* Status Tabs */}
-        <div className="flex items-center gap-1 border-b border-zinc-800 pb-0 overflow-x-auto scrollbar-hide">
+        {/* Status filter tabs */}
+        <div className="flex items-center gap-1 border-b border-zinc-800 overflow-x-auto scrollbar-hide">
           {STATUS_TABS.map((tab) => {
-            const count = statusCounts[tab.key] || 0;
+            const count = statusCounts[tab.key] ?? 0;
             const isActive = statusFilter === tab.key;
-
             return (
               <button
                 key={tab.key}
-                onClick={() => {
-                  setStatusFilter(tab.key);
-                  setCurrentPage(1);
-                }}
+                onClick={() => { setStatusFilter(tab.key); setCurrentPage(1); }}
                 className={cn(
                   'relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-all',
                   'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:transition-all',
@@ -195,14 +201,8 @@ export default function OrdersPage() {
                 )}
               >
                 {tab.label}
-                <span
-                  className={cn(
-                    'ml-2 text-xs font-semibold px-2 py-0.5 rounded-full',
-                    isActive
-                      ? 'bg-white/10 text-white'
-                      : 'bg-zinc-800 text-zinc-400'
-                  )}
-                >
+                <span className={cn('ml-2 text-xs font-semibold px-2 py-0.5 rounded-full',
+                  isActive ? 'bg-white/10 text-white' : 'bg-zinc-800 text-zinc-400')}>
                   {count}
                 </span>
               </button>
@@ -210,350 +210,220 @@ export default function OrdersPage() {
           })}
         </div>
 
-        {/* Filter & Sort Bar */}
+        {/* Filter bar */}
         <Card className="bg-zinc-900/50 border-zinc-800 p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {/* Search Input */}
             <div className="relative flex-1 lg:max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-600" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
               <input
                 type="text"
-                placeholder="Search orders, customers, destinations..."
+                placeholder="Search orders, customers, addresses…"
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className={cn(
-                  'w-full pl-10 pr-4 py-2 rounded-lg',
-                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100 text-sm',
-                  'placeholder:text-zinc-500',
-                  'focus:outline-none focus:ring-2 focus:ring-white/20 focus:bg-zinc-800',
-                  'transition-all'
-                )}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                className="w-full pl-10 pr-4 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 text-zinc-100 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
             </div>
-
-            {/* Date Range Inputs */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <input
                 type="date"
-                value={dateRange?.from || ''}
-                onChange={(e) => {
-                  setDateRange((prev) => ({
-                    ...prev,
-                    from: e.target.value,
-                  } as any));
-                  setCurrentPage(1);
-                }}
-                className={cn(
-                  'px-3 py-2 rounded-lg text-sm',
-                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
-                  'focus:outline-none focus:ring-2 focus:ring-white/20',
-                  'transition-all'
-                )}
+                value={dateRange.from}
+                onChange={(e) => { setDateRange((p) => ({ ...p, from: e.target.value })); setCurrentPage(1); }}
+                className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
               <input
                 type="date"
-                value={dateRange?.to || ''}
-                onChange={(e) => {
-                  setDateRange((prev) => ({
-                    ...prev,
-                    to: e.target.value,
-                  } as any));
-                  setCurrentPage(1);
-                }}
-                className={cn(
-                  'px-3 py-2 rounded-lg text-sm',
-                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
-                  'focus:outline-none focus:ring-2 focus:ring-white/20',
-                  'transition-all'
-                )}
+                value={dateRange.to}
+                onChange={(e) => { setDateRange((p) => ({ ...p, to: e.target.value })); setCurrentPage(1); }}
+                className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
+              <select
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+                className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.key} value={opt.key}>{opt.label}</option>
+                ))}
+              </select>
             </div>
-
-            {/* Sort Dropdown */}
-            <select
-              value={sortBy}
-              onChange={(e) => {
-                setSortBy(e.target.value);
-                setCurrentPage(1);
-              }}
-              className={cn(
-                'px-3 py-2 rounded-lg text-sm font-medium',
-                'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
-                'focus:outline-none focus:ring-2 focus:ring-white/20',
-                'transition-all appearance-none cursor-pointer',
-                'pr-8'
-              )}
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%2371717a' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E")`,
-                backgroundPosition: 'right 8px center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '16px',
-              }}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.key} value={opt.key}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
           </div>
         </Card>
 
-        {/* Orders Table */}
-        <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-zinc-800 bg-zinc-900/80">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Order
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Customer
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Destination
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Items
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Total
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Created
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800">
-                {loading ? (
-                  Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
-                      <td colSpan={8}>
-                        <div className="px-6 py-4">
-                          <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : paginatedOrders.length === 0 ? (
+        {/* Map view */}
+        {viewMode === 'map' && (
+          <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
+            <div className="p-4 border-b border-zinc-800">
+              <h3 className="text-sm font-semibold text-zinc-200">Delivery Locations</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                {filtered.length} orders • click a pin for details
+              </p>
+            </div>
+            {loading ? (
+              <div className="h-[480px] bg-zinc-900 animate-pulse" />
+            ) : filtered.length === 0 ? (
+              <div className="h-[480px] flex items-center justify-center">
+                <p className="text-zinc-500 text-sm">No orders to display on map</p>
+              </div>
+            ) : (
+              <OrderLayer
+                orders={mapOrders}
+                selectedId={selectedOrderId}
+                onOrderClick={(id) => setSelectedOrderId((prev) => (prev === id ? null : id))}
+                height={480}
+              />
+            )}
+          </Card>
+        )}
+
+        {/* List view */}
+        {viewMode === 'list' && (
+          <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-zinc-800 bg-zinc-900/80">
                   <tr>
-                    <td colSpan={8}>
-                      <div className="flex flex-col items-center justify-center py-16 px-6">
-                        <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
-                          <Search className="w-6 h-6 text-zinc-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-zinc-200 mb-1">
-                          No orders found
-                        </h3>
-                        <p className="text-sm text-zinc-500 text-center max-w-sm">
-                          {search || dateRange?.from || dateRange?.to
-                            ? 'Try adjusting your filters or search terms'
-                            : 'No orders yet. Create your first order to get started.'}
-                        </p>
-                      </div>
-                    </td>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Order</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Customer</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Destination</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Status</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">Items</th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Total</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Created</th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Actions</th>
                   </tr>
-                ) : (
-                  paginatedOrders.map((order, idx) => (
-                    <tr
-                      key={order.id}
-                      className={cn(
-                        'border-b border-zinc-800/50 last:border-b-0',
-                        'hover:bg-zinc-800/30 transition-colors animate-in fade-in slide-in-from-top-2',
-                        `animation-delay-[${idx * 50}ms]`
-                      )}
-                    >
-                      {/* Order ID */}
-                      <td className="px-6 py-4">
-                        <a
-                          href={`#order-${order.id}`}
-                          className={cn(
-                            'font-mono font-semibold text-sm',
-                            'text-amber-400 hover:text-amber-300',
-                            'transition-colors cursor-pointer'
-                          )}
-                        >
-                          #{order.id.slice(0, 8)}
-                        </a>
-                      </td>
-
-                      {/* Customer */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              'w-8 h-8 rounded-full flex items-center justify-center',
-                              'text-xs font-semibold text-white',
-                              getAvatarBgColor(order.customerName)
-                            )}
-                          >
-                            {getAvatarInitials(order.customerName)}
+                </thead>
+                <tbody className="divide-y divide-zinc-800">
+                  {loading ? (
+                    Array.from({ length: 8 }).map((_, i) => (
+                      <tr key={i}>
+                        <td colSpan={8}>
+                          <div className="px-6 py-4">
+                            <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
                           </div>
-                          <span className="text-zinc-100 font-medium text-sm">
-                            {order.customerName}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Destination */}
-                      <td className="px-6 py-4">
-                        <span className="text-zinc-300 text-sm" title={order.deliveryAddress.street}>
-                          {truncateAddress(
-                            `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`,
-                            35
-                          )}
-                        </span>
-                      </td>
-
-                      {/* Status Badge */}
-                      <td className="px-6 py-4">
-                        <Badge
-                          variant={getStatusVariant(order.status)}
-                          className="text-xs font-semibold"
-                        >
-                          {order.status.replace(/_/g, ' ')}
-                        </Badge>
-                      </td>
-
-                      {/* Items Count */}
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
-                          {order.items.length}
-                        </span>
-                      </td>
-
-                      {/* Total Amount */}
-                      <td className="px-6 py-4 text-right">
-                        <span className="font-mono font-semibold text-zinc-100 text-sm">
-                          {formatCurrency(order.totalAmount)}
-                        </span>
-                      </td>
-
-                      {/* Created Date */}
-                      <td className="px-6 py-4">
-                        <span className="text-zinc-400 text-sm">
-                          {new Date(order.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </td>
-
-                      {/* Actions Dropdown */}
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
-                          >
-                            View
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-zinc-400 hover:text-red-400 hover:bg-red-950/20"
-                          >
-                            Cancel
-                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : paginatedOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={8}>
+                        <div className="flex flex-col items-center justify-center py-16 px-6">
+                          <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+                            <Search className="w-6 h-6 text-zinc-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-zinc-200 mb-1">No orders found</h3>
+                          <p className="text-sm text-zinc-500 text-center max-w-sm">
+                            {search || dateRange.from || dateRange.to
+                              ? 'Try adjusting your filters or search terms'
+                              : 'No orders yet. Create your first order to get started.'}
+                          </p>
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                  ) : (
+                    paginatedOrders.map((order, idx) => (
+                      <tr
+                        key={order.id}
+                        className={cn(
+                          'border-b border-zinc-800/50 last:border-b-0 hover:bg-zinc-800/30 transition-colors cursor-pointer',
+                          selectedOrderId === order.id && 'bg-violet-950/20'
+                        )}
+                        onClick={() => setSelectedOrderId((p) => (p === order.id ? null : order.id))}
+                      >
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/orders/${order.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="font-mono font-semibold text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                          >
+                            #{order.orderNumber ?? order.id.slice(0, 8)}
+                          </Link>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', avatarColor(order.customerName))}>
+                              {avatarInitials(order.customerName)}
+                            </div>
+                            <span className="text-zinc-100 font-medium text-sm">{order.customerName}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-zinc-300 text-sm" title={`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`}>
+                            {truncate(`${order.deliveryAddress.street}, ${order.city || order.deliveryAddress.city}`, 38)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge variant={statusVariant(order.status)} className="text-xs font-semibold">
+                            {order.status.replace(/_/g, ' ')}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                            {order.itemCount || order.items.length}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="font-mono font-semibold text-zinc-100 text-sm">
+                            {formatCurrency(order.totalAmount)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-zinc-400 text-sm">
+                            {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Link
+                              href={`/orders/${order.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50">
+                                View
+                              </Button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
+        {/* Pagination (list view only) */}
+        {viewMode === 'list' && totalPages > 1 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-zinc-400">
-              Showing{' '}
-              <span className="font-semibold text-zinc-200">{startIdx + 1}</span> to{' '}
-              <span className="font-semibold text-zinc-200">
-                {Math.min(endIdx, filtered.length)}
-              </span>{' '}
-              of <span className="font-semibold text-zinc-200">{filtered.length}</span> orders
+              Showing <span className="font-semibold text-zinc-200">{startIdx + 1}</span> to{' '}
+              <span className="font-semibold text-zinc-200">{Math.min(startIdx + itemsPerPage, filtered.length)}</span> of{' '}
+              <span className="font-semibold text-zinc-200">{filtered.length}</span> orders
             </div>
-
             <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="flex items-center gap-1"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
+              <Button variant="secondary" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-1">
+                <ChevronLeft className="w-4 h-4" /> Previous
               </Button>
-
               <div className="flex items-center gap-1">
                 {Array.from({ length: totalPages }).map((_, i) => {
                   const page = i + 1;
-                  const isCurrentPage = page === currentPage;
-                  const showPage =
-                    isCurrentPage ||
-                    page === 1 ||
-                    page === totalPages ||
-                    Math.abs(page - currentPage) <= 1;
-
-                  if (!showPage && Math.abs(page - currentPage) === 2) {
-                    return (
-                      <span key={`ellipsis-${page}`} className="text-zinc-500">
-                        …
-                      </span>
-                    );
-                  }
-
-                  if (!showPage) return null;
-
+                  const show = page === currentPage || page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                  if (!show && Math.abs(page - currentPage) === 2) return <span key={`e${page}`} className="text-zinc-500">…</span>;
+                  if (!show) return null;
                   return (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={cn(
-                        'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all',
-                        isCurrentPage
-                          ? 'bg-white text-black font-semibold'
-                          : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                      )}
+                      className={cn('w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all',
+                        page === currentPage ? 'bg-white text-black font-semibold' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700')}
                     >
                       {page}
                     </button>
                   );
                 })}
               </div>
-
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="flex items-center gap-1"
-              >
-                Next
-                <ChevronRight className="w-4 h-4" />
+              <Button variant="secondary" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-1">
+                Next <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>

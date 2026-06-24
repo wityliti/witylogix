@@ -5,9 +5,8 @@ import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/loading-skeleton';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
 import { KanbanColumn, OrderStatus } from '@/components/orders/kanban-column';
@@ -15,12 +14,23 @@ import {
   Search,
   Users,
   RefreshCw,
-  Kanban,
 } from 'lucide-react';
 
-// ── Board-view Order shape (as expected by KanbanColumn/KanbanCard) ──
+// Shape the API returns (after orders.ts transformOrder)
+interface ApiOrder {
+  id: string;
+  orderNumber: string | null;
+  customerName: string;
+  deliveryAddress: { street: string; city: string; state: string; zipCode: string; country: string };
+  city: string;
+  status: string;
+  totalAmount: number;
+  driver: { id: string; name: string; phone: string } | null;
+  createdAt: string;
+}
 
-interface BoardOrder {
+// Shape KanbanColumn / KanbanCard expect
+interface KanbanOrder {
   id: string;
   orderNumber: string;
   customerName: string;
@@ -34,59 +44,36 @@ interface BoardOrder {
   value: number;
 }
 
-// ── Raw API order shape ──
+const VALID_STATUSES: Set<string> = new Set([
+  'PENDING', 'CONFIRMED', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED', 'FAILED', 'CANCELLED',
+]);
 
-interface ApiOrder {
-  id: string;
-  externalOrderNumber?: string;
-  customerName?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  province?: string;
-  postalCode?: string;
-  country?: string;
-  status: string;
-  totalPrice?: string | number;
-  createdAt: string;
-  driver?: { id: string; name: string };
-  tags?: string[];
+function normalizeStatus(s: string): OrderStatus {
+  const up = s.toUpperCase();
+  if (up === 'ACCEPTED') return 'CONFIRMED';
+  if (up === 'OUT_FOR_DELIVERY' || up === 'ARRIVED') return 'IN_TRANSIT';
+  if (up === 'RETURNED') return 'FAILED';
+  if (VALID_STATUSES.has(up)) return up as OrderStatus;
+  return 'PENDING';
 }
 
-function toInitials(name: string): string {
-  return name.split(' ').map((w) => w[0] ?? '').join('').toUpperCase().slice(0, 2);
+function initials(name: string): string {
+  return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
-function mapPriority(tags: string[] = []): 'high' | 'medium' | 'low' {
-  const lower = tags.map((t) => t.toLowerCase());
-  if (lower.some((t) => ['high', 'urgent', 'priority'].includes(t))) return 'high';
-  if (lower.includes('low')) return 'low';
-  return 'medium';
-}
-
-function mapStatus(status: string): OrderStatus {
-  const upper = status.toUpperCase();
-  const valid: OrderStatus[] = ['PENDING', 'CONFIRMED', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED', 'FAILED', 'CANCELLED'];
-  return (valid.includes(upper as OrderStatus) ? upper : 'PENDING') as OrderStatus;
-}
-
-function mapApiOrder(raw: ApiOrder): BoardOrder {
-  const city = raw.city ?? '';
-  const line1 = raw.addressLine1 ?? '';
-  const fullAddress = [line1, raw.addressLine2, city, raw.province, raw.postalCode, raw.country]
-    .filter(Boolean).join(', ');
+function toKanban(o: ApiOrder): KanbanOrder {
   return {
-    id: raw.id,
-    orderNumber: raw.externalOrderNumber ?? raw.id.slice(0, 8).toUpperCase(),
-    customerName: raw.customerName ?? 'Unknown Customer',
-    destination: city || line1 || 'Unknown',
-    fullAddress: fullAddress || 'No address',
-    createdAt: raw.createdAt,
-    priority: mapPriority(raw.tags),
-    status: mapStatus(raw.status),
-    driverName: raw.driver?.name,
-    driverInitials: raw.driver?.name ? toInitials(raw.driver.name) : undefined,
-    value: raw.totalPrice ? parseFloat(String(raw.totalPrice)) : 0,
+    id: o.id,
+    orderNumber: o.orderNumber ?? o.id.slice(0, 8),
+    customerName: o.customerName,
+    destination: o.city || o.deliveryAddress?.city || '',
+    fullAddress: [o.deliveryAddress?.street, o.city || o.deliveryAddress?.city].filter(Boolean).join(', '),
+    createdAt: o.createdAt,
+    priority: 'medium',
+    status: normalizeStatus(o.status),
+    driverName: o.driver?.name,
+    driverInitials: o.driver?.name ? initials(o.driver.name) : undefined,
+    value: o.totalAmount ?? 0,
   };
 }
 
@@ -101,61 +88,49 @@ const COLUMN_CONFIG: { status: OrderStatus; title: string }[] = [
   { status: 'CANCELLED', title: 'Cancelled' },
 ];
 
-function BoardSkeleton() {
-  return (
-    <div className="flex gap-4 min-w-min px-6 py-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex flex-col flex-shrink-0 w-80 rounded-lg bg-wl-bg-surface border border-wl-border-default overflow-hidden">
-          <div className="px-4 py-3 border-b border-wl-border-default">
-            <Skeleton variant="text" className="h-4 w-24" />
-          </div>
-          <div className="p-3 space-y-3">
-            {Array.from({ length: 3 }).map((_, j) => (
-              <Skeleton key={j} variant="card" className="h-24 w-full" />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function OrderBoardPage() {
-  const { items: rawApiOrders, loading, error, refetch } = useApiList<ApiOrder>('/api/v4/orders?limit=200');
-  const [localOverrides, setLocalOverrides] = useState<Record<string, OrderStatus>>({});
+  const { items: apiOrders, loading, error, refetch } = useApiList<ApiOrder>('/api/v4/orders', { limit: 200 });
+  const [localStatusOverrides, setLocalStatusOverrides] = useState<Record<string, OrderStatus>>({});
 
-  const apiOrders = useMemo(() => rawApiOrders.map(mapApiOrder), [rawApiOrders]);
-  const orders = useMemo(
-    () => apiOrders.map((o) => (localOverrides[o.id] ? { ...o, status: localOverrides[o.id] } : o)),
-    [apiOrders, localOverrides]
+  const orders: KanbanOrder[] = useMemo(
+    () => apiOrders.map((o) => {
+      const base = toKanban(o);
+      return localStatusOverrides[o.id] ? { ...base, status: localStatusOverrides[o.id] } : base;
+    }),
+    [apiOrders, localStatusOverrides]
   );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [collapsedColumns, setCollapsedColumns] = useState<Set<OrderStatus>>(new Set(['FAILED', 'CANCELLED']));
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<OrderStatus>>(
+    new Set(['FAILED', 'CANCELLED'])
+  );
   const [sortBy, setSortBy] = useState<'time' | 'priority'>('time');
 
   const drivers = useMemo(() => {
-    const seen = new Set<string>();
-    orders.forEach((o) => { if (o.driverInitials) seen.add(o.driverInitials); });
-    return Array.from(seen).sort();
+    const set = new Set<string>();
+    orders.forEach((o) => { if (o.driverInitials) set.add(o.driverInitials); });
+    return Array.from(set).sort();
   }, [orders]);
 
-  const filteredOrders = useMemo(() => orders.filter((o) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      (!q || o.orderNumber.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q) || o.destination.toLowerCase().includes(q)) &&
-      (!selectedDriver || o.driverInitials === selectedDriver)
-    );
-  }), [orders, searchQuery, selectedDriver]);
+  const filteredOrders = useMemo(
+    () => orders.filter((o) => {
+      const matchSearch = !searchQuery ||
+        o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.destination.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchDriver = !selectedDriver || o.driverInitials === selectedDriver;
+      return matchSearch && matchDriver;
+    }),
+    [orders, searchQuery, selectedDriver]
+  );
 
   const ordersByStatus = useMemo(() => {
-    const grouped: Record<OrderStatus, BoardOrder[]> = {
-      PENDING: [], CONFIRMED: [], ASSIGNED: [], PICKED_UP: [],
-      IN_TRANSIT: [], DELIVERED: [], FAILED: [], CANCELLED: [],
-    };
-    filteredOrders.forEach((o) => grouped[o.status].push(o));
+    const grouped = Object.fromEntries(
+      COLUMN_CONFIG.map(({ status }) => [status, [] as KanbanOrder[]])
+    ) as Record<OrderStatus, KanbanOrder[]>;
+    filteredOrders.forEach((o) => { grouped[o.status]?.push(o); });
     return grouped;
   }, [filteredOrders]);
 
@@ -167,14 +142,18 @@ export default function OrderBoardPage() {
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>, targetStatus: OrderStatus) => {
     e.preventDefault();
     try {
-      const { id } = JSON.parse(e.dataTransfer.getData('application/json')) as { id: string };
-      setLocalOverrides((prev) => ({ ...prev, [id]: targetStatus }));
-    } catch { /* malformed drag data */ }
+      const { id } = JSON.parse(e.dataTransfer.getData('application/json')) as { id: string; sourceStatus: OrderStatus };
+      setLocalStatusOverrides((prev) => ({ ...prev, [id]: targetStatus }));
+    } catch {
+      // ignore malformed drag data
+    }
   }, []);
 
-  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); }, []);
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  }, []);
 
-  const toggleColumnCollapse = (status: OrderStatus) => {
+  const toggleCollapse = (status: OrderStatus) => {
     setCollapsedColumns((prev) => {
       const next = new Set(prev);
       next.has(status) ? next.delete(status) : next.add(status);
@@ -182,30 +161,24 @@ export default function OrderBoardPage() {
     });
   };
 
-  const totalOrders = filteredOrders.length;
   const totalValue = filteredOrders.reduce((sum, o) => sum + o.value, 0);
 
+  if (loading && orders.length === 0) return <LoadingSkeleton />;
   if (error && orders.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <>
-      <Header title="Order Kanban Board" subtitle="Drag and drop to update order status" />
+      <Header title="Order Kanban Board" subtitle="Drag and drop orders between stages" />
 
       <div className="flex flex-col gap-4 px-6 py-4">
         <Card>
           <CardHeader className="pb-3">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <CardTitle className="flex items-center gap-2">
-                  <Kanban className="w-4 h-4 text-wl-primary-400" />
-                  Orders Dashboard
-                </CardTitle>
+                <CardTitle>Orders Dashboard</CardTitle>
                 <div className="flex items-center gap-4 text-sm text-wl-text-secondary">
-                  <span>{totalOrders} orders</span>
-                  {totalValue > 0 && (
-                    <span>${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                  )}
-                  {loading && <span className="text-wl-text-tertiary">Refreshing…</span>}
+                  <span>{filteredOrders.length} orders</span>
+                  <span>Value: ${totalValue.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -217,7 +190,6 @@ export default function OrderBoardPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9"
-                    aria-label="Search orders"
                   />
                 </div>
 
@@ -226,61 +198,57 @@ export default function OrderBoardPage() {
                   <select
                     value={selectedDriver ?? ''}
                     onChange={(e) => setSelectedDriver(e.target.value || null)}
-                    className={cn('px-3 py-2 rounded-md text-sm bg-wl-bg-overlay border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-border-strong')}
-                    aria-label="Filter by driver"
+                    className={cn(
+                      'px-3 py-2 rounded-md text-sm',
+                      'bg-wl-bg-overlay border border-wl-border-default',
+                      'text-wl-text-primary focus:outline-none focus:border-wl-border-strong'
+                    )}
                   >
                     <option value="">All Drivers</option>
                     {drivers.map((d) => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
 
-                <Button variant="secondary" size="sm" onClick={() => setSortBy(sortBy === 'time' ? 'priority' : 'time')}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setSortBy((s) => (s === 'time' ? 'priority' : 'time'))}
+                >
                   Sort: {sortBy === 'time' ? 'Time' : 'Priority'}
                 </Button>
 
                 <Button
                   variant={autoRefresh ? 'primary' : 'secondary'}
                   size="sm"
-                  onClick={() => { setAutoRefresh(!autoRefresh); if (!autoRefresh) refetch(); }}
+                  onClick={() => { setAutoRefresh((v) => !v); if (!autoRefresh) refetch(); }}
                   className="flex items-center gap-2"
-                  aria-label="Refresh orders"
                 >
                   <RefreshCw className={cn('w-4 h-4', autoRefresh && 'animate-spin')} />
-                  {autoRefresh ? 'Refreshing' : 'Refresh'}
+                  {autoRefresh ? 'Auto' : 'Refresh'}
                 </Button>
               </div>
             </div>
           </CardHeader>
         </Card>
 
-        {loading && orders.length === 0 ? (
-          <BoardSkeleton />
-        ) : orders.length === 0 ? (
-          <EmptyState
-            title="No orders yet"
-            description="Orders will appear here as they are created."
-            icon={<Kanban className="w-10 h-10" />}
-          />
-        ) : (
-          <div className="overflow-x-auto pb-4">
-            <div className="flex gap-4 min-w-min">
-              {COLUMN_CONFIG.map(({ status, title }) => (
-                <KanbanColumn
-                  key={status}
-                  status={status}
-                  title={title}
-                  orders={ordersByStatus[status]}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onDragLeave={handleDragLeave}
-                  isCollapsed={collapsedColumns.has(status)}
-                  onToggleCollapse={() => toggleColumnCollapse(status)}
-                  sortBy={sortBy}
-                />
-              ))}
-            </div>
+        <div className="overflow-x-auto pb-4">
+          <div className="flex gap-4 min-w-min">
+            {COLUMN_CONFIG.map(({ status, title }) => (
+              <KanbanColumn
+                key={status}
+                status={status}
+                title={title}
+                orders={ordersByStatus[status]}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onDragLeave={handleDragLeave}
+                isCollapsed={collapsedColumns.has(status)}
+                onToggleCollapse={() => toggleCollapse(status)}
+                sortBy={sortBy}
+              />
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </>
   );
