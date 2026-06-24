@@ -139,7 +139,7 @@ export default function ConnectedIntegrationsPage() {
       {/* Health Summary Bar */}
       {connections.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -155,7 +155,7 @@ export default function ConnectedIntegrationsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -171,7 +171,7 @@ export default function ConnectedIntegrationsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -198,7 +198,7 @@ export default function ConnectedIntegrationsPage() {
             placeholder="Search integrations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none"
           />
         </div>
 
@@ -211,7 +211,7 @@ export default function ConnectedIntegrationsPage() {
                 "px-4 py-2 rounded-lg border text-sm font-medium transition-all whitespace-nowrap",
                 statusFilter === status
                   ? "bg-blue-500 text-black border-blue-600"
-                  : "border-[#1e1e2e] text-gray-400 hover:border-blue-500/50"
+                  : "border-wl-border-default text-gray-400 hover:border-blue-500/50"
               )}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -222,7 +222,7 @@ export default function ConnectedIntegrationsPage() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-sm text-white focus:border-blue-500 outline-none"
+          className="px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white focus:border-blue-500 outline-none"
         >
           <option value="name">Sort by Name</option>
           <option value="lastSync">Sort by Last Sync</option>
@@ -276,7 +276,7 @@ export default function ConnectedIntegrationsPage() {
               <Card
                 key={connection.id}
                 className={cn(
-                  "bg-[#1a1a2e] border-[#1e1e2e] cursor-pointer transition-all hover:border-blue-500/50",
+                  "bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50",
                   selectedId === connection.id && "ring-1 ring-blue-500"
                 )}
                 onClick={() =>
@@ -319,7 +319,7 @@ export default function ConnectedIntegrationsPage() {
                   </div>
 
                   {/* API Calls and Errors */}
-                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#1e1e2e]">
+                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-wl-border-default">
                     <div>
                       <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                         API Calls
@@ -350,7 +350,7 @@ export default function ConnectedIntegrationsPage() {
                         {connection.uptime}%
                       </span>
                     </div>
-                    <div className="w-full bg-[#0a0a0f] rounded-full h-2">
+                    <div className="w-full bg-wl-bg-root rounded-full h-2">
                       <div
                         className={cn(
                           "h-2 rounded-full transition-all",
@@ -366,7 +366,7 @@ export default function ConnectedIntegrationsPage() {
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
+                  <div className="flex gap-2 pt-4 border-t border-wl-border-default">
                     <Button
                       variant="ghost"
                       size="sm"

@@ -1,43 +1,24 @@
 /**
  * Platform Health & Status Routes
  *
- * Comprehensive endpoints for monitoring system health, service status,
- * integration connectivity, request metrics, and operational alerts.
+ * Endpoints for monitoring system health, service status,
+ * integration connectivity, process metrics, and operational alerts.
  *
- * Usage:
- * GET /platform/health — Overall health check
- * GET /platform/status — Detailed service status
- * GET /platform/integrations — Integration connection status
- * GET /platform/metrics — Request rate, error rate, latency
- * GET /platform/alerts — Recent platform alerts
- * POST /platform/alerts/acknowledge — Acknowledge an alert
+ * Routes:
+ * GET /platform/health       — Simple uptime check (DB ping)
+ * GET /platform/status       — Real service checks (DB + Redis latency)
+ * GET /platform/integrations — Tenant's connected integrations (auth required)
+ * GET /platform/metrics      — Real process metrics (memory, uptime, DB latency)
+ * GET /platform/alerts       — Platform alerts (empty until alerting is built)
+ * POST /platform/alerts/:alertId/acknowledge — Acknowledge an alert
  */
 
+import os from "os";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { prisma } from "@witylogix/db";
-import { requireAuth, requireRole } from "../../middleware/auth";
-
-// ─── CONSTANTS ─────────────────────────────────────────────
-
-const SERVICE_NAMES = [
-  "api-server",
-  "database",
-  "workers",
-  "redis-cache",
-  "s3-storage",
-] as const;
-
-const INTEGRATION_PROVIDERS = [
-  "shopify",
-  "samsara",
-  "geotab",
-  "quickbooks",
-  "xero",
-  "onfleet",
-  "stuart",
-  "uberdirect",
-] as const;
+import { requireAuth, requireRole } from "../../middleware/auth.js";
+import { getRedis } from "../../lib/redis.js";
 
 // ─── TYPES ─────────────────────────────────────────────────
 
@@ -54,17 +35,8 @@ interface IntegrationStatus {
   provider: string;
   status: "connected" | "disconnected" | "error";
   accountsConnected: number;
-  lastSync: Date;
+  lastSync: Date | null;
   error?: string;
-}
-
-interface PlatformMetrics {
-  activeConnections: number;
-  requestsPerSecond: number;
-  errorRate: number;
-  p95Latency: number;
-  p99Latency: number;
-  uptime: number;
 }
 
 interface PlatformAlert {
@@ -90,24 +62,22 @@ const AcknowledgeAlertSchema = z.object({
 /**
  * GET /platform/health
  *
- * Simple health check with overall status
- * Used by monitoring systems and load balancers
+ * Simple health check — pings the database.
+ * Used by monitoring systems and load balancers.
  */
-async function healthHandler(request: FastifyRequest, reply: FastifyReply) {
+async function healthHandler(_request: FastifyRequest, reply: FastifyReply) {
   try {
-    // Quick database check
+    const dbStart = Date.now();
     await prisma.$queryRaw`SELECT 1`;
+    const dbLatencyMs = Date.now() - dbStart;
 
-    const health = {
-      status: "ok" as const,
+    return reply.send({
+      status: "ok",
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      memory: process.memoryUsage(),
-    };
-
-    return reply.send(health);
+      dbLatencyMs,
+    });
   } catch (error) {
-    request.log.error(error, "Health check failed");
     return reply.code(503).send({
       status: "service_unavailable",
       timestamp: new Date().toISOString(),
@@ -119,180 +89,106 @@ async function healthHandler(request: FastifyRequest, reply: FastifyReply) {
 /**
  * GET /platform/status
  *
- * Detailed status of all platform services
- * Query params: ?include_latency=true
+ * Live checks against Database and Redis.
+ * API Server status is derived from process metrics.
  */
 async function statusHandler(request: FastifyRequest, reply: FastifyReply) {
-  const includeLatency = (request.query as any).include_latency === "true";
+  const now = Date.now();
+  const services: ServiceStatus[] = [];
 
+  // ── API Server (self) ─────────────────────────────────────
+  services.push({
+    name: "API Server",
+    status: "healthy",
+    uptime: Math.min(100, Math.round((process.uptime() / (30 * 24 * 3600)) * 1000) / 10),
+    responseTime: Date.now() - now,
+    lastChecked: new Date(),
+  });
+
+  // ── Database ──────────────────────────────────────────────
   try {
-    const services: ServiceStatus[] = [];
-
-    // API Server (self)
+    const dbStart = Date.now();
+    await prisma.$queryRaw`SELECT 1`;
+    const responseTime = Date.now() - dbStart;
     services.push({
-      name: "API Server",
-      status: "healthy",
-      uptime: 99.97,
-      responseTime: 45,
+      name: "PostgreSQL",
+      status: responseTime < 150 ? "healthy" : "degraded",
+      uptime: 100,
+      responseTime,
       lastChecked: new Date(),
     });
-
-    // Database
-    try {
-      const startTime = Date.now();
-      await prisma.$queryRaw`SELECT 1`;
-      const responseTime = Date.now() - startTime;
-
-      services.push({
-        name: "Database",
-        status: responseTime < 100 ? "healthy" : "degraded",
-        uptime: 99.99,
-        responseTime,
-        lastChecked: new Date(),
-      });
-    } catch (error) {
-      services.push({
-        name: "Database",
-        status: "down",
-        uptime: 0,
-        lastChecked: new Date(),
-      });
-    }
-
-    // Background Workers (Redis-based)
-    try {
-      // In a real implementation, check Redis queue status
-      services.push({
-        name: "Background Workers",
-        status: "healthy",
-        uptime: 99.92,
-        responseTime: 78,
-        lastChecked: new Date(),
-      });
-    } catch (error) {
-      services.push({
-        name: "Background Workers",
-        status: "degraded",
-        uptime: 80,
-        lastChecked: new Date(),
-      });
-    }
-
-    // Cache Layer
-    services.push({
-      name: "Cache Layer (Redis)",
-      status: "healthy",
-      uptime: 99.98,
-      responseTime: 3,
-      lastChecked: new Date(),
-    });
-
-    // File Storage
-    services.push({
-      name: "File Storage (S3)",
-      status: "healthy",
-      uptime: 99.95,
-      responseTime: 156,
-      lastChecked: new Date(),
-    });
-
-    const healthyCount = services.filter((s) => s.status === "healthy").length;
-    const overallHealth = (healthyCount / services.length) * 100;
-
-    return reply.send({
-      timestamp: new Date().toISOString(),
-      healthScore: overallHealth,
-      services,
-      summary: {
-        total: services.length,
-        healthy: healthyCount,
-        degraded: services.filter((s) => s.status === "degraded").length,
-        down: services.filter((s) => s.status === "down").length,
-      },
-    });
-  } catch (error) {
-    request.log.error(error, "Status check failed");
-    return reply.code(500).send({
-      error: "Failed to get platform status",
-      timestamp: new Date().toISOString(),
-    });
+  } catch {
+    services.push({ name: "PostgreSQL", status: "down", uptime: 0, lastChecked: new Date() });
   }
+
+  // ── Redis ─────────────────────────────────────────────────
+  try {
+    const redis = getRedis();
+    const redisStart = Date.now();
+    await redis.ping();
+    const responseTime = Date.now() - redisStart;
+    services.push({
+      name: "Redis Cache",
+      status: responseTime < 50 ? "healthy" : "degraded",
+      uptime: 100,
+      responseTime,
+      lastChecked: new Date(),
+    });
+  } catch {
+    services.push({ name: "Redis Cache", status: "down", uptime: 0, lastChecked: new Date() });
+  }
+
+  const healthyCount = services.filter((s) => s.status === "healthy").length;
+  const score = (healthyCount / services.length) * 100;
+
+  return reply.send({
+    timestamp: new Date().toISOString(),
+    score,
+    services,
+    summary: {
+      total: services.length,
+      healthy: healthyCount,
+      degraded: services.filter((s) => s.status === "degraded").length,
+      down: services.filter((s) => s.status === "down").length,
+    },
+  });
 }
 
 /**
  * GET /platform/integrations
  *
- * Status of all third-party integrations
- * Query params: ?status=connected,disconnected,error
+ * Returns the current tenant's connected integrations from the database.
+ * Requires authentication (shopId from session).
  */
 async function integrationsHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const integrations: IntegrationStatus[] = [
-      {
-        name: "Shopify",
-        provider: "shopify",
-        status: "connected",
-        accountsConnected: 24,
-        lastSync: new Date(Date.now() - 2 * 60000),
-      },
-      {
-        name: "Samsara",
-        provider: "samsara",
-        status: "connected",
-        accountsConnected: 18,
-        lastSync: new Date(Date.now() - 5 * 60000),
-      },
-      {
-        name: "Geotab",
-        provider: "geotab",
-        status: "connected",
-        accountsConnected: 12,
-        lastSync: new Date(Date.now() - 8 * 60000),
-      },
-      {
-        name: "QuickBooks",
-        provider: "quickbooks",
-        status: "connected",
-        accountsConnected: 15,
-        lastSync: new Date(Date.now() - 15 * 60000),
-      },
-      {
-        name: "Xero",
-        provider: "xero",
-        status: "connected",
-        accountsConnected: 8,
-        lastSync: new Date(Date.now() - 12 * 60000),
-      },
-      {
-        name: "Onfleet",
-        provider: "onfleet",
-        status: "connected",
-        accountsConnected: 6,
-        lastSync: new Date(Date.now() - 3 * 60000),
-      },
-      {
-        name: "Stuart",
-        provider: "stuart",
-        status: "disconnected",
-        accountsConnected: 0,
-        lastSync: new Date(Date.now() - 24 * 3600000),
-      },
-      {
-        name: "Uber Direct",
-        provider: "uberdirect",
-        status: "connected",
-        accountsConnected: 5,
-        lastSync: new Date(Date.now() - 10 * 60000),
-      },
-    ];
+    const shopId = (request as any).shopId as string;
 
-    const statusFilter = (request.query as any).status;
-    let filtered = integrations;
+    const rows = await prisma.integration.findMany({
+      where: { shopId, isEnabled: true },
+      include: { app: { select: { name: true, slug: true } } },
+      orderBy: { lastSyncAt: "desc" },
+    });
 
-    if (statusFilter) {
-      const statuses = statusFilter.split(",");
-      filtered = integrations.filter((i) => statuses.includes(i.status));
-    }
+    const integrations: IntegrationStatus[] = rows.map((row) => ({
+      name: row.app.name,
+      provider: row.app.slug,
+      status:
+        row.healthStatus === "HEALTHY"
+          ? "connected"
+          : row.healthStatus === "ERROR"
+            ? "error"
+            : row.lastSyncAt != null
+              ? "connected"
+              : "disconnected",
+      accountsConnected: row.isEnabled ? 1 : 0,
+      lastSync: row.lastSyncAt,
+    }));
+
+    const statusFilter = (request.query as any).status as string | undefined;
+    const filtered = statusFilter
+      ? integrations.filter((i) => statusFilter.split(",").includes(i.status))
+      : integrations;
 
     return reply.send({
       timestamp: new Date().toISOString(),
@@ -302,7 +198,6 @@ async function integrationsHandler(request: FastifyRequest, reply: FastifyReply)
         connected: integrations.filter((i) => i.status === "connected").length,
         disconnected: integrations.filter((i) => i.status === "disconnected").length,
         error: integrations.filter((i) => i.status === "error").length,
-        totalAccounts: integrations.reduce((sum, i) => sum + i.accountsConnected, 0),
       },
     });
   } catch (error) {
@@ -317,43 +212,35 @@ async function integrationsHandler(request: FastifyRequest, reply: FastifyReply)
 /**
  * GET /platform/metrics
  *
- * Request metrics: rate, error rate, latencies
- * Query params: ?granularity=minute,hour,day
+ * Real process metrics: memory, uptime, DB latency.
+ * Does NOT include requestsPerSecond or errorRate — those require an external
+ * APM system. The dashboard shows only what we can actually measure.
  */
 async function metricsHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const metrics: PlatformMetrics = {
-      activeConnections: 487,
-      requestsPerSecond: 142,
-      errorRate: 0.23,
-      p95Latency: 234,
-      p99Latency: 512,
-      uptime: 99.96,
-    };
+    const mem = process.memoryUsage();
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const memUsagePct = Math.round(((totalMem - freeMem) / totalMem) * 100);
+    const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
+    const rssMb = Math.round(mem.rss / 1024 / 1024);
 
-    const granularity = (request.query as any).granularity || "minute";
+    let dbLatencyMs = 0;
+    try {
+      const start = Date.now();
+      await prisma.$queryRaw`SELECT 1`;
+      dbLatencyMs = Date.now() - start;
+    } catch { /* db down — leave at 0 */ }
 
     return reply.send({
       timestamp: new Date().toISOString(),
-      granularity,
-      metrics,
-      trend: {
-        requestsPerSecond: {
-          current: metrics.requestsPerSecond,
-          change: 12, // percentage vs 1h ago
-          direction: "up" as const,
-        },
-        errorRate: {
-          current: metrics.errorRate,
-          change: -0.15, // percentage point vs 1h ago
-          direction: "down" as const,
-        },
-        p95Latency: {
-          current: metrics.p95Latency,
-          change: 2, // ms vs 1h ago
-          direction: "up" as const,
-        },
-      },
+      uptimeSeconds: Math.round(process.uptime()),
+      memUsagePct,
+      heapUsedMb,
+      rssMb,
+      dbLatencyMs,
+      nodeVersion: process.version,
+      platform: process.platform,
     });
   } catch (error) {
     request.log.error(error, "Metrics retrieval failed");
@@ -367,144 +254,47 @@ async function metricsHandler(request: FastifyRequest, reply: FastifyReply) {
 /**
  * GET /platform/alerts
  *
- * Recent platform alerts and incidents
- * Query params: ?limit=50&severity=critical,warning&acknowledged=false
+ * Platform alerts. Returns an empty list until a persistent alerting
+ * model is implemented. No synthetic/hardcoded alerts.
  */
-async function alertsHandler(request: FastifyRequest, reply: FastifyReply) {
-  try {
-    const limit = Math.min(parseInt((request.query as any).limit || "50"), 100);
-    const acknowledgedFilter = (request.query as any).acknowledged;
-    const severityFilter = (request.query as any).severity;
-
-    const alerts: PlatformAlert[] = [
-      {
-        id: "alert-001",
-        severity: "info",
-        title: "Scheduled Maintenance",
-        description: "Database maintenance scheduled for 2026-03-12 02:00 UTC",
-        timestamp: new Date(Date.now() - 2 * 3600000),
-        acknowledged: false,
-      },
-      {
-        id: "alert-002",
-        severity: "warning",
-        title: "High Error Rate Detected",
-        description: "Error rate in Payment API exceeded 2% threshold (2.3% current)",
-        timestamp: new Date(Date.now() - 30 * 60000),
-        acknowledged: false,
-      },
-      {
-        id: "alert-003",
-        severity: "info",
-        title: "Background Job Latency",
-        description: "Delivery notification jobs running 2x slower than baseline",
-        timestamp: new Date(Date.now() - 1 * 3600000),
-        acknowledged: true,
-        acknowledgedAt: new Date(Date.now() - 30 * 60000),
-        acknowledgedBy: "user-001",
-      },
-    ];
-
-    let filtered = alerts;
-
-    // Apply filters
-    if (acknowledgedFilter !== undefined) {
-      const isAcknowledged = acknowledgedFilter === "true";
-      filtered = filtered.filter((a) => a.acknowledged === isAcknowledged);
-    }
-
-    if (severityFilter) {
-      const severities = severityFilter.split(",");
-      filtered = filtered.filter((a) => severities.includes(a.severity));
-    }
-
-    // Sort by timestamp (newest first)
-    filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-    filtered = filtered.slice(0, limit);
-
-    return reply.send({
-      timestamp: new Date().toISOString(),
-      alerts: filtered,
-      summary: {
-        total: alerts.length,
-        pending: alerts.filter((a) => !a.acknowledged).length,
-        critical: alerts.filter((a) => a.severity === "critical").length,
-        warning: alerts.filter((a) => a.severity === "warning").length,
-        info: alerts.filter((a) => a.severity === "info").length,
-      },
-    });
-  } catch (error) {
-    request.log.error(error, "Alerts retrieval failed");
-    return reply.code(500).send({
-      error: "Failed to get alerts",
-      timestamp: new Date().toISOString(),
-    });
-  }
+async function alertsHandler(_request: FastifyRequest, reply: FastifyReply) {
+  return reply.send({
+    timestamp: new Date().toISOString(),
+    alerts: [] as PlatformAlert[],
+    summary: { total: 0, pending: 0, critical: 0, warning: 0, info: 0 },
+  });
 }
 
 /**
  * POST /platform/alerts/:alertId/acknowledge
- *
- * Acknowledge a platform alert
- * Body: { userId?: string, notes?: string }
  */
 async function acknowledgeAlertHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const { alertId } = request.params as { alertId: string };
-    const body = AcknowledgeAlertSchema.parse(request.body);
-
-    // In a real implementation, update alert in database
-    const alert: PlatformAlert = {
-      id: alertId,
-      severity: "warning",
-      title: "High Error Rate Detected",
-      description: "Error rate in Payment API exceeded 2% threshold",
-      timestamp: new Date(Date.now() - 30 * 60000),
-      acknowledged: true,
-      acknowledgedAt: new Date(),
-      acknowledgedBy: body.userId || "system",
-    };
-
-    return reply.send({
-      status: "acknowledged",
-      alert,
-      timestamp: new Date().toISOString(),
-    });
+    AcknowledgeAlertSchema.parse(request.body);
+    return reply.send({ status: "acknowledged", timestamp: new Date().toISOString() });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return reply.code(400).send({
-        error: "Invalid request body",
-        details: error.errors,
-      });
+      return reply.code(400).send({ error: "Invalid request body", details: error.errors });
     }
-
     request.log.error(error, "Alert acknowledgement failed");
-    return reply.code(500).send({
-      error: "Failed to acknowledge alert",
-      timestamp: new Date().toISOString(),
-    });
+    return reply.code(500).send({ error: "Failed to acknowledge alert", timestamp: new Date().toISOString() });
   }
 }
 
 // ─── ROUTE REGISTRATION ─────────────────────────────────────
 
 export async function platformRoutes(app: FastifyInstance) {
-  // Health check
+  // Public health check (no auth — for load balancers)
   app.get("/platform/health", healthHandler);
 
-  // Detailed status
+  // Public status check (no auth — for monitoring)
   app.get("/platform/status", statusHandler);
 
-  // Integration status
-  app.get("/platform/integrations", integrationsHandler);
-
-  // Metrics
+  // Authenticated routes — need shopId for tenant context
+  app.get("/platform/integrations", { preHandler: [requireAuth] }, integrationsHandler);
   app.get("/platform/metrics", metricsHandler);
-
-  // Alerts
   app.get("/platform/alerts", alertsHandler);
 
-  // Acknowledge alert — requires authenticated SUPER_ADMIN session
   app.post("/platform/alerts/:alertId/acknowledge", {
     preHandler: [requireAuth, requireRole("SUPER_ADMIN")],
   }, acknowledgeAlertHandler);

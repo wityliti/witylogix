@@ -127,7 +127,7 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
         throw new Error(`Token exchange failed: ${response.statusText}`);
       }
 
-      return response.json();
+      return response.json() as Promise<OAuth2Token>;
     });
 
     this.accessToken = token.accessToken;
@@ -437,7 +437,7 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
       throw this.createError("BULK_EXPORT_STATUS_FAILED", response.status, outcome);
     }
 
-    return response.json();
+    return response.json() as Promise<BulkExportResult>;
   }
 
   /**
@@ -514,7 +514,7 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
             }
 
             this.circuitBreakerFailures = 0;
-            return response.json();
+            return response.json() as Promise<T>;
           });
 
           resolve(result);
@@ -597,7 +597,7 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
             }
 
             this.circuitBreakerFailures = 0;
-            return response.json();
+            return response.json() as Promise<T>;
           });
 
           resolve(result);

@@ -633,16 +633,18 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Parse webhook event
    */
-  async parseWebhookEvent(payload: unknown): Promise<ECommerceWebhookEvent> {
-    const data = payload as any;
+  parseWebhookEvent(payload: unknown): ECommerceWebhookEvent {
+    const raw = payload as Record<string, unknown>;
 
     return {
-      id: data.event_id || crypto.randomUUID(),
+      id: typeof raw["event_id"] === "string" ? raw["event_id"] : crypto.randomUUID(),
       platform: "magento",
-      topic: data.topic || "",
-      event: data.resource || "",
-      createdAt: new Date(data.created_at || Date.now()),
-      data: data,
+      topic: typeof raw["topic"] === "string" ? raw["topic"] : "",
+      event: typeof raw["resource"] === "string" ? raw["resource"] : "",
+      createdAt: typeof raw["created_at"] === "string" || typeof raw["created_at"] === "number"
+        ? new Date(raw["created_at"] as string)
+        : new Date(),
+      data: raw as unknown as ECommerceWebhookEvent["data"],
     };
   }
 
@@ -730,14 +732,15 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Normalize Magento product to internal format
    */
-  private normalizeMagentoProduct(product: MagentoProduct) {
+  private normalizeMagentoProduct(product: MagentoProduct): ECommerceProduct {
     const qty = product.extension_attributes?.stock_item?.qty || 0;
+    const status: ECommerceProduct["status"] = product.status === 1 ? "active" : "archived";
 
     return {
       id: product.id.toString(),
       title: product.name,
       description: product.description,
-      status: product.status === 1 ? "active" : "archived",
+      status,
       variants: [
         {
           id: product.id.toString(),
@@ -761,8 +764,8 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
   /**
    * Map Magento order status to internal status
    */
-  private mapMagentoOrderStatus(status: string) {
-    const mapping: Record<string, any> = {
+  private mapMagentoOrderStatus(status: string): ECommerceOrder["status"] {
+    const mapping: Record<string, ECommerceOrder["status"]> = {
       pending: "pending",
       processing: "processing",
       complete: "delivered",
@@ -772,7 +775,7 @@ export class MagentoClient extends ECommerceAdapterBase implements IECommerceAda
       payment_review: "pending",
     };
 
-    return mapping[status] || "pending";
+    return mapping[status] ?? "pending";
   }
 }
 

@@ -66,6 +66,7 @@ export default function CreateOrderPage() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [lineItemError, setLineItemError] = useState<string | null>(null);
 
   const { items: customers, setSearch: setCustomerSearchApi } = useApiList<ApiCustomer>('/api/v4/customers', { limit: 10 });
   const { items: products } = useApiList<ApiProduct>('/api/v4/products', { limit: 50 });
@@ -73,9 +74,10 @@ export default function CreateOrderPage() {
 
   const addLineItem = () => {
     if (!newLineItem.productName || newLineItem.quantity <= 0 || newLineItem.unitPrice <= 0) {
-      alert('Please fill all line item fields');
+      setLineItemError('Please fill product name, quantity, and unit price');
       return;
     }
+    setLineItemError(null);
     const lineItem: LineItem = {
       id: Date.now().toString(),
       productName: newLineItem.productName,
@@ -131,7 +133,7 @@ export default function CreateOrderPage() {
 
   const handleCreateOrder = async () => {
     if (!customer.name || !customer.email || !address.street || lineItems.length === 0) {
-      alert('Please fill all required fields and add at least one line item');
+      setSubmitError('Please fill all required fields and add at least one line item');
       return;
     }
     setSubmitError(null);
@@ -147,7 +149,7 @@ export default function CreateOrderPage() {
 
   const handleSaveDraft = async () => {
     if (!customer.name) {
-      alert('Please enter customer name');
+      setSubmitError('Please enter customer name');
       return;
     }
     setSubmitError(null);
@@ -163,8 +165,8 @@ export default function CreateOrderPage() {
 
   if (successOrderId) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6 text-white flex items-center justify-center">
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-wl-bg-root p-6 text-white flex items-center justify-center">
+        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">✓</div>
           <h2 className="text-xl font-bold mb-2">Order Created</h2>
           <p className="text-gray-400 text-sm mb-6">Order ID: {successOrderId}</p>
@@ -195,7 +197,7 @@ export default function CreateOrderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
+    <div className="min-h-screen bg-wl-bg-root p-6 text-white">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Create Order</h1>
         <p className="text-sm text-gray-400">Create and manage new orders with customer and delivery information</p>
@@ -209,7 +211,7 @@ export default function CreateOrderPage() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))] mb-6">
         {/* Customer Section */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
           <h3 className="text-base font-semibold mb-4 text-white">Customer Information</h3>
 
           <div className="mb-4">
@@ -236,7 +238,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-gray-300 mb-1.5">Search Customer</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Search by name or email..."
                 value={customerSearch}
                 onChange={(e) => {
@@ -245,11 +247,11 @@ export default function CreateOrderPage() {
                 }}
               />
               {customerSearch && customers.length > 0 && (
-                <div className="absolute bg-[#12121a] border border-[#1e1e2e] rounded mt-1 z-10 max-h-52 overflow-y-auto w-full">
+                <div className="absolute bg-wl-bg-surface border border-wl-border-default rounded mt-1 z-10 max-h-52 overflow-y-auto w-full">
                   {customers.map(c => (
                     <div
                       key={c.id}
-                      className="p-3 cursor-pointer border-b border-[#1e1e2e] hover:bg-[#0a0a0f] text-sm text-gray-300"
+                      className="p-3 cursor-pointer border-b border-wl-border-default hover:bg-wl-bg-root text-sm text-gray-300"
                       onClick={() => {
                         setCustomer({ id: c.id, name: c.name, email: c.email, phone: c.phone });
                         setCustomerSearch('');
@@ -269,7 +271,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Full Name *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter customer name"
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
@@ -280,7 +282,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Email *</label>
             <input
               type="email"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="customer@example.com"
               value={customer.email}
               onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
@@ -291,7 +293,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Phone Number</label>
             <input
               type="tel"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="+91-9876543210"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
@@ -300,14 +302,14 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Delivery Address */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
           <h3 className="text-base font-semibold mb-4 text-white">Delivery Address</h3>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Street Address *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter street address"
               value={address.street}
               onChange={(e) => setAddress({ ...address, street: e.target.value })}
@@ -318,7 +320,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">City *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter city"
               value={address.city}
               onChange={(e) => setAddress({ ...address, city: e.target.value })}
@@ -330,7 +332,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-gray-300 mb-1.5">State *</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Enter state"
                 value={address.state}
                 onChange={(e) => setAddress({ ...address, state: e.target.value })}
@@ -341,7 +343,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-gray-300 mb-1.5">Zip Code *</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Enter zip code"
                 value={address.zip}
                 onChange={(e) => setAddress({ ...address, zip: e.target.value })}
@@ -351,14 +353,14 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Delivery Preferences */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
           <h3 className="text-base font-semibold mb-4 text-white">Delivery Preferences</h3>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Preferred Delivery Date</label>
             <input
               type="date"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               value={deliveryDate}
               onChange={(e) => setDeliveryDate(e.target.value)}
             />
@@ -367,7 +369,7 @@ export default function CreateOrderPage() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Time Slot</label>
             <select
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               value={timeSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
             >
@@ -381,7 +383,7 @@ export default function CreateOrderPage() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Delivery Notes</label>
             <textarea
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm min-h-20 font-inherit box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm min-h-20 font-inherit box-border focus:outline-none focus:border-blue-500"
               placeholder="Add special delivery instructions..."
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
@@ -390,7 +392,7 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Payment & Priority */}
-        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+        <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
           <h3 className="text-base font-semibold mb-4 text-white">Payment & Priority</h3>
 
           <div className="mb-5">
@@ -441,7 +443,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Tags (comma-separated)</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="e.g., VIP, Fragile, Gift Wrap"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
@@ -451,7 +453,7 @@ export default function CreateOrderPage() {
       </div>
 
       {/* Line Items Section */}
-      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 mb-6">
+      <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 mb-6">
         <h3 className="text-base font-semibold mb-4 text-white">Line Items</h3>
 
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_100px] gap-2.5 mb-4">
@@ -459,7 +461,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Product Name</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Search product..."
               value={newLineItem.productName}
               onChange={(e) => {
@@ -484,7 +486,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">SKU</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-400 text-sm box-border"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-400 text-sm box-border"
               placeholder="SKU"
               value={newLineItem.sku}
               onChange={(e) => setNewLineItem({ ...newLineItem, sku: e.target.value })}
@@ -495,7 +497,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Quantity</label>
             <input
               type="number"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="1"
               value={newLineItem.quantity}
               onChange={(e) => setNewLineItem({ ...newLineItem, quantity: parseInt(e.target.value) || 1 })}
@@ -506,7 +508,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-gray-300 mb-1.5">Unit Price</label>
             <input
               type="number"
-              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="0"
               value={newLineItem.unitPrice}
               onChange={(e) => setNewLineItem({ ...newLineItem, unitPrice: parseFloat(e.target.value) || 0 })}
@@ -523,13 +525,16 @@ export default function CreateOrderPage() {
             </button>
           </div>
         </div>
+        {lineItemError && (
+          <p className="text-red-400 text-xs -mt-2 mb-3">{lineItemError}</p>
+        )}
 
         {lineItems.length > 0 && (
           <table className="w-full border-collapse mt-4 mb-5">
             <thead>
               <tr>
                 {['Product', 'SKU', 'Qty', 'Unit Price', 'Total', 'Action'].map(h => (
-                  <th key={h} className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">
+                  <th key={h} className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400">
                     {h}
                   </th>
                 ))}
@@ -538,12 +543,12 @@ export default function CreateOrderPage() {
             <tbody>
               {lineItems.map(item => (
                 <tr key={item.id}>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.productName}</td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.sku}</td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.quantity}</td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{item.unitPrice.toLocaleString()}</td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{item.total.toLocaleString()}</td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm">
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{item.productName}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{item.sku}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{item.quantity}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">₹{item.unitPrice.toLocaleString()}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">₹{item.total.toLocaleString()}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm">
                     <button
                       onClick={() => removeLineItem(item.id)}
                       className="px-2.5 py-1.5 rounded bg-red-500 text-white font-semibold text-xs transition-all hover:bg-red-600"
@@ -558,7 +563,7 @@ export default function CreateOrderPage() {
         )}
 
         {/* Order Totals */}
-        <div className="border-t border-[#1e1e2e] pt-4">
+        <div className="border-t border-wl-border-default pt-4">
           <div className="flex justify-between py-2 text-sm text-gray-300">
             <span>Subtotal:</span>
             <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
@@ -569,7 +574,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-gray-300 mb-1.5">Tax (%)</label>
               <input
                 type="number"
-                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 min="0"
                 max="100"
                 value={tax}
@@ -580,7 +585,7 @@ export default function CreateOrderPage() {
               <label className="block text-sm font-medium text-gray-300 mb-1.5">Discount (₹)</label>
               <input
                 type="number"
-                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 min="0"
                 value={discount}
                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
@@ -603,7 +608,7 @@ export default function CreateOrderPage() {
             <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
           </div>
 
-          <div className="flex justify-between py-4 border-t border-[#1e1e2e] text-base font-bold text-blue-500">
+          <div className="flex justify-between py-4 border-t border-wl-border-default text-base font-bold text-blue-500">
             <span>Total Amount:</span>
             <span>₹{total.toLocaleString()}</span>
           </div>

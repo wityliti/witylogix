@@ -6,6 +6,8 @@ import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   usePOSOverview,
@@ -57,12 +59,16 @@ const DEFAULT_OVERVIEW: POSOverview = {
 };
 
 export default function POSPage() {
-  const { data: overviewData } = usePOSOverview();
-  const { items: liveTransactions } = useTransactions();
-  const { items: terminals } = useTerminals();
+  const { data: overviewData, loading: overviewLoading, error: overviewError, refetch: refetchOverview } = usePOSOverview();
+  const { items: liveTransactions, loading: txnLoading } = useTransactions();
+  const { items: terminals, loading: terminalsLoading } = useTerminals();
   const { items: topItems } = useTopSellingItems();
 
+  const loading = overviewLoading || txnLoading || terminalsLoading;
   const overview = overviewData ?? DEFAULT_OVERVIEW;
+
+  if (loading) return <LoadingSkeleton />;
+  if (overviewError) return <ErrorState message={overviewError.message} onRetry={refetchOverview} />;
 
   const [selectedTerminal, setSelectedTerminal] = useState<string | null>(null);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
@@ -95,34 +101,30 @@ export default function POSPage() {
         actions={<Button variant="primary" size="md">+ New Sale</Button>}
       />
 
-      <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-[calc(100vh-var(--header-height))]">
+      <div className="p-6 space-y-6 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))]">
         {/* KPI Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Today's Sales"
             value={`$${overview.todaysSales.toFixed(2)}`}
-            change={{ value: 12.5, label: "vs yesterday" }}
             accentColor="var(--wl-success-400)"
             index={0}
           />
           <StatCard
             label="Transactions"
             value={overview.transactionCount}
-            change={{ value: 5.2, label: "vs average" }}
             accentColor="var(--wl-primary-500)"
             index={1}
           />
           <StatCard
             label="Avg Ticket"
             value={`$${overview.avgTicket.toFixed(2)}`}
-            change={{ value: 3.1, label: "increase" }}
             accentColor="var(--wl-info-400)"
             index={2}
           />
           <StatCard
             label="Terminals"
             value={`${terminals.filter((t) => t.status === "online").length}/${terminals.length}`}
-            change={{ value: 0, label: "online" }}
             accentColor="var(--wl-warning-400)"
             index={3}
           />
@@ -131,7 +133,7 @@ export default function POSPage() {
         {/* Main Grid: Payment Breakdown + Live Feed */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Payment Breakdown Card */}
-          <Card className={cn("border-[#1e1e2e] bg-[#12121a]")}>
+          <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
             <CardHeader>
               <CardTitle className="text-white">Payment Breakdown</CardTitle>
             </CardHeader>
@@ -148,7 +150,7 @@ export default function POSPage() {
                     {paymentBreakdownPercentages.cash}%
                   </span>
                 </div>
-                <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                   <div
                     className="bg-emerald-500 h-2 rounded-full"
                     style={{ width: `${paymentBreakdownPercentages.cash}%` }}
@@ -170,7 +172,7 @@ export default function POSPage() {
                     {paymentBreakdownPercentages.card}%
                   </span>
                 </div>
-                <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                   <div
                     className="bg-blue-500 h-2 rounded-full"
                     style={{ width: `${paymentBreakdownPercentages.card}%` }}
@@ -192,7 +194,7 @@ export default function POSPage() {
                     {paymentBreakdownPercentages.mobile}%
                   </span>
                 </div>
-                <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                   <div
                     className="bg-purple-500 h-2 rounded-full"
                     style={{ width: `${paymentBreakdownPercentages.mobile}%` }}
@@ -215,7 +217,7 @@ export default function POSPage() {
                       {paymentBreakdownPercentages.other}%
                     </span>
                   </div>
-                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                  <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                     <div
                       className="bg-gray-500 h-2 rounded-full"
                       style={{ width: `${paymentBreakdownPercentages.other}%` }}
@@ -231,7 +233,7 @@ export default function POSPage() {
 
           {/* Live Transaction Feed */}
           <div className="lg:col-span-2">
-            <Card className={cn("border-[#1e1e2e] bg-[#12121a]")}>
+            <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
               <CardHeader>
                 <CardTitle className="text-white">Live Transactions</CardTitle>
               </CardHeader>
@@ -247,7 +249,7 @@ export default function POSPage() {
                       <div
                         key={txn.id}
                         className={cn(
-                          "p-3 bg-[#1a1a2e] rounded-md border-l-4 border-blue-500 hover:bg-[#1e1e2e] transition-colors opacity-0",
+                          "p-3 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500 hover:bg-wl-bg-elevated transition-colors opacity-0",
                           "cursor-pointer"
                         )}
                         style={{
@@ -296,14 +298,14 @@ export default function POSPage() {
         {/* Top Items + Terminal Status */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Top-Selling Items */}
-          <Card className={cn("border-[#1e1e2e] bg-[#12121a]")}>
+          <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
             <CardHeader>
               <CardTitle className="text-white">Top-Selling Items</CardTitle>
             </CardHeader>
 
             <CardContent className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+                <thead className="border-b border-wl-border-default bg-wl-bg-root">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">
                       Item
@@ -318,7 +320,7 @@ export default function POSPage() {
                 </thead>
                 <tbody className="divide-y divide-[#1e1e2e]">
                   {topItems.map((item, idx) => (
-                    <tr key={item.id} className="hover:bg-[#1a1a2e] transition-colors">
+                    <tr key={item.id} className="hover:bg-wl-bg-elevated transition-colors">
                       <td className="px-4 py-3">
                         <div className="text-white font-medium">{item.name}</div>
                         <div className="text-xs text-gray-500">{item.sku}</div>
@@ -337,7 +339,7 @@ export default function POSPage() {
           </Card>
 
           {/* POS Terminal Status */}
-          <Card className={cn("border-[#1e1e2e] bg-[#12121a]")}>
+          <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
             <CardHeader>
               <CardTitle className="text-white">Terminal Status</CardTitle>
             </CardHeader>
@@ -348,10 +350,10 @@ export default function POSPage() {
                   key={terminal.id}
                   onClick={() => setSelectedTerminal(terminal.id)}
                   className={cn(
-                    "p-3 bg-[#1a1a2e] rounded-md border transition-colors cursor-pointer opacity-0",
+                    "p-3 bg-wl-bg-elevated rounded-md border transition-colors cursor-pointer opacity-0",
                     selectedTerminal === terminal.id
-                      ? "border-blue-500 bg-[#1e1e2e]"
-                      : "border-[#1e1e2e] hover:border-[#2a2a3e]"
+                      ? "border-blue-500 bg-wl-bg-elevated"
+                      : "border-wl-border-default hover:border-wl-border-strong"
                   )}
                   style={{
                     animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,

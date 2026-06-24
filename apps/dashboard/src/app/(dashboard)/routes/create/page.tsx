@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { WLMap } from '@/components/map/wl-map';
+import { RoutePolylineLayer } from '@/components/map/route-polyline-layer';
+import { RouteStopMarkersLayer, type StopMarker } from '@/components/map/route-stop-markers-layer';
+import { MapPin } from 'lucide-react';
 
 interface Stop {
   id: string;
@@ -47,6 +51,8 @@ interface ApiOrder {
   priority?: string;
   status?: string;
 }
+
+const DEFAULT_CENTER: [number, number] = [0, 20];
 
 export default function CreateRoutePage() {
   const [step, setStep] = useState(1);
@@ -135,21 +141,23 @@ export default function CreateRoutePage() {
     }));
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityClass = (priority: string): string => {
     switch (priority) {
-      case "high":
-        return "#ff6b6b";
-      case "medium":
-        return "#ffd93d";
-      case "low":
-        return "#6bcf7f";
-      default:
-        return "#8888a0";
+      case "high":   return "bg-wl-danger-400";
+      case "medium": return "bg-wl-warning-400";
+      case "low":    return "bg-wl-success-400";
+      default:       return "bg-wl-neutral-400";
     }
   };
 
   const estimatedDistance = formData.stops.length * 3.5;
   const estimatedDuration = formData.stops.length * 15 + 30;
+
+  // Build map data from stops that have lat/lng embedded in address (from order data)
+  // Orders with deliveryLocation JSON will be the source of truth for coordinates.
+  // For the create flow, we don't have geocoords from API, so the map shows a no-data state.
+  const previewStopMarkers = useMemo<StopMarker[]>(() => [], []);
+  const previewPolyline: Array<[number, number]> = [];
 
   const canProceed =
     step === 1
@@ -171,10 +179,10 @@ export default function CreateRoutePage() {
   const selectedVehicle = vehicles.find((v) => v.id === formData.vehicleId);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
+    <div className="min-h-screen bg-wl-bg-root p-6 text-white">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">Create New Route</h1>
-        <p className="text-sm text-gray-400">Set up a new delivery route with multiple stops</p>
+        <p className="text-sm text-wl-text-secondary">Set up a new delivery route with multiple stops</p>
       </div>
 
       <div className="flex gap-3 mb-8 max-w-4xl">
@@ -186,8 +194,8 @@ export default function CreateRoutePage() {
               step === idx + 1
                 ? "bg-blue-500 text-white border-blue-500"
                 : step > idx + 1
-                  ? "bg-[#12121a] text-gray-400 border-[#1e1e2e]"
-                  : "bg-[#12121a] text-gray-400 border-[#1e1e2e]"
+                  ? "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default"
+                  : "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default"
             )}
             onClick={() => step > idx + 1 && setStep(idx + 1)}
           >
@@ -196,7 +204,7 @@ export default function CreateRoutePage() {
         ))}
       </div>
 
-      <Card className="max-w-4xl mb-6 bg-[#12121a] border border-[#1e1e2e]">
+      <Card className="max-w-4xl mb-6 bg-wl-bg-surface border border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-white">
             Step {step}:{" "}
@@ -221,7 +229,7 @@ export default function CreateRoutePage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="e.g., Downtown Delivery Route A"
-                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
                   />
                 </div>
                 <div>
@@ -231,7 +239,7 @@ export default function CreateRoutePage() {
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
                   />
                 </div>
               </div>
@@ -242,7 +250,7 @@ export default function CreateRoutePage() {
                     name="driverId"
                     value={formData.driverId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
                   >
                     <option value="">Select a driver</option>
                     {drivers.map((driver) => (
@@ -258,7 +266,7 @@ export default function CreateRoutePage() {
                     name="vehicleId"
                     value={formData.vehicleId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
                   >
                     <option value="">Select a vehicle</option>
                     {vehicles.map((vehicle) => (
@@ -281,7 +289,7 @@ export default function CreateRoutePage() {
                   placeholder="Search by order ID or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm mb-4 box-border"
+                  className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm mb-4 box-border"
                 />
               </div>
 
@@ -294,7 +302,7 @@ export default function CreateRoutePage() {
                     {filteredOrders.map((order) => (
                       <div
                         key={order.id}
-                        className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] cursor-pointer transition-all hover:border-blue-500 hover:bg-[#12121a]"
+                        className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default cursor-pointer transition-all hover:border-blue-500 hover:bg-wl-bg-surface"
                       >
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-white font-semibold text-sm">
@@ -302,7 +310,7 @@ export default function CreateRoutePage() {
                           </span>
                           {order.priority && <Badge>{order.priority.toUpperCase()}</Badge>}
                         </div>
-                        <p className="text-gray-400 text-xs mb-2">
+                        <p className="text-wl-text-secondary text-xs mb-2">
                           {getOrderAddress(order)}
                         </p>
                         <Button
@@ -328,26 +336,26 @@ export default function CreateRoutePage() {
                     {formData.stops.map((stop, idx) => (
                       <div
                         key={stop.id}
-                        className="p-3 rounded-md bg-[#12121a] border border-[#1e1e2e] flex items-center gap-3 cursor-grab transition-all"
-                        style={{
-                          backgroundColor: draggedStop === idx ? "#2563eb" : "#12121a",
-                          borderColor: draggedStop === idx ? "#2563eb" : "#1e1e2e",
-                          opacity: draggedStop === idx ? 0.7 : 1,
-                        }}
+                        className={cn(
+                          "p-3 rounded-md flex items-center gap-3 cursor-grab transition-all border",
+                          draggedStop === idx
+                            ? "bg-wl-info-500 border-wl-info-500 opacity-70"
+                            : "bg-wl-bg-surface border-wl-border-default",
+                        )}
                         draggable
                         onDragStart={() => handleDragStart(idx)}
                         onDragOver={handleDragOver}
                         onDrop={() => handleDrop(idx)}
                       >
-                        <div className="flex flex-col gap-0.5 text-gray-400 text-xs">
+                        <div className="flex flex-col gap-0.5 text-wl-text-secondary text-xs">
                           <span>::::</span>
                         </div>
                         <div className="flex-1">
                           <div className="text-white text-sm font-semibold">
                             {stop.orderId}
                           </div>
-                          <div className="text-gray-400 text-xs">{stop.address}</div>
-                          <div className="text-gray-400 text-xs mt-1">
+                          <div className="text-wl-text-secondary text-xs">{stop.address}</div>
+                          <div className="text-wl-text-secondary text-xs mt-1">
                             {stop.timeWindow.start} - {stop.timeWindow.end}
                           </div>
                         </div>
@@ -364,21 +372,21 @@ export default function CreateRoutePage() {
                   </div>
 
                   <div className="grid grid-cols-4 gap-4 my-6">
-                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                    <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
                       <div className="text-lg font-bold text-blue-500 mb-1">{formData.stops.length}</div>
-                      <div className="text-xs text-gray-400">Total Stops</div>
+                      <div className="text-xs text-wl-text-secondary">Total Stops</div>
                     </div>
-                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                    <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
                       <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDistance.toFixed(1)}km</div>
-                      <div className="text-xs text-gray-400">Est. Distance</div>
+                      <div className="text-xs text-wl-text-secondary">Est. Distance</div>
                     </div>
-                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                    <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
                       <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDuration}min</div>
-                      <div className="text-xs text-gray-400">Est. Duration</div>
+                      <div className="text-xs text-wl-text-secondary">Est. Duration</div>
                     </div>
-                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                    <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
                       <div className="text-lg font-bold text-blue-500 mb-1">850kg</div>
-                      <div className="text-xs text-gray-400">Est. Capacity</div>
+                      <div className="text-xs text-wl-text-secondary">Est. Capacity</div>
                     </div>
                   </div>
                 </>
@@ -388,58 +396,54 @@ export default function CreateRoutePage() {
 
           {step === 3 && (
             <div className="max-w-4xl">
-              <div className="w-full h-96 bg-[#12121a] border border-[#1e1e2e] rounded-lg flex items-center justify-center mb-6 relative overflow-hidden">
-                <svg
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 800 400"
-                  className="absolute top-0 left-0"
-                >
-                  {formData.stops.length > 1 && (
-                    <polyline
-                      points={formData.stops
-                        .map((_, idx) => {
-                          const x = 50 + (idx / (formData.stops.length - 1)) * 700;
-                          const y = 150 + Math.sin(idx * 0.5) * 50;
-                          return `${x},${y}`;
-                        })
-                        .join(" ")}
-                      fill="none"
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      opacity="0.5"
+              <div className="w-full h-96 rounded-lg mb-6 overflow-hidden relative border border-wl-border-default">
+                {previewStopMarkers.length > 0 ? (
+                  <WLMap
+                    center={DEFAULT_CENTER}
+                    zoom={12}
+                    className="w-full h-full"
+                    interactive
+                  >
+                    {previewPolyline.length >= 2 && (
+                      <RoutePolylineLayer
+                        coordinates={previewPolyline}
+                        variant="planned"
+                        fitBounds
+                        fitPadding={60}
+                      />
+                    )}
+                    <RouteStopMarkersLayer
+                      stops={previewStopMarkers}
+                      fitBounds
+                      fitPadding={60}
                     />
-                  )}
-
-                  {formData.stops.map((stop, idx) => {
-                    const x = 50 + (idx / Math.max(formData.stops.length - 1, 1)) * 700;
-                    const y = 150 + Math.sin(idx * 0.5) * 50;
-                    return (
-                      <g key={stop.id}>
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r="12"
-                          fill={getPriorityColor(stop.priority)}
-                          opacity="0.8"
-                        />
-                        <text
-                          x={x}
-                          y={y}
-                          textAnchor="middle"
-                          dy="0.3em"
-                          fontSize="10"
-                          fontWeight="bold"
-                          fill="white"
-                        >
-                          {idx + 1}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-                <div className="absolute bottom-4 right-4 text-xs text-gray-400">
-                  Map Preview - {formData.stops.length} stops
+                  </WLMap>
+                ) : (
+                  <div className="w-full h-full bg-wl-bg-surface flex flex-col items-center justify-center text-gray-500 gap-3">
+                    <MapPin className="w-10 h-10 opacity-20" />
+                    <div className="text-sm font-medium">Map Preview</div>
+                    <div className="text-xs text-gray-600 text-center max-w-xs">
+                      {formData.stops.length === 0
+                        ? 'Add stops in step 2 to see them on the map.'
+                        : `${formData.stops.length} stop${formData.stops.length > 1 ? 's' : ''} added. The map will show coordinates once orders have delivery location data.`}
+                    </div>
+                    {/* Fallback: numbered stop list as visual indicator */}
+                    {formData.stops.length > 0 && (
+                      <div className="flex gap-2 mt-2 flex-wrap justify-center max-w-md">
+                        {formData.stops.map((stop, idx) => (
+                          <div
+                            key={stop.id}
+                            className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white", getPriorityClass(stop.priority))}
+                          >
+                            {idx + 1}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="absolute bottom-3 right-3 bg-wl-bg-root/80 backdrop-blur-sm text-xs text-wl-text-secondary px-2 py-1 rounded border border-wl-border-default">
+                  {formData.stops.length} stop{formData.stops.length !== 1 ? 's' : ''}
                 </div>
               </div>
 
@@ -449,16 +453,13 @@ export default function CreateRoutePage() {
                   {formData.stops.map((stop, idx) => (
                     <div
                       key={stop.id}
-                      className="p-4 rounded-md bg-[#12121a] border border-[#1e1e2e] grid gap-3 items-center"
+                      className="p-4 rounded-md bg-wl-bg-surface border border-wl-border-default grid gap-3 items-center"
                       style={{
                         gridTemplateColumns: "30px 1fr auto",
                       }}
                     >
                       <div
-                        className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
-                        style={{
-                          backgroundColor: getPriorityColor(stop.priority)
-                        }}
+                        className={cn("w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold", getPriorityClass(stop.priority))}
                       >
                         {idx + 1}
                       </div>
@@ -466,7 +467,7 @@ export default function CreateRoutePage() {
                         <div className="text-white text-sm font-semibold">
                           {stop.orderId}
                         </div>
-                        <div className="text-gray-400 text-xs mt-0.5">
+                        <div className="text-wl-text-secondary text-xs mt-0.5">
                           {stop.address}
                         </div>
                       </div>
@@ -507,7 +508,7 @@ export default function CreateRoutePage() {
                       "p-4 rounded-lg border text-center cursor-pointer transition-all",
                       formData.optimizationMode === (option.id as RouteFormData['optimizationMode'])
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-[#12121a] text-white border-[#1e1e2e]"
+                        : "bg-wl-bg-surface text-white border-wl-border-default"
                     )}
                     onClick={() =>
                       setFormData((prev) => ({
@@ -522,9 +523,9 @@ export default function CreateRoutePage() {
                 ))}
               </div>
 
-              <div className="mt-6 p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+              <div className="mt-6 p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
                 <h4 className="text-white text-sm font-semibold mb-2">Summary</h4>
-                <div className="text-gray-400 text-sm leading-relaxed">
+                <div className="text-wl-text-secondary text-sm leading-relaxed">
                   <p>
                     <strong>Route:</strong> {formData.name}
                   </p>

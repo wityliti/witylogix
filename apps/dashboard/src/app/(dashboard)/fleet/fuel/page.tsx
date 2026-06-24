@@ -62,7 +62,6 @@ export default function FuelPage() {
     totalSpend,
     avgMpg: parseFloat(avgMpg.toFixed(1)),
     pricePerGallon: parseFloat(pricePerGallon.toFixed(2)),
-    idleTimePercent: 8,
     anomalies,
     topConsumers,
   };
@@ -75,18 +74,18 @@ export default function FuelPage() {
         actions={<Button variant="primary" size="md">Manage Fuel Cards</Button>}
       />
 
-      <main className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
+      <main className="min-h-screen bg-wl-bg-root p-6 space-y-6">
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
-          <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} change={{ value: 8.5, label: 'vs last month' }} accentColor="var(--wl-primary-500)" index={0} />
-          <StatCard label="Average MPG" value={`${analytics.avgMpg}`} change={{ value: -2.1, label: 'efficiency decline' }} accentColor="var(--wl-warning-500)" index={1} />
-          <StatCard label="Avg Price/Gallon" value={formatCurrency(analytics.pricePerGallon)} change={{ value: 3.2, label: 'increase' }} accentColor="var(--wl-danger-400)" index={2} />
-          <StatCard label="Idle Time" value={`${analytics.idleTimePercent}%`} change={{ value: -1.5, label: 'improvement' }} accentColor="var(--wl-info-500)" index={3} />
+          <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} accentColor="var(--wl-primary-500)" index={0} />
+          <StatCard label="Average MPG" value={`${analytics.avgMpg}`} accentColor="var(--wl-warning-500)" index={1} />
+          <StatCard label="Avg Price/Gallon" value={formatCurrency(analytics.pricePerGallon)} accentColor="var(--wl-danger-400)" index={2} />
+          <StatCard label="Flagged Transactions" value={analytics.anomalies.length} accentColor="var(--wl-info-500)" index={3} />
         </div>
 
         {/* Anomaly Alerts */}
         {analytics.anomalies.length > 0 && (
-          <Card className="bg-[#12121a] border border-red-500/30">
+          <Card className="bg-wl-bg-surface border border-red-500/30">
             <CardHeader>
               <CardTitle className="text-sm text-red-400 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
@@ -96,7 +95,7 @@ export default function FuelPage() {
             <CardContent>
               <div className="space-y-2">
                 {analytics.anomalies.slice(0, 3).map((anomaly) => (
-                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-[#1e1e2e]">
+                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default">
                     <div>
                       <p className="text-sm font-medium text-white">Anomaly Detected</p>
                       <p className="text-xs text-gray-400">{formatCurrency(anomaly.amount)} • {anomaly.gallons.toFixed(1)} gal • {formatDate(anomaly.date)}</p>
@@ -111,7 +110,7 @@ export default function FuelPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Top Consumers */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-sm text-white">Top Fuel Consumers</CardTitle>
             </CardHeader>
@@ -126,7 +125,7 @@ export default function FuelPage() {
                         <p className="text-sm font-medium text-white">{idx + 1}. Vehicle {idx + 1}</p>
                         <p className="text-xs font-semibold text-gray-400">{formatCurrency(item.spend)}</p>
                       </div>
-                      <div className="h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
+                      <div className="h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style={{ width: `${percentage}%` }} />
                       </div>
                     </div>
@@ -136,56 +135,49 @@ export default function FuelPage() {
             </CardContent>
           </Card>
 
-          {/* Cost Breakdown */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          {/* Fuel Cost Summary */}
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-sm text-white">Cost Breakdown</CardTitle>
+              <CardTitle className="text-sm text-white">Fuel Cost Summary</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Fuel Spend</p>
-                  <p className="text-lg font-bold text-white">{formatCurrency(12000)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Total Fuel Spend</p>
+                  <p className="text-lg font-bold text-white">{formatCurrency(analytics.totalSpend)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Maintenance</p>
-                  <p className="text-lg font-bold text-white">{formatCurrency(3000)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Transactions</p>
+                  <p className="text-lg font-bold text-white">{transactions.length}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Insurance (Monthly)</p>
-                  <p className="text-lg font-bold text-white">{formatCurrency(500)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Flagged</p>
+                  <p className="text-lg font-bold text-white">{analytics.anomalies.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Fuel Cards */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-sm text-white">Fuel Cards Status</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {['Shell ****1234', 'Chevron ****5678', 'Shell ****9012'].map((card, idx) => (
-                  <div key={card} className="p-3 bg-[#1a1a2e] rounded-md border border-[#1e1e2e]">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium text-white">{card}</p>
-                      <Badge variant={idx === 2 ? 'danger' : 'success'}>{idx === 2 ? 'Blocked' : 'Active'}</Badge>
-                    </div>
-                    <p className="text-xs text-gray-400">Daily: {formatCurrency(500 + idx * 100)} • Monthly: {formatCurrency(10000 + idx * 2000)}</p>
-                  </div>
-                ))}
+              <div className="flex flex-col items-center justify-center py-6 text-center gap-3">
+                <p className="text-sm text-gray-400">No fuel cards configured</p>
+                <p className="text-xs text-gray-500">Connect a fuel card provider to manage cards and limits</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Transactions Table */}
-        <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Date</th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Vehicle</th>
                   <th className="p-3 px-4 text-center font-semibold text-gray-400">Station</th>
@@ -198,7 +190,7 @@ export default function FuelPage() {
               </thead>
               <tbody>
                 {paginatedTransactions.map((tx, idx) => (
-                  <tr key={tx.id} className={cn('border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e]', idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]')}>
+                  <tr key={tx.id} className={cn('border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken')}>
                     <td className="p-3 px-4 text-gray-400 text-xs">{formatDate(tx.date)}</td>
                     <td className="p-3 px-4 text-white font-semibold">
                       <div className="flex items-center gap-2">
@@ -227,7 +219,7 @@ export default function FuelPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400">
+          <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-400">
             <div>
               Showing {paginatedTransactions.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
               {Math.min(currentPage * pageSize, transactions.length)} of {transactions.length}

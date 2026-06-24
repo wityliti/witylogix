@@ -45,7 +45,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const result = await fetch(`${this.config.baseUrl}/api/v1/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         return result.ok;
       });
@@ -66,7 +66,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/warehouses/${warehouseId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -103,7 +103,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list warehouses: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -154,7 +154,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -194,7 +194,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update warehouse: ${response.statusText}`);
       });
@@ -217,7 +217,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory/${sku}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to get inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -261,7 +261,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -327,7 +327,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory-adjustments`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to adjust inventory: ${response.statusText}`);
       });
@@ -364,7 +364,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/inventory-moves`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to move inventory: ${response.statusText}`);
       });
@@ -388,7 +388,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/inbound/${shipmentId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get inbound shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -424,7 +424,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/inbound?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok)
           throw new Error(`Failed to list inbound shipments: ${response.statusText}`);
@@ -465,7 +465,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create inbound shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -507,7 +507,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to receive shipment: ${response.statusText}`);
       });
@@ -541,7 +541,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/inbound/${shipmentId}/qc`,
-          { method: 'POST', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'POST', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to confirm QC: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -576,7 +576,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/orders/${orderId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -615,7 +615,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/orders?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list orders: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -657,7 +657,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -697,7 +697,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update order: ${response.statusText}`);
       });
@@ -724,7 +724,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to cancel order: ${response.statusText}`);
       });
@@ -747,7 +747,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/fulfillment-requests/${fulfillmentId}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok)
           throw new Error(`Failed to get fulfillment request: ${response.statusText}`);
@@ -791,7 +791,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to allocate order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -831,7 +831,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/fulfillment-requests/${fulfillmentId}`,
-          { method: 'PUT', headers, body: JSON.stringify(payload), timeout: this.config.timeout }
+          { method: 'PUT', headers, body: JSON.stringify(payload), signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok)
           throw new Error(`Failed to update fulfillment: ${response.statusText}`);
@@ -856,7 +856,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/waves/${waveId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get wave: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -892,7 +892,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/waves?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list waves: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -937,7 +937,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create wave: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -972,7 +972,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to release wave: ${response.statusText}`);
       });
@@ -999,7 +999,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to complete wave: ${response.statusText}`);
       });
@@ -1023,7 +1023,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/pick-tasks/${taskId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get pick task: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1057,7 +1057,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/pick-tasks?wave_id=${waveId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list pick tasks: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1102,7 +1102,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update pick task: ${response.statusText}`);
       });
@@ -1126,7 +1126,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/pack-stations/${stationId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get pack station: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1157,7 +1157,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/pack-stations?warehouse_id=${warehouseId}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list pack stations: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1203,7 +1203,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to confirm shipment: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1240,7 +1240,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/locations/${binLocation}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to get location: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1268,7 +1268,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/warehouses/${warehouseId}/zones`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list zones: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1304,7 +1304,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to configure zone: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1329,7 +1329,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/purchase-orders/${poId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get PO: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1365,7 +1365,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/purchase-orders?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list POs: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1410,7 +1410,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create PO: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1444,7 +1444,7 @@ export class DeposcoClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/transfer-orders/${toId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get transfer order: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1479,7 +1479,7 @@ export class DeposcoClient extends SupplyChainAdapter {
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/transfer-orders?${params}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to list transfer orders: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -1523,7 +1523,7 @@ export class DeposcoClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to create transfer order: ${response.statusText}`);
         return response.json() as Promise<any>;

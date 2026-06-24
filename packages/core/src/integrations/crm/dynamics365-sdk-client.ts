@@ -331,7 +331,7 @@ export class Dynamics365SDKClient {
     await this.ensureValidToken();
 
     const url = `${this.apiUrl}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json',
       'OData-MaxVersion': '4.0',

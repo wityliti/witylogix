@@ -334,7 +334,7 @@ export class ManhattanV2SDKClient {
         const error = new Error(
           `API request failed: ${response.status} ${response.statusText}`
         );
-        (error as Record<string, unknown>).statusCode = response.status;
+        (error as unknown as Record<string, unknown>).statusCode = response.status;
         throw error;
       }
 
@@ -568,6 +568,7 @@ export class ManhattanV2SDKClient {
       waveNumber: data.waveNumber,
       warehouseId: data.warehouseId,
       status: (data.status as any),
+      planDate: new Date(),
       orders: [],
       orderCount: 0,
       lineCount: 0,

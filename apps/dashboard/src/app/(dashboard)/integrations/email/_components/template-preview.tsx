@@ -22,7 +22,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const [showTestEmail, setShowTestEmail] = useState(false);
 
   return (
-    <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+    <Card className="bg-wl-bg-elevated border-wl-border-default">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>{template.name}</span>
@@ -47,7 +47,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
           <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
             Subject
           </label>
-          <div className="text-sm text-white mt-2 p-3 bg-[#12121a] rounded border border-[#1e1e2e] font-mono">
+          <div className="text-sm text-white mt-2 p-3 bg-wl-bg-surface rounded border border-wl-border-default font-mono">
             {template.subject}
           </div>
         </div>
@@ -57,7 +57,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
           <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
             Preview
           </label>
-          <div className="text-sm text-gray-400 mt-2 p-4 bg-[#12121a] rounded border border-[#1e1e2e]">
+          <div className="text-sm text-gray-400 mt-2 p-4 bg-wl-bg-surface rounded border border-wl-border-default">
             {template.preview}
           </div>
         </div>
@@ -78,7 +78,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
 
         {/* Test Email Form */}
         {showTestEmail && (
-          <div className="p-4 bg-[#12121a] rounded border border-blue-500/30 space-y-3">
+          <div className="p-4 bg-wl-bg-surface rounded border border-blue-500/30 space-y-3">
             <div>
               <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold block mb-2">
                 Recipient Email
@@ -86,7 +86,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
               <input
                 type="email"
                 placeholder="test@example.com"
-                className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white placeholder-wl-text-tertiary"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white placeholder-wl-text-tertiary"
               />
             </div>
             <div className="flex gap-2">

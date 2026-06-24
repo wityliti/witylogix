@@ -253,11 +253,11 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
     try {
       locations = await (request.tenantDb as any).location.findMany({
         where: { shopId, isActive: true },
-        select: { id: true, name: true, type: true },
+        select: { id: true, name: true, type: true, city: true, addressLine1: true, country: true, coordinates: true },
       });
     } catch {
       // location model may not exist in all environments
-      locations = [{ id: "default", name: "Main Warehouse", type: "WAREHOUSE" }];
+      locations = [{ id: "default", name: "Main Warehouse", type: "WAREHOUSE", city: null, coordinates: null }];
     }
 
     // For each location get inventory count
@@ -273,12 +273,21 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
 
         const capacity = 10000;
         const utilization = Math.min(totalQty, capacity);
+        const coords = loc.coordinates as { lat?: number; lng?: number } | null;
         return {
           warehouseId: loc.id,
           name: loc.name,
+          type: loc.type ?? "WAREHOUSE",
+          city: loc.city ?? null,
+          address: loc.addressLine1 ?? null,
+          country: loc.country ?? null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           capacity,
           utilization,
           utilizationPercentage: Math.round((utilization / capacity) * 100),
+          itemCount,
+          totalQuantity: totalQty,
           activeOrders: 0,
           pendingPutaway: 0,
           cycleCountsScheduled: 0,
@@ -390,78 +399,73 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
     return { data: gauges, pagination: { page: 1, limit: gauges.length, total: gauges.length, totalPages: 1 } };
   });
 
-  // ── WAVES ─────────────────────────────────────────────────────────
+  // ── WAVE PLANS ────────────────────────────────────────────────────────
 
   fastify.get("/waves", async (request: FastifyRequest, _reply: FastifyReply) => {
     const shopId = request.shopId;
-    const since = new Date();
-    since.setDate(since.getDate() - 14);
 
-    const orders = await request.tenantDb.order.findMany({
-      where: { shopId, createdAt: { gte: since } },
-      select: { status: true, itemCount: true, createdAt: true, deliveryDate: true },
+    const waves = await (request.tenantDb as any).pickList.findMany({
+      where: { shopId, strategy: "WAVE_PICK" },
+      include: { items: { select: { orderId: true } } },
       orderBy: { createdAt: "desc" as const },
+      take: 50,
     });
 
-    // Group by calendar day
-    const dayMap = new Map<string, { statuses: string[]; itemsCount: number; deliveryDate: Date | null }>();
-    for (const o of orders) {
-      const day = o.createdAt.toISOString().slice(0, 10);
-      const existing = dayMap.get(day) ?? { statuses: [], itemsCount: 0, deliveryDate: null };
-      existing.statuses.push(String(o.status));
-      existing.itemsCount += o.itemCount;
-      if (!existing.deliveryDate && o.deliveryDate) existing.deliveryDate = o.deliveryDate;
-      dayMap.set(day, existing);
-    }
+    const data = waves.map((w: any) => {
+      const orderIds = [...new Set(w.items.map((i: any) => i.orderId as string))];
+      const status =
+        w.status === "DONE" ? "completed"
+        : w.status === "IN_PROGRESS" ? "picking"
+        : "planned";
+      return {
+        waveId: `WAVE-${w.id.slice(0, 8).toUpperCase()}`,
+        id: w.id,
+        createdDate: w.createdAt,
+        ordersCount: orderIds.length,
+        itemsCount: w.items.length,
+        status,
+        waveWindow: w.waveWindow,
+        estimatedCompletionTime: w.completedAt ?? null,
+        assignedTo: w.assignedTo,
+      };
+    });
 
-    const waves = Array.from(dayMap.entries())
-      .sort(([a], [b]) => b.localeCompare(a))
-      .map(([day, { statuses, itemsCount, deliveryDate }], idx) => {
-        const allDone = statuses.every((s) => s === "DELIVERED" || s === "CANCELLED");
-        const anyActive = statuses.some((s) => ["IN_TRANSIT", "PICKED_UP", "ASSIGNED"].includes(s));
-        const waveNum = String(dayMap.size - idx).padStart(4, "0");
-        const estCompletion = deliveryDate ?? new Date(new Date(day).getTime() + 18 * 3600000);
-        return {
-          waveId: `WAVE-${day.replace(/-/g, "")}-${waveNum}`,
-          createdDate: `${day}T06:00:00Z`,
-          ordersCount: statuses.length,
-          itemsCount,
-          status: allDone ? "completed" : anyActive ? "picking" : "planned",
-          estimatedCompletionTime: estCompletion instanceof Date ? estCompletion.toISOString() : new Date(estCompletion).toISOString(),
-        };
-      });
-
-    return { data: waves, pagination: { page: 1, limit: waves.length, total: waves.length, totalPages: 1 } };
+    return { data, total: data.length };
   });
 
-  // ── BATCHES ───────────────────────────────────────────────────────
+  // ── BATCH PICKING ─────────────────────────────────────────────────────
 
   fastify.get("/batches", async (request: FastifyRequest, _reply: FastifyReply) => {
     const shopId = request.shopId;
 
-    const orders = await request.tenantDb.order.findMany({
-      where: { shopId, status: { notIn: ["DELIVERED", "CANCELLED"] as any } },
-      take: 30,
+    const batches = await (request.tenantDb as any).pickList.findMany({
+      where: { shopId, strategy: "BATCH_PICK" },
+      include: { items: { select: { id: true, binLocation: true, zone: true } } },
       orderBy: { createdAt: "desc" as const },
-      select: { id: true, status: true, itemCount: true, createdAt: true, fulfillmentId: true },
+      take: 50,
     });
 
-    const batches = orders.map((o) => {
-      const s = String(o.status);
-      const batchStatus = s === "PICKED_UP" ? "completed" : ["IN_TRANSIT", "ASSIGNED"].includes(s) ? "in-progress" : "pending";
-      const completionRate = batchStatus === "completed" ? 100 : batchStatus === "in-progress" ? 60 : 0;
-      const day = o.createdAt.toISOString().slice(0, 10).replace(/-/g, "");
+    const data = batches.map((b: any) => {
+      const status =
+        b.status === "DONE" ? "completed"
+        : b.status === "IN_PROGRESS" ? "in-progress"
+        : "pending";
+      const doneItems = b.status === "DONE" ? b.items.length : b.status === "IN_PROGRESS" ? Math.floor(b.items.length * 0.5) : 0;
+      const completionRate = b.items.length > 0 ? Math.round((doneItems / b.items.length) * 100) : 0;
+      const zone = b.zone ?? b.items[0]?.zone ?? "General";
       return {
-        batchId: o.fulfillmentId ?? `BATCH-${o.id.slice(0, 8)}`,
-        waveId: `WAVE-${day}-0001`,
-        location: "Main Warehouse",
-        itemCount: o.itemCount,
-        status: batchStatus as "pending" | "in-progress" | "completed",
+        batchId: `BATCH-${b.batchNumber ?? b.id.slice(0, 6).toUpperCase()}`,
+        id: b.id,
+        waveId: `WAVE-${b.id.slice(0, 8).toUpperCase()}`,
+        location: `Zone ${zone}`,
+        itemCount: b.items.length,
+        status,
+        assignedTo: b.assignedTo,
         completionRate,
       };
     });
 
-    return { data: batches, pagination: { page: 1, limit: batches.length, total: batches.length, totalPages: 1 } };
+    return { data, total: data.length };
   });
 }
 

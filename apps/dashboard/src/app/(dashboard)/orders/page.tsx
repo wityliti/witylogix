@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown, Map, List, MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { ChevronLeft, ChevronRight, Search, Map, List } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,17 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useOrders, Order } from '@/hooks/use-orders';
-import Link from 'next/link';
+import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
+
+const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
+
+function toOrderPinStatus(status: string): OrderPinStatus {
+  const s = status.toLowerCase();
+  if (s === 'assigned') return 'assigned';
+  if (s === 'in_transit') return 'in_transit';
+  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
+  return 'pending';
+}
 
 const OrderLayer = dynamic(
   () => import('@/components/map/order-layer').then((m) => m.OrderLayer),
@@ -67,13 +78,14 @@ function truncate(s: string, max = 40): string {
 type ViewMode = 'list' | 'map';
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt:desc');
   const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
+  const [view, setView] = useState<'list' | 'map'>('list');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
 
   const itemsPerPage = 15;
 
@@ -104,6 +116,25 @@ export default function OrdersPage() {
   const startIdx = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filtered.slice(startIdx, startIdx + itemsPerPage);
 
+  // Map pins — only orders that have delivery coordinates
+  const orderPins = useMemo<OrderPin[]>(() =>
+    orders
+      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
+        o.deliveryLat != null && o.deliveryLng != null
+      )
+      .map((o) => ({
+        id: o.id,
+        orderNumber: `#${o.id.slice(0, 8)}`,
+        customerName: o.customerName,
+        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
+        status: toOrderPinStatus(o.status),
+        lat: o.deliveryLat,
+        lng: o.deliveryLng,
+        priority: o.status === 'in_transit' ? 'high' : 'medium',
+      })),
+  [orders]);
+
+  // Status counts
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { all: orders.length };
     STATUS_TABS.forEach((tab) => {
@@ -132,37 +163,34 @@ export default function OrdersPage() {
     <div className="min-h-screen bg-zinc-950">
       <Header
         title="Orders"
-        subtitle={`${pagination.total} total orders`}
+        subtitle={`${pagination.total} total orders${orderPins.length > 0 ? ` · ${orderPins.length} on map` : ''}`}
         actions={
           <div className="flex items-center gap-2">
-            {/* View toggle */}
-            <div className="flex items-center rounded-lg border border-zinc-700 bg-zinc-900 p-0.5">
+            <div className="flex items-center gap-1 rounded-lg bg-zinc-800 p-0.5">
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => setView('list')}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
-                  viewMode === 'list'
-                    ? 'bg-zinc-700 text-white'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                  view === 'list' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
                 )}
               >
-                <List className="w-3.5 h-3.5" />
-                List
+                <List className="w-3.5 h-3.5" /> List
               </button>
               <button
-                onClick={() => setViewMode('map')}
+                onClick={() => setView('map')}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
-                  viewMode === 'map'
-                    ? 'bg-zinc-700 text-white'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                  view === 'map' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
                 )}
               >
-                <Map className="w-3.5 h-3.5" />
-                Map
+                <Map className="w-3.5 h-3.5" /> Map
               </button>
             </div>
-            <Button variant="primary" size="md">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push('/orders/create')}
+            >
               + Create Order
             </Button>
           </div>
@@ -249,38 +277,74 @@ export default function OrdersPage() {
           </div>
         </Card>
 
-        {/* Map view */}
-        {viewMode === 'map' && (
-          <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
-            <div className="p-4 border-b border-zinc-800">
-              <h3 className="text-sm font-semibold text-zinc-200">Delivery Locations</h3>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                {filtered.length} orders • click a pin for details
-              </p>
-            </div>
-            {loading ? (
-              <div className="h-[480px] bg-zinc-900 animate-pulse" />
-            ) : filtered.length === 0 ? (
-              <div className="h-[480px] flex items-center justify-center">
-                <p className="text-zinc-500 text-sm">No orders to display on map</p>
+        {/* Map View */}
+        {view === 'map' && (
+          <div
+            className="relative rounded-xl overflow-hidden border border-zinc-800"
+            style={{ height: 'calc(100vh - 320px)', minHeight: '480px' }}
+          >
+            {orderPins.length === 0 ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900">
+                <MapPin className="w-10 h-10 mb-3 text-zinc-600" />
+                <p className="text-sm font-medium text-zinc-300">No orders with location data</p>
+                <p className="text-xs mt-1 text-zinc-500">Orders need delivery coordinates to appear on the map</p>
               </div>
             ) : (
-              <OrderLayer
-                orders={mapOrders}
-                selectedId={selectedOrderId}
-                onOrderClick={(id) => setSelectedOrderId((prev) => (prev === id ? null : id))}
-                height={480}
+              <OrdersMapView
+                orders={orderPins}
+                selectedOrderId={selectedOrderId}
+                onOrderClick={setSelectedOrderId}
               />
             )}
-          </Card>
+          </div>
         )}
 
-        {/* List view */}
-        {viewMode === 'list' && (
-          <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b border-zinc-800 bg-zinc-900/80">
+        {/* Orders Table + Pagination (list view) */}
+        {view === 'list' && (
+        <>
+        <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-zinc-800 bg-zinc-900/80">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Order
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Customer
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Destination
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Items
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Total
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Created
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800">
+                {loading ? (
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
+                      <td colSpan={8}>
+                        <div className="px-6 py-4">
+                          <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : paginatedOrders.length === 0 ? (
                   <tr>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Order</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Customer</th>
@@ -427,6 +491,8 @@ export default function OrdersPage() {
               </Button>
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>

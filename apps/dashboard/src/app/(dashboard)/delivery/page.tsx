@@ -2,46 +2,66 @@
 
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { Card } from '@/components/ui/card';
+import { Header } from '@/components/layout/header';
+import { Card, CardContent } from '@/components/ui/card';
+import { StatCard } from '@/components/ui/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { Truck, Package, RefreshCw, MapPin } from 'lucide-react';
 import { useApiList } from '@/hooks/use-api';
-import type { DeliveryPoint } from '@/components/map/delivery-marker-layer';
+import {
+  Truck,
+  Package,
+  RefreshCw,
+  MapPin,
+  LayoutList,
+  Map,
+  Clock,
+  CheckCircle,
+  XCircle,
+  ChevronRight,
+  User,
+} from 'lucide-react';
+import type { DeliveryMapShipment } from './components/delivery-map-view';
 
-const WLMap = dynamic(() => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })), { ssr: false });
-const DeliveryMarkerLayer = dynamic(
-  () => import('@/components/map/delivery-marker-layer').then((m) => ({ default: m.DeliveryMarkerLayer })),
-  { ssr: false },
-);
+// ── Types ─────────────────────────────────────────────────────
 
 interface Shipment {
   id: string;
   shipmentNumber: string;
+  trackingNumber?: string | null;
   status: string;
-  deliveryDate?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  province?: string;
-  postalCode?: string;
-  recipientName?: string;
+  deliveryMethod?: string | null;
+  recipientName?: string | null;
+  recipientPhone?: string | null;
+  recipientEmail?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
   deliveryLocation?: { lat: number; lng: number } | null;
-  driverId?: string;
-  orderId?: string;
-  order?: { externalOrderNumber?: string };
-  driver?: { name?: string } | null;
+  deliveryDate?: string | null;
+  estimatedArrival?: string | null;
+  actualDelivery?: string | null;
+  attemptCount?: number;
+  order?: {
+    id: string;
+    externalOrderNumber?: string | null;
+    customerName?: string | null;
+  } | null;
+  driver?: {
+    id: string;
+    name: string;
+    phone: string;
+  } | null;
   createdAt: string;
 }
 
-const STATUS_FILTER_MAP: Record<string, string | undefined> = {
-  all: undefined,
-  pending: 'PENDING',
-  'in-transit': 'IN_TRANSIT',
-  delivered: 'DELIVERED',
-  failed: 'FAILED',
-};
+// ── Status helpers ────────────────────────────────────────────
 
 const API_TO_DISPLAY: Record<string, string> = {
   PENDING: 'pending',
@@ -53,228 +73,481 @@ const API_TO_DISPLAY: Record<string, string> = {
   ARRIVED: 'in-transit',
   DELIVERED: 'delivered',
   FAILED: 'failed',
+  FAILED_ATTEMPT: 'failed',
   RETURNED: 'failed',
   CANCELLED: 'failed',
 };
 
-export default function DeliveryPage() {
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [mapId, setMapId] = useState<string | null>(null);
+const STATUS_FILTER_MAP: Record<string, string | undefined> = {
+  all: undefined,
+  pending: 'PENDING',
+  'in-transit': 'IN_TRANSIT',
+  delivered: 'DELIVERED',
+  failed: 'FAILED',
+};
 
-  const apiStatus = STATUS_FILTER_MAP[statusFilter];
-  const { items: shipments, loading, error, refetch } = useApiList<Shipment>(
-    '/api/v4/shipments',
-    { limit: 50, ...(apiStatus ? { status: apiStatus } : {}) },
-  );
+function displayStatus(s: string): string {
+  return API_TO_DISPLAY[s] ?? s.toLowerCase();
+}
 
-  const displayStatus = (s: string) => API_TO_DISPLAY[s] ?? s.toLowerCase();
+function statusVariant(s: string): 'success' | 'primary' | 'warning' | 'danger' | 'default' {
+  switch (displayStatus(s)) {
+    case 'delivered': return 'success';
+    case 'in-transit': return 'primary';
+    case 'pending': return 'warning';
+    case 'failed': return 'danger';
+    default: return 'default';
+  }
+}
 
-  const filtered = statusFilter === 'all'
-    ? shipments
-    : shipments.filter((s) => displayStatus(s.status) === statusFilter);
+function formatAddress(s: Shipment): string {
+  const parts = [s.addressLine1, s.city, s.province].filter(Boolean);
+  return parts.join(', ') || '—';
+}
 
-  const stats = {
-    pending: shipments.filter((s) => ['pending'].includes(displayStatus(s.status))).length,
-    inTransit: shipments.filter((s) => displayStatus(s.status) === 'in-transit').length,
-    completed: shipments.filter((s) => displayStatus(s.status) === 'delivered').length,
-    failed: shipments.filter((s) => displayStatus(s.status) === 'failed').length,
-  };
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-CA', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
-  // Build delivery points from shipments that have deliveryLocation
-  const deliveryPoints = useMemo<DeliveryPoint[]>(() => {
-    return filtered
-      .filter((s) => s.deliveryLocation?.lat != null && s.deliveryLocation?.lng != null)
-      .map((s) => ({
-        id: s.id,
-        label: s.recipientName ?? s.shipmentNumber,
-        address: [s.addressLine1, s.city].filter(Boolean).join(', '),
-        status: displayStatus(s.status),
-        latitude: s.deliveryLocation!.lat,
-        longitude: s.deliveryLocation!.lng,
-      }));
-  }, [filtered]);
+// ── Lazy-load map to avoid SSR issues ─────────────────────────
 
-  const getStatusVariant = (status: string): 'success' | 'primary' | 'warning' | 'danger' | 'default' => {
-    const display = displayStatus(status);
-    switch (display) {
-      case 'delivered': return 'success';
-      case 'in-transit': return 'primary';
-      case 'pending': return 'warning';
-      case 'failed': return 'danger';
-      default: return 'default';
-    }
-  };
-
-  const formatAddress = (s: Shipment) => [s.addressLine1, s.city, s.province].filter(Boolean).join(', ');
-
-  return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
-        <div className="p-6">
-          <div className="max-w-[1600px] mx-auto">
-            <div className="flex items-center justify-between gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white">Deliveries</h1>
-                <p className="text-sm text-gray-400 mt-1">
-                  Track delivery operations · {deliveryPoints.length} mapped
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
-                  <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
-                </Button>
-                <Button variant="primary" size="md">
-                  <Package className="w-4 h-4" />
-                  New Delivery
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex gap-2 flex-wrap">
-              {[
-                { label: 'All', value: 'all', count: shipments.length },
-                { label: 'Pending', value: 'pending', count: stats.pending },
-                { label: 'In Transit', value: 'in-transit', count: stats.inTransit },
-                { label: 'Delivered', value: 'delivered', count: stats.completed },
-                { label: 'Failed', value: 'failed', count: stats.failed },
-              ].map((tab) => (
-                <button
-                  key={tab.value}
-                  onClick={() => setStatusFilter(tab.value)}
-                  className={cn(
-                    'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-                    statusFilter === tab.value
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-[#1a1a2e] text-gray-400 hover:text-gray-300'
-                  )}
-                >
-                  {tab.label} ({tab.count})
-                </button>
-              ))}
-            </div>
-          </div>
+const DeliveryMapView = dynamic(
+  () => import('./components/delivery-map-view'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[520px] rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 rounded-full border-2 border-zinc-600 border-t-white animate-spin mx-auto mb-3" />
+          <p className="text-sm text-zinc-500">Loading map…</p>
         </div>
       </div>
+    ),
+  },
+);
 
-      <div className="flex-1 p-6">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_440px] gap-6">
-            {/* Shipment list */}
-            <div className="space-y-3">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <Card key={i} className="p-4 bg-[#12121a] border border-[#1e1e2e] animate-pulse h-20">{' '}</Card>
-                ))
-              ) : error ? (
-                <Card className="p-12 bg-[#12121a] border border-[#1e1e2e] text-center">
-                  <p className="text-red-400">Failed to load deliveries. Please try again.</p>
-                  <Button variant="secondary" size="sm" className="mt-4" onClick={refetch}>
-                    Retry
-                  </Button>
-                </Card>
-              ) : filtered.length === 0 ? (
-                <Card className="p-12 bg-[#12121a] border border-[#1e1e2e] text-center">
-                  <Truck className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400">No deliveries found</p>
-                </Card>
-              ) : (
-                filtered.map((shipment) => (
-                  <Card
-                    key={shipment.id}
-                    className={cn(
-                      'p-4 bg-[#12121a] border border-[#1e1e2e] hover:border-[#2e2e3e] cursor-pointer transition-colors',
-                      selectedId === shipment.id && 'border-blue-500/60 ring-1 ring-blue-500/30',
-                    )}
-                    onClick={() => setSelectedId((p) => (p === shipment.id ? null : shipment.id))}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-white">
-                            {shipment.recipientName ?? 'Unknown Recipient'}
-                          </h3>
-                          <Badge variant={getStatusVariant(shipment.status)}>
-                            {displayStatus(shipment.status).replace('-', ' ')}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-400 mb-1">
-                          {shipment.shipmentNumber}
-                          {shipment.order?.externalOrderNumber && ` · Order #${shipment.order.externalOrderNumber}`}
-                        </p>
-                        <div className="flex gap-4 text-sm text-gray-500">
-                          {formatAddress(shipment) && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {formatAddress(shipment)}
-                            </span>
-                          )}
-                          {shipment.driver?.name && <span>· {shipment.driver.name}</span>}
-                        </div>
+// ── Skeleton ──────────────────────────────────────────────────
+
+function DeliverySkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-4 h-24 animate-pulse"
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Selected shipment detail panel ────────────────────────────
+
+function ShipmentDetailPanel({
+  shipment,
+  onClose,
+}: {
+  shipment: Shipment;
+  onClose: () => void;
+}) {
+  return (
+    <Card className="mt-4 bg-wl-bg-surface border border-wl-border-default">
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-white text-base">{shipment.shipmentNumber}</h3>
+            <p className="text-sm text-zinc-400 mt-0.5">
+              {shipment.order?.customerName ?? shipment.recipientName ?? 'Unknown recipient'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={statusVariant(shipment.status)}>
+              {displayStatus(shipment.status).replace('-', ' ')}
+            </Badge>
+            <button
+              onClick={onClose}
+              className="text-zinc-500 hover:text-white transition-colors text-xs px-2 py-1 rounded border border-zinc-700"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Delivery Address</p>
+            <p className="text-zinc-200">{formatAddress(shipment)}</p>
+          </div>
+          <div>
+            <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Est. Delivery</p>
+            <p className="text-zinc-200">
+              {formatDate(shipment.estimatedArrival ?? shipment.deliveryDate)}
+            </p>
+          </div>
+          {shipment.driver && (
+            <div>
+              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Driver</p>
+              <div className="flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-zinc-400" />
+                <p className="text-zinc-200">{shipment.driver.name}</p>
+              </div>
+            </div>
+          )}
+          {shipment.trackingNumber && (
+            <div>
+              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Tracking #</p>
+              <p className="text-zinc-200 font-mono text-xs">{shipment.trackingNumber}</p>
+            </div>
+          )}
+          {shipment.order?.externalOrderNumber && (
+            <div>
+              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Order</p>
+              <p className="text-zinc-200">#{shipment.order.externalOrderNumber}</p>
+            </div>
+          )}
+          {(shipment.attemptCount ?? 0) > 0 && (
+            <div>
+              <p className="text-zinc-500 text-xs uppercase tracking-wide mb-1">Attempts</p>
+              <p className="text-zinc-200">{shipment.attemptCount}</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────
+
+type ViewMode = 'list' | 'map';
+
+const STATUS_TABS = [
+  { label: 'All', value: 'all' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'In Transit', value: 'in-transit' },
+  { label: 'Delivered', value: 'delivered' },
+  { label: 'Failed', value: 'failed' },
+];
+
+export default function DeliveryPage() {
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const apiStatus = STATUS_FILTER_MAP[statusFilter];
+
+  const { items: shipments, loading, error, refetch } = useApiList<Shipment>(
+    '/api/v4/shipments',
+    { limit: 100, ...(apiStatus ? { status: apiStatus } : {}) },
+  );
+
+  // Client-side filter for sub-statuses not directly filterable by API
+  const filtered = useMemo(() => {
+    if (statusFilter === 'all') return shipments;
+    return shipments.filter((s) => displayStatus(s.status) === statusFilter);
+  }, [shipments, statusFilter]);
+
+  const selectedShipment = selectedId
+    ? shipments.find((s) => s.id === selectedId) ?? null
+    : null;
+
+  // Stats
+  const stats = useMemo(() => ({
+    total: shipments.length,
+    pending: shipments.filter((s) => ['pending'].includes(displayStatus(s.status))).length,
+    inTransit: shipments.filter((s) => displayStatus(s.status) === 'in-transit').length,
+    delivered: shipments.filter((s) => displayStatus(s.status) === 'delivered').length,
+    failed: shipments.filter((s) => displayStatus(s.status) === 'failed').length,
+    withLocation: shipments.filter((s) => s.deliveryLocation?.lat != null).length,
+  }), [shipments]);
+
+  // Map data (typed for the dynamic component)
+  const mapShipments: DeliveryMapShipment[] = useMemo(() =>
+    filtered.map((s) => ({
+      id: s.id,
+      shipmentNumber: s.shipmentNumber,
+      status: s.status,
+      recipientName: s.recipientName,
+      addressLine1: s.addressLine1,
+      city: s.city,
+      deliveryLocation: s.deliveryLocation,
+      order: s.order,
+    })),
+    [filtered],
+  );
+
+  return (
+    <>
+      <Header
+        title="Deliveries"
+        subtitle="Track and manage all delivery operations"
+        actions={
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex rounded-lg border border-wl-border-subtle overflow-hidden">
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
+                  viewMode === 'list'
+                    ? 'bg-wl-primary text-white'
+                    : 'text-wl-text-secondary hover:text-wl-text-primary',
+                )}
+                aria-pressed={viewMode === 'list'}
+                aria-label="List view"
+              >
+                <LayoutList className="w-4 h-4" />
+                <span className="hidden sm:inline">List</span>
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
+                  viewMode === 'map'
+                    ? 'bg-wl-primary text-white'
+                    : 'text-wl-text-secondary hover:text-wl-text-primary',
+                )}
+                aria-pressed={viewMode === 'map'}
+                aria-label="Map view"
+              >
+                <Map className="w-4 h-4" />
+                <span className="hidden sm:inline">Map</span>
+              </button>
+            </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={refetch}
+              disabled={loading}
+              aria-label="Refresh"
+            >
+              <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
+            </Button>
+
+            <Button variant="primary" size="sm">
+              <Package className="w-4 h-4" />
+              <span className="hidden sm:inline">New Delivery</span>
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="flex-1 overflow-auto p-6 space-y-6">
+
+        {/* ── Stat cards ───────────────────────────────────────── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <StatCard
+            label="In Transit"
+            value={loading ? '—' : stats.inTransit}
+            icon={<Truck className="w-5 h-5" />}
+            accentColor="var(--wl-primary-500)"
+          />
+          <StatCard
+            label="Pending"
+            value={loading ? '—' : stats.pending}
+            icon={<Clock className="w-5 h-5" />}
+            accentColor="#f59e0b"
+          />
+          <StatCard
+            label="Delivered"
+            value={loading ? '—' : stats.delivered}
+            icon={<CheckCircle className="w-5 h-5" />}
+            accentColor="#10b981"
+          />
+          <StatCard
+            label="Failed"
+            value={loading ? '—' : stats.failed}
+            icon={<XCircle className="w-5 h-5" />}
+            accentColor="#ef4444"
+          />
+        </div>
+
+        {/* ── Status filter tabs ───────────────────────────────── */}
+        <div
+          className="flex gap-1 flex-wrap"
+          role="tablist"
+          aria-label="Filter by delivery status"
+        >
+          {STATUS_TABS.map((tab) => {
+            const count =
+              tab.value === 'all' ? stats.total
+              : tab.value === 'pending' ? stats.pending
+              : tab.value === 'in-transit' ? stats.inTransit
+              : tab.value === 'delivered' ? stats.delivered
+              : stats.failed;
+            return (
+              <button
+                key={tab.value}
+                role="tab"
+                aria-selected={statusFilter === tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={cn(
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                  statusFilter === tab.value
+                    ? 'bg-wl-primary text-white'
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary border border-wl-border-subtle',
+                )}
+              >
+                {tab.label}
+                {!loading && (
+                  <span className="ml-1.5 text-xs opacity-70">({count})</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Content ──────────────────────────────────────────── */}
+        {loading && shipments.length === 0 ? (
+          <DeliverySkeleton />
+        ) : error && shipments.length === 0 ? (
+          <ErrorState
+            title="Failed to load deliveries"
+            message={error.message}
+            onRetry={refetch}
+          />
+        ) : viewMode === 'map' ? (
+          /* ── MAP VIEW ─────────────────────────────────────── */
+          <div>
+            <div className="h-[520px]">
+              <DeliveryMapView
+                shipments={mapShipments}
+                selectedId={selectedId}
+                onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))}
+              />
+            </div>
+            {selectedShipment && (
+              <ShipmentDetailPanel
+                shipment={selectedShipment}
+                onClose={() => setSelectedId(null)}
+              />
+            )}
+            {stats.withLocation === 0 && !loading && (
+              <p className="text-center text-sm text-zinc-500 mt-4">
+                No deliveries have geographic coordinates yet. Coordinates are set when drivers
+                confirm delivery or when the address is geocoded.
+              </p>
+            )}
+          </div>
+        ) : filtered.length === 0 ? (
+          /* ── EMPTY STATE ──────────────────────────────────── */
+          <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-xl border border-wl-border-subtle bg-wl-bg-elevated">
+            <div className="w-14 h-14 rounded-full bg-wl-bg-surface flex items-center justify-center">
+              <Truck className="w-7 h-7 text-wl-text-tertiary" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-wl-text-secondary">No deliveries found</p>
+              <p className="text-xs text-wl-text-tertiary mt-1">
+                {statusFilter === 'all'
+                  ? 'Create your first delivery to get started'
+                  : `No ${statusFilter.replace('-', ' ')} deliveries`}
+              </p>
+            </div>
+            <Button variant="primary" size="sm">
+              <Package className="w-4 h-4" />
+              New Delivery
+            </Button>
+          </div>
+        ) : (
+          /* ── LIST VIEW ────────────────────────────────────── */
+          <div className="space-y-2" role="list" aria-label="Delivery list">
+            {filtered.map((shipment) => (
+              <button
+                key={shipment.id}
+                role="listitem"
+                onClick={() =>
+                  setSelectedId((prev) => (prev === shipment.id ? null : shipment.id))
+                }
+                className={cn(
+                  'w-full text-left rounded-xl border transition-colors',
+                  'bg-wl-bg-surface hover:bg-wl-bg-elevated',
+                  selectedId === shipment.id
+                    ? 'border-wl-primary/60'
+                    : 'border-wl-border-default hover:border-wl-border-strong',
+                )}
+                aria-pressed={selectedId === shipment.id}
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      {/* Header row */}
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className="font-semibold text-white text-sm">
+                          {shipment.order?.customerName ?? shipment.recipientName ?? 'Unknown recipient'}
+                        </span>
+                        <Badge variant={statusVariant(shipment.status)} size="sm">
+                          {displayStatus(shipment.status).replace('-', ' ')}
+                        </Badge>
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        {shipment.deliveryLocation ? (
-                          <span className="text-xs text-green-400 flex items-center gap-1 justify-end mb-1">
-                            <MapPin className="w-3 h-3" /> Mapped
+
+                      {/* Shipment number */}
+                      <p className="text-xs text-zinc-500 mb-1.5 font-mono">
+                        {shipment.shipmentNumber}
+                        {shipment.order?.externalOrderNumber &&
+                          ` · Order #${shipment.order.externalOrderNumber}`}
+                      </p>
+
+                      {/* Address + driver */}
+                      <div className="flex items-center gap-4 text-xs text-zinc-500 flex-wrap">
+                        {(shipment.addressLine1 || shipment.city) && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            {formatAddress(shipment)}
                           </span>
-                        ) : null}
-                        {shipment.deliveryDate ? (
-                          <>
-                            <p className="text-sm font-medium text-white">
-                              {new Date(shipment.deliveryDate).toLocaleDateString()}
-                            </p>
-                            <p className="text-xs text-gray-500">Est. Delivery</p>
-                          </>
-                        ) : (
-                          <p className="text-xs text-gray-500">No date set</p>
+                        )}
+                        {shipment.driver && (
+                          <span className="flex items-center gap-1">
+                            <User className="w-3 h-3 flex-shrink-0" />
+                            {shipment.driver.name}
+                          </span>
                         )}
                       </div>
                     </div>
-                  </Card>
-                ))
-              )}
-            </div>
 
-            {/* Delivery map */}
-            <div className="relative rounded-xl overflow-hidden border border-white/[0.07] h-[560px] xl:sticky xl:top-[140px] xl:self-start">
-              <WLMap className="w-full h-full" onReady={setMapId}>
-                {mapId && (
-                  <DeliveryMarkerLayer
-                    mapId={mapId}
-                    points={deliveryPoints}
-                    selectedId={selectedId}
-                  />
-                )}
-              </WLMap>
-
-              {/* Map legend */}
-              <div className="absolute bottom-4 left-4 bg-[rgba(10,10,20,.9)] backdrop-blur-sm border border-white/[0.08] rounded-lg p-3 text-xs space-y-1.5 pointer-events-none">
-                {[
-                  { color: '#fbbf24', label: 'Pending' },
-                  { color: '#60a5fa', label: 'In Transit' },
-                  { color: '#34d399', label: 'Delivered' },
-                  { color: '#f87171', label: 'Failed' },
-                ].map(({ color, label }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
-                    <span className="text-gray-300">{label}</span>
-                  </div>
-                ))}
-              </div>
-
-              {deliveryPoints.length === 0 && !loading && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="bg-[rgba(10,10,20,.85)] backdrop-blur-sm border border-white/[0.08] rounded-lg px-5 py-4 text-center max-w-[220px]">
-                    <MapPin className="w-6 h-6 text-gray-500 mx-auto mb-2" />
-                    <p className="text-xs text-gray-400">No mapped delivery points</p>
-                    <p className="text-[10px] text-gray-600 mt-1">Shipments with geo-coordinates appear here</p>
+                    {/* Right: date + chevron */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="text-right">
+                        {(shipment.estimatedArrival ?? shipment.deliveryDate) ? (
+                          <>
+                            <p className="text-xs font-medium text-zinc-300">
+                              {formatDate(shipment.estimatedArrival ?? shipment.deliveryDate)}
+                            </p>
+                            <p className="text-[10px] text-zinc-600">
+                              {shipment.actualDelivery ? 'Delivered' : 'Est. delivery'}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-[10px] text-zinc-600">No date</p>
+                        )}
+                      </div>
+                      <ChevronRight
+                        className={cn(
+                          'w-4 h-4 text-zinc-600 transition-transform',
+                          selectedId === shipment.id && 'rotate-90',
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </button>
+            ))}
           </div>
-        </div>
+        )}
+
+        {/* Selected detail panel (list view) */}
+        {viewMode === 'list' && selectedShipment && (
+          <ShipmentDetailPanel
+            shipment={selectedShipment}
+            onClose={() => setSelectedId(null)}
+          />
+        )}
       </div>
-    </div>
+    </>
   );
 }

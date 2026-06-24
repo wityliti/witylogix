@@ -17,6 +17,7 @@ export function ProviderCard({
   className,
 }: ProviderCardProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
 
   // Get status badge color
   const getStatusColor = (): string => {
@@ -84,9 +85,12 @@ export function ProviderCard({
   };
 
   const handleDisconnect = () => {
-    if (window.confirm('Are you sure you want to disconnect this integration?')) {
-      onDisconnect?.(provider.id);
+    if (!confirmDisconnect) {
+      setConfirmDisconnect(true);
+      return;
     }
+    setConfirmDisconnect(false);
+    onDisconnect?.(provider.id);
   };
 
   return (
@@ -232,16 +236,40 @@ export function ProviderCard({
           {isLoading ? 'Testing...' : 'Test'}
         </button>
 
-        <button
-          onClick={handleDisconnect}
-          className={cn(
-            'flex-1 px-3 py-2 rounded text-sm font-medium transition-colors',
-            'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
-            'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
-          )}
-        >
-          Disconnect
-        </button>
+        {confirmDisconnect ? (
+          <div className="flex-1 flex gap-1">
+            <button
+              onClick={() => setConfirmDisconnect(false)}
+              className={cn(
+                'flex-1 px-3 py-2 rounded text-sm font-medium transition-colors',
+                'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle'
+              )}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDisconnect}
+              className={cn(
+                'flex-1 px-3 py-2 rounded text-sm font-medium transition-colors',
+                'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+                'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+              )}
+            >
+              Confirm
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleDisconnect}
+            className={cn(
+              'flex-1 px-3 py-2 rounded text-sm font-medium transition-colors',
+              'bg-wl-danger-100 text-wl-danger-700 hover:bg-wl-danger-200',
+              'dark:bg-wl-danger-900/30 dark:text-wl-danger-300 dark:hover:bg-wl-danger-900/50'
+            )}
+          >
+            Disconnect
+          </button>
+        )}
       </div>
     </div>
   );

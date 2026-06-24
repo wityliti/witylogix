@@ -11,6 +11,7 @@
  * - Open/click tracking pixel injection
  */
 
+import { EmailEventType } from "./types.js";
 import type {
   EmailAdapterConfig,
   EmailMessage,
@@ -379,7 +380,7 @@ export abstract class EmailAdapter {
    * @param event Email event from webhook
    */
   protected handleBounceEvent(event: EmailEvent): void {
-    if (event.type !== "BOUNCED") return;
+    if (event.type !== EmailEventType.BOUNCED) return;
 
     const entry: SuppressionEntry = {
       email: event.recipient,
@@ -398,7 +399,7 @@ export abstract class EmailAdapter {
    * @param event Email event from webhook
    */
   protected handleComplaintEvent(event: EmailEvent): void {
-    if (event.type !== "COMPLAINED") return;
+    if (event.type !== EmailEventType.COMPLAINED) return;
 
     const entry: SuppressionEntry = {
       email: event.recipient,

@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  @apply bg-[#0a0a0f] text-gray-100 antialiased;
+  min-height: 100vh;
+}

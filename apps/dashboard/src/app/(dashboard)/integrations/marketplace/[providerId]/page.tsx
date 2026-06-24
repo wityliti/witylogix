@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
 import {
   ArrowLeft,
   CheckCircle,
@@ -20,277 +22,142 @@ import {
   ExternalLink,
   Loader2,
   Check,
-  X,
 } from "lucide-react";
-import { useApiQuery } from '@/hooks/use-api';
 
 /* ═══════════════════════════════════════════════════════════
-   INTEGRATION DETAIL PAGE
-   Single provider configuration & setup
+   INTEGRATION DETAIL PAGE — fetches from /api/v4/integrations/marketplace/:slug
    ═══════════════════════════════════════════════════════════ */
 
-type AuthType = "oauth2" | "api_key" | "basic_auth" | "custom";
-type Status = "AVAILABLE" | "CONNECTED" | "COMING_SOON" | "BETA";
-
-interface ProviderDetails {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  description: string;
-  longDescription: string;
-  status: Status;
-  authType: AuthType;
-  popular: boolean;
-  connected: boolean;
-  features: string[];
-  supportedOperations: string[];
-  webhookSupported: boolean;
-  webhookUrl?: string;
-  documentationUrl: string;
-  setupInstructions: string[];
+interface CredentialField {
+  key: string;
+  label: string;
+  placeholder: string;
+  type: "text" | "password" | "url" | "textarea";
+  required: boolean;
+  helpUrl?: string;
 }
 
-// Sample provider data
-const PROVIDERS: Record<string, ProviderDetails> = {
-  hubspot: {
-    id: "crm-1",
-    slug: "hubspot",
-    name: "HubSpot",
-    category: "CRM",
-    description: "Customer relationship management platform",
-    longDescription:
-      "HubSpot is a comprehensive CRM platform that helps businesses manage customer interactions, sales pipelines, and marketing campaigns. Integrating HubSpot with Witylogix enables seamless synchronization of customer data and logistics information.",
-    status: "AVAILABLE",
-    authType: "oauth2",
-    popular: true,
-    connected: false,
-    features: [
-      "Contact Management",
-      "Deal Tracking",
-      "Email Integration",
-      "Analytics",
-      "Custom Fields",
-      "Workflow Automation",
-    ],
-    supportedOperations: [
-      "Create Contact",
-      "Update Deal",
-      "Get Company Info",
-      "Create Task",
-      "Send Email",
-      "Update Pipeline",
-    ],
-    webhookSupported: true,
-    webhookUrl: "https://api.witylogix.com/webhooks/hubspot",
-    documentationUrl: "https://developers.hubspot.com",
-    setupInstructions: [
-      "Visit HubSpot and sign in to your account",
-      "Navigate to Settings > Integrations",
-      "Authorize Witylogix to access your account",
-      "Select the scopes you want to grant",
-      "Review and confirm the permissions",
-      "You're all set! Data will start syncing.",
-    ],
-  },
-  sendgrid: {
-    id: "email-1",
-    slug: "sendgrid",
-    name: "SendGrid",
-    category: "EMAIL",
-    description: "Transactional email delivery service",
-    longDescription:
-      "SendGrid provides reliable email delivery with advanced tracking and analytics. Integrate with Witylogix to send transactional emails, delivery notifications, and customer communications.",
-    status: "AVAILABLE",
-    authType: "api_key",
-    popular: true,
-    connected: true,
-    features: [
-      "Email Delivery",
-      "Template Engine",
-      "Analytics",
-      "Bounce Management",
-      "List Management",
-      "Webhook Support",
-    ],
-    supportedOperations: [
-      "Send Email",
-      "Get Contact",
-      "Update Contact",
-      "Delete Contact",
-      "Get Analytics",
-      "Create Campaign",
-    ],
-    webhookSupported: true,
-    webhookUrl: "https://api.witylogix.com/webhooks/sendgrid",
-    documentationUrl: "https://sendgrid.com/docs",
-    setupInstructions: [
-      "Log in to your SendGrid account",
-      "Navigate to Settings > API Keys",
-      "Create a new API key or use an existing one",
-      "Copy your API key",
-      "Paste it in the configuration form below",
-      "Test the connection to verify",
-    ],
-  },
-  twilio: {
-    id: "sms-1",
-    slug: "twilio",
-    name: "Twilio",
-    category: "SMS",
-    description: "Programmable SMS and voice APIs",
-    longDescription:
-      "Twilio provides programmable communication APIs for SMS, voice, and more. Integrate with Witylogix to send SMS notifications, make voice calls, and handle customer communications.",
-    status: "AVAILABLE",
-    authType: "api_key",
-    popular: true,
-    connected: true,
-    features: [
-      "SMS Messaging",
-      "Voice Calls",
-      "WhatsApp Integration",
-      "Call Recording",
-      "IVR Support",
-      "Number Intelligence",
-    ],
-    supportedOperations: [
-      "Send SMS",
-      "Make Call",
-      "Get Message Status",
-      "Record Call",
-      "Send WhatsApp",
-      "Get Call Recording",
-    ],
-    webhookSupported: true,
-    webhookUrl: "https://api.witylogix.com/webhooks/twilio",
-    documentationUrl: "https://www.twilio.com/docs",
-    setupInstructions: [
-      "Sign in to your Twilio account",
-      "Find your Account SID and Auth Token",
-      "Go to Account Info in your dashboard",
-      "Copy the Account SID and Auth Token",
-      "Enter them in the configuration form",
-      "Verify by sending a test SMS",
-    ],
-  },
-  mapbox: {
-    id: "routing-1",
-    slug: "mapbox",
-    name: "Mapbox",
-    category: "ROUTING",
-    description: "Maps, routing and optimization APIs",
-    longDescription:
-      "Mapbox provides powerful mapping and routing APIs for route optimization, turn-by-turn navigation, and location services. Integrate with Witylogix for advanced routing capabilities.",
-    status: "AVAILABLE",
-    authType: "api_key",
-    popular: true,
-    connected: true,
-    features: [
-      "Route Optimization",
-      "Geocoding",
-      "Static Maps",
-      "Turn-by-Turn Navigation",
-      "Distance Matrix",
-      "Traffic Data",
-    ],
-    supportedOperations: [
-      "Get Route",
-      "Geocode Address",
-      "Get Matrix",
-      "Get Directions",
-      "Create Map",
-      "Get Traffic",
-    ],
-    webhookSupported: false,
-    documentationUrl: "https://docs.mapbox.com",
-    setupInstructions: [
-      "Create or sign in to your Mapbox account",
-      "Go to Account > Tokens",
-      "Create a new access token",
-      "Copy the token (keep it secret!)",
-      "Paste in the configuration form",
-      "Your routes are ready to optimize",
-    ],
-  },
+interface IntegrationAppMeta {
+  slug: string;
+  name: string;
+  description: string;
+  longDescription?: string;
+  category: string;
+  subcategory?: string;
+  logoUrl?: string;
+  websiteUrl?: string;
+  docsUrl?: string;
+  authType: "API_KEY" | "OAUTH" | "NONE" | "MULTI_CREDENTIAL";
+  credentialFields: CredentialField[];
+  capabilities: string[];
+  status: "AVAILABLE" | "COMING_SOON" | "BETA" | "DEPRECATED";
+  isBuiltIn: boolean;
+  version: string;
+}
+
+interface MarketplaceDetailResponse {
+  app: IntegrationAppMeta;
+  installed: boolean;
+  installation: {
+    isEnabled: boolean;
+    healthStatus: string;
+    lastSyncAt: string | null;
+    installedAt: string;
+  } | null;
+}
+
+const AUTH_LABEL: Record<string, string> = {
+  API_KEY: "API Key",
+  OAUTH: "OAuth 2.0",
+  NONE: "No Authentication",
+  MULTI_CREDENTIAL: "Multiple Credentials",
+};
+
+const STATUS_VARIANT: Record<string, "success" | "info" | "default" | "warning"> = {
+  AVAILABLE: "success",
+  BETA: "info",
+  COMING_SOON: "default",
+  DEPRECATED: "warning",
 };
 
 export default function ProviderDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const providerId = params.providerId as string;
+  const slug = params.providerId as string;
 
-  const provider = PROVIDERS[providerId];
+  const {
+    data: detail,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<MarketplaceDetailResponse>(`/api/v4/integrations/marketplace/${slug}`);
+
+  const { execute: installIntegration } = useApiMutation<{ integration: { id: string } }>(
+    "POST",
+    `/api/v4/integrations/${slug}/install`
+  );
 
   const [isConnectDialogOpen, setIsConnectDialogOpen] = useState(false);
-  const [authStep, setAuthStep] = useState<"details" | "credentials" | "testing" | "success">(
+  const [authStep, setAuthStep] = useState<"details" | "credentials" | "installing" | "success" | "error">(
     "details"
   );
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [testResult, setTestResult] = useState<"pending" | "success" | "error">(
-    "pending"
-  );
-  const [formData, setFormData] = useState({
-    accountSid: "",
-    authToken: "",
-    apiKey: "",
-    username: "",
-    password: "",
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [installError, setInstallError] = useState<string | null>(null);
+  const [showSecret, setShowSecret] = useState<Record<string, boolean>>({});
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
 
-  if (!provider) {
+  const provider = detail?.app;
+  const isInstalled = detail?.installed ?? false;
+
+  const credentialFields = useMemo(
+    () => provider?.credentialFields ?? [],
+    [provider]
+  );
+
+  const canSubmit = useMemo(
+    () => credentialFields.filter((f) => f.required).every((f) => !!credentials[f.key]?.trim()),
+    [credentialFields, credentials]
+  );
+
+  if (loading) return <LoadingSkeleton />;
+  if (error || !provider) {
     return (
-      <div className={cn("p-6 text-center text-gray-500")}>
-        <div className="text-lg font-semibold mb-2">Provider not found</div>
-        <Link href="/integrations/marketplace">
-          <Button variant="secondary">Back to Marketplace</Button>
-        </Link>
-      </div>
+      <ErrorState
+        message={error?.message ?? "Integration not found"}
+        onRetry={refetch}
+      />
     );
   }
 
   const handleConnect = () => {
-    setIsConnectDialogOpen(true);
+    setCredentials({});
+    setInstallError(null);
     setAuthStep("details");
+    setIsConnectDialogOpen(true);
   };
 
   const handleCredentialsSubmit = async () => {
-    setIsLoading(true);
-    setAuthStep("testing");
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    setTestResult("success");
-    setIsLoading(false);
-  };
-
-  const handleTestConnection = async () => {
-    setIsLoading(true);
-    setTestResult("pending");
-
-    // Simulate connection test
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setTestResult("success");
-    setIsLoading(false);
+    setIsSubmitting(true);
+    setInstallError(null);
+    setAuthStep("installing");
+    try {
+      await installIntegration({ credentials, config: {} });
+      setAuthStep("success");
+      void refetch();
+    } catch (err) {
+      setInstallError(err instanceof Error ? err.message : "Installation failed");
+      setAuthStep("error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSuccessClose = () => {
     setIsConnectDialogOpen(false);
     setAuthStep("details");
-    setFormData({ accountSid: "", authToken: "", apiKey: "", username: "", password: "" });
+    setCredentials({});
+    router.push("/integrations/connected");
   };
-
-  const statusColor =
-    provider.status === "CONNECTED"
-      ? "success"
-      : provider.status === "BETA"
-        ? "info"
-        : provider.status === "COMING_SOON"
-          ? "default"
-          : "primary";
 
   return (
     <>
@@ -312,36 +179,32 @@ export default function ProviderDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className={cn("flex items-start gap-6")}>
-              <div
-                className={cn(
-                  "w-24 h-24 rounded-lg bg-[#1a1a2e] flex items-center justify-center flex-shrink-0"
+              <div className={cn("w-24 h-24 rounded-lg bg-wl-bg-elevated flex items-center justify-center flex-shrink-0")}>
+                {provider.logoUrl ? (
+                  <img src={provider.logoUrl} alt={provider.name} className="w-16 h-16 object-contain" />
+                ) : (
+                  <span className="text-5xl">📦</span>
                 )}
-              >
-                <span className="text-5xl">📦</span>
               </div>
 
               <div className={cn("flex-1 min-w-0")}>
                 <div className={cn("flex items-center gap-3 mb-3")}>
-                  <h1 className={cn("text-2xl font-bold text-white")}>
-                    {provider.name}
-                  </h1>
-                  {provider.popular && (
-                    <Badge variant="primary">Popular</Badge>
-                  )}
+                  <h1 className={cn("text-2xl font-bold text-white")}>{provider.name}</h1>
+                  {provider.status === "BETA" && <Badge variant="info">Beta</Badge>}
                 </div>
 
                 <p className={cn("text-gray-400 mb-4")}>
-                  {provider.longDescription}
+                  {provider.longDescription ?? provider.description}
                 </p>
 
                 <div className={cn("flex flex-wrap gap-2")}>
-                  <Badge variant={statusColor}>
+                  <Badge variant={STATUS_VARIANT[provider.status] ?? "default"}>
                     {provider.status.replace(/_/g, " ")}
                   </Badge>
                   <Badge variant="info">
-                    Auth: {provider.authType.replace(/_/g, " ")}
+                    Auth: {AUTH_LABEL[provider.authType] ?? provider.authType}
                   </Badge>
-                  {provider.connected && (
+                  {isInstalled && (
                     <Badge variant="success">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Connected
@@ -351,8 +214,14 @@ export default function ProviderDetailPage() {
               </div>
 
               <div>
-                {provider.connected ? (
-                  <Button variant="secondary">Manage</Button>
+                {isInstalled ? (
+                  <Button variant="secondary" onClick={() => router.push("/integrations/connected")}>
+                    Manage
+                  </Button>
+                ) : provider.status === "COMING_SOON" || provider.status === "DEPRECATED" ? (
+                  <Button variant="ghost" disabled>
+                    {provider.status === "COMING_SOON" ? "Coming Soon" : "Deprecated"}
+                  </Button>
                 ) : (
                   <Button variant="primary" onClick={handleConnect}>
                     Connect Integration
@@ -367,154 +236,99 @@ export default function ProviderDetailPage() {
         <div className={cn("grid grid-cols-3 gap-6")}>
           {/* Main Content */}
           <div className={cn("col-span-2 space-y-6")}>
-            {/* Features */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Features</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={cn("grid grid-cols-2 gap-3")}>
-                  {provider.features.map((feature) => (
-                    <div
-                      key={feature}
-                      className={cn("flex items-center gap-2 p-2 rounded bg-[#1a1a2e]")}
-                    >
-                      <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                      <span className="text-sm text-white">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Capabilities / Features */}
+            {provider.capabilities.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Features</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={cn("grid grid-cols-2 gap-3")}>
+                    {provider.capabilities.map((cap) => (
+                      <div key={cap} className={cn("flex items-center gap-2 p-2 rounded bg-wl-bg-elevated")}>
+                        <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        <span className="text-sm text-white">{cap}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Supported Operations */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Supported Operations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={cn("space-y-2")}>
-                  {provider.supportedOperations.map((op) => (
-                    <div
-                      key={op}
-                      className={cn(
-                        "flex items-center gap-2 p-3 rounded border border-[#1e1e2e]"
-                      )}
-                    >
-                      <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      <span className="text-sm text-white">{op}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Setup Instructions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Setup Instructions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ol className={cn("space-y-3")}>
-                  {provider.setupInstructions.map((instruction, idx) => (
-                    <li key={idx} className={cn("flex gap-4")}>
-                      <span
-                        className={cn(
-                          "flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-black",
-                          "flex items-center justify-center text-xs font-semibold"
-                        )}
-                      >
-                        {idx + 1}
-                      </span>
-                      <span className={cn("text-sm text-white pt-0.5")}>
-                        {instruction}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </CardContent>
-            </Card>
+            {/* Credential Fields preview */}
+            {credentialFields.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Required Configuration</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={cn("space-y-2")}>
+                    {credentialFields.map((field) => (
+                      <div key={field.key} className={cn("flex items-center gap-2 p-3 rounded border border-wl-border-default")}>
+                        <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-sm text-white">
+                          {field.label}
+                          {field.required && <span className="text-red-400 ml-1">*</span>}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
           <aside className={cn("space-y-6")}>
-            {/* Quick Info */}
             <Card>
               <CardHeader>
                 <CardTitle>Integration Info</CardTitle>
               </CardHeader>
               <CardContent className={cn("space-y-4")}>
                 <div>
-                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>
-                    Category
+                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>Category</div>
+                  <div className={cn("text-sm font-medium text-white")}>{provider.category}</div>
+                </div>
+                {provider.subcategory && (
+                  <div>
+                    <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>Type</div>
+                    <div className={cn("text-sm font-medium text-white capitalize")}>{provider.subcategory}</div>
                   </div>
+                )}
+                <div>
+                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>Authentication</div>
                   <div className={cn("text-sm font-medium text-white")}>
-                    {provider.category}
+                    {AUTH_LABEL[provider.authType] ?? provider.authType}
                   </div>
                 </div>
                 <div>
-                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>
-                    Authentication
-                  </div>
-                  <div className={cn("text-sm font-medium text-white")}>
-                    {provider.authType.replace(/_/g, " ")}
-                  </div>
-                </div>
-                <div>
-                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>
-                    Webhooks
-                  </div>
-                  <div className={cn("text-sm font-medium text-white")}>
-                    {provider.webhookSupported ? "Supported" : "Not supported"}
-                  </div>
+                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>Version</div>
+                  <div className={cn("text-sm font-mono text-white")}>{provider.version}</div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Webhook URL */}
-            {provider.webhookSupported && provider.webhookUrl && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Webhook URL</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className={cn("space-y-2")}>
-                    <p className={cn("text-xs text-gray-500 mb-2")}>
-                      Use this URL for webhook configuration:
-                    </p>
-                    <div
-                      className={cn(
-                        "flex items-center gap-2 p-2 bg-[#1a1a2e] rounded border border-[#1e1e2e]"
-                      )}
-                    >
-                      <code className={cn("flex-1 text-xs text-gray-400 truncate")}>
-                        {provider.webhookUrl}
-                      </code>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(provider.webhookUrl!);
-                        }}
-                        className={cn(
-                          "p-1 hover:bg-[#1a1a2e] rounded transition-all"
-                        )}
-                      >
-                        <Copy className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {provider.docsUrl && (
+              <Button
+                variant="ghost"
+                className={cn("w-full justify-start")}
+                onClick={() => window.open(provider.docsUrl, "_blank")}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Documentation
+              </Button>
             )}
 
-            {/* Documentation Link */}
-            <Button
-              variant="ghost"
-              className={cn("w-full justify-start")}
-              onClick={() => window.open(provider.documentationUrl, "_blank")}
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              View Documentation
-            </Button>
+            {provider.websiteUrl && (
+              <Button
+                variant="ghost"
+                className={cn("w-full justify-start")}
+                onClick={() => window.open(provider.websiteUrl, "_blank")}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Provider Website
+              </Button>
+            )}
           </aside>
         </div>
       </div>
@@ -532,33 +346,19 @@ export default function ProviderDetailPage() {
               Review the integration details before connecting:
             </p>
 
-            <div className={cn("space-y-3 bg-[#1a1a2e] p-4 rounded-lg")}>
+            <div className={cn("space-y-3 bg-wl-bg-elevated p-4 rounded-lg")}>
               <div>
-                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>
-                  Provider
-                </div>
+                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>Provider</div>
+                <div className={cn("text-sm font-medium text-white")}>{provider.name}</div>
+              </div>
+              <div>
+                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>Authentication Type</div>
                 <div className={cn("text-sm font-medium text-white")}>
-                  {provider.name}
+                  {AUTH_LABEL[provider.authType] ?? provider.authType}
                 </div>
               </div>
               <div>
-                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>
-                  Authentication Type
-                </div>
-                <div className={cn("text-sm font-medium text-white")}>
-                  {provider.authType === "oauth2"
-                    ? "OAuth 2.0"
-                    : provider.authType === "api_key"
-                      ? "API Key"
-                      : provider.authType === "basic_auth"
-                        ? "Basic Authentication"
-                        : "Custom"}
-                </div>
-              </div>
-              <div>
-                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>
-                  Permissions Requested
-                </div>
+                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>Permissions Requested</div>
                 <div className={cn("text-sm text-white space-y-1 mt-1")}>
                   <div className={cn("flex items-center gap-2")}>
                     <Check className="w-3 h-3 text-emerald-500" />
@@ -568,29 +368,15 @@ export default function ProviderDetailPage() {
                     <Check className="w-3 h-3 text-emerald-500" />
                     Write access to selected resources
                   </div>
-                  {provider.webhookSupported && (
-                    <div className={cn("flex items-center gap-2")}>
-                      <Check className="w-3 h-3 text-emerald-500" />
-                      Webhook configuration
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
 
             <div className={cn("flex gap-2 pt-4")}>
-              <Button
-                variant="ghost"
-                className="flex-1"
-                onClick={() => setIsConnectDialogOpen(false)}
-              >
+              <Button variant="ghost" className="flex-1" onClick={() => setIsConnectDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => setAuthStep("credentials")}
-              >
+              <Button variant="primary" className="flex-1" onClick={() => setAuthStep("credentials")}>
                 Continue
               </Button>
             </div>
@@ -600,83 +386,71 @@ export default function ProviderDetailPage() {
         {authStep === "credentials" && (
           <div className={cn("space-y-4")}>
             <p className={cn("text-sm text-gray-400")}>
-              {provider.authType === "oauth2"
-                ? "You'll be redirected to authenticate with " + provider.name
-                : "Enter your " + provider.name + " credentials"}
+              {provider.authType === "OAUTH"
+                ? `You'll be redirected to authenticate with ${provider.name}`
+                : `Enter your ${provider.name} credentials`}
             </p>
 
-            {provider.authType === "oauth2" ? (
-              <Button
-                variant="primary"
-                className="w-full"
-                onClick={handleCredentialsSubmit}
-              >
-                Authorize with {provider.name}
-              </Button>
-            ) : provider.authType === "api_key" ? (
+            {credentialFields.length > 0 ? (
               <div className={cn("space-y-3")}>
-                <Input
-                  label="API Key"
-                  type={showApiKey ? "text" : "password"}
-                  value={formData.apiKey}
-                  onChange={(e) =>
-                    setFormData({ ...formData, apiKey: e.target.value })
-                  }
-                  placeholder="Enter your API key"
-                  icon={
-                    <button
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      className="text-gray-500 hover:text-white"
-                    >
-                      {showApiKey ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
+                {credentialFields.map((field) => {
+                  const isSecret = field.type === "password";
+                  const visible = showSecret[field.key];
+                  return (
+                    <div key={field.key}>
+                      <Input
+                        label={`${field.label}${field.required ? " *" : ""}`}
+                        type={isSecret && !visible ? "password" : "text"}
+                        value={credentials[field.key] ?? ""}
+                        onChange={(e) =>
+                          setCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))
+                        }
+                        placeholder={field.placeholder}
+                        icon={
+                          isSecret ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowSecret((prev) => ({ ...prev, [field.key]: !prev[field.key] }))
+                              }
+                              className="text-gray-500 hover:text-white"
+                            >
+                              {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          ) : undefined
+                        }
+                      />
+                      {field.helpUrl && (
+                        <a
+                          href={field.helpUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-400 hover:underline mt-1 inline-block"
+                        >
+                          Where to find this?
+                        </a>
                       )}
-                    </button>
-                  }
-                />
-                <div className={cn("text-xs text-gray-500")}>
-                  Your API key is encrypted and never shared
-                </div>
+                    </div>
+                  );
+                })}
               </div>
-            ) : provider.authType === "basic_auth" ? (
-              <div className={cn("space-y-3")}>
-                <Input
-                  label="Username"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  placeholder="Enter username"
-                />
-                <Input
-                  label="Password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  placeholder="Enter password"
-                />
-              </div>
-            ) : null}
+            ) : (
+              <p className={cn("text-sm text-gray-500 bg-wl-bg-elevated p-3 rounded-lg")}>
+                This integration requires no credentials.
+              </p>
+            )}
 
             <div className={cn("flex gap-2 pt-4")}>
-              <Button
-                variant="ghost"
-                className="flex-1"
-                onClick={() => setAuthStep("details")}
-              >
+              <Button variant="ghost" className="flex-1" onClick={() => setAuthStep("details")}>
                 Back
               </Button>
               <Button
                 variant="primary"
                 className="flex-1"
                 onClick={handleCredentialsSubmit}
-                disabled={isLoading}
+                disabled={!canSubmit || isSubmitting}
               >
-                {isLoading ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Connecting...
@@ -689,79 +463,34 @@ export default function ProviderDetailPage() {
           </div>
         )}
 
-        {authStep === "testing" && (
+        {authStep === "installing" && (
           <div className={cn("space-y-4 text-center py-6")}>
-            {testResult === "pending" && (
-              <>
-                <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
-                <p className={cn("text-white font-medium")}>
-                  Testing connection...
-                </p>
-                <p className={cn("text-sm text-gray-500")}>
-                  Verifying your credentials with {provider.name}
-                </p>
-              </>
-            )}
-
-            {testResult === "success" && (
-              <>
-                <CheckCircle className="w-8 h-8 mx-auto text-emerald-500" />
-                <p className={cn("text-white font-medium")}>
-                  Connection successful!
-                </p>
-                <p className={cn("text-sm text-gray-500")}>
-                  Your integration is ready to use
-                </p>
-                <Button
-                  variant="primary"
-                  className="w-full mt-4"
-                  onClick={() => setAuthStep("success")}
-                >
-                  Complete Setup
-                </Button>
-              </>
-            )}
-
-            {testResult === "error" && (
-              <>
-                <AlertCircle className="w-8 h-8 mx-auto text-red-500" />
-                <p className={cn("text-white font-medium")}>
-                  Connection failed
-                </p>
-                <p className={cn("text-sm text-gray-500")}>
-                  Please check your credentials and try again
-                </p>
-                <Button
-                  variant="ghost"
-                  className="w-full mt-4"
-                  onClick={() => setAuthStep("credentials")}
-                >
-                  Try Again
-                </Button>
-              </>
-            )}
+            <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+            <p className={cn("text-white font-medium")}>Installing integration…</p>
+            <p className={cn("text-sm text-gray-500")}>Verifying credentials and connecting to {provider.name}</p>
           </div>
         )}
 
         {authStep === "success" && (
           <div className={cn("space-y-4 text-center py-6")}>
-            <div className={cn("flex justify-center")}>
-              <CheckCircle className="w-12 h-12 text-emerald-500" />
-            </div>
-            <h3 className={cn("text-lg font-semibold text-white")}>
-              All set!
-            </h3>
+            <CheckCircle className="w-12 h-12 mx-auto text-emerald-500" />
+            <h3 className={cn("text-lg font-semibold text-white")}>All set!</h3>
             <p className={cn("text-sm text-gray-500")}>
-              {provider.name} has been successfully connected to your Witylogix
-              account. You can now use this integration in your workflows.
+              {provider.name} has been successfully connected to your Witylogix account.
             </p>
+            <Button variant="primary" className="w-full mt-4" onClick={handleSuccessClose}>
+              View Connected Integrations
+            </Button>
+          </div>
+        )}
 
-            <Button
-              variant="primary"
-              className="w-full mt-4"
-              onClick={handleSuccessClose}
-            >
-              Close
+        {authStep === "error" && (
+          <div className={cn("space-y-4 text-center py-6")}>
+            <AlertCircle className="w-8 h-8 mx-auto text-red-500" />
+            <p className={cn("text-white font-medium")}>Connection failed</p>
+            <p className={cn("text-sm text-red-400")}>{installError}</p>
+            <Button variant="ghost" className="w-full mt-4" onClick={() => setAuthStep("credentials")}>
+              Try Again
             </Button>
           </div>
         )}

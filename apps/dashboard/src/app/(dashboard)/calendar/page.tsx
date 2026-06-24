@@ -55,8 +55,8 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+    <div className="flex flex-col min-h-screen bg-wl-bg-root">
+      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
         <div className="p-6">
           <div className="flex items-center justify-between gap-4 mb-6">
             <div>
@@ -75,7 +75,7 @@ export default function CalendarPage() {
               onChange={(e) => setFilterType(e.target.value)}
               className={cn(
                 "px-3 py-2 rounded-md text-sm font-medium",
-                "bg-[#12121a] border border-[#1e1e2e]",
+                "bg-wl-bg-surface border border-wl-border-default",
                 "text-white",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500"
               )}
@@ -92,7 +92,7 @@ export default function CalendarPage() {
               onChange={(e) => setSelectedZone(e.target.value)}
               className={cn(
                 "px-3 py-2 rounded-md text-sm font-medium",
-                "bg-[#12121a] border border-[#1e1e2e]",
+                "bg-wl-bg-surface border border-wl-border-default",
                 "text-white",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500"
               )}
@@ -111,14 +111,14 @@ export default function CalendarPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-4 max-w-5xl">
           {filtered.length === 0 ? (
-            <Card className="p-12 bg-[#12121a] border-[#1e1e2e] text-center">
+            <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
               <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
               <p className="text-gray-400">No calendar rules found</p>
             </Card>
           ) : (
             <div className="space-y-3">
               {filtered.map((rule) => (
-                <Card key={rule.id} className="p-6 bg-[#12121a] border-[#1e1e2e] hover:border-[#2e2e3e] transition-colors">
+                <Card key={rule.id} className="p-6 bg-wl-bg-surface border-wl-border-default hover:border-wl-border-strong transition-colors">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">

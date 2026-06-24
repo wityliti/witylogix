@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   AlertCircle,
   Download,
@@ -58,6 +58,19 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
+  const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
+
+  const uniqueUsers = useMemo(() => {
+    const seen = new Set<string>();
+    const users: { id: string; name: string }[] = [];
+    for (const e of apiEvents) {
+      if (e.user && !seen.has(e.user.id)) {
+        seen.add(e.user.id);
+        users.push({ id: e.user.id, name: e.user.name });
+      }
+    }
+    return users;
+  }, [apiEvents]);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -118,10 +131,10 @@ export default function ActivityPage() {
 
   const displayedEvents = filteredEvents();
 
-  // Live mode: poll for new events every 30 seconds
+  // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
-    const interval = setInterval(() => refetch(), 30000);
+    const interval = setInterval(() => { refetch(); }, 30000);
     return () => clearInterval(interval);
   }, [isLiveMode, refetch]);
 
@@ -203,9 +216,12 @@ export default function ActivityPage() {
   const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0f]" ref={containerRef}>
+    <div
+      className="flex flex-col min-h-screen bg-wl-bg-root"
+      ref={containerRef}
+    >
       {/* Header */}
-      <div className="bg-[#0a0a0f] border-b border-[#1e1e2e] sticky top-0 z-30">
+      <div className="bg-wl-bg-root border-b border-wl-border-default sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -219,8 +235,8 @@ export default function ActivityPage() {
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all duration-300',
                   isLiveMode
-                    ? 'bg-emerald-500/10 border-emerald-500/30'
-                    : 'bg-[#1a1a2e] border-[#1e1e2e]',
+                    ? "bg-emerald-500/10 border-emerald-500/30"
+                    : "bg-wl-bg-elevated border-wl-border-default"
                 )}
               >
                 <div
@@ -249,8 +265,14 @@ export default function ActivityPage() {
                 type="text"
                 placeholder="Search by title, description, entity, or user..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2.5 w-full bg-[#12121a] border border-[#1e1e2e] text-white placeholder-gray-500 focus:border-blue-500 rounded-md"
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className={cn(
+                  "pl-10 pr-4 py-2.5 w-full",
+                  "bg-wl-bg-surface border border-wl-border-default",
+                  "text-white placeholder-wl-text-tertiary",
+                  "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                  "rounded-md transition-all duration-200"
+                )}
               />
               {searchQuery && (
                 <button
@@ -262,7 +284,8 @@ export default function ActivityPage() {
               )}
             </div>
 
-            <EventFilters filters={filters} setFilters={setFilters} />
+            {/* Filters */}
+            <EventFilters filters={filters} setFilters={setFilters} users={uniqueUsers} />
 
             {(filters.types.length > 0 || filters.severities.length > 0 || filters.startDate || filters.endDate || filters.userId) && (
               <div className="flex flex-wrap items-center gap-2">
@@ -347,14 +370,20 @@ export default function ActivityPage() {
                       </div>
                     </div>
 
-                    <div className="border-t border-[#1e1e2e] pt-4">
-                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Description</p>
-                      <p className="text-sm text-white">{selectedEvent.description}</p>
+                    <div className="border-t border-wl-border-default pt-4">
+                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                        Description
+                      </p>
+                      <p className="text-sm text-white">
+                        {selectedEvent.description}
+                      </p>
                     </div>
 
                     {selectedEvent.user && (
-                      <div className="border-t border-[#1e1e2e] pt-4">
-                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">Triggered by</p>
+                      <div className="border-t border-wl-border-default pt-4">
+                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                          Triggered by
+                        </p>
                         <div className="flex items-center gap-3">
                           <Avatar size="sm">
                             <AvatarFallback name={selectedEvent.user.name} />
@@ -368,31 +397,53 @@ export default function ActivityPage() {
                     )}
 
                     {selectedEvent.entity && (
-                      <div className="border-t border-[#1e1e2e] pt-4">
-                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">Related entity</p>
-                        <div className="bg-[#12121a] rounded-md p-3 border border-[#1e1e2e]">
-                          <p className="text-xs text-gray-300 mb-1">{selectedEvent.entity.type.toUpperCase()}</p>
-                          <p className="text-sm font-medium text-blue-400">{selectedEvent.entity.name}</p>
-                          <p className="text-xs text-gray-400 mt-1">ID: {selectedEvent.entity.id}</p>
+                      <div className="border-t border-wl-border-default pt-4">
+                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                          Related entity
+                        </p>
+                        <div className="bg-wl-bg-surface rounded-md p-3 border border-wl-border-default">
+                          <p className="text-xs text-gray-300 mb-1">
+                            {selectedEvent.entity.type.toUpperCase()}
+                          </p>
+                          <p className="text-sm font-medium text-blue-400">
+                            {selectedEvent.entity.name}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            ID: {selectedEvent.entity.id}
+                          </p>
                         </div>
                       </div>
                     )}
 
-                    <div className="border-t border-[#1e1e2e] pt-4">
-                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Timestamp</p>
-                      <p className="text-sm text-white">{new Date(selectedEvent.timestamp).toLocaleString()}</p>
+                    <div className="border-t border-wl-border-default pt-4">
+                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                        Timestamp
+                      </p>
+                      <p className="text-sm text-white">
+                        {new Date(selectedEvent.timestamp).toLocaleString()}
+                      </p>
                     </div>
 
-                    {selectedEvent.metadata && Object.keys(selectedEvent.metadata).length > 0 && (
-                      <div className="border-t border-[#1e1e2e] pt-4">
-                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">Metadata</p>
-                        <div className="space-y-2">
-                          {Object.entries(selectedEvent.metadata).map(([key, value]) => (
-                            <div key={key} className="text-xs">
-                              <span className="text-gray-300">{key}:</span>
-                              <span className="text-white ml-2">{String(value)}</span>
-                            </div>
-                          ))}
+                    {selectedEvent.metadata &&
+                      Object.keys(selectedEvent.metadata).length > 0 && (
+                        <div className="border-t border-wl-border-default pt-4">
+                          <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                            Metadata
+                          </p>
+                          <div className="space-y-2">
+                            {Object.entries(selectedEvent.metadata).map(
+                              ([key, value]) => (
+                                <div key={key} className="text-xs">
+                                  <span className="text-gray-300">
+                                    {key}:
+                                  </span>
+                                  <span className="text-white ml-2">
+                                    {String(value)}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}

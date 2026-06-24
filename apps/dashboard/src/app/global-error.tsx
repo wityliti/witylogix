@@ -39,13 +39,13 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   return (
     <html lang="en">
       <body className="wl-noise">
-        <div className={cn('flex min-h-screen bg-[#0a0a0f]')}>
+        <div className={cn('flex min-h-screen bg-wl-bg-root')}>
           <main className={cn('flex-1 min-h-screen')}>
             <div className="flex items-center justify-center min-h-screen p-4">
               <div
                 className={cn(
                   'w-full max-w-md rounded-lg border border-white/10',
-                  'bg-[#1a1a20] p-8',
+                  'bg-wl-bg-elevated p-8',
                   'shadow-lg backdrop-blur-sm'
                 )}
               >

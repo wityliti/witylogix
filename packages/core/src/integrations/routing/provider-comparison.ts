@@ -436,7 +436,7 @@ export class ProviderComparisonEngine {
   /**
    * Identify provider strengths
    */
-  private identifyStrengths(target: typeof results[0], all: RouteComparison[]): string[] {
+  private identifyStrengths(target: { provider: ProviderName }, all: RouteComparison[]): string[] {
     const strengths: string[] = [];
 
     // Find corresponding result
@@ -469,7 +469,7 @@ export class ProviderComparisonEngine {
   /**
    * Identify provider weaknesses
    */
-  private identifyWeaknesses(target: typeof results[0], all: RouteComparison[]): string[] {
+  private identifyWeaknesses(target: { provider: ProviderName }, all: RouteComparison[]): string[] {
     const weaknesses: string[] = [];
 
     // Find corresponding result
@@ -505,7 +505,7 @@ export class ProviderComparisonEngine {
   private analyzeCosts(
     results: RouteComparison[],
   ): { cheapest: ProviderName; costPerRequest: Record<ProviderName, number>; monthlySavings: number } {
-    const costPerRequest: Record<ProviderName, number> = {};
+    const costPerRequest = {} as Record<ProviderName, number>;
     let minCost = Infinity;
     let maxCost = 0;
     let cheapest: ProviderName = 'here';

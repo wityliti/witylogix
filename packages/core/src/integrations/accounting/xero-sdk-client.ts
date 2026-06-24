@@ -1177,7 +1177,7 @@ export class XeroSDKClient {
       accessToken
     );
 
-    return response.Account || response;
+    return (response.Account ?? response) as XeroAccount;
   }
 
   // ─── PURCHASE ORDER OPERATIONS ──────────────────────────────────
@@ -1481,7 +1481,7 @@ export class XeroSDKClient {
 
     const response = await this.request(method, url, {
       headers,
-      ...(body && { body: JSON.stringify(body) }),
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
 
     // Update rate limit info from response headers
@@ -1587,33 +1587,40 @@ export class XeroSDKClient {
   }
 
   private parseInvoiceResponse(response: Record<string, unknown>): XeroInvoice {
-    const invoice = (response.Invoices?.[0] || response.Invoice || response) as XeroInvoice;
+    const invoices = response.Invoices as XeroInvoice[] | undefined;
+    const invoice = (invoices?.[0] ?? response.Invoice ?? response) as XeroInvoice;
     return XeroInvoiceSchema.parse(invoice);
   }
 
   private parseContactResponse(response: Record<string, unknown>): XeroContact {
-    const contact = (response.Contacts?.[0] || response.Contact || response) as XeroContact;
+    const contacts = response.Contacts as XeroContact[] | undefined;
+    const contact = (contacts?.[0] ?? response.Contact ?? response) as XeroContact;
     return XeroContactSchema.parse(contact);
   }
 
   private parsePaymentResponse(response: Record<string, unknown>): XeroPayment {
-    return (response.Payments?.[0] || response.Payment || response) as XeroPayment;
+    const payments = response.Payments as XeroPayment[] | undefined;
+    return (payments?.[0] ?? response.Payment ?? response) as XeroPayment;
   }
 
   private parseBankTransactionResponse(response: Record<string, unknown>): XeroBankTransaction {
-    return (response.BankTransactions?.[0] || response.BankTransaction || response) as XeroBankTransaction;
+    const txns = response.BankTransactions as XeroBankTransaction[] | undefined;
+    return (txns?.[0] ?? response.BankTransaction ?? response) as XeroBankTransaction;
   }
 
   private parseItemResponse(response: Record<string, unknown>): XeroItem {
-    return (response.Items?.[0] || response.Item || response) as XeroItem;
+    const items = response.Items as XeroItem[] | undefined;
+    return (items?.[0] ?? response.Item ?? response) as XeroItem;
   }
 
   private parsePOResponse(response: Record<string, unknown>): XeroPurchaseOrder {
-    return (response.PurchaseOrders?.[0] || response.PurchaseOrder || response) as XeroPurchaseOrder;
+    const pos = response.PurchaseOrders as XeroPurchaseOrder[] | undefined;
+    return (pos?.[0] ?? response.PurchaseOrder ?? response) as XeroPurchaseOrder;
   }
 
   private parseQuoteResponse(response: Record<string, unknown>): XeroQuote {
-    return (response.Quotes?.[0] || response.Quote || response) as XeroQuote;
+    const quotes = response.Quotes as XeroQuote[] | undefined;
+    return (quotes?.[0] ?? response.Quote ?? response) as XeroQuote;
   }
 
   /**

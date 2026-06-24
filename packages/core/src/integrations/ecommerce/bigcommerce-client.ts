@@ -628,7 +628,10 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
       id: response.data.id.toString(),
       orderId: response.data.order_id.toString(),
       status: "complete",
-      items: response.data.items,
+      items: response.data.items.map((item) => ({
+        lineItemId: item.order_product_id.toString(),
+        quantity: item.quantity,
+      })),
       trackingInfo: response.data.tracking_number
         ? {
             company: response.data.carrier || "Carrier",
@@ -704,17 +707,19 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   /**
    * Parse webhook event
    */
-  async parseWebhookEvent(payload: unknown): Promise<ECommerceWebhookEvent> {
-    const data = payload as any;
+  parseWebhookEvent(payload: unknown): ECommerceWebhookEvent {
+    const raw = payload as Record<string, unknown>;
 
     return {
-      id: data.id || crypto.randomUUID(),
+      id: (typeof raw["id"] === "string" ? raw["id"] : undefined) ?? crypto.randomUUID(),
       platform: "bigcommerce",
-      topic: data.scope || "",
-      event: data.type || "",
-      createdAt: new Date(data.created_at || Date.now()),
-      data: data.data,
-      signature: data.signature,
+      topic: typeof raw["scope"] === "string" ? raw["scope"] : "",
+      event: typeof raw["type"] === "string" ? raw["type"] : "",
+      createdAt: typeof raw["created_at"] === "string" || typeof raw["created_at"] === "number"
+        ? new Date(raw["created_at"] as string)
+        : new Date(),
+      data: raw["data"] as ECommerceWebhookEvent["data"],
+      signature: typeof raw["signature"] === "string" ? raw["signature"] : undefined,
     };
   }
 
@@ -723,7 +728,7 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
    */
   async validateConnection(): Promise<boolean> {
     try {
-      await this.bigcommerceRequest<any>(
+      await this.bigcommerceRequest<Record<string, unknown>>(
         "GET",
         "/store",
       );
@@ -738,7 +743,7 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
    */
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await this.bigcommerceRequest<any>(
+      const response = await this.bigcommerceRequest<Record<string, unknown>>(
         "GET",
         "/store",
       );
@@ -755,7 +760,7 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
     order: BigCommerceOrderData,
     shippingAddress: BigCommerceAddress,
   ): ECommerceOrder {
-    const parseAddress = (addr: BigCommerceAddress): any => ({
+    const parseAddress = (addr: BigCommerceAddress): ECommerceOrder["billingAddress"] => ({
       firstName: addr.first_name,
       lastName: addr.last_name,
       company: addr.company,
@@ -801,16 +806,22 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
 
   /**
    * Normalize BigCommerce product to internal format
+   * Maps BigCommerce "disabled" status to "draft" to match the ECommerceProduct union.
    */
   private normalizeBigCommerceProduct(
     product: BigCommerceProductData,
     variants: BigCommerceVariantData[],
-  ) {
+  ): ECommerceProduct {
+    const status: ECommerceProduct["status"] =
+      product.status === "active" ? "active" :
+      product.status === "archived" ? "archived" :
+      "draft";
+
     return {
       id: product.id.toString(),
       title: product.name,
       description: product.description,
-      status: product.status,
+      status,
       productType: product.type,
       variants: variants.map((variant) => ({
         id: variant.id.toString(),
@@ -838,7 +849,7 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
         },
         image: variant.image_url ? { url: variant.image_url } : undefined,
       })),
-      image: product.image_url ? { url: product.image_url } : undefined,
+      images: product.image_url ? [{ url: product.image_url }] : undefined,
       createdAt: new Date(product.created_at),
       updatedAt: new Date(product.updated_at),
     };
@@ -847,36 +858,36 @@ export class BigCommerceClient extends ECommerceAdapterBase implements IECommerc
   /**
    * Map BigCommerce order status to internal status
    */
-  private mapBigCommerceOrderStatus(status: string) {
-    const mapping: Record<string, any> = {
+  private mapBigCommerceOrderStatus(status: string): ECommerceOrder["status"] {
+    const mapping: Record<string, ECommerceOrder["status"]> = {
       "0": "pending", // Pending
-      "1": "pending", // Dispatched
+      "1": "dispatched", // Dispatched
       "2": "delivered", // Shipped
       "3": "cancelled", // Cancelled
       "4": "refunded", // Refunded
-      "5": "pending", // Partially Shipped
+      "5": "processing", // Partially Shipped
       "6": "pending", // Pending Review
-      "7": "pending", // Manually Reviewed
-      "8": "pending", // Awaiting Shipment
-      "9": "pending", // Awaiting Pickup
+      "7": "confirmed", // Manually Reviewed
+      "8": "processing", // Awaiting Shipment
+      "9": "processing", // Awaiting Pickup
       "10": "delivered", // Complete
     };
 
-    return mapping[status] || "pending";
+    return mapping[status] ?? "pending";
   }
 
   /**
    * Map BigCommerce payment status to internal status
    */
-  private mapBigCommercePaymentStatus(status: string) {
-    const mapping: Record<string, any> = {
+  private mapBigCommercePaymentStatus(status: string): ECommerceOrder["paymentStatus"] {
+    const mapping: Record<string, ECommerceOrder["paymentStatus"]> = {
       "0": "pending",
       "1": "authorized",
       "2": "captured",
       "3": "refunded",
     };
 
-    return mapping[status] || "pending";
+    return mapping[status] ?? "pending";
   }
 }
 

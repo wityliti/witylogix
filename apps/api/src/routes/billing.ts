@@ -62,10 +62,152 @@ const paginationSchema = z.object({
 
 // ─── ROUTE PLUGIN ───────────────────────────────────────────────────────
 
+const billingAddressSchema = z.object({
+  fullName: z.string().min(1).max(200).optional(),
+  company: z.string().max(200).optional(),
+  address: z.string().max(500).optional(),
+  city: z.string().max(100).optional(),
+  state: z.string().max(100).optional(),
+  postalCode: z.string().max(20).optional(),
+  country: z.string().max(100).optional(),
+});
+
 async function billingRoutes(fastify: FastifyInstance): Promise<void> {
   // All billing routes require authentication and tenant context
   fastify.addHook("preHandler", requireAuth);
   fastify.addHook("preHandler", tenantContext);
+
+  // ── GET / — Composite billing summary for settings/billing page ──────────
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { shopId } = request;
+
+    const shop = await request.tenantDb.shop.findUnique({
+      where: { id: shopId },
+      select: { planTier: true, settings: true },
+    });
+
+    if (!shop) {
+      throw new NotFoundError("Shop", shopId);
+    }
+
+    const plan = shop.planTier as PlanTier;
+    const planFeatures = PLANS[plan];
+    const settings = (shop.settings as Record<string, unknown>) ?? {};
+    const billingAddress = (settings.billingAddress ?? null) as Record<string, string> | null;
+
+    const billingPeriodStart = getMonthStart(new Date());
+    const billingPeriodEnd = getMonthEnd(new Date());
+
+    // Fetch usage counts in parallel
+    const [shipmentsCount, driversCount, notificationCount, invoices] =
+      await Promise.all([
+        request.tenantDb.shipment.count({
+          where: { shopId, createdAt: { gte: billingPeriodStart } },
+        }),
+        request.tenantDb.driver.count({ where: { shopId } }),
+        request.tenantDb.notificationMeterEvent.count({
+          where: { shopId, timestamp: { gte: billingPeriodStart } },
+        }),
+        request.tenantDb.paymentTransaction.findMany({
+          where: { shopId, type: "CHARGE" },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+          select: {
+            id: true,
+            createdAt: true,
+            amount: true,
+            currency: true,
+            status: true,
+            metadata: true,
+          },
+        }),
+      ]);
+
+    const shipLimit =
+      planFeatures.shipmentsPerMonth === Infinity ? null : planFeatures.shipmentsPerMonth;
+    const driverLimit =
+      planFeatures.driversLimit === Infinity ? null : planFeatures.driversLimit;
+    const notifLimit =
+      planFeatures.notificationsPerMonth === Infinity ? null : planFeatures.notificationsPerMonth;
+
+    const usageMetrics = [
+      {
+        name: "Shipments",
+        current: shipmentsCount,
+        limit: shipLimit ?? 9999999,
+        percentage: shipLimit ? Math.min(100, (shipmentsCount / shipLimit) * 100) : 0,
+        unit: "shipments",
+      },
+      {
+        name: "Active Drivers",
+        current: driversCount,
+        limit: driverLimit ?? 9999999,
+        percentage: driverLimit ? Math.min(100, (driversCount / driverLimit) * 100) : 0,
+        unit: "drivers",
+      },
+      {
+        name: "Notifications",
+        current: notificationCount,
+        limit: notifLimit ?? 9999999,
+        percentage: notifLimit ? Math.min(100, (notificationCount / notifLimit) * 100) : 0,
+        unit: "sent",
+      },
+    ];
+
+    return reply.send({
+      data: {
+        plan: plan.charAt(0) + plan.slice(1).toLowerCase(),
+        planTier: plan,
+        monthlyPrice: planFeatures.monthlyPrice,
+        renewalDate: billingPeriodEnd,
+        billingPeriodStart,
+        billingPeriodEnd,
+        usageMetrics,
+        billingAddress,
+        invoices: invoices.map((inv) => ({
+          id: inv.id,
+          date: inv.createdAt,
+          period: new Date(inv.createdAt).toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          }),
+          amount: Number(inv.amount) / 100,
+          currency: inv.currency,
+          status: inv.status === "completed" ? "paid" : inv.status,
+          downloadUrl: `/api/v4/billing/invoices/${inv.id}/pdf`,
+        })),
+      },
+    });
+  });
+
+  // ── GET /address — Get billing address ───────────────────────────────────
+  fastify.get("/address", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shop = await request.tenantDb.shop.findUnique({
+      where: { id: request.shopId },
+      select: { settings: true },
+    });
+    const settings = (shop?.settings as Record<string, unknown>) ?? {};
+    return reply.send({ data: settings.billingAddress ?? null });
+  });
+
+  // ── PUT /address — Save billing address ──────────────────────────────────
+  fastify.put(
+    "/address",
+    { preHandler: [requireRole("ADMIN", "SUPER_ADMIN")] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const body = billingAddressSchema.parse(request.body);
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
+      const settings = (shop?.settings as Record<string, unknown>) ?? {};
+      await request.tenantDb.shop.update({
+        where: { id: request.shopId },
+        data: { settings: { ...settings, billingAddress: body } },
+      });
+      return reply.send({ data: body });
+    },
+  );
 
   // ── GET /plans ───────────────────────────────────────────────────────────
   /**
@@ -75,8 +217,13 @@ async function billingRoutes(fastify: FastifyInstance): Promise<void> {
     const plans = getPlanComparison();
     // Return standard paginated shape so dashboard useApiList works
     return reply.send({
-      data: plans,
-      pagination: { page: 1, limit: plans.length, total: plans.length, totalPages: 1 },
+      data: {
+        plans,
+        metadata: {
+          total: plans.length,
+          timestamp: new Date(),
+        },
+      },
     });
   });
 

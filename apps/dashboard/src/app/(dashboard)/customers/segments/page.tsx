@@ -1,138 +1,60 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useCustomerStats, useCustomerDensity } from '@/hooks/use-customers';
-import type { CustomerDensityPoint } from '@/hooks/use-customers';
-import { Users, Star, TrendingUp, Globe, Map as MapIcon, ChevronRight } from 'lucide-react';
+import { useCustomerSegmentStats } from '@/hooks/use-customers';
+import {
+  ArrowLeft, Star, TrendingUp, Users, MapPin, BarChart2, Map as MapIcon,
+} from 'lucide-react';
 
+// Leaflet map for top-city visualization
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
-  { ssr: false, loading: () => <div className="h-full bg-[#0d0d14] rounded-xl animate-pulse" /> },
-);
-const CustomerDensityLayer = dynamic(
-  () => import('@/components/map/customer-density-layer').then((m) => ({ default: m.CustomerDensityLayer })),
-  { ssr: false },
+  { ssr: false, loading: () => <div className="h-full bg-wl-bg-root rounded-xl animate-pulse" /> },
 );
 
-// ─── Helpers ─────────────────────────────────────────────────
-
-const fmtCurrency = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(n);
-
-const pct = (n: number, total: number) =>
-  total === 0 ? '0%' : `${Math.round((n / total) * 100)}%`;
-
-// ─── Tier Config ──────────────────────────────────────────────
+const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const fmtPct = (val: number, total: number) =>
+  total > 0 ? `${((val / total) * 100).toFixed(1)}%` : '0%';
 
 const TIER_CONFIG = {
   enterprise: {
     label: 'Enterprise',
-    badge: 'primary' as const,
-    color: '#818cf8',
-    bg: 'bg-indigo-500/10',
-    icon: '🏆',
-    description: '$1,000+ lifetime spend',
-    spendMin: 1000,
+    color: '#f59e0b',
+    bgClass: 'bg-amber-400/10 border-amber-400/30',
+    dotClass: 'bg-amber-400',
+    badgeVariant: 'warning' as const,
+    description: 'Top 5%+ by lifetime spend — highest-value accounts',
   },
   premium: {
     label: 'Premium',
-    badge: 'success' as const,
-    color: '#34d399',
-    bg: 'bg-green-500/10',
-    icon: '⭐',
-    description: '$200–$999 lifetime spend',
-    spendMin: 200,
+    color: '#60a5fa',
+    bgClass: 'bg-blue-400/10 border-blue-400/30',
+    dotClass: 'bg-blue-400',
+    badgeVariant: 'primary' as const,
+    description: 'Regular buyers with solid order history',
   },
   standard: {
     label: 'Standard',
-    badge: 'info' as const,
-    color: '#60a5fa',
-    bg: 'bg-blue-500/10',
-    icon: '👤',
-    description: 'Under $200 lifetime spend',
-    spendMin: 0,
+    color: '#6b7280',
+    bgClass: 'bg-gray-500/10 border-gray-500/30',
+    dotClass: 'bg-gray-500',
+    badgeVariant: 'default' as const,
+    description: 'New or low-frequency customers',
   },
 } as const;
 
-// ─── Skeleton ─────────────────────────────────────────────────
-
-function SegmentSkeleton() {
-  return (
-    <div className="h-36 bg-[#1a1a2e] rounded-xl animate-pulse" />
-  );
-}
-
-// ─── Tier Card ────────────────────────────────────────────────
-
-function TierCard({
-  tier,
-  count,
-  total,
-}: {
-  tier: keyof typeof TIER_CONFIG;
-  count: number;
-  total: number;
-}) {
-  const cfg = TIER_CONFIG[tier];
-  const ratio = total === 0 ? 0 : count / total;
-
-  return (
-    <Link href={`/customers?tier=${tier}`}>
-      <Card hover className="p-5 group cursor-pointer">
-        <div className="flex items-start justify-between mb-4">
-          <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center text-lg', cfg.bg)}>
-            {cfg.icon}
-          </div>
-          <Badge variant={cfg.badge}>{cfg.label}</Badge>
-        </div>
-
-        <div className="mb-1">
-          <span className="text-3xl font-bold text-white">{count.toLocaleString()}</span>
-          <span className="ml-2 text-sm text-gray-500">customers</span>
-        </div>
-
-        <div className="text-xs text-gray-500 mb-3">{cfg.description}</div>
-
-        {/* Progress bar */}
-        <div className="h-1.5 bg-[#1e1e2e] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${Math.round(ratio * 100)}%`, background: cfg.color }}
-          />
-        </div>
-        <div className="mt-1 text-xs text-gray-500 text-right">{pct(count, total)} of total</div>
-
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-xs text-gray-600 group-hover:text-gray-400 transition-colors">
-            View customers →
-          </span>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-600 group-hover:text-gray-300 transition-colors" />
-        </div>
-      </Card>
-    </Link>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────
-
 export default function CustomerSegmentsPage() {
-  const { data: stats, loading, error, refetch } = useCustomerStats();
-  const { data: densityRaw } = useCustomerDensity();
-  const [mapId, setMapId] = useState<string | null>(null);
-  const [selectedCity, setSelectedCity] = useState<CustomerDensityPoint | null>(null);
-
-  const density: CustomerDensityPoint[] = Array.isArray(densityRaw) ? densityRaw : [];
-  const handleMapReady = useCallback((id: string) => setMapId(id), []);
-  const handleCityClick = useCallback((p: CustomerDensityPoint) => setSelectedCity(p), []);
+  const { data: stats, loading, error, refetch } = useCustomerSegmentStats();
+  const [activeView, setActiveView] = useState<'cards' | 'geo'>('cards');
 
   const total = stats?.total ?? 0;
 
@@ -140,196 +62,349 @@ export default function CustomerSegmentsPage() {
     <>
       <Header
         title="Customer Segments"
-        subtitle="Tier breakdown, geographic distribution, and revenue analysis"
+        subtitle={loading ? 'Loading…' : `${total} customers across ${Object.keys(stats?.tiers ?? {}).length} tiers`}
         actions={
-          <Link href="/customers">
-            <Button variant="secondary" size="md">
-              <Users className="w-4 h-4 mr-2" /> All Customers
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/customers">
+              <Button variant="secondary" size="sm">
+                <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back
+              </Button>
+            </Link>
+            <div className="flex rounded-md border border-wl-border-default overflow-hidden">
+              <button
+                onClick={() => setActiveView('cards')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
+                  activeView === 'cards' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                )}
+              >
+                <BarChart2 className="w-3.5 h-3.5" /> Tiers
+              </button>
+              <button
+                onClick={() => setActiveView('geo')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
+                  activeView === 'geo' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                )}
+              >
+                <MapIcon className="w-3.5 h-3.5" /> Geography
+              </button>
+            </div>
+          </div>
         }
       />
 
       <div className="p-6 space-y-6">
         {error && !loading && (
-          <ErrorState
-            title="Failed to load segment data"
-            error={error}
-            onRetry={() => refetch()}
-          />
+          <ErrorState title="Failed to load segment data" error={error} onRetry={() => refetch()} />
         )}
 
-        {/* Tier Cards */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-widest">Tier Segments</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {loading ? (
-              Array.from({ length: 3 }).map((_, i) => <SegmentSkeleton key={i} />)
-            ) : stats ? (
-              (['enterprise', 'premium', 'standard'] as const).map((tier) => (
-                <TierCard key={tier} tier={tier} count={stats.tiers[tier]} total={total} />
-              ))
-            ) : null}
-          </div>
-        </section>
+        {activeView === 'cards' && (
+          <>
+            {/* Tier breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
+                const cfg = TIER_CONFIG[tier];
+                const seg = stats?.tiers?.[tier];
 
-        {/* Summary Stats */}
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-blue-400" />
-                <span className="text-xs text-gray-500">Total</span>
-              </div>
-              <div className="text-2xl font-bold text-white">{stats.total.toLocaleString()}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-green-400" />
-                <span className="text-xs text-gray-500">Active</span>
-              </div>
-              <div className="text-2xl font-bold text-white">{stats.active.toLocaleString()}</div>
-              <div className="text-xs text-gray-500">{pct(stats.active, total)} of total</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="w-4 h-4 text-yellow-400" />
-                <span className="text-xs text-gray-500">Avg Orders</span>
-              </div>
-              <div className="text-2xl font-bold text-white">{Number(stats.avgOrderCount).toFixed(1)}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Globe className="w-4 h-4 text-indigo-400" />
-                <span className="text-xs text-gray-500">Total Revenue</span>
-              </div>
-              <div className="text-2xl font-bold text-white">{fmtCurrency(stats.totalRevenue)}</div>
-            </Card>
-          </div>
-        )}
+                return (
+                  <Card key={tier} className={cn('p-5 border', cfg.bgClass)}>
+                    {loading ? (
+                      <div className="space-y-3">
+                        <Skeleton type="text" className="w-24 h-5" />
+                        <Skeleton type="text" className="w-16 h-8" />
+                        <Skeleton type="text" className="w-32 h-4" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className={cn('w-3 h-3 rounded-full', cfg.dotClass)} />
+                            <span className="font-semibold text-white text-sm">{cfg.label}</span>
+                          </div>
+                          <Badge variant={cfg.badgeVariant}>{fmtPct(seg?.count ?? 0, total)}</Badge>
+                        </div>
 
-        {/* Top Spenders */}
-        {stats && stats.topSpenders.length > 0 && (
-          <section>
-            <h2 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-widest">Top Spenders</h2>
-            <Card className="overflow-hidden p-0">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
-                    <th className="px-4 py-3 text-left font-semibold text-gray-300">Rank</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-300">Customer</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-300">Email</th>
-                    <th className="px-4 py-3 text-right font-semibold text-gray-300">Revenue</th>
-                    <th className="px-4 py-3 text-center font-semibold text-gray-300">Orders</th>
-                    <th className="px-4 py-3" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.topSpenders.map((s, idx) => {
-                    const tier =
-                      s.totalSpent >= 1000 ? 'enterprise' : s.totalSpent >= 200 ? 'premium' : 'standard';
-                    const cfg = TIER_CONFIG[tier];
+                        <div className="text-3xl font-bold text-white mb-1">
+                          {(seg?.count ?? 0).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 mb-4">customers</div>
+
+                        <div className="space-y-2 text-xs border-t border-white/[0.06] pt-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Total revenue</span>
+                            <span className="text-gray-200 font-semibold">
+                              {fmt.format(seg?.totalSpent ?? 0)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Avg orders</span>
+                            <span className="text-gray-200 font-semibold">
+                              {seg && seg.count > 0 ? (seg.totalOrders / seg.count).toFixed(1) : '0'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Avg spend</span>
+                            <span className="text-gray-200 font-semibold">
+                              {seg && seg.count > 0 ? fmt.format(seg.totalSpent / seg.count) : '—'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-gray-500 mt-3 leading-relaxed">
+                          {cfg.description}
+                        </p>
+                      </>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Active vs Inactive */}
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                <Users className="w-4 h-4 text-gray-500" /> Engagement Status
+              </h3>
+              {loading ? (
+                <div className="flex gap-4">
+                  <Skeleton type="rect" className="h-20 flex-1" />
+                  <Skeleton type="rect" className="h-20 flex-1" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {(['active', 'inactive'] as const).map((status) => {
+                    const count = stats?.statuses?.[status] ?? 0;
                     return (
-                      <tr key={s.id} className="border-b border-[#1e1e2e] hover:bg-white/[0.02] transition-colors">
-                        <td className="px-4 py-3">
-                          <span className={cn(
-                            'text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center',
-                            idx === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                            idx === 1 ? 'bg-gray-400/20 text-gray-400' :
-                            idx === 2 ? 'bg-orange-500/20 text-orange-400' :
-                            'bg-[#1e1e2e] text-gray-500',
-                          )}>
-                            {idx + 1}
+                      <div
+                        key={status}
+                        className={cn(
+                          'p-4 rounded-lg border',
+                          status === 'active'
+                            ? 'bg-green-400/5 border-green-400/20'
+                            : 'bg-gray-500/5 border-gray-500/20',
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-gray-300 capitalize font-medium">
+                            {status}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 text-white font-medium">{s.name}</td>
-                        <td className="px-4 py-3 text-gray-400">{s.email ?? '—'}</td>
-                        <td className="px-4 py-3 text-right">
-                          <span className="font-bold" style={{ color: cfg.color }}>
-                            {fmtCurrency(s.totalSpent)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center text-gray-300">{s.ordersCount}</td>
-                        <td className="px-4 py-3 text-right">
-                          <Link href={`/customers/${s.id}`}>
-                            <Button variant="secondary" size="sm">View</Button>
-                          </Link>
-                        </td>
-                      </tr>
+                          <Badge variant={status === 'active' ? 'success' : 'default'}>
+                            {fmtPct(count, total)}
+                          </Badge>
+                        </div>
+                        <div className="text-2xl font-bold text-white">
+                          {count.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {status === 'active'
+                            ? 'Have placed at least one order'
+                            : 'No orders on record'}
+                        </div>
+                        {/* Progress bar */}
+                        <div className="mt-3 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all',
+                              status === 'active' ? 'bg-green-400' : 'bg-gray-500',
+                            )}
+                            style={{ width: fmtPct(count, total) }}
+                          />
+                        </div>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
+                </div>
+              )}
             </Card>
-          </section>
+
+            {/* Top tier actions */}
+            <Card className="p-5">
+              <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                <Star className="w-4 h-4 text-amber-400" /> Segment Criteria
+              </h3>
+              <div className="space-y-3 text-sm">
+                {([
+                  { tier: 'enterprise', rule: 'Lifetime spend ≥ $5,000', color: 'text-amber-400' },
+                  { tier: 'premium', rule: 'Lifetime spend $1,000 – $4,999', color: 'text-blue-400' },
+                  { tier: 'standard', rule: 'Lifetime spend < $1,000', color: 'text-gray-400' },
+                ] as const).map(({ tier, rule, color }) => (
+                  <div key={tier} className="flex items-center justify-between py-2 border-b border-wl-border-default last:border-0">
+                    <div className="flex items-center gap-2">
+                      <span className={cn('w-2 h-2 rounded-full', TIER_CONFIG[tier].dotClass)} />
+                      <span className="capitalize font-medium text-white">{TIER_CONFIG[tier].label}</span>
+                    </div>
+                    <span className={cn('text-xs', color)}>{rule}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Tiers are computed automatically based on cumulative spend synced from your store.
+              </p>
+            </Card>
+          </>
         )}
 
-        {/* Geographic Distribution Map */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-widest flex items-center gap-2">
-            <MapIcon className="w-4 h-4" /> Geographic Distribution
-          </h2>
-
-          <div className="h-[400px] relative rounded-xl overflow-hidden border border-[#1e1e2e]">
-            <WLMap
-              className="w-full h-full"
-              center={[20, 0]}
-              zoom={2}
-              onReady={handleMapReady}
-            >
-              {/* Legend overlay */}
-              <div className="absolute bottom-3 left-3 z-[1000] bg-[rgba(13,13,20,0.9)] border border-white/10 rounded-lg p-3 pointer-events-auto">
-                <div className="text-xs font-semibold text-gray-300 mb-2">Bubble = customer count</div>
-                <div className="flex flex-col gap-1">
-                  {[
-                    { color: '#818cf8', label: 'High density' },
-                    { color: '#60a5fa', label: 'Mid density' },
-                    { color: '#34d399', label: 'Low density' },
-                  ].map(({ color, label }) => (
-                    <div key={label} className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: color, opacity: 0.7 }} />
-                      <span className="text-xs text-gray-400">{label}</span>
-                    </div>
+        {activeView === 'geo' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Top cities table */}
+            <Card className="overflow-hidden p-0">
+              <div className="p-4 border-b border-wl-border-default">
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-gray-500" /> Top Cities
+                </h3>
+              </div>
+              {loading ? (
+                <div className="p-4 space-y-3">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} type="rect" className="h-10" />
                   ))}
                 </div>
-              </div>
-            </WLMap>
-            {mapId && density.length > 0 && (
-              <CustomerDensityLayer
-                mapId={mapId}
-                points={density}
-                onCityClick={handleCityClick}
-              />
-            )}
-          </div>
-
-          {selectedCity && (
-            <Card className="mt-3 p-4 flex items-center justify-between gap-4">
-              <div>
-                <div className="text-sm font-semibold text-white">
-                  {selectedCity.city}{selectedCity.country ? `, ${selectedCity.country}` : ''}
+              ) : !stats?.topCities || stats.topCities.length === 0 ? (
+                <div className="p-10 text-center">
+                  <MapPin className="w-8 h-8 text-gray-600 mx-auto mb-3" />
+                  <p className="text-sm text-gray-400">No city data available</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Sync customers with addresses to see geographic breakdown
+                  </p>
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5">
-                  {selectedCity.customerCount.toLocaleString()} customers · {selectedCity.orderCount.toLocaleString()} orders
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-wl-border-default bg-wl-bg-surface">
+                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">#</th>
+                        <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">City</th>
+                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Customers</th>
+                        <th className="p-3 px-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenue</th>
+                        <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Avg Orders</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.topCities.map((city, i) => {
+                        const maxCount = stats.topCities[0]?.count ?? 1;
+                        return (
+                          <tr
+                            key={city.city}
+                            className={cn(
+                              'border-b border-wl-border-default hover:bg-wl-bg-elevated/30 transition-colors',
+                              i % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-surface/40',
+                            )}
+                          >
+                            <td className="p-3 px-4 text-xs text-gray-500 font-mono">{i + 1}</td>
+                            <td className="p-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-1.5 bg-blue-500 rounded-full"
+                                  style={{ width: `${Math.max(4, (city.count / maxCount) * 60)}px` }}
+                                />
+                                <span className="text-white text-xs font-medium">{city.city}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 px-4 text-center font-semibold text-white">
+                              {city.count.toLocaleString()}
+                            </td>
+                            <td className="p-3 px-4 text-right text-white text-xs">
+                              {fmt.format(city.totalSpent)}
+                            </td>
+                            <td className="p-3 px-4 text-center text-gray-300 text-xs">
+                              {city.avgOrders.toFixed(1)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              </div>
-              <button
-                onClick={() => setSelectedCity(null)}
-                className="text-xs text-gray-500 hover:text-white"
-              >
-                ✕
-              </button>
+              )}
             </Card>
-          )}
 
-          {density.length === 0 && !loading && (
-            <EmptyState
-              icon={<Globe className="w-6 h-6" />}
-              title="No geographic data yet"
-              description="Geographic distribution populates once customers have delivery orders with city data."
-            />
-          )}
-        </section>
+            {/* Revenue by tier bar chart (CSS-based) */}
+            <div className="space-y-4">
+              <Card className="p-5">
+                <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-gray-500" /> Revenue Distribution by Tier
+                </h3>
+                {loading ? (
+                  <div className="space-y-3">
+                    {[0, 1, 2].map((i) => <Skeleton key={i} type="rect" className="h-8" />)}
+                  </div>
+                ) : stats?.tiers ? (() => {
+                  const totalRevenue = Object.values(stats.tiers).reduce((s, t) => s + t.totalSpent, 0);
+                  return (
+                    <div className="space-y-4">
+                      {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
+                        const seg = stats.tiers[tier];
+                        const pct = totalRevenue > 0 ? (seg.totalSpent / totalRevenue) * 100 : 0;
+                        const cfg = TIER_CONFIG[tier];
+                        return (
+                          <div key={tier}>
+                            <div className="flex items-center justify-between text-xs mb-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className={cn('w-2 h-2 rounded-full', cfg.dotClass)} />
+                                <span className="text-gray-300 capitalize font-medium">{cfg.label}</span>
+                              </div>
+                              <span className="text-gray-400">
+                                {fmt.format(seg.totalSpent)} ({pct.toFixed(1)}%)
+                              </span>
+                            </div>
+                            <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%`, backgroundColor: cfg.color }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })() : null}
+              </Card>
+
+              {/* Customer count by tier */}
+              <Card className="p-5">
+                <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-gray-500" /> Customer Count by Tier
+                </h3>
+                {loading ? (
+                  <div className="space-y-3">
+                    {[0, 1, 2].map((i) => <Skeleton key={i} type="rect" className="h-8" />)}
+                  </div>
+                ) : stats?.tiers ? (() => {
+                  return (
+                    <div className="space-y-4">
+                      {(['enterprise', 'premium', 'standard'] as const).map((tier) => {
+                        const seg = stats.tiers[tier];
+                        const pct = total > 0 ? (seg.count / total) * 100 : 0;
+                        const cfg = TIER_CONFIG[tier];
+                        return (
+                          <div key={tier}>
+                            <div className="flex items-center justify-between text-xs mb-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className={cn('w-2 h-2 rounded-full', cfg.dotClass)} />
+                                <span className="text-gray-300 capitalize font-medium">{cfg.label}</span>
+                              </div>
+                              <span className="text-gray-400">
+                                {seg.count.toLocaleString()} ({pct.toFixed(1)}%)
+                              </span>
+                            </div>
+                            <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%`, backgroundColor: cfg.color }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })() : null}
+              </Card>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

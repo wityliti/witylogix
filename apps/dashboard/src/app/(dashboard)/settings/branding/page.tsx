@@ -31,7 +31,7 @@ export default function BrandingPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Branding"
         subtitle="Customize your brand colors, logo, and communication templates"
@@ -50,7 +50,7 @@ export default function BrandingPage() {
         </Link>
 
         {/* Logo Section */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Upload className="w-5 h-5" />
@@ -64,9 +64,9 @@ export default function BrandingPage() {
                 <h4 className="font-medium text-white mb-4">
                   Primary Logo
                 </h4>
-                <div className="border-2 border-dashed border-[#1e1e2e] rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
                   <div className="mb-4">
-                    <div className="w-16 h-16 mx-auto rounded-lg bg-[#1a1a2e] flex items-center justify-center">
+                    <div className="w-16 h-16 mx-auto rounded-lg bg-wl-bg-elevated flex items-center justify-center">
                       <img
                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234f46e5' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='48' fill='white' text-anchor='middle' dy='.3em' font-weight='bold'%3EWL%3C/text%3E%3C/svg%3E"
                         alt="Current Logo"
@@ -82,7 +82,7 @@ export default function BrandingPage() {
                   </p>
                   <Button
                     variant="secondary"
-                    className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
+                    className="border-wl-border-default text-white hover:bg-wl-bg-elevated"
                   >
                     Choose File
                   </Button>
@@ -97,9 +97,9 @@ export default function BrandingPage() {
                 <h4 className="font-medium text-white mb-4">
                   Favicon
                 </h4>
-                <div className="border-2 border-dashed border-[#1e1e2e] rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer">
                   <div className="mb-4">
-                    <div className="w-16 h-16 mx-auto rounded-lg bg-[#1a1a2e] flex items-center justify-center">
+                    <div className="w-16 h-16 mx-auto rounded-lg bg-wl-bg-elevated flex items-center justify-center">
                       <div className="w-8 h-8 rounded bg-blue-500" />
                     </div>
                   </div>
@@ -111,7 +111,7 @@ export default function BrandingPage() {
                   </p>
                   <Button
                     variant="secondary"
-                    className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
+                    className="border-wl-border-default text-white hover:bg-wl-bg-elevated"
                   >
                     Choose File
                   </Button>
@@ -125,7 +125,7 @@ export default function BrandingPage() {
         </Card>
 
         {/* Color Scheme */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Paintbrush className="w-5 h-5" />
@@ -144,7 +144,7 @@ export default function BrandingPage() {
                     <input
                       type="text"
                       defaultValue="#4f46e5"
-                      className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -155,7 +155,7 @@ export default function BrandingPage() {
                   Secondary Color
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-lg bg-[#a78bfa] border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
+                  <div className="w-16 h-16 rounded-lg bg-violet-400 border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
                   <div className="flex-1">
                     <input
                       type="text"
@@ -171,7 +171,7 @@ export default function BrandingPage() {
                   Accent Color
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-lg bg-[#f59e0b] border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
+                  <div className="w-16 h-16 rounded-lg bg-amber-500 border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
                   <div className="flex-1">
                     <input
                       type="text"
@@ -187,7 +187,7 @@ export default function BrandingPage() {
                   Success Color
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-lg bg-[#10b981] border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
+                  <div className="w-16 h-16 rounded-lg bg-emerald-500 border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
                   <div className="flex-1">
                     <input
                       type="text"
@@ -199,7 +199,7 @@ export default function BrandingPage() {
               </div>
             </div>
 
-            <div className="bg-[#1a1a2e] p-4 rounded-lg">
+            <div className="bg-wl-bg-elevated p-4 rounded-lg">
               <Button variant="secondary" className="gap-2">
                 <RotateCcw className="w-4 h-4" />
                 Reset to Default
@@ -209,7 +209,7 @@ export default function BrandingPage() {
         </Card>
 
         {/* Tracking Page Branding */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Eye className="w-5 h-5" />
@@ -224,7 +224,7 @@ export default function BrandingPage() {
               <input
                 type="text"
                 defaultValue="Track Your Shipment - Witylogix"
-                className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -235,7 +235,7 @@ export default function BrandingPage() {
               <textarea
                 rows={3}
                 defaultValue="Enter your tracking number to see real-time updates about your shipment."
-                className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -269,7 +269,7 @@ export default function BrandingPage() {
         </Card>
 
         {/* Email Template Branding */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white">Email Template Branding</CardTitle>
           </CardHeader>
@@ -315,7 +315,7 @@ export default function BrandingPage() {
         </Card>
 
         {/* Custom Domain */}
-        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Globe className="w-5 h-5" />
@@ -337,11 +337,11 @@ export default function BrandingPage() {
               </p>
             </div>
 
-            <div className="bg-[#1a1a2e] p-4 rounded-lg">
+            <div className="bg-wl-bg-elevated p-4 rounded-lg">
               <p className="text-sm font-medium text-white mb-2">
                 DNS Configuration
               </p>
-              <code className="text-xs text-gray-400 block bg-[#0a0a0f] p-2 rounded border border-[#1e1e2e] font-mono">
+              <code className="text-xs text-gray-400 block bg-wl-bg-root p-2 rounded border border-wl-border-default font-mono">
                 track.witylogix.com.wl-cdn.com
               </code>
               <p className="text-xs text-gray-500 mt-2">
@@ -355,7 +355,7 @@ export default function BrandingPage() {
         <div className="flex gap-4 justify-end">
           <Button
             variant="secondary"
-            className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
+            className="border-wl-border-default text-white hover:bg-wl-bg-elevated"
           >
             Preview
           </Button>

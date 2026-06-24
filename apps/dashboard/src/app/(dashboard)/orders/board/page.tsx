@@ -44,39 +44,6 @@ interface KanbanOrder {
   value: number;
 }
 
-const VALID_STATUSES: Set<string> = new Set([
-  'PENDING', 'CONFIRMED', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED', 'FAILED', 'CANCELLED',
-]);
-
-function normalizeStatus(s: string): OrderStatus {
-  const up = s.toUpperCase();
-  if (up === 'ACCEPTED') return 'CONFIRMED';
-  if (up === 'OUT_FOR_DELIVERY' || up === 'ARRIVED') return 'IN_TRANSIT';
-  if (up === 'RETURNED') return 'FAILED';
-  if (VALID_STATUSES.has(up)) return up as OrderStatus;
-  return 'PENDING';
-}
-
-function initials(name: string): string {
-  return name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function toKanban(o: ApiOrder): KanbanOrder {
-  return {
-    id: o.id,
-    orderNumber: o.orderNumber ?? o.id.slice(0, 8),
-    customerName: o.customerName,
-    destination: o.city || o.deliveryAddress?.city || '',
-    fullAddress: [o.deliveryAddress?.street, o.city || o.deliveryAddress?.city].filter(Boolean).join(', '),
-    createdAt: o.createdAt,
-    priority: 'medium',
-    status: normalizeStatus(o.status),
-    driverName: o.driver?.name,
-    driverInitials: o.driver?.name ? initials(o.driver.name) : undefined,
-    value: o.totalAmount ?? 0,
-  };
-}
-
 const COLUMN_CONFIG: { status: OrderStatus; title: string }[] = [
   { status: 'PENDING', title: 'Pending' },
   { status: 'CONFIRMED', title: 'Confirmed' },

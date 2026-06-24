@@ -35,22 +35,21 @@ const categoryColors: Record<string, 'primary' | 'success' | 'info' | 'warning' 
   CUSTOM: "default",
 };
 
-function TemplateGrid({ templates }: { templates: Template[] }) {
+function TemplateGrid({ templates, viewMode }: { templates: Template[]; viewMode: 'grid' | 'list' }) {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   if (viewMode === "list") {
     return (
       <>
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
-          <CardHeader className="border-b border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
+          <CardHeader className="border-b border-wl-border-default">
             <CardTitle className="text-base text-white">Templates</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="text-left py-3 px-4 font-medium text-gray-400">Name</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-400">Category</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-400">Documents</th>
@@ -64,7 +63,7 @@ function TemplateGrid({ templates }: { templates: Template[] }) {
                   {templates.map((tpl) => (
                     <tr
                       key={tpl.id}
-                      className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors cursor-pointer"
+                      className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer"
                       onClick={() => setSelectedTemplate(tpl)}
                     >
                       <td className="py-3 px-4 text-white font-medium">
@@ -109,10 +108,10 @@ function TemplateGrid({ templates }: { templates: Template[] }) {
         {templates.map((tpl) => (
           <Card
             key={tpl.id}
-            className="bg-[#12121a] border-[#1e1e2e] hover:border-blue-500/30 transition-colors cursor-pointer"
+            className="bg-wl-bg-surface border-wl-border-default hover:border-blue-500/30 transition-colors cursor-pointer"
             onClick={() => setSelectedTemplate(tpl)}
           >
-            <div className="h-32 bg-gradient-to-br from-blue-500/10 to-emerald-500/10 flex items-center justify-center border-b border-[#1e1e2e]">
+            <div className="h-32 bg-gradient-to-br from-blue-500/10 to-emerald-500/10 flex items-center justify-center border-b border-wl-border-default">
               <FileText className="text-blue-500" size={48} />
             </div>
             <CardContent className="pt-4">
@@ -168,8 +167,8 @@ function TemplateDetailCard({
   onClose: () => void;
 }) {
   return (
-    <Card className="mt-6 bg-[#12121a] border-[#1e1e2e]">
-      <CardHeader className="border-b border-[#1e1e2e] flex flex-row items-center justify-between">
+    <Card className="mt-6 bg-wl-bg-surface border-wl-border-default">
+      <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-base text-white">{template.name}</CardTitle>
           <p className="text-xs text-gray-400 mt-1">ID: {template.id}</p>
@@ -210,12 +209,12 @@ function TemplateDetailCard({
           <div>
             <h3 className="text-sm font-semibold text-gray-400 mb-3">Usage</h3>
             <div className="space-y-3">
-              <div className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+              <div className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                 <p className="text-xs text-gray-400 mb-1">Total Usage</p>
                 <p className="text-2xl font-bold text-white">{template.usageCount}</p>
                 <p className="text-xs text-gray-400 mt-1">times used</p>
               </div>
-              <div className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+              <div className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                 <p className="text-xs text-gray-400 mb-1">Last Used</p>
                 <p className="text-sm font-medium text-white">
                   {template.lastUsed
@@ -264,7 +263,7 @@ function TemplateDetailCard({
 }
 
 export default function TemplatesPage() {
-  const { items: data, loading, error, refetch } = useApiList<Template>('/api/v4/esignatures/templates');
+  const { items: data, loading, error, refetch } = useApiList<Template>('/api/v4/signing-templates');
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
 
@@ -287,7 +286,7 @@ export default function TemplatesPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
+    <div className="min-h-screen bg-wl-bg-root p-6 space-y-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -303,7 +302,7 @@ export default function TemplatesPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Total Templates</span>
@@ -314,7 +313,7 @@ export default function TemplatesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Active</span>
@@ -327,7 +326,7 @@ export default function TemplatesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-400 text-sm font-medium">Avg. Usage</span>
@@ -342,7 +341,7 @@ export default function TemplatesPage() {
       </div>
 
       {/* Controls */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -356,7 +355,7 @@ export default function TemplatesPage() {
                       "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                       filterCategory === cat
                         ? "bg-blue-500 text-white"
-                        : "bg-[#1a1a2e] text-gray-400 hover:text-white"
+                        : "bg-wl-bg-elevated text-gray-400 hover:text-white"
                     )}
                   >
                     {cat}
@@ -364,7 +363,7 @@ export default function TemplatesPage() {
                 ))}
               </div>
             </div>
-            <div className="flex items-center gap-2 border-l border-[#1e1e2e] pl-4">
+            <div className="flex items-center gap-2 border-l border-wl-border-default pl-4">
               <label className="text-sm font-medium text-gray-400">View:</label>
               <button
                 onClick={() => setViewMode("grid")}
@@ -372,7 +371,7 @@ export default function TemplatesPage() {
                   "p-1.5 rounded transition-colors",
                   viewMode === "grid"
                     ? "bg-blue-500 text-white"
-                    : "hover:bg-[#1a1a2e] text-gray-400"
+                    : "hover:bg-wl-bg-elevated text-gray-400"
                 )}
                 title="Grid view"
               >
@@ -384,7 +383,7 @@ export default function TemplatesPage() {
                   "p-1.5 rounded transition-colors",
                   viewMode === "list"
                     ? "bg-blue-500 text-white"
-                    : "hover:bg-[#1a1a2e] text-gray-400"
+                    : "hover:bg-wl-bg-elevated text-gray-400"
                 )}
                 title="List view"
               >
@@ -397,9 +396,9 @@ export default function TemplatesPage() {
 
       {/* Templates */}
       {filteredTemplates.length > 0 ? (
-        <TemplateGrid templates={filteredTemplates} />
+        <TemplateGrid templates={filteredTemplates} viewMode={viewMode} />
       ) : (
-        <Card className="bg-[#12121a] border-[#1e1e2e] text-center py-12">
+        <Card className="bg-wl-bg-surface border-wl-border-default text-center py-12">
           <CardContent className="space-y-4">
             <FileText className="mx-auto text-gray-600" size={48} />
             <p className="text-gray-400">

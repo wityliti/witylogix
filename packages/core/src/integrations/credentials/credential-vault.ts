@@ -19,10 +19,10 @@
  *   }
  */
 
-import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 import { EventEmitter } from 'events';
-import type { CryptoService } from '../encryption/crypto.js';
-import type { AuditLogger } from '../audit/logger.js';
+import type { CryptoService } from '../../encryption/crypto.js';
+import type { AuditLogger } from '../../audit/logger.js';
+import type { EncryptedPayload } from '../../encryption/types.js';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -112,8 +112,6 @@ export interface MaskedCredential {
 
 // ─── Constants ───────────────────────────────────────────────────────
 
-const IV_LENGTH = 16; // 128 bits for GCM
-const AUTH_TAG_LENGTH = 16; // 128 bits for GCM
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_MAX_CACHE_SIZE = 1000;
 
@@ -146,30 +144,18 @@ export class CredentialVault extends EventEmitter {
     // Serialize credential data
     const plaintext = JSON.stringify(entry.credential);
 
-    // Generate IV
-    const iv = randomBytes(IV_LENGTH);
-
-    // Encrypt the credential
-    const cipher = createCipheriv(
-      'aes-256-gcm',
-      Buffer.from(this.cryptoService.getActiveKey(), 'base64'),
-      iv,
-    );
-
-    let encryptedData = cipher.update(plaintext, 'utf8', 'base64');
-    encryptedData += cipher.final('base64');
-
-    const authTag = cipher.getAuthTag();
+    // Encrypt the credential using the crypto service
+    const payload = this.cryptoService.encrypt(plaintext);
 
     const encryptedCredential: EncryptedCredential = {
       id,
       tenantId: entry.tenantId,
       providerId: entry.providerId,
       credentialType: entry.credentialType,
-      encryptedData,
-      iv: iv.toString('base64'),
-      authTag: authTag.toString('base64'),
-      keyVersion: this.cryptoService.getActiveKeyVersion(),
+      encryptedData: payload.data,
+      iv: payload.iv,
+      authTag: payload.authTag ?? '',
+      keyVersion: payload.keyId ?? this.cryptoService.getActiveKeyId(),
       encryptedAt: new Date(),
       expiresAt: expiresAt ?? null,
       metadata: entry.metadata,
@@ -298,22 +284,13 @@ export class CredentialVault extends EventEmitter {
         oldKeyVersion,
       );
 
-      // Re-encrypt with new key
-      const iv = randomBytes(IV_LENGTH);
-      const cipher = createCipheriv(
-        'aes-256-gcm',
-        Buffer.from(this.cryptoService.getKeyVersion(newKeyVersion), 'base64'),
-        iv,
-      );
-
-      let reEncryptedData = cipher.update(decrypted, 'utf8', 'base64');
-      reEncryptedData += cipher.final('base64');
-      const authTag = cipher.getAuthTag();
+      // Re-encrypt with new key via the crypto service
+      const reEncrypted = this.cryptoService.encrypt(decrypted, newKeyVersion);
 
       // Update credential with new encryption
-      encryptedCredential.encryptedData = reEncryptedData;
-      encryptedCredential.iv = iv.toString('base64');
-      encryptedCredential.authTag = authTag.toString('base64');
+      encryptedCredential.encryptedData = reEncrypted.data;
+      encryptedCredential.iv = reEncrypted.iv;
+      encryptedCredential.authTag = reEncrypted.authTag ?? '';
       encryptedCredential.keyVersion = newKeyVersion;
 
       await this.persistenceLayer.save(encryptedCredential);
@@ -372,8 +349,10 @@ export class CredentialVault extends EventEmitter {
   private setCachedCredential(id: string, credential: EncryptedCredential): void {
     // Evict oldest if cache is full
     if (this.cache.size >= this.maxCacheSize) {
-      const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      const oldestKey = this.cache.keys().next().value as string | undefined;
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey);
+      }
     }
 
     this.cache.set(id, {
@@ -409,19 +388,14 @@ export class CredentialVault extends EventEmitter {
     authTag: string,
     keyVersion: string,
   ): Promise<string> {
-    const key = Buffer.from(this.cryptoService.getKeyVersion(keyVersion), 'base64');
-    const decipher = createDecipheriv(
-      'aes-256-gcm',
-      key,
-      Buffer.from(iv, 'base64'),
-    );
-
-    decipher.setAuthTag(Buffer.from(authTag, 'base64'));
-
-    let decrypted = decipher.update(encryptedData, 'base64', 'utf8');
-    decrypted += decipher.final('utf8');
-
-    return decrypted;
+    const payload: EncryptedPayload = {
+      algorithm: 'aes-256-gcm',
+      iv,
+      authTag,
+      data: encryptedData,
+      keyId: keyVersion,
+    };
+    return this.cryptoService.decrypt(payload);
   }
 
   private maskValue(value: string): string {

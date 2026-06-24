@@ -95,6 +95,7 @@ export class EpicorClient {
       customerId: response.custID,
       total: response.orderTotal,
       status: response.orderStatus,
+      lineItems: [],
     };
   }
 
@@ -111,6 +112,7 @@ export class EpicorClient {
       customerId: response.custID,
       total: response.orderTotal,
       status: response.orderStatus,
+      lineItems: [],
     };
   }
 
@@ -155,6 +157,7 @@ export class EpicorClient {
       customerId: response.vendorID,
       total: response.poTotal,
       status: response.poStatus,
+      lineItems: [],
     };
   }
 
@@ -171,6 +174,7 @@ export class EpicorClient {
       customerId: response.vendorID,
       total: response.poTotal,
       status: response.poStatus,
+      lineItems: [],
     };
   }
 

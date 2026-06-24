@@ -187,7 +187,7 @@ export default function ShippingProfilesPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
-                "w-full p-2 px-4 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm font-sans outline-none",
+                "w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none",
               )}
             />
           </div>
@@ -216,7 +216,7 @@ export default function ShippingProfilesPage() {
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-200",
                     deliveryFilter === m
                       ? "bg-blue-500 text-gray-900 border-blue-500"
-                      : "bg-transparent text-gray-400 border-[#1e1e2e]",
+                      : "bg-transparent text-gray-400 border-wl-border-default",
                   )}
                 >
                   {m === "ALL"
@@ -304,7 +304,7 @@ export default function ShippingProfilesPage() {
                 {/* Rate & Thresholds */}
                 <div
                   className={cn(
-                    "grid grid-cols-2 gap-3 p-3 bg-[#12121a] rounded-lg mb-3",
+                    "grid grid-cols-2 gap-3 p-3 bg-wl-bg-surface rounded-lg mb-3",
                   )}
                 >
                   <div>

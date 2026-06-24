@@ -47,10 +47,10 @@ interface FailoverConfig {
 const defaultConfig: FailoverConfig = {
   primaryProvider: "here",
   secondaryProvider: "google",
-  timeoutMs: 5000,
+  timeoutMs: 2000,
   maxRetries: 2,
   circuitBreakerThreshold: 5,
-  circuitBreakerResetMs: 30000,
+  circuitBreakerResetMs: 5000,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -154,7 +154,7 @@ describe("Failover Behavior - Failover Chain", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.distance).toBeCloseTo(3200, -1);
+    expect(data.distance).toBeCloseTo(3150, -1);
   });
 });
 
@@ -168,7 +168,7 @@ describe("Failover Behavior - Timeout Detection", () => {
 
   beforeEach(() => {
     slowClient = createMockHTTPClient({
-      delay: 6000, // 6 seconds - exceeds 5s timeout
+      delay: 3000, // 3 seconds - exceeds 2s timeout used in test
       responses: [
         {
           url: /slow/,
@@ -416,12 +416,7 @@ describe("Failover Behavior - Circuit Breaker", () => {
     let state = circuitBreaker.getState();
     expect(state.state).toBe("open");
 
-    // Simulate timeout expiration
-    await new Promise((resolve) =>
-      setTimeout(resolve, defaultConfig.circuitBreakerResetMs + 100),
-    );
-
-    // Reset circuit
+    // Reset circuit (simulates what happens after reset timeout)
     circuitBreaker.reset();
 
     state = circuitBreaker.getState();

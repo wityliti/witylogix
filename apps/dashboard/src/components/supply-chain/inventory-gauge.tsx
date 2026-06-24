@@ -15,16 +15,6 @@ interface InventoryGaugeProps {
   className?: string;
 }
 
-// Mock data
-const mockInventory: InventoryGaugeProps = {
-  sku: "SKU-2024-001",
-  current: 450,
-  max: 1000,
-  reorderPoint: 200,
-  daysOfSupply: 28,
-  unit: "units",
-};
-
 const getStockStatus = (
   current: number,
   max: number,
@@ -56,12 +46,12 @@ const getStockStatus = (
 };
 
 const InventoryGauge = ({
-  sku = mockInventory.sku,
-  current = mockInventory.current,
-  max = mockInventory.max,
-  reorderPoint = mockInventory.reorderPoint,
-  daysOfSupply = mockInventory.daysOfSupply,
-  unit = mockInventory.unit,
+  sku = "",
+  current = 0,
+  max = 0,
+  reorderPoint = 0,
+  daysOfSupply = 0,
+  unit = "units",
   className,
 }: InventoryGaugeProps) => {
   const percentage = (current / max) * 100;

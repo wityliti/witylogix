@@ -12,7 +12,6 @@
  */
 
 import { fetch } from "undici";
-
 import { ESignatureAdapter } from "./esignature-adapter.js";
 import type {
   Envelope,
@@ -364,7 +363,7 @@ export class AdobeSignClient extends ESignatureAdapter {
         signedAt: p.signedDate ? new Date(p.signedDate) : undefined,
       }));
 
-      const completedSigners = signerStatuses.filter((s) => s.status === "completed" || s.status === "signed").length;
+      const completedSigners = signerStatuses.filter((s: { status: EnvelopeStatus }) => s.status === "completed" || s.status === "signed").length;
       const totalSigners = signerStatuses.length;
 
       return {

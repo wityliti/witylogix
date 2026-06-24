@@ -218,21 +218,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const errorData = await response.json().catch(() => ({}));
 
         if (response.status === 400) {
-          throw new Error(errorData.message || "Invalid registration data");
+          throw new Error(errorData.message || errorData.error || "Invalid registration data");
         } else if (response.status === 409) {
-          throw new Error("Email already registered");
+          throw new Error(errorData.error || "Email already registered");
         } else {
-          throw new Error(errorData.message || `Registration failed: ${response.status}`);
+          throw new Error(errorData.message || errorData.error || `Registration failed: ${response.status}`);
         }
       }
 
-      const responseData: AuthResponse = await response.json();
+      const raw = await response.json();
+      // API wraps response in { data: { accessToken, user, shop, ... } }
+      const payload = raw.data || raw;
+      const responseData: AuthResponse = {
+        token: payload.accessToken || payload.token,
+        user: payload.user,
+        refreshToken: payload.refreshToken,
+      };
       setToken(responseData.token);
       setUser(responseData.user);
 
-      // Token is stored in httpOnly cookie by backend
-      // Only store user profile in localStorage (non-sensitive)
+      // Store user profile and refresh token in localStorage
       localStorage.setItem("authUser", JSON.stringify(responseData.user));
+      if (responseData.refreshToken) {
+        localStorage.setItem("refreshToken", responseData.refreshToken);
+      }
+      if (payload.shop) {
+        localStorage.setItem("authShop", JSON.stringify(payload.shop));
+      }
 
       // Fallback: also set cookie in case backend doesn't set httpOnly
       if (responseData.token) {

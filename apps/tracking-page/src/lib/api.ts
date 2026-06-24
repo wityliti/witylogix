@@ -1,76 +1,92 @@
-import type { TrackingData } from '../types'
+import type { TrackingData, TrackingResponse, AIEtaData } from '../types'
 
-const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api'
+// VITE_API_URL should end WITHOUT /api (e.g. https://api.witylogix.com)
+const API_BASE_URL = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL || 'http://localhost:3000'
 
-export interface AIEtaData {
-  estimatedArrival: string
-  confidenceLow: string
-  confidenceHigh: string
-  isAIPredicted: boolean
-  lastUpdated: string
+export type { AIEtaData }
+
+/**
+ * Fetch full tracking info for a shipment by its public tracking token.
+ * Hits GET /tracking/token/:trackingToken (public, no auth required).
+ */
+export async function fetchTrackingData(trackingToken: string): Promise<TrackingData> {
+  const url = `${API_BASE_URL}/tracking/token/${encodeURIComponent(trackingToken)}`
+  const response = await fetch(url, { cache: 'no-store' })
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Tracking number not found. Please check and try again.')
+    }
+    const body: unknown = await response.json().catch(() => ({}))
+    const message =
+      body && typeof body === 'object' && 'message' in body
+        ? String((body as Record<string, unknown>).message)
+        : 'Failed to load tracking information'
+    throw new Error(message)
+  }
+
+  const json: { data: TrackingResponse } = await response.json()
+
+  return {
+    trackingToken,
+    response: json.data,
+  }
 }
 
+/**
+ * Fetch AI-predicted ETA for a tracking token.
+ * Returns null on any error (non-blocking; UI falls back to static estimate).
+ */
 export async function fetchAIEta(trackingToken: string): Promise<AIEtaData | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/tracking/token/${trackingToken}/eta`)
+    const url = `${API_BASE_URL}/tracking/token/${encodeURIComponent(trackingToken)}/eta`
+    const response = await fetch(url)
     if (!response.ok) return null
-    const json = await response.json()
+    const json: { data: AIEtaData } = await response.json()
     return json.data ?? null
   } catch {
     return null
   }
 }
 
-export async function fetchTrackingData(orderId: string): Promise<TrackingData> {
-  const response = await fetch(`${API_BASE_URL}/tracking/${orderId}`)
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error('Order not found')
-    }
-    throw new Error('Failed to fetch tracking data')
-  }
-
-  return response.json()
-}
+// ─── Delivery Preferences (by tracking token) ────────────────────────────────
 
 export interface DeliveryPreferences {
-  safePlace?: string
   instructions?: string
-  rescheduleDate?: string // YYYY-MM-DD
-  rescheduleTimeWindow?: 'morning' | 'afternoon' | 'evening' | 'anytime'
-  redirectAddress?: {
-    line1: string
-    city: string
-    postalCode: string
-  }
-  deliveryMethod?: 'door' | 'signature' | 'neighbor'
-  phoneNumber?: string
+  dropoffNote?: string
+  dropoffLat?: number
+  dropoffLng?: number
+  contactPref?: 'call' | 'sms' | 'whatsapp'
+  rescheduledTo?: string // ISO datetime
+  timeSlotId?: string
 }
 
 export interface PreferencesUpdateResult {
   data: Record<string, unknown>
-  notification: {
-    sent: boolean
-    channels: string[]
-    message: string
-  }
 }
 
+/**
+ * Update customer delivery preferences using the tracking token (public endpoint).
+ */
 export async function updateDeliveryPreferences(
-  deliveryId: string,
+  trackingToken: string,
   preferences: DeliveryPreferences,
 ): Promise<PreferencesUpdateResult> {
-  const response = await fetch(`${API_BASE_URL}/v4/deliveries/${deliveryId}/preferences`, {
+  const url = `${API_BASE_URL}/tracking/token/${encodeURIComponent(trackingToken)}/preferences`
+  const response = await fetch(url, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(preferences),
   })
 
   if (!response.ok) {
-    const body = await response.json().catch(() => ({}))
-    throw new Error((body as any).error || 'Failed to update delivery preferences')
+    const body: unknown = await response.json().catch(() => ({}))
+    const message =
+      body && typeof body === 'object' && 'message' in body
+        ? String((body as Record<string, unknown>).message)
+        : 'Failed to update delivery preferences'
+    throw new Error(message)
   }
 
-  return response.json()
+  return response.json() as Promise<PreferencesUpdateResult>
 }

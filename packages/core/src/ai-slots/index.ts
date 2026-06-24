@@ -52,3 +52,10 @@ export {
 
 export type { TimeSlot } from './slot-recommender.js';
 export { SlotRecommender, slotRecommender } from './slot-recommender.js';
+
+// Holt-Winters forecasting
+export {
+  HoltWintersModel,
+  DEFAULT_HOURLY_PROFILE,
+} from './holt-winters.js';
+export type { HoltWintersParams, HoltWintersForecast, HoltWintersState } from './holt-winters.js';

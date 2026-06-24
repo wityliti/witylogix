@@ -113,7 +113,7 @@ export class GoogleCalendarService {
       throw new Error(`Token exchange failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as { access_token: string; refresh_token?: string; expires_in: number };
 
     const token: OAuth2Token = {
       accessToken: data.access_token,
@@ -151,7 +151,7 @@ export class GoogleCalendarService {
       throw new Error(`Token refresh failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as { access_token: string; refresh_token?: string; expires_in: number };
 
     const newToken: OAuth2Token = {
       accessToken: data.access_token,
@@ -208,18 +208,18 @@ export class GoogleCalendarService {
       throw new Error(`Calendar API Error [${response.status}]: ${error || response.statusText}`);
     }
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (schema) {
       try {
-        return schema.parse(data);
+        return schema.parse(data) as T;
       } catch (validationError) {
         console.error('Validation error:', validationError);
         throw new Error('Invalid response format from Calendar API');
       }
     }
 
-    return data;
+    return data as T;
   }
 
   /**

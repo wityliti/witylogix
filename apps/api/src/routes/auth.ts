@@ -30,11 +30,7 @@ import { getRedis } from "../lib/redis.js";
 import { getNotificationQueue } from "../lib/queue.js";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-
-// Password hashing with bcrypt
-// Note: Ensure 'bcrypt' is installed as dependency
-// TODO: Consider adding rate limiting middleware for login endpoints
-// Suggested approach: @fastify/rate-limit per /login route with max 5 attempts per minute
+import { strictRateLimiter } from "../middleware/rate-limiter.js";
 
 // ─── Schemas ────────────────────────────────────────────────
 
@@ -62,6 +58,14 @@ const forgotPasswordSchema = z.object({
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
   password: z.string().min(8),
+});
+
+const registerSchema = z.object({
+  name: z.string().min(2).max(200),
+  email: z.string().email(),
+  password: z.string().min(8),
+  companyName: z.string().min(2).max(200).optional(),
+  phone: z.string().optional(),
 });
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -94,13 +98,211 @@ function generateRefreshToken(): string {
 async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // No auth hooks — these are public routes
 
+  // ── REGISTER (Create Account) ─────────────────────────────
+  // POST /register - Create a new organization, shop, user, and start onboarding
+  // Inspired by Fleetbase's OnboardController@createAccount
+  // Returns: accessToken, refreshToken, user profile, needsOnboarding flag
+  // Errors: 409 (email already registered), 422 (validation error)
+  // Rate limiting: Strict — 3 attempts/minute per IP
+
+  fastify.post("/register", { preHandler: [strictRateLimiter] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const body = registerSchema.parse(request.body);
+
+    // Check if email is already registered anywhere
+    const existingUser = await prisma.user.findFirst({
+      where: { email: body.email },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      reply.status(409);
+      return { error: "Email already registered", statusCode: 409 };
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(body.password);
+
+    // Determine if this is the first user (auto-admin, skip verification)
+    const userCount = await prisma.user.count();
+    const isFirstUser = userCount === 0;
+
+    // Generate org slug from company name
+    const companyName = body.companyName || `${body.name}'s Organization`;
+    const baseSlug = companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const orgSlug = `${baseSlug}-${Date.now().toString(36)}`;
+
+    // Create everything atomically
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Create Organization
+      const org = await tx.organization.create({
+        data: {
+          name: companyName,
+          slug: orgSlug,
+          email: body.email,
+          planTier: "FREE",
+        },
+      });
+
+      // 2. Create a "platform" Shop (non-Shopify, represents the org's dashboard context)
+      const platformDomain = `${orgSlug}.platform.witylogix.io`;
+      const shop = await tx.shop.create({
+        data: {
+          orgId: org.id,
+          shopifyDomain: platformDomain,
+          shopifyAccessToken: "platform-managed", // Not a real Shopify token
+          shopifyShopId: `platform-${org.id.slice(0, 8)}`,
+          name: companyName,
+          email: body.email,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+          planTier: "FREE",
+        },
+      });
+
+      // 3. Create User
+      const user = await tx.user.create({
+        data: {
+          shopId: shop.id,
+          email: body.email,
+          name: body.name,
+          phone: body.phone,
+          role: "ADMIN",
+          password: hashedPassword,
+          emailVerifiedAt: isFirstUser ? new Date() : null, // First user auto-verified
+          lastLogin: new Date(),
+        },
+      });
+
+      // 4. Create OrgMember (OWNER)
+      await tx.orgMember.create({
+        data: {
+          orgId: org.id,
+          userId: user.id,
+          role: "OWNER",
+          shopIds: [],
+        },
+      });
+
+      // 5. Create OnboardingProgress
+      await tx.onboardingProgress.create({
+        data: {
+          userId: user.id,
+          orgId: org.id,
+          currentStep: isFirstUser ? "choose-deployment" : "verify-email",
+          completedSteps: isFirstUser ? ["verify-email"] : [],
+          data: {
+            companyName,
+            email: body.email,
+            emailVerified: isFirstUser,
+          },
+        },
+      });
+
+      return { org, shop, user };
+    });
+
+    // Generate tokens
+    const refreshToken = generateRefreshToken();
+    const accessToken = fastify.jwt.sign(
+      {
+        sub: result.user.id,
+        shopId: result.shop.id,
+        orgId: result.org.id,
+        role: "ADMIN",
+        orgRole: "OWNER",
+        type: "user" as const,
+        shopDomain: `${orgSlug}.platform.witylogix.io`,
+      },
+      { expiresIn: getConfig().JWT_EXPIRES_IN },
+    );
+
+    // Store refresh token in Redis
+    const refreshHash = createHash("sha256").update(refreshToken).digest("hex");
+    try {
+      const redis = getRedis();
+      await redis.set(
+        `refresh:${refreshHash}`,
+        JSON.stringify({
+          userId: result.user.id,
+          shopId: result.shop.id,
+          orgId: result.org.id,
+          role: "ADMIN",
+          orgRole: "OWNER",
+        }),
+        "EX",
+        30 * 24 * 60 * 60,
+      );
+    } catch (redisErr) {
+      fastify.log.warn({ err: redisErr }, "Redis unavailable — refresh token not persisted");
+    }
+
+    // Generate and store email verification code (skip for first user)
+    if (!isFirstUser) {
+      try {
+        const { randomInt } = await import("crypto");
+        const code = String(randomInt(100000, 999999));
+        const redis = getRedis();
+        await redis.set(`email-verify:${result.user.id}`, code, "EX", 15 * 60);
+
+        // Enqueue verification email
+        const notificationQueue = getNotificationQueue();
+        await notificationQueue.add(
+          "onboarding.verify_email",
+          {
+            type: "notification",
+            data: {
+              shopId: result.shop.id,
+              notificationId: `email-verify-${result.user.id}-${Date.now()}`,
+              channel: "email",
+              payload: {
+                templateId: "email-verification",
+                recipientId: result.user.id,
+                recipientAddress: result.user.email,
+                templateData: { code, email: result.user.email },
+                priority: "high",
+                ttl: 900,
+              },
+            },
+          },
+          { priority: 1 },
+        );
+
+        fastify.log.info({ userId: result.user.id, code }, "[register] Verification code (logged for dev)");
+      } catch (err) {
+        fastify.log.warn({ err }, "Failed to send verification email — non-fatal");
+      }
+    }
+
+    reply.status(201);
+    return {
+      data: {
+        accessToken,
+        refreshToken,
+        expiresIn: getConfig().JWT_EXPIRES_IN,
+        user: {
+          id: result.user.id,
+          name: result.user.name,
+          email: result.user.email,
+          role: "ADMIN",
+        },
+        shop: {
+          id: result.shop.id,
+          name: result.shop.name,
+          domain: `${orgSlug}.platform.witylogix.io`,
+        },
+        orgId: result.org.id,
+        needsOnboarding: true,
+        skipVerification: isFirstUser,
+      },
+    };
+  });
+
   // ── DASHBOARD USER LOGIN ──────────────────────────────────
   // POST /login - Email + password authentication
   // Returns: accessToken, refreshToken, user profile, shop details
   // Errors: 401 (invalid credentials), 422 (validation error)
   // Rate limiting: Recommended 5 attempts/minute per IP
 
-  fastify.post("/login", async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post("/login", { preHandler: [strictRateLimiter] }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       var { email, password, shopDomain } = loginSchema.parse(request.body);
     } catch (err) {
@@ -207,7 +409,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // Errors: 401 (invalid credentials), 422 (validation error)
   // Rate limiting: Recommended 5 attempts/minute per IP
 
-  fastify.post("/driver/login", async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post("/driver/login", { preHandler: [strictRateLimiter] }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       var { phone, password, shopDomain } = driverLoginSchema.parse(request.body);
     } catch (err) {
@@ -546,6 +748,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
           id: true,
           name: true,
           email: true,
+          phone: true,
           role: true,
           isActive: true,
         },
@@ -560,11 +763,67 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
           id: user.id,
           name: user.name,
           email: user.email,
+          phone: user.phone,
           role: user.role,
           type: "user" as const,
           shopId: auth.shopId,
           orgId: auth.orgId,
           orgRole: auth.orgRole,
+        },
+      };
+    },
+  );
+
+  // PATCH /me - Update authenticated user's own profile (name, phone)
+  // Auth: Required — Bearer token in Authorization header
+  // Body: { name?: string, phone?: string | null }
+  // Returns: updated user data
+  // Errors: 401 (unauthenticated), 422 (validation error)
+
+  const updateMeSchema = z.object({
+    name: z.string().min(1).max(200).optional(),
+    phone: z.string().max(30).nullable().optional(),
+  });
+
+  fastify.patch(
+    "/me",
+    { preHandler: [requireAuth, tenantContext] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const auth = (request as any).auth;
+      if (!auth?.userId) {
+        throw new UnauthorizedError("Only user accounts can update their profile here");
+      }
+
+      let body: z.infer<typeof updateMeSchema>;
+      try {
+        body = updateMeSchema.parse(request.body);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Invalid input";
+        throw new ValidationError(msg);
+      }
+
+      const db = (request as any).tenantDb;
+
+      const updatedUser = await db.user.update({
+        where: { id: auth.userId },
+        data: {
+          ...(body.name !== undefined && { name: body.name }),
+          ...(body.phone !== undefined && { phone: body.phone }),
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+        },
+      });
+
+      return {
+        data: {
+          ...updatedUser,
+          type: "user" as const,
+          shopId: auth.shopId,
         },
       };
     },

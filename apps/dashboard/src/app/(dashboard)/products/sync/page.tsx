@@ -22,6 +22,8 @@ import {
   useSyncSchedule,
   useProductPreview,
 } from "@/hooks/use-product-sync";
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import {
   AlertCircle,
   Check,
@@ -56,17 +58,8 @@ interface ConnectedPlatform {
   fields: PlatformField[];
 }
 
-interface RawIntegration {
-  slug: string;
-  name: string;
-  category: string;
-  isEnabled: boolean;
-  healthStatus: string | null;
-  lastSyncAt: string | null;
-  config: Record<string, unknown> | null;
-}
-
-const PLATFORM_FIELDS: Record<string, PlatformField[]> = {
+/* Per-platform field schemas — these are the documented product schemas for each platform. */
+const PLATFORM_FIELDS: Record<string, ConnectedPlatform['fields']> = {
   shopify: [
     { id: 'sf-id', name: 'ID', type: 'string', required: true, sampleValue: 'gid://shopify/Product/12345' },
     { id: 'sf-title', name: 'Title', type: 'string', required: true, sampleValue: 'Premium Cardboard Box' },
@@ -78,37 +71,70 @@ const PLATFORM_FIELDS: Record<string, PlatformField[]> = {
     { id: 'sf-status', name: 'Status', type: 'string', required: false, sampleValue: 'active' },
   ],
   woocommerce: [
-    { id: 'wc-id', name: 'Product ID', type: 'string', required: true, sampleValue: '98765' },
-    { id: 'wc-name', name: 'Name', type: 'string', required: true, sampleValue: 'Standard Box' },
-    { id: 'wc-sku', name: 'SKU', type: 'string', required: false, sampleValue: 'BOX-STD' },
-    { id: 'wc-price', name: 'Regular Price', type: 'number', required: false, sampleValue: '19.99' },
-    { id: 'wc-stock', name: 'Stock Quantity', type: 'number', required: true, sampleValue: '250' },
+    { id: 'wc-id', name: 'Product ID', type: 'string', required: true, sampleValue: '12345' },
+    { id: 'wc-name', name: 'Name', type: 'string', required: true, sampleValue: 'Premium Box' },
+    { id: 'wc-sku', name: 'SKU', type: 'string', required: false, sampleValue: 'BOX-001' },
+    { id: 'wc-price', name: 'Regular Price', type: 'number', required: false, sampleValue: '24.99' },
+    { id: 'wc-stock', name: 'Stock Quantity', type: 'number', required: false, sampleValue: '500' },
     { id: 'wc-status', name: 'Status', type: 'string', required: false, sampleValue: 'publish' },
   ],
-  amazon: [
-    { id: 'az-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'PACK-001' },
-    { id: 'az-asin', name: 'ASIN', type: 'string', required: true, sampleValue: 'B0C3X5Y8Z1' },
-    { id: 'az-name', name: 'Product Name', type: 'string', required: true, sampleValue: 'Eco Shipping Box' },
-    { id: 'az-price', name: 'Price', type: 'number', required: true, sampleValue: '22.50' },
-    { id: 'az-qty', name: 'FBA Quantity', type: 'number', required: true, sampleValue: '150' },
-  ],
   magento: [
-    { id: 'mg-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'MAG-BOX-001' },
-    { id: 'mg-name', name: 'Name', type: 'string', required: true, sampleValue: 'Corrugated Box' },
-    { id: 'mg-price', name: 'Price', type: 'number', required: false, sampleValue: '21.99' },
-    { id: 'mg-qty', name: 'Quantity', type: 'number', required: true, sampleValue: '300' },
-    { id: 'mg-status', name: 'Status', type: 'string', required: false, sampleValue: 'Enabled' },
+    { id: 'mg-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'BOX-MED-001' },
+    { id: 'mg-name', name: 'Product Name', type: 'string', required: true, sampleValue: 'Medium Box' },
+    { id: 'mg-price', name: 'Price', type: 'number', required: true, sampleValue: '24.99' },
+    { id: 'mg-qty', name: 'Quantity', type: 'number', required: false, sampleValue: '500' },
+    { id: 'mg-status', name: 'Status', type: 'string', required: false, sampleValue: '1' },
   ],
 };
 
-const DEFAULT_FIELDS: PlatformField[] = [
-  { id: 'gen-id', name: 'ID', type: 'string', required: true },
-  { id: 'gen-name', name: 'Name', type: 'string', required: true },
-  { id: 'gen-price', name: 'Price', type: 'number', required: false },
-  { id: 'gen-qty', name: 'Quantity', type: 'number', required: true },
+const DEFAULT_FIELDS: ConnectedPlatform['fields'] = [
+  { id: 'df-id', name: 'Product ID', type: 'string', required: true },
+  { id: 'df-name', name: 'Product Name', type: 'string', required: true },
+  { id: 'df-sku', name: 'SKU', type: 'string', required: false },
+  { id: 'df-price', name: 'Price', type: 'number', required: false },
+  { id: 'df-qty', name: 'Quantity', type: 'number', required: false },
 ];
 
-const WITYLOGIX_FIELDS: PlatformField[] = [
+interface RawConnection {
+  id: string;
+  providerName: string;
+  status: string;
+  lastSyncTime: string | null;
+  apiCallsCount: number;
+  category: string;
+}
+
+function mapConnection(c: RawConnection): ConnectedPlatform {
+  const platformKey = c.id.toLowerCase().replace(/[^a-z]/g, '');
+  const matchKey = Object.keys(PLATFORM_FIELDS).find((k) => platformKey.includes(k));
+  const fields = matchKey ? PLATFORM_FIELDS[matchKey] : DEFAULT_FIELDS;
+  const status: ConnectedPlatform['status'] =
+    c.status === 'connected' ? 'synced'
+    : c.status === 'error' ? 'error'
+    : c.status === 'pending' ? 'pending'
+    : 'pending';
+
+  return {
+    id: c.id,
+    name: c.providerName,
+    platform: c.providerName,
+    status,
+    lastSyncAt: c.lastSyncTime,
+    productCount: c.apiCallsCount,
+    fields,
+  };
+}
+
+type FieldType = 'string' | 'number' | 'boolean' | 'date';
+interface SyncField {
+  id: string;
+  name: string;
+  type: FieldType;
+  required: boolean;
+  sampleValue?: string;
+}
+
+const WITYLOGIX_FIELDS: SyncField[] = [
   { id: 'wl-id', name: 'Product ID', type: 'string', required: true, sampleValue: 'PROD-12345' },
   { id: 'wl-name', name: 'Product Name', type: 'string', required: true, sampleValue: 'Cardboard Box Medium' },
   { id: 'wl-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'BOX-MED-001' },
@@ -155,9 +181,12 @@ const syncStatusBadgeVariant: Record<string, 'success' | 'info' | 'danger' | 'wa
 };
 
 export default function ProductSyncPage() {
-  const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
-  const [loadingPlatforms, setLoadingPlatforms] = useState(true);
-  const [platformsError, setPlatformsError] = useState<string | null>(null);
+  const { items: rawConnections, loading: connectionsLoading } = useApiList<RawConnection>(
+    '/api/v4/integrations/connections'
+  );
+  const platforms = rawConnections
+    .filter((c) => ['ecommerce', 'marketplace'].includes(c.category))
+    .map(mapConnection);
 
   const [selectedPlatformId, setSelectedPlatformId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'mapping' | 'schedule' | 'preview'>('mapping');
@@ -165,37 +194,27 @@ export default function ProductSyncPage() {
   const [templateName, setTemplateName] = useState('');
   const [showTemplateInput, setShowTemplateInput] = useState(false);
 
-  const fetchPlatforms = async () => {
-    setLoadingPlatforms(true);
-    setPlatformsError(null);
-    try {
-      const res = await api.get<{ integrations: RawIntegration[] }>('/api/v4/integrations');
-      const ecommerce = (res.integrations ?? []).filter((i) => i.category === 'ECOMMERCE');
-      const mapped = ecommerce.map(mapIntegrationToPlatform);
-      setPlatforms(mapped);
-      if (mapped.length > 0 && !selectedPlatformId) {
-        setSelectedPlatformId(mapped[0].id);
-      }
-    } catch (err) {
-      setPlatformsError(err instanceof Error ? err.message : 'Failed to load platforms');
-    } finally {
-      setLoadingPlatforms(false);
-    }
-  };
+  const effectivePlatformId = selectedPlatformId || platforms[0]?.id || '';
+  const selectedPlatform = platforms.find((p) => p.id === effectivePlatformId);
+  const {
+    mappings,
+    addMapping,
+    removeMapping,
+    updateTransformer,
+    autoMapFields,
+    saveMappings,
+  } = useFieldMappings(effectivePlatformId);
 
-  useEffect(() => {
-    fetchPlatforms();
-  }, []);
+  const {
+    schedule,
+    setSchedule,
+  } = useSyncSchedule(effectivePlatformId);
 
-  const selectedPlatform = useMemo(
-    () => platforms.find((p) => p.id === selectedPlatformId) ?? null,
-    [platforms, selectedPlatformId]
-  );
-
-  const { mappings, addMapping, removeMapping, updateTransformer, autoMapFields, saveMappings } =
-    useFieldMappings(selectedPlatformId);
-  const { schedule, setSchedule } = useSyncSchedule(selectedPlatformId);
-  const { previewProduct } = useProductPreview(selectedPlatformId, mappings);
+  const {
+    previewProduct,
+    runPreview,
+    isLoading: previewLoading,
+  } = useProductPreview(effectivePlatformId, mappings);
 
   const unmappedRequired = useMemo(() => {
     if (!selectedPlatform) return [];
@@ -208,15 +227,13 @@ export default function ProductSyncPage() {
   };
 
   const handleTestSync = async () => {
-    if (!selectedPlatformId) return;
+    if (!selectedPlatform) return;
     setTestSyncInProgress(true);
-    try {
-      await api.post(`/api/v4/integrations/${selectedPlatformId}/test`, {});
-    } catch {
-      // test sync endpoint may not exist yet — ignore
-    } finally {
-      setTestSyncInProgress(false);
-    }
+    const sampleProduct = Object.fromEntries(
+      selectedPlatform.fields.map((f) => [f.name, f.sampleValue ?? ""]),
+    );
+    await runPreview(sampleProduct);
+    setTestSyncInProgress(false);
   };
 
   const handleSaveTemplate = () => {
@@ -250,6 +267,8 @@ export default function ProductSyncPage() {
     );
   }
 
+  if (connectionsLoading) return <LoadingSkeleton />;
+
   return (
     <div className="space-y-6">
       <Header
@@ -264,33 +283,31 @@ export default function ProductSyncPage() {
         </CardHeader>
         <CardContent>
           {platforms.length === 0 ? (
-            <div className="py-12 text-center">
-              <Package className="mx-auto mb-3 text-gray-400" size={32} />
-              <p className="text-gray-400 text-sm mb-4">No e-commerce platforms connected yet</p>
-              <Button variant="primary" size="sm" onClick={() => window.location.href = '/integrations'}>
-                Connect a Platform
-              </Button>
+            <div className="text-center py-10 text-gray-400">
+              <p className="font-medium mb-1">No ecommerce platforms connected</p>
+              <p className="text-sm">Connect a platform in Integrations to start syncing products.</p>
             </div>
           ) : (
-            <div className="grid gap-3">
-              {platforms.map((platform) => (
-                <button
-                  key={platform.id}
-                  onClick={() => setSelectedPlatformId(platform.id)}
-                  className={cn(
-                    'flex items-center justify-between p-4 rounded-lg border transition-all',
-                    selectedPlatformId === platform.id
-                      ? 'hover:bg-[#1a1a2e] border-blue-500 ring-2 ring-blue-500/20'
-                      : 'bg-[#12121a] border-[#1e1e2e] hover:border-[#1e1e2e]'
-                  )}
-                >
-                  <div className="flex items-center gap-3 flex-1 text-left">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">{platform.name}</h4>
-                      <p className="text-sm text-gray-300">
-                        {platform.platform} • {platform.productCount} products
-                      </p>
-                    </div>
+          <div className="grid gap-3">
+            {platforms.map((platform) => (
+              <button
+                key={platform.id}
+                onClick={() => setSelectedPlatformId(platform.id)}
+                className={cn(
+                  'flex items-center justify-between p-4 rounded-lg border transition-all',
+                  effectivePlatformId === platform.id
+                    ? 'hover:bg-wl-bg-elevated border-blue-500 ring-2 ring-blue-500/20'
+                    : 'bg-wl-bg-surface border-wl-border-default hover:border-wl-border-default'
+                )}
+              >
+                <div className="flex items-center gap-3 flex-1 text-left">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-white">
+                      {platform.name}
+                    </h4>
+                    <p className="text-sm text-gray-300">
+                      {platform.platform} • {platform.productCount} products
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end gap-1">
@@ -308,9 +325,17 @@ export default function ProductSyncPage() {
                       className={cn('w-5 h-5 text-gray-300 transition-transform', selectedPlatformId === platform.id && 'rotate-90')}
                     />
                   </div>
-                </button>
-              ))}
-            </div>
+
+                  <ChevronRight
+                    className={cn(
+                      'w-5 h-5 text-gray-300 transition-transform',
+                      effectivePlatformId === platform.id && 'rotate-90'
+                    )}
+                  />
+                </div>
+              </button>
+            ))}
+          </div>
           )}
         </CardContent>
       </Card>
@@ -318,7 +343,7 @@ export default function ProductSyncPage() {
       {selectedPlatform && (
         <>
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-[#1e1e2e]">
+          <div className="flex gap-2 border-b border-wl-border-default">
             {(['mapping', 'schedule', 'preview'] as const).map((tab) => (
               <button
                 key={tab}
@@ -382,7 +407,7 @@ export default function ProductSyncPage() {
                       onChange={(e) => setTemplateName(e.target.value)}
                       className={cn(
                         'flex-1 px-3 py-2 text-sm rounded-md',
-                        'bg-[#12121a] border border-[#1e1e2e]',
+                        'bg-wl-bg-surface border border-wl-border-default',
                         'text-white placeholder:text-gray-300',
                         'focus:outline-none focus:ring-2 focus:ring-blue-500'
                       )}
@@ -438,7 +463,7 @@ export default function ProductSyncPage() {
                     variant="secondary"
                     size="sm"
                     onClick={handleTestSync}
-                    disabled={testSyncInProgress || unmappedRequired.length > 0}
+                    disabled={testSyncInProgress || previewLoading || unmappedRequired.length > 0}
                     className="gap-2"
                   >
                     <RefreshCw className={cn('w-4 h-4', testSyncInProgress && 'animate-spin')} />
@@ -447,15 +472,21 @@ export default function ProductSyncPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-[#12121a] rounded-lg p-4 border border-[#1e1e2e]">
-                  <h4 className="font-semibold text-white mb-4">Sample Product Transformation</h4>
+                <div className="bg-wl-bg-surface rounded-lg p-4 border border-wl-border-default">
+                  <h4 className="font-semibold text-white mb-4">
+                    Sample Product Transformation
+                  </h4>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h5 className="text-sm font-medium text-gray-300 mb-3">Source ({selectedPlatform.name})</h5>
                       <div className="space-y-2 text-sm">
                         {previewProduct?.source &&
                           Object.entries(previewProduct.source).map(([key, value]) => (
-                            <div key={key} className="flex justify-between p-2 bg-[#1a1a2e] rounded">
+                            <div
+                              key={key}
+                              className="flex justify-between p-2 bg-wl-bg-elevated rounded"
+                            >
                               <span className="text-gray-300">{key}:</span>
                               <span className="text-white font-medium">{String(value)}</span>
                             </div>
@@ -467,7 +498,10 @@ export default function ProductSyncPage() {
                       <div className="space-y-2 text-sm">
                         {previewProduct?.target &&
                           Object.entries(previewProduct.target).map(([key, value]) => (
-                            <div key={key} className="flex justify-between p-2 bg-[#1a1a2e] rounded">
+                            <div
+                              key={key}
+                              className="flex justify-between p-2 bg-wl-bg-elevated rounded"
+                            >
                               <span className="text-gray-300">{key}:</span>
                               <span className="text-white font-medium">{String(value)}</span>
                             </div>

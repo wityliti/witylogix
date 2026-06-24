@@ -772,7 +772,7 @@ export class TrimbleClient extends TelematicsAdapter {
   /**
    * Build request headers
    */
-  protected buildHeaders(): HeadersInit {
+  protected buildHeaders(): Record<string, string> {
     return {
       Authorization: `Bearer ${this.oauthToken}`,
       "X-API-Key": this.apiKey,

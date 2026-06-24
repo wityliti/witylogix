@@ -1,18 +1,41 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
+import { useApiList, useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton, ErrorState } from '@/components/ui/loading';
+import { List, Map as MapIcon } from 'lucide-react';
+
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false },
+);
+const WarehouseLayer = dynamic(
+  () => import('@/components/map/warehouse-layer').then((m) => ({ default: m.WarehouseLayer })),
+  { ssr: false },
+);
 
 interface SearchFilters {
   searchTerm: string;
   warehouse: string;
   status: string;
   abcClass: string;
+}
+
+interface WarehouseData {
+  warehouseId: string;
+  name: string;
+  type: string;
+  city: string | null;
+  lat: number | null;
+  lng: number | null;
+  itemCount: number;
+  totalQuantity: number;
+  utilizationPercentage: number;
 }
 
 const ABC_CLASSES = [
@@ -85,14 +108,12 @@ interface ReorderAlert {
 
 export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
-  const { items: stockGauges, loading: gaugesLoading } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
-  const { items: reorderAlerts, loading: alertsLoading } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
+  const { items: stockGauges } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
+  const { items: reorderAlerts } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
+  const { data: warehousesData } = useApiQuery<{ data: WarehouseData[] }>('/api/v4/supply-chain/warehouses');
+  const warehouseItems = warehousesData?.data ?? [];
 
-  const warehouses = useMemo(
-    () => ['All', ...Array.from(new Set(inventory.map((i) => i.warehouse).filter(Boolean)))],
-    [inventory],
-  );
-
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
     searchTerm: '',
     warehouse: 'All',
@@ -101,6 +122,28 @@ export default function InventoryPage() {
   });
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [showTransferForm, setShowTransferForm] = useState(false);
+
+  const warehousePins = useMemo(
+    () =>
+      warehouseItems
+        .filter((w) => w.lat != null && w.lng != null)
+        .map((w) => ({
+          id: w.warehouseId,
+          name: w.name,
+          lat: w.lat as number,
+          lng: w.lng as number,
+          utilizationPercentage: w.utilizationPercentage,
+          totalQuantity: w.totalQuantity,
+          itemCount: w.itemCount,
+          city: w.city,
+        })),
+    [warehouseItems],
+  );
+
+  const warehouseNames = useMemo(
+    () => ['All', ...warehouseItems.map((w) => w.name)],
+    [warehouseItems],
+  );
 
   // Filter inventory
   const filteredInventory = inventory.filter((item) => {
@@ -135,10 +178,73 @@ export default function InventoryPage() {
             Monitor stock levels, ABC analysis, and reorder alerts
           </p>
         </div>
-        <Button variant="primary" onClick={() => setShowTransferForm(!showTransferForm)}>
-          Create Transfer
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* List / Map toggle */}
+          <div className="flex rounded-lg border border-wl-border-default overflow-hidden">
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors',
+                viewMode === 'list'
+                  ? 'bg-wl-primary-600 text-white'
+                  : 'bg-wl-bg-surface text-wl-text-secondary hover:text-wl-text-primary',
+              )}
+            >
+              <List className="w-3.5 h-3.5" />
+              List
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors',
+                viewMode === 'map'
+                  ? 'bg-wl-primary-600 text-white'
+                  : 'bg-wl-bg-surface text-wl-text-secondary hover:text-wl-text-primary',
+              )}
+            >
+              <MapIcon className="w-3.5 h-3.5" />
+              Map
+            </button>
+          </div>
+          <Button variant="primary" onClick={() => setShowTransferForm(!showTransferForm)}>
+            Create Transfer
+          </Button>
+        </div>
       </div>
+
+      {/* Warehouse Map View */}
+      {viewMode === 'map' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Warehouse Distribution Map</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="h-[480px] rounded-b-xl overflow-hidden">
+              {warehousePins.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center bg-wl-bg-surface text-wl-text-secondary gap-3">
+                  <MapIcon className="w-10 h-10 opacity-30" />
+                  <p className="text-sm">No warehouses with coordinates yet.</p>
+                  <p className="text-xs text-wl-text-tertiary">Add lat/lng to locations in Settings → Locations.</p>
+                </div>
+              ) : (
+                <WLMap center={warehousePins.length > 0 ? [warehousePins[0].lng, warehousePins[0].lat] : [0, 20]}>
+                  <WarehouseLayer warehouses={warehousePins} />
+                </WLMap>
+              )}
+            </div>
+            {/* Legend */}
+            {warehousePins.length > 0 && (
+              <div className="p-4 border-t border-wl-border-default flex flex-wrap gap-4 text-xs text-wl-text-secondary">
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block" />Low utilization</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />Normal</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block" />High utilization</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-500 inline-block" />At capacity</span>
+                <span className="ml-auto opacity-60">Bubble size = total quantity on hand</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stock Level Gauges Section */}
       <Card>
@@ -155,7 +261,7 @@ export default function InventoryPage() {
             {stockGauges.map((gauge) => {
               const gaugePercentage = (gauge.current / gauge.maximum) * 100;
               return (
-                <div key={gauge.sku} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
+                <div key={gauge.sku} className="p-4 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="text-sm font-medium text-white">
@@ -247,7 +353,7 @@ export default function InventoryPage() {
             {reorderAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
+                className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
               >
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-white">
@@ -303,7 +409,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, searchTerm: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
               />
 
               <select
@@ -311,9 +417,9 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, warehouse: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
               >
-                {warehouses.map((wh) => (
+                {warehouseNames.map((wh) => (
                   <option key={wh} value={wh}>
                     {wh}
                   </option>
@@ -325,7 +431,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, abcClass: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
               >
                 {ABC_CLASSES.map((cls) => (
                   <option key={cls.value} value={cls.value}>
@@ -339,7 +445,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, status: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
               >
                 {STATUS_FILTERS.map((st) => (
                   <option key={st.value} value={st.value}>
@@ -359,7 +465,7 @@ export default function InventoryPage() {
                     'p-4 rounded-lg border-2 cursor-pointer transition-all',
                     selectedItem === item.id
                       ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-[#1e1e2e] hover:bg-[#1a1a2e]'
+                      : 'border-wl-border-default hover:bg-wl-bg-elevated'
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -439,7 +545,7 @@ export default function InventoryPage() {
             {[].map((transfer: Record<string, unknown>) => (
               <div
                 key={String(transfer.id)}
-                className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
+                className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
               >
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-white">
@@ -483,7 +589,7 @@ export default function InventoryPage() {
           <div className="space-y-3">
             {/* Cycle count data would come from API */}
             {[].map((count: Record<string, unknown>) => (
-              <div key={String(count.id)} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
+              <div key={String(count.id)} className="p-4 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h4 className="text-sm font-medium text-white">
@@ -516,7 +622,7 @@ export default function InventoryPage() {
                         {String(count.completionRate)}%
                       </span>
                     </div>
-                    <div className="w-full bg-[#12121a] rounded-full h-2">
+                    <div className="w-full bg-wl-bg-surface rounded-full h-2">
                       <div
                         className="h-full rounded-full bg-blue-500 transition-all"
                         style={{ width: `${count.completionRate}%` }}

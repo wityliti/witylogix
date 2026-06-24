@@ -209,6 +209,7 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
     info: (msg: string, data?: unknown) => console.info(`[EbaySdk] ${msg}`, data),
     error: (msg: string, error?: unknown) => console.error(`[EbaySdk] ${msg}`, error),
     warn: (msg: string, data?: unknown) => console.warn(`[EbaySdk] ${msg}`, data),
+    debug: (msg: string, data?: unknown) => console.debug(`[EbaySdk] ${msg}`, data),
   };
 
   /**
@@ -463,7 +464,7 @@ export class EbaySdkClient extends ECommerceAdapterBase implements IECommerceAda
         orderId,
         status: "complete" as FulfillmentStatus,
         items: request.items,
-        trackingInfo: trackingInfo
+        trackingInfo: trackingInfo && request.trackingNumber
           ? {
               company: request.trackingCompany || "Unknown",
               number: request.trackingNumber,

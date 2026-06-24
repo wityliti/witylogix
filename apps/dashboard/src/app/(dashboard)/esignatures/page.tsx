@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEnvelopes, useEsigAnalytics, useTemplates, type Envelope } from "@/hooks/use-esignatures";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 /**
  * E-Signatures Page - Professional Dark Theme
@@ -40,7 +42,7 @@ interface KPICard {
 
 function KPICardComponent({ card }: { card: KPICard }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardContent className={cn("pt-6")}>
         <div className={cn("flex items-start justify-between")}>
           <div className={cn("flex-1")}>
@@ -82,7 +84,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
 
 function CompletionRateChart({ rate }: { rate: number }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
         <CardTitle className={cn("text-base text-white")}>Completion Rate</CardTitle>
       </CardHeader>
@@ -138,7 +140,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
 
 function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
         <CardTitle className={cn("text-base text-white")}>Recent Envelopes</CardTitle>
       </CardHeader>
@@ -146,7 +148,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
         <div className={cn("overflow-x-auto")}>
           <table className={cn("w-full text-sm")}>
             <thead>
-              <tr className={cn("border-b border-[#1e1e2e]")}>
+              <tr className={cn("border-b border-wl-border-default")}>
                 <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
                   Name
                 </th>
@@ -166,7 +168,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                 <tr
                   key={env.id}
                   className={cn(
-                    "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
+                    "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                   )}
                 >
                   <td className={cn("py-3 px-4 text-white font-medium")}>
@@ -192,7 +194,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                   </td>
                   <td className={cn("py-3 px-4")}>
                     <div className={cn("flex items-center gap-2")}>
-                      <div className={cn("flex-1 h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden")}>
+                      <div className={cn("flex-1 h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden")}>
                         <div
                           className={cn("h-full bg-emerald-500 transition-all")}
                           style={{ width: `${env.completionRate}%` }}
@@ -215,7 +217,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
 
 function TemplateUsageCard({ templates }: { templates: Array<{ name: string; count: number }> }) {
   return (
-    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+    <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
         <CardTitle className={cn("text-base text-white")}>Template Usage</CardTitle>
       </CardHeader>
@@ -241,33 +243,27 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
 }
 
 export default function ESignaturesPage() {
-  const { items: envelopes, loading: envelopesLoading } = useEnvelopes();
-  const { data: analytics, loading: analyticsLoading } = useEsigAnalytics();
-  const { items: templates } = useTemplates();
+  const { items: envelopes, loading: envelopesLoading, error: envelopesError } = useEnvelopes();
+  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useEsigAnalytics();
+  const { items: signingTemplates, loading: templatesLoading, error: templatesError } = useTemplates();
 
-  const templateUsage = templates.map((t) => ({ name: t.name, count: t.usageCount }));
+  const templateData = signingTemplates.map((t: { name: string; usageCount: number }) => ({ name: t.name, count: t.usageCount }));
 
   const kpiCards: KPICard[] = [
     {
       label: "Envelopes Sent",
       value: analytics?.totalEnvelopes || 0,
       icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-      trend: "up",
-      trendValue: "12%",
     },
     {
       label: "Pending Signatures",
       value: analytics?.pendingEnvelopes || 0,
       icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-      trend: "down",
-      trendValue: "4%",
     },
     {
       label: "Completed",
       value: analytics?.completedEnvelopes || 0,
       icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-      trend: "up",
-      trendValue: "8%",
     },
     {
       label: "Avg Sign Time",
@@ -277,8 +273,28 @@ export default function ESignaturesPage() {
     },
   ];
 
+  if (envelopesLoading || analyticsLoading || templatesLoading) {
+    return (
+      <div className="p-6">
+        <TableSkeleton rows={6} columns={4} />
+      </div>
+    );
+  }
+
+  const anyError = envelopesError || analyticsError || templatesError;
+  if (anyError) {
+    return (
+      <div className="p-6">
+        <ErrorState
+          message={anyError instanceof Error ? anyError.message : "Failed to load e-signatures data"}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("p-6 space-y-6 bg-[#0a0a0f] min-h-[calc(100vh-var(--header-height))]")}>
+    <div className={cn("p-6 space-y-6 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))]")}>
       {/* Header with Action */}
       <div className={cn("flex items-center justify-between")}>
         <div>
@@ -307,7 +323,7 @@ export default function ESignaturesPage() {
           <CompletionRateChart rate={analytics?.completionRate || 0} />
         </div>
         <div>
-          <TemplateUsageCard templates={templateUsage} />
+          <TemplateUsageCard templates={templateData} />
         </div>
       </div>
 
@@ -316,7 +332,7 @@ export default function ESignaturesPage() {
 
       {/* Additional Stats */}
       <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4")}>
-        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+        <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
             <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               Decline Rate
@@ -329,7 +345,7 @@ export default function ESignaturesPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+        <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
             <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               Avg Signers per Envelope
@@ -342,13 +358,13 @@ export default function ESignaturesPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+        <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
           <CardContent className={cn("pt-6")}>
             <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               Active Templates
             </p>
             <p className={cn("text-2xl font-bold text-white")}>
-              {templates.length}
+              {signingTemplates.filter((t: { isActive: boolean }) => t.isActive).length}
             </p>
             <p className={cn("text-xs text-gray-400 mt-2")}>
               Ready to use

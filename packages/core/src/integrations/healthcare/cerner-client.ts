@@ -253,7 +253,7 @@ export class CernerClient extends HealthcareAdapter {
       patientId: doc.subject?.reference?.split("/")[1] || "",
       title: doc.description || "Document",
       content: "", // Would fetch actual content
-      contentType: format === "pdf" ? "application/pdf" : format === "xml" ? "application/xml" : "application/json",
+      contentType: format === "pdf" ? "application/pdf" : format === "xml" ? "application/xml" : "text/plain",
       createdAt: doc.date,
       metadata: doc,
     };
@@ -307,8 +307,8 @@ export class CernerClient extends HealthcareAdapter {
       dateTime: consent.validFrom,
     };
 
-    const result = await this.create<ConsentRecord>("Consent" as any, resource as any);
-    return result;
+    const result = await this.create<FHIRResource>("Consent", resource as Omit<FHIRResource, "id">);
+    return result as unknown as ConsentRecord;
   }
 
   async revokeConsent(consentId: string): Promise<ConsentRecord> {
@@ -486,7 +486,7 @@ export class CernerClient extends HealthcareAdapter {
     return {
       accessToken: response.access_token,
       expiresIn: response.expires_in,
-      context: response.patient ? { patientId: response.patient } : undefined,
+      context: response.patient ? { patientId: String(response.patient), scope: [] } : undefined,
     };
   }
 

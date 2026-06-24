@@ -62,7 +62,7 @@ const getSeverityColor = (severity: string) => {
 
 export function DVIRReportCard({ report }: DVIRReportCardProps) {
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
@@ -89,13 +89,13 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
 
         {/* Issues */}
         {report.issues.length > 0 && (
-          <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
+          <div className="mb-4 pb-4 border-b border-wl-border-default">
             <p className="text-xs font-medium text-gray-500 uppercase mb-3">
               Reported Issues
             </p>
             <div className="space-y-2">
               {report.issues.map((issue) => (
-                <div key={issue.id} className="flex items-start gap-3 p-3 bg-[#12121a] rounded-lg">
+                <div key={issue.id} className="flex items-start gap-3 p-3 bg-wl-bg-surface rounded-lg">
                   <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
                     issue.severity === "critical" ? "bg-red-500" : issue.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
                   )} />
@@ -123,7 +123,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+            className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
           >
             <Eye className="w-4 h-4 mr-2" />
             View Report
@@ -131,7 +131,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+            className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
           >
             <Download className="w-4 h-4 mr-2" />
             Download

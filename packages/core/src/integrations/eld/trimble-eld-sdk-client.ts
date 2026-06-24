@@ -711,7 +711,7 @@ export class TrimbleELDClient extends ELDAdapter {
       throw new Error(`Trimble API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**
@@ -738,7 +738,7 @@ export class TrimbleELDClient extends ELDAdapter {
       throw new Error(`Trimble API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**

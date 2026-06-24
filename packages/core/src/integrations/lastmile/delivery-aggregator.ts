@@ -215,6 +215,7 @@ export class DeliveryAggregator {
       doordash: null,
       ubereats: null,
       grubhub: null,
+      uberdirect: null,
     };
 
     const quote_promises = [];
@@ -353,6 +354,7 @@ export class DeliveryAggregator {
       doordash: { total_commissions: 0, commission_rate: 0.25 },
       ubereats: { total_commissions: 0, commission_rate: 0.25 },
       grubhub: { total_commissions: 0, commission_rate: 0.25 },
+      uberdirect: { total_commissions: 0, commission_rate: 0.15 },
     };
 
     let total_commissions = 0;
@@ -467,6 +469,7 @@ export class DeliveryAggregator {
       doordash: this.doordash !== null,
       ubereats: this.ubereats !== null,
       grubhub: this.grubhub !== null,
+      uberdirect: false,
     };
   }
 

@@ -30,6 +30,7 @@ import type {
   ELDConfig,
   ELDWebhookEvent,
   DutyStatus,
+  HOSSummary,
 } from "./types.js";
 import type {
   KeepTruckinDriver,
@@ -586,14 +587,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async getHOSSummary(
     driverId: string,
     date: Date
-  ): Promise<{
-    hours11: number;
-    hours14: number;
-    hours60: number;
-    hours70: number;
-    availableDriving: number;
-    availableOnDuty: number;
-  }> {
+  ): Promise<HOSSummary> {
     const summary = await this.executeWithRetry(() =>
       this.makeRequest<any>("GET", `/drivers/${driverId}/hos-summary`, {
         date: date.toISOString().split("T")[0],
@@ -601,12 +595,15 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     );
 
     return {
+      driverId,
+      date,
       hours11: summary.hoursWorked11 || 0,
       hours14: summary.hoursWorked14 || 0,
       hours60: summary.hoursWorked60 || 0,
       hours70: summary.hoursWorked70 || 0,
       availableDriving: Math.max(0, 11 - (summary.hoursWorked11 || 0)),
       availableOnDuty: Math.max(0, 14 - (summary.hoursWorked14 || 0)),
+      violations: [],
     };
   }
 
@@ -632,7 +629,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
    * Handle webhook event
    */
   async handleWebhook(event: ELDWebhookEvent): Promise<void> {
-    const payload = event.payload as KeepTruckinWebhookPayload;
+    const payload = event.payload as unknown as KeepTruckinWebhookPayload;
 
     switch (payload.eventType) {
       case "violation":
@@ -733,7 +730,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       throw new Error(`KeepTruckin API error: ${response.status} ${error}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   private mapDutyStatus(status: string): DutyStatus {
@@ -782,7 +779,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       condition: dvir.status === "Pass" ? "pass" : "defect",
       defects: dvir.defects.map((d) => ({
         component: d.component,
-        severity: d.severity.toLowerCase(),
+        severity: (d.severity.toLowerCase() as "minor" | "major" | "critical") || "minor",
         description: d.description,
         evidenceUrls: [],
       })),

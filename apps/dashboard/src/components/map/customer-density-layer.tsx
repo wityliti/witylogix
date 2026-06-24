@@ -1,133 +1,164 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { getLeaflet, getMapById } from './wl-map';
+import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
+import type { Feature, Point } from 'geojson';
+import { useWLMap } from './wl-map-context';
 
-export interface CustomerDensityPoint {
-  city: string;
-  country: string | null;
-  customerCount: number;
-  orderCount: number;
+export interface CustomerLocation {
+  id: string;
+  name: string;
   lat: number;
   lng: number;
+  city: string;
+  country: string;
+  totalOrders: number;
+  totalSpent: number;
+  tier: 'standard' | 'premium' | 'enterprise';
 }
 
-interface CustomerDensityLayerProps {
-  mapId: string;
-  points: CustomerDensityPoint[];
-  onCityClick?: (point: CustomerDensityPoint) => void;
+export interface CustomerDensityLayerProps {
+  customers: CustomerLocation[];
+  selectedId?: string | null;
+  onCustomerClick?: (id: string) => void;
 }
 
-// Bubble radius: log-scaled so the range stays visually useful
-function bubbleRadius(count: number, max: number): number {
-  if (max === 0) return 8;
-  const minR = 8, maxR = 40;
-  const ratio = Math.log(count + 1) / Math.log(max + 1);
-  return minR + ratio * (maxR - minR);
-}
-
-const TIER_COLORS = {
-  high: '#818cf8',   // indigo — top quartile
-  mid: '#60a5fa',    // blue — mid
-  low: '#34d399',    // green — low
+const TIER_COLORS: Record<string, string> = {
+  enterprise: '#f59e0b',
+  premium:    '#60a5fa',
+  standard:   '#6b7280',
 };
 
-function tierColor(count: number, max: number): string {
-  if (max === 0) return TIER_COLORS.low;
-  const ratio = count / max;
-  if (ratio >= 0.5) return TIER_COLORS.high;
-  if (ratio >= 0.2) return TIER_COLORS.mid;
-  return TIER_COLORS.low;
+const SOURCE_ID = 'customer-density';
+const CIRCLE_LAYER = 'customer-density-circles';
+const LABEL_LAYER = 'customer-density-labels';
+
+const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+function buildFeatures(customers: CustomerLocation[], selectedId?: string | null): Feature<Point>[] {
+  return customers.map((c) => ({
+    type: 'Feature' as const,
+    geometry: { type: 'Point' as const, coordinates: [c.lng, c.lat] },
+    properties: {
+      id: c.id,
+      name: c.name,
+      city: c.city,
+      country: c.country,
+      totalOrders: c.totalOrders,
+      totalSpent: c.totalSpent,
+      tier: c.tier,
+      color: TIER_COLORS[c.tier] ?? TIER_COLORS.standard,
+      isSelected: c.id === selectedId ? 1 : 0,
+    },
+  }));
 }
 
-export function CustomerDensityLayer({
-  mapId,
-  points,
-  onCityClick,
-}: CustomerDensityLayerProps) {
-  const layersRef = useRef<unknown[]>([]);
+export function CustomerDensityLayer({ customers, selectedId, onCustomerClick }: CustomerDensityLayerProps) {
+  const map = useWLMap();
+  const clickHandlerRef = useRef<((e: MapLayerMouseEvent) => void) | null>(null);
 
   useEffect(() => {
-    let alive = true;
+    const setup = () => {
+      if (map.getSource(SOURCE_ID)) return;
 
-    getLeaflet().then((L) => {
-      if (!alive) return;
-      const map = getMapById(mapId);
-      if (!map) return;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (layersRef.current as any[]).forEach((l) => map.removeLayer(l));
-      layersRef.current = [];
-
-      if (!points.length) return;
-
-      const maxCount = Math.max(...points.map((p) => p.customerCount), 1);
-      const bounds: [number, number][] = [];
-
-      points.forEach((point) => {
-        const r = bubbleRadius(point.customerCount, maxCount);
-        const color = tierColor(point.customerCount, maxCount);
-
-        const circle = L.circleMarker([point.lat, point.lng], {
-          radius: r,
-          fillColor: color,
-          color: 'rgba(255,255,255,0.15)',
-          weight: 1,
-          opacity: 0.8,
-          fillOpacity: 0.55,
-        });
-
-        circle.bindPopup(`
-          <div style="font-family:ui-sans-serif,system-ui;min-width:160px">
-            <div style="font-weight:700;font-size:13px;color:#f1f5f9;margin-bottom:6px">
-              ${point.city}${point.country ? `, ${point.country}` : ''}
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div>
-                <div style="font-size:10px;color:#64748b;margin-bottom:2px">Customers</div>
-                <div style="font-size:15px;font-weight:700;color:${color}">${point.customerCount.toLocaleString()}</div>
-              </div>
-              <div>
-                <div style="font-size:10px;color:#64748b;margin-bottom:2px">Orders</div>
-                <div style="font-size:15px;font-weight:700;color:#94a3b8">${point.orderCount.toLocaleString()}</div>
-              </div>
-            </div>
-          </div>
-        `);
-
-        if (onCityClick) {
-          circle.on('click', () => onCityClick(point));
-        }
-
-        circle.addTo(map);
-        layersRef.current.push(circle);
-        bounds.push([point.lat, point.lng]);
+      map.addSource(SOURCE_ID, {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: buildFeatures(customers, selectedId),
+        },
       });
 
-      if (bounds.length > 0) {
-        try {
-          if (bounds.length === 1) {
-            map.setView(bounds[0], 10);
-          } else {
-            map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [50, 50], maxZoom: 10 });
-          }
-        } catch {
-          // ignore fit-bounds errors
-        }
-      }
-    });
+      map.addLayer({
+        id: CIRCLE_LAYER,
+        type: 'circle',
+        source: SOURCE_ID,
+        paint: {
+          'circle-radius': [
+            'case',
+            ['==', ['get', 'isSelected'], 1], 12,
+            ['==', ['get', 'tier'], 'enterprise'], 9,
+            ['==', ['get', 'tier'], 'premium'], 7,
+            6,
+          ],
+          'circle-color': ['get', 'color'],
+          'circle-stroke-color': [
+            'case',
+            ['==', ['get', 'isSelected'], 1], '#ffffff',
+            'rgba(0,0,0,0.6)',
+          ],
+          'circle-stroke-width': [
+            'case',
+            ['==', ['get', 'isSelected'], 1], 2.5,
+            1,
+          ],
+          'circle-opacity': [
+            'case',
+            ['==', ['get', 'isSelected'], 1], 1,
+            0.82,
+          ],
+        },
+      });
+
+      map.addLayer({
+        id: LABEL_LAYER,
+        type: 'symbol',
+        source: SOURCE_ID,
+        filter: ['==', ['get', 'tier'], 'enterprise'],
+        layout: {
+          'text-field': ['slice', ['get', 'name'], 0, 1],
+          'text-size': 9,
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Regular'],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': 'rgba(0,0,0,0.5)',
+          'text-halo-width': 0.5,
+        },
+      });
+
+      const clickHandler = (e: MapLayerMouseEvent) => {
+        const feature = e.features?.[0];
+        if (!feature) return;
+        const id = feature.properties?.id as string | undefined;
+        if (id && onCustomerClick) onCustomerClick(id);
+      };
+
+      clickHandlerRef.current = clickHandler;
+      map.on('click', CIRCLE_LAYER, clickHandler);
+      map.on('mouseenter', CIRCLE_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', CIRCLE_LAYER, () => { map.getCanvas().style.cursor = ''; });
+    };
+
+    if (map.isStyleLoaded()) setup();
+    else map.on('load', setup);
 
     return () => {
-      alive = false;
-      getLeaflet().then(() => {
-        const map = getMapById(mapId);
+      if (clickHandlerRef.current) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (map) (layersRef.current as any[]).forEach((l) => map.removeLayer(l));
-        layersRef.current = [];
-      });
+        map.off('click', CIRCLE_LAYER, clickHandlerRef.current as any);
+      }
+      if (map.getLayer(LABEL_LAYER)) map.removeLayer(LABEL_LAYER);
+      if (map.getLayer(CIRCLE_LAYER)) map.removeLayer(CIRCLE_LAYER);
+      if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapId, points]);
+    // Mount-only; data updates handled below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+
+  useEffect(() => {
+    const src = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    if (!src) return;
+    src.setData({
+      type: 'FeatureCollection',
+      features: buildFeatures(customers, selectedId),
+    });
+  }, [map, customers, selectedId]);
 
   return null;
 }
+
+// Re-export fmt for use in the map view component
+export { fmt as fmtCurrency };

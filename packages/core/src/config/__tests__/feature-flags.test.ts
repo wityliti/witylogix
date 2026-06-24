@@ -9,7 +9,20 @@
  * - Context-aware evaluation
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+// Mock ConfigService to avoid env validation at import time
+vi.mock("../config-service.ts", () => ({
+  ConfigService: {
+    getInstance: () => ({
+      get: (key: string, fallback?: unknown) => {
+        if (key === "server.env") return "development";
+        return fallback;
+      },
+    }),
+  },
+}));
+
 import {
   FeatureFlag,
   isFeatureEnabled,

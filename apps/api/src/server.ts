@@ -27,6 +27,8 @@ import errorHandlerPlugin from "./plugins/error-handler.js";
 import rawBodyPlugin from "./plugins/raw-body.js";
 import securityHeadersPlugin from "./middleware/security-headers.js";
 import { shutdownQueues } from "./lib/queue.js";
+import { p95Tracker } from "./lib/p95-tracker.js";
+import { requireAuth, requireRole } from "./middleware/auth.js";
 // Workers are started lazily to avoid @witylogix/core import failures
 const startNotificationWorker = async () => { try { const m = await import("./workers/notification-worker.js"); return m.startNotificationWorker(); } catch { console.warn("[Worker] Notification worker unavailable"); } };
 const startOptimizationWorker = async () => { try { const m = await import("./workers/optimization-worker.js"); return m.startOptimizationWorker(); } catch { console.warn("[Worker] Optimization worker unavailable"); } };
@@ -87,13 +89,19 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(rawBodyPlugin);
 
   // 3. CORS — restrictive in production, permissive in dev
+  // CORS_ORIGINS env (comma-separated) takes precedence over the config defaults.
+  const corsEnvOrigins = process.env.CORS_ORIGINS
+    ?.split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+  const corsProdOrigins =
+    corsEnvOrigins && corsEnvOrigins.length > 0
+      ? corsEnvOrigins
+      : ([config.SHOPIFY_APP_URL, config.TRACKING_PAGE_URL].filter(
+          Boolean,
+        ) as string[]);
   await app.register(cors, {
-    origin: isDev()
-      ? true
-      : [
-          config.SHOPIFY_APP_URL,
-          config.TRACKING_PAGE_URL,
-        ].filter(Boolean) as string[],
+    origin: isDev() ? true : corsProdOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
@@ -147,6 +155,16 @@ export async function buildServer(): Promise<FastifyInstance> {
   // 6. Structured error handler (maps AppError, ZodError, Prisma errors)
   await app.register(errorHandlerPlugin);
 
+  // Bench Admin API — only enabled when BENCH_SERVICE_TOKEN is set
+  // (see apps/api/src/routes/internal/bench.ts, docs/bench/ARCHITECTURE.md §3)
+  if (process.env.BENCH_SERVICE_TOKEN) {
+    const benchAdminRoutes = (
+      await import("./routes/internal/bench.js")
+    ).default;
+    await app.register(benchAdminRoutes, { prefix: "/internal/bench" });
+    app.log.info("bench admin API registered at /internal/bench");
+  }
+
   // Workflow integration (auto-trigger workflows from API operations)
   await safeRegister(import("./plugins/workflow-integration.js"));
 
@@ -190,6 +208,20 @@ export async function buildServer(): Promise<FastifyInstance> {
     });
   });
 
+  // ─── Latency Percentile Metrics (p95 dashboard) ─────────────
+  // Exposes rolling p50/p95/p99 for BFS-certified endpoints.
+  // carrier_rates p95 must stay ≤ 500ms per BFS SLA.
+  app.get("/metrics/p95", { preHandler: [requireAuth, requireRole("admin")] }, async (_request, reply) => {
+    const stats = p95Tracker.allStats();
+    const bfsSla = {
+      carrier_rates: { threshold_ms: 500, status: "no_data" as "no_data" | "pass" | "fail" },
+    };
+    if (stats.carrier_rates) {
+      bfsSla.carrier_rates.status = stats.carrier_rates.p95 <= 500 ? "pass" : "fail";
+    }
+    return reply.send({ timestamp: new Date().toISOString(), endpoints: stats, bfs_sla: bfsSla });
+  });
+
   // ─── API Routes (v4) ───────────────────────────────────────
 
   await safeRegister(import("./routes/orders.js"), "/api/v4/orders");
@@ -203,10 +235,14 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/shops.js"), { prefix: "/api/v4/shops" });
   await safeRegister(import("./routes/orgs.js"), { prefix: "/api/v4/orgs" });
   await safeRegister(import("./routes/auth.js"), { prefix: "/api/v4/auth" });
+  // Legacy alias — same handlers (older docs / envs used /api/v1/auth/*).
+  await safeRegister(import("./routes/auth.js"), { prefix: "/api/v1/auth" });
+  await safeRegister(import("./routes/onboarding.js"), { prefix: "/api/v4/onboarding" });
   await safeRegister(import("./routes/admin.js"), { prefix: "/api/v4/admin" });
   await safeRegister(import("./routes/auth-providers.js"), { prefix: "/api/v4/auth-providers" });
   await safeRegister(import("./routes/users.js"), { prefix: "/api/v4/users" });
   await safeRegister(import("./routes/integrations.js"), { prefix: "/api/v4/integrations" });
+  await safeRegister(import("./routes/integrations/crm.js"), { prefix: "/api/v4/integrations/crm" });
   await safeRegister(import("./routes/shipments.js"), { prefix: "/api/v4/shipments" });
   await safeRegister(import("./routes/locations.js"), { prefix: "/api/v4/locations" });
   await safeRegister(import("./routes/shipping-profiles.js"), { prefix: "/api/v4/shipping-profiles" });
@@ -225,6 +261,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/billing-subscriptions.js"), { prefix: "/api/v4/billing/subscriptions" });
   await safeRegister(import("./routes/campaigns.js"), { prefix: "/api/v4/campaigns" });
   await safeRegister(import("./routes/messages.js"), { prefix: "/api/v4/messages" });
+  await safeRegister(import("./routes/chaos.js"), { prefix: "/api/v4/chaos" });
   await safeRegister(import("./routes/audit.js"), { prefix: "/api/v4/audit" });
   await safeRegister(import("./routes/permissions.js"), { prefix: "/api/v4/permissions" });
   await safeRegister(import("./routes/support-tickets.js"), { prefix: "/api/v4/support/tickets" });
@@ -235,6 +272,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
   await safeRegister(import("./routes/couriers.js"), { prefix: "/api/v4/couriers" });
   await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
+  await safeRegister(import("./routes/field-service.js"), { prefix: "/api/v4/field-service" });
   await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/delivery-otp.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/delivery-events.js"), { prefix: "/api/v4/deliveries" });
@@ -248,6 +286,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/notification-preferences.js"), { prefix: "/api/v4/notification-preferences" });
   await safeRegister(import("./routes/notifications-v2.js"), { prefix: "/api/v4/notifications" });
   await safeRegister(import("./routes/outbound-webhooks.js"), { prefix: "/api/v4/outbound-webhooks" });
+  await safeRegister(import("./routes/oauth.js"), { prefix: "/api/v4/oauth" });
+  await safeRegister(import("./routes/operations.js"), { prefix: "/api/v4/operations" });
+  await safeRegister(import("./routes/platform/platform.js"), { prefix: "/api/v4" });
   await safeRegister(import("./routes/payments-v2.js"), { prefix: "/api/v4/payments/v2" });
   await safeRegister(import("./routes/pod.js"), { prefix: "/api/v4/pod" });
   await safeRegister(import("./routes/returns.js"), { prefix: "/api/v4/returns" });
@@ -276,9 +317,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/ai/eta-recalculate.js"), { prefix: "/api/v4/ai/eta/recalculate" });
   await safeRegister(import("./routes/finance-cod.js"), { prefix: "/api/v4/finance/cod" });
   await safeRegister(import("./routes/ai/copilot.js"), { prefix: "/api/v4/ai/copilot" });
-  await safeRegister(import("./routes/ai/analytics.js"), { prefix: "/api/v4/ai/analytics" });
-  await safeRegister(import("./routes/ai/slots.js"), { prefix: "/api/v4/ai/slots" });
-  await safeRegister(import("./routes/eld.js"), { prefix: "/api/v4/eld" });
+  await safeRegister(import("./routes/esignatures.js"), { prefix: "/api/v4" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 

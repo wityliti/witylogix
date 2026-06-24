@@ -135,7 +135,7 @@ export default function ActivityPage() {
   if (error && activities.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-surface">
       <Header
         title="User Activity"
         subtitle="Monitor user actions and system events"
@@ -211,7 +211,7 @@ export default function ActivityPage() {
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     !selectedType
                       ? "bg-blue-600 text-white"
-                      : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                      : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
                   )}
                 >
                   All Activities
@@ -224,7 +224,7 @@ export default function ActivityPage() {
                       "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                       selectedType === type.id
                         ? "bg-blue-600 text-white"
-                        : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                        : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
                     )}
                   >
                     {type.label}
@@ -241,7 +241,7 @@ export default function ActivityPage() {
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-[#1e1e2e]-focus"
+                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-border-default-focus"
                 >
                   <option value="all">All Time</option>
                   <option value="24h">Last 24 Hours</option>
@@ -265,18 +265,18 @@ export default function ActivityPage() {
                 <div
                   key={activity.id}
                   className={cn(
-                    "px-5 py-4 flex gap-4 hover:bg-[#1a1a2e] transition-colors",
+                    "px-5 py-4 flex gap-4 hover:bg-wl-bg-elevated transition-colors",
                     idx !== filteredActivities.length - 1 &&
-                    "border-b border-[#1e1e2e]"
+                    "border-b border-wl-border-default"
                   )}
                 >
                   {/* Timeline */}
                   <div className="flex flex-col items-center pt-1">
-                    <div className="p-2 bg-[#1a1a2e] rounded-lg">
+                    <div className="p-2 bg-wl-bg-elevated rounded-lg">
                       <ActivityIcon type={activity.type} />
                     </div>
                     {idx !== filteredActivities.length - 1 && (
-                      <div className="w-0.5 h-12 bg-[#1e1e2e] my-2" />
+                      <div className="w-0.5 h-12 bg-wl-bg-elevated my-2" />
                     )}
                   </div>
 
@@ -300,7 +300,7 @@ export default function ActivityPage() {
                         </p>
 
                         {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                          <div className="mt-2 p-2 bg-[#1a1a2e] rounded text-xs text-gray-400 space-y-1">
+                          <div className="mt-2 p-2 bg-wl-bg-elevated rounded text-xs text-gray-400 space-y-1">
                             {Object.entries(activity.metadata).map(([key, value]) => (
                               <div key={key} className="flex justify-between">
                                 <span>{key}:</span>

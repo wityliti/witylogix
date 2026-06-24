@@ -473,9 +473,9 @@ export interface CostCenter {
 // ─── SYNC & OPERATIONS ──────────────────────────────────────────────────────
 
 /**
- * Sync operation status
+ * Sync operation record
  */
-export interface ERPSyncStatus {
+export interface ERPSyncRecord {
   id: string;
   connectionId: string;
   entityType: SyncEntityType;

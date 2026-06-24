@@ -7,16 +7,16 @@
 import { useApiQuery, UseApiQueryResult } from './use-api';
 
 /**
- * Dashboard statistics
+ * Dashboard statistics — matches GET /api/v4/dashboard/stats response
  */
 export interface DashboardStats {
-  totalOrdersToday: number;
+  totalOrders: number;
+  totalDrivers: number;
+  totalCustomers: number;
+  pendingOrders: number;
   activeDrivers: number;
-  pendingDeliveries: number;
-  totalRevenueToday: number;
-  averageDeliveryTime: number;
-  completionRate: number;
-  lastUpdated: string;
+  deliveredToday: number;
+  revenue: number;
 }
 
 /**
@@ -77,34 +77,6 @@ export function useRecentOrders(
   );
 }
 
-/**
- * Hook to fetch delivery heatmap data for map visualization
- * Shows concentration of deliveries by geographic location
- * @returns Heatmap data with points and geographic bounds
- * @note Heatmap endpoint returns empty points if not yet implemented
- */
 export function useDeliveryHeatmap(): UseApiQueryResult<DeliveryHeatmap> {
-  // TODO: Implement GET /api/v4/analytics/heatmap endpoint when analytics heatmap becomes available
-  // For now, this hook gracefully handles the missing endpoint by returning empty data
-  const result = useApiQuery<DeliveryHeatmap>('/api/v4/analytics/heatmap');
-
-  // If the endpoint doesn't exist (404), return empty heatmap data instead of showing error
-  if (result.error && (result.error as any).status === 404) {
-    return {
-      data: {
-        points: [],
-        bounds: {
-          north: 40.7128,
-          south: 40.7128,
-          east: -74.0060,
-          west: -74.0060,
-        },
-      },
-      loading: false,
-      error: null,
-      refetch: result.refetch,
-    };
-  }
-
-  return result;
+  return useApiQuery<DeliveryHeatmap>('/api/v4/analytics/heatmap');
 }

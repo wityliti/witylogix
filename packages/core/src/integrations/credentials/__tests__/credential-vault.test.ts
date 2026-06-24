@@ -23,22 +23,24 @@ import type {
   ICredentialPersistence,
   VaultConfig,
 } from '../credential-vault.js';
-import type { CryptoService } from '../../encryption/crypto.js';
-import type { AuditLogger } from '../../audit/logger.js';
+import type { CryptoService } from '../../../encryption/crypto.js';
+import type { AuditLogger } from '../../../audit/logger.js';
 
 // ─── Mock Implementations ────────────────────────────────────────
 
 class MockCryptoService {
-  getActiveKey(): Buffer {
-    return Buffer.from('0'.repeat(64), 'hex');
-  }
-
-  getActiveKeyVersion(): string {
+  getActiveKeyId(): string {
     return 'v1';
   }
 
-  getKeyVersion(version: string): Buffer {
-    return Buffer.from('0'.repeat(64), 'hex');
+  // Simple reversible base64 "encryption" for tests — not secure, just functional
+  encrypt(plaintext: string, _keyId?: string): { algorithm: string; iv: string; authTag: string; data: string; keyId: string } {
+    const data = Buffer.from(plaintext, 'utf8').toString('base64');
+    return { algorithm: 'aes-256-gcm', iv: 'dGVzdGl2MTIzNDU2', authTag: 'dGVzdHRhZw==', data, keyId: _keyId ?? 'v1' };
+  }
+
+  decrypt(payload: { algorithm: string; iv: string; authTag?: string; data: string; keyId?: string }): string {
+    return Buffer.from(payload.data, 'base64').toString('utf8');
   }
 }
 

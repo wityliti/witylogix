@@ -118,8 +118,8 @@ export default function SettingsHub() {
               <div
                 className={cn(
                   "relative overflow-hidden rounded-xl p-5",
-                  "bg-[#111118] border border-white/[0.06]",
-                  "hover:border-white/[0.14] hover:bg-[#14141f]",
+                  "bg-wl-bg-surface border border-white/[0.06]",
+                  "hover:border-white/[0.14] hover:bg-wl-bg-elevated",
                   "transition-all duration-200 ease-out",
                   "h-full"
                 )}

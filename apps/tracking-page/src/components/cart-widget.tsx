@@ -48,8 +48,8 @@ export function CartWidget({
   const successColor = 'var(--wl-widget-success, #008060)'
   const lightPrimary = isDarkTheme ? '#3d3d5c' : '#f0eaff'
 
-  // Mock data
-  const mockAvailableDates = availableDates || [
+  // Fallback demo values used when the embedder does not supply prop data
+  const resolvedAvailableDates = availableDates || [
     new Date(Date.now() + 86400000).toISOString().split('T')[0],
     new Date(Date.now() + 172800000).toISOString().split('T')[0],
     new Date(Date.now() + 259200000).toISOString().split('T')[0],
@@ -57,15 +57,15 @@ export function CartWidget({
     new Date(Date.now() + 432000000).toISOString().split('T')[0],
   ]
 
-  const mockBlockedDates = blockedDates || []
+  const resolvedBlockedDates = blockedDates || []
 
-  const mockTimeSlots: TimeSlot[] = timeSlots || [
+  const resolvedTimeSlots: TimeSlot[] = timeSlots || [
     { id: 'morning', start: '08:00', end: '12:00', available: 8, capacity: 10, isExpress: true },
     { id: 'afternoon', start: '12:00', end: '16:00', available: 5, capacity: 10, isExpress: false },
     { id: 'evening', start: '16:00', end: '20:00', available: 12, capacity: 15, isExpress: false },
   ]
 
-  const mockShippingRates: ShippingRate[] = shippingRates || [
+  const resolvedShippingRates: ShippingRate[] = shippingRates || [
     {
       id: 'economy',
       name: 'Economy',
@@ -278,8 +278,8 @@ export function CartWidget({
         {currentStep === 'date' && (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <DatePicker
-              availableDates={mockAvailableDates}
-              blockedDates={mockBlockedDates}
+              availableDates={resolvedAvailableDates}
+              blockedDates={resolvedBlockedDates}
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
               theme={theme}
@@ -291,7 +291,7 @@ export function CartWidget({
         {currentStep === 'time' && (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <TimeSlotSelector
-              slots={mockTimeSlots}
+              slots={resolvedTimeSlots}
               selectedSlot={selectedSlot}
               onSlotSelect={handleSlotSelect}
               theme={theme}
@@ -303,7 +303,7 @@ export function CartWidget({
         {currentStep === 'rate' && (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <RateCalculator
-              rates={mockShippingRates}
+              rates={resolvedShippingRates}
               onRateSelect={handleRateSelect}
               currency={currency}
               theme={theme}
@@ -416,8 +416,8 @@ export function CartWidget({
                         color: textColor,
                       }}
                     >
-                      {mockTimeSlots.find((s) => s.id === selectedSlot)?.start} –{' '}
-                      {mockTimeSlots.find((s) => s.id === selectedSlot)?.end}
+                      {resolvedTimeSlots.find((s) => s.id === selectedSlot)?.start} –{' '}
+                      {resolvedTimeSlots.find((s) => s.id === selectedSlot)?.end}
                     </p>
                   </div>
 
@@ -442,7 +442,7 @@ export function CartWidget({
                         color: textColor,
                       }}
                     >
-                      {mockShippingRates.find((r) => r.id === selectedRate)?.name}
+                      {resolvedShippingRates.find((r) => r.id === selectedRate)?.name}
                     </p>
                   </div>
 

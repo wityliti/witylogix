@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
@@ -95,11 +95,25 @@ export default function CrmDashboardPage() {
   const { data: integrationsData, loading, error, refetch } = useApiQuery<IntegrationsResponse>(
     "/api/v4/integrations"
   );
-  const [syncEvents] = useState<SyncEvent[]>([]);
-
   const crmIntegrations = useMemo(
     () => (integrationsData?.integrations ?? []).filter((i) => CRM_SLUGS.has(i.slug)),
     [integrationsData]
+  );
+
+  const syncEvents = useMemo<SyncEvent[]>(
+    () =>
+      crmIntegrations
+        .filter((i) => i.lastSyncAt)
+        .map((i) => ({
+          id: `${i.slug}-last-sync`,
+          timestamp: i.lastSyncAt!,
+          type: 'sync',
+          direction: 'in' as const,
+          status: i.healthStatus === 'UNHEALTHY' ? ('failed' as const) : ('success' as const),
+          recordsAffected: 0,
+          details: `${i.name} last sync`,
+        })),
+    [crmIntegrations]
   );
 
   const aggregateStats = useMemo(() => {
@@ -124,7 +138,7 @@ export default function CrmDashboardPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className={cn("flex flex-col min-h-screen", "bg-[#0a0a0f]")}>
+    <div className={cn("flex flex-col min-h-screen", "bg-wl-bg-root")}>
       <Header
         title="CRM Integrations"
         subtitle="Manage your connected CRM platforms and sync activity"
@@ -142,14 +156,12 @@ export default function CrmDashboardPage() {
             <StatCard
               label="Connected Platforms"
               value={aggregateStats.activeConnections}
-              change={{ value: 0, label: `of ${aggregateStats.totalConnections} installed` }}
               accentColor="var(--wl-primary-500)"
               index={0}
             />
             <StatCard
               label="Total Installed"
               value={aggregateStats.totalConnections}
-              change={{ value: 0, label: "CRM integrations" }}
               accentColor="var(--wl-info-400)"
               index={1}
             />
@@ -190,7 +202,7 @@ export default function CrmDashboardPage() {
                   {crmIntegrations.map((crm) => (
                     <div
                       key={crm.slug}
-                      className="border border-[#1e1e2e] rounded-lg p-4 bg-[#12121a] hover:bg-[#1a1a2e] transition-colors duration-200"
+                      className="border border-wl-border-default rounded-lg p-4 bg-wl-bg-surface hover:bg-wl-bg-elevated transition-colors duration-200"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div>
@@ -231,7 +243,7 @@ export default function CrmDashboardPage() {
                       </div>
 
                       {crm.description && (
-                        <p className="text-xs text-gray-400 mt-3 border-t border-[#1e1e2e] pt-3">
+                        <p className="text-xs text-gray-400 mt-3 border-t border-wl-border-default pt-3">
                           {crm.description}
                         </p>
                       )}
@@ -257,7 +269,7 @@ export default function CrmDashboardPage() {
                   {syncEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="flex items-center justify-between px-4 py-3 border border-[#1e1e2e] rounded-md hover:bg-[#1a1a2e] transition-colors duration-200"
+                      className="flex items-center justify-between px-4 py-3 border border-wl-border-default rounded-md hover:bg-wl-bg-elevated transition-colors duration-200"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">

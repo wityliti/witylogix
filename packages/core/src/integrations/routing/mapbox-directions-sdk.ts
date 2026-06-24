@@ -172,28 +172,30 @@ interface MapboxDirectionsConfig extends RoutingAdapterConfig {
  * Mapbox Directions API SDK
  */
 export class MapboxDirectionsSDK extends RoutingAdapter {
-  private config: MapboxDirectionsConfig;
-  private baseUrl: string = 'https://api.mapbox.com/directions/v5';
+  private mapboxBaseUrl: string = 'https://api.mapbox.com/directions/v5';
   private apiRequestsThisMinute: number = 0;
   private lastMinuteReset: number = Date.now();
   private readonly RATE_LIMIT: number = 300; // 300 req/min
 
+  /** Narrowed accessor for Mapbox-specific config fields */
+  private get mapboxConfig(): MapboxDirectionsConfig {
+    return this.config as MapboxDirectionsConfig;
+  }
+
   constructor(config: MapboxDirectionsConfig) {
-    super(config);
+    super({
+      timeout: 30000,
+      retries: 2,
+      rateLimit: 5, // Conservative: 5 req/sec (300 req/min max)
+      ...config,
+    });
 
     if (!config.apiKey) {
       throw new Error('Mapbox Directions API requires apiKey');
     }
 
-    this.config = {
-      timeout: 30000,
-      retries: 2,
-      rateLimit: 5, // Conservative: 5 req/sec (300 req/min max)
-      ...config,
-    };
-
     if (config.baseUrl) {
-      this.baseUrl = config.baseUrl;
+      this.mapboxBaseUrl = config.baseUrl;
     }
   }
 
@@ -219,10 +221,10 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
         continue_straight: 'true',
         annotations: 'distance,duration,speed',
         language: request.options?.language || 'en',
-        access_token: this.config.apiKey,
+        access_token: this.mapboxConfig.apiKey,
       });
 
-      const url = `${this.baseUrl}/${profile}/${coordinates}?${params}`;
+      const url = `${this.mapboxBaseUrl}/${profile}/${coordinates}?${params}`;
       const response = await this.callMapboxAPI<MapboxDirectionsResponse>(url);
 
       if (response.code !== 'Ok') {
@@ -238,44 +240,64 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
   }
 
   /**
-   * Optimize waypoint order
+   * Optimize waypoint order using Mapbox Optimization API v1
    */
   async optimize(request: OptimizationRequest): Promise<OptimizationResponse> {
     return this.executeRequest('MapboxDirections.optimize', async () => {
-      const waypoints = request.waypoints.map((w) => {
-        const normalized = this.normalizeCoordinate(w);
-        return `${normalized.lng},${normalized.lat}`;
-      });
+      // Support both the canonical VRP format (jobs[].location) and the simpler
+      // waypoints[] format from unified-routing-types (used internally).
+      const rawRequest = request as OptimizationRequest & { waypoints?: import('./types.js').Coordinate[] };
+      const jobCoords: string[] = rawRequest.waypoints
+        ? rawRequest.waypoints.map((w) => {
+            const normalized = this.normalizeCoordinate(w);
+            return `${normalized.lng},${normalized.lat}`;
+          })
+        : (request.jobs ?? []).map((j) => {
+            const normalized = this.normalizeCoordinate(j.location);
+            return `${normalized.lng},${normalized.lat}`;
+          });
 
-      const coordinatesStr = waypoints.join(';');
+      if (jobCoords.length === 0) {
+        throw new Error('Mapbox optimize: no jobs provided');
+      }
+
+      const coordinatesStr = jobCoords.join(';');
       const params = new URLSearchParams({
         geometries: 'polyline6',
         overview: 'full',
         annotations: 'distance,duration',
-        access_token: this.config.apiKey,
+        access_token: this.mapboxConfig.apiKey,
       });
 
-      const url = `${this.baseUrl}/mapbox/driving/${coordinatesStr}?${params}&optimize=true`;
+      const url = `${this.mapboxBaseUrl}/mapbox/driving/${coordinatesStr}?${params}&optimize=true`;
       const response = await this.callMapboxAPI<MapboxOptimizationResponse>(url);
 
       if (response.code !== 'Ok') {
         throw new Error(`Mapbox returned status: ${response.code}`);
       }
 
-      // Extract waypoint order from response
-      const waypointOrder = response.waypoints.map((wp, idx) => {
-        // Find original index
-        return idx;
-      });
-
       const route = response.routes[0];
+      const totalDistance = Math.round(route.distance);
+      const totalDuration = Math.round(route.duration);
 
-      return {
+      const optimizedRoute = {
         vehicle: 0,
-        steps: [], // Not applicable for optimization
-        distance_m: Math.round(route.distance),
-        duration_s: Math.round(route.duration),
+        steps: [] as OptimizationResponse['routes'][number]['steps'],
+        distance_m: totalDistance,
+        duration_s: totalDuration,
         polyline: this.geometryToPolyline(route.geometry),
+      };
+      return {
+        code: 'OK',
+        summary: {
+          distance_m: totalDistance,
+          duration_s: totalDuration,
+          vehicle_count: 1,
+        },
+        routes: [optimizedRoute],
+        // Expose aggregate totals at top level for convenience
+        distance_m: totalDistance,
+        duration_s: totalDuration,
       } as OptimizationResponse;
     });
   }
@@ -295,14 +317,19 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
         .join(';');
 
       const params = new URLSearchParams({
-        access_token: this.config.apiKey,
+        access_token: this.mapboxConfig.apiKey,
       });
 
       // Matrix API endpoint
       const url = `https://api.mapbox.com/matrix/v1/mapbox/driving/${coords}?${params}`;
-      const response = await fetch(url, {
-        timeout: this.config.timeout,
-      });
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), this.mapboxConfig.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(url, { signal: controller.signal });
+      } finally {
+        clearTimeout(tid);
+      }
 
       if (!response.ok) {
         throw new Error(`Mapbox Matrix API error: ${response.statusText}`);
@@ -347,7 +374,7 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
     const params = new URLSearchParams({
       contours_seconds: contours.join(','),
       contours_colors: colors.join(','),
-      access_token: this.config.apiKey,
+      access_token: this.mapboxConfig.apiKey,
     });
 
     const url =
@@ -380,13 +407,18 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
   private async callMapboxAPI<T>(url: string): Promise<T> {
     this.checkRateLimit();
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'User-Agent': this.config.user_agent || 'Witylogix/1.0',
-      },
-      timeout: this.config.timeout,
-    });
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), this.mapboxConfig.timeout ?? 30000);
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: { 'User-Agent': this.mapboxConfig.user_agent || 'Witylogix/1.0' },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(tid);
+    }
 
     this.apiRequestsThisMinute++;
 
@@ -448,15 +480,19 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
   /**
    * Normalize Mapbox directions response
    */
-  private normalizeDirectionsResponse(route: MapboxRoute, originalRequest: RouteRequest): RouteResponse {
-    const legs: RouteLeg[] = route.legs.map((leg, index) => ({
-      distance_m: Math.round(leg.distance),
-      duration_s: Math.round(leg.duration),
-      steps: leg.steps.map((step) => this.normalizeStep(step)),
-      start_location: this.extractFirstCoordinate(step.geometry),
-      end_location: this.extractLastCoordinate(step.geometry),
-      summary: leg.summary,
-    }));
+  private normalizeDirectionsResponse(route: MapboxRoute, _originalRequest: RouteRequest): RouteResponse {
+    const legs: RouteLeg[] = route.legs.map((leg) => {
+      const firstStep = leg.steps[0];
+      const lastStep = leg.steps[leg.steps.length - 1];
+      return {
+        distance_m: Math.round(leg.distance),
+        duration_s: Math.round(leg.duration),
+        steps: leg.steps.map((step) => this.normalizeStep(step)),
+        start_location: this.extractFirstCoordinate(firstStep?.geometry),
+        end_location: this.extractLastCoordinate(lastStep?.geometry),
+        summary: leg.summary,
+      };
+    });
 
     // Convert GeoJSON to polyline6
     const polyline = this.geoJsonToPolyline6(route.geometry);
@@ -469,10 +505,6 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
       bounds: this.getGeoJsonBounds(route.geometry),
       warnings: [],
     };
-
-    function step(this: any): never {
-      throw new Error('Function not implemented.');
-    }
   }
 
   /**

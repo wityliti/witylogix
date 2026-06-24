@@ -14,10 +14,24 @@ RUN cd packages/types && npx tsc || true
 RUN cd packages/validators && npx tsup src/index.ts --format cjs,esm --dts 2>/dev/null || true
 RUN cd packages/framework && npx tsup 2>/dev/null || true
 
+# Compile API TypeScript to JS — avoids slow tsx JIT on cold start
+# tsc may emit with type errors (noEmitOnError defaults to false); CI enforces types separately.
+RUN cd apps/api && npx tsc --project tsconfig.build.json --skipLibCheck || true
+
 FROM node:20-alpine
-RUN npm install -g tsx && apk add --no-cache dumb-init curl
+RUN apk add --no-cache dumb-init curl
 WORKDIR /app
 COPY --from=builder /app ./
+
 ENV NODE_ENV=production
 EXPOSE 8000
-CMD ["dumb-init", "tsx", "apps/api/src/server.ts"]
+
+# Healthcheck: give extra time for prisma migrate + server init
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+# Run pending Prisma migrations then start compiled server.
+# migrate deploy is idempotent — safe on every restart/redeploy.
+CMD ["dumb-init", "sh", "-c", \
+    "npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma && \
+    cd apps/api && node --import tsx dist/server.js"]

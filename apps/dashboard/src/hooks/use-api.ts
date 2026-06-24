@@ -211,15 +211,14 @@ export function useApiList<T>(
   const buildUrl = useCallback(() => {
     if (!path) return null;
 
-    const params = new URLSearchParams({
-      page: String(pagination.page),
-      limit: String(pagination.limit),
-    });
+    const [basePath, existingQuery] = path.split('?');
+    const params = new URLSearchParams(existingQuery ?? '');
+    params.set('page', String(pagination.page));
+    params.set('limit', String(pagination.limit));
+    if (search) params.set('search', search);
+    if (sort) params.set('sort', sort);
 
-    if (search) params.append('search', search);
-    if (sort) params.append('sort', sort);
-
-    return `${path}?${params.toString()}`;
+    return `${basePath}?${params.toString()}`;
   }, [path, pagination.page, pagination.limit, search, sort]);
 
   const fetchList = useCallback(async () => {

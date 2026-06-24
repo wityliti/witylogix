@@ -129,7 +129,7 @@ export default function ProfilePage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Profile Settings"
         subtitle="Manage your personal information and security"
@@ -138,7 +138,7 @@ export default function ProfilePage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Avatar and Basic Info */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Profile Information</CardTitle>
               <CardDescription className="text-gray-400">Update your personal details</CardDescription>
@@ -152,7 +152,7 @@ export default function ProfilePage() {
                   <img
                     src={profileData.avatar}
                     alt="Avatar"
-                    className="w-24 h-24 rounded-full border-2 border-[#1e1e2e] object-cover"
+                    className="w-24 h-24 rounded-full border-2 border-wl-border-default object-cover"
                   />
                   <div className="flex gap-2">
                     <Button variant="secondary" size="sm" asChild>
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                   type="email"
                   value={profileData.email}
                   disabled
-                  className="bg-[#1a1a2e] border-[#1e1e2e] text-gray-400"
+                  className="bg-wl-bg-elevated border-wl-border-default text-gray-400"
                 />
               </div>
 
@@ -225,7 +225,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Password Change */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Lock className="w-5 h-5" />
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                   <div className="mt-2">
                     <div className="flex items-center gap-2 text-xs mb-1">
                       <span className="text-gray-400">Strength:</span>
-                      <div className="flex-1 h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
                         <div
                           className={cn("h-full transition-all", getStrengthColor())}
                           style={{ width: `${passwordStrength}%` }}
@@ -300,7 +300,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* MFA Setup */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -336,7 +336,7 @@ export default function ProfilePage() {
                     <p className="text-sm text-gray-400 mb-3">
                       Scan this QR code with your authenticator app
                     </p>
-                    <img src={qrCode} alt="MFA QR Code" className="mx-auto border border-[#1e1e2e] p-2 rounded" />
+                    <img src={qrCode} alt="MFA QR Code" className="mx-auto border border-wl-border-default p-2 rounded" />
                   </div>
 
                   <div>
@@ -351,7 +351,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="bg-[#1a1a2e] p-4 rounded-lg border border-[#1e1e2e]">
+                  <div className="bg-wl-bg-elevated p-4 rounded-lg border border-wl-border-default">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
                       Backup Codes
                     </p>
@@ -362,7 +362,7 @@ export default function ProfilePage() {
                       {backupCodes.map((code, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between p-2 bg-[#0a0a0f] rounded font-mono text-sm text-white"
+                          className="flex items-center justify-between p-2 bg-wl-bg-root rounded font-mono text-sm text-white"
                         >
                           <span>{code}</span>
                           <button className="text-blue-400 hover:text-blue-300">

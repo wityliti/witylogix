@@ -535,7 +535,7 @@ export class MotiveELDClient extends ELDAdapter {
         Authorization: `Bearer ${this.apiKey}`,
         "Content-Type": "application/json",
       },
-      body: body ? JSON.stringify(body) : body,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     });
 
     if (!response.ok) {
@@ -544,7 +544,7 @@ export class MotiveELDClient extends ELDAdapter {
       );
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**

@@ -777,11 +777,13 @@ export class LightspeedPOSSDKClient extends POSAdapter {
   /**
    * Get kitchen display status
    */
-  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<string> {
+  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<import('./types').KitchenOrderStatus> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const order = await this.getOrder(locationId, orderId);
-        return order.status;
+        const s = order.status;
+        const mapped: import('./types').KitchenOrderStatus = s === 'completed' ? 'completed' : s === 'in_progress' ? 'in_progress' : s === 'open' ? 'new' : 'received';
+        return mapped;
       });
     });
   }
@@ -897,12 +899,12 @@ export class LightspeedPOSSDKClient extends POSAdapter {
         this.rateLimitInfo.remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '60', 10);
       }
 
-      const data = await response.json();
+      const data = await response.json() as Record<string, unknown>;
 
       if (!response.ok && response.status >= 400) {
         throw this.createError(
-          data.error?.code || 'API_ERROR',
-          data.error?.message || response.statusText,
+          (data.error as Record<string, unknown> | undefined)?.code as string || 'API_ERROR',
+          (data.error as Record<string, unknown> | undefined)?.message as string || response.statusText,
           { statusCode: response.status }
         );
       }

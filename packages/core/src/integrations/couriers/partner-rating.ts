@@ -260,7 +260,7 @@ async function getPerformanceMetrics(
   const costs = deliveries
     .filter((d: any) => d.actualCost)
     .map((d: any) => parseFloat(d.actualCost));
-  const averageCost = costs.length > 0 ? costs.reduce((a, b) => a + b, 0) / costs.length : 0;
+  const averageCost = costs.length > 0 ? costs.reduce((a: number, b: number) => a + b, 0) / costs.length : 0;
 
   // Get benchmark cost (average across all partners)
   const allDeliveries = await (prisma.courierDelivery as any).findMany({
@@ -272,7 +272,7 @@ async function getPerformanceMetrics(
   const allCosts = allDeliveries
     .filter((d: any) => d.actualCost)
     .map((d: any) => parseFloat(d.actualCost));
-  const benchmarkCost = allCosts.length > 0 ? allCosts.reduce((a, b) => a + b, 0) / allCosts.length : averageCost;
+  const benchmarkCost = allCosts.length > 0 ? allCosts.reduce((a: number, b: number) => a + b, 0) / allCosts.length : averageCost;
 
   // Get customer ratings (would come from a ratings table)
   // For demonstration, assuming ratings in metadata
@@ -283,10 +283,10 @@ async function getPerformanceMetrics(
     })
     .map((d: any) => {
       const metadata = typeof d.metadata === "string" ? JSON.parse(d.metadata) : d.metadata;
-      return metadata.customerRating;
+      return metadata.customerRating as number;
     });
 
-  const averageRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 5.0;
+  const averageRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 5.0;
 
   return {
     onTimeDeliveries: onTimeCount,

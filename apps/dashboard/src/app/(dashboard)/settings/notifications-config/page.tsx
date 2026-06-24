@@ -144,7 +144,7 @@ export default function NotificationsConfigPage() {
         </Link>
 
         {/* Channel Configuration */}
-        <Card className="mb-8 border border-[#1e1e2e] bg-[#12121a]">
+        <Card className="mb-8 border border-wl-border-default bg-wl-bg-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="w-5 h-5" />
@@ -158,7 +158,7 @@ export default function NotificationsConfigPage() {
                 return (
                   <div
                     key={channel.id}
-                    className="p-4 rounded-lg border border-[#1e1e2e] hover:border-blue-500/50 transition-colors"
+                    className="p-4 rounded-lg border border-wl-border-default hover:border-blue-500/50 transition-colors"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <Icon className="w-5 h-5 text-blue-500" />
@@ -187,7 +187,7 @@ export default function NotificationsConfigPage() {
         </Card>
 
         {/* Event Configuration Table */}
-        <Card className="border border-[#1e1e2e] bg-[#12121a]">
+        <Card className="border border-wl-border-default bg-wl-bg-surface">
           <CardHeader>
             <CardTitle>Event Notification Matrix</CardTitle>
           </CardHeader>
@@ -195,7 +195,7 @@ export default function NotificationsConfigPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#1e1e2e]">
+                  <tr className="border-b border-wl-border-default">
                     <th className="text-left py-4 px-4 font-semibold text-white">
                       Event Type
                     </th>
@@ -229,7 +229,7 @@ export default function NotificationsConfigPage() {
                   {notificationEvents.map((event) => (
                     <tr
                       key={event.id}
-                      className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e]/50 transition-colors"
+                      className="border-b border-wl-border-default hover:bg-wl-bg-elevated/50 transition-colors"
                     >
                       <td className="py-4 px-4">
                         <div>

@@ -56,7 +56,7 @@ export function ESignatureProviderCard({ provider }: ESignatureProviderCardProps
 
         {provider.status === "connected" && (
           <>
-            <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+            <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase">Templates</p>
                 <p className="text-2xl font-bold text-white mt-1">{provider.templates}</p>
@@ -79,7 +79,7 @@ export function ESignatureProviderCard({ provider }: ESignatureProviderCardProps
         <div className="flex gap-2">
           {provider.status === "connected" ? (
             <>
-              <Button variant="secondary" size="sm" className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]">
+              <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">
                 <Settings className="w-4 h-4 mr-2" />Settings
               </Button>
               <Button variant="danger" size="sm" className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20">

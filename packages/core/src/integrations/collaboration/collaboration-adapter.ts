@@ -149,7 +149,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
             retryConfig.maxBackoffMs || 30000
           );
           const jitter =
-            backoff * retryConfig.jitterFactor * Math.random();
+            backoff * (retryConfig.jitterFactor ?? 0.1) * Math.random();
           await new Promise((resolve) =>
             setTimeout(resolve, backoff + jitter)
           );
@@ -315,10 +315,10 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
   /**
    * Register webhook handler
    */
-  public registerWebhook(
+  public async registerWebhook(
     eventTypes: WebhookEventType[],
     callback: (event: CollaborationWebhookEvent) => Promise<void>
-  ): string {
+  ): Promise<string> {
     const webhookId = `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.webhookHandlers.set(webhookId, callback);
     return webhookId;
@@ -327,7 +327,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
   /**
    * Unregister webhook handler
    */
-  public unregisterWebhook(webhookId: string): void {
+  public async unregisterWebhook(webhookId: string): Promise<void> {
     this.webhookHandlers.delete(webhookId);
   }
 

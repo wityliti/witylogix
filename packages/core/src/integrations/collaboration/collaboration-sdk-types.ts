@@ -333,4 +333,4 @@ export interface OperationResult<T> {
   timestamp: Date;
 }
 
-export type { UnifiedMessage, UnifiedChannel, UnifiedUser, UnifiedAttachment, UnifiedReaction, UnifiedMention, UnifiedPresence, UnifiedWebhookEvent };
+// Types above are exported directly via their interface/type declarations.

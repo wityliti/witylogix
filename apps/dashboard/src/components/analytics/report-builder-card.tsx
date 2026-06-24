@@ -46,9 +46,6 @@ const dataSources: { value: DataSource; label: string }[] = [
 const dimensionOptions = ["Month", "Region", "Product", "Category", "Salesperson"];
 const measureOptions = ["Revenue", "Units Sold", "Gross Margin", "Cost", "Count"];
 
-const mockPreview =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120'%3E%3Crect fill='%23f3f4f6' width='200' height='120'/%3E%3Crect x='10' y='10' width='15' height='80' fill='%236366f1'/%3E%3Crect x='35' y='30' width='15' height='60' fill='%236366f1'/%3E%3Crect x='60' y='20' width='15' height='70' fill='%236366f1'/%3E%3Crect x='85' y='25' width='15' height='65' fill='%236366f1'/%3E%3Crect x='110' y='35' width='15' height='55' fill='%236366f1'/%3E%3Crect x='135' y='40' width='15' height='50' fill='%236366f1'/%3E%3Crect x='160' y='15' width='15' height='75' fill='%236366f1'/%3E%3C/svg%3E";
-
 const defaultConfig: ReportConfig = {
   id: "report-1",
   name: "Monthly Sales Report",
@@ -274,11 +271,11 @@ const ReportBuilderCard = ({
           <p className="text-xs font-semibold text-wl-text-secondary mb-2">
             Preview
           </p>
-          <img
-            src={mockPreview}
-            alt="Report preview"
-            className="w-full rounded"
-          />
+          <div className="w-full h-28 flex items-center justify-center rounded bg-wl-bg-surface border border-dashed border-wl-border-default">
+            <p className="text-xs text-wl-text-tertiary">
+              Run report to see preview
+            </p>
+          </div>
         </div>
       )}
 

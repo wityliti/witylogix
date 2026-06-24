@@ -495,7 +495,7 @@ export class APIError extends Error {
     public readonly retryable: boolean = false,
     public readonly retryAfter?: number,
   ) {
-    super(`[${code}] ${statusCode}: ${message}`);
+    super(`[${code}] ${statusCode}`);
     this.name = 'APIError';
   }
 }

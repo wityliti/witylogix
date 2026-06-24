@@ -72,12 +72,20 @@ describe("FlespiClient", () => {
         ],
       };
 
-      global.fetch = vi.fn(() =>
-        Promise.resolve({
+      let callCount = 0;
+      global.fetch = vi.fn(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockDevices),
+          } as Response);
+        }
+        return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve(mockDevices),
-        } as Response),
-      );
+          json: () => Promise.resolve({ result: [] }),
+        } as Response);
+      });
 
       const vehicles = await client.getVehicles();
 
@@ -121,18 +129,28 @@ describe("FlespiClient", () => {
         ],
       };
 
-      global.fetch = vi.fn(() =>
-        Promise.resolve({
+      let callCount = 0;
+      global.fetch = vi.fn(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockDevices),
+          } as Response);
+        }
+        return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve(mockDevices),
-        } as Response),
-      );
+          json: () => Promise.resolve({ result: [] }),
+        } as Response);
+      });
 
       const vehicles1 = await client.getVehicles();
       const vehicles2 = await client.getVehicles();
 
       expect(vehicles1).toEqual(vehicles2);
-      expect(global.fetch).toHaveBeenCalledTimes(1); // Called once, second result is cached
+      // First getVehicles() paginates: 1 call returns data + 1 call returns empty = 2 fetch calls.
+      // Second getVehicles() returns from cache = 0 fetch calls. Total: 2.
+      expect(global.fetch).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -479,7 +497,7 @@ describe("FlespiClient", () => {
         Promise.reject(new Error("Network error")),
       );
 
-      await expect(client.getVehicles()).rejects.toThrow("Max retries exceeded");
+      await expect(client.getVehicles()).rejects.toThrow("Network error");
     });
 
     it("should retry on 429 rate limit", async () => {

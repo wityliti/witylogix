@@ -7,23 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useApiList } from "@/hooks/use-api";
 
+interface FilterState {
+  types: string[];
+  severities: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+  userId: string | null;
+}
+
 interface EventFiltersProps {
-  filters: {
-    types: string[];
-    severities: string[];
-    startDate: Date | null;
-    endDate: Date | null;
-    userId: string | null;
-  };
-  setFilters: (
-    filters: {
-      types: string[];
-      severities: string[];
-      startDate: Date | null;
-      endDate: Date | null;
-      userId: string | null;
-    }
-  ) => void;
+  filters: FilterState;
+  setFilters: (filters: FilterState) => void;
+  users?: { id: string; name: string }[];
 }
 
 const EVENT_TYPES = [
@@ -45,6 +40,7 @@ const SEVERITY_LEVELS = [
 export function EventFilters({
   filters,
   setFilters,
+  users = [],
 }: EventFiltersProps) {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
@@ -311,26 +307,20 @@ export function EventFilters({
         {showUserDropdown && (
           <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48 max-h-56 overflow-y-auto">
             <div className="p-3 space-y-2">
-              {usersLoading ? (
-                <p className="text-xs text-wl-text-secondary px-2 py-1">Loading users…</p>
-              ) : users.length === 0 ? (
-                <p className="text-xs text-wl-text-secondary px-2 py-1">No users found</p>
-              ) : (
-                users.map((user) => (
-                  <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
-                    <input
-                      type="radio"
-                      name="user"
-                      checked={filters.userId === user.id}
-                      onChange={() => handleUserSelect(user.id)}
-                      className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
-                    />
-                    <span className="text-sm text-wl-text-primary">
-                      {user.name}
-                    </span>
-                  </label>
-                ))
-              )}
+              {users.map((user) => (
+                <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
+                  <input
+                    type="radio"
+                    name="user"
+                    checked={filters.userId === user.id}
+                    onChange={() => handleUserSelect(user.id)}
+                    className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
+                  />
+                  <span className="text-sm text-wl-text-primary">
+                    {user.name}
+                  </span>
+                </label>
+              ))}
             </div>
           </div>
         )}

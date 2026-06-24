@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "build": "node -e \"try{require('fs').accessSync('src/generated/prisma/index.d.ts')}catch(e){process.exit(1)}\" || npx prisma generate --schema=./prisma/schema; tsc",
+    "build": "node -e \"try{require('fs').accessSync('src/generated/prisma/index.d.ts')}catch(e){process.exit(1)}\" || npx prisma generate --schema=./prisma/schema; tsc && node -e \"const{cpSync}=require('fs');try{cpSync('src/generated','dist/generated',{recursive:true})}catch{}\"",
     "db:generate": "npx prisma generate --schema=./prisma/schema",
     "db:migrate": "npx prisma migrate dev --schema=./prisma/schema",
     "db:migrate:deploy": "npx prisma migrate deploy --schema=./prisma/schema",

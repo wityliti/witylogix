@@ -237,6 +237,22 @@ export interface ITelematicsAdapter {
 }
 
 /**
+ * Sync Options for batch data retrieval
+ */
+export interface SyncOptions {
+  /** Start of the date range to sync */
+  startDate?: Date;
+  /** End of the date range to sync */
+  endDate?: Date;
+  /** Maximum number of records to fetch */
+  limit?: number;
+  /** Page offset for pagination */
+  offset?: number;
+  /** Whether to force a full sync ignoring cache */
+  forceRefresh?: boolean;
+}
+
+/**
  * Rate Limit State
  */
 export interface RateLimitState {

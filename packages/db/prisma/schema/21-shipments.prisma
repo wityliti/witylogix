@@ -93,6 +93,8 @@ model Shipment {
   deliveryAttempts    DeliveryAttempt[]
   temperatureLogs     TemperatureLog[]
   coldChainAlerts     ColdChainAlert[]
+  activityFlowId      String?              @map("activity_flow_id") @db.Uuid
+  activityFlow        ActivityFlow?        @relation(fields: [activityFlowId], references: [id])
 
   @@unique([shopId, shipmentNumber])
   @@index([shopId, status, createdAt(sort: Desc)])

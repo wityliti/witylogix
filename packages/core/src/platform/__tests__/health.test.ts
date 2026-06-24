@@ -110,7 +110,8 @@ describe('PlatformHealthService', () => {
       expect(health.metrics).toBeDefined();
       expect(health.metrics.cpu).toBeDefined();
       expect(health.metrics.memory).toBeDefined();
-      expect(health.metrics.uptime).toBeGreaterThan(0);
+      // process.uptime() may be < 1 second, Math.floor gives 0
+      expect(health.metrics.uptime).toBeGreaterThanOrEqual(0);
       expect(health.metrics.timestamp).toBeDefined();
     });
 

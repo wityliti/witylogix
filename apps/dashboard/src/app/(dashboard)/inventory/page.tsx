@@ -73,17 +73,14 @@ export default function InventoryPage() {
     }))
   ).slice(0, 20);
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, { backgroundColor: string; color: string }> = {
-      "in-stock": { backgroundColor: "#22c55e", color: "#fff" },
-      "low-stock": { backgroundColor: "#eab308", color: "#000" },
-      "out-of-stock": { backgroundColor: "#ef4444", color: "#fff" },
-    };
-    return styles[status] ?? styles["in-stock"];
+  const getStatusVariant = (status: string): "success" | "warning" | "danger" => {
+    if (status === "in-stock") return "success";
+    if (status === "low-stock") return "warning";
+    return "danger";
   };
 
   return (
-    <div className={cn("min-h-screen bg-[#0a0a0f] p-6")}>
+    <div className={cn("min-h-screen bg-wl-bg-root p-6")}>
       <div className={cn("max-w-6xl mx-auto")}>
         {/* Header */}
         <div className={cn("mb-8 flex items-center justify-between")}>
@@ -103,7 +100,7 @@ export default function InventoryPage() {
 
         {/* Stats Cards */}
         <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6")}>
-          <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
                 <p className={cn("text-gray-400 text-xs font-medium")}>Total Quantity</p>
@@ -115,7 +112,7 @@ export default function InventoryPage() {
             </CardContent>
           </Card>
 
-          <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
                 <p className={cn("text-gray-400 text-xs font-medium")}>Low Stock</p>
@@ -127,7 +124,7 @@ export default function InventoryPage() {
             </CardContent>
           </Card>
 
-          <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
                 <p className={cn("text-gray-400 text-xs font-medium")}>Out of Stock</p>
@@ -139,7 +136,7 @@ export default function InventoryPage() {
             </CardContent>
           </Card>
 
-          <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
                 <p className={cn("text-gray-400 text-xs font-medium")}>Total SKUs</p>
@@ -154,7 +151,7 @@ export default function InventoryPage() {
 
         <div className={cn("grid gap-6 mb-6")} style={{ gridTemplateColumns: "1fr 320px" }}>
           {/* Inventory Table */}
-          <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
             <CardHeader>
               <div className={cn("flex items-center justify-between")}>
                 <CardTitle className={cn("text-white")}>Product Inventory</CardTitle>
@@ -162,7 +159,7 @@ export default function InventoryPage() {
                   <select
                     value={selectedWarehouse}
                     onChange={(e) => setSelectedWarehouse(e.target.value)}
-                    className={cn("px-2.5 py-1.5 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer")}
+                    className={cn("px-2.5 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs cursor-pointer")}
                   >
                     <option value="all">All Locations</option>
                     {warehouses.map((w) => (
@@ -173,7 +170,7 @@ export default function InventoryPage() {
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className={cn("px-2.5 py-1.5 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer")}
+                    className={cn("px-2.5 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs cursor-pointer")}
                   >
                     <option value="all">All Status</option>
                     <option value="in-stock">In Stock</option>
@@ -187,7 +184,7 @@ export default function InventoryPage() {
               <div className={cn("overflow-x-auto")}>
                 <table className={cn("w-full border-collapse")}>
                   <thead>
-                    <tr className={cn("border-b-2 border-[#1e1e2e]")}>
+                    <tr className={cn("border-b-2 border-wl-border-default")}>
                       <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>SKU</th>
                       <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Product Name</th>
                       <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Location</th>
@@ -205,14 +202,14 @@ export default function InventoryPage() {
                       </tr>
                     ) : (
                       filteredItems.map((item) => (
-                        <tr key={item.id} className={cn("border-b border-[#1e1e2e]")}>
+                        <tr key={item.id} className={cn("border-b border-wl-border-default")}>
                           <td className={cn("p-3 text-white text-xs font-medium font-mono")}>{item.sku}</td>
                           <td className={cn("p-3 text-white text-sm")}>{item.name}</td>
                           <td className={cn("p-3 text-gray-400 text-xs")}>{item.locationId}</td>
                           <td className={cn("p-3 text-white text-sm text-center font-semibold")}>{item.quantity}</td>
                           <td className={cn("p-3 text-gray-400 text-xs text-center")}>{item.reorderPoint}</td>
                           <td className={cn("p-3")}>
-                            <Badge style={getStatusBadge(item.status)} className="px-2 py-1 text-xs font-semibold">
+                            <Badge variant={getStatusVariant(item.status)} className="px-2 py-1 text-xs font-semibold">
                               {item.status.replace(/-/g, " ").toUpperCase()}
                             </Badge>
                           </td>
@@ -226,7 +223,7 @@ export default function InventoryPage() {
           </Card>
 
           {/* Low Stock Alerts */}
-          <Card className={cn("bg-[#12121a] border border-[#1e1e2e] h-fit")}>
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default h-fit")}>
             <CardHeader>
               <CardTitle className={cn("text-white text-base")}>Low Stock Alerts</CardTitle>
             </CardHeader>
@@ -237,7 +234,7 @@ export default function InventoryPage() {
                 </p>
               ) : (
                 lowStockAlerts.map((item) => (
-                  <div key={item.id} className={cn("p-3 bg-[#1a1a2e] rounded border border-[#1e1e2e]")}>
+                  <div key={item.id} className={cn("p-3 bg-wl-bg-elevated rounded border border-wl-border-default")}>
                     <div className={cn("flex items-start gap-2 mb-1.5")}>
                       <AlertTriangle size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
                       <div>
@@ -256,7 +253,7 @@ export default function InventoryPage() {
         </div>
 
         {/* Stock Movement History */}
-        <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
+        <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
           <CardHeader>
             <CardTitle className={cn("text-white")}>Stock Movement History</CardTitle>
             <CardDescription className={cn("text-gray-400")}>Recent inventory transactions</CardDescription>
@@ -265,7 +262,7 @@ export default function InventoryPage() {
             <div className={cn("overflow-x-auto")}>
               <table className={cn("w-full border-collapse")}>
                 <thead>
-                  <tr className={cn("border-b-2 border-[#1e1e2e]")}>
+                  <tr className={cn("border-b-2 border-wl-border-default")}>
                     <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>SKU</th>
                     <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Type</th>
                     <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Quantity</th>
@@ -282,7 +279,7 @@ export default function InventoryPage() {
                     </tr>
                   ) : (
                     movements.map((movement) => (
-                      <tr key={movement.id} className={cn("border-b border-[#1e1e2e]")}>
+                      <tr key={movement.id} className={cn("border-b border-wl-border-default")}>
                         <td className={cn("p-3 text-white text-xs font-medium font-mono")}>{movement.sku}</td>
                         <td className={cn("p-3 text-center")}>
                           <div className={cn("flex items-center justify-center gap-1")}>

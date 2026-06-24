@@ -120,11 +120,10 @@ export async function defineSLA(
 ): Promise<SLAConfig> {
   // In a real system, this would store in a partner_sla_configs table
   const slaConfig: SLAConfig = {
+    ...config,
     id: `sla_${Date.now()}`,
-    partnerId,
     createdAt: new Date(),
     updatedAt: new Date(),
-    ...config,
   };
 
   // Validate configuration

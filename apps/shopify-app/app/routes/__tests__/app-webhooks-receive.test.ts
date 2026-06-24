@@ -35,20 +35,23 @@ vi.mock('~/lib/sentry.server', () => ({
 }));
 
 // Mock the DB and queue calls that handlers make through dynamic imports
+const mockPrismaInstance = {
+  order: {
+    updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+  },
+  shop: {
+    update: vi.fn().mockResolvedValue({ shopifyId: 'test-shop.myshopify.com' }),
+    delete: vi.fn().mockResolvedValue({ shopifyId: 'test-shop.myshopify.com' }),
+  },
+  customer: {
+    deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+  },
+  $disconnect: vi.fn().mockResolvedValue(undefined),
+};
+
 vi.mock('@witylogix/db', () => ({
-  PrismaClient: vi.fn().mockImplementation(() => ({
-    order: {
-      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
-    },
-    shop: {
-      update: vi.fn().mockResolvedValue({ shopifyId: 'test-shop.myshopify.com' }),
-      delete: vi.fn().mockResolvedValue({ shopifyId: 'test-shop.myshopify.com' }),
-    },
-    customer: {
-      deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
-    },
-    $disconnect: vi.fn().mockResolvedValue(undefined),
-  })),
+  PrismaClient: vi.fn().mockImplementation(() => mockPrismaInstance),
+  prisma: mockPrismaInstance,
 }));
 
 import { checkRateLimit, rateLimitHeaders } from '~/lib/rate-limiter.server';

@@ -28,6 +28,7 @@ export function DateRangePicker({
   const [mode, setMode] = useState<"preset" | "custom">("preset");
   const [tempStart, setTempStart] = useState(value.start.toISOString().split("T")[0]);
   const [tempEnd, setTempEnd] = useState(value.end.toISOString().split("T")[0]);
+  const [dateError, setDateError] = useState<string | null>(null);
 
   // Default presets
   const defaultPresets: DateRangePreset[] = [
@@ -102,14 +103,15 @@ export function DateRangePicker({
       const end = new Date(tempEnd);
 
       if (start > end) {
-        alert("Start date must be before end date");
+        setDateError("Start date must be before end date");
         return;
       }
 
+      setDateError(null);
       onChange({ start, end });
       setMode("preset");
     } catch {
-      alert("Invalid date format");
+      setDateError("Invalid date format");
     }
   };
 
@@ -217,6 +219,10 @@ export function DateRangePicker({
             />
           </div>
         </div>
+
+        {dateError && (
+          <p className="text-xs text-red-400">{dateError}</p>
+        )}
 
         <Button
           variant="primary"

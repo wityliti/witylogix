@@ -75,7 +75,7 @@ export default function CarriersSettingsPage() {
   const configuredCount = rows.filter((r) => r.configured).length;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Carrier Coverage"
         subtitle="Native carrier adapters configured via environment variables"
@@ -107,7 +107,7 @@ export default function CarriersSettingsPage() {
           {rows.map((carrier) => (
             <Card
               key={carrier.name}
-              className="bg-[#12121a] border-white/10"
+              className="bg-wl-bg-surface border-white/10"
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">

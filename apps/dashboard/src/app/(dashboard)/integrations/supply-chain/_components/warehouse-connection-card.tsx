@@ -38,7 +38,7 @@ const getSyncStatusColor = (status: string) => {
 
 export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardProps) {
   return (
-    <Card className="bg-[#1a1a2e]">
+    <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
@@ -50,7 +50,7 @@ export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardPr
           </Badge>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase">Last Sync</p>
             <p className="text-sm font-semibold text-white mt-1">{warehouse.lastSync}</p>
@@ -69,10 +69,10 @@ export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardPr
         )}
 
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm" className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]">
+          <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">
             <RefreshCw className="w-4 h-4 mr-2" />Sync Now
           </Button>
-          <Button variant="secondary" size="sm" className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]">
+          <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">
             <Settings className="w-4 h-4 mr-2" />Configure
           </Button>
         </div>

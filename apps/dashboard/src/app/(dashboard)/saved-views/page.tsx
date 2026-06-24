@@ -129,7 +129,7 @@ export default function SavedViewsPage() {
   }, [refetch]);
 
   return (
-    <div className="w-full bg-[#0a0a0f] min-h-screen">
+    <div className="w-full bg-wl-bg-root min-h-screen">
       <Header
         title="Saved Views"
         subtitle={`${views.length} total views · ${sharedCount} shared with team`}
@@ -149,11 +149,11 @@ export default function SavedViewsPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i} className="bg-[#12121a] border-[#1e1e2e] animate-pulse h-48">{" "}</Card>
+              <Card key={i} className="bg-wl-bg-surface border-wl-border-default animate-pulse h-48">{" "}</Card>
             ))}
           </div>
         ) : error ? (
-          <Card className="bg-[#12121a] border-[#1e1e2e] p-8 text-center">
+          <Card className="bg-wl-bg-surface border-wl-border-default p-8 text-center">
             <p className="text-red-400 mb-4">Failed to load views.</p>
             <Button variant="secondary" size="sm" onClick={refetch}>Retry</Button>
           </Card>
@@ -161,13 +161,13 @@ export default function SavedViewsPage() {
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-white mb-4">My Views</h2>
             {views.length === 0 ? (
-              <Card className="bg-[#12121a] border-[#1e1e2e] p-8 text-center">
+              <Card className="bg-wl-bg-surface border-wl-border-default p-8 text-center">
                 <p className="text-gray-400">No saved views yet. Create your first view.</p>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {views.map((view) => (
-                  <Card key={view.id} className="bg-[#12121a] border-[#1e1e2e] flex flex-col">
+                  <Card key={view.id} className="bg-wl-bg-surface border-wl-border-default flex flex-col">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">
@@ -235,7 +235,7 @@ export default function SavedViewsPage() {
           onClick={() => setShowCreateModal(false)}
         >
           <Card
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl bg-[#12121a] border-[#1e1e2e]"
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl bg-wl-bg-surface border-wl-border-default"
             onClick={(e) => e.stopPropagation()}
           >
             <CardHeader>
@@ -250,7 +250,7 @@ export default function SavedViewsPage() {
                     placeholder="e.g., Today's Priority Orders"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 </div>
 
@@ -259,7 +259,7 @@ export default function SavedViewsPage() {
                   <select
                     value={formData.targetTable}
                     onChange={(e) => handleTableChange(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
                   >
                     {TABLE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -273,7 +273,7 @@ export default function SavedViewsPage() {
                         <select
                           value={filter.column}
                           onChange={(e) => updateFilter(idx, 'column', e.target.value)}
-                          className="flex-1 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
+                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
                         >
                           <option value="">Select Column</option>
                           {availableColumns.map((col) => <option key={col} value={col}>{col}</option>)}
@@ -281,7 +281,7 @@ export default function SavedViewsPage() {
                         <select
                           value={filter.operator}
                           onChange={(e) => updateFilter(idx, 'operator', e.target.value)}
-                          className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
+                          className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
                         >
                           <option value="equals">equals</option>
                           <option value="not_equals">not equals</option>
@@ -295,7 +295,7 @@ export default function SavedViewsPage() {
                           placeholder="Value"
                           value={filter.value}
                           onChange={(e) => updateFilter(idx, 'value', e.target.value)}
-                          className="flex-1 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
                         />
                         {formData.filters.length > 1 && (
                           <Button variant="danger" size="sm" onClick={() => removeFilter(idx)}>Remove</Button>
@@ -331,7 +331,7 @@ export default function SavedViewsPage() {
                     <select
                       value={formData.sortColumn}
                       onChange={(e) => setFormData({ ...formData, sortColumn: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
                     >
                       <option value="">None</option>
                       {availableColumns.map((col) => <option key={col} value={col}>{col}</option>)}
@@ -342,7 +342,7 @@ export default function SavedViewsPage() {
                     <select
                       value={formData.sortDirection}
                       onChange={(e) => setFormData({ ...formData, sortDirection: e.target.value as 'asc' | 'desc' })}
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
                     >
                       <option value="asc">Ascending</option>
                       <option value="desc">Descending</option>
@@ -360,7 +360,7 @@ export default function SavedViewsPage() {
                   Share with team
                 </label>
 
-                <div className="flex gap-3 justify-end pt-4 border-t border-[#1e1e2e]">
+                <div className="flex gap-3 justify-end pt-4 border-t border-wl-border-default">
                   <Button variant="secondary" size="md" onClick={() => setShowCreateModal(false)}>Cancel</Button>
                   <Button variant="primary" size="md" onClick={handleCreateView} disabled={creating}>
                     {creating ? 'Creating...' : 'Create View'}

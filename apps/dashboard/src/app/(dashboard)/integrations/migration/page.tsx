@@ -93,9 +93,9 @@ export default function MigrationWizard() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-[#0a0a0f]">
+    <div className="flex h-screen flex-col bg-wl-bg-root">
       {/* Header */}
-      <div className="border-b border-[#1e1e2e] bg-[#0a0a0f] px-8 py-6">
+      <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
         <h1 className="text-3xl font-bold text-white">Migration Wizard</h1>
         <p className="mt-2 text-white">
           Safely migrate between payment and integration providers
@@ -103,7 +103,7 @@ export default function MigrationWizard() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[#1e1e2e] px-8">
+      <div className="border-b border-wl-border-default px-8">
         <div className="flex gap-8">
           {(['wizard', 'progress', 'history'] as const).map((tab) => (
             <button
@@ -112,7 +112,7 @@ export default function MigrationWizard() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-[#1e1e2e] text-white'
+                  ? 'border-wl-border-default text-white'
                   : 'border-transparent text-white hover:text-white'
               )}
             >
@@ -135,8 +135,8 @@ export default function MigrationWizard() {
                     className={cn(
                       'flex h-10 w-10 items-center justify-center rounded-full font-semibold transition-colors',
                       currentStep >= step
-                        ? 'bg-[#0a0a0f] text-white'
-                        : 'bg-[#0a0a0f] text-white'
+                        ? 'bg-wl-bg-root text-white'
+                        : 'bg-wl-bg-root text-white'
                     )}
                   >
                     {step}
@@ -145,7 +145,7 @@ export default function MigrationWizard() {
                     <div
                       className={cn(
                         'mx-2 h-1 w-12',
-                        currentStep > step ? 'bg-[#0a0a0f]' : 'bg-[#0a0a0f]'
+                        currentStep > step ? 'bg-wl-bg-root' : 'bg-wl-bg-root'
                       )}
                     />
                   )}
@@ -233,7 +233,7 @@ export default function MigrationWizard() {
         )}
 
         {activeTab === 'progress' && selectedMigration && (
-          <MigrationProgress migrationId={selectedMigration} />
+          <MigrationProgress migrationId={selectedMigration} migrations={migrations} />
         )}
 
         {activeTab === 'history' && (
@@ -256,7 +256,7 @@ function ProviderSelection({
   title: string;
 }) {
   return (
-    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-root p-6">
       <h3 className="mb-4 text-lg font-semibold text-white">{title}</h3>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {providers.map((provider) => (
@@ -266,8 +266,8 @@ function ProviderSelection({
             className={cn(
               'rounded-lg border-2 px-4 py-6 text-center font-medium transition-all',
               selected === provider
-                ? 'border-[#1e1e2e] bg-[#0a0a0f] bg-opacity-10 text-white'
-                : 'border-[#1e1e2e] text-white hover:border-[#1e1e2e]'
+                ? 'border-wl-border-default bg-wl-bg-root bg-opacity-10 text-white'
+                : 'border-wl-border-default text-white hover:border-wl-border-default'
             )}
           >
             {provider}
@@ -308,21 +308,21 @@ function FieldMappingEditor({
   };
 
   return (
-    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-root p-6">
       <h3 className="mb-4 text-lg font-semibold text-white">Field Mapping</h3>
       <div className="space-y-4">
         {mappings.length === 0 ? (
           <p className="text-sm text-white">No mappings configured yet.</p>
         ) : (
           mappings.map((mapping, idx) => (
-            <div key={idx} className="flex items-end gap-3 rounded bg-[#0a0a0f] p-4">
+            <div key={idx} className="flex items-end gap-3 rounded bg-wl-bg-root p-4">
               <div className="flex-1">
                 <Label className="text-sm text-white">Source Field</Label>
                 <Select
                   value={mapping.sourceField}
                   onValueChange={(value) => handleUpdateMapping(idx, { sourceField: value })}
                 >
-                  <SelectTrigger className="mt-1 bg-[#0a0a0f] text-white">
+                  <SelectTrigger className="mt-1 bg-wl-bg-root text-white">
                     <SelectValue placeholder="Select field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -340,7 +340,7 @@ function FieldMappingEditor({
                   value={mapping.targetField}
                   onValueChange={(value) => handleUpdateMapping(idx, { targetField: value })}
                 >
-                  <SelectTrigger className="mt-1 bg-[#0a0a0f] text-white">
+                  <SelectTrigger className="mt-1 bg-wl-bg-root text-white">
                     <SelectValue placeholder="Select field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -384,7 +384,7 @@ function ShadowModeSettings({
   comparisons: ShadowModeComparison[];
 }) {
   return (
-    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-root p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -402,9 +402,9 @@ function ShadowModeSettings({
               <span className="text-sm font-medium text-white">Match Rate</span>
               <Badge variant="success">{matchPercentage}%</Badge>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#0a0a0f]">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
               <div
-                className="h-full bg-[#0a0a0f] transition-all"
+                className="h-full bg-wl-bg-root transition-all"
                 style={{ width: `${matchPercentage}%` }}
               />
             </div>
@@ -427,24 +427,24 @@ function ReviewCutover({
   fieldMappings: FieldMapping[];
 }) {
   return (
-    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-root p-6">
       <h3 className="mb-6 text-lg font-semibold text-white">Review Migration Plan</h3>
       <div className="space-y-4">
-        <div className="rounded bg-[#0a0a0f] p-4">
+        <div className="rounded bg-wl-bg-root p-4">
           <div className="text-sm text-white">Source Provider</div>
           <div className="text-lg font-semibold text-white">{sourceProvider}</div>
         </div>
-        <div className="rounded bg-[#0a0a0f] p-4">
+        <div className="rounded bg-wl-bg-root p-4">
           <div className="text-sm text-white">Target Provider</div>
           <div className="text-lg font-semibold text-white">{targetProvider}</div>
         </div>
-        <div className="rounded bg-[#0a0a0f] p-4">
+        <div className="rounded bg-wl-bg-root p-4">
           <div className="text-sm text-white">Shadow Mode</div>
           <div className="text-lg font-semibold text-white">
             {shadowModeEnabled ? 'Enabled' : 'Disabled'}
           </div>
         </div>
-        <div className="rounded bg-[#0a0a0f] p-4">
+        <div className="rounded bg-wl-bg-root p-4">
           <div className="text-sm text-white">Field Mappings</div>
           <div className="mt-2 space-y-1">
             {fieldMappings.map((mapping, idx) => (
@@ -459,25 +459,38 @@ function ReviewCutover({
   );
 }
 
-function MigrationProgress({ migrationId }: { migrationId: string }) {
+function MigrationProgress({ migrationId, migrations }: { migrationId: string; migrations: Migration[] }) {
+  const migration = migrations.find((m) => m.id === migrationId);
+
+  if (!migration) {
+    return (
+      <Card className="border border-wl-border-default bg-wl-bg-root p-6">
+        <p className="text-sm text-gray-400">Migration not found.</p>
+      </Card>
+    );
+  }
+
+  const latencyDelta = migration.latencyComparison.targetAvg - migration.latencyComparison.sourceAvg;
+  const latencyLabel = latencyDelta >= 0 ? `+${latencyDelta.toFixed(0)}ms` : `${latencyDelta.toFixed(0)}ms`;
+
   return (
-    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-root p-6">
       <h3 className="mb-6 text-lg font-semibold text-white">Migration in Progress</h3>
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-white">Overall Progress</span>
-            <span className="text-sm font-semibold text-white">65%</span>
+            <span className="text-sm font-semibold text-white">{migration.progress}%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#0a0a0f]">
-            <div className="h-full w-2/3 bg-[#0a0a0f]" />
+          <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-elevated">
+            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${migration.progress}%` }} />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <MetricCard label="Requests Migrated" value="2,450 / 3,750" />
-          <MetricCard label="Error Rate" value="0.2%" />
-          <MetricCard label="Latency Δ" value="+12ms" />
+          <MetricCard label="Requests Migrated" value={migration.requestsMigrated.toLocaleString()} />
+          <MetricCard label="Error Rate" value={`${(migration.errorRate * 100).toFixed(2)}%`} />
+          <MetricCard label="Latency Δ" value={latencyLabel} />
         </div>
 
         <Button variant="danger">Rollback to Source</Button>
@@ -488,12 +501,12 @@ function MigrationProgress({ migrationId }: { migrationId: string }) {
 
 function MigrationHistory({ migrations }: { migrations: Migration[] }) {
   return (
-    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+    <Card className="border border-wl-border-default bg-wl-bg-root p-6">
       <h3 className="mb-4 text-lg font-semibold text-white">Migration History</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#1e1e2e]">
+            <tr className="border-b border-wl-border-default">
               <th className="px-4 py-2 text-left text-white">Source</th>
               <th className="px-4 py-2 text-left text-white">Target</th>
               <th className="px-4 py-2 text-left text-white">Status</th>
@@ -503,7 +516,7 @@ function MigrationHistory({ migrations }: { migrations: Migration[] }) {
           </thead>
           <tbody>
             {migrations.map((migration) => (
-              <tr key={migration.id} className="border-b border-[#1e1e2e]">
+              <tr key={migration.id} className="border-b border-wl-border-default">
                 <td className="px-4 py-2 text-white">{migration.sourceProvider}</td>
                 <td className="px-4 py-2 text-white">{migration.targetProvider}</td>
                 <td className="px-4 py-2">
@@ -524,7 +537,7 @@ function MigrationHistory({ migrations }: { migrations: Migration[] }) {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded border border-[#1e1e2e] bg-[#0a0a0f] p-4">
+    <div className="rounded border border-wl-border-default bg-wl-bg-root p-4">
       <div className="text-xs text-white">{label}</div>
       <div className="mt-1 text-xl font-bold text-white">{value}</div>
     </div>

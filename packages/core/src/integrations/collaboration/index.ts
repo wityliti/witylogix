@@ -3,7 +3,7 @@
  */
 
 // Types
-export {
+export type {
   CollaborationUser,
   CollaborationChannel,
   CollaborationMessage,
@@ -34,6 +34,12 @@ export {
 // Unified SDK Types
 export {
   CollaborationPlatform,
+  platformSchema,
+  unifiedMessageSchema,
+  unifiedChannelSchema,
+  unifiedUserSchema,
+} from './collaboration-sdk-types';
+export type {
   UnifiedMessage,
   UnifiedChannel,
   UnifiedUser,
@@ -43,44 +49,40 @@ export {
   UnifiedPresence,
   UnifiedWebhookEvent,
   PresenceStatus as UnifiedPresenceStatus,
-  type WebhookEventType as UnifiedWebhookEventType,
-  type ConversionOptions,
-  type CollaborationSDKConfig,
-  type PaginatedResult,
-  type OperationResult,
-  platformSchema,
-  unifiedMessageSchema,
-  unifiedChannelSchema,
-  unifiedUserSchema,
+  WebhookEventType as UnifiedWebhookEventType,
+  ConversionOptions,
+  CollaborationSDKConfig,
+  PaginatedResult,
+  OperationResult,
 } from './collaboration-sdk-types';
 
 // SDK Clients
-export {
-  SlackSDKClient,
-  type SlackOAuth2Token,
-  type SlackMessage,
-  type SlackChannel,
-  type SlackUser,
-  type SlackFile,
-  type SlackEvent,
-  type SlackAttachment,
-  type SlackBlockElement,
+export { SlackSDKClient } from './slack-sdk-client';
+export type {
+  SlackOAuth2Token,
+  SlackMessage,
+  SlackChannel,
+  SlackUser,
+  SlackFile,
+  SlackEvent,
+  SlackAttachment,
+  SlackBlockElement,
 } from './slack-sdk-client';
 
-export {
-  TeamsSDKClient,
-  type TeamsOAuth2Token,
-  type TeamsTeam,
-  type TeamsChannel,
-  type TeamsMessage,
-  type TeamsChat,
-  type TeamsUser,
-  type TeamsAttachment,
-  type TeamsReaction,
-  type TeamsPresence,
-  type TeamsSubscription,
-  type TeamsChangeNotification,
-  type TeamsAdaptiveCard,
+export { TeamsSDKClient } from './teams-sdk-client';
+export type {
+  TeamsOAuth2Token,
+  TeamsTeam,
+  TeamsChannel,
+  TeamsMessage,
+  TeamsChat,
+  TeamsUser,
+  TeamsAttachment,
+  TeamsReaction,
+  TeamsPresence,
+  TeamsSubscription,
+  TeamsChangeNotification,
+  TeamsAdaptiveCard,
 } from './teams-sdk-client';
 
 // Base Adapter

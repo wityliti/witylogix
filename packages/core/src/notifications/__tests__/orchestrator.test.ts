@@ -117,7 +117,7 @@ describe('NotificationOrchestrator', () => {
         where: {
           id: 'welcome-email',
           channel: 'EMAIL',
-          active: true,
+          isActive: true,
         },
       });
 
@@ -597,11 +597,11 @@ describe('NotificationOrchestrator', () => {
       expect(mockPrisma.notificationLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           shopId: 'shop-123',
-          templateId: 'logging-test',
+          eventType: 'logging-test',
           channel: 'EMAIL',
           recipient: 'user@example.com',
           status: 'SENT',
-          messageId: 'msg-logged',
+          providerMsgId: 'msg-logged',
         }),
       });
     });
@@ -631,7 +631,7 @@ describe('NotificationOrchestrator', () => {
       expect(mockPrisma.notificationLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           status: 'FAILED',
-          error: 'All providers in fallback chain failed for channel EMAIL',
+          errorMessage: 'All providers in fallback chain failed for channel EMAIL',
         }),
       });
     });

@@ -13,11 +13,12 @@ import {
   CheckCircle2,
   Zap,
   BarChart3,
-  AlertTriangle,
   RefreshCw,
+  Info,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiQuery } from '@/hooks/use-api';
 
 interface TestStats {
   total: number;
@@ -27,78 +28,73 @@ interface TestStats {
   duration: number;
 }
 
-interface TestCategory {
-  name: string;
-  count: number;
-  passed: number;
-  coverage: number;
-}
-
-interface PackageCoverage {
-  name: string;
-  tests: number;
-  coverage: number;
-  lastRun: string;
-  status: "success" | "warning" | "error";
-}
-
-interface FlakyTest {
-  name: string;
+interface TestFile {
   file: string;
-  flakiness: number;
-  lastPassed: string;
-  lastFailed: string;
-  suggestion: string;
-}
-
-interface TestRun {
-  id: string;
-  timestamp: string;
+  status: string;
   duration: number;
-  totalTests: number;
+  tests: number;
   passed: number;
   failed: number;
-  coverage: number;
 }
 
-interface TestDashboardData {
+interface TestStatsData {
   stats: TestStats;
-  categories: TestCategory[];
-  packages: PackageCoverage[];
-  flakyTests: FlakyTest[];
-  recentRuns: TestRun[];
+  testResults: TestFile[];
+  hasCoverage: boolean;
+  generatedAt: string;
+}
+
+interface TestStatsResponse {
+  data: TestStatsData | null;
 }
 
 const getPassRate = (passed: number, total: number): number =>
-  total > 0 ? Math.round((passed / total) * 100) : 0;
+  total === 0 ? 0 : Math.round((passed / total) * 100);
 
 export default function TestDashboardPage() {
-  const { data, loading, error, refetch } = useApiQuery<TestDashboardData>('/api/v4/admin/test-results');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data: response, loading, error, refetch } = useApiQuery<TestStatsResponse>(
+    '/api/v4/admin/test-stats'
+  );
+
+  const testData = response?.data ?? null;
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const stats = data?.stats;
-  const categories = data?.categories ?? [];
-  const packages = data?.packages ?? [];
-  const flakyTests = data?.flakyTests ?? [];
-  const recentRuns = data?.recentRuns ?? [];
+  if (!testData) {
+    return (
+      <div className="min-h-screen bg-wl-bg-root">
+        <Header
+          title="Test Results Dashboard"
+          actions={
+            <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
+              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+              Refresh
+            </Button>
+          }
+        />
+        <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
+          <Info className="w-12 h-12 text-blue-500 mx-auto mb-4 opacity-60" />
+          <h2 className="text-lg font-semibold text-white mb-2">No Test Results Available</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Test results are generated during CI runs. To populate this dashboard, run:
+          </p>
+          <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-4 text-xs text-gray-400 text-left mb-4">
+            pnpm test:run --reporter=json {'>'} test-results.json
+          </pre>
+          <p className="text-xs text-gray-500">
+            The report file is read from the monorepo root. Commit it or write it as part of your CI pipeline.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  const passRate = stats ? getPassRate(stats.passed, stats.total) : 0;
-  const failRate = stats ? getPassRate(stats.failed, stats.total) : 0;
-  const avgCoverage = categories.filter(c => c.coverage > 0).length > 0
-    ? Math.round(
-        categories.filter(c => c.coverage > 0).reduce((sum, c) => sum + c.coverage, 0) /
-        categories.filter(c => c.coverage > 0).length
-      )
-    : 0;
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await refetch();
-    setIsRefreshing(false);
-  };
+  const { stats, testResults, generatedAt } = testData;
+  const passRate = getPassRate(stats.passed, stats.total);
+  const failRate = getPassRate(stats.failed, stats.total);
+  const failedFiles = testResults.filter(f => f.failed > 0);
+  const passingFiles = testResults.filter(f => f.failed === 0);
 
   if (!data) {
     return (
@@ -118,238 +114,164 @@ export default function TestDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      <Header title="Test Results Dashboard" />
+    <div className="min-h-screen bg-wl-bg-root">
+      <Header
+        title="Test Results Dashboard"
+        subtitle={`Generated ${new Date(generatedAt).toLocaleString()}`}
+        actions={
+          <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
+            <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+            Refresh
+          </Button>
+        }
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Summary Stats */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Total Tests</p>
-                    <p className="text-3xl font-bold text-white">{stats.total}</p>
-                  </div>
-                  <BarChart3 className="w-8 h-8 text-blue-500 opacity-60" />
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Total Tests</p>
+                  <p className="text-3xl font-bold text-white">{stats.total}</p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Passed</p>
-                    <p className="text-3xl font-bold text-green-600">{stats.passed}</p>
-                    <p className="text-xs text-gray-400 mt-1">{passRate}% pass rate</p>
-                  </div>
-                  <CheckCircle2 className="w-8 h-8 text-green-500 opacity-60" />
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Passed</p>
+                  <p className="text-3xl font-bold text-green-600">{stats.passed}</p>
+                  <p className="text-xs text-gray-400 mt-1">{passRate}% pass rate</p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Failed</p>
-                    <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
-                    <p className="text-xs text-gray-400 mt-1">{failRate}% fail rate</p>
-                  </div>
-                  <AlertCircle className="w-8 h-8 text-red-500 opacity-60" />
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Failed</p>
+                  <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
+                  <p className="text-xs text-gray-400 mt-1">{failRate}% fail rate</p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Avg Coverage</p>
-                    <p className="text-3xl font-bold text-white">{avgCoverage}%</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-blue-500 opacity-60" />
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Skipped</p>
+                  <p className="text-3xl font-bold text-amber-500">{stats.skipped}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <TrendingUp className="w-8 h-8 text-amber-500 opacity-60" />
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Duration</p>
-                    <p className="text-3xl font-bold text-white">{stats.duration}s</p>
-                  </div>
-                  <Zap className="w-8 h-8 text-yellow-500 opacity-60" />
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Duration</p>
+                  <p className="text-3xl font-bold text-white">{stats.duration}s</p>
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Tests by Category + Package Coverage */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <Card>
-            <div className="p-6 border-b border-[#1e1e2e]">
-              <h3 className="text-base font-semibold text-white">Tests by Category</h3>
-            </div>
-            <CardContent className="pt-4">
-              {categories.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-8">No category data</p>
-              ) : (
-                <div className="space-y-4">
-                  {categories.map((category) => {
-                    const pr = getPassRate(category.passed, category.count);
-                    return (
-                      <div key={category.name}>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="capitalize font-medium text-white">{category.name}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-400">{category.count} tests</span>
-                            {category.coverage > 0 && (
-                              <Badge variant={category.coverage >= 80 ? "success" : category.coverage >= 60 ? "warning" : "danger"}>
-                                {category.coverage}%
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="w-full bg-[#1a1a2e] rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${pr}%` }} />
-                        </div>
-                        <p className="text-xs text-gray-400 mt-1">{category.passed}/{category.count} passed ({pr}%)</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <div className="p-6 border-b border-[#1e1e2e]">
-              <h3 className="text-base font-semibold text-white">Package Coverage</h3>
-            </div>
-            <CardContent className="pt-4">
-              {packages.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-8">No package data</p>
-              ) : (
-                <div className="space-y-3">
-                  {packages.map((pkg) => (
-                    <div key={pkg.name} className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium text-white capitalize">{pkg.name}</p>
-                        <p className="text-xs text-gray-400">{pkg.tests} tests • {pkg.lastRun}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-20 bg-[#0a0a0f] rounded-full h-1.5">
-                            <div
-                              className={cn("h-1.5 rounded-full transition-all", pkg.coverage >= 80 ? "bg-green-500" : pkg.coverage >= 60 ? "bg-yellow-500" : "bg-red-500")}
-                              style={{ width: `${pkg.coverage}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-semibold text-white w-10 text-right">{pkg.coverage}%</span>
-                        </div>
-                        {pkg.status === "success" && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                        {pkg.status === "warning" && <AlertTriangle className="w-4 h-4 text-yellow-500" />}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Flaky Tests */}
-        <div className="mb-8">
-          <Card>
-            <div className="p-6 border-b border-[#1e1e2e]">
-              <h3 className="text-base font-semibold text-white">Flaky Tests</h3>
-            </div>
-            <CardContent className="pt-4">
-              {flakyTests.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">No flaky tests detected</p>
-              ) : (
-                <div className="space-y-4">
-                  {flakyTests.map((test, idx) => (
-                    <div key={idx} className="p-4 border border-yellow-500/20 bg-yellow-500/5 rounded-lg">
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-white">{test.name}</h4>
-                        <Badge variant="warning">{test.flakiness}% flaky</Badge>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-2">{test.file}</p>
-                      <p className="text-sm text-gray-400 mb-3">
-                        Last Passed: {test.lastPassed} • Last Failed: {test.lastFailed}
+        {/* Failing Files */}
+        {failedFiles.length > 0 && (
+          <Card className="mb-8 border border-red-600/30 bg-red-600/5">
+            <CardHeader>
+              <CardTitle>Failing Test Files ({failedFiles.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {failedFiles.map((file, idx) => (
+                  <div key={idx} className="p-3 bg-red-600/10 rounded-lg border border-red-500/20 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-white font-mono">
+                        {file.file.replace(process.env.NEXT_PUBLIC_APP_URL ?? '', '')}
                       </p>
-                      <div className="bg-white/5 rounded p-2">
-                        <p className="text-xs font-medium mb-1 text-gray-400">Suggestion:</p>
-                        <p className="text-xs text-gray-400">{test.suggestion}</p>
-                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {file.passed} passed / {file.failed} failed · {file.duration}s
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <Badge variant="danger">{file.failed} failed</Badge>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
-        </div>
+        )}
 
-        {/* Recent Test Runs */}
-        <div className="mb-8">
-          <Card>
-            <div className="p-6 border-b border-[#1e1e2e] flex items-center justify-between">
-              <h3 className="text-base font-semibold text-white">Recent Test Runs</h3>
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
-                Refresh
-              </button>
-            </div>
-            <CardContent className="pt-0">
-              {recentRuns.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-8">No recent runs</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#1e1e2e]">
-                        <th className="text-left py-3 px-4 font-medium text-gray-400">Timestamp</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-400">Total</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-400">Passed</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-400">Failed</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-400">Coverage</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-400">Duration</th>
+        {/* All Test Files */}
+        <Card>
+          <CardHeader>
+            <CardTitle>All Test Files ({testResults.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {testResults.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">No test files in results.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-wl-border-default">
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">File</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">Tests</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">Passed</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">Failed</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">Duration</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testResults.map((file, idx) => (
+                      <tr key={idx} className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
+                        <td className="py-3 px-4 text-white font-mono text-xs max-w-sm truncate">
+                          {file.file.split('/').slice(-2).join('/')}
+                        </td>
+                        <td className="py-3 px-4 text-gray-400">{file.tests}</td>
+                        <td className="py-3 px-4 text-green-600 font-medium">{file.passed}</td>
+                        <td className="py-3 px-4">
+                          <span className={cn("font-medium", file.failed > 0 ? "text-red-600" : "text-green-600")}>
+                            {file.failed}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-400">{file.duration}s</td>
+                        <td className="py-3 px-4">
+                          <Badge variant={file.failed === 0 ? "success" : "danger"}>
+                            {file.failed === 0 ? "pass" : "fail"}
+                          </Badge>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {recentRuns.map((run) => (
-                        <tr key={run.id} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
-                          <td className="py-3 px-4 text-white">{run.timestamp}</td>
-                          <td className="py-3 px-4 text-gray-400">{run.totalTests}</td>
-                          <td className="py-3 px-4 text-green-600 font-medium">{run.passed}</td>
-                          <td className="py-3 px-4">
-                            <span className={cn("font-medium", run.failed > 0 ? "text-red-600" : "text-green-600")}>{run.failed}</span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <Badge variant={run.coverage >= 80 ? "success" : run.coverage >= 60 ? "warning" : "danger"}>
-                              {run.coverage}%
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4 text-gray-400">{run.duration}s</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {stats.failed === 0 && stats.total > 0 && (
+          <Card className="mt-6 border border-emerald-600/30 bg-emerald-600/5">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <p className="text-sm font-semibold text-emerald-500">
+                  All {stats.total} tests passing
+                </p>
+              </div>
             </CardContent>
           </Card>
-        </div>
+        )}
       </div>
     </div>
   );

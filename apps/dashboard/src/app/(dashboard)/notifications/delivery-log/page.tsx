@@ -106,7 +106,7 @@ export default function DeliveryLogPage() {
   }, [entries]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Delivery Log"
         subtitle="Track notification delivery status and history"
@@ -123,7 +123,7 @@ export default function DeliveryLogPage() {
         <div className="space-y-6">
           {/* Statistics Cards */}
           <div className="grid grid-cols-4 gap-4">
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-white">
@@ -136,7 +136,7 @@ export default function DeliveryLogPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-emerald-500">
@@ -149,7 +149,7 @@ export default function DeliveryLogPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-500">
@@ -162,7 +162,7 @@ export default function DeliveryLogPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-amber-500">
@@ -177,7 +177,7 @@ export default function DeliveryLogPage() {
           </div>
 
           {/* Filters and Search */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {/* Search */}
@@ -189,7 +189,7 @@ export default function DeliveryLogPage() {
                     placeholder="Search by message, recipient..."
                     value={debouncedQuery}
                     onChange={(e) => setDebouncedQuery(e.target.value)}
-                    className="bg-[#1a1a2e] border-[#1e1e2e] text-white placeholder-gray-500"
+                    className="bg-wl-bg-elevated border-wl-border-default text-white placeholder-gray-500"
                   />
                 </div>
 
@@ -209,7 +209,7 @@ export default function DeliveryLogPage() {
                       }
                       className={cn(
                         "w-full px-4 py-2 rounded-md",
-                        "bg-[#1a1a2e] border border-[#1e1e2e]",
+                        "bg-wl-bg-elevated border border-wl-border-default",
                         "text-white",
                         "focus:outline-none focus:border-blue-500",
                         "transition-colors duration-fast"
@@ -238,7 +238,7 @@ export default function DeliveryLogPage() {
                       }
                       className={cn(
                         "w-full px-4 py-2 rounded-md",
-                        "bg-[#1a1a2e] border border-[#1e1e2e]",
+                        "bg-wl-bg-elevated border border-wl-border-default",
                         "text-white",
                         "focus:outline-none focus:border-blue-500",
                         "transition-colors duration-fast"
@@ -282,7 +282,7 @@ export default function DeliveryLogPage() {
           </Card>
 
           {/* Delivery Log Table */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="p-0">
               {entries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
@@ -295,7 +295,7 @@ export default function DeliveryLogPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+                      <tr className="border-b border-wl-border-default bg-wl-bg-root">
                         <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
                           Message
                         </th>
@@ -322,8 +322,8 @@ export default function DeliveryLogPage() {
                           <tr
                             key={entry.id}
                             className={cn(
-                              "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors cursor-pointer",
-                              isExpanded && "bg-[#12121a]"
+                              "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer",
+                              isExpanded && "bg-wl-bg-surface"
                             )}
                           >
                             <td className="py-4 px-6 text-white font-medium">
@@ -374,7 +374,7 @@ export default function DeliveryLogPage() {
               return (
                 <div
                   key={`${entry.id}-details`}
-                  className="bg-[#12121a] border-t border-[#1e1e2e] px-6 py-4"
+                  className="bg-wl-bg-surface border-t border-wl-border-default px-6 py-4"
                 >
                   <div className="grid grid-cols-2 gap-6 text-sm">
                     <div>

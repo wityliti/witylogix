@@ -282,13 +282,20 @@ export class HERESDKClient extends RoutingAdapter {
         limit: String(limit),
       });
 
-      const response = await fetch(
-        `${this.baseUrlGeocoding}/v1/autosuggest?${params.toString()}`,
-        { timeout: this.config.timeout },
-      );
+      const controller1 = new AbortController();
+      const tid1 = setTimeout(() => controller1.abort(), this.config.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(
+          `${this.baseUrlGeocoding}/v1/autosuggest?${params.toString()}`,
+          { signal: controller1.signal },
+        );
+      } finally {
+        clearTimeout(tid1);
+      }
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { message?: string };
         throw new Error(
           `HERE autosuggest error: ${error.message || response.statusText}`,
         );
@@ -324,13 +331,20 @@ export class HERESDKClient extends RoutingAdapter {
         limit: '5',
       });
 
-      const response = await fetch(
-        `${this.baseUrlGeocoding}/v1/geocode?${params.toString()}`,
-        { timeout: this.config.timeout },
-      );
+      const controller2 = new AbortController();
+      const tid2 = setTimeout(() => controller2.abort(), this.config.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(
+          `${this.baseUrlGeocoding}/v1/geocode?${params.toString()}`,
+          { signal: controller2.signal },
+        );
+      } finally {
+        clearTimeout(tid2);
+      }
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { message?: string };
         throw new Error(`HERE geocode error: ${error.message || response.statusText}`);
       }
 
@@ -367,13 +381,20 @@ export class HERESDKClient extends RoutingAdapter {
         apiKey: this.apiKey,
       });
 
-      const response = await fetch(
-        `${this.baseUrlGeocoding}/v1/revgeocode?${params.toString()}`,
-        { timeout: this.config.timeout },
-      );
+      const controller3 = new AbortController();
+      const tid3 = setTimeout(() => controller3.abort(), this.config.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(
+          `${this.baseUrlGeocoding}/v1/revgeocode?${params.toString()}`,
+          { signal: controller3.signal },
+        );
+      } finally {
+        clearTimeout(tid3);
+      }
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { message?: string };
         throw new Error(`HERE reverse geocode error: ${error.message || response.statusText}`);
       }
 
@@ -437,17 +458,22 @@ export class HERESDKClient extends RoutingAdapter {
       }
 
       const url = `${this.baseUrlRouting}/routes?${params.toString()}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `waypoint0=${origin.lat},${origin.lng}&waypoint${request.waypoints?.length || 1}=${destination.lat},${destination.lng}`,
-        timeout: this.config.timeout,
-      });
+      const controller4 = new AbortController();
+      const tid4 = setTimeout(() => controller4.abort(), this.config.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `waypoint0=${origin.lat},${origin.lng}&waypoint${request.waypoints?.length || 1}=${destination.lat},${destination.lng}`,
+          signal: controller4.signal,
+        });
+      } finally {
+        clearTimeout(tid4);
+      }
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { message?: string };
         throw new Error(`HERE routing error: ${error.message || response.statusText}`);
       }
 
@@ -543,12 +569,19 @@ export class HERESDKClient extends RoutingAdapter {
       }
 
       const url = `${this.baseUrlRouting}/routes?${params.toString()}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `waypoint0=${origin.lat},${origin.lng}&waypoint1=${destination.lat},${destination.lng}`,
-        timeout: this.config.timeout,
-      });
+      const controller5 = new AbortController();
+      const tid5 = setTimeout(() => controller5.abort(), this.config.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `waypoint0=${origin.lat},${origin.lng}&waypoint1=${destination.lat},${destination.lng}`,
+          signal: controller5.signal,
+        });
+      } finally {
+        clearTimeout(tid5);
+      }
 
       if (!response.ok) {
         throw new Error(`HERE truck routing error: ${response.statusText}`);
@@ -610,12 +643,19 @@ export class HERESDKClient extends RoutingAdapter {
       }
 
       const url = `${this.baseUrlRouting}/routes?${params.toString()}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `waypoint0=${origin.lat},${origin.lng}&waypoint1=${destination.lat},${destination.lng}`,
-        timeout: this.config.timeout,
-      });
+      const controller6 = new AbortController();
+      const tid6 = setTimeout(() => controller6.abort(), this.config.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `waypoint0=${origin.lat},${origin.lng}&waypoint1=${destination.lat},${destination.lng}`,
+          signal: controller6.signal,
+        });
+      } finally {
+        clearTimeout(tid6);
+      }
 
       if (!response.ok) {
         throw new Error(`HERE EV routing error: ${response.statusText}`);
@@ -673,12 +713,19 @@ export class HERESDKClient extends RoutingAdapter {
       ];
 
       const url = `${this.baseUrlRouting}/matrix?${params.toString()}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: waypointStrings.map((w, i) => `waypoint${i}=${w}`).join('&'),
-        timeout: this.config.timeout,
-      });
+      const controller7 = new AbortController();
+      const tid7 = setTimeout(() => controller7.abort(), this.config.timeout ?? 30000);
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: waypointStrings.map((w, i) => `waypoint${i}=${w}`).join('&'),
+          signal: controller7.signal,
+        });
+      } finally {
+        clearTimeout(tid7);
+      }
 
       if (!response.ok) {
         throw new Error(`HERE matrix error: ${response.statusText}`);
@@ -729,7 +776,7 @@ export class HERESDKClient extends RoutingAdapter {
   /**
    * Not implemented (HERE doesn't have native optimization)
    */
-  async optimize(): Promise<never> {
+  async optimize(_request: import('./types.js').OptimizationRequest): Promise<import('./types.js').OptimizationResponse> {
     throw new Error('Optimization not implemented in HERE SDK client');
   }
 

@@ -88,13 +88,16 @@ export default function NotificationsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    setHasChanges(false);
+    try {
+      await updateSettings({ preferences, quietHours });
+      setHasChanges(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-primary">
       <Header
         title="Notification Preferences"
         subtitle="Configure how and when you receive notifications"
@@ -103,7 +106,7 @@ export default function NotificationsPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Notification Matrix */}
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
+          <Card className="border border-wl-border-default bg-wl-bg-surface">
             <CardHeader>
               <CardTitle>Notification Channels & Preferences</CardTitle>
               <CardDescription>
@@ -114,7 +117,7 @@ export default function NotificationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#1e1e2e]">
+                    <tr className="border-b border-wl-border-default">
                       <th className="text-left py-3 px-3 font-semibold text-white">
                         Event Type
                       </th>
@@ -135,7 +138,7 @@ export default function NotificationsPage() {
                     {EVENT_CATEGORIES.map((category) => (
                       <tr
                         key={category}
-                        className="border-b border-[#1e1e2e] last:border-b-0"
+                        className="border-b border-wl-border-default last:border-b-0"
                       >
                         <td className="py-4 px-3 font-medium text-white">
                           {category}
@@ -150,7 +153,7 @@ export default function NotificationsPage() {
                                   type="checkbox"
                                   checked={isChecked}
                                   onChange={() => handlePreferenceChange(channel.id, categoryKey)}
-                                  className="w-4 h-4 rounded border-[#1e1e2e] text-blue-500 cursor-pointer"
+                                  className="w-4 h-4 rounded border-wl-border-default text-blue-500 cursor-pointer"
                                 />
                               </label>
                             </td>
@@ -165,7 +168,7 @@ export default function NotificationsPage() {
           </Card>
 
           {/* Quiet Hours */}
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
+          <Card className="border border-wl-border-default bg-wl-bg-surface">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -225,7 +228,7 @@ export default function NotificationsPage() {
           </Card>
 
           {/* Summary */}
-          <Card className="bg-[#1a1a2e] border border-[#1e1e2e]">
+          <Card className="bg-wl-bg-overlay border border-wl-border-default">
             <CardContent className="pt-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import {
   Code,
   Eye,
@@ -23,6 +24,11 @@ import {
   TypeIcon,
   Layout,
 } from "lucide-react";
+
+interface ShopData {
+  id: string;
+  settings: Record<string, unknown> | null;
+}
 
 export default function WidgetConfigPage() {
   const [cartSelectorEnabled, setCartSelectorEnabled] = useState(true);
@@ -40,7 +46,27 @@ export default function WidgetConfigPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const { data: shopResp, loading: shopLoading } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
   const saveMutation = useApiMutation<{ settings: Record<string, unknown> }>('PATCH', '/api/v4/shops/me');
+
+  useEffect(() => {
+    const cfg = (shopResp?.data?.settings as any)?.widgetConfig;
+    if (!cfg) return;
+    if (cfg.cartSelectorEnabled !== undefined) setCartSelectorEnabled(cfg.cartSelectorEnabled);
+    if (cfg.shippingCalcEnabled !== undefined) setShippingCalcEnabled(cfg.shippingCalcEnabled);
+    if (cfg.position) setWidgetPosition(cfg.position);
+    if (cfg.fontFamily) setFontFamily(cfg.fontFamily);
+    if (cfg.language) setLanguage(cfg.language);
+    if (cfg.width) setWidgetWidth(cfg.width);
+    if (cfg.height) setWidgetHeight(cfg.height);
+    if (cfg.primaryColor) setPrimaryColor(cfg.primaryColor);
+    if (cfg.backgroundColor) setBackgroundColor(cfg.backgroundColor);
+    if (cfg.textColor) setTextColor(cfg.textColor);
+    if (cfg.borderRadius) setBorderRadius(cfg.borderRadius);
+    if (cfg.shadowEnabled !== undefined) setShadowEnabled(cfg.shadowEnabled);
+  }, [shopResp]);
+
+  if (shopLoading) return <TableSkeleton rows={6} columns={2} />;
 
   const handleSave = async () => {
     try {
@@ -90,7 +116,7 @@ export default function WidgetConfigPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
+    <div className="min-h-screen bg-wl-bg-root p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -106,14 +132,14 @@ export default function WidgetConfigPage() {
           {/* Left Column - Settings */}
           <div className="flex flex-col gap-6">
             {/* Widget Features */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Widget Features</CardTitle>
                 <CardDescription className="text-gray-400">Enable widget features</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Cart Selector Toggle */}
-                <div className="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
+                <div className="flex items-center justify-between p-3 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-3">
                     <Settings size={18} className="text-blue-400" />
                     <div>
@@ -125,13 +151,13 @@ export default function WidgetConfigPage() {
                     onClick={() => setCartSelectorEnabled(!cartSelectorEnabled)}
                     className={cn(
                       'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      cartSelectorEnabled ? 'bg-blue-500' : 'bg-[#1a1a2e]'
+                      cartSelectorEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
                     )}
                   />
                 </div>
 
                 {/* Shipping Calculator Toggle */}
-                <div className="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
+                <div className="flex items-center justify-between p-3 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="flex items-center gap-3">
                     <Globe size={18} className="text-blue-400" />
                     <div>
@@ -143,7 +169,7 @@ export default function WidgetConfigPage() {
                     onClick={() => setShippingCalcEnabled(!shippingCalcEnabled)}
                     className={cn(
                       'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      shippingCalcEnabled ? 'bg-blue-500' : 'bg-[#1a1a2e]'
+                      shippingCalcEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
                     )}
                   />
                 </div>
@@ -151,7 +177,7 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Widget Appearance */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Appearance</CardTitle>
                 <CardDescription className="text-gray-400">Customize widget look and feel</CardDescription>
@@ -165,7 +191,7 @@ export default function WidgetConfigPage() {
                   <select
                     value={widgetPosition}
                     onChange={(e) => setWidgetPosition(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer hover:border-[#2a2a3e]"
+                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs cursor-pointer hover:border-wl-border-strong"
                   >
                     <option value="bottom-right">Bottom Right</option>
                     <option value="bottom-left">Bottom Left</option>
@@ -186,7 +212,7 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetWidth(e.target.value)}
                       min="250"
                       max="600"
-                      className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs"
+                      className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs"
                     />
                   </div>
                   <div>
@@ -199,7 +225,7 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetHeight(e.target.value)}
                       min="400"
                       max="900"
-                      className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs"
+                      className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs"
                     />
                   </div>
                 </div>
@@ -220,13 +246,13 @@ export default function WidgetConfigPage() {
                 </div>
 
                 {/* Shadow Toggle */}
-                <div className="flex items-center justify-between p-2.5 bg-[#0a0a0f] rounded">
+                <div className="flex items-center justify-between p-2.5 bg-wl-bg-root rounded">
                   <span className="text-white text-xs">Drop Shadow</span>
                   <button
                     onClick={() => setShadowEnabled(!shadowEnabled)}
                     className={cn(
                       'w-11 h-6 rounded-full border-none cursor-pointer transition-colors',
-                      shadowEnabled ? 'bg-blue-500' : 'bg-[#1a1a2e]'
+                      shadowEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
                     )}
                   />
                 </div>
@@ -239,7 +265,7 @@ export default function WidgetConfigPage() {
                   <select
                     value={fontFamily}
                     onChange={(e) => setFontFamily(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer"
+                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs cursor-pointer"
                   >
                     <option value="system">System Default</option>
                     <option value="inter">Inter</option>
@@ -256,7 +282,7 @@ export default function WidgetConfigPage() {
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer"
+                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs cursor-pointer"
                   >
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
@@ -269,7 +295,7 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Color Scheme */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Palette size={18} />
@@ -286,13 +312,13 @@ export default function WidgetConfigPage() {
                       type="color"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
+                      className="w-12 h-10 rounded border border-wl-border-default cursor-pointer"
                     />
                     <input
                       type="text"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -306,13 +332,13 @@ export default function WidgetConfigPage() {
                       type="color"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
+                      className="w-12 h-10 rounded border border-wl-border-default cursor-pointer"
                     />
                     <input
                       type="text"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -326,13 +352,13 @@ export default function WidgetConfigPage() {
                       type="color"
                       value={textColor}
                       onChange={(e) => setTextColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
+                      className="w-12 h-10 rounded border border-wl-border-default cursor-pointer"
                     />
                     <input
                       type="text"
                       value={textColor}
                       onChange={(e) => setTextColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -343,7 +369,7 @@ export default function WidgetConfigPage() {
           {/* Right Column - Preview & Code */}
           <div className="flex flex-col gap-6">
             {/* Widget Preview */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Eye size={18} />
@@ -351,7 +377,7 @@ export default function WidgetConfigPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-[#0a0a0f] rounded-lg border border-[#1e1e2e] p-4 min-h-96 flex items-center justify-center">
+                <div className="bg-wl-bg-root rounded-lg border border-wl-border-default p-4 min-h-96 flex items-center justify-center">
                   <div
                     className="flex flex-col gap-3 overflow-hidden rounded"
                     style={{
@@ -395,7 +421,7 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Embed Code */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Code size={18} />
@@ -404,7 +430,7 @@ export default function WidgetConfigPage() {
                 <CardDescription className="text-gray-400">Copy and paste to your website</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <div className="bg-[#0a0a0f] rounded border border-[#1e1e2e] p-3 max-h-64 overflow-y-auto">
+                <div className="bg-wl-bg-root rounded border border-wl-border-default p-3 max-h-64 overflow-y-auto">
                   <pre className="text-blue-400 text-xs font-mono m-0 leading-relaxed whitespace-pre-wrap break-words">
                     {embedCode}
                   </pre>
@@ -421,7 +447,7 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Documentation */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Installation</CardTitle>
               </CardHeader>

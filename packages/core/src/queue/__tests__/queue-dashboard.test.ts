@@ -1,10 +1,28 @@
+// @ts-nocheck
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Queue } from 'bullmq';
-import { Redis } from 'ioredis';
 import { QueueDashboard } from '../queue-dashboard';
 
+// Mock bullmq and ioredis so no real connections are attempted
+vi.mock('bullmq', () => ({
+  Queue: vi.fn(),
+  Worker: vi.fn(),
+  QueueEvents: vi.fn(),
+}));
+
+vi.mock('ioredis', () => {
+  const RedisMock = vi.fn().mockImplementation(() => ({
+    get: vi.fn().mockResolvedValue(null),
+    disconnect: vi.fn().mockResolvedValue(undefined),
+  }));
+  return { Redis: RedisMock, default: RedisMock };
+});
+
+// Import after mocks are in place
+import { Redis } from 'ioredis';
+
 describe('QueueDashboard', () => {
-  let redis: Redis;
+  let redis: any;
   let dashboard: QueueDashboard;
   let mockQueue: any;
 
@@ -26,6 +44,8 @@ describe('QueueDashboard', () => {
       getJob: vi.fn(),
       pause: vi.fn().mockResolvedValue(undefined),
       resume: vi.fn().mockResolvedValue(undefined),
+      getCompleted: vi.fn().mockResolvedValue([]),
+      getFailed: vi.fn().mockResolvedValue([]),
     };
 
     dashboard.registerQueue('test-queue', mockQueue as any);

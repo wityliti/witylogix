@@ -5,8 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useOrders, useWaves, useBatches } from '@/hooks/use-supply-chain';
+import { useOrders, useFulfillment } from '@/hooks/use-supply-chain';
 import { useApiList } from '@/hooks/use-api';
+import { Header } from '@/components/layout/header';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 interface FilterOptions {
   status: string;
@@ -27,15 +30,6 @@ interface RawReturn {
   };
 }
 
-function mapReturnStatus(status: string): 'pending-approval' | 'approved' | 'restocked' {
-  switch (status.toUpperCase()) {
-    case 'APPROVED':
-    case 'RECEIVED':
-    case 'INSPECTED': return 'approved';
-    case 'REFUNDED': return 'restocked';
-    default: return 'pending-approval';
-  }
-}
 
 const PRIORITY_OPTIONS = ['All', 'Standard', 'Expedited', 'Backorder'];
 const WAREHOUSE_OPTIONS = ['All', 'WH-Central', 'WH-North', 'WH-South', 'WH-East'];
@@ -43,10 +37,10 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 
 export default function OrdersPage() {
   const orders = useOrders();
-  const { items: waves, loading: wavesLoading } = useWaves();
-  const { items: batches, loading: batchesLoading } = useBatches();
-  const { items: rawReturns, loading: returnsLoading } = useApiList<RawReturn>('/api/v4/returns');
-
+  const fulfillment = useFulfillment();
+  const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: returnQueue } = useApiList<ReturnItem>('/api/v4/returns');
   const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
     priority: 'all',
@@ -77,8 +71,32 @@ export default function OrdersPage() {
 
   const stats = getPipelineStats();
 
+  if (orders.loading || fulfillment.loading) {
+    return (
+      <>
+        <Header title="Supply Chain Orders" subtitle="Order pipeline and fulfillment" />
+        <div className="p-6">
+          <TableSkeleton rows={8} columns={6} />
+        </div>
+      </>
+    );
+  }
+
+  if (orders.error) {
+    return (
+      <>
+        <Header title="Supply Chain Orders" subtitle="Order pipeline and fulfillment" />
+        <div className="p-6">
+          <ErrorState message="Failed to load orders" onRetry={() => window.location.reload()} />
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <>
+      <Header title="Supply Chain Orders" subtitle={`${orders.orders.length} orders in pipeline`} />
+    <div className="space-y-8 p-6">
       {/* Order Pipeline Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
@@ -99,7 +117,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-[#1e1e2e]">
+      <div className="border-b border-wl-border-default">
         <div className="flex gap-6">
           {(['orders', 'waves', 'batches', 'returns'] as const).map((tab) => (
             <button
@@ -128,13 +146,17 @@ export default function OrdersPage() {
                   type="text"
                   placeholder="Search order # or customer..."
                   value={filters.searchTerm}
-                  onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, searchTerm: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
                 />
                 <select
                   value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, status: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {STATUS_OPTIONS.map((s) => (
                     <option key={s} value={s.toLowerCase()}>{s}</option>
@@ -142,8 +164,10 @@ export default function OrdersPage() {
                 </select>
                 <select
                   value={filters.priority}
-                  onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, priority: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {PRIORITY_OPTIONS.map((p) => (
                     <option key={p} value={p.toLowerCase()}>{p}</option>
@@ -151,8 +175,10 @@ export default function OrdersPage() {
                 </select>
                 <select
                   value={filters.warehouse}
-                  onChange={(e) => setFilters({ ...filters, warehouse: e.target.value })}
-                  className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) =>
+                    setFilters({ ...filters, warehouse: e.target.value })
+                  }
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                 >
                   {WAREHOUSE_OPTIONS.map((w) => (
                     <option key={w} value={w.toLowerCase()}>{w}</option>
@@ -247,26 +273,20 @@ export default function OrdersPage() {
             <Button variant="primary">Create Wave</Button>
           </div>
 
-          {wavesLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-28 rounded-lg bg-white/[0.03] animate-pulse" />
-              ))}
-            </div>
-          ) : waves.length === 0 ? (
-            <Card><CardContent className="pt-10 pb-10 text-center text-gray-400">No wave plans in the last 14 days.</CardContent></Card>
-          ) : (
-            waves.map((wave) => (
-              <Card key={wave.waveId}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-base">{wave.waveId}</CardTitle>
-                      <p className="text-xs text-gray-400 mt-1">{new Date(wave.createdDate).toLocaleString()}</p>
-                    </div>
-                    <Badge variant={wave.status === 'completed' ? 'success' : wave.status === 'picking' ? 'info' : 'warning'}>
-                      {wave.status}
-                    </Badge>
+          {wavePlans.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No wave plans found. Create a wave to start batch fulfillment.</div>
+          ) : null}
+          {wavePlans.map((wave) => (
+            <Card key={wave.waveId}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-base">
+                      {wave.waveId}
+                    </CardTitle>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(wave.createdDate).toLocaleString()}
+                    </p>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -299,26 +319,25 @@ export default function OrdersPage() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Batch Picking Tasks</h3>
 
-          {batchesLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-28 rounded-lg bg-white/[0.03] animate-pulse" />
-              ))}
-            </div>
-          ) : batches.length === 0 ? (
-            <Card><CardContent className="pt-10 pb-10 text-center text-gray-400">No active batch picking tasks.</CardContent></Card>
-          ) : (
-            batches.map((batch) => (
-              <Card key={batch.batchId}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">{batch.batchId}</h4>
-                      <p className="text-xs text-gray-400 mt-1">{batch.location}</p>
-                    </div>
-                    <Badge variant={batch.status === 'completed' ? 'success' : batch.status === 'in-progress' ? 'info' : 'warning'}>
-                      {batch.status}
-                    </Badge>
+          {batchPicking.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No batch picking tasks found.</div>
+          ) : null}
+          {batchPicking.map((batch) => (
+            <Card key={batch.batchId}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">
+                      {batch.batchId}
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {batch.location}
+                    </p>
+                    {batch.assignedTo && (
+                      <p className="text-xs text-gray-300 mt-1">
+                        Assigned to: {batch.assignedTo}
+                      </p>
+                    )}
                   </div>
                   <div className="mb-3">
                     <div className="flex items-center justify-between mb-2">
@@ -332,13 +351,22 @@ export default function OrdersPage() {
                       />
                     </div>
                   </div>
-                  {batch.status !== 'completed' && (
-                    <Button variant="secondary" size="sm" className="w-full">Update Progress</Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  <div className="w-full hover:bg-wl-bg-elevated rounded-full h-2">
+                    <div
+                      className="h-full rounded-full bg-blue-500 transition-all"
+                      style={{ width: `${batch.completionRate}%` }}
+                    />
+                  </div>
+                </div>
+
+                {batch.status !== 'completed' && (
+                  <Button variant="secondary" size="sm" className="w-full">
+                    Update Progress
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
@@ -347,36 +375,19 @@ export default function OrdersPage() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Returns Queue</h3>
 
-          {returnsLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-24 rounded-lg bg-white/[0.03] animate-pulse" />
-              ))}
-            </div>
-          ) : rawReturns.length === 0 ? (
-            <Card><CardContent className="pt-10 pb-10 text-center text-gray-400">No pending returns in the queue.</CardContent></Card>
-          ) : (
-            rawReturns.map((r) => {
-              const status = mapReturnStatus(r.status);
-              return (
-                <Card key={r.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="text-sm font-semibold text-white">
-                          {r.order?.externalOrderNumber ?? r.id}
-                        </h4>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {r.order?.customerName ?? r.order?.customerEmail ?? 'Unknown'}
-                        </p>
-                        <p className="text-xs text-gray-300 mt-1">Reason: {r.reason}</p>
-                      </div>
-                      <Badge variant={status === 'restocked' ? 'success' : status === 'approved' ? 'info' : 'warning'}>
-                        {status.replace(/-/g, ' ')}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-400 mb-3">
-                      Submitted: {new Date(r.createdAt).toLocaleString()}
+          {returnQueue.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">No returns in queue.</div>
+          ) : null}
+          {returnQueue.map((returnItem) => (
+            <Card key={returnItem.id}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">
+                      {returnItem.orderNumber}
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {returnItem.customerName}
                     </p>
                     {status === 'pending-approval' && (
                       <div className="flex gap-2">
@@ -392,5 +403,6 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

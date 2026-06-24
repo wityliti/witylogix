@@ -1,56 +1,31 @@
 'use client';
-
-import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatCurrency } from '@/lib/utils';
-import { MapPin, LayoutGrid, Map as MapIcon, Clock, ChevronRight } from 'lucide-react';
+import { WLMap } from '@/components/map/wl-map';
+import { ZoneLayer } from '@/components/map/zone-layer';
+import { HeatmapLayer } from '@/components/map/heatmap-layer';
+import { PinLayer } from '@/components/map/pin-layer';
+import { HubLayer } from '@/components/map/hub-layer';
+import { DrawLayer } from '@/components/map/draw-layer';
+import { ModeToggle, type ZoneMode } from '@/components/zones/mode-toggle';
+import { OverlayControls, type OverlayState } from '@/components/zones/overlay-controls';
+import { ZoneSearch } from '@/components/zones/zone-search';
+import { KpiStrip } from '@/components/zones/kpi-strip';
+import { ZoneInspector } from '@/components/zones/zone-inspector';
+import { track } from '@/lib/track';
+import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
+import { useZoneOverlays } from '@/hooks/use-zone-overlays';
 
-// Lazy-load map to avoid SSR issues
-const WLMap = dynamic(
-  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
-  { ssr: false },
-);
-const ZonePolygonLayer = dynamic(
-  () => import('@/components/map/zone-polygon-layer').then((m) => ({ default: m.ZonePolygonLayer })),
-  { ssr: false },
-);
-
-/* ═══════════════════════════════════════════════════════════
-   ZONES PAGE — Delivery zone management, production-ready
-   Data: /api/v4/zones  (real Prisma / PostGIS backend)
-   ═══════════════════════════════════════════════════════════ */
-
-interface TimeSlot {
-  id: string;
-  name: string;
-  startTime: string;
-  endTime: string;
-}
-
-interface Zone {
-  id: string;
-  name: string;
-  priority: number;
-  baseRate: string | number;
-  perKmRate: string | number;
-  minOrder: string | number;
-  freeAbove?: string | number | null;
-  isActive: boolean;
-  boundary?: { latitude: number; longitude: number }[] | null;
-  timeSlots: TimeSlot[];
-  _count?: { timeSlots: number };
-}
-
-const ZONE_PALETTE = [
-  '#818cf8', '#34d399', '#fbbf24', '#f472b6',
-  '#60a5fa', '#a78bfa', '#2dd4bf', '#fb923c',
-];
+const DEFAULT_OVERLAYS: OverlayState = {
+  heatmap: true,
+  sla: true,
+  openOrders: true,
+  hubs: true,
+  window: '24h',
+};
+const DEFAULT_CENTER: [number, number] = [77.12, 28.65]; // per-org override to come later
 
 function ZoneCardSkeleton() {
   return (
@@ -90,234 +65,142 @@ function EmptyZones() {
 }
 
 export default function ZonesPage() {
-  const [view, setView] = useState<'grid' | 'map'>('grid');
-  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
-  const [mapId, setMapId] = useState<string | null>(null);
+  const router = useRouter();
+  const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
+  const { data: geojson, refetch: refetchZones } = useZonesGeoJson();
+  const [overlays, setOverlays] = useState<OverlayState>(DEFAULT_OVERLAYS);
+  const { data: overlaysData } = useZoneOverlays(overlays.window);
+  const [mode, setMode] = useState<ZoneMode>('monitor');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [drawing, setDrawing] = useState(false);
 
-  const { items: zones, loading, error, refetch } = useApiList<Zone>('/api/v4/zones', {
-    limit: 100,
-  });
+  const zones = useMemo(
+    () =>
+      geojson?.features.map((f) => ({
+        id: String(f.properties?.id),
+        name: String(f.properties?.name),
+      })) ?? [],
+    [geojson],
+  );
+  const overlay = overlaysData?.zones.find((z) => z.id === selectedId);
+  const selectedZone = useMemo(() => {
+    const f = geojson?.features.find((g) => g.properties?.id === selectedId);
+    if (!f) return null;
+    const p = f.properties as Record<string, unknown>;
+    return {
+      id: String(p.id),
+      name: String(p.name),
+      baseRate: Number(p.baseRate ?? 0),
+      perKmRate: Number(p.perKmRate ?? 0),
+      minOrder: 0,
+      freeAbove: null as number | null,
+      isActive: Boolean(p.isActive),
+      priority: Number(p.priority ?? 0),
+    };
+  }, [geojson, selectedId]);
 
-  const activeCount = useMemo(() => zones.filter((z) => z.isActive).length, [zones]);
+  const stats = {
+    zones: overlaysData?.zones.length ?? 0,
+    driversOnline: overlaysData?.zones.reduce((s, z) => s + z.drivers, 0) ?? 0,
+    openOrders: overlaysData?.zones.reduce((s, z) => s + z.openOrders, 0) ?? 0,
+    slipping: overlaysData?.zones.filter((z) => z.health === 'slipping').length ?? 0,
+  };
 
-  if (error) {
-    return (
-      <>
-        <Header title="Delivery Zones" subtitle="Zone management" />
-        <div className="p-6 bg-[#0a0a0f] min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-400 mb-4">{error.message || 'Failed to load zones'}</p>
-            <Button variant="secondary" onClick={refetch}>Retry</Button>
-          </div>
-        </div>
-      </>
-    );
-  }
+  useEffect(() => {
+    track('zones.viewed', {
+      mode,
+      overlays: (Object.keys(overlays) as (keyof OverlayState)[]).filter(
+        (k) => overlays[k] === true,
+      ),
+    });
+    // snapshot initial values — fire once per mount only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
       <Header
         title="Delivery Zones"
-        subtitle={
-          loading
-            ? 'Loading zones...'
-            : `${zones.length} zone${zones.length !== 1 ? 's' : ''} · ${activeCount} active`
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg border border-[#1e1e2e] overflow-hidden">
-              <button
-                onClick={() => setView('grid')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                  view === 'grid'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:text-gray-200',
-                )}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" /> Grid
-              </button>
-              <button
-                onClick={() => setView('map')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                  view === 'map'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:text-gray-200',
-                )}
-              >
-                <MapIcon className="w-3.5 h-3.5" /> Map
-              </button>
-            </div>
-            <Button variant="primary" size="md">+ Create Zone</Button>
-          </div>
-        }
+        subtitle={`${zones.length} zones · ${mode === 'monitor' ? 'Monitor' : 'Configure'}`}
       />
+      <div
+        className="relative h-[calc(100vh-64px)] w-full"
+        style={{ background: 'var(--wl-bg-root)' }}
+      >
+        <WLMap maptilerKey={maptilerKey} center={DEFAULT_CENTER} zoom={11}>
+          {geojson && (
+            <ZoneLayer zones={geojson} selectedId={selectedId} onSelect={setSelectedId} />
+          )}
+          {overlays.heatmap && overlaysData?.heatmap && (
+            <HeatmapLayer points={overlaysData.heatmap} />
+          )}
+          {overlays.openOrders && <PinLayer pins={[]} />}
+          {overlays.hubs && overlaysData?.hubs && <HubLayer hubs={overlaysData.hubs} />}
+          {drawing && selectedZone && (
+            <DrawLayer
+              mode="polygon"
+              value={null}
+              onChange={async (shape) => {
+                if (!shape || shape.type !== 'polygon') return;
+                track('zones.geometry_edited', {
+                  zoneId: selectedZone.id,
+                  type: shape.type,
+                });
+                await fetch(`/api/v4/zones/${selectedZone.id}`, {
+                  method: 'PATCH',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ shape }),
+                });
+                setDrawing(false);
+                await refetchZones();
+              }}
+            />
+          )}
+        </WLMap>
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
-        {/* Map View */}
-        {view === 'map' && (
-          <div className="mb-6 rounded-xl overflow-hidden border border-[#1e1e2e]" style={{ height: 520 }}>
-            {loading ? (
-              <div className="w-full h-full bg-[#0d0d14] flex items-center justify-center">
-                <p className="text-gray-500 text-sm">Loading map...</p>
-              </div>
-            ) : zones.length === 0 ? (
-              <div className="w-full h-full bg-[#0d0d14] flex items-center justify-center">
-                <p className="text-gray-500 text-sm">No zones to display</p>
-              </div>
-            ) : (
-              <WLMap
-                className="w-full h-full"
-                zoom={10}
-                onReady={setMapId}
-              >
-                {/* Map overlay: zone legend */}
-                <div className="absolute top-3 left-3 z-[1000] pointer-events-auto">
-                  <div className="bg-[rgba(13,13,20,.92)] border border-[#1e1e2e] rounded-lg p-3 max-h-48 overflow-y-auto backdrop-blur-sm">
-                    <p className="text-[10px] font-semibold text-gray-400 uppercase mb-2">Zones</p>
-                    {zones.map((zone, i) => (
-                      <button
-                        key={zone.id}
-                        onClick={() => setSelectedZoneId(zone.id === selectedZoneId ? null : zone.id)}
-                        className="flex items-center gap-2 w-full text-left py-1 hover:opacity-80 transition-opacity"
-                      >
-                        <span
-                          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                          style={{ background: ZONE_PALETTE[i % ZONE_PALETTE.length] }}
-                        />
-                        <span className={cn(
-                          'text-xs truncate max-w-[140px]',
-                          zone.id === selectedZoneId ? 'text-white font-semibold' : 'text-gray-300',
-                        )}>
-                          {zone.name}
-                        </span>
-                        {!zone.isActive && (
-                          <span className="text-[10px] text-gray-500 ml-auto">off</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </WLMap>
-            )}
-            {mapId && !loading && zones.length > 0 && (
-              <ZonePolygonLayer
-                mapId={mapId}
-                zones={zones}
-                selectedZoneId={selectedZoneId}
-                onZoneClick={(id) => setSelectedZoneId(id === selectedZoneId ? null : id)}
-              />
-            )}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <ModeToggle value={mode} onChange={setMode} />
+          <OverlayControls value={overlays} onChange={setOverlays} />
+        </div>
+
+        <div className="absolute top-4 right-4 flex gap-2 items-center">
+          <ZoneSearch zones={zones} onSelect={setSelectedId} />
+          <Button variant="primary" size="md" onClick={() => router.push('/zones/new')}>
+            + New zone
+          </Button>
+        </div>
+
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          <KpiStrip
+            stats={stats}
+            onClickSlipping={() => {
+              const z = overlaysData?.zones.find((zone) => zone.health === 'slipping');
+              if (z) setSelectedId(z.id);
+            }}
+          />
+        </div>
+
+        {selectedZone && (
+          <div className="absolute top-0 right-0 h-full">
+            <ZoneInspector
+              zone={selectedZone}
+              overlay={overlay}
+              mode={mode}
+              onSave={async (patch) => {
+                await fetch(`/api/v4/zones/${selectedZone.id}`, {
+                  method: 'PATCH',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify(patch),
+                });
+              }}
+              onDelete={async () => {
+                await fetch(`/api/v4/zones/${selectedZone.id}`, { method: 'DELETE' });
+                setSelectedId(null);
+                await refetchZones();
+              }}
+              onEditGeometry={() => setDrawing((d) => !d)}
+            />
           </div>
-        )}
-
-        {/* Grid View */}
-        {view === 'grid' && (
-          <>
-            {loading ? (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-4">
-                {[...Array(6)].map((_, i) => <ZoneCardSkeleton key={i} />)}
-              </div>
-            ) : zones.length === 0 ? (
-              <EmptyZones />
-            ) : (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-4">
-                {zones.map((zone, i) => {
-                  const color = ZONE_PALETTE[i % ZONE_PALETTE.length];
-                  const slotCount = zone._count?.timeSlots ?? zone.timeSlots?.length ?? 0;
-
-                  return (
-                    <Card
-                      key={zone.id}
-                      className={cn(
-                        'relative overflow-hidden bg-[#12121a] border border-[#1e1e2e] hover:border-blue-500/50 transition-all',
-                        !zone.isActive && 'opacity-60',
-                        selectedZoneId === zone.id && 'border-blue-500',
-                      )}
-                      onClick={() => setSelectedZoneId(zone.id === selectedZoneId ? null : zone.id)}
-                    >
-                      <div className="absolute top-0 left-0 right-0 h-1" style={{ background: color }} />
-
-                      <div className="p-4">
-                        <div className="flex justify-between items-center mb-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                              style={{ background: color }}
-                            />
-                            <span className="text-base font-bold text-white">{zone.name}</span>
-                          </div>
-                          <Badge variant={zone.isActive ? 'success' : 'default'} dot>
-                            {zone.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
-
-                        {/* Pricing Grid */}
-                        <div className="grid grid-cols-2 gap-3 p-3 bg-[#1a1a2e] rounded-md mb-4">
-                          <div>
-                            <div className="text-[10px] text-gray-400 mb-0.5">Base Rate</div>
-                            <div className="text-sm font-bold font-mono text-white">
-                              {formatCurrency(Number(zone.baseRate))}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-gray-400 mb-0.5">Per KM</div>
-                            <div className="text-sm font-bold font-mono text-white">
-                              {formatCurrency(Number(zone.perKmRate))}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-gray-400 mb-0.5">Min Order</div>
-                            <div className="text-sm font-bold font-mono text-white">
-                              {formatCurrency(Number(zone.minOrder))}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-gray-400 mb-0.5">Free Above</div>
-                            <div className={cn(
-                              'text-sm font-bold font-mono',
-                              zone.freeAbove ? 'text-emerald-400' : 'text-gray-500',
-                            )}>
-                              {zone.freeAbove ? formatCurrency(Number(zone.freeAbove)) : '—'}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>
-                              <strong className="text-gray-300 font-mono">{slotCount}</strong>{' '}
-                              time slot{slotCount !== 1 ? 's' : ''}
-                            </span>
-                            {zone.boundary && zone.boundary.length > 0 && (
-                              <>
-                                <span className="text-gray-600">·</span>
-                                <MapPin className="w-3 h-3" />
-                                <span className="text-gray-400">Geo boundary</span>
-                              </>
-                            )}
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setView('map');
-                              setSelectedZoneId(zone.id);
-                            }}
-                            className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
-                          >
-                            View on map <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </>
         )}
       </div>
     </>

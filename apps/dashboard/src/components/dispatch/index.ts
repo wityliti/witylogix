@@ -40,3 +40,10 @@ export {
   type ViewMode,
   type DispatchFilterBarProps,
 } from "./dispatch-filter-bar";
+
+// Dispatch Live Map (MapLibre / WLMap-based, keyless)
+export {
+  DispatchLiveMap,
+  type DispatchDriverItem,
+  type DispatchOrderItem,
+} from "./dispatch-live-map";

@@ -59,8 +59,10 @@ export function WebhookConfig({
   };
 
   const handleRegenerateSecret = () => {
-    const newSecret = 'whsec_' + Math.random().toString(36).substr(2, 32);
-    setSecretKey(newSecret);
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    const hex = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+    setSecretKey('whsec_' + hex);
   };
 
   const handleTestWebhook = async () => {

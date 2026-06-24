@@ -5,26 +5,17 @@
  *   GET    /                      List webhook deliveries with filters and pagination
  *   GET    /:id                   Get single delivery detail with payload
  *   POST   /:id/retry             Retry a failed delivery
- *
- * Features:
- *   - Pagination with configurable page size
- *   - Filtering by status (success/failed/pending), event type, date range
- *   - Full payload inspection (request/response)
- *   - Retry with idempotent logic
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import { requireAuth, requireRole } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-import { prisma } from "@witylogix/db";
-
-// ─── ZODI VALIDATION SCHEMAS ────────────────────────────
 
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(["success", "failed", "pending"]).optional(),
+  status: z.string().max(50).optional(),
   eventType: z.string().max(100).optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
@@ -34,293 +25,171 @@ const deliveryIdSchema = z.object({
   id: z.string().uuid(),
 });
 
-const retrySchema = z.object({
-  id: z.string().uuid(),
-});
-
-// ─── ROUTE REGISTRATION ─────────────────────────────────
-
 export default async function webhookDeliveriesRoutes(
-  app: FastifyInstance
+  app: FastifyInstance,
 ): Promise<void> {
-  // All routes require authentication + tenant context
   app.addHook("preHandler", requireAuth);
   app.addHook("preHandler", tenantContext);
 
-  // ── GET / — List webhook deliveries ─────────────────────
+  // GET / — List webhook deliveries
+  app.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = listQuerySchema.parse(request.query);
+    const tenantId = request.shopId;
+    const skip = (query.page - 1) * query.limit;
 
-  app.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const query = listQuerySchema.parse(request.query);
-        const shopId = request.shopId;
+    const where: Record<string, unknown> = { tenantId };
 
-        // Calculate pagination
-        const skip = (query.page - 1) * query.limit;
-
-        // Build where clause
-        interface Where {
-          shopId: string;
-          status?: string;
-          eventType?: string;
-          timestamp?: {
-            gte?: string;
-            lte?: string;
-          };
-        }
-
-        const where: Where = { shopId };
-
-        if (query.status) {
-          where.status = query.status;
-        }
-
-        if (query.eventType) {
-          where.eventType = query.eventType;
-        }
-
-        if (query.startDate || query.endDate) {
-          where.timestamp = {};
-          if (query.startDate) {
-            where.timestamp.gte = query.startDate;
-          }
-          if (query.endDate) {
-            where.timestamp.lte = query.endDate;
-          }
-        }
-
-        // Fetch deliveries and total count
-        const [deliveries, total] = await Promise.all([
-          db.webhookDelivery.findMany({
-            where,
-            select: {
-              id: true,
-              eventType: true,
-              endpointUrl: true,
-              status: true,
-              responseCode: true,
-              duration: true,
-              timestamp: true,
-            },
-            orderBy: { timestamp: "desc" },
-            skip,
-            take: query.limit,
-          }),
-          db.webhookDelivery.count({ where }),
-        ]);
-
-        const totalPages = Math.ceil(total / query.limit);
-
-        return reply.code(200).send({
-          data: deliveries,
-          pagination: {
-            page: query.page,
-            limit: query.limit,
-            total,
-            totalPages,
-          },
-        });
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          return reply.code(400).send({
-            error: "Invalid query parameters",
-            details: error.errors,
-          });
-        }
-        throw error;
-      }
+    if (query.status) {
+      // Map frontend status values to DB values
+      const statusMap: Record<string, string> = {
+        success: "delivered",
+        failed: "failed",
+        pending: "pending",
+        retrying: "pending",
+      };
+      where.status = statusMap[query.status] ?? query.status;
     }
-  );
 
-  // ── GET /:id — Get delivery detail with payload ─────────
-
-  app.get(
-    "/:id",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const { id } = deliveryIdSchema.parse(request.params);
-        const shopId = request.shopId;
-
-        const delivery = await db.webhookDelivery.findUnique({
-          where: { id },
-        });
-
-        if (!delivery) {
-          return reply.code(404).send({
-            error: "Webhook delivery not found",
-          });
-        }
-
-        // Verify ownership
-        if (delivery.shopId !== shopId) {
-          return reply.code(403).send({
-            error: "Forbidden: You do not have access to this delivery",
-          });
-        }
-
-        return reply.code(200).send({
-          data: {
-            id: delivery.id,
-            eventType: delivery.eventType,
-            endpointUrl: delivery.endpointUrl,
-            status: delivery.status,
-            responseCode: delivery.responseCode,
-            duration: delivery.duration,
-            timestamp: delivery.timestamp,
-            requestPayload: delivery.requestPayload,
-            responsePayload: delivery.responsePayload,
-            errorMessage: delivery.errorMessage,
-            retryCount: delivery.retryCount,
-            nextRetryAt: delivery.nextRetryAt,
-          },
-        });
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          return reply.code(400).send({
-            error: "Invalid request parameters",
-            details: error.errors,
-          });
-        }
-        throw error;
-      }
+    if (query.eventType) {
+      where.eventType = query.eventType;
     }
-  );
 
-  // ── POST /:id/retry — Retry a failed delivery ────────────
-
-  app.post(
-    "/:id/retry",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const { id } = retrySchema.parse(request.params);
-        const shopId = request.shopId;
-
-        // Find the delivery
-        const delivery = await db.webhookDelivery.findUnique({
-          where: { id },
-        });
-
-        if (!delivery) {
-          return reply.code(404).send({
-            error: "Webhook delivery not found",
-          });
-        }
-
-        // Verify ownership
-        if (delivery.shopId !== shopId) {
-          return reply.code(403).send({
-            error: "Forbidden: You do not have access to this delivery",
-          });
-        }
-
-        // Only allow retrying failed/pending deliveries
-        if (!["failed", "pending"].includes(delivery.status)) {
-          return reply.code(400).send({
-            error: "Cannot retry a successful delivery",
-          });
-        }
-
-        // Increment retry count
-        const maxRetries = 5;
-        if (delivery.retryCount >= maxRetries) {
-          return reply.code(400).send({
-            error: `Maximum retry limit (${maxRetries}) reached`,
-          });
-        }
-
-        // Update delivery status to pending and increment retry count
-        const updatedDelivery = await db.webhookDelivery.update({
-          where: { id },
-          data: {
-            status: "pending",
-            retryCount: delivery.retryCount + 1,
-            nextRetryAt: new Date(Date.now() + 60000), // Retry in 1 minute
-            updatedAt: new Date(),
-          },
-        });
-
-        // In a real scenario, you would queue this for processing by a worker
-        // For example: await webhookQueue.enqueue({ deliveryId: id })
-
-        return reply.code(200).send({
-          data: {
-            id: updatedDelivery.id,
-            status: updatedDelivery.status,
-            retryCount: updatedDelivery.retryCount,
-            nextRetryAt: updatedDelivery.nextRetryAt,
-            message: `Delivery queued for retry (attempt ${updatedDelivery.retryCount}/${maxRetries})`,
-          },
-        });
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          return reply.code(400).send({
-            error: "Invalid request parameters",
-            details: error.errors,
-          });
-        }
-        throw error;
-      }
+    if (query.startDate || query.endDate) {
+      const createdAt: Record<string, Date> = {};
+      if (query.startDate) createdAt.gte = new Date(query.startDate);
+      if (query.endDate) createdAt.lte = new Date(query.endDate);
+      where.createdAt = createdAt;
     }
-  );
 
-  // ── Health endpoint ─────────────────────────────────────
-
-  app.get("/health/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    const shopId = request.shopId;
-    const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-    const [total, success, failed, pending, avgDuration] = await Promise.all([
-      db.webhookDelivery.count({
-        where: {
-          shopId,
-          timestamp: { gte: last24h },
+    const [deliveries, total] = await Promise.all([
+      request.tenantDb.webhookDelivery.findMany({
+        where,
+        select: {
+          id: true,
+          eventType: true,
+          status: true,
+          responseStatus: true,
+          durationMs: true,
+          attempt: true,
+          maxAttempts: true,
+          error: true,
+          createdAt: true,
+          endpoint: {
+            select: { url: true },
+          },
         },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: query.limit,
       }),
-      db.webhookDelivery.count({
-        where: {
-          shopId,
-          status: "success",
-          timestamp: { gte: last24h },
-        },
-      }),
-      db.webhookDelivery.count({
-        where: {
-          shopId,
-          status: "failed",
-          timestamp: { gte: last24h },
-        },
-      }),
-      db.webhookDelivery.count({
-        where: {
-          shopId,
-          status: "pending",
-          timestamp: { gte: last24h },
-        },
-      }),
-      db.webhookDelivery.aggregate({
-        where: {
-          shopId,
-          timestamp: { gte: last24h },
-          duration: { gt: 0 },
-        },
-        _avg: {
-          duration: true,
-        },
-      }),
+      request.tenantDb.webhookDelivery.count({ where }),
     ]);
 
-    const successRate = total > 0 ? ((success / total) * 100).toFixed(1) : "0";
+    const data = deliveries.map((d) => ({
+      id: d.id,
+      eventType: d.eventType,
+      endpointUrl: d.endpoint?.url ?? "",
+      status: d.status === "delivered" ? "success" : d.status,
+      statusCode: d.responseStatus,
+      duration: d.durationMs ?? 0,
+      attempt: d.attempt,
+      maxAttempts: d.maxAttempts,
+      error: d.error,
+      timestamp: d.createdAt,
+    }));
+
+    return reply.code(200).send({
+      data,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.ceil(total / query.limit),
+      },
+    });
+  });
+
+  // GET /:id — Get delivery detail with full payload
+  app.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = deliveryIdSchema.parse(request.params);
+    const tenantId = request.shopId;
+
+    const delivery = await request.tenantDb.webhookDelivery.findUnique({
+      where: { id },
+      include: {
+        endpoint: { select: { url: true } },
+      },
+    });
+
+    if (!delivery) {
+      return reply.code(404).send({ error: "Webhook delivery not found" });
+    }
+
+    if (delivery.tenantId !== tenantId) {
+      return reply.code(403).send({ error: "Forbidden" });
+    }
 
     return reply.code(200).send({
       data: {
-        period: "24h",
-        total,
-        success,
-        failed,
-        pending,
-        successRate: parseFloat(successRate),
-        avgDuration: Math.round(avgDuration._avg.duration || 0),
+        id: delivery.id,
+        eventType: delivery.eventType,
+        endpointUrl: delivery.endpoint?.url ?? "",
+        status: delivery.status === "delivered" ? "success" : delivery.status,
+        statusCode: delivery.responseStatus,
+        duration: delivery.durationMs ?? 0,
+        attempt: delivery.attempt,
+        maxAttempts: delivery.maxAttempts,
+        error: delivery.error,
+        timestamp: delivery.createdAt,
+        requestHeaders: delivery.requestHeaders,
+        requestBody: delivery.requestBody,
+        responseHeaders: delivery.responseHeaders,
+        responseBody: delivery.responseBody,
+      },
+    });
+  });
+
+  // POST /:id/retry — Retry a failed delivery
+  app.post("/:id/retry", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = deliveryIdSchema.parse(request.params);
+    const tenantId = request.shopId;
+
+    const delivery = await request.tenantDb.webhookDelivery.findUnique({
+      where: { id },
+    });
+
+    if (!delivery) {
+      return reply.code(404).send({ error: "Webhook delivery not found" });
+    }
+
+    if (delivery.tenantId !== tenantId) {
+      return reply.code(403).send({ error: "Forbidden" });
+    }
+
+    if (!["failed", "pending"].includes(delivery.status)) {
+      return reply.code(400).send({ error: "Cannot retry a non-failed delivery" });
+    }
+
+    if (delivery.attempt >= delivery.maxAttempts) {
+      return reply.code(400).send({ error: `Maximum retry limit (${delivery.maxAttempts}) reached` });
+    }
+
+    const updated = await request.tenantDb.webhookDelivery.update({
+      where: { id },
+      data: {
+        status: "pending",
+        nextRetryAt: new Date(Date.now() + 60_000),
+      },
+    });
+
+    return reply.code(200).send({
+      data: {
+        id: updated.id,
+        status: updated.status,
+        attempt: updated.attempt,
+        maxAttempts: updated.maxAttempts,
+        nextRetryAt: updated.nextRetryAt,
+        message: `Delivery queued for retry (attempt ${updated.attempt}/${updated.maxAttempts})`,
       },
     });
   });

@@ -221,11 +221,11 @@ export abstract class TelematicsAdapter implements ITelematicsAdapter {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
-        // Don't retry on 4xx errors except 429 (rate limit)
+        // Don't retry on non-retryable errors (e.g. 4xx except 429 rate limit)
         if (
           error instanceof Error &&
-          error.message.includes("4") &&
-          !error.message.includes("429")
+          'retryable' in error &&
+          !(error as any).retryable
         ) {
           throw error;
         }

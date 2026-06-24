@@ -76,7 +76,7 @@ const SAMPLE_PAYLOADS: Record<string, Record<string, any>> = {
 };
 
 export default function WebhookTestPage() {
-  const { execute: sendTestWebhook } = useApiMutation('POST', '/api/v4/webhooks/test');
+  const { execute: sendTestWebhook } = useApiMutation<{ success: boolean; statusCode: number; duration: number; response: string | null }>('POST', '/api/v4/outbound-webhooks/test');
 
   const [selectedEvent, setSelectedEvent] = useState('shipment.created');
   const [endpoint, setEndpoint] = useState('https://webhook.example.com/events');
@@ -107,28 +107,30 @@ export default function WebhookTestPage() {
 
   const handleSendTest = async () => {
     setIsLoading(true);
-
     try {
       const payload = JSON.parse(customPayload);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
+      const result = await sendTestWebhook({ url: endpoint, eventType: selectedEvent, payload });
       const newSend: TestSend = {
         id: `test-${Date.now()}`,
         timestamp: new Date(),
         eventType: selectedEvent,
         endpoint,
-        status: Math.random() > 0.2 ? "success" : "failed",
-        statusCode: Math.random() > 0.2 ? 200 : 500,
-        duration: Math.floor(Math.random() * 300) + 50,
-        responseBody: JSON.stringify({
-          success: true,
-          message: "Webhook processed",
-          eventId: payload.id,
-        }),
+        status: result?.success ? "success" : "failed",
+        statusCode: result?.statusCode,
+        duration: result?.duration ?? 0,
+        responseBody: result?.response ?? undefined,
       };
-
+      setTestSends([newSend, ...testSends]);
+    } catch (err) {
+      const newSend: TestSend = {
+        id: `test-${Date.now()}`,
+        timestamp: new Date(),
+        eventType: selectedEvent,
+        endpoint,
+        status: "failed",
+        duration: 0,
+        responseBody: err instanceof Error ? err.message : "Request failed",
+      };
       setTestSends([newSend, ...testSends]);
     } finally {
       setIsLoading(false);
@@ -155,7 +157,7 @@ export default function WebhookTestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Webhook Test Sender"
         subtitle="Test webhook deliveries with custom payloads"
@@ -166,7 +168,7 @@ export default function WebhookTestPage() {
           {/* Test Configuration */}
           <div className="lg:col-span-2 space-y-6">
             {/* Event Type Selection */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle className="text-lg">Select Event Type</CardTitle>
                 <CardDescription>
@@ -183,7 +185,7 @@ export default function WebhookTestPage() {
                         "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
                         selectedEvent === event.id
                           ? "bg-blue-500 text-white border-blue-500"
-                          : "border-[#1e1e2e] hover:bg-[#1a1a2e]"
+                          : "border-wl-border-default hover:bg-wl-bg-elevated"
                       )}
                     >
                       {event.label}
@@ -194,7 +196,7 @@ export default function WebhookTestPage() {
             </Card>
 
             {/* Endpoint Configuration */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle className="text-lg">Target Endpoint</CardTitle>
                 <CardDescription>
@@ -212,7 +214,7 @@ export default function WebhookTestPage() {
             </Card>
 
             {/* Payload Editor */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -236,13 +238,13 @@ export default function WebhookTestPage() {
                 <textarea
                   value={customPayload}
                   onChange={(e) => setCustomPayload(e.target.value)}
-                  className="w-full h-48 p-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] font-mono text-xs resize-none focus:outline-none focus:border-blue-500 text-white"
+                  className="w-full h-48 p-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated font-mono text-xs resize-none focus:outline-none focus:border-blue-500 text-white"
                 />
               </CardContent>
             </Card>
 
             {/* Send Button */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardContent className="pt-6">
                 <Button
                   onClick={handleSendTest}
@@ -259,7 +261,7 @@ export default function WebhookTestPage() {
 
           {/* Test History */}
           <div className="lg:col-span-1">
-            <Card className="border border-[#1e1e2e] bg-[#12121a] sticky top-4">
+            <Card className="border border-wl-border-default bg-wl-bg-surface sticky top-4">
               <CardHeader>
                 <CardTitle className="text-lg">Test History</CardTitle>
               </CardHeader>
@@ -273,7 +275,7 @@ export default function WebhookTestPage() {
                     {testSends.map((send) => (
                       <div
                         key={send.id}
-                        className="border border-[#1e1e2e] rounded-lg overflow-hidden"
+                        className="border border-wl-border-default rounded-lg overflow-hidden"
                       >
                         <button
                           onClick={() =>
@@ -281,7 +283,7 @@ export default function WebhookTestPage() {
                               expandedSendId === send.id ? null : send.id
                             )
                           }
-                          className="w-full p-3 hover:bg-[#1a1a2e] transition-colors flex items-center justify-between"
+                          className="w-full p-3 hover:bg-wl-bg-elevated transition-colors flex items-center justify-between"
                         >
                           <div className="flex items-center gap-2 flex-1 text-left">
                             {getStatusIcon(send.status)}
@@ -316,7 +318,7 @@ export default function WebhookTestPage() {
                         </button>
 
                         {expandedSendId === send.id && (
-                          <div className="border-t border-[#1e1e2e] bg-[#1a1a2e] p-3 text-xs space-y-2">
+                          <div className="border-t border-wl-border-default bg-wl-bg-elevated p-3 text-xs space-y-2">
                             <div>
                               <div className="font-semibold text-gray-400 mb-1">
                                 Duration
@@ -340,7 +342,7 @@ export default function WebhookTestPage() {
                                 <div className="font-semibold text-gray-400 mb-1">
                                   Response
                                 </div>
-                                <pre className="bg-[#0a0a0f] p-2 rounded overflow-x-auto max-h-32 overflow-y-auto text-white">
+                                <pre className="bg-wl-bg-root p-2 rounded overflow-x-auto max-h-32 overflow-y-auto text-white">
                                   {send.responseBody}
                                 </pre>
                               </div>

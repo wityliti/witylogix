@@ -12,7 +12,6 @@
  */
 
 import { fetch } from "undici";
-
 import { ESignatureAdapter } from "./esignature-adapter.js";
 import type {
   Envelope,
@@ -323,7 +322,7 @@ export class HelloSignClient extends ESignatureAdapter {
         signedAt: sig.signed_at ? new Date(sig.signed_at * 1000) : undefined,
       })) || [];
 
-      const completedSigners = signerStatuses.filter((s) => s.status === "signed").length;
+      const completedSigners = signerStatuses.filter((s: { status: EnvelopeStatus }) => s.status === "signed").length;
       const totalSigners = signerStatuses.length;
 
       return {

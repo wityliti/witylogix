@@ -1,43 +1,35 @@
 import { useState, useEffect } from 'react'
-import type { TrackingData, LocationUpdate, StatusUpdate, ETAUpdate } from './types'
+import type { TrackingData, LocationUpdate, StatusUpdate, OrderStatus } from './types'
 import { fetchTrackingData } from './lib/api'
 import {
   initializeSocket,
-  joinTrackingRoom,
   onLocationUpdate,
   onStatusUpdate,
-  onETAUpdate,
   disconnectSocket,
 } from './lib/socket'
 import { TrackingLandingPage } from './components/TrackingLandingPage'
 import { TrackingResultPage } from './components/TrackingResultPage'
 import { DeliveryPreferencesPage } from './components/DeliveryPreferencesPage'
 
-const BRAND_BLUE = '#3b82f6'
-const BG_COLOR = '#f8fafc'
+const BRAND_BLUE = '#005bd3'
+const BG_COLOR = '#f6f6f7'
 
 interface RouteState {
   view: 'landing' | 'tracking' | 'preferences'
-  trackingNumber?: string
-  shipmentId?: string
+  trackingToken?: string
 }
 
 function parseHash(): RouteState {
   const hash = window.location.hash.slice(1) || '/'
 
-  // #/track/:trackingNumber
   if (hash.startsWith('/track/')) {
-    const trackingNumber = hash.replace('/track/', '')
-    return { view: 'tracking', trackingNumber }
+    return { view: 'tracking', trackingToken: hash.replace('/track/', '') }
   }
 
-  // #/preferences/:shipmentId
   if (hash.startsWith('/preferences/')) {
-    const shipmentId = hash.replace('/preferences/', '')
-    return { view: 'preferences', shipmentId }
+    return { view: 'preferences', trackingToken: hash.replace('/preferences/', '') }
   }
 
-  // #/ or empty - landing page
   return { view: 'landing' }
 }
 
@@ -52,42 +44,58 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
-  // Handle hash changes
+  // ── Hash-based routing ─────────────────────────────────────────────────────
+
   useEffect(() => {
     const handleHashChange = () => {
       setRoute(parseHash())
       setError(null)
+      setTrackingData(null)
     }
-
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
-  // Fetch tracking data when navigating to tracking view
+  // ── Fetch real tracking data ───────────────────────────────────────────────
+
   useEffect(() => {
-    if (route.view === 'tracking' && route.trackingNumber) {
-      setLoading(true)
-      setError(null)
+    if (route.view !== 'tracking' || !route.trackingToken) return
 
-      fetchTrackingData(route.trackingNumber)
-        .then((data) => {
-          setTrackingData(data)
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    setTrackingData(null)
 
-          // Initialize socket after getting initial data
-          const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+    fetchTrackingData(route.trackingToken)
+      .then((data) => {
+        if (cancelled) return
+        setTrackingData(data)
+
+        // Join real-time socket room when driver is en-route
+        const status = data.response.status
+        if (['OUT_FOR_DELIVERY', 'ARRIVED'].includes(status)) {
+          const apiUrl =
+            (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ||
+            'http://localhost:3000'
           initializeSocket(apiUrl)
-          joinTrackingRoom(data.order.id)
-        })
-        .catch((err) => {
-          setError(err.message || 'Failed to load tracking data')
-        })
-        .finally(() => {
-          setLoading(false)
-        })
-    }
-  }, [route.view, route.trackingNumber])
+        }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        const message = err instanceof Error ? err.message : 'Failed to load tracking information'
+        setError(message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
 
-  // Handle real-time updates
+    return () => {
+      cancelled = true
+    }
+  }, [route.view, route.trackingToken])
+
+  // ── Real-time socket overlays ──────────────────────────────────────────────
+
   useEffect(() => {
     if (!trackingData) return
 
@@ -96,19 +104,11 @@ export default function App() {
         if (!prev) return prev
         return {
           ...prev,
-          currentLocation: {
+          liveDriverLocation: {
             latitude: update.latitude,
             longitude: update.longitude,
-            timestamp: update.timestamp,
+            updatedAt: new Date(update.timestamp).toISOString(),
           },
-          route: [
-            ...prev.route,
-            {
-              latitude: update.latitude,
-              longitude: update.longitude,
-              timestamp: update.timestamp,
-            },
-          ],
         }
       })
     })
@@ -116,31 +116,17 @@ export default function App() {
     const unsubscribeStatus = onStatusUpdate((update: StatusUpdate) => {
       setTrackingData((prev) => {
         if (!prev) return prev
+        const updatedTimeline = prev.response.timeline.map((step) => ({
+          ...step,
+          completed: step.completed || step.status === update.status,
+          current: step.status === update.status,
+        }))
         return {
           ...prev,
-          order: {
-            ...prev.order,
-            status: update.status,
-          },
-          statusHistory: [
-            ...prev.statusHistory,
-            {
-              status: update.status,
-              timestamp: update.timestamp,
-            },
-          ],
-        }
-      })
-    })
-
-    const unsubscribeETA = onETAUpdate((update: ETAUpdate) => {
-      setTrackingData((prev) => {
-        if (!prev) return prev
-        return {
-          ...prev,
-          order: {
-            ...prev.order,
-            eta: update.eta,
+          response: {
+            ...prev.response,
+            status: update.status as OrderStatus,
+            timeline: updatedTimeline,
           },
         }
       })
@@ -149,161 +135,141 @@ export default function App() {
     return () => {
       unsubscribeLocation?.()
       unsubscribeStatus?.()
-      unsubscribeETA?.()
     }
   }, [trackingData])
 
-  // Handle window resize
+  // ── Responsive helper ──────────────────────────────────────────────────────
+
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Cleanup on unmount
+  // ── Cleanup ────────────────────────────────────────────────────────────────
+
   useEffect(() => {
-    return () => {
-      disconnectSocket()
-    }
+    return () => { disconnectSocket() }
   }, [])
 
-  // Landing page
+  // ── Routing ────────────────────────────────────────────────────────────────
+
   if (route.view === 'landing') {
     return <TrackingLandingPage onNavigate={navigateTo} />
   }
 
-  // Preferences page
   if (route.view === 'preferences') {
     return (
       <DeliveryPreferencesPage
-        shipmentId={route.shipmentId || ''}
+        trackingToken={route.trackingToken || ''}
         onBack={() => navigateTo('/')}
       />
     )
   }
 
-  // Tracking page
-  if (route.view === 'tracking') {
-    if (loading) {
-      return (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100vh',
-            backgroundColor: BG_COLOR,
-            fontSize: '16px',
-            color: '#6b7280',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                border: '4px solid #e5e7eb',
-                borderTop: `4px solid ${BRAND_BLUE}`,
-                borderRadius: '50%',
-                margin: '0 auto 16px',
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <p>Loading tracking information...</p>
-            <style>
-              {`@keyframes spin {
-                to { transform: rotate(360deg); }
-              }`}
-            </style>
-          </div>
-        </div>
-      )
-    }
-
-    if (error) {
-      return (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100vh',
-            backgroundColor: BG_COLOR,
-            padding: '20px',
-          }}
-        >
+  // Tracking view
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          backgroundColor: BG_COLOR,
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
           <div
             style={{
-              backgroundColor: 'white',
-              padding: '40px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              maxWidth: '400px',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+              width: '48px',
+              height: '48px',
+              border: '4px solid #e5e7eb',
+              borderTop: `4px solid ${BRAND_BLUE}`,
+              borderRadius: '50%',
+              margin: '0 auto 16px',
+              animation: 'spin 0.8s linear infinite',
             }}
-          >
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-            <h1
-              style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#1f2937',
-                marginBottom: '8px',
-              }}
-            >
-              Unable to Load Tracking
-            </h1>
-            <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
-              {error}
-            </p>
-            <button
-              onClick={() => navigateTo('/')}
-              style={{
-                marginTop: '24px',
-                backgroundColor: BRAND_BLUE,
-                color: 'white',
-                padding: '10px 20px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-              }}
-            >
-              Back to Home
-            </button>
-          </div>
+          />
+          <p style={{ color: '#6b7280', margin: 0, fontSize: '15px' }}>
+            Loading tracking information...
+          </p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
-      )
-    }
-
-    if (!trackingData) {
-      return (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100vh',
-            backgroundColor: BG_COLOR,
-          }}
-        >
-          <p style={{ color: '#6b7280' }}>No tracking data available</p>
-        </div>
-      )
-    }
-
-    return (
-      <TrackingResultPage
-        trackingData={trackingData}
-        isMobile={isMobile}
-        onPreferences={() => navigateTo(`/preferences/${trackingData.order.id}`)}
-        onHome={() => navigateTo('/')}
-      />
+      </div>
     )
   }
 
-  return null
+  if (error) {
+    const isNotFound = error.toLowerCase().includes('not found')
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          backgroundColor: BG_COLOR,
+          padding: '20px',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: 'white',
+            padding: '48px 40px',
+            borderRadius: '16px',
+            textAlign: 'center',
+            maxWidth: '420px',
+            width: '100%',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+          }}
+        >
+          <div style={{ fontSize: '52px', marginBottom: '20px' }}>
+            {isNotFound ? '🔍' : '⚠️'}
+          </div>
+          <h1
+            style={{
+              fontSize: '22px',
+              fontWeight: '700',
+              color: '#1f2937',
+              margin: '0 0 10px 0',
+            }}
+          >
+            {isNotFound ? 'Tracking Number Not Found' : 'Unable to Load Tracking'}
+          </h1>
+          <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 28px 0', lineHeight: 1.6 }}>
+            {error}
+          </p>
+          <button
+            onClick={() => navigateTo('/')}
+            style={{
+              backgroundColor: BRAND_BLUE,
+              color: 'white',
+              padding: '12px 28px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '15px',
+              fontWeight: '600',
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!trackingData) {
+    return null
+  }
+
+  return (
+    <TrackingResultPage
+      trackingData={trackingData}
+      isMobile={isMobile}
+      onPreferences={() => navigateTo(`/preferences/${trackingData.trackingToken}`)}
+      onHome={() => navigateTo('/')}
+    />
+  )
 }

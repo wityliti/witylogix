@@ -78,7 +78,9 @@ interface DriverProfile {
   _count: { orders: number };
 }
 
-// ── Tier style config ────────────────────────────────────────
+
+
+// ── Helpers ──────────────────────────────────────────────────────
 
 const TIER_STYLE: Record<string, { bg: string; text: string; border: string; label: string }> = {
   platinum: { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-400/30', label: 'Platinum' },
@@ -192,14 +194,50 @@ export default function DriverDetailPage() {
   const params = useParams();
   const driverId = params.id as string;
 
-  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } =
-    useApiQuery<DriverScoreData>(`/api/v4/driver-scoring/${driverId}`);
+  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreResponse>(
+    `/api/v4/driver-scoring/${driverId}`,
+  );
 
-  const { data: historyItems, loading: historyLoading } =
-    useApiQuery<HistoryEntry[]>(`/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`);
+  const { data: historyData } = useApiQuery<HistoryResponse>(
+    `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
+  );
 
-  const { data: profileData } =
-    useApiQuery<DriverProfile>(`/api/v4/drivers/${driverId}`);
+  const history = historyData?.history ?? [];
+
+  if (scoreLoading) {
+    return (
+      <div className="min-h-screen px-6 lg:px-8 pt-8 space-y-4">
+        <div className="h-8 w-32 bg-white/[0.04] rounded animate-pulse" />
+        <div className="h-24 bg-white/[0.04] rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-28 bg-white/[0.04] rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (scoreError || !scoreData) {
+    return (
+      <div className="min-h-screen px-6 lg:px-8 pt-8">
+        <Link href="/drivers" className="inline-flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 mb-6">
+          <ArrowLeft className="w-4 h-4" />All Drivers
+        </Link>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <ShieldCheck className="w-10 h-10 text-white/10" />
+          <p className="text-sm font-medium text-white/30">Driver not found or score unavailable</p>
+          <p className="text-xs text-white/20">{scoreError?.message ?? 'No scoring data for this driver'}</p>
+          <button onClick={refetch} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 mt-2">
+            <RefreshCw className="w-3.5 h-3.5" />Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { score, driver, metrics } = scoreData;
+  const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
 
   if (scoreLoading) return <PageSkeleton />;
 
@@ -247,7 +285,9 @@ export default function DriverDetailPage() {
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-bold text-white/90 tracking-tight">{scoreData.driverName}</h1>
+                <h1 className="text-2xl font-bold text-white/90 tracking-tight">
+                  {driver.name}
+                </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
                 </span>
@@ -284,8 +324,9 @@ export default function DriverDetailPage() {
 
           {/* Left: score dial + breakdown */}
           <div className="space-y-4">
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 flex flex-col items-center">
-              <ScoreArc score={scoreData.compositeScore} />
+            {/* Score dial */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
+              <ScoreArc score={score.compositeScore} />
               <p className="text-xs text-white/30 mt-1">Composite Score</p>
               {scoreDelta !== null && (
                 <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
@@ -297,7 +338,8 @@ export default function DriverDetailPage() {
               )}
             </div>
 
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5 space-y-4">
+            {/* Score breakdown */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
               <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">Score Breakdown</h3>
               <BreakdownRow label="On-Time Delivery"  value={scoreData.breakdown.onTimeScore}          icon={Clock}       accent="#34d399" />
               <BreakdownRow label="Customer Rating"   value={scoreData.breakdown.customerRatingScore}   icon={Star}        accent="#fbbf24" />
@@ -316,7 +358,7 @@ export default function DriverDetailPage() {
                 { label: 'Avg Rating',   value: avgRating != null ? avgRating.toFixed(2) : '—',      icon: Star,      accent: '#fbbf24', suffix: avgRating != null ? '/ 5' : undefined },
                 { label: 'POD Rate',     value: podPct != null ? `${podPct.toFixed(1)}%` : '—',      icon: Camera,    accent: '#60a5fa' },
               ].map(({ label, value, suffix, icon: Icon, accent }) => (
-                <div key={label} className="relative overflow-hidden rounded-xl bg-[#111118] border border-white/[0.06] p-4 hover:border-white/[0.12] transition-all">
+                <div key={label} className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-4 group hover:border-white/[0.12] transition-all">
                   <div className="absolute top-0 left-0 right-0 h-[2px] opacity-40" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] text-white/35">{label}</span>
@@ -332,19 +374,23 @@ export default function DriverDetailPage() {
               ))}
             </div>
 
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+            {/* Score history chart */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-white/60 tracking-wide">Score History</h3>
                 <span className="text-[11px] text-white/20 font-mono">weekly · 56d</span>
               </div>
-              {historyLoading ? (
-                <div className="h-24 bg-white/[0.03] rounded animate-pulse" />
+              {history.length === 0 ? (
+                <div className="h-24 flex items-center justify-center text-xs text-white/20">
+                  No history data yet
+                </div>
               ) : (
                 <HistoryChart history={history} />
               )}
             </div>
 
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+            {/* Raw metrics */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
               <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Delivery Metrics</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[

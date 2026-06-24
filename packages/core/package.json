@@ -68,6 +68,7 @@
     "./ai-eta-v2": "./src/ai-eta-v2/index.ts",
     "./ai-analytics": "./src/ai-analytics/index.ts",
     "./natural-language-filter": "./src/ai/natural-language-filter.ts",
+    "./ai/smart-driver-assignment": "./src/ai/smart-driver-assignment.ts",
     "./platform": "./src/platform/index.ts",
     "./config": "./src/config/index.ts",
     "./demand-prediction": "./src/demand-prediction/index.ts",
@@ -87,11 +88,14 @@
     "./slots": "./src/slots/index.ts",
     "./webhooks": "./src/webhooks/index.ts",
     "./invoicing": "./src/invoicing/index.ts",
+    "./oauth": "./src/oauth/index.ts",
+    "./operations": "./src/operations/index.ts",
     "./woocommerce/normalize": "./src/woocommerce/normalize.ts",
     "./eta-recalculator": "./src/eta-recalculator/index.ts",
     "./realtime/types": "./src/realtime/types.ts",
     "./integrations/telematics": "./src/integrations/telematics/index.ts",
-    "./integrations/shipping": "./src/integrations/shipping/index.ts"
+    "./integrations/shipping": "./src/integrations/shipping/index.ts",
+    "./onboarding": "./src/onboarding/index.ts"
   },
   "scripts": {
     "build": "echo build-ok",
@@ -99,13 +103,24 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "@witylogix/db": "workspace:*",
     "@witylogix/framework": "workspace:*",
     "@witylogix/types": "workspace:*",
     "@witylogix/validators": "workspace:*",
+    "bullmq": "^5.25.0",
+    "cron-parser": "^4.9.0",
+    "express": "^4.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "lru-cache": "^10.4.3",
+    "pino": "^9.5.0",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "undici": "^7.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/express": "^4.17.0",
     "@types/ioredis": "^5.0.0",
     "fastify": "^5.0.0",
     "ioredis": "^5.4.0",

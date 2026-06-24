@@ -45,7 +45,7 @@ export default function CreateLabelPage() {
     <>
       <Header title="Create Shipping Label" subtitle="Step-by-step label creation" />
 
-      <main className="min-h-screen bg-[#0a0a0f] p-6 max-w-2xl mx-auto">
+      <main className="min-h-screen bg-wl-bg-root p-6 max-w-2xl mx-auto">
         {/* Progress Indicator */}
         <div className="flex gap-2 mb-8">
           {(['package', 'carrier', 'rates', 'review'] as const).map((s, idx) => (
@@ -54,13 +54,13 @@ export default function CreateLabelPage() {
               className={`flex-1 h-2 rounded-full transition-colors ${
                 (['package', 'carrier', 'rates', 'review'] as const).indexOf(step) >= idx
                   ? 'bg-blue-500'
-                  : 'bg-[#1a1a2e]'
+                  : 'bg-wl-bg-elevated'
               }`}
             />
           ))}
         </div>
 
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-white">{step === 'package' ? 'Package Details' : step === 'carrier' ? 'Select Carrier' : step === 'rates' ? 'Review Rates' : 'Review Order'}</CardTitle>
           </CardHeader>
@@ -74,7 +74,7 @@ export default function CreateLabelPage() {
                     value={formData.destination}
                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                     placeholder="City, State"
-                    className="w-full p-2 border border-[#1e1e2e] rounded bg-[#0a0a0f] text-white placeholder-gray-600"
+                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-white placeholder-gray-600"
                   />
                 </div>
                 <div>
@@ -83,7 +83,7 @@ export default function CreateLabelPage() {
                     type="number"
                     value={formData.weight}
                     onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
-                    className="w-full p-2 border border-[#1e1e2e] rounded bg-[#0a0a0f] text-white"
+                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-white"
                   />
                 </div>
               </div>
@@ -96,7 +96,7 @@ export default function CreateLabelPage() {
                     key={carrier}
                     onClick={() => setFormData({ ...formData, carrier })}
                     className={`p-3 border-2 rounded cursor-pointer transition-colors ${
-                      formData.carrier === carrier ? 'border-blue-500 bg-blue-500/10' : 'border-[#1e1e2e] bg-[#0f0f14]'
+                      formData.carrier === carrier ? 'border-blue-500 bg-blue-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
                     }`}
                   >
                     <p className="font-medium text-white">{carrier}</p>
@@ -112,11 +112,11 @@ export default function CreateLabelPage() {
                     key={service}
                     onClick={() => setFormData({ ...formData, service })}
                     className={`p-3 border-2 rounded cursor-pointer transition-colors ${
-                      formData.service === service ? 'border-blue-500 bg-blue-500/10' : 'border-[#1e1e2e] bg-[#0f0f14]'
+                      formData.service === service ? 'border-blue-500 bg-blue-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
                     }`}
                   >
                     <p className="font-medium text-white">{service}</p>
-                    <p className="text-xs text-gray-400">${15 + Math.random() * 50}</p>
+                    <p className="text-xs text-gray-400">${{ Ground: "15.00", Express: "35.00", Overnight: "65.00" }[service] ?? "—"}</p>
                   </div>
                 ))}
               </div>
@@ -124,7 +124,7 @@ export default function CreateLabelPage() {
 
             {step === 'review' && (
               <div className="space-y-4">
-                <div className="p-4 bg-[#1a1a2e] rounded border border-[#1e1e2e]">
+                <div className="p-4 bg-wl-bg-elevated rounded border border-wl-border-default">
                   <p className="text-sm text-gray-400">Destination: {formData.destination}</p>
                   <p className="text-sm text-gray-400">Weight: {formData.weight} lbs</p>
                   <p className="text-sm text-gray-400">Carrier: {formData.carrier} {formData.service}</p>

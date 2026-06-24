@@ -22,7 +22,6 @@ import {
   ExternalLink,
   Trash2,
   AlertTriangle,
-  Settings,
   ArrowRight,
   CheckCheck,
 } from "lucide-react";
@@ -72,11 +71,19 @@ export default function IntegrationDetailPage() {
     useIntegrationStatus({ enablePolling: true });
   const connection = getStatus(connectionId);
 
-  const { data: eventsData, loading: eventsLoading } =
-    useApiQuery<EventsResponse>(`/api/v4/integrations/${connectionId}/events?limit=10`);
+  const { data: usageData } = useApiQuery<{ usage: UsageMetric[] }>(
+    connection ? `/api/v4/integrations/${connectionId}/usage` : null,
+  );
+  const { data: activityData } = useApiQuery<{ activity: ActivityLogEntry[] }>(
+    connection ? `/api/v4/integrations/${connectionId}/activity` : null,
+  );
+  const { data: errorsData } = useApiQuery<{ errors: ErrorEntry[] }>(
+    connection ? `/api/v4/integrations/${connectionId}/errors` : null,
+  );
 
-  const { data: meterData, loading: meterLoading } =
-    useApiQuery<MeterResponse>(`/api/v4/integrations/meter?appSlug=${connectionId}`);
+  const usageMetrics: UsageMetric[] = usageData?.usage ?? [];
+  const activityLog: ActivityLogEntry[] = activityData?.activity ?? [];
+  const errorLog: ErrorEntry[] = errorsData?.errors ?? [];
 
   const [expandedErrors, setExpandedErrors] = useState<Set<string>>(new Set());
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
@@ -85,19 +92,8 @@ export default function IntegrationDetailPage() {
     message: string;
   } | null>(null);
 
-  const activityLog = useMemo(
-    () => (eventsData?.events ?? []).filter((e) => !isErrorEvent(e)),
-    [eventsData],
-  );
-  const errorLog = useMemo(
-    () => (eventsData?.events ?? []).filter(isErrorEvent),
-    [eventsData],
-  );
-
-  const totalApiCalls = meterData?.total ?? 0;
-  const totalWebhooks = meterData?.bySlug ? Object.values(meterData.bySlug).reduce((a, b) => a + b, 0) : 0;
-
   if (!connection) {
+    const isLoading = connections.length === 0;
     return (
       <div className="space-y-8">
         <Link
@@ -108,19 +104,27 @@ export default function IntegrationDetailPage() {
           Back to Connected Integrations
         </Link>
 
-        <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-elevated border-wl-border-default">
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              {isLoading ? (
+                <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin mx-auto mb-4" />
+              ) : (
+                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              )}
               <h2 className="text-xl font-semibold text-white mb-2">
-                Integration not found
+                {isLoading ? "Loading…" : "Integration not found"}
               </h2>
-              <p className="text-gray-400 mb-4">
-                The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
-              </p>
-              <Button variant="primary" asChild>
-                <Link href="/integrations/connected">View All Integrations</Link>
-              </Button>
+              {!isLoading && (
+                <>
+                  <p className="text-gray-400 mb-4">
+                    The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
+                  </p>
+                  <Button variant="primary" asChild>
+                    <Link href="/integrations/connected">View All Integrations</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -164,10 +168,6 @@ export default function IntegrationDetailPage() {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm">
-            <Settings className="w-4 h-4 mr-2" />
-            Configure
-          </Button>
           <Button
             variant="danger"
             size="sm"
@@ -179,26 +179,24 @@ export default function IntegrationDetailPage() {
         </div>
       </div>
 
-      {/* Usage Meters */}
-      {meterLoading ? (
-        <LoadingSkeleton className="h-20" />
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Total Events", value: totalApiCalls, unit: "events", period: "all time" },
-            { label: "Webhook Events", value: totalWebhooks, unit: "events", period: "all time" },
-            { label: "Error Count", value: connection.errorCount, unit: "errors", period: "tracked" },
-            { label: "Sync Operations", value: (eventsData?.events ?? []).filter(e => e.eventType === 'SYNC').length, unit: "syncs", period: "recent" },
-          ].map((metric) => (
-            <Card key={metric.label} className="bg-[#1a1a2e] border-[#1e1e2e]">
+      {/* Usage Meters Grid */}
+      {usageMetrics.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {usageMetrics.map((metric) => (
+            <Card
+              key={`${metric.label}-${metric.period}`}
+              className="bg-wl-bg-elevated border-wl-border-default"
+            >
               <CardContent className="pt-6">
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                  {metric.label}
+                  {metric.label} ({metric.period})
                 </div>
                 <div className="text-2xl font-bold text-white">
                   {metric.value.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">{metric.unit}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {metric.unit}
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -209,7 +207,7 @@ export default function IntegrationDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Sync Controls */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardHeader>
               <CardTitle>Sync Controls</CardTitle>
             </CardHeader>
@@ -241,14 +239,15 @@ export default function IntegrationDetailPage() {
                 </Button>
               </div>
 
-              <div className="pt-4 border-t border-[#1e1e2e]">
+              <div className="pt-4 border-t border-wl-border-default">
                 <Button
                   variant="ghost"
                   className="w-full justify-center"
                   onClick={async () => {
                     try {
+                      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
                       const response = await fetch(
-                        `/api/v4/integrations/${connectionId}/test`,
+                        `${API_BASE}/api/v4/integrations/${connectionId}/test`,
                         { method: "POST" }
                       );
                       const result = await response.json();
@@ -274,8 +273,10 @@ export default function IntegrationDetailPage() {
           {showTestResult && (
             <Card
               className={cn(
-                "bg-[#1a1a2e] border",
-                showTestResult.success ? "border-emerald-500/20" : "border-red-500/20"
+                "bg-wl-bg-elevated border",
+                showTestResult.success
+                  ? "border-emerald-500/20"
+                  : "border-red-500/20"
               )}
             >
               <CardContent className="pt-6">
@@ -300,7 +301,7 @@ export default function IntegrationDetailPage() {
           )}
 
           {/* Recent Activity */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Activity</CardTitle>
@@ -313,40 +314,52 @@ export default function IntegrationDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {eventsLoading ? (
-                <LoadingSkeleton className="h-32" />
-              ) : activityLog.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-6">No activity events yet</p>
+              {activityLog.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No activity recorded yet.</p>
               ) : (
-                activityLog.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="p-3 rounded-lg border-l-2 border-l-emerald-500 bg-emerald-500/5"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          {eventLabel(entry.eventType)}
-                        </p>
-                        {entry.metadata && typeof entry.metadata === 'object' && 'description' in entry.metadata && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {String(entry.metadata.description)}
+                activityLog.map((entry) => {
+                  const time = new Date(entry.timestamp);
+                  const diffMs = new Date().getTime() - time.getTime();
+                  const diffMins = Math.floor(diffMs / 60000);
+                  const diffHours = Math.floor(diffMins / 60);
+
+                  let timeStr = `${diffMins}m ago`;
+                  if (diffHours > 0) timeStr = `${diffHours}h ago`;
+                  if (diffMins < 1) timeStr = "just now";
+
+                  return (
+                    <div
+                      key={entry.id}
+                      className={cn(
+                        "p-3 rounded-lg border-l-2",
+                        entry.status === "success"
+                          ? "border-l-emerald-500 bg-emerald-500/5"
+                          : "border-l-amber-500 bg-amber-500/5"
+                      )}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            {entry.type.replace(/_/g, " ")}
                           </p>
-                        )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            {entry.description}
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                          {timeStr}
+                        </span>
                       </div>
-                      <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                        {relativeTime(entry.timestamp)}
-                      </span>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </CardContent>
           </Card>
 
           {/* Error Log */}
           {errorLog.length > 0 && (
-            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+            <Card className="bg-wl-bg-elevated border-wl-border-default">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-500">
                   <AlertTriangle className="w-5 h-5" />
@@ -354,12 +367,8 @@ export default function IntegrationDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {errorLog.map((event) => {
-                  const isExpanded = expandedErrors.has(event.id);
-                  const meta = (event.metadata ?? {}) as Record<string, unknown>;
-                  const errorMsg = String(meta.error ?? meta.message ?? eventLabel(event.eventType));
-                  const context = String(meta.context ?? '');
-                  const trace = String(meta.stackTrace ?? meta.stack ?? '');
+                {errorLog.map((error) => {
+                  const isExpanded = expandedErrors.has(error.id);
 
                   return (
                     <div key={event.id} className="border border-red-500/20 rounded-lg bg-red-500/5">
@@ -385,10 +394,10 @@ export default function IntegrationDetailPage() {
                         </div>
                       </button>
 
-                      {isExpanded && trace && (
-                        <div className="border-t border-red-500/20 p-3 bg-[#0a0a0f]">
-                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-[#1a1a2e] p-2 rounded border border-[#1e1e2e]">
-                            {trace}
+                      {isExpanded && error.stackTrace && (
+                        <div className="border-t border-red-500/20 p-3 bg-wl-bg-root">
+                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-wl-bg-elevated p-2 rounded border border-wl-border-default">
+                            {error.stackTrace}
                           </pre>
                         </div>
                       )}
@@ -402,8 +411,58 @@ export default function IntegrationDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Webhook Configuration */}
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
+            <CardHeader>
+              <CardTitle>Webhook Configuration</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide">
+                  Webhook URL
+                </label>
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={`https://api.example.com/webhooks/${connectionId}`}
+                    readOnly
+                    className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-gray-400 font-mono"
+                  />
+                  <button className="p-2 hover:bg-wl-bg-elevated rounded transition-colors">
+                    <Copy className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">
+                  Subscribed Events
+                </label>
+                <div className="space-y-2">
+                  {["orders.created", "orders.updated", "inventory.changed"].map(
+                    (event) => (
+                      <label
+                        key={event}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-400">
+                          {event}
+                        </span>
+                      </label>
+                    )
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Connection Info */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardHeader>
               <CardTitle>Connection Info</CardTitle>
             </CardHeader>
@@ -414,7 +473,9 @@ export default function IntegrationDetailPage() {
               </div>
               <div>
                 <p className="text-gray-500 mb-1">Category</p>
-                <p className="text-white font-medium">{connection.category}</p>
+                <p className="text-white font-medium capitalize">
+                  {connection.category}
+                </p>
               </div>
               <div>
                 <p className="text-gray-500 mb-1">Status</p>

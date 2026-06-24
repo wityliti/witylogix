@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Route,
   TrendingUp,
@@ -12,10 +13,26 @@ import {
   Search,
   BarChart3,
   Gauge,
+  Map,
+  List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
 import { useApiList } from '@/hooks/use-api';
+import type { StopMarker } from '@/components/map/route-stop-markers-layer';
+
+const WLMap = dynamic(
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false },
+);
+const RoutePolylineLayer = dynamic(
+  () => import('@/components/map/route-polyline-layer').then((m) => ({ default: m.RoutePolylineLayer })),
+  { ssr: false },
+);
+const RouteStopMarkersLayer = dynamic(
+  () => import('@/components/map/route-stop-markers-layer').then((m) => ({ default: m.RouteStopMarkersLayer })),
+  { ssr: false },
+);
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -52,6 +69,21 @@ interface RouteListItem {
   driverName: string;
   stopCount: number;
   date: string;
+}
+
+interface RouteStop {
+  id: string;
+  sequence: number;
+  status: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  address?: string;
+  customerName?: string;
+}
+
+interface RouteDetail {
+  id: string;
+  stops: RouteStop[];
 }
 
 
@@ -140,29 +172,50 @@ function GaugeDial({ score, accent }: { score: number; accent: string }) {
 export default function RouteEfficiencyPage() {
   const [selectedRouteId, setSelectedRouteId] = useState<string>('');
   const [search, setSearch] = useState('');
+  const [scoreView, setScoreView] = useState<'score' | 'map'>('score');
 
   const { items: routesData, loading: routesLoading } = useApiList<RouteListItem>(
     '/api/v4/routes?status=COMPLETED&limit=20',
   );
 
-  const routes = routesData.filter((r) =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
+  const routes = (routesData ?? []).filter((r) =>
+    r.name?.toLowerCase().includes(search.toLowerCase()) ||
     r.driverName?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const firstRouteId = routesData[0]?.id ?? '';
-  const activeId = selectedRouteId || firstRouteId;
+  const activeRouteId = selectedRouteId || routes[0]?.id;
 
   const { data: efficiencyData, loading: efficiencyLoading } = useApiQuery<RouteEfficiencyResponse>(
-    activeId ? `/api/v4/ai/analytics/route-efficiency/${activeId}` : null!,
+    activeRouteId ? `/api/v4/ai/analytics/route-efficiency/${activeRouteId}` : null!,
+  );
+
+  const { data: routeDetail } = useApiQuery<RouteDetail>(
+    activeRouteId && scoreView === 'map' ? `/api/v4/routes/${activeRouteId}` : null!,
   );
 
   const score: RouteEfficiencyScore | null = efficiencyData?.data ?? null;
-  const accent = score ? scoreAccent(score.score) : '#60a5fa';
-  const selectedRoute = routes.find((r) => r.id === activeId) ?? routes[0] ?? null;
+  const accent = score ? scoreAccent(score.score) : '#818cf8';
+  const selectedRoute = routes.find((r) => r.id === activeRouteId);
 
-  const distDiff = score ? (score.metrics.actualDistance - score.metrics.plannedDistance) : 0;
-  const timeDiff = score ? (score.metrics.actualDuration - score.metrics.plannedDuration) : 0;
+  const mapCoords: Array<[number, number]> = (routeDetail?.stops ?? [])
+    .filter((s) => s.latitude != null && s.longitude != null)
+    .sort((a, b) => a.sequence - b.sequence)
+    .map((s) => [s.longitude!, s.latitude!]);
+
+  const mapStops: StopMarker[] = (routeDetail?.stops ?? [])
+    .filter((s) => s.latitude != null && s.longitude != null)
+    .map((s) => ({
+      id: s.id,
+      sequence: s.sequence,
+      lng: s.longitude!,
+      lat: s.latitude!,
+      status: (s.status as StopMarker['status']) ?? 'PENDING',
+      address: s.address,
+      customerName: s.customerName,
+    }));
+
+  const distDiff = score ? score.metrics.actualDistance - score.metrics.plannedDistance : 0;
+  const timeDiff = score ? score.metrics.actualDuration - score.metrics.plannedDuration : 0;
 
   return (
     <div className="min-h-screen">
@@ -192,12 +245,12 @@ export default function RouteEfficiencyPage() {
                 placeholder="Search routes…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#111118] border border-white/[0.06] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-sunken border border-white/[0.06] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
 
             {/* Route list */}
-            <div className="rounded-xl bg-[#111118] border border-white/[0.06] overflow-hidden">
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
               <div className="px-4 py-3 border-b border-white/[0.05]">
                 <p className="text-xs font-medium text-white/30 uppercase tracking-wider">Completed Routes</p>
               </div>
@@ -208,6 +261,12 @@ export default function RouteEfficiencyPage() {
                       <div key={i} className="h-16 bg-white/[0.03] rounded animate-pulse" />
                     ))}
                   </div>
+                ) : routes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-2 text-center px-4">
+                    <Route className="w-8 h-8 text-white/10" />
+                    <p className="text-sm text-white/25">No completed routes</p>
+                    <p className="text-xs text-white/15">Efficiency scores appear once routes are completed</p>
+                  </div>
                 ) : (
                   routes.map((route) => (
                     <button
@@ -215,20 +274,18 @@ export default function RouteEfficiencyPage() {
                       onClick={() => setSelectedRouteId(route.id)}
                       className={cn(
                         'w-full text-left px-4 py-3.5 border-b border-white/[0.03] last:border-0 transition-colors',
-                        selectedRouteId === route.id
+                        activeRouteId === route.id
                           ? 'bg-blue-500/10 border-l-2 border-l-blue-500'
                           : 'hover:bg-white/[0.02]',
                       )}
                     >
-                      <p className={cn('text-sm font-medium', selectedRouteId === route.id ? 'text-white/90' : 'text-white/60')}>
-                        {route.name}
+                      <p className={cn('text-sm font-medium', activeRouteId === route.id ? 'text-white/90' : 'text-white/60')}>
+                        {route.name ?? route.id.slice(0, 12)}
                       </p>
                       <div className="flex items-center gap-3 mt-1 text-[11px] text-white/25">
-                        <span>{route.driverName}</span>
-                        <span>·</span>
-                        <span>{route.stopCount} stops</span>
-                        <span>·</span>
-                        <span>{route.date}</span>
+                        {route.driverName && <span>{route.driverName}</span>}
+                        {route.stopCount != null && <><span>·</span><span>{route.stopCount} stops</span></>}
+                        {route.date && <><span>·</span><span>{route.date}</span></>}
                       </div>
                     </button>
                   ))
@@ -239,12 +296,73 @@ export default function RouteEfficiencyPage() {
 
           {/* Right: score panel */}
           <div className="space-y-4">
-            {efficiencyLoading ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] h-80 animate-pulse" />
-            ) : score ? (
+            {activeRouteId && (
+              <div className="flex items-center justify-end">
+                <div className="flex items-center rounded-lg border border-white/[0.08] overflow-hidden">
+                  <button
+                    onClick={() => setScoreView('score')}
+                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'score' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
+                  >
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    Score
+                  </button>
+                  <button
+                    onClick={() => setScoreView('map')}
+                    className={cn('px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all', scoreView === 'map' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50')}
+                  >
+                    <Map className="w-3.5 h-3.5" />
+                    Map
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {scoreView === 'map' && activeRouteId && (
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] overflow-hidden">
+                <div className="px-5 py-3 border-b border-white/[0.05]">
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{selectedRoute?.name ?? 'Route'} — Stop Map</p>
+                </div>
+                {mapCoords.length < 2 ? (
+                  <div className="flex flex-col items-center justify-center h-80 gap-3">
+                    <MapPin className="w-10 h-10 text-white/10" />
+                    <p className="text-sm text-white/30">No stop coordinates available</p>
+                    <p className="text-xs text-white/15">Stops appear once delivery locations have GPS coordinates</p>
+                  </div>
+                ) : (
+                  <div className="h-80">
+                    <WLMap center={[0, 20]} zoom={2} className="h-full w-full">
+                      <RoutePolylineLayer coordinates={mapCoords} variant="planned" fitBounds />
+                      <RouteStopMarkersLayer stops={mapStops} />
+                    </WLMap>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!activeRouteId && (
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
+                <div className="text-center">
+                  <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                  <p className="text-sm text-white/30">Select a route to see its efficiency score</p>
+                </div>
+              </div>
+            )}
+
+            {scoreView === 'score' && activeRouteId && (
+              efficiencyLoading ? (
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 animate-pulse" />
+            ) : !score ? (
+              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] h-80 flex items-center justify-center">
+                <div className="text-center">
+                  <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                  <p className="text-sm text-white/30">Score unavailable for this route</p>
+                  <p className="text-xs text-white/15 mt-1">Route may not have timing data</p>
+                </div>
+              </div>
+            ) : (
               <>
                 {/* Score card */}
-                <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-6">
+                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h2 className="text-base font-semibold text-white/70">{selectedRoute?.name}</h2>
@@ -318,7 +436,7 @@ export default function RouteEfficiencyPage() {
                 </div>
 
                 {/* Breakdown bars */}
-                <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
                   <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-5">Score Breakdown</h3>
                   <div className="space-y-4">
                     <BreakdownBar
@@ -360,7 +478,7 @@ export default function RouteEfficiencyPage() {
                 </div>
 
                 {/* Raw metrics */}
-                <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+                <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
                   <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Raw Metrics</h3>
                   <div className="grid grid-cols-3 gap-4">
                     {[
@@ -379,14 +497,7 @@ export default function RouteEfficiencyPage() {
                   </div>
                 </div>
               </>
-            ) : (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
-                <Gauge className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                <p className="text-sm text-white/25">
-                  {!activeId ? 'Select a route from the list to view its efficiency score' : 'No efficiency data available for this route'}
-                </p>
-              </div>
-            )}
+            ))}
           </div>
         </div>
       </div>

@@ -117,6 +117,7 @@ export class SageIntacctClient {
       referenceNumber: result.REFERENCE_NUMBER,
       transactionDate: entry.transactionDate,
       status: 'posted',
+      lines: [],
     };
   }
 
@@ -159,6 +160,7 @@ export class SageIntacctClient {
       customerId: bill.customerId,
       total: bill.total,
       status: 'draft',
+      lineItems: [],
     };
   }
 
@@ -201,6 +203,7 @@ export class SageIntacctClient {
       customerId: invoice.customerId,
       total: invoice.total,
       status: 'draft',
+      lineItems: [],
     };
   }
 

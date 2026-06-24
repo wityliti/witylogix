@@ -151,7 +151,7 @@ export default function IntegrationsPage() {
     <div className="space-y-8">
       {/* Health Score Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center gap-4">
               <HealthGauge
@@ -166,7 +166,7 @@ export default function IntegrationsPage() {
         </Card>
 
         {/* Stats Cards */}
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="space-y-2">
               <p className="text-sm text-gray-400">Total Providers</p>
@@ -177,7 +177,7 @@ export default function IntegrationsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="space-y-2">
               <p className="text-sm text-gray-400 flex items-center gap-2">
@@ -191,7 +191,7 @@ export default function IntegrationsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="space-y-2">
               <p className="text-sm text-gray-400 flex items-center gap-2">
@@ -229,7 +229,7 @@ export default function IntegrationsPage() {
 
       {/* Active Alerts */}
       {sortedAlerts.length > 0 && (
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
@@ -241,7 +241,7 @@ export default function IntegrationsPage() {
               {sortedAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className="flex items-start justify-between gap-3 p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]"
+                  className="flex items-start justify-between gap-3 p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default"
                 >
                   <div className="flex gap-3 flex-1 min-w-0">
                     {alert.severity === "critical" && (
@@ -294,7 +294,7 @@ export default function IntegrationsPage() {
 
       {/* Error Trend Chart */}
       {health?.errorTrend && health.errorTrend.length > 0 && (
-        <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
             <CardTitle>Error Trend (24h)</CardTitle>
           </CardHeader>
@@ -338,7 +338,7 @@ export default function IntegrationsPage() {
               placeholder="Search providers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function IntegrationsPage() {
               onChange={(e) =>
                 setSelectedCategory(e.target.value || null)
               }
-              className="px-3 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-white text-sm focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-blue-500"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -367,7 +367,7 @@ export default function IntegrationsPage() {
           <select
             value={selectedStatus ?? ""}
             onChange={(e) => setSelectedStatus(e.target.value || null)}
-            className="px-3 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-white text-sm focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-blue-500"
           >
             <option value="">All Status</option>
             {statuses.map((status) => (
@@ -388,7 +388,7 @@ export default function IntegrationsPage() {
           {filteredProviders.map((provider) => (
             <Card
               key={provider.id}
-              className="bg-[#12121a] border-[#1e1e2e] hover:border-[#1e1e2e] transition-colors cursor-pointer"
+              className="bg-wl-bg-surface border-wl-border-default hover:border-wl-border-default transition-colors cursor-pointer"
             >
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-4">
@@ -420,7 +420,7 @@ export default function IntegrationsPage() {
                       {provider.uptime.toFixed(1)}%
                     </span>
                   </div>
-                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                  <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                     <div
                       className={cn(
                         "h-2 rounded-full transition-all",

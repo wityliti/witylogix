@@ -14,7 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useApiMutation, useApiList } from '@/hooks/use-api';
+import { useApiQuery, useApiList } from '@/hooks/use-api';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -47,6 +47,11 @@ interface RecommendResponse {
   timestamp: string;
 }
 
+interface Zone {
+  id: string;
+  name: string;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 function scoreGrade(score: number) {
@@ -75,35 +80,22 @@ export default function SlotAIPage() {
   const [customerId, setCustomerId] = useState('');
   const [zoneId, setZoneId] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [queryUrl, setQueryUrl] = useState<string | null>(null);
 
-  const { items: zones, loading: zonesLoading } = useApiList<Zone>('/api/v4/zones');
+  const { items: zones, loading: zonesLoading } = useApiList<Zone>('/api/v4/zones?limit=50');
 
-  useEffect(() => {
-    if (zones.length > 0 && !zoneId) {
-      setZoneId(zones[0].id);
-    }
-  }, [zones, zoneId]);
+  const activeZoneId = zoneId || zones[0]?.id || '';
 
-  const { data, loading, execute } = useApiMutation<RecommendResponse>(
-    'POST',
-    '/api/v4/ai/slots/recommend',
-  );
+  const { data, loading } = useApiQuery<RecommendResponse>(queryUrl);
 
   const slots: ScoredSlot[] = data?.recommendations ?? [];
 
-  const handleSearch = async () => {
-    setHasSearched(true);
-    try {
-      await execute({
-        customerId: customerId || undefined,
-        zoneId,
-        date: new Date(date).toISOString(),
-        maxSlots: 5,
-      });
-    } catch {
-      // error displayed via empty state
-    }
+  const handleSearch = () => {
+    if (!customerId.trim()) return;
+    const dateIso = encodeURIComponent(new Date(date + 'T00:00:00.000Z').toISOString());
+    setQueryUrl(
+      `/api/v4/ai/slots/recommend?customerId=${encodeURIComponent(customerId.trim())}&zoneId=${encodeURIComponent(activeZoneId)}&date=${dateIso}&maxSlots=5`,
+    );
   };
 
   return (
@@ -123,7 +115,7 @@ export default function SlotAIPage() {
 
       <div className="px-6 lg:px-8 pb-8 space-y-5">
         {/* Query form */}
-        <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
+        <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
           <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Preview Slot Recommendations</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Customer ID */}
@@ -134,7 +126,7 @@ export default function SlotAIPage() {
                 placeholder="cust_xxxxxxxx"
                 value={customerId}
                 onChange={(e) => setCustomerId(e.target.value)}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 placeholder:text-white/15 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-sunken border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 placeholder:text-white/15 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
 
@@ -142,15 +134,15 @@ export default function SlotAIPage() {
             <div>
               <label className="block text-xs text-white/30 mb-1.5">Delivery Zone</label>
               <select
-                value={zoneId}
+                value={activeZoneId}
                 onChange={(e) => setZoneId(e.target.value)}
                 disabled={zonesLoading}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
+                className="w-full bg-wl-bg-sunken border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
               >
                 {zonesLoading ? (
                   <option>Loading zones…</option>
                 ) : zones.length === 0 ? (
-                  <option value="">No zones available</option>
+                  <option value="">No zones configured</option>
                 ) : (
                   zones.map((z) => (
                     <option key={z.id} value={z.id}>{z.name}</option>
@@ -166,7 +158,7 @@ export default function SlotAIPage() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-[#0e0e15] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-wl-bg-sunken border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white/70 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -186,10 +178,23 @@ export default function SlotAIPage() {
         </div>
 
         {/* Results */}
-        {!hasSearched ? (
-          <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
+        {!queryUrl ? (
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-12 text-center">
             <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
-            <p className="text-sm text-white/25">Enter a zone and date above to preview AI slot recommendations</p>
+            <p className="text-sm text-white/25">Enter a customer ID and click "Get Recommendations"</p>
+            <p className="text-xs text-white/15 mt-1">Customer ID is required to personalise slot scoring</p>
+          </div>
+        ) : loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-28 bg-wl-bg-surface border border-white/[0.06] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : slots.length === 0 ? (
+          <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-12 text-center">
+            <CalendarDays className="w-10 h-10 text-white/10 mx-auto mb-3" />
+            <p className="text-sm text-white/25">No slot recommendations available</p>
+            <p className="text-xs text-white/15 mt-1">Try a different zone or date</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -203,19 +208,7 @@ export default function SlotAIPage() {
               </div>
             )}
 
-            {loading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-28 bg-[#111118] border border-white/[0.06] rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : slots.length === 0 ? (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-12 text-center">
-                <BarChart3 className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                <p className="text-sm text-white/25">No slot recommendations available for this zone and date</p>
-              </div>
-            ) : (
-              slots.map((slot, idx) => {
+            {slots.map((slot, idx) => {
                 const isTop = idx === 0;
                 const grade = scoreGrade(slot.score);
                 const driverPct = slot.driverAvailability.total > 0
@@ -229,7 +222,7 @@ export default function SlotAIPage() {
                       'rounded-xl border p-5 transition-all',
                       isTop
                         ? 'bg-emerald-500/5 border-emerald-500/20'
-                        : 'bg-[#111118] border-white/[0.06] hover:border-white/[0.10]',
+                        : 'bg-wl-bg-surface border-white/[0.06] hover:border-white/[0.10]',
                     )}
                   >
                     <div className="flex items-start gap-4">
@@ -271,11 +264,11 @@ export default function SlotAIPage() {
                             </div>
                             <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                               <div
-                                className="h-full rounded-full"
-                                style={{
-                                  width: `${driverPct}%`,
-                                  background: driverPct >= 70 ? '#34d399' : driverPct >= 40 ? '#fbbf24' : '#f87171',
-                                }}
+                                className={cn(
+                                  'h-full rounded-full',
+                                  driverPct >= 70 ? 'bg-wl-success-400' : driverPct >= 40 ? 'bg-wl-warning-400' : 'bg-wl-danger-400',
+                                )}
+                                style={{ width: `${driverPct}%` }}
                               />
                             </div>
                           </div>
@@ -308,13 +301,12 @@ export default function SlotAIPage() {
                     </div>
                   </div>
                 );
-              })
-            )}
+              })}
           </div>
         )}
 
         {/* Info footer */}
-        {hasSearched && slots.length > 0 && (
+        {queryUrl && slots.length > 0 && (
           <p className="text-[11px] text-white/20 text-center">
             Recommendations scored by demand forecast · driver availability · customer preferences · historical success rates
           </p>

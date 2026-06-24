@@ -82,6 +82,7 @@ export class JwtService {
     const now = Math.floor(Date.now() / 1000);
     const token: AccessTokenPayload = {
       ...payload,
+      jti: this.generateJti(),
       iat: now,
       exp: now + this.accessTokenTtl,
       sub: payload.userId,
@@ -106,6 +107,7 @@ export class JwtService {
     const now = Math.floor(Date.now() / 1000);
     const token: RefreshTokenPayload = {
       ...payload,
+      jti: this.generateJti(),
       version,
       iat: now,
       exp: now + this.refreshTokenTtl,
@@ -125,6 +127,11 @@ export class JwtService {
    */
   verifyAccessToken(token: string): TokenVerificationResult {
     try {
+      // Check blacklist before signature verification
+      if (this.isTokenBlacklisted(token)) {
+        return { valid: false, error: "Token has been revoked" };
+      }
+
       const payload = this.verify(token) as unknown as AccessTokenPayload;
 
       // Additional validation
@@ -135,7 +142,7 @@ export class JwtService {
         };
       }
 
-      if (payload.exp < Math.floor(Date.now() / 1000)) {
+      if (payload.exp <= Math.floor(Date.now() / 1000)) {
         return {
           valid: false,
           error: "Token expired",
@@ -162,6 +169,11 @@ export class JwtService {
    */
   verifyRefreshToken(token: string): TokenVerificationResult {
     try {
+      // Check blacklist before signature verification
+      if (this.isTokenBlacklisted(token)) {
+        return { valid: false, error: "Token has been revoked" };
+      }
+
       const payload = this.verify(token) as unknown as RefreshTokenPayload;
 
       // Additional validation
@@ -172,7 +184,7 @@ export class JwtService {
         };
       }
 
-      if (payload.exp < Math.floor(Date.now() / 1000)) {
+      if (payload.exp <= Math.floor(Date.now() / 1000)) {
         return {
           valid: false,
           error: "Token expired",
@@ -199,12 +211,19 @@ export class JwtService {
    */
   revokeToken(token: string): void {
     try {
-      const payload = this.verify(token) as { exp: number };
-      const jti = `${payload.exp}-${token.substring(0, 8)}`;
-      this.blacklist.add(jti);
-      this.blacklistTtl.set(jti, payload.exp);
+      const parts = token.split(".");
+      if (parts.length === 3) {
+        const payload = JSON.parse(this.base64UrlDecode(parts[1]));
+        const jti = payload.jti || `${payload.exp}-${token.substring(0, 8)}`;
+        this.blacklist.add(jti);
+        this.blacklistTtl.set(jti, payload.exp || Math.floor(Date.now() / 1000) + 3600);
+      } else {
+        // Mark raw token as revoked
+        this.blacklist.add(token);
+      }
     } catch {
-      // Token already invalid or can't decode - ignore
+      // Can't decode — mark raw token as revoked
+      this.blacklist.add(token);
     }
   }
 
@@ -215,14 +234,31 @@ export class JwtService {
    * @returns true if token is revoked
    */
   isTokenRevoked(token: string): boolean {
+    return this.isTokenBlacklisted(token);
+  }
+
+  /**
+   * Check blacklist without calling verify (avoids recursion).
+   */
+  private isTokenBlacklisted(token: string): boolean {
+    // Check raw token first (for invalid tokens added directly)
+    if (this.blacklist.has(token)) return true;
     try {
-      const payload = this.verify(token) as { exp: number };
-      const jti = `${payload.exp}-${token.substring(0, 8)}`;
+      const parts = token.split(".");
+      if (parts.length !== 3) return false;
+      const payload = JSON.parse(this.base64UrlDecode(parts[1]));
+      const jti = payload.jti || `${payload.exp}-${token.substring(0, 8)}`;
       return this.blacklist.has(jti);
     } catch {
-      // Invalid token - treat as revoked
-      return true;
+      return false;
     }
+  }
+
+  /**
+   * Generate a unique token identifier.
+   */
+  private generateJti(): string {
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
   }
 
   /**
@@ -237,7 +273,7 @@ export class JwtService {
     }
 
     const parts = authHeader.split(" ");
-    if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
+    if (parts.length !== 2 || parts[0] !== "Bearer") {
       return null;
     }
 
@@ -269,11 +305,6 @@ export class JwtService {
    * Verify and decode a JWT token.
    */
   private verify(token: string): Record<string, unknown> {
-    // Check blacklist first
-    if (this.isTokenRevoked(token)) {
-      throw new Error("Token has been revoked");
-    }
-
     const parts = token.split(".");
     if (parts.length !== 3) {
       throw new Error("Invalid token format");
@@ -301,7 +332,7 @@ export class JwtService {
       }
 
       const now = Math.floor(Date.now() / 1000);
-      if (payload.exp && payload.exp < now) {
+      if (payload.exp && payload.exp <= now) {
         throw new TokenExpiredError("local", "Token has expired");
       }
 

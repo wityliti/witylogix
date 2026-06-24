@@ -190,7 +190,7 @@ export default function AccountingSettingsPage() {
   };
 
   return (
-    <div className="space-y-6 bg-[#0a0a0f] min-h-screen p-8">
+    <div className="space-y-6 bg-wl-bg-root min-h-screen p-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white">Accounting Integration</h1>
@@ -212,7 +212,7 @@ export default function AccountingSettingsPage() {
           const connection = connections.find(c => c.provider === provider && c.isActive);
 
           return (
-            <Card key={provider} className={cn('relative border border-[#1e1e2e] bg-[#12121a]', connection && 'border-blue-500')}>
+            <Card key={provider} className={cn('relative border border-wl-border-default bg-wl-bg-surface', connection && 'border-blue-500')}>
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -237,11 +237,11 @@ export default function AccountingSettingsPage() {
                   <>
                     {/* Connection Stats */}
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="bg-[#1a1a2e] rounded p-2">
+                      <div className="bg-wl-bg-elevated rounded p-2">
                         <div className="text-gray-400 text-xs">Synced</div>
                         <div className="text-lg font-semibold text-white">{connection.syncedCount || 0}</div>
                       </div>
-                      <div className="bg-[#1a1a2e] rounded p-2">
+                      <div className="bg-wl-bg-elevated rounded p-2">
                         <div className="text-gray-400 text-xs">Failed</div>
                         <div className="text-lg font-semibold text-red-500">{connection.failedCount || 0}</div>
                       </div>
@@ -312,7 +312,7 @@ export default function AccountingSettingsPage() {
       {/* Tabs */}
       {connections.some(c => c.isActive) && (
         <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-[#1a1a2e] border border-[#1e1e2e]">
+          <TabsList className="grid w-full grid-cols-3 bg-wl-bg-elevated border border-wl-border-default">
             <TabsTrigger value="settings">Sync Settings</TabsTrigger>
             <TabsTrigger value="manual">Manual Sync</TabsTrigger>
             <TabsTrigger value="history">Sync History</TabsTrigger>
@@ -320,14 +320,14 @@ export default function AccountingSettingsPage() {
 
           {/* Sync Settings Tab */}
           <TabsContent value="settings">
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle>Sync Settings</CardTitle>
                 <CardDescription>Configure automatic invoice synchronization</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Auto Sync Toggle */}
-                <div className="flex items-center justify-between py-3 border-b border-[#1e1e2e]">
+                <div className="flex items-center justify-between py-3 border-b border-wl-border-default">
                   <div>
                     <p className="font-medium text-white">Automatic Sync</p>
                     <p className="text-sm text-gray-400">
@@ -345,7 +345,7 @@ export default function AccountingSettingsPage() {
                   <div className="py-3">
                     <p className="font-medium mb-3 text-white">Sync Frequency</p>
                     <Select value={syncFrequency} onValueChange={setSyncFrequency}>
-                      <SelectTrigger className="w-full border-[#1e1e2e] bg-[#1a1a2e] text-white">
+                      <SelectTrigger className="w-full border-wl-border-default bg-wl-bg-elevated text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -358,7 +358,7 @@ export default function AccountingSettingsPage() {
                 )}
 
                 {/* Sync Options */}
-                <div className="space-y-3 py-3 border-t border-[#1e1e2e]">
+                <div className="space-y-3 py-3 border-t border-wl-border-default">
                   <p className="font-medium text-white">Sync Options</p>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -366,7 +366,7 @@ export default function AccountingSettingsPage() {
                         type="checkbox"
                         id="include-discounts"
                         defaultChecked
-                        className="h-4 w-4 rounded border border-[#1e1e2e]"
+                        className="h-4 w-4 rounded border border-wl-border-default"
                       />
                       <label
                         htmlFor="include-discounts"
@@ -380,7 +380,7 @@ export default function AccountingSettingsPage() {
                         type="checkbox"
                         id="include-taxes"
                         defaultChecked
-                        className="h-4 w-4 rounded border border-[#1e1e2e]"
+                        className="h-4 w-4 rounded border border-wl-border-default"
                       />
                       <label
                         htmlFor="include-taxes"
@@ -402,7 +402,7 @@ export default function AccountingSettingsPage() {
 
           {/* Manual Sync Tab */}
           <TabsContent value="manual">
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle>Manual Sync</CardTitle>
                 <CardDescription>Manually sync invoices to your accounting software</CardDescription>
@@ -414,7 +414,7 @@ export default function AccountingSettingsPage() {
                     value={manualSyncProvider}
                     onValueChange={(v) => setManualSyncProvider(v as 'quickbooks' | 'xero')}
                   >
-                    <SelectTrigger className="border-[#1e1e2e] bg-[#1a1a2e] text-white">
+                    <SelectTrigger className="border-wl-border-default bg-wl-bg-elevated text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -448,7 +448,7 @@ export default function AccountingSettingsPage() {
 
           {/* Sync History Tab */}
           <TabsContent value="history">
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle>Sync History</CardTitle>
                 <CardDescription>Recent invoice synchronization events</CardDescription>
@@ -457,7 +457,7 @@ export default function AccountingSettingsPage() {
                 <div className="overflow-x-auto">
                   <table>
                     <TableHeader>
-                      <TableRow className="border-b border-[#1e1e2e]">
+                      <TableRow className="border-b border-wl-border-default">
                         <TableHead className="text-white">Invoice</TableHead>
                         <TableHead className="text-white">Provider</TableHead>
                         <TableHead className="text-white">Status</TableHead>
@@ -468,7 +468,7 @@ export default function AccountingSettingsPage() {
                     <TableBody>
                       {syncHistory.length > 0 ? (
                         syncHistory.map(record => (
-                          <TableRow key={record.id} className="border-b border-[#1e1e2e]">
+                          <TableRow key={record.id} className="border-b border-wl-border-default">
                             <TableCell className="font-mono text-sm text-white">{record.invoiceId.slice(0, 8)}</TableCell>
                             <TableCell className="capitalize text-white">{record.provider}</TableCell>
                             <TableCell>

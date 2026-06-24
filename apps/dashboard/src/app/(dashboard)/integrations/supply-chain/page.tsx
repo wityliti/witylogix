@@ -10,19 +10,15 @@ import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/ui/stat-card';
 import {
   Package,
-  Truck,
   Warehouse,
   AlertTriangle,
   CheckCircle,
   Plus,
   Settings,
-  Zap,
   TrendingUp,
-  BarChart3,
   RefreshCw,
   Pause,
   Play,
-  Trash2,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
@@ -56,34 +52,6 @@ interface InventorySync {
   successRate: number;
 }
 
-interface FulfillmentMetric {
-  warehouse: string;
-  totalOrders: number;
-  onTime: number;
-  atRisk: number;
-  late: number;
-  avgProcessingTime: number;
-  fulfillmentRate: number;
-}
-
-interface StockLevel {
-  warehouse: string;
-  totalSku: number;
-  inStock: number;
-  lowStock: number;
-  outOfStock: number;
-  lastSyncTime: string;
-}
-
-interface IntegrationHealth {
-  provider: SupplyChainProvider;
-  uptime: number;
-  errorRate: number;
-  avgLatency: number;
-  syncSuccess: number;
-  warnings: number;
-  alerts: number;
-}
 
 const SUPPLY_CHAIN_PROVIDERS = [
   {
@@ -124,267 +92,6 @@ const SUPPLY_CHAIN_PROVIDERS = [
   },
 ];
 
-const WAREHOUSE_CONNECTIONS: WarehouseConnection[] = [
-  {
-    id: "wh-1",
-    provider: "manhattan",
-    name: "Manhattan - East Coast Hub",
-    warehouseCount: 3,
-    syncStatus: "SYNCED",
-    lastSync: "2 minutes ago",
-    nextSync: "in 28 minutes",
-    errorCount: 0,
-  },
-  {
-    id: "wh-2",
-    provider: "blueyonder",
-    name: "Blue Yonder - Central Region",
-    warehouseCount: 5,
-    syncStatus: "SYNCING",
-    lastSync: "syncing...",
-    nextSync: "auto",
-    errorCount: 0,
-  },
-  {
-    id: "wh-3",
-    provider: "korber",
-    name: "Körber - West Coast Automation",
-    warehouseCount: 2,
-    syncStatus: "SYNCED",
-    lastSync: "5 minutes ago",
-    nextSync: "in 25 minutes",
-    errorCount: 0,
-  },
-  {
-    id: "wh-4",
-    provider: "deposco",
-    name: "Deposco - Secondary Fulfillment",
-    warehouseCount: 4,
-    syncStatus: "FAILED",
-    lastSync: "2 hours ago",
-    nextSync: "retry in 5 min",
-    errorCount: 3,
-  },
-  {
-    id: "wh-5",
-    provider: "extensiv",
-    name: "Extensiv - Multi-Channel",
-    warehouseCount: 6,
-    syncStatus: "SYNCED",
-    lastSync: "1 minute ago",
-    nextSync: "in 59 minutes",
-    errorCount: 0,
-  },
-  {
-    id: "wh-6",
-    provider: "fishbowl",
-    name: "Fishbowl - Manufacturing",
-    warehouseCount: 2,
-    syncStatus: "SYNCED",
-    lastSync: "3 minutes ago",
-    nextSync: "in 27 minutes",
-    errorCount: 0,
-  },
-];
-
-const INVENTORY_SYNCS: InventorySync[] = [
-  {
-    id: "sync-1",
-    warehouse: "East Coast Hub",
-    mode: "REAL_TIME",
-    status: "ACTIVE",
-    itemsTracked: 45320,
-    lastUpdate: "1 second ago",
-    successRate: 99.98,
-  },
-  {
-    id: "sync-2",
-    warehouse: "Central Region",
-    mode: "BATCH",
-    interval: "Every 4 hours",
-    status: "ACTIVE",
-    itemsTracked: 78540,
-    lastUpdate: "12 minutes ago",
-    successRate: 99.85,
-  },
-  {
-    id: "sync-3",
-    warehouse: "West Coast Automation",
-    mode: "SCHEDULED",
-    interval: "Daily 02:00 AM",
-    status: "ACTIVE",
-    itemsTracked: 32150,
-    lastUpdate: "yesterday 02:15 AM",
-    successRate: 99.92,
-  },
-  {
-    id: "sync-4",
-    warehouse: "Secondary Fulfillment",
-    mode: "BATCH",
-    interval: "Every 8 hours",
-    status: "PAUSED",
-    itemsTracked: 28900,
-    lastUpdate: "2 days ago",
-    successRate: 85.4,
-  },
-  {
-    id: "sync-5",
-    warehouse: "Multi-Channel",
-    mode: "REAL_TIME",
-    status: "ACTIVE",
-    itemsTracked: 156800,
-    lastUpdate: "3 seconds ago",
-    successRate: 99.96,
-  },
-];
-
-const FULFILLMENT_METRICS: FulfillmentMetric[] = [
-  {
-    warehouse: "East Coast Hub",
-    totalOrders: 2450,
-    onTime: 2398,
-    atRisk: 35,
-    late: 17,
-    avgProcessingTime: 4.2,
-    fulfillmentRate: 97.9,
-  },
-  {
-    warehouse: "Central Region",
-    totalOrders: 3820,
-    onTime: 3745,
-    atRisk: 58,
-    late: 17,
-    avgProcessingTime: 5.1,
-    fulfillmentRate: 98.0,
-  },
-  {
-    warehouse: "West Coast Automation",
-    totalOrders: 1620,
-    onTime: 1598,
-    atRisk: 15,
-    late: 7,
-    avgProcessingTime: 3.8,
-    fulfillmentRate: 98.6,
-  },
-  {
-    warehouse: "Secondary Fulfillment",
-    totalOrders: 920,
-    onTime: 855,
-    atRisk: 42,
-    late: 23,
-    avgProcessingTime: 6.5,
-    fulfillmentRate: 92.9,
-  },
-  {
-    warehouse: "Multi-Channel",
-    totalOrders: 5340,
-    onTime: 5210,
-    atRisk: 98,
-    late: 32,
-    avgProcessingTime: 4.9,
-    fulfillmentRate: 97.6,
-  },
-];
-
-const STOCK_LEVELS: StockLevel[] = [
-  {
-    warehouse: "East Coast Hub",
-    totalSku: 12450,
-    inStock: 11980,
-    lowStock: 385,
-    outOfStock: 85,
-    lastSyncTime: "2 minutes ago",
-  },
-  {
-    warehouse: "Central Region",
-    totalSku: 18920,
-    inStock: 18320,
-    lowStock: 520,
-    outOfStock: 80,
-    lastSyncTime: "12 minutes ago",
-  },
-  {
-    warehouse: "West Coast Automation",
-    totalSku: 8340,
-    inStock: 8120,
-    lowStock: 180,
-    outOfStock: 40,
-    lastSyncTime: "3 minutes ago",
-  },
-  {
-    warehouse: "Secondary Fulfillment",
-    totalSku: 5620,
-    inStock: 5180,
-    lowStock: 340,
-    outOfStock: 100,
-    lastSyncTime: "2 hours ago",
-  },
-  {
-    warehouse: "Multi-Channel",
-    totalSku: 32450,
-    inStock: 31240,
-    lowStock: 980,
-    outOfStock: 230,
-    lastSyncTime: "1 second ago",
-  },
-];
-
-const INTEGRATION_HEALTH: IntegrationHealth[] = [
-  {
-    provider: "manhattan",
-    uptime: 99.98,
-    errorRate: 0.02,
-    avgLatency: 245,
-    syncSuccess: 99.98,
-    warnings: 0,
-    alerts: 0,
-  },
-  {
-    provider: "blueyonder",
-    uptime: 99.95,
-    errorRate: 0.05,
-    avgLatency: 320,
-    syncSuccess: 99.85,
-    warnings: 2,
-    alerts: 0,
-  },
-  {
-    provider: "korber",
-    uptime: 99.99,
-    errorRate: 0.01,
-    avgLatency: 198,
-    syncSuccess: 99.92,
-    warnings: 0,
-    alerts: 0,
-  },
-  {
-    provider: "deposco",
-    uptime: 98.2,
-    errorRate: 1.8,
-    avgLatency: 450,
-    syncSuccess: 85.4,
-    warnings: 5,
-    alerts: 2,
-  },
-  {
-    provider: "extensiv",
-    uptime: 99.96,
-    errorRate: 0.04,
-    avgLatency: 280,
-    syncSuccess: 99.96,
-    warnings: 1,
-    alerts: 0,
-  },
-  {
-    provider: "fishbowl",
-    uptime: 99.92,
-    errorRate: 0.08,
-    avgLatency: 310,
-    syncSuccess: 99.92,
-    warnings: 1,
-    alerts: 0,
-  },
-];
 
 const syncStatusVariant = (
   status: SyncStatus
@@ -399,32 +106,37 @@ const syncStatusVariant = (
 };
 
 export default function SupplyChainIntegrationsPage() {
-  const [expandedWarehouse, setExpandedWarehouse] = useState<string | null>("wh-1");
+  const [expandedWarehouse, setExpandedWarehouse] = useState<string | null>(null);
   const [view, setView] = useState<"warehouses" | "inventory" | "fulfillment" | "health">(
     "warehouses"
   );
 
+  const {
+    items: warehouseConnections,
+    loading: warehousesLoading,
+    error: warehousesError,
+  } = useApiList<WarehouseConnection>('/api/v4/integrations/connections?category=supply-chain');
+
+  const {
+    items: inventorySyncs,
+    loading: inventoryLoading,
+    error: inventoryError,
+  } = useApiList<InventorySync>('/api/v4/supply-chain/stock-gauges');
+
+  const connections = warehouseConnections ?? [];
+  const syncs = inventorySyncs ?? [];
+
   const syncedCount = useMemo(
-    () => WAREHOUSE_CONNECTIONS.filter((w) => w.syncStatus === "SYNCED").length,
-    []
+    () => connections.filter((w) => w.syncStatus === "SYNCED").length,
+    [connections]
   );
   const totalWarehouses = useMemo(
-    () => WAREHOUSE_CONNECTIONS.reduce((sum, w) => sum + w.warehouseCount, 0),
-    []
+    () => connections.reduce((sum, w) => sum + w.warehouseCount, 0),
+    [connections]
   );
   const totalItems = useMemo(
-    () => INVENTORY_SYNCS.reduce((sum, s) => sum + s.itemsTracked, 0),
-    []
-  );
-  const avgFulfillmentRate = useMemo(
-    () =>
-      (FULFILLMENT_METRICS.reduce((sum, m) => sum + m.fulfillmentRate, 0) /
-        FULFILLMENT_METRICS.length).toFixed(1),
-    []
-  );
-  const totalOutOfStock = useMemo(
-    () => STOCK_LEVELS.reduce((sum, s) => sum + s.outOfStock, 0),
-    []
+    () => syncs.reduce((sum, s) => sum + s.itemsTracked, 0),
+    [syncs]
   );
 
   return (
@@ -442,37 +154,33 @@ export default function SupplyChainIntegrationsPage() {
         }
       />
 
-      <div className={cn("p-6 bg-[#0a0a0f]")}>
+      <div className={cn("p-6 bg-wl-bg-root")}>
         {/* Top Stats */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
           <StatCard
             label="Connected Warehouses"
             value={totalWarehouses}
-            change={{ value: 2, label: "active" }}
             icon={<Warehouse size={16} />}
             accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Items Tracked"
-            value={`${Math.floor(totalItems / 1000)}K`}
-            change={{ value: 5, label: "this month" }}
+            value={totalItems > 0 ? `${Math.floor(totalItems / 1000)}K` : '—'}
             icon={<Package size={16} />}
             accentColor="#3b82f6"
             index={1}
           />
           <StatCard
-            label="Fulfillment Rate"
-            value={`${avgFulfillmentRate}%`}
-            change={{ value: 2, label: "vs last month" }}
+            label="Synced"
+            value={syncedCount}
             icon={<TrendingUp size={16} />}
             accentColor="#3b82f6"
             index={2}
           />
           <StatCard
-            label="Stock Alerts"
-            value={totalOutOfStock}
-            change={{ value: -3, label: "vs yesterday" }}
+            label="Connection Errors"
+            value={connections.filter((w) => w.syncStatus === "FAILED").length}
             icon={<AlertTriangle size={16} />}
             accentColor="#3b82f6"
             index={3}
@@ -480,7 +188,7 @@ export default function SupplyChainIntegrationsPage() {
         </div>
 
         {/* View Toggle */}
-        <div className={cn("flex gap-2 mb-6 bg-[#1a1a2e] rounded-md p-1 w-fit flex-wrap")}>
+        <div className={cn("flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit flex-wrap")}>
           {(["warehouses", "inventory", "fulfillment", "health"] as const).map((v) => (
             <button
               key={v}
@@ -502,7 +210,7 @@ export default function SupplyChainIntegrationsPage() {
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
               <h3 className={cn("text-sm font-semibold text-white")}>
-                Warehouse Connections ({WAREHOUSE_CONNECTIONS.length})
+                Warehouse Connections ({connections.length})
               </h3>
               <span className={cn("text-xs text-gray-300")}>
                 {syncedCount} synced
@@ -510,7 +218,7 @@ export default function SupplyChainIntegrationsPage() {
             </div>
 
             {/* Order Flow Diagram */}
-            <Card className={cn("mb-6 bg-gradient-to-r from-[#0a0a0f]elevated to-[#0a0a0f]surface")}>
+            <Card className={cn("mb-6 bg-wl-bg-root")}>
               <div className={cn("p-4")}>
                 <p className={cn("text-xs font-semibold text-white mb-4")}>
                   Order Flow Pipeline
@@ -542,7 +250,20 @@ export default function SupplyChainIntegrationsPage() {
             </Card>
 
             {/* Connection Cards */}
-            {WAREHOUSE_CONNECTIONS.map((warehouse, idx) => {
+            {warehousesLoading && (
+              <div className={cn("text-sm text-gray-400 py-8 text-center")}>Loading connections...</div>
+            )}
+            {warehousesError && (
+              <div className={cn("text-sm text-red-400 py-8 text-center")}>
+                Failed to load warehouse connections.
+              </div>
+            )}
+            {!warehousesLoading && !warehousesError && connections.length === 0 && (
+              <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+                No supply-chain integrations connected yet. Click &quot;Connect Warehouse&quot; to get started.
+              </div>
+            )}
+            {connections.map((warehouse, idx) => {
               const provider = SUPPLY_CHAIN_PROVIDERS.find(
                 (p) => p.slug === warehouse.provider
               );
@@ -594,7 +315,7 @@ export default function SupplyChainIntegrationsPage() {
                     </div>
 
                     {isExpanded && (
-                      <div className={cn("border-t border-[#1e1e2e] pt-3 mt-3 space-y-3")}>
+                      <div className={cn("border-t border-wl-border-default pt-3 mt-3 space-y-3")}>
                         {/* Location Mapping */}
                         <div>
                           <p className={cn("text-xs font-semibold text-white mb-2")}>
@@ -605,7 +326,7 @@ export default function SupplyChainIntegrationsPage() {
                               <div
                                 key={i}
                                 className={cn(
-                                  "p-2 rounded bg-[#12121a] border border-[#1e1e2e] flex items-center gap-2"
+                                  "p-2 rounded bg-wl-bg-surface border border-wl-border-default flex items-center gap-2"
                                 )}
                               >
                                 <Warehouse size={14} className={cn("text-blue-400")} />
@@ -618,7 +339,7 @@ export default function SupplyChainIntegrationsPage() {
                         </div>
 
                         {/* Sync Configuration */}
-                        <div className={cn("bg-[#12121a] rounded p-3")}>
+                        <div className={cn("bg-wl-bg-surface rounded p-3")}>
                           <p className={cn("text-xs font-semibold text-white mb-2")}>
                             Sync Details
                           </p>
@@ -675,7 +396,20 @@ export default function SupplyChainIntegrationsPage() {
               Inventory Sync Configuration
             </h3>
 
-            {INVENTORY_SYNCS.map((sync, idx) => (
+            {inventoryLoading && (
+              <div className={cn("text-sm text-gray-400 py-8 text-center")}>Loading inventory syncs...</div>
+            )}
+            {inventoryError && (
+              <div className={cn("text-sm text-red-400 py-8 text-center")}>
+                Failed to load inventory sync data.
+              </div>
+            )}
+            {!inventoryLoading && !inventoryError && syncs.length === 0 && (
+              <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+                Connect a supply-chain integration to see inventory sync configuration.
+              </div>
+            )}
+            {syncs.map((sync, idx) => (
               <Card key={sync.id} className={cn("blue-500")} style={{ animationDelay: `${idx * 40}ms` }}>
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-start justify-between mb-3")}>
@@ -684,7 +418,7 @@ export default function SupplyChainIntegrationsPage() {
                         {sync.warehouse}
                       </p>
                       <div className={cn("flex items-center gap-3 mt-1 text-xs text-gray-300")}>
-                        <span className={cn("px-2 py-1 rounded bg-[#12121a] font-medium")}>
+                        <span className={cn("px-2 py-1 rounded bg-wl-bg-surface font-medium")}>
                           {sync.mode.replace(/_/g, " ")}
                         </span>
                         {sync.interval && (
@@ -703,7 +437,7 @@ export default function SupplyChainIntegrationsPage() {
                     </Badge>
                   </div>
 
-                  <div className={cn("bg-[#12121a] rounded p-3 mb-3")}>
+                  <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
                         <p className={cn("text-gray-300 mb-1")}>Items Tracked</p>
@@ -759,110 +493,8 @@ export default function SupplyChainIntegrationsPage() {
             <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Fulfillment SLA Dashboard
             </h3>
-
-            {FULFILLMENT_METRICS.map((metric, idx) => (
-              <Card key={metric.warehouse} className={cn("blue-500")} style={{ animationDelay: `${idx * 40}ms` }}>
-                <div className={cn("p-4")}>
-                  <div className={cn("flex items-center justify-between mb-4")}>
-                    <p className={cn("text-sm font-semibold text-white")}>
-                      {metric.warehouse}
-                    </p>
-                    <div className={cn("text-right")}>
-                      <p className={cn("text-2xl font-bold text-emerald-500")}>
-                        {metric.fulfillmentRate}%
-                      </p>
-                      <p className={cn("text-xs text-gray-300")}>Fulfillment Rate</p>
-                    </div>
-                  </div>
-
-                  <div className={cn("grid grid-cols-4 gap-3 mb-4")}>
-                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-emerald-500")}>
-                        {metric.onTime}
-                      </p>
-                      <p className={cn("text-xs text-gray-300 mt-1")}>On Time</p>
-                    </div>
-                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-amber-500")}>
-                        {metric.atRisk}
-                      </p>
-                      <p className={cn("text-xs text-gray-300 mt-1")}>At Risk</p>
-                    </div>
-                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-red-500")}>
-                        {metric.late}
-                      </p>
-                      <p className={cn("text-xs text-gray-300 mt-1")}>Late</p>
-                    </div>
-                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-white")}>
-                        {metric.avgProcessingTime}h
-                      </p>
-                      <p className={cn("text-xs text-gray-300 mt-1")}>Avg Process</p>
-                    </div>
-                  </div>
-
-                  {metric.atRisk > 0 && (
-                    <div className={cn("bg-[rgba(245,158,11,0.1)] border border-amber-400 border-opacity-30 rounded p-2 mb-3")}>
-                      <p className={cn("text-xs text-amber-500 font-semibold")}>
-                        ⚠️ {metric.atRisk} order{metric.atRisk !== 1 ? "s" : ""} at risk of missing SLA
-                      </p>
-                    </div>
-                  )}
-
-                  <div className={cn("flex gap-2")}>
-                    <Button variant="secondary" size="sm">
-                      View Details
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <AlertTriangle size={14} className={cn("mr-1")} />
-                      Alerts
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-
-            {/* Stock Levels by Warehouse */}
-            <div className={cn("mt-6")}>
-              <h3 className={cn("text-sm font-semibold text-white mb-4")}>
-                Stock Level Summary
-              </h3>
-
-              {STOCK_LEVELS.map((stock, idx) => (
-                <Card key={stock.warehouse} className={cn("mb-3 blue-500")} style={{ animationDelay: `${(FULFILLMENT_METRICS.length + idx) * 40}ms` }}>
-                  <div className={cn("p-3 flex items-center justify-between")}>
-                    <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-white")}>
-                        {stock.warehouse}
-                      </p>
-                      <p className={cn("text-xs text-gray-300 mt-1")}>
-                        {stock.totalSku.toLocaleString()} SKUs
-                      </p>
-                    </div>
-                    <div className={cn("flex items-center gap-4 text-right shrink-0")}>
-                      <div>
-                        <p className={cn("text-sm font-bold text-emerald-500")}>
-                          {stock.inStock}
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>In Stock</p>
-                      </div>
-                      <div>
-                        <p className={cn("text-sm font-bold text-amber-500")}>
-                          {stock.lowStock}
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>Low</p>
-                      </div>
-                      <div>
-                        <p className={cn("text-sm font-bold text-red-500")}>
-                          {stock.outOfStock}
-                        </p>
-                        <p className={cn("text-xs text-gray-300")}>Out</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+            <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+              Connect a supply-chain integration to see metrics
             </div>
           </div>
         )}
@@ -873,107 +505,9 @@ export default function SupplyChainIntegrationsPage() {
             <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Integration Health & Error Logs
             </h3>
-
-            {INTEGRATION_HEALTH.map((health, idx) => {
-              const provider = SUPPLY_CHAIN_PROVIDERS.find(
-                (p) => p.slug === health.provider
-              );
-              const hasAlerts = health.warnings > 0 || health.alerts > 0;
-
-              return (
-                <Card
-                  key={`health-${health.provider}`}
-                  className={cn(
-                    "blue-500",
-                    hasAlerts && "border-amber-400 border-opacity-30"
-                  )}
-                  style={{ animationDelay: `${idx * 40}ms` }}
-                >
-                  <div className={cn("p-4")}>
-                    <div className={cn("flex items-center justify-between mb-4")}>
-                      <div className={cn("flex items-center gap-3")}>
-                        <span className={cn("text-xl")}>{provider?.icon}</span>
-                        <div>
-                          <p className={cn("text-sm font-semibold text-white")}>
-                            {provider?.name}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={cn("flex items-center gap-2")}>
-                        {health.uptime >= 99 ? (
-                          <Badge variant="success" dot>
-                            <CheckCircle size={12} className={cn("mr-1")} />
-                            Healthy
-                          </Badge>
-                        ) : (
-                          <Badge variant="warning" dot>
-                            <AlertTriangle size={12} className={cn("mr-1")} />
-                            Warning
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className={cn("grid grid-cols-3 md:grid-cols-6 gap-3 mb-3")}>
-                      <div className={cn("bg-[#12121a] rounded p-2")}>
-                        <p className={cn("text-xs text-gray-300 mb-1")}>Uptime</p>
-                        <p className={cn("text-lg font-bold text-white")}>
-                          {health.uptime}%
-                        </p>
-                      </div>
-                      <div className={cn("bg-[#12121a] rounded p-2")}>
-                        <p className={cn("text-xs text-gray-300 mb-1")}>Error Rate</p>
-                        <p className={cn("text-lg font-bold text-red-500")}>
-                          {health.errorRate}%
-                        </p>
-                      </div>
-                      <div className={cn("bg-[#12121a] rounded p-2")}>
-                        <p className={cn("text-xs text-gray-300 mb-1")}>Latency</p>
-                        <p className={cn("text-lg font-bold text-white")}>
-                          {health.avgLatency}ms
-                        </p>
-                      </div>
-                      <div className={cn("bg-[#12121a] rounded p-2")}>
-                        <p className={cn("text-xs text-gray-300 mb-1")}>Sync Success</p>
-                        <p className={cn("text-lg font-bold text-emerald-500")}>
-                          {health.syncSuccess}%
-                        </p>
-                      </div>
-                      <div className={cn("bg-[#12121a] rounded p-2")}>
-                        <p className={cn("text-xs text-gray-300 mb-1")}>Warnings</p>
-                        <p className={cn("text-lg font-bold", health.warnings > 0 ? "text-amber-500" : "text-white")}>
-                          {health.warnings}
-                        </p>
-                      </div>
-                      <div className={cn("bg-[#12121a] rounded p-2")}>
-                        <p className={cn("text-xs text-gray-300 mb-1")}>Alerts</p>
-                        <p className={cn("text-lg font-bold", health.alerts > 0 ? "text-red-500" : "text-white")}>
-                          {health.alerts}
-                        </p>
-                      </div>
-                    </div>
-
-                    {hasAlerts && (
-                      <div className={cn("bg-[rgba(245,158,11,0.1)] border border-amber-400 border-opacity-30 rounded p-2 mb-2")}>
-                        <p className={cn("text-xs text-amber-500 font-semibold")}>
-                          {health.warnings} warning{health.warnings !== 1 ? "s" : ""} · {health.alerts} active alert{health.alerts !== 1 ? "s" : ""}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className={cn("flex gap-2")}>
-                      <Button variant="secondary" size="sm">
-                        View Logs
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <BarChart3 size={14} className={cn("mr-1")} />
-                        Metrics
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
+            <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+              Connect a supply-chain integration to see metrics
+            </div>
           </div>
         )}
       </div>

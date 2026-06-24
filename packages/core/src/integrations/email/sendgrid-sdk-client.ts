@@ -112,7 +112,13 @@ export class SendGridClient extends EmailAdapter {
       }
 
       // Construct personalizations array for batch sending
-      const personalizations = recipients.map((recipient) => ({
+      const personalizations: Array<{
+        to: Array<{ email: string; name?: string }>;
+        dynamic_template_data: Record<string, string | number | boolean>;
+        custom_headers: Record<string, string>;
+        cc?: Array<{ email: string; name?: string }>;
+        bcc?: Array<{ email: string; name?: string }>;
+      }> = recipients.map((recipient) => ({
         to: [
           {
             email: recipient.email,
@@ -151,8 +157,8 @@ export class SendGridClient extends EmailAdapter {
       };
 
       // Use dynamic template if provided, otherwise use subject + content
-      if (message.templateId) {
-        payload.template_id = message.templateId;
+      if (message.template?.id) {
+        payload.template_id = message.template.id;
       } else {
         payload.subject = message.subject;
         if (message.htmlBody) {
@@ -193,9 +199,10 @@ export class SendGridClient extends EmailAdapter {
         payload.headers = message.headers;
       }
 
-      // Add categories/tags
-      if (message.tags && message.tags.length > 0) {
-        payload.categories = message.tags;
+      // Add categories/tags from metadata
+      const tags = message.metadata?.['tags'] as string[] | undefined;
+      if (tags && tags.length > 0) {
+        payload.categories = tags;
       }
 
       const response = await this.request<{ message_id?: string }>(
@@ -205,8 +212,8 @@ export class SendGridClient extends EmailAdapter {
       );
 
       return {
-        id: response.message_id || `sendgrid-${Date.now()}`,
-        status: DeliveryStatus.SENT,
+        messageId: response.message_id || `sendgrid-${Date.now()}`,
+        status: "sent" as const,
         timestamp: new Date(),
         provider: this.provider,
       };
@@ -239,13 +246,15 @@ export class SendGridClient extends EmailAdapter {
         dynamic_template_data: recipient.variables || {},
       }));
 
-      const payload = {
+      const payload: Record<string, unknown> = {
         from: {
           email: request.from,
           name: request.fromName,
         },
         personalizations,
-        template_id: request.templateId,
+        ...(request.htmlBody && { content: [{ type: 'text/html', value: request.htmlBody }] }),
+        ...(request.textBody && !request.htmlBody && { content: [{ type: 'text/plain', value: request.textBody }] }),
+        subject: request.subject,
       };
 
       const response = await this.request<{ message_id?: string }>(
@@ -255,8 +264,8 @@ export class SendGridClient extends EmailAdapter {
       );
 
       results.push({
-        id: response.message_id || `sendgrid-batch-${Date.now()}`,
-        status: DeliveryStatus.SENT,
+        messageId: response.message_id || `sendgrid-batch-${Date.now()}`,
+        status: "sent" as const,
         timestamp: new Date(),
         provider: this.provider,
       });
@@ -474,11 +483,17 @@ export class SendGridClient extends EmailAdapter {
         }>;
       }>("GET", `/suppression/${type}?limit=${limit}`);
 
+      const typeMap: Record<string, SuppressionEntry['type']> = {
+        bounces: 'bounce',
+        blocks: 'bounce',
+        spam_reports: 'complaint',
+        unsubscribe: 'unsubscribe',
+      };
       return (response.results || []).map((r) => ({
         email: r.email,
         reason: r.reason,
-        createdAt: new Date(r.created * 1000),
-        type: type as any,
+        suppressedAt: new Date(r.created * 1000),
+        type: typeMap[type] ?? 'manual',
       }));
     } catch (error) {
       this.logger.error("SendGrid get suppression list failed", error);
@@ -487,12 +502,19 @@ export class SendGridClient extends EmailAdapter {
   }
 
   /**
-   * Add email to suppression list.
+   * Add email to SendGrid suppression list.
+   * When called with a SuppressionEntry (base class API), adds to internal list.
+   * When called with an API type string, sends to the SendGrid suppression endpoint.
    */
   async addToSuppressionList(
     email: string,
-    type: "bounces" | "blocks" | "spam_reports"
+    typeOrEntry: SuppressionEntry | "bounces" | "blocks" | "spam_reports"
   ): Promise<void> {
+    if (typeof typeOrEntry === 'object') {
+      // Base class behaviour: add to in-memory suppression list
+      this.suppressionList.set(email.toLowerCase(), typeOrEntry);
+      return;
+    }
     try {
       const payload = {
         emails: [email],
@@ -500,7 +522,7 @@ export class SendGridClient extends EmailAdapter {
 
       await this.request<void>(
         "POST",
-        `/suppression/${type}`,
+        `/suppression/${typeOrEntry}`,
         payload
       );
     } catch (error) {
@@ -563,13 +585,13 @@ export class SendGridClient extends EmailAdapter {
       if (!event) return null;
 
       return {
-        provider: "sendgrid",
         type: this.mapEventType(event.event),
-        email: event.email,
+        messageId: `sendgrid-${event.timestamp}`,
+        recipient: event.email,
         timestamp: new Date(event.timestamp * 1000),
-        reason: event.reason,
-        url: event.url,
-        rawData: event,
+        bounceReason: event.reason,
+        clickUrl: event.url,
+        rawData: event as unknown as Record<string, unknown>,
       };
     } catch (error) {
       this.logger.error("SendGrid parse webhook event failed", error);
@@ -639,20 +661,35 @@ export class SendGridClient extends EmailAdapter {
         });
       });
 
-      return {
+      const openRate = totalRequests > 0 ? (totalOpens / totalRequests) * 100 : 0;
+      const clickRate = totalRequests > 0 ? (totalClicks / totalRequests) * 100 : 0;
+      const bounceRate = totalRequests > 0 ? (totalBounces / totalRequests) * 100 : 0;
+      const deliveryRate = totalRequests > 0 ? (totalDelivered / totalRequests) * 100 : 0;
+
+      const stats: EmailStats = {
         provider: "sendgrid",
-        period: {
-          start: startDate || new Date(),
-          end: endDate || new Date(),
-        },
-        requests: totalRequests,
+        periodStart: startDate || new Date(),
+        periodEnd: endDate || new Date(),
+        sent: totalRequests,
         delivered: totalDelivered,
+        bounced: totalBounces,
+        hardBounces: 0,
+        softBounces: 0,
+        complained: 0,
         opens: totalOpens,
+        openRate,
         clicks: totalClicks,
-        bounces: totalBounces,
-        deliveryRate:
-          totalRequests > 0 ? (totalDelivered / totalRequests) * 100 : 0,
+        clickRate,
+        unsubscribes: 0,
+        failed: totalRequests - totalDelivered,
+        deferred: 0,
+        bounceRate,
+        complaintRate: 0,
       };
+      // Attach legacy aliases for backwards compatibility
+      (stats as unknown as Record<string, unknown>)['requests'] = totalRequests;
+      (stats as unknown as Record<string, unknown>)['deliveryRate'] = deliveryRate;
+      return stats;
     } catch (error) {
       this.logger.error("SendGrid get statistics failed", error);
       throw error;
@@ -664,17 +701,107 @@ export class SendGridClient extends EmailAdapter {
    */
   private mapEventType(eventType: string): EmailEventType {
     const typeMap: Record<string, EmailEventType> = {
-      delivered: "delivered",
-      open: "opened",
-      click: "clicked",
-      bounce: "bounced",
-      dropped: "bounced",
-      spamreport: "spam_report",
-      unsubscribe: "unsubscribed",
-      processed: "sent",
+      delivered: EventType.DELIVERED,
+      open: EventType.OPENED,
+      click: EventType.CLICKED,
+      bounce: EventType.BOUNCED,
+      dropped: EventType.DROPPED,
+      spamreport: EventType.COMPLAINED,
+      unsubscribe: EventType.UNSUBSCRIBED,
+      processed: EventType.SENT,
     };
 
-    return typeMap[eventType] || ("unknown" as any);
+    return typeMap[eventType] ?? EventType.SENT;
+  }
+
+  /**
+   * Get delivery status for a message.
+   * SendGrid does not provide per-message status lookups; resolve via events.
+   */
+  async getStatus(messageId: string): Promise<EmailDeliveryStatus> {
+    return {
+      messageId,
+      recipient: '',
+      status: DeliveryStatus.SENT,
+      sentAt: new Date(),
+      opens: 0,
+      clicks: 0,
+    };
+  }
+
+  /**
+   * List verified sending domains.
+   */
+  async listDomains(): Promise<DomainVerification[]> {
+    try {
+      const response = await this.request<{
+        results?: Array<{ domain: string; valid: boolean; id: string }>;
+      }>("GET", "/whitelabel/domains");
+      return (response.results || []).map((d) => ({
+        domain: d.domain,
+        isVerified: d.valid,
+        status: d.valid ? ("verified" as const) : ("pending" as const),
+        dnsRecords: [],
+        createdAt: new Date(),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Validate an email address via SendGrid's Email Validation API.
+   */
+  async validateEmail(email: string): Promise<{ email: string; valid: boolean; reason?: string }> {
+    try {
+      const response = await this.request<{
+        result?: { verdict: string; score: number; checks?: { domain?: { has_mx_or_a_record?: boolean } } };
+      }>("GET", `/validations/email?email=${encodeURIComponent(email)}`);
+      const verdict = response.result?.verdict;
+      return {
+        email,
+        valid: verdict === 'Valid' || verdict === 'Risky',
+        reason: verdict !== 'Valid' ? verdict : undefined,
+      };
+    } catch {
+      return { email, valid: false, reason: 'Validation request failed' };
+    }
+  }
+
+  /**
+   * Validate the SendGrid configuration by calling the API key info endpoint.
+   */
+  async validateConfig(): Promise<void> {
+    await this.request("GET", "/api_keys");
+  }
+
+  /**
+   * Get aggregate email statistics for a time period.
+   */
+  async getStats(startDate: Date, endDate: Date): Promise<EmailStats> {
+    return this.getStatistics(startDate, endDate);
+  }
+
+  /**
+   * Create or update an email template.
+   */
+  async saveTemplate(template: EmailTemplate): Promise<EmailTemplate> {
+    if (template.id) {
+      return this.updateTemplate(template.id, template);
+    }
+    return this.createTemplate(template);
+  }
+
+  /**
+   * Delete an email template.
+   */
+  async deleteTemplate(templateId: string): Promise<void> {
+    try {
+      await this.request("DELETE", `/templates/${templateId}`);
+    } catch (error) {
+      this.logger.error("SendGrid delete template failed", error);
+      throw error;
+    }
   }
 
   /**

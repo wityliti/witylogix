@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
@@ -25,19 +25,11 @@ import {
   Send,
   History,
   Copy,
-  RefreshCw,
   Eye,
   Code,
 } from 'lucide-react';
 
 type Channel = 'email' | 'sms' | 'whatsapp' | 'push';
-
-interface TemplateVersion {
-  id: string;
-  timestamp: Date;
-  author: string;
-  changes: string;
-}
 
 interface TemplateContent {
   email: {
@@ -81,7 +73,7 @@ const VARIABLES = [
   { name: "delivery_address", label: "Delivery Address" },
 ];
 
-const SAMPLE_DATA = {
+const TEMPLATE_PREVIEW_VALUES = {
   customer_name: "John Doe",
   order_id: "ORD-123456",
   delivery_date: "March 15, 2026",
@@ -132,63 +124,69 @@ const INITIAL_TEMPLATE: TemplateContent = {
   },
 };
 
-const VERSION_HISTORY: TemplateVersion[] = [
-  {
-    id: "v1",
-    timestamp: new Date("2026-03-10"),
-    author: "John Smith",
-    changes: "Updated email template",
-  },
-  {
-    id: "v2",
-    timestamp: new Date("2026-03-08"),
-    author: "Jane Doe",
-    changes: "Added WhatsApp template",
-  },
-  {
-    id: "v3",
-    timestamp: new Date("2026-03-01"),
-    author: "System",
-    changes: "Created template",
-  },
-];
-
 const renderPreview = (text: string) => {
   return text.replace(/\{\{(\w+)\}\}/g, (match, variable) => {
     return (
-      SAMPLE_DATA[variable as keyof typeof SAMPLE_DATA] || match
+      TEMPLATE_PREVIEW_VALUES[variable as keyof typeof TEMPLATE_PREVIEW_VALUES] || match
     );
   });
 };
 
+interface ApiTemplate {
+  id: string;
+  name: string;
+  content: TemplateContent;
+  status: string;
+}
+
 export default function TemplateEditorPage() {
   const router = useRouter();
+  const params = useParams();
+  const templateId = params?.id as string | undefined;
+
+  const { data: apiTemplate, loading: templateLoading } = useApiQuery<ApiTemplate>(
+    templateId ? `/api/v4/notification-templates/${templateId}` : null,
+  );
+
+  const { execute: saveDraft, loading: savingDraft } = useApiMutation<ApiTemplate>(
+    "PATCH",
+    templateId ? `/api/v4/notification-templates/${templateId}` : "/api/v4/notification-templates",
+  );
+  const { execute: publish, loading: publishing } = useApiMutation<ApiTemplate>(
+    "PATCH",
+    templateId ? `/api/v4/notification-templates/${templateId}` : "/api/v4/notification-templates",
+  );
+
   const [content, setContent] = useState<TemplateContent>(INITIAL_TEMPLATE);
   const [activeChannel, setActiveChannel] = useState<Channel>("email");
-  const [isSaving, setIsSaving] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showTestSend, setShowTestSend] = useState(false);
   const [testRecipient, setTestRecipient] = useState("");
 
-  const handleSaveDraft = async () => {
-    setIsSaving(true);
-    try {
-      // API call would go here
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } finally {
-      setIsSaving(false);
+  const isSaving = savingDraft || publishing;
+
+  useEffect(() => {
+    if (apiTemplate?.content) {
+      setContent(apiTemplate.content);
     }
+  }, [apiTemplate]);
+
+  if (templateLoading) {
+    return (
+      <div className="min-h-screen bg-wl-bg-primary">
+        <Header title="Edit Notification Template" subtitle="Loading template…" />
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  const handleSaveDraft = async () => {
+    await saveDraft({ content, status: "draft" });
   };
 
   const handlePublish = async () => {
-    setIsSaving(true);
-    try {
-      // API call would go here
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/settings/notifications/templates");
-    } finally {
-      setIsSaving(false);
-    }
+    await publish({ content, status: "active" });
+    router.push("/settings/notifications/templates");
   };
 
   const insertVariable = (variableName: string) => {
@@ -221,7 +219,7 @@ export default function TemplateEditorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-primary">
       <Header
         title="Edit Notification Template"
         subtitle="Customize template content for different channels"
@@ -232,7 +230,7 @@ export default function TemplateEditorPage() {
           {/* Editor */}
           <div className="lg:col-span-2">
             <Tabs value={activeChannel} onValueChange={(v) => setActiveChannel(v as Channel)}>
-              <Card className="border border-[#1e1e2e] bg-[#12121a]">
+              <Card className="border border-wl-border-default bg-wl-bg-surface">
                 <CardHeader>
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -285,7 +283,7 @@ export default function TemplateEditorPage() {
                           }))
                         }
                         placeholder="HTML content"
-                        className="w-full h-64 px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm font-mono"
+                        className="w-full h-64 px-3 py-2 bg-wl-bg-overlay text-white border border-wl-border-default rounded-md text-sm font-mono"
                       />
                     </div>
 
@@ -305,7 +303,7 @@ export default function TemplateEditorPage() {
                           }))
                         }
                         placeholder="Plain text content"
-                        className="w-full h-32 px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm font-mono"
+                        className="w-full h-32 px-3 py-2 bg-wl-bg-overlay text-white border border-wl-border-default rounded-md text-sm font-mono"
                       />
                     </div>
                   </CardContent>
@@ -329,13 +327,13 @@ export default function TemplateEditorPage() {
                           }))
                         }
                         placeholder="SMS message"
-                        className="w-full h-32 px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm font-mono"
+                        className="w-full h-32 px-3 py-2 bg-wl-bg-overlay text-white border border-wl-border-default rounded-md text-sm font-mono"
                       />
-                      <div className="mt-3 p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+                      <div className="mt-3 p-3 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
                         <p className="text-xs text-gray-400 mb-2">
                           Character count: {content.sms.text.length} / 160
                         </p>
-                        <div className="relative h-2 bg-[#2a2a3e] rounded-full overflow-hidden">
+                        <div className="relative h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
                           <div
                             className="h-full bg-blue-500 transition-all"
                             style={{
@@ -374,7 +372,7 @@ export default function TemplateEditorPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Variable Picker */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle className="text-base">Variables</CardTitle>
                 <CardDescription>Insert template variables</CardDescription>
@@ -384,7 +382,7 @@ export default function TemplateEditorPage() {
                   <button
                     key={variable.name}
                     onClick={() => insertVariable(variable.name)}
-                    className="w-full text-left px-3 py-2 bg-[#1a1a2e] hover:bg-[#202030] text-white rounded-lg text-sm transition-colors border border-[#1e1e2e]"
+                    className="w-full text-left px-3 py-2 bg-wl-bg-overlay hover:bg-wl-bg-overlay text-white rounded-lg text-sm transition-colors border border-wl-border-default"
                   >
                     <code className="font-mono">{`{{${variable.name}}}`}</code>
                     <p className="text-xs text-gray-400 mt-1">
@@ -396,7 +394,7 @@ export default function TemplateEditorPage() {
             </Card>
 
             {/* Preview */}
-            <Card className="border border-[#1e1e2e] bg-[#12121a]">
+            <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
                 <CardTitle className="text-base">Preview</CardTitle>
                 <CardDescription>Live preview with sample data</CardDescription>
@@ -404,7 +402,7 @@ export default function TemplateEditorPage() {
               <CardContent className="space-y-3">
                 {activeChannel === "email" && (
                   <div className="space-y-2">
-                    <div className="p-3 bg-[#1a1a2e] rounded-lg">
+                    <div className="p-3 bg-wl-bg-overlay rounded-lg">
                       <p className="text-xs text-gray-400 mb-1">
                         Subject:
                       </p>
@@ -412,7 +410,7 @@ export default function TemplateEditorPage() {
                         {renderPreview(content.email.subject)}
                       </p>
                     </div>
-                    <div className="p-3 bg-[#1a1a2e] rounded-lg">
+                    <div className="p-3 bg-wl-bg-overlay rounded-lg">
                       <p className="text-xs text-gray-400 mb-1">
                         Text Preview:
                       </p>
@@ -423,7 +421,7 @@ export default function TemplateEditorPage() {
                   </div>
                 )}
                 {activeChannel === "sms" && (
-                  <div className="p-3 bg-[#1a1a2e] rounded-lg">
+                  <div className="p-3 bg-wl-bg-overlay rounded-lg">
                     <p className="text-xs text-gray-400 mb-2">
                       SMS Preview:
                     </p>
@@ -462,38 +460,22 @@ export default function TemplateEditorPage() {
         {/* Version History Modal */}
         {showVersionHistory && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+            <Card className="border border-wl-border-default bg-wl-bg-surface w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
               <CardHeader>
                 <div className="flex items-center justify-between gap-4">
                   <CardTitle>Version History</CardTitle>
                   <button
                     onClick={() => setShowVersionHistory(false)}
-                    className="p-2 hover:bg-[#1a1a2e] rounded-lg"
+                    className="p-2 hover:bg-wl-bg-overlay rounded-lg"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {VERSION_HISTORY.map((version) => (
-                  <div
-                    key={version.id}
-                    className="p-4 border border-[#1e1e2e] rounded-lg flex items-start justify-between"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        {version.changes}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        by {version.author} on{" "}
-                        {version.timestamp.toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <RefreshCw className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                <p className="text-sm text-wl-text-muted text-center py-4">
+                  Version history is not available for this template.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -502,13 +484,13 @@ export default function TemplateEditorPage() {
         {/* Test Send Modal */}
         {showTestSend && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-md mx-4">
+            <Card className="border border-wl-border-default bg-wl-bg-surface w-full max-w-md mx-4">
               <CardHeader>
                 <div className="flex items-center justify-between gap-4">
                   <CardTitle>Send Test Message</CardTitle>
                   <button
                     onClick={() => setShowTestSend(false)}
-                    className="p-2 hover:bg-[#1a1a2e] rounded-lg"
+                    className="p-2 hover:bg-wl-bg-overlay rounded-lg"
                   >
                     <X className="w-4 h-4" />
                   </button>

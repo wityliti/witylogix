@@ -95,10 +95,22 @@ export default function PartnerDetailPage() {
     "/api/v4/integrations"
   );
 
+  const { data: partnerStatsData } = useApiQuery<{
+    stats: Array<{ provider: string; activeDeliveries: number; totalDeliveries: number; successRate: number | null }>;
+  }>("/api/v4/couriers/partner-stats");
+
   const partner = useMemo(
     () => integrationsData?.integrations.find((i) => i.slug === params.id) ?? null,
     [integrationsData, params.id]
   );
+
+  const partnerStat = useMemo(() => {
+    const slug = params.id;
+    return (
+      partnerStatsData?.stats.find((s) => s.provider === slug || s.provider === slug.replace(/-/g, "_")) ??
+      null
+    );
+  }, [partnerStatsData, params.id]);
 
   const cfg = (partner?.config ?? {}) as Record<string, unknown>;
   const creds = (partner?.credentials ?? {}) as Record<string, unknown>;
@@ -134,8 +146,8 @@ export default function PartnerDetailPage() {
   const apiSecret = String(creds.apiSecret ?? "");
   const webhookSecret = String(creds.webhookSecret ?? "");
   const baseUrl = String(cfg.baseUrl ?? "");
-  const maxDeliveryTime = typeof cfg.maxDeliveryTime === "number" ? cfg.maxDeliveryTime : 30;
-  const maxDistance = typeof cfg.maxDistance === "number" ? cfg.maxDistance : 50;
+  const maxDeliveryTime = typeof cfg.maxDeliveryTime === "number" ? cfg.maxDeliveryTime : null;
+  const maxDistance = typeof cfg.maxDistance === "number" ? cfg.maxDistance : null;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -181,16 +193,14 @@ export default function PartnerDetailPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              label="Max Delivery Time"
-              value={maxDeliveryTime}
-              suffix="min"
+              label="Active Deliveries"
+              value={partnerStat ? partnerStat.activeDeliveries : "—"}
               icon={TrendingUp}
             />
             <KPICard
-              label="Max Distance"
-              value={maxDistance}
-              suffix="km"
-              icon={MapPin}
+              label="Success Rate"
+              value={partnerStat?.successRate != null ? `${partnerStat.successRate}%` : "—"}
+              icon={CheckCircle}
             />
             <KPICard
               label="Health Status"
@@ -256,7 +266,7 @@ export default function PartnerDetailPage() {
                 </div>
               </dl>
               {partner.description && (
-                <p className="mt-4 text-sm text-gray-400 border-t border-[#1e1e2e] pt-4">
+                <p className="mt-4 text-sm text-gray-400 border-t border-wl-border-default pt-4">
                   {partner.description}
                 </p>
               )}
@@ -382,7 +392,7 @@ export default function PartnerDetailPage() {
                 </div>
               )}
 
-              <div className="pt-4 border-t border-[#1e1e2e]">
+              <div className="pt-4 border-t border-wl-border-default">
                 <Button
                   variant="secondary"
                   size="md"
@@ -431,17 +441,21 @@ export default function PartnerDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
+                <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
                     Max Delivery Time
                   </span>
-                  <p className="text-2xl font-bold text-white mt-2">{maxDeliveryTime} min</p>
+                  <p className="text-2xl font-bold text-white mt-2">
+                    {maxDeliveryTime != null ? `${maxDeliveryTime} min` : "Not configured"}
+                  </p>
                 </div>
-                <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
+                <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
                     Max Distance
                   </span>
-                  <p className="text-2xl font-bold text-white mt-2">{maxDistance} km</p>
+                  <p className="text-2xl font-bold text-white mt-2">
+                    {maxDistance != null ? `${maxDistance} km` : "Not configured"}
+                  </p>
                 </div>
               </div>
 

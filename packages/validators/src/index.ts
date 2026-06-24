@@ -18,6 +18,19 @@ export const coordinatesSchema = z.object({
   longitude: z.number().min(-180).max(180),
 });
 
+// ─── Zone shape (polygon ring OR circle descriptor) ──────────
+const polygonShape = z.object({
+  type: z.literal("polygon"),
+  ring: z.array(coordinatesSchema).min(3),
+});
+const circleShape = z.object({
+  type: z.literal("circle"),
+  center: coordinatesSchema,
+  radiusMeters: z.number().positive().max(100_000),
+});
+export const zoneShapeSchema = z.discriminatedUnion("type", [polygonShape, circleShape]);
+export type ZoneShape = z.infer<typeof zoneShapeSchema>;
+
 // - Orders -
 
 export const createOrderSchema = z.object({
@@ -78,13 +91,29 @@ export const updateDriverLocationSchema = z.object({
 
 export const createDeliveryZoneSchema = z.object({
   name: z.string().min(1).max(100),
-  boundary: z.array(coordinatesSchema).min(3), // GeoJSON polygon ring
+  // Legacy: array of lat/lng points. Kept for one release cycle.
+  boundary: z.array(coordinatesSchema).min(3).optional(),
+  // Preferred: discriminated shape (polygon | circle).
+  shape: zoneShapeSchema.optional(),
   baseRate: z.number().nonnegative().default(0),
   perKmRate: z.number().nonnegative().default(0),
   minOrder: z.number().nonnegative().default(0),
   freeAbove: z.number().nonnegative().optional(),
   priority: z.number().int().default(0),
 });
+
+export const updateDeliveryZoneSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  boundary: z.array(coordinatesSchema).min(3).optional(),
+  shape: zoneShapeSchema.optional(),
+  baseRate: z.number().nonnegative().optional(),
+  perKmRate: z.number().nonnegative().optional(),
+  minOrder: z.number().nonnegative().optional(),
+  freeAbove: z.number().nonnegative().nullable().optional(),
+  priority: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+});
+export type UpdateDeliveryZone = z.infer<typeof updateDeliveryZoneSchema>;
 
 // - Carrier Service -
 

@@ -90,7 +90,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
         return (
           <Card
             key={idx}
-            className="bg-[#12121a] border border-[#1e1e2e]"
+            className="bg-wl-bg-surface border border-wl-border-default"
             style={{
               animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
             }}
@@ -130,7 +130,7 @@ const SystemHealth = () => {
   ];
 
   return (
-    <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+    <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Server className="w-5 h-5 text-gray-400" />
@@ -146,7 +146,7 @@ const SystemHealth = () => {
                 <div
                   className={cn(
                     "p-2 rounded-md flex items-center justify-center flex-shrink-0",
-                    metric.status === "healthy" ? "bg-[#10b98115]" : "bg-[#f59e0b15]"
+                    metric.status === "healthy" ? "bg-emerald-500/10" : "bg-amber-500/10"
                   )}
                 >
                   <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
@@ -171,7 +171,7 @@ const SystemHealth = () => {
 // Quick Actions
 const QuickActions = () => {
   return (
-    <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+    <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-gray-400" />
@@ -229,7 +229,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
   if (error) return <ErrorState message={error.message} onRetry={onRetry} />;
 
   return (
-    <Card className="bg-[#12121a] border border-[#1e1e2e]">
+    <Card className="bg-wl-bg-surface border border-wl-border-default">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle>Store Health</CardTitle>
@@ -239,7 +239,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
               placeholder="Search stores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 pl-8 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
+              className="w-full p-2 pl-8 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
             />
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -250,7 +250,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+              <tr className="border-b border-wl-border-default bg-wl-bg-root">
                 {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map((header) => (
                   <th
                     key={header}
@@ -265,9 +265,9 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
               {filteredStores.map((store, idx) => (
                 <tr
                   key={store.id}
-                  className={cn('border-b border-[#1e1e2e] transition-all duration-200 hover:bg-[#1a1a2e]', {
-                    'bg-[#0a0a0f]': idx % 2 === 0,
-                    'bg-[#12121a]': idx % 2 !== 0,
+                  className={cn('border-b border-wl-border-default transition-all duration-200 hover:bg-wl-bg-elevated', {
+                    'bg-wl-bg-root': idx % 2 === 0,
+                    'bg-wl-bg-surface': idx % 2 !== 0,
                   })}
                 >
                   <td className="p-3">
@@ -336,7 +336,7 @@ export default function AdminDashboardPage() {
   if (loading && stores.length === 0) return <LoadingSkeleton />;
 
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
+    <div className="bg-wl-bg-root min-h-screen">
       <Header
         title="Platform Admin"
         subtitle="Manage all stores, users, and platform operations"

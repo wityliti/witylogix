@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery, useApiList } from '@/hooks/use-api';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,614 +10,410 @@ import { StatCard } from '@/components/ui/stat-card';
 import { cn } from '@/lib/utils';
 
 /* ═══════════════════════════════════════════════════════════
-   LAST-MILE DELIVERY INTEGRATION PAGE — Delivery aggregator
+   LAST-MILE DELIVERY INTEGRATION PAGE — Courier partner mgmt
    ═══════════════════════════════════════════════════════════ */
 
-interface DeliveryProvider {
+interface CourierPartner {
   id: string;
+  provider: string;
   name: string;
-  logo: string;
-  status: "connected" | "disconnected";
-  commissionsPercentage: number;
-  deliveriesToday: number;
-  revenueToday: number;
-  averageDeliveryTime: number;
-  onTimeDeliveryRate: number;
+  description: string | null;
+  isEnabled: boolean;
+  status: 'ACTIVE' | 'INACTIVE' | 'ERROR';
+  healthStatus: 'HEALTHY' | 'DEGRADED' | 'ERROR' | 'UNKNOWN';
+  lastSyncAt: string | null;
+  lastError: string | null;
 }
 
-interface Delivery {
-  id: string;
-  orderId: string;
+interface PartnerStat {
   provider: string;
-  customer: string;
-  destination: string;
-  driver: string;
-  status: "pending" | "assigned" | "in_transit" | "delivered" | "cancelled";
-  fee: number;
-  commission: number;
-  estimatedTime: string;
-  actualTime?: string;
-  distance: number;
-  timestamp: string;
+  activeDeliveries: number;
+  totalDeliveries: number;
+  successRate: number | null;
+}
+
+interface OverallStats {
+  total: number;
+  delivered: number;
+  failed: number;
+  cancelled: number;
+  pending: number;
+  successRate: string;
+  averageCost: number | null;
+}
+
+interface CourierDelivery {
+  id: string;
+  externalId: string;
+  status: 'PENDING' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED' | 'FAILED' | 'CANCELLED';
+  driverName: string | null;
+  driverPhone: string | null;
+  trackingUrl: string | null;
+  actualCost: number | null;
+  quote: { price?: number; estimatedMinutes?: number; distanceKm?: number } | null;
+  createdAt: string;
+  deliveredAt: string | null;
+  partner: { name: string; provider: string };
 }
 
 interface Driver {
   id: string;
   name: string;
-  provider: string;
-  status: "online" | "on_delivery" | "offline";
-  activeDeliveries: number;
-  completedToday: number;
-  rating: number;
-  location: string;
+  status: 'AVAILABLE' | 'ON_ROUTE' | 'OFFLINE' | 'ON_BREAK';
+  vehicleType: string | null;
+  lastLocationAt: string | null;
+  _count: { orders: number };
 }
 
-interface PerformanceMetric {
-  provider: string;
-  onTimePercent: number;
-  avgDeliveryTime: number;
-  customerRating: number;
-  costPerDelivery: number;
-}
-
-const DELIVERY_PROVIDERS: DeliveryProvider[] = [
-  {
-    id: "doordash",
-    name: "DoorDash Drive",
-    logo: "DD",
-    status: "connected",
-    commissionsPercentage: 15,
-    deliveriesToday: 342,
-    revenueToday: 2890.50,
-    averageDeliveryTime: 28,
-    onTimeDeliveryRate: 94.2,
-  },
-  {
-    id: "ubereats",
-    name: "Uber Eats",
-    logo: "UE",
-    status: "connected",
-    commissionsPercentage: 18,
-    deliveriesToday: 267,
-    revenueToday: 1840.75,
-    averageDeliveryTime: 32,
-    onTimeDeliveryRate: 91.8,
-  },
-  {
-    id: "grubhub",
-    name: "Grubhub",
-    logo: "GH",
-    status: "connected",
-    commissionsPercentage: 16,
-    deliveriesToday: 189,
-    revenueToday: 1320.40,
-    averageDeliveryTime: 35,
-    onTimeDeliveryRate: 88.5,
-  },
-];
-
-const DELIVERIES: Delivery[] = [
-  {
-    id: "del-001",
-    orderId: "#ORDER-5421",
-    provider: "DoorDash Drive",
-    customer: "Alice Johnson",
-    destination: "123 Park Ave, Apt 4B",
-    driver: "Marcus T.",
-    status: "in_transit",
-    fee: 8.50,
-    commission: 1.28,
-    estimatedTime: "15 mins",
-    distance: 3.2,
-    timestamp: "2026-03-12T14:22:15Z",
-  },
-  {
-    id: "del-002",
-    orderId: "#ORDER-5422",
-    provider: "Uber Eats",
-    customer: "Bob Smith",
-    destination: "456 5th Ave",
-    driver: "Jessica R.",
-    status: "assigned",
-    fee: 7.25,
-    commission: 1.31,
-    estimatedTime: "22 mins",
-    distance: 4.1,
-    timestamp: "2026-03-12T14:18:33Z",
-  },
-  {
-    id: "del-003",
-    orderId: "#ORDER-5423",
-    provider: "Grubhub",
-    customer: "Carol Davis",
-    destination: "789 Broadway",
-    driver: "David K.",
-    status: "delivered",
-    fee: 6.75,
-    commission: 1.08,
-    estimatedTime: "28 mins",
-    actualTime: "26 mins",
-    distance: 2.8,
-    timestamp: "2026-03-12T14:15:22Z",
-  },
-  {
-    id: "del-004",
-    orderId: "#ORDER-5424",
-    provider: "DoorDash Drive",
-    customer: "Emma Wilson",
-    destination: "321 Madison Ave",
-    driver: "Robert P.",
-    status: "delivered",
-    fee: 9.00,
-    commission: 1.35,
-    estimatedTime: "20 mins",
-    actualTime: "19 mins",
-    distance: 3.8,
-    timestamp: "2026-03-12T14:10:45Z",
-  },
-  {
-    id: "del-005",
-    orderId: "#ORDER-5425",
-    provider: "Uber Eats",
-    customer: "Frank Miller",
-    destination: "654 West St",
-    driver: "Sandra L.",
-    status: "delivered",
-    fee: 6.50,
-    commission: 1.17,
-    estimatedTime: "30 mins",
-    actualTime: "32 mins",
-    distance: 4.5,
-    timestamp: "2026-03-12T14:05:08Z",
-  },
-  {
-    id: "del-006",
-    orderId: "#ORDER-5426",
-    provider: "Grubhub",
-    customer: "Grace Lee",
-    destination: "987 Columbus Ave",
-    driver: "Thomas H.",
-    status: "pending",
-    fee: 7.00,
-    commission: 1.12,
-    estimatedTime: "35 mins",
-    distance: 5.2,
-    timestamp: "2026-03-12T14:00:19Z",
-  },
-];
-
-const DRIVERS: Driver[] = [
-  {
-    id: "drv-001",
-    name: "Marcus Thompson",
-    provider: "DoorDash",
-    status: "on_delivery",
-    activeDeliveries: 2,
-    completedToday: 8,
-    rating: 4.85,
-    location: "Midtown",
-  },
-  {
-    id: "drv-002",
-    name: "Jessica Rodriguez",
-    provider: "Uber Eats",
-    status: "on_delivery",
-    activeDeliveries: 1,
-    completedToday: 6,
-    rating: 4.92,
-    location: "Downtown",
-  },
-  {
-    id: "drv-003",
-    name: "David Kim",
-    provider: "Grubhub",
-    status: "online",
-    activeDeliveries: 0,
-    completedToday: 7,
-    rating: 4.78,
-    location: "Upper East",
-  },
-  {
-    id: "drv-004",
-    name: "Robert Patterson",
-    provider: "DoorDash",
-    status: "offline",
-    activeDeliveries: 0,
-    completedToday: 5,
-    rating: 4.65,
-    location: "—",
-  },
-  {
-    id: "drv-005",
-    name: "Sandra Lopez",
-    provider: "Uber Eats",
-    status: "on_delivery",
-    activeDeliveries: 1,
-    completedToday: 9,
-    rating: 4.88,
-    location: "Financial District",
-  },
-  {
-    id: "drv-006",
-    name: "Thomas Harris",
-    provider: "Grubhub",
-    status: "online",
-    activeDeliveries: 0,
-    completedToday: 4,
-    rating: 4.71,
-    location: "Brooklyn",
-  },
-];
-
-const PERFORMANCE_METRICS: PerformanceMetric[] = [
-  {
-    provider: "DoorDash Drive",
-    onTimePercent: 94.2,
-    avgDeliveryTime: 28,
-    customerRating: 4.82,
-    costPerDelivery: 8.45,
-  },
-  {
-    provider: "Uber Eats",
-    onTimePercent: 91.8,
-    avgDeliveryTime: 32,
-    customerRating: 4.75,
-    costPerDelivery: 6.88,
-  },
-  {
-    provider: "Grubhub",
-    onTimePercent: 88.5,
-    avgDeliveryTime: 35,
-    customerRating: 4.68,
-    costPerDelivery: 7.12,
-  },
-];
-
-const getStatusColor = (status: string): "success" | "warning" | "default" | "info" | "danger" => {
+const getDeliveryStatusVariant = (status: string): 'success' | 'warning' | 'default' | 'info' | 'danger' => {
   switch (status) {
-    case "delivered":
-    case "online":
-      return "success";
-    case "in_transit":
-    case "on_delivery":
-      return "warning";
-    case "assigned":
-      return "info";
-    case "cancelled":
-    case "offline":
-      return "danger";
-    default:
-      return "default";
+    case 'DELIVERED': return 'success';
+    case 'IN_TRANSIT': case 'PICKED_UP': return 'warning';
+    case 'PENDING': return 'info';
+    case 'FAILED': case 'CANCELLED': return 'danger';
+    default: return 'default';
   }
 };
 
-const getStatusIcon = (status: string): string => {
+const getDriverStatusVariant = (status: string): 'success' | 'warning' | 'default' | 'danger' => {
   switch (status) {
-    case "delivered":
-    case "online":
-      return "●";
-    case "in_transit":
-    case "on_delivery":
-      return "⟿";
-    case "assigned":
-      return "◐";
-    case "cancelled":
-      return "✕";
-    case "offline":
-      return "○";
-    default:
-      return "○";
+    case 'AVAILABLE': return 'success';
+    case 'ON_ROUTE': return 'warning';
+    case 'OFFLINE': return 'danger';
+    default: return 'default';
   }
 };
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+const getHealthVariant = (h: string): 'success' | 'warning' | 'danger' | 'default' => {
+  switch (h) {
+    case 'HEALTHY': return 'success';
+    case 'DEGRADED': return 'warning';
+    case 'ERROR': return 'danger';
+    default: return 'default';
+  }
 };
 
-const formatDateTime = (isoStr: string): string => {
-  if (!isoStr) return "—";
-  const date = new Date(isoStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
+const formatCurrency = (amount: number): string =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+const formatRelative = (isoStr: string): string => {
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return new Date(isoStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
+
+type DeliveryStatusFilter = 'all' | 'PENDING' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED';
+type DriverStatusFilter = 'all' | 'AVAILABLE' | 'ON_ROUTE' | 'OFFLINE';
 
 export default function LastMileIntegrationPage() {
-  const [selectedProvider, setSelectedProvider] = useState<string>("doordash");
-  const [deliveryFilterStatus, setDeliveryFilterStatus] = useState<"all" | "pending" | "assigned" | "in_transit" | "delivered">("all");
-  const [driverFilterStatus, setDriverFilterStatus] = useState<"all" | "online" | "on_delivery" | "offline">("all");
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
+  const [deliveryFilter, setDeliveryFilter] = useState<DeliveryStatusFilter>('all');
+  const [driverFilter, setDriverFilter] = useState<DriverStatusFilter>('all');
 
-  // Calculate stats
-  const connectedCount = DELIVERY_PROVIDERS.length;
-  const totalDeliveriesToday = DELIVERY_PROVIDERS.reduce((sum, p) => sum + p.deliveriesToday, 0);
-  const totalRevenuToday = DELIVERY_PROVIDERS.reduce((sum, p) => sum + p.revenueToday, 0);
-  const totalCommissions = DELIVERIES.reduce((sum, d) => sum + d.commission, 0);
-  const avgOnTimeRate =
-    PERFORMANCE_METRICS.reduce((sum, m) => sum + m.onTimePercent, 0) / PERFORMANCE_METRICS.length;
+  const { data: partners, loading: partnersLoading, error: partnersError } =
+    useApiQuery<CourierPartner[]>('/api/v4/couriers/partners');
 
-  const filteredDeliveries = useMemo(
-    () =>
-      DELIVERIES.filter((delivery) => {
-        if (deliveryFilterStatus !== "all" && delivery.status !== deliveryFilterStatus)
-          return false;
-        return true;
-      }),
-    [deliveryFilterStatus]
+  const { data: partnerStatsData, loading: statsLoading } =
+    useApiQuery<{ stats: PartnerStat[] }>('/api/v4/couriers/partner-stats');
+
+  const { data: overallStats, loading: overallLoading } =
+    useApiQuery<OverallStats>('/api/v4/couriers/stats');
+
+  const deliveriesUrl = useMemo(() => {
+    const params = new URLSearchParams({ limit: '30' });
+    if (deliveryFilter !== 'all') params.set('status', deliveryFilter);
+    return `/api/v4/couriers/deliveries?${params}`;
+  }, [deliveryFilter]);
+
+  const { data: deliveries, loading: deliveriesLoading, error: deliveriesError } =
+    useApiQuery<CourierDelivery[]>(deliveriesUrl);
+
+  const driversUrl = useMemo(() => {
+    const params = new URLSearchParams({ limit: '10' });
+    if (driverFilter !== 'all') params.set('status', driverFilter);
+    return `/api/v4/drivers?${params}`;
+  }, [driverFilter]);
+
+  const { data: drivers, loading: driversLoading } =
+    useApiQuery<Driver[]>(driversUrl);
+
+  // Merge partner stats by provider
+  const statsByProvider = useMemo(() => {
+    const map: Record<string, PartnerStat> = {};
+    for (const s of partnerStatsData?.stats ?? []) {
+      map[s.provider] = s;
+    }
+    return map;
+  }, [partnerStatsData]);
+
+  const connectedCount = (partners ?? []).filter(p => p.isEnabled).length;
+  const totalActiveDeliveries = (partnerStatsData?.stats ?? []).reduce(
+    (sum, s) => sum + s.activeDeliveries, 0
   );
 
-  const filteredDrivers = useMemo(
-    () =>
-      DRIVERS.filter((driver) => {
-        if (driverFilterStatus !== "all" && driver.status !== driverFilterStatus) return false;
-        return true;
-      }),
-    [driverFilterStatus]
-  );
-
-  const selectedProviderData = DELIVERY_PROVIDERS.find((p) => p.id === selectedProvider);
+  const isLoading = partnersLoading || overallLoading;
 
   return (
     <>
       <Header
         title="Last-Mile Delivery"
-        subtitle={`${connectedCount} platforms · ${totalDeliveriesToday} deliveries today`}
+        subtitle={`${connectedCount} couriers · ${overallStats?.total ?? 0} total deliveries`}
         actions={
           <Button variant="primary" size="md">
-            + New Integration
+            + Add Courier
           </Button>
         }
       />
 
-      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+      <div className="p-6 bg-wl-bg-root min-h-screen">
+        {partnersError && (
+          <div className="mb-6 p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
+            {partnersError.message}
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
-            label="Deliveries Today"
-            value={totalDeliveriesToday}
-            change={{ value: 22.5, label: "vs yesterday" }}
+            label="Providers Connected"
+            value={connectedCount}
+            isLoading={isLoading}
             accentColor="#3b82f6"
             index={0}
           />
           <StatCard
-            label="Total Revenue"
-            value={formatCurrency(totalRevenuToday)}
-            change={{ value: 18.3, label: "vs yesterday" }}
+            label="Total Deliveries"
+            value={overallStats?.total ?? 0}
+            isLoading={isLoading}
             accentColor="#10b981"
             index={1}
           />
           <StatCard
-            label="On-Time Rate"
-            value={`${avgOnTimeRate.toFixed(1)}%`}
-            change={{ value: 2.1, label: "vs avg" }}
+            label="Success Rate"
+            value={overallStats?.successRate ?? '—'}
+            isLoading={isLoading}
             accentColor="#f59e0b"
             index={2}
           />
           <StatCard
-            label="Total Commissions"
-            value={formatCurrency(totalCommissions)}
-            change={{ value: -1.5, label: "vs target" }}
+            label="Active Now"
+            value={totalActiveDeliveries}
+            isLoading={statsLoading}
             accentColor="#60a5fa"
             index={3}
           />
         </div>
 
-        {/* Delivery Platform Cards */}
+        {/* Courier Partner Cards */}
         <div className="mb-6">
           <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
-            Connected Delivery Platforms
+            Courier Partners
           </h2>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-            {DELIVERY_PROVIDERS.map((provider) => (
-              <Card
-                key={provider.id}
-                hover
-                onClick={() => setSelectedProvider(provider.id)}
-                className={cn(
-                  "cursor-pointer transition-all",
-                  selectedProvider === provider.id && "ring-2 ring-blue-500"
-                )}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
-                      {provider.logo}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-white">
-                        {provider.name}
-                      </h3>
-                      <Badge variant="success">● {provider.status}</Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs text-gray-400 mb-3">
-                  <div className="flex justify-between">
-                    <span>Deliveries Today:</span>
-                    <span className="text-white font-semibold">
-                      {provider.deliveriesToday}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Revenue:</span>
-                    <span className="text-white font-semibold">
-                      {formatCurrency(provider.revenueToday)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Commission:</span>
-                    <span className="text-white font-semibold">
-                      {provider.commissionsPercentage}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>On-Time Rate:</span>
-                    <span className="text-emerald-500 font-semibold">
-                      {provider.onTimeDeliveryRate}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Avg Delivery Time:</span>
-                    <span className="text-white font-semibold">
-                      {provider.averageDeliveryTime}m
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button variant="secondary" size="sm" className="flex-1">
-                    Settings
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex-1">
-                    View Details
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Performance Metrics */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Delivery Performance Comparison</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#1e1e2e]">
-                    <th className="p-3 text-left font-semibold text-gray-400">
-                      Provider
-                    </th>
-                    <th className="p-3 text-center font-semibold text-gray-400">
-                      On-Time %
-                    </th>
-                    <th className="p-3 text-center font-semibold text-gray-400">
-                      Avg Time (mins)
-                    </th>
-                    <th className="p-3 text-center font-semibold text-gray-400">
-                      Rating
-                    </th>
-                    <th className="p-3 text-right font-semibold text-gray-400">
-                      Cost per Delivery
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {PERFORMANCE_METRICS.map((metric, idx) => (
-                    <tr
-                      key={idx}
-                      className={cn(
-                        "border-b border-[#1e1e2e]",
-                        idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]/30"
-                      )}
-                    >
-                      <td className="p-3 text-white font-semibold">
-                        {metric.provider}
-                      </td>
-                      <td className="p-3 text-center">
-                        <Badge variant="success">{metric.onTimePercent}%</Badge>
-                      </td>
-                      <td className="p-3 text-center text-white font-semibold">
-                        {metric.avgDeliveryTime}
-                      </td>
-                      <td className="p-3 text-center text-white font-semibold">
-                        {metric.customerRating} ⭐
-                      </td>
-                      <td className="p-3 text-right text-white font-semibold">
-                        {formatCurrency(metric.costPerDelivery)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {partnersLoading ? (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-40 rounded-lg bg-wl-bg-surface animate-pulse" />
+              ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Unified Order & Driver View */}
-        <div className="grid grid-cols-[1fr_1fr] gap-6">
-          {/* Delivery Orders */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Deliveries</CardTitle>
-              <div className="flex gap-2 ml-auto">
-                {(["all", "pending", "assigned", "in_transit", "delivered"] as const).map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => setDeliveryFilterStatus(status)}
+          ) : (partners ?? []).length === 0 ? (
+            <Card>
+              <CardContent>
+                <div className="py-8 text-center text-gray-400 text-sm">
+                  No courier partners configured. Add a courier to start dispatching deliveries.
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+              {(partners ?? []).map((partner) => {
+                const stats = statsByProvider[partner.provider];
+                return (
+                  <Card
+                    key={partner.id}
+                    hover
+                    onClick={() => setSelectedPartnerId(
+                      selectedPartnerId === partner.id ? null : partner.id
+                    )}
                     className={cn(
-                      "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
-                      deliveryFilterStatus === status
-                        ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                      'cursor-pointer transition-all',
+                      selectedPartnerId === partner.id && 'ring-2 ring-blue-500'
                     )}
                   >
-                    {status === "all" ? "All" : status === "in_transit" ? "Transit" : status}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400 uppercase">
+                          {partner.provider.slice(0, 2)}
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-white">{partner.name}</h3>
+                          <Badge variant={getHealthVariant(partner.healthStatus)}>
+                            ● {partner.healthStatus.toLowerCase()}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-xs text-gray-400 mb-3">
+                      <div className="flex justify-between">
+                        <span>Active Deliveries:</span>
+                        <span className="text-white font-semibold">
+                          {stats?.activeDeliveries ?? '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Total Deliveries:</span>
+                        <span className="text-white font-semibold">
+                          {stats?.totalDeliveries ?? '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Success Rate:</span>
+                        <span className="text-emerald-500 font-semibold">
+                          {stats?.successRate != null ? `${stats.successRate}%` : '—'}
+                        </span>
+                      </div>
+                      {partner.lastSyncAt && (
+                        <div className="flex justify-between">
+                          <span>Last Sync:</span>
+                          <span className="text-white font-semibold">
+                            {formatRelative(partner.lastSyncAt)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button variant="secondary" size="sm" className="flex-1">Settings</Button>
+                      <Button variant="ghost" size="sm" className="flex-1">Details</Button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Performance Summary Table */}
+        {(partnerStatsData?.stats ?? []).length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Performance Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-wl-border-default">
+                      <th className="p-3 text-left font-semibold text-gray-400">Provider</th>
+                      <th className="p-3 text-center font-semibold text-gray-400">Active</th>
+                      <th className="p-3 text-center font-semibold text-gray-400">Total</th>
+                      <th className="p-3 text-center font-semibold text-gray-400">Success Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(partnerStatsData?.stats ?? []).map((stat, idx) => (
+                      <tr
+                        key={stat.provider}
+                        className={cn(
+                          'border-b border-wl-border-default',
+                          idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-elevated/30'
+                        )}
+                      >
+                        <td className="p-3 text-white font-semibold capitalize">{stat.provider.replace(/_/g, ' ')}</td>
+                        <td className="p-3 text-center text-white font-semibold">{stat.activeDeliveries}</td>
+                        <td className="p-3 text-center text-white font-semibold">{stat.totalDeliveries}</td>
+                        <td className="p-3 text-center">
+                          {stat.successRate != null ? (
+                            <Badge variant="success">{stat.successRate}%</Badge>
+                          ) : (
+                            <span className="text-gray-500">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Deliveries & Drivers */}
+        <div className="grid grid-cols-[1fr_1fr] gap-6">
+          {/* Active Deliveries */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Deliveries</CardTitle>
+              <div className="flex gap-2 ml-auto">
+                {(['all', 'PENDING', 'IN_TRANSIT', 'DELIVERED'] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setDeliveryFilter(s)}
+                    className={cn(
+                      'px-2 py-1 text-xs font-semibold rounded border capitalize transition-all',
+                      deliveryFilter === s
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-transparent text-gray-400 border-wl-border-default'
+                    )}
+                  >
+                    {s === 'all' ? 'All' : s === 'IN_TRANSIT' ? 'Transit' : s.charAt(0) + s.slice(1).toLowerCase()}
                   </button>
                 ))}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {filteredDeliveries.map((delivery) => (
-                  <div
-                    key={delivery.id}
-                    className={cn(
-                      "p-3 rounded-md border",
-                      delivery.status === "delivered"
-                        ? "border-emerald-500/20 bg-emerald-500/20"
-                        : delivery.status === "in_transit"
-                        ? "border-amber-500/20 bg-amber-500/20"
-                        : "border-blue-500/20 bg-blue-500/20"
-                    )}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-white">
-                          {delivery.orderId}
-                        </p>
-                        <p className="text-xs text-gray-300">
-                          {delivery.customer} → {delivery.destination}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant={getStatusColor(delivery.status)} className="text-xs">
-                          {getStatusIcon(delivery.status)} {delivery.status}
+              {deliveriesLoading ? (
+                <div className="space-y-2">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-16 rounded-md bg-wl-bg-surface animate-pulse" />
+                  ))}
+                </div>
+              ) : deliveriesError ? (
+                <div className="py-4 text-center text-red-400 text-sm">{deliveriesError.message}</div>
+              ) : (deliveries ?? []).length === 0 ? (
+                <div className="py-8 text-center text-gray-400 text-sm">No deliveries found.</div>
+              ) : (
+                <div className="space-y-2">
+                  {(deliveries ?? []).map((d) => (
+                    <div
+                      key={d.id}
+                      className={cn(
+                        'p-3 rounded-md border',
+                        d.status === 'DELIVERED'
+                          ? 'border-emerald-500/20 bg-emerald-500/10'
+                          : d.status === 'IN_TRANSIT' || d.status === 'PICKED_UP'
+                          ? 'border-amber-500/20 bg-amber-500/10'
+                          : d.status === 'FAILED' || d.status === 'CANCELLED'
+                          ? 'border-red-500/20 bg-red-500/10'
+                          : 'border-blue-500/20 bg-blue-500/10'
+                      )}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-white truncate">
+                            {d.externalId}
+                          </p>
+                          <p className="text-xs text-gray-400">{d.partner.name}</p>
+                        </div>
+                        <Badge variant={getDeliveryStatusVariant(d.status)} className="text-xs ml-2 shrink-0">
+                          {d.status.replace(/_/g, ' ')}
                         </Badge>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 mb-2 text-xs">
-                      <div>
-                        <span className="text-gray-300">Driver:</span>
-                        <p className="font-semibold text-white">{delivery.driver}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                        <span>{d.driverName ?? 'Unassigned'}</span>
+                        <span>
+                          {d.quote?.distanceKm != null ? `${d.quote.distanceKm} km` : ''}
+                          {d.actualCost != null ? ` · ${formatCurrency(d.actualCost)}` : ''}
+                        </span>
                       </div>
-                      <div className="text-right">
-                        <span className="text-gray-300">Distance:</span>
-                        <p className="font-semibold text-white">
-                          {delivery.distance} km
-                        </p>
-                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{formatRelative(d.createdAt)}</p>
                     </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-[#1e1e2e] text-xs">
-                      <span className="text-gray-400">
-                        {delivery.actualTime ? `${delivery.actualTime}` : delivery.estimatedTime}
-                      </span>
-                      <span className="text-gray-300">
-                        Fee: {formatCurrency(delivery.fee)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -626,77 +422,66 @@ export default function LastMileIntegrationPage() {
             <CardHeader>
               <CardTitle>Driver Status</CardTitle>
               <div className="flex gap-2 ml-auto">
-                {(["all", "online", "on_delivery", "offline"] as const).map((status) => (
+                {(['all', 'AVAILABLE', 'ON_ROUTE', 'OFFLINE'] as const).map((s) => (
                   <button
-                    key={status}
-                    onClick={() => setDriverFilterStatus(status)}
+                    key={s}
+                    onClick={() => setDriverFilter(s)}
                     className={cn(
-                      "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
-                      driverFilterStatus === status
-                        ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                      'px-2 py-1 text-xs font-semibold rounded border capitalize transition-all',
+                      driverFilter === s
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-transparent text-gray-400 border-wl-border-default'
                     )}
                   >
-                    {status === "all"
-                      ? "All"
-                      : status === "on_delivery"
-                      ? "In Delivery"
-                      : status}
+                    {s === 'all' ? 'All' : s === 'ON_ROUTE' ? 'En Route' : s.charAt(0) + s.slice(1).toLowerCase()}
                   </button>
                 ))}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {filteredDrivers.map((driver) => (
-                  <div
-                    key={driver.id}
-                    className={cn(
-                      "p-3 rounded-md border",
-                      driver.status === "online"
-                        ? "border-emerald-500/20 bg-emerald-500/20"
-                        : driver.status === "on_delivery"
-                        ? "border-amber-500/20 bg-amber-500/20"
-                        : "border-neutral-600/20 bg-[#1a1a2e]/20"
-                    )}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-white">
-                          {driver.name}
-                        </p>
-                        <p className="text-xs text-gray-300">
-                          {driver.provider} • {driver.location}
-                        </p>
+              {driversLoading ? (
+                <div className="space-y-2">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-16 rounded-md bg-wl-bg-surface animate-pulse" />
+                  ))}
+                </div>
+              ) : (drivers ?? []).length === 0 ? (
+                <div className="py-8 text-center text-gray-400 text-sm">No drivers found.</div>
+              ) : (
+                <div className="space-y-2">
+                  {(drivers ?? []).map((driver) => (
+                    <div
+                      key={driver.id}
+                      className={cn(
+                        'p-3 rounded-md border',
+                        driver.status === 'AVAILABLE'
+                          ? 'border-emerald-500/20 bg-emerald-500/10'
+                          : driver.status === 'ON_ROUTE'
+                          ? 'border-amber-500/20 bg-amber-500/10'
+                          : 'border-neutral-600/20 bg-wl-bg-elevated/20'
+                      )}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <div>
+                          <p className="text-sm font-semibold text-white">{driver.name}</p>
+                          <p className="text-xs text-gray-400">
+                            {driver.vehicleType ?? 'Vehicle unknown'}
+                          </p>
+                        </div>
+                        <Badge variant={getDriverStatusVariant(driver.status)}>
+                          {driver.status.replace(/_/g, ' ')}
+                        </Badge>
                       </div>
-                      <Badge variant={getStatusColor(driver.status)}>
-                        {getStatusIcon(driver.status)} {driver.status}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div>
-                        <span className="text-gray-300 block mb-0.5">Active</span>
-                        <p className="font-semibold text-white">
-                          {driver.activeDeliveries}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-gray-300 block mb-0.5">Completed</span>
-                        <p className="font-semibold text-white">
-                          {driver.completedToday}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-gray-300 block mb-0.5">Rating</span>
-                        <p className="font-semibold text-white">
-                          {driver.rating} ⭐
-                        </p>
+                      <div className="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>Active orders: {driver._count.orders}</span>
+                        {driver.lastLocationAt && (
+                          <span>Seen {formatRelative(driver.lastLocationAt)}</span>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

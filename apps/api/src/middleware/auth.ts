@@ -221,6 +221,46 @@ export function requireOrgRole(...allowedOrgRoles: NonNullable<AuthContext["orgR
   };
 }
 
+// ─── Scope-Based Access (ADR-010 claims-based auth) ─────────
+// Used by routes that can be reached either by a first-party user/session or by
+// a third-party OAuth app installation access token. First-party auth carries no
+// `scopes` (full access, gated by role); OAuth tokens must hold every required
+// scope. Supports hierarchical scopes via a trailing wildcard, e.g. a token with
+// `orders` (or `orders:*`) satisfies a required `orders:read`.
+export function requireScopes(...requiredScopes: string[]) {
+  return async function (
+    request: FastifyRequest,
+    _reply: FastifyReply,
+  ): Promise<void> {
+    if (!request.auth) {
+      throw new UnauthorizedError("Authentication required");
+    }
+
+    // First-party user/session auth has no scope restriction.
+    const granted = request.auth.scopes;
+    if (!granted) {
+      return;
+    }
+
+    const grantedSet = new Set(granted);
+    const isGranted = (required: string): boolean => {
+      if (grantedSet.has(required) || grantedSet.has("*")) {
+        return true;
+      }
+      // Hierarchical match: `orders` or `orders:*` covers `orders:read`.
+      const [resource] = required.split(":");
+      return grantedSet.has(resource) || grantedSet.has(`${resource}:*`);
+    };
+
+    const missing = requiredScopes.filter((scope) => !isGranted(scope));
+    if (missing.length > 0) {
+      throw new ForbiddenError(
+        `Missing required scope(s): ${missing.join(", ")}`,
+      );
+    }
+  };
+}
+
 // ─── Shopify Webhook HMAC Verification ──────────────────────
 // NOTE: This flow is completely unchanged by the org layer.
 // Shopify webhooks always identify a single shop via domain.

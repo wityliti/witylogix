@@ -29,6 +29,7 @@ import type {
   ELDConfig,
   ELDWebhookEvent,
   DutyStatus,
+  HOSSummary,
 } from "./types.js";
 import type {
   SamsaraDriver,
@@ -628,14 +629,7 @@ export class SamsaraELDClient extends ELDAdapter {
   async getHOSSummary(
     driverId: string,
     date: Date
-  ): Promise<{
-    hours11: number;
-    hours14: number;
-    hours60: number;
-    hours70: number;
-    availableDriving: number;
-    availableOnDuty: number;
-  }> {
+  ): Promise<HOSSummary> {
     const summary = await this.executeWithRetry(() =>
       this.makeRequest<any>("GET", `/drivers/${driverId}/hos-summary`, {
         date: date.toISOString().split("T")[0],
@@ -643,12 +637,15 @@ export class SamsaraELDClient extends ELDAdapter {
     );
 
     return {
+      driverId,
+      date,
       hours11: summary.hours11 || 0,
       hours14: summary.hours14 || 0,
       hours60: summary.hours60 || 0,
       hours70: summary.hours70 || 0,
       availableDriving: Math.max(0, 11 - (summary.hours11 || 0)),
       availableOnDuty: Math.max(0, 14 - (summary.hours14 || 0)),
+      violations: [],
     };
   }
 
@@ -674,7 +671,7 @@ export class SamsaraELDClient extends ELDAdapter {
    * Handle webhook event
    */
   async handleWebhook(event: ELDWebhookEvent): Promise<void> {
-    const payload = event.payload as SamsaraWebhookPayload;
+    const payload = event.payload as unknown as SamsaraWebhookPayload;
 
     switch (payload.eventType) {
       case "hos.violation":
@@ -761,7 +758,7 @@ export class SamsaraELDClient extends ELDAdapter {
       throw new Error(`Samsara API error: ${response.status} ${error}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   private mapDutyStatus(status: string): DutyStatus {
@@ -808,7 +805,7 @@ export class SamsaraELDClient extends ELDAdapter {
       condition: dvir.defectsSummary === "pass" ? "pass" : "defect",
       defects: dvir.defects.map((d) => ({
         component: d.component,
-        severity: d.severity,
+        severity: "minor" as const,
         description: d.defectDescription,
         evidenceUrls: [],
       })),

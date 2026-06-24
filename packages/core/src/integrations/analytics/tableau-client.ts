@@ -697,7 +697,7 @@ export class TableauClient extends AnalyticsAdapter {
       id: `tableau-token-${Date.now()}`,
       token: trustedTicket.ticket,
       entityId,
-      entityType: 'view',
+      entityType: 'report',
       userId,
       scopes,
       rlsRules,

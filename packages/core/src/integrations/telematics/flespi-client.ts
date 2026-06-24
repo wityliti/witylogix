@@ -513,7 +513,9 @@ export class FlespiClient extends TelematicsAdapter {
             headers: this.buildHeaders(),
           },
         );
-        return response.ok;
+        if (!response.ok) {
+          throw new Error(`Health check failed with status ${response.status}`);
+        }
       });
       return true;
     } catch {
@@ -699,7 +701,7 @@ export class FlespiClient extends TelematicsAdapter {
   /**
    * Build request headers with Bearer token
    */
-  protected buildHeaders(): HeadersInit {
+  protected buildHeaders(): Record<string, string> {
     return {
       Authorization: `Bearer ${this.apiToken}`,
       "Content-Type": "application/json",

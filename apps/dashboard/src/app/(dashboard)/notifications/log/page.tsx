@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/layout/header";
 import {
   Card,
@@ -13,13 +13,15 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
   TableHeader,
   TableRow,
   TableHead,
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   Download,
@@ -27,447 +29,410 @@ import {
   Mail,
   MessageSquare,
   Bell,
-  Webhook,
-  Slack,
+  MessageCircle,
   Clock,
   CheckCircle,
   AlertCircle,
-  MessageCircle,
-  Bell as BellIcon,
+  XCircle,
+  Package,
+  RefreshCw,
 } from "lucide-react";
-import {
-  useDeliveryLog,
-  type DeliveryStatus,
-  type NotificationChannel,
-} from "@/hooks/use-notifications";
+import { useApiList } from "@/hooks/use-api";
+import Link from "next/link";
 
-type Channel = "EMAIL" | "SMS" | "WHATSAPP" | "PUSH" | "WEBHOOK" | "SLACK";
+// ── API types matching notifications-v2 /log response ─────────────────────
 
-function ChannelIcon({ channel }: { channel: Channel }) {
-  const cls = "w-4 h-4 text-gray-400";
-  switch (channel) {
-    case "EMAIL": return <Mail className={cls} />;
-    case "SMS": return <MessageSquare className={cls} />;
-    case "WHATSAPP": return <MessageCircle className={cls} />;
-    case "PUSH": return <BellIcon className={cls} />;
-    case "WEBHOOK": return <Webhook className={cls} />;
-    case "SLACK": return <Slack className={cls} />;
-    default: return <Bell className={cls} />;
+interface ApiNotificationLog {
+  id: string;
+  channel: string;
+  eventType: string;
+  recipient: string;
+  status: string;
+  providerMsgId: string | null;
+  errorMessage: string | null;
+  sentAt: string | null;
+  deliveredAt: string | null;
+  createdAt: string;
+  orderId: string | null;
+  orderNumber: string | null;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+const CHANNEL_ICON: Record<string, React.ReactNode> = {
+  EMAIL: <Mail className="w-4 h-4" />,
+  SMS: <MessageSquare className="w-4 h-4" />,
+  WHATSAPP: <MessageCircle className="w-4 h-4" />,
+  PUSH: <Bell className="w-4 h-4" />,
+};
+
+const STATUS_ICON: Record<string, React.ReactNode> = {
+  SENT: <CheckCircle className="w-4 h-4 text-blue-400" />,
+  DELIVERED: <CheckCircle className="w-4 h-4 text-emerald-400" />,
+  FAILED: <XCircle className="w-4 h-4 text-red-400" />,
+  BOUNCED: <AlertCircle className="w-4 h-4 text-amber-400" />,
+  PENDING: <Clock className="w-4 h-4 text-zinc-400" />,
+};
+
+function statusVariant(s: string): "success" | "danger" | "warning" | "info" | "default" {
+  switch (s) {
+    case "DELIVERED": return "success";
+    case "SENT": return "info";
+    case "FAILED": return "danger";
+    case "BOUNCED": return "warning";
+    default: return "default";
   }
 }
 
-function StatusIcon({ status }: { status: string }) {
-  switch (status) {
-    case "DELIVERED":
-    case "SENT":
-      return <CheckCircle className="w-4 h-4 text-emerald-500" />;
-    case "FAILED":
-    case "BOUNCED":
-      return <AlertCircle className="w-4 h-4 text-red-500" />;
-    default:
-      return <Clock className="w-4 h-4 text-gray-400" />;
-  }
+function fmtEvent(e: string): string {
+  return e.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function getStatusVariant(
-  status: string
-): "default" | "success" | "warning" | "danger" | "info" {
-  switch (status) {
-    case "DELIVERED":
-    case "SENT":
-      return "success";
-    case "FAILED":
-      return "danger";
-    case "BOUNCED":
-      return "warning";
-    default:
-      return "info";
-  }
+function fmtTs(ts: string): string {
+  return new Date(ts).toLocaleString(undefined, {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
 }
 
-function formatDateTime(ts: string): string {
-  const date = new Date(ts);
-  const now = new Date();
-  const diffMins = Math.floor((now.getTime() - date.getTime()) / 60000);
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
-  return date.toLocaleDateString();
-}
+// ── Detail Modal ───────────────────────────────────────────────────────────
 
-function truncate(s: string, n: number) {
-  return s.length > n ? s.slice(0, n) + "…" : s;
-}
-
-interface DetailModalProps {
-  entry?: ReturnType<typeof useDeliveryLog>["entries"][number];
-  onClose: () => void;
-}
-
-function DetailModal({ entry, onClose }: DetailModalProps) {
-  if (!entry) return null;
+function DetailModal({ log, onClose }: { log: ApiNotificationLog; onClose: () => void }) {
   return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
       <Card
-        className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"
+        className="border border-zinc-800 bg-wl-bg-surface w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <CardHeader>
-          <CardTitle>Notification Detail</CardTitle>
+          <CardTitle className="text-base">Notification Details</CardTitle>
+          {log.providerMsgId && (
+            <CardDescription className="font-mono text-xs">{log.providerMsgId}</CardDescription>
+          )}
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Recipient</p>
-              <p className="text-white font-mono break-all">{entry.recipient}</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Channel</p>
-              <div className="flex items-center gap-2">
-                <ChannelIcon channel={entry.channel as Channel} />
-                <span className="text-white capitalize">{entry.channel}</span>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Status</p>
-              <Badge variant={getStatusVariant(entry.status)}>{entry.status}</Badge>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Sent At</p>
-              <p className="text-white">{new Date(entry.timestamp).toLocaleString()}</p>
-            </div>
-            {entry.deliveredAt && (
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Delivered At</p>
-                <p className="text-emerald-400">{new Date(entry.deliveredAt).toLocaleString()}</p>
-              </div>
+        <CardContent className="space-y-4 text-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Channel" value={log.channel} />
+            <Field label="Event" value={fmtEvent(log.eventType)} />
+            <Field label="Recipient" value={log.recipient} mono />
+            <Field label="Status">
+              <Badge variant={statusVariant(log.status)}>{log.status}</Badge>
+            </Field>
+            {log.orderId && (
+              <Field label="Order">
+                <Link
+                  href={`/orders/${log.orderId}`}
+                  className="text-blue-400 hover:text-blue-300 font-mono text-xs"
+                >
+                  {log.orderNumber ?? log.orderId.slice(0, 8)}
+                </Link>
+              </Field>
             )}
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Retries</p>
-              <p className="text-white">{entry.retryCount}</p>
+            <Field label="Sent" value={log.sentAt ? fmtTs(log.sentAt) : log.createdAt ? fmtTs(log.createdAt) : "—"} />
+            {log.deliveredAt && <Field label="Delivered" value={fmtTs(log.deliveredAt)} />}
+          </div>
+          {log.errorMessage && (
+            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3">
+              <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">Error</p>
+              <p className="text-xs text-red-300">{log.errorMessage}</p>
             </div>
-            {entry.error && (
-              <div className="col-span-2">
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Error</p>
-                <p className="text-red-400 text-sm">{entry.error}</p>
-              </div>
-            )}
-          </div>
-          <div className="pt-3 border-t border-[#1e1e2e]">
-            <Button variant="secondary" onClick={onClose} className="w-full">
-              Close
-            </Button>
-          </div>
+          )}
+          <button
+            onClick={onClose}
+            className="w-full mt-2 px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 transition-colors text-sm"
+          >
+            Close
+          </button>
         </CardContent>
       </Card>
     </div>
   );
 }
 
-export default function NotificationLogPage() {
-  const {
-    entries,
-    isLoading,
-    error,
-    hasMore,
-    searchQuery,
-    filters,
-    setSearchQuery,
-    setFilters,
-    loadMore,
-    exportCSV,
-  } = useDeliveryLog();
+function Field({
+  label,
+  value,
+  mono,
+  children,
+}: {
+  label: string;
+  value?: string;
+  mono?: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">{label}</p>
+      {children ?? (
+        <p className={cn("text-sm text-zinc-200", mono && "font-mono text-xs break-all")}>
+          {value}
+        </p>
+      )}
+    </div>
+  );
+}
 
-  const [selectedEntry, setSelectedEntry] = useState<
-    (typeof entries)[number] | undefined
-  >();
+// ── Page ───────────────────────────────────────────────────────────────────
+
+export default function NotificationLogPage() {
   const [filterChannel, setFilterChannel] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [isExporting, setIsExporting] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [selectedLog, setSelectedLog] = useState<ApiNotificationLog | null>(null);
 
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setSearchQuery(debouncedQuery), 300);
-    return () => clearTimeout(t);
-  }, [debouncedQuery, setSearchQuery]);
+  const filters = useMemo(() => {
+    const f: Record<string, string> = {};
+    if (filterChannel) f.channel = filterChannel;
+    if (filterStatus) f.status = filterStatus;
+    if (filterDateFrom) f.dateFrom = filterDateFrom;
+    if (filterDateTo) f.dateTo = filterDateTo;
+    return f;
+  }, [filterChannel, filterStatus, filterDateFrom, filterDateTo]);
 
-  // Sync dropdown filters
-  useEffect(() => {
-    setFilters({
-      channel: filterChannel ? (filterChannel as NotificationChannel) : undefined,
-      status: filterStatus ? (filterStatus as DeliveryStatus) : undefined,
-    });
-  }, [filterChannel, filterStatus, setFilters]);
+  const { items: logs, loading, error, refetch, pagination } = useApiList<ApiNotificationLog>(
+    "/api/v4/notifications/log",
+    { ...filters, limit: 50 },
+  );
 
+  // derive stats from loaded page
   const stats = useMemo(() => {
-    const total = entries.length;
-    const delivered = entries.filter(
-      (e) => e.status === "DELIVERED" || e.status === "READ"
-    ).length;
-    const failed = entries.filter((e) => e.status === "FAILED").length;
-    const bounced = entries.filter((e) => e.status === "BOUNCED").length;
-    const rate = total > 0 ? Math.round((delivered / total) * 100) : 0;
-    return { total, delivered, failed, bounced, rate };
-  }, [entries]);
+    const total = pagination.total ?? logs.length;
+    const delivered = logs.filter((l) => l.status === "DELIVERED" || l.status === "SENT").length;
+    const failed = logs.filter((l) => l.status === "FAILED").length;
+    const bounced = logs.filter((l) => l.status === "BOUNCED").length;
+    const deliveryRate = logs.length > 0 ? ((delivered / logs.length) * 100).toFixed(1) : "—";
+    const bounceRate = logs.length > 0 ? ((bounced / logs.length) * 100).toFixed(1) : "—";
+    return { total, deliveryRate, bounceRate, pending: logs.filter((l) => l.status === "PENDING").length };
+  }, [logs, pagination.total]);
 
-  const handleExport = useCallback(async () => {
-    setIsExporting(true);
-    try { await exportCSV(); } finally { setIsExporting(false); }
-  }, [exportCSV]);
-
-  const handleLoadMore = useCallback(async () => {
-    setIsLoadingMore(true);
-    await loadMore();
-    setIsLoadingMore(false);
-  }, [loadMore]);
+  function exportCSV() {
+    const rows = [
+      ["Timestamp", "Recipient", "Channel", "Event", "Status", "Provider ID", "Order"],
+      ...logs.map((l) => [
+        l.createdAt,
+        l.recipient,
+        l.channel,
+        l.eventType,
+        l.status,
+        l.providerMsgId ?? "",
+        l.orderNumber ?? l.orderId ?? "",
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `notification-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Notification Log"
         subtitle="Track sent notifications and delivery status"
         actions={
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleExport}
-            disabled={isExporting || entries.length === 0}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {isExporting ? "Exporting…" : "Export CSV"}
+          <Button variant="secondary" size="sm" onClick={refetch}>
+            <RefreshCw className="w-4 h-4" />
+            Refresh
           </Button>
         }
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="border border-[#1e1e2e] bg-[#12121a]">
-                  <CardContent className="pt-6">
-                    <Skeleton className="h-4 w-20 mb-2" />
-                    <Skeleton className="h-8 w-16" />
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <>
-                <Card className="border border-[#1e1e2e] bg-[#12121a]">
-                  <CardContent className="pt-6 text-center">
-                    <p className="text-2xl font-bold text-white">{stats.total}</p>
-                    <p className="text-sm text-gray-400 mt-1">Total Sent</p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-[#1e1e2e] bg-[#12121a]">
-                  <CardContent className="pt-6 text-center">
-                    <p className="text-2xl font-bold text-emerald-500">{stats.delivered}</p>
-                    <p className="text-sm text-gray-400 mt-1">Delivered</p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-[#1e1e2e] bg-[#12121a]">
-                  <CardContent className="pt-6 text-center">
-                    <p className="text-2xl font-bold text-red-500">{stats.failed}</p>
-                    <p className="text-sm text-gray-400 mt-1">Failed</p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-[#1e1e2e] bg-[#12121a]">
-                  <CardContent className="pt-6 text-center">
-                    <p className="text-2xl font-bold text-amber-500">{stats.rate}%</p>
-                    <p className="text-sm text-gray-400 mt-1">Success Rate</p>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Total (this page)", value: String(logs.length), sub: `of ${(pagination.total ?? 0).toLocaleString()} total` },
+            { label: "Delivery Rate", value: `${stats.deliveryRate}%`, accent: "text-emerald-400" },
+            { label: "Bounce Rate", value: `${stats.bounceRate}%`, accent: "text-amber-400" },
+            { label: "Pending", value: String(stats.pending), accent: "text-zinc-400" },
+          ].map(({ label, value, sub, accent }) => (
+            <Card key={label} className="border border-zinc-800 bg-wl-bg-surface">
+              <CardContent className="pt-5 pb-4">
+                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-1">{label}</p>
+                <p className={cn("text-2xl font-bold", accent ?? "text-white")}>{loading ? "—" : value}</p>
+                {sub && <p className="text-xs text-zinc-600 mt-0.5">{sub}</p>}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-          {/* Filters */}
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 uppercase mb-2">
-                    Search
-                  </label>
-                  <Input
-                    placeholder="Recipient, event type…"
-                    value={debouncedQuery}
-                    onChange={(e) => setDebouncedQuery(e.target.value)}
-                    className="bg-[#1a1a2e] border-[#1e1e2e] text-white placeholder-gray-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 uppercase mb-2">
-                    Channel
-                  </label>
-                  <select
-                    value={filterChannel}
-                    onChange={(e) => setFilterChannel(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] text-white rounded-md text-sm focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="">All Channels</option>
-                    <option value="EMAIL">Email</option>
-                    <option value="SMS">SMS</option>
-                    <option value="WHATSAPP">WhatsApp</option>
-                    <option value="PUSH">Push</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 uppercase mb-2">
-                    Status
-                  </label>
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] text-white rounded-md text-sm focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="SENT">Sent</option>
-                    <option value="DELIVERED">Delivered</option>
-                    <option value="FAILED">Failed</option>
-                    <option value="BOUNCED">Bounced</option>
-                    <option value="PENDING">Pending</option>
-                  </select>
-                </div>
+        {/* Filters */}
+        <Card className="border border-zinc-800 bg-wl-bg-surface">
+          <CardContent className="pt-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">Channel</label>
+                <select
+                  value={filterChannel}
+                  onChange={(e) => setFilterChannel(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-900 text-zinc-100 border border-zinc-800 rounded-md text-sm focus:outline-none focus:border-zinc-600"
+                >
+                  <option value="">All Channels</option>
+                  <option value="EMAIL">Email</option>
+                  <option value="SMS">SMS</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="PUSH">Push</option>
+                </select>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Table */}
-          <Card className="border border-[#1e1e2e] bg-[#12121a]">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>
-                  {isLoading ? "Loading…" : `${entries.length} Notification${entries.length !== 1 ? "s" : ""}`}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {error ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <AlertCircle className="w-10 h-10 text-red-500 mb-3" />
-                  <p className="text-red-400 font-medium">Failed to load notification log</p>
-                  <p className="text-gray-500 text-sm mt-1">{String(error)}</p>
-                </div>
-              ) : isLoading ? (
-                <div className="p-6 space-y-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex gap-4 items-center">
-                      <Skeleton className="w-4 h-4 rounded-full" />
-                      <Skeleton className="flex-1 h-4" />
-                      <Skeleton className="w-20 h-4" />
-                      <Skeleton className="w-16 h-4" />
-                    </div>
-                  ))}
-                </div>
-              ) : entries.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <Bell className="w-12 h-12 text-gray-600 mb-3" />
-                  <p className="text-gray-400 font-medium">No notification logs found</p>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Notifications will appear here once sent
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
-                        <th className="text-left py-3 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                          Timestamp
-                        </th>
-                        <th className="text-left py-3 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                          Event
-                        </th>
-                        <th className="text-left py-3 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                          Channel
-                        </th>
-                        <th className="text-left py-3 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                          Recipient
-                        </th>
-                        <th className="text-left py-3 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                          Status
-                        </th>
-                        <th className="w-12" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {entries.map((entry) => (
-                        <tr
-                          key={entry.id}
-                          className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
-                        >
-                          <td className="py-4 px-6 text-gray-400 text-xs">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {formatDateTime(entry.timestamp)}
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-white font-medium max-w-xs">
-                            <span className="truncate block">{entry.message}</span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-2">
-                              <ChannelIcon channel={entry.channel as Channel} />
-                              <span className="text-gray-300 text-xs capitalize">
-                                {entry.channel}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-gray-400 font-mono text-xs">
-                            {truncate(entry.recipient, 32)}
-                          </td>
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-2">
-                              <StatusIcon status={entry.status} />
-                              <Badge variant={getStatusVariant(entry.status)}>
-                                {entry.status}
-                              </Badge>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 text-center">
-                            <button
-                              onClick={() => setSelectedEntry(entry)}
-                              className="p-1.5 hover:bg-[#252541] rounded-lg transition-colors"
-                              aria-label="View details"
-                            >
-                              <Eye className="w-4 h-4 text-gray-400" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Load More */}
-          {hasMore && (
-            <div className="flex justify-center">
-              <Button
-                variant="secondary"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore || isLoading}
+              <div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">Status</label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-900 text-zinc-100 border border-zinc-800 rounded-md text-sm focus:outline-none focus:border-zinc-600"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="SENT">Sent</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="FAILED">Failed</option>
+                  <option value="BOUNCED">Bounced</option>
+                  <option value="PENDING">Pending</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">From Date</label>
+                <Input
+                  type="date"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase block mb-2">To Date</label>
+                <Input
+                  type="date"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                />
+              </div>
+            </div>
+            {(filterChannel || filterStatus || filterDateFrom || filterDateTo) && (
+              <button
+                onClick={() => { setFilterChannel(""); setFilterStatus(""); setFilterDateFrom(""); setFilterDateTo(""); }}
+                className="mt-3 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
               >
-                {isLoadingMore ? "Loading…" : "Load More"}
+                Clear filters
+              </button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Table */}
+        <Card className="border border-zinc-800 bg-wl-bg-surface">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="text-base">
+                {loading ? "Loading…" : `${logs.length} notification${logs.length !== 1 ? "s" : ""}`}
+              </CardTitle>
+              <Button variant="secondary" size="sm" onClick={exportCSV} disabled={loading || logs.length === 0}>
+                <Download className="w-4 h-4" />
+                Export CSV
               </Button>
             </div>
-          )}
-        </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="p-6">
+                <TableSkeleton rows={8} columns={6} />
+              </div>
+            ) : error ? (
+              <div className="p-6">
+                <ErrorState message={error.message} onRetry={refetch} />
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Package className="w-10 h-10 text-zinc-700" />
+                <p className="text-sm text-zinc-500">No notifications found</p>
+                {(filterChannel || filterStatus || filterDateFrom || filterDateTo) && (
+                  <p className="text-xs text-zinc-600">Try clearing your filters</p>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <TableHeader>
+                    <TableRow className="border-b border-zinc-800 bg-zinc-950/50">
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Timestamp</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Recipient</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Channel</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Event</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Order</TableHead>
+                      <TableHead className="text-xs uppercase tracking-wide text-zinc-500 py-3 px-4">Status</TableHead>
+                      <TableHead className="py-3 px-4 w-10" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {logs.map((log) => (
+                      <TableRow
+                        key={log.id}
+                        className="border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors"
+                      >
+                        <TableCell className="py-3 px-4">
+                          <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            {fmtTs(log.createdAt)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3 px-4">
+                          <span className="text-xs text-zinc-300 font-mono truncate max-w-[160px] block">
+                            {log.recipient}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-3 px-4">
+                          <div className="flex items-center gap-2 text-zinc-400">
+                            {CHANNEL_ICON[log.channel] ?? <Bell className="w-4 h-4" />}
+                            <span className="text-xs">{log.channel}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3 px-4">
+                          <span className="text-xs text-zinc-200">{fmtEvent(log.eventType)}</span>
+                        </TableCell>
+                        <TableCell className="py-3 px-4">
+                          {log.orderId ? (
+                            <Link
+                              href={`/orders/${log.orderId}`}
+                              className="text-xs text-blue-400 hover:text-blue-300 font-mono"
+                            >
+                              {log.orderNumber ?? log.orderId.slice(0, 8)}
+                            </Link>
+                          ) : (
+                            <span className="text-zinc-600 text-xs">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            {STATUS_ICON[log.status] ?? <Clock className="w-4 h-4 text-zinc-500" />}
+                            <Badge variant={statusVariant(log.status)} className="text-xs">
+                              {log.status}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => setSelectedLog(log)}
+                            aria-label="View details"
+                            className="p-1.5 hover:bg-zinc-800 rounded transition-colors text-zinc-500 hover:text-zinc-200"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
 
-      <DetailModal
-        entry={selectedEntry}
-        onClose={() => setSelectedEntry(undefined)}
-      />
+      {selectedLog && (
+        <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />
+      )}
     </div>
   );
 }

@@ -93,7 +93,7 @@ interface ChannelConfig {
  */
 export class RealTimeHealthTracker extends EventEmitter {
   private healthStatus: Map<string, ProviderHealth> = new Map();
-  private healthSchedules: Map<string, NodeJS.Timer> = new Map();
+  private healthSchedules: Map<string, ReturnType<typeof setInterval>> = new Map();
   private healthHistory: HealthHistoryRecord[] = [];
   private readonly HISTORY_RETENTION_DAYS = 30;
   private checkFunctions: Map<string, () => Promise<HealthCheck>> = new Map();
@@ -331,6 +331,12 @@ export class SLAMonitor {
     const latencyP95 = this.calculatePercentile(filteredHistory.map((h: HealthHistoryRecord) => h.latency), 95);
     const latencyP99 = this.calculatePercentile(filteredHistory.map((h: HealthHistoryRecord) => h.latency), 99);
 
+    const uptimeMet = uptimeAchieved >= config.uptimeTarget;
+    const latencyP95Met = latencyP95 <= config.latencyTargetP95;
+    const latencyP99Met = latencyP99 <= config.latencyTargetP99;
+    const errorRateMet = errorRateAchieved <= config.errorRateTarget;
+    const breachCount = [!uptimeMet, !latencyP95Met, !latencyP99Met, !errorRateMet].filter(Boolean).length;
+
     const report: SLAReport = {
       providerId,
       period,
@@ -338,21 +344,19 @@ export class SLAMonitor {
       endDate: now,
       uptimeAchieved: Math.round(uptimeAchieved * 100) / 100,
       uptimeTarget: config.uptimeTarget,
-      uptimeMet: uptimeAchieved >= config.uptimeTarget,
+      uptimeMet,
       latencyP95Achieved: latencyP95,
       latencyP95Target: config.latencyTargetP95,
-      latencyP95Met: latencyP95 <= config.latencyTargetP95,
+      latencyP95Met,
       latencyP99Achieved: latencyP99,
       latencyP99Target: config.latencyTargetP99,
-      latencyP99Met: latencyP99 <= config.latencyTargetP99,
+      latencyP99Met,
       errorRateAchieved: Math.round(errorRateAchieved * 100) / 100,
       errorRateTarget: config.errorRateTarget,
-      errorRateMet: errorRateAchieved <= config.errorRateTarget,
-      breachCount: [!report?.uptimeMet, !report?.latencyP95Met, !report?.latencyP99Met, !report?.errorRateMet].filter(Boolean).length,
+      errorRateMet,
+      breachCount,
       breachSeverity: config.severity,
     };
-
-    report.breachCount = [!report.uptimeMet, !report.latencyP95Met, !report.latencyP99Met, !report.errorRateMet].filter(Boolean).length;
 
     if (report.breachCount > 0) {
       report.creditAmount = this.calculateSLACredit(report.breachCount, config.severity);

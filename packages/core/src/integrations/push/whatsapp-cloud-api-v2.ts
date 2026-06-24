@@ -554,7 +554,7 @@ export class WhatsAppClient {
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = (await response.json()) as { message?: string };
         throw new WhatsAppError(
           `Media upload failed: ${String(error.message || response.statusText)}`
         );
@@ -887,7 +887,7 @@ export class WhatsAppClient {
    * Parse webhook event.
    */
   parseWebhookEvent(body: Record<string, unknown>): WhatsAppWebhookEvent {
-    return body as WhatsAppWebhookEvent;
+    return body as unknown as WhatsAppWebhookEvent;
   }
 
   /**

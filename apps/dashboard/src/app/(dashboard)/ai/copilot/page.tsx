@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -94,18 +95,7 @@ export default function AICopilotPage() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/v4/ai/copilot/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query.trim(), entityType }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error((body as any).error || `Request failed: ${res.status}`);
-      }
-
-      const data: CopilotResult = await res.json();
+      const data = await api.post<CopilotResult>("/api/v4/ai/copilot/query", { query: query.trim(), entityType });
       setResult(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");

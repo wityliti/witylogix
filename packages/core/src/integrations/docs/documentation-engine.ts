@@ -13,11 +13,11 @@ import {
   Playbook,
   ProviderDocumentation,
   RateLimitInfo,
-  RateLimitReference,
+  RateLimitReference as RateLimitReferenceType,
   ResponseDoc,
   SDKDocumentation,
   TroubleshootingReference,
-  WebhookCatalog,
+  WebhookCatalog as WebhookCatalogType,
   WebhookEventDoc,
 } from "./docs-types";
 
@@ -300,7 +300,7 @@ export class WebhookCatalog {
    * @param provider Provider slug
    * @returns Webhook catalog
    */
-  generateWebhookCatalog(provider: string): WebhookCatalog {
+  generateWebhookCatalog(provider: string): WebhookCatalogType {
     const events = this.extractWebhookEvents(provider);
     const eventDocs = events.map((event) =>
       this.generateWebhookEventDoc(provider, event)
@@ -503,7 +503,7 @@ export class RateLimitReference {
    * @param provider Provider slug
    * @returns Rate limit reference
    */
-  generateRateLimitReference(provider: string): RateLimitReference {
+  generateRateLimitReference(provider: string): RateLimitReferenceType {
     const limits = this.aggregateRateLimits(provider);
 
     return {

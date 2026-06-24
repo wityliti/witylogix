@@ -228,7 +228,8 @@ describe("SmartRouter", () => {
       expect(result.results.size).toBe(deliveries.length);
       expect(result.optimizedAssignment.size).toBeGreaterThan(0);
       expect(result.costOptimization.individualTotal).toBeGreaterThan(0);
-      expect(result.analysis).toBeDefined();
+      // BatchRoutingResult has splitAssignments, not analysis
+      expect(result.splitAssignments).toBeDefined();
     });
 
     it("should show cost savings from batch optimization", async () => {
@@ -304,7 +305,7 @@ describe("SmartRouter", () => {
       const delivery: DeliveryRequest = {
         pickup: { latitude: 40.7128, longitude: -74.006 },
         dropoff: { latitude: 40.7489, longitude: -73.968 },
-        maxCost: 3.0,
+        maxCost: 5.5, // onfleet(4.5) and stuart(5.0) viable, uber(6.0) not viable
       };
 
       const result = await router.routeDelivery(delivery);

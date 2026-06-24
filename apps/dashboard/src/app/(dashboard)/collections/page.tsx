@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, GripVertical, Edit2, Trash2, Image as ImageIcon, Search } from "lucide-react";
 import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 
@@ -115,7 +116,7 @@ export default function CollectionsPage() {
   const totalPages = Math.ceil(filtered.length / pageSize);
 
   return (
-    <div className="w-full bg-[#0a0a0f] min-h-screen">
+    <div className="w-full bg-wl-bg-root min-h-screen">
       <Header
         title="Collections"
         subtitle={`${totalCollections} total · ${totalProducts} products · ${autoCollections} auto`}
@@ -132,28 +133,24 @@ export default function CollectionsPage() {
           <StatCard
             label="Total Collections"
             value={totalCollections}
-            change={{ value: 2.5, label: "vs last month" }}
             accentColor="var(--wl-primary-500)"
             index={0}
           />
           <StatCard
             label="Total Products"
             value={totalProducts}
-            change={{ value: 18.3, label: "vs last month" }}
             accentColor="var(--wl-success-400)"
             index={1}
           />
           <StatCard
             label="Auto Collections"
             value={autoCollections}
-            change={{ value: 0, label: "no change" }}
             accentColor="var(--wl-info-400)"
             index={2}
           />
           <StatCard
             label="Manual Collections"
             value={manualCollections}
-            change={{ value: 2.5, label: "vs last month" }}
             accentColor="var(--wl-warning-400)"
             index={3}
           />
@@ -172,7 +169,7 @@ export default function CollectionsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors duration-200"
+              className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors duration-200"
             />
           </div>
 
@@ -189,7 +186,7 @@ export default function CollectionsPage() {
                   "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all capitalize",
                   typeFilter === type
                     ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-transparent text-gray-400 border-[#1e1e2e]"
+                    : "bg-transparent text-gray-400 border-wl-border-default"
                 )}
               >
                 {type === "all" ? "All Types" : type}
@@ -204,7 +201,7 @@ export default function CollectionsPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors duration-200"
+            className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors duration-200"
           >
             <option value="title">Sort by Title</option>
             <option value="productCount">Sort by Product Count</option>
@@ -213,11 +210,11 @@ export default function CollectionsPage() {
         </div>
 
         {/* Collections Table */}
-        <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden p-0 mb-6">
+        <Card className="bg-wl-bg-surface border-wl-border-default overflow-hidden p-0 mb-6">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+                <tr className="border-b border-wl-border-default bg-wl-bg-root">
                   <th className="p-3 px-4 text-left font-semibold text-gray-400 w-10"> </th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Title</th>
                   <th className="p-3 px-4 text-center font-semibold text-gray-400">Type</th>
@@ -231,8 +228,8 @@ export default function CollectionsPage() {
                 {paginatedItems.map((collection, idx) => (
                   <tbody key={collection.id}>
                     <tr className={cn(
-                      "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors",
-                      idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]/40"
+                      "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors",
+                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated/40"
                     )}>
                       <td className="p-3 px-4 text-center cursor-pointer text-gray-400" onClick={() => setExpandedCollection(expandedCollection === collection.id ? null : collection.id)}>
                         {expandedCollection === collection.id ? (
@@ -260,13 +257,13 @@ export default function CollectionsPage() {
 
                     {/* Expanded Details Row */}
                     {expandedCollection === collection.id && (
-                      <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]/40">
+                      <tr className="border-b border-wl-border-default bg-wl-bg-elevated/40">
                         <td colSpan={7} className="p-0">
                           <div className="p-4">
                             <div className="grid gap-6 grid-cols-[200px_1fr]">
                               {/* Collection Image & Meta */}
                               <div>
-                                <div className="bg-[#1a1a2e] border border-dashed border-[#1e1e2e] rounded-lg h-45 flex items-center justify-center mb-3 text-gray-500">
+                                <div className="bg-wl-bg-elevated border border-dashed border-wl-border-default rounded-lg h-45 flex items-center justify-center mb-3 text-gray-500">
                                   <ImageIcon size={32} opacity={0.5} />
                                 </div>
                                 <p className="text-xs text-gray-400 m-0">{collection.description}</p>
@@ -277,7 +274,7 @@ export default function CollectionsPage() {
                                 <h4 className="text-sm font-semibold text-white mb-3">Products in Collection</h4>
                                 <div className="flex flex-col gap-2 mb-4">
                                   {collection.products?.map((product, pIdx) => (
-                                    <div key={product.id} className="flex items-center gap-3 p-2 px-3 bg-[#1a1a2e] rounded-lg hover:bg-[#1a1a2e]/80 transition-colors">
+                                    <div key={product.id} className="flex items-center gap-3 p-2 px-3 bg-wl-bg-elevated rounded-lg hover:bg-wl-bg-elevated/80 transition-colors">
                                       <GripVertical size={14} className="text-gray-500 cursor-grab" />
                                       <div className="flex-1">
                                         <p className="text-sm text-white m-0 font-medium">{product.title}</p>
@@ -286,10 +283,16 @@ export default function CollectionsPage() {
                                       <Button
                                         variant="danger"
                                         size="sm"
-                                        disabled={removingProductId === product.id}
-                                        onClick={() => handleRemoveProduct(collection.id, product.id)}
+                                        onClick={() =>
+                                          api
+                                            .delete(`/api/v4/collections/${collection.id}/products`, {
+                                              body: JSON.stringify({ productIds: [product.id] }),
+                                            } as RequestInit)
+                                            .then(() => refetch())
+                                            .catch(console.error)
+                                        }
                                       >
-                                        {removingProductId === product.id ? 'Removing…' : 'Remove'}
+                                        Remove
                                       </Button>
                                     </div>
                                   ))}
@@ -301,7 +304,7 @@ export default function CollectionsPage() {
                                     <h4 className="text-sm font-semibold text-white mb-2">Sort Rules</h4>
                                     <ul className="list-none p-0 m-0 flex flex-col gap-2">
                                       {collection.sortRules.map((rule, rIdx) => (
-                                        <li key={rIdx} className="text-sm text-gray-400 p-2 px-3 bg-[#1a1a2e] rounded-lg">
+                                        <li key={rIdx} className="text-sm text-gray-400 p-2 px-3 bg-wl-bg-elevated rounded-lg">
                                           {rule}
                                         </li>
                                       ))}
@@ -321,7 +324,7 @@ export default function CollectionsPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e]/40 text-sm text-gray-400">
+          <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated/40 text-sm text-gray-400">
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
             </div>

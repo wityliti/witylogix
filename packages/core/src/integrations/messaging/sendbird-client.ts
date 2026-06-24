@@ -351,7 +351,7 @@ export class SendbirdClient extends MessagingAdapter {
         messageId: Number(response.message_id || 0),
         type: "MESG",
         message: String(response.message),
-        userId: String(response.user?.user_id),
+        userId: String((response.user as Record<string, unknown> | undefined)?.user_id),
         createdAt: new Date(Number(response.created_at || 0) * 1000),
       };
     });
@@ -378,7 +378,7 @@ export class SendbirdClient extends MessagingAdapter {
         messageId: Number(response.message_id || 0),
         type: "MESG",
         message: String(response.message),
-        userId: String(response.user?.user_id),
+        userId: String((response.user as Record<string, unknown> | undefined)?.user_id),
         createdAt: new Date(Number(response.created_at || 0) * 1000),
       };
     });

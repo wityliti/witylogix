@@ -67,7 +67,7 @@ export function ELDProviderCard({ provider }: ELDProviderCardProps) {
 
         {provider.status === "connected" && (
           <>
-            <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+            <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase">
                   Drivers
@@ -105,7 +105,7 @@ export function ELDProviderCard({ provider }: ELDProviderCardProps) {
               <Button
                 variant="secondary"
                 size="sm"
-                className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Settings

@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { api } from '@/lib/api';
+import { useApiList } from '@/hooks/use-api';
 import { useToast } from '@/components/ui/toast';
 import { useApiList } from '@/hooks/use-api';
 
@@ -24,6 +25,8 @@ type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | 
 interface Customer {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   address: string;
 }
@@ -36,12 +39,16 @@ interface LineItem {
   taxable: boolean;
 }
 
-function normalizeCustomer(raw: any): Customer {
+function normalizeCustomer(raw: Record<string, unknown>): Customer {
+  const firstName = String(raw.firstName || '');
+  const lastName = String(raw.lastName || '');
   return {
-    id: raw.id ?? "",
-    name: raw.name ?? raw.companyName ?? "",
-    email: raw.email ?? raw.contactEmail ?? "",
-    address: raw.address ?? raw.billingAddress ?? "",
+    id: String(raw.id),
+    name: [firstName, lastName].filter(Boolean).join(' ') || String(raw.email || raw.id),
+    firstName,
+    lastName,
+    email: String(raw.email || ''),
+    address: String(raw.addressLine1 || raw.address || ''),
   };
 }
 
@@ -50,6 +57,9 @@ export default function CreateInvoicePage() {
   const { addToast } = useToast();
   const { items: rawCustomers } = useApiList<any>("/api/v4/customers");
   const allCustomers = rawCustomers.map(normalizeCustomer);
+
+  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
+  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -74,14 +84,14 @@ export default function CreateInvoicePage() {
   const [isSending, setIsSending] = useState(false);
 
   const filteredCustomers = useMemo(() => {
-    if (!customerSearch) return allCustomers;
+    if (!customerSearch) return realCustomers;
     const search = customerSearch.toLowerCase();
-    return allCustomers.filter(
+    return realCustomers.filter(
       (c) =>
         c.name.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search)
     );
-  }, [customerSearch, allCustomers]);
+  }, [customerSearch, realCustomers]);
 
   // Calculate totals
   const subtotal = useMemo(() => {
@@ -246,7 +256,7 @@ export default function CreateInvoicePage() {
   }, [selectedCustomer, lineItems, dueDate, notes, terms, taxRate, discountPercentage, isSending, addToast, router]);
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
+    <div className="flex flex-col gap-6 p-6 bg-wl-bg-root min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -284,13 +294,13 @@ export default function CreateInvoicePage() {
         {/* Left Column - Form */}
         <div className="col-span-2 space-y-6">
           {/* Customer Selection */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h2 className="text-lg font-semibold text-white mb-4">
               Customer
             </h2>
 
             {selectedCustomer ? (
-              <div className={cn("flex items-center justify-between p-4 bg-[#1a1a2e] rounded border border-[#1e1e2e]")}>
+              <div className={cn("flex items-center justify-between p-4 bg-wl-bg-elevated rounded border border-wl-border-default")}>
                 <div>
                   <p className="font-semibold text-white">
                     {selectedCustomer.name}
@@ -323,7 +333,7 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Billing Dates */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h2 className="text-lg font-semibold text-white mb-4">
               Billing Period
             </h2>
@@ -336,7 +346,7 @@ export default function CreateInvoicePage() {
                   type="date"
                   value={billingStartDate}
                   onChange={(e) => setBillingStartDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white"
                 />
               </div>
               <div>
@@ -347,14 +357,14 @@ export default function CreateInvoicePage() {
                   type="date"
                   value={billingEndDate}
                   onChange={(e) => setBillingEndDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white"
                 />
               </div>
             </div>
           </Card>
 
           {/* Billing Rule */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h2 className="text-lg font-semibold text-white mb-4">
               Billing Rule
             </h2>
@@ -388,7 +398,7 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Line Items */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white">
                 Line Items
@@ -416,7 +426,7 @@ export default function CreateInvoicePage() {
                 {lineItems.map((item) => (
                   <div
                     key={item.id}
-                    className={cn("flex gap-3 p-4 bg-[#1a1a2e] rounded border border-[#1e1e2e] items-end")}
+                    className={cn("flex gap-3 p-4 bg-wl-bg-elevated rounded border border-wl-border-default items-end")}
                   >
                     <div className="flex-1">
                       <label className="block text-xs font-medium text-gray-400 mb-1">
@@ -433,7 +443,7 @@ export default function CreateInvoicePage() {
                           )
                         }
                         placeholder="Item description"
-                        className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white"
+                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
                       />
                     </div>
 
@@ -453,7 +463,7 @@ export default function CreateInvoicePage() {
                             parseFloat(e.target.value)
                           )
                         }
-                        className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white"
+                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
                       />
                     </div>
 
@@ -473,7 +483,7 @@ export default function CreateInvoicePage() {
                             parseFloat(e.target.value)
                           )
                         }
-                        className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white"
+                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
                       />
                     </div>
 
@@ -500,7 +510,7 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Due Date */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h2 className="text-lg font-semibold text-white mb-4">
               Due Date
             </h2>
@@ -539,14 +549,14 @@ export default function CreateInvoicePage() {
                     setDueDate(e.target.value);
                     setDueDatePreset("custom");
                   }}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white"
                 />
               </div>
             </div>
           </Card>
 
           {/* Notes & Terms */}
-          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h2 className="text-lg font-semibold text-white mb-4">
               Notes & Terms
             </h2>
@@ -560,7 +570,7 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add any notes for the customer..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
                 />
               </div>
               <div>
@@ -572,7 +582,7 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setTerms(e.target.value)}
                   placeholder="Add any terms and conditions..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
                 />
               </div>
             </div>
@@ -582,7 +592,7 @@ export default function CreateInvoicePage() {
         {/* Right Column - Summary */}
         <div className="space-y-6">
           {/* Pricing Summary */}
-          <Card className={cn("p-6 sticky top-6 bg-[#12121a] border border-[#1e1e2e]")}>
+          <Card className={cn("p-6 sticky top-6 bg-wl-bg-surface border border-wl-border-default")}>
             <h2 className="text-lg font-semibold text-white mb-6">
               Invoice Summary
             </h2>
@@ -611,7 +621,7 @@ export default function CreateInvoicePage() {
                     max="100"
                     value={discountPercentage}
                     onChange={(e) => setDiscountPercentage(e.target.value)}
-                    className="w-full px-2 py-1 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-xs text-white"
+                    className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-white"
                   />
                 </div>
               )}
@@ -627,12 +637,12 @@ export default function CreateInvoicePage() {
                     max="100"
                     value={discountPercentage}
                     onChange={(e) => setDiscountPercentage(e.target.value)}
-                    className="w-full px-2 py-1 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-xs text-white"
+                    className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-white"
                   />
                 </div>
               )}
 
-              <div className="border-t border-[#1e1e2e] pt-3">
+              <div className="border-t border-wl-border-default pt-3">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-400">
                     Tax ({taxRate}%)
@@ -648,11 +658,11 @@ export default function CreateInvoicePage() {
                   step="0.5"
                   value={taxRate}
                   onChange={(e) => setTaxRate(e.target.value)}
-                  className="w-full px-2 py-1 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-xs text-white"
+                  className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-white"
                 />
               </div>
 
-              <div className="border-t-2 border-[#1e1e2e] pt-3">
+              <div className="border-t-2 border-wl-border-default pt-3">
                 <div className="flex justify-between">
                   <span className="font-semibold text-white">
                     Total
@@ -682,7 +692,11 @@ export default function CreateInvoicePage() {
               icon={null}
             />
 
-            {filteredCustomers.length === 0 ? (
+            {customersLoading ? (
+              <p className="text-center py-6 text-gray-400">
+                Loading customers...
+              </p>
+            ) : filteredCustomers.length === 0 ? (
               <p className="text-center py-6 text-gray-400">
                 No customers found
               </p>
@@ -692,7 +706,7 @@ export default function CreateInvoicePage() {
                   <button
                     key={customer.id}
                     onClick={() => handleSelectCustomer(customer)}
-                    className={cn("w-full text-left p-3 rounded border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors")}
+                    className={cn("w-full text-left p-3 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors")}
                   >
                     <p className="font-medium text-white">
                       {customer.name}
