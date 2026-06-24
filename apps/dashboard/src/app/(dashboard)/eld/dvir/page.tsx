@@ -22,19 +22,48 @@ import {
 } from "lucide-react";
 
 type DefectStatus = "REPORTED" | "ACKNOWLEDGED" | "REPAIRED" | "CERTIFIED";
+type InspectionStatus = "PASSED" | "FAILED";
+
+interface InspectionHistory {
+  id: string;
+  vehicleNumber: string;
+  vehicleId: string;
+  driverId: string;
+  driverName: string;
+  type: "PRE_TRIP" | "POST_TRIP";
+  status: InspectionStatus;
+  date: string;
+  defectsCount: number;
+  criticalDefects: number;
+  mileage?: number;
+}
 
 export default function DVIRPage() {
-  const { defects, isLoading: defectsLoading, error: defectsError, refetch: refetchDefects, updateDefectStatus } = useDVIR();
-  const { items: inspections, loading: inspectionsLoading, error: inspectionsError, refetch: refetchInspections } = useDvirInspections();
-  const { execute: submitInspection } = useApiMutation("POST", "/api/v4/eld/dvir");
+  const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
+  const { items: history, loading, error, refetch } = useApiList<InspectionHistory>("/api/v4/eld/dvir");
+  const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
 
   const [showForm, setShowForm] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [inspectionType, setInspectionType] = useState<"PRE_TRIP" | "POST_TRIP">("PRE_TRIP");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
+  const [selectedVehicleNum, setSelectedVehicleNum] = useState<string | null>(null);
+
+  // Derive unique vehicles from history
+  const vehicles = useMemo(() => {
+    const seen = new Map<string, InspectionHistory>();
+    history.forEach((h) => {
+      if (!seen.has(h.vehicleNumber)) seen.set(h.vehicleNumber, h);
+    });
+    return Array.from(seen.values());
+  }, [history]);
+
+  const selectedVehicle = selectedVehicleNum ?? vehicles[0]?.vehicleNumber ?? null;
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const loading = defectsLoading && inspectionsLoading;
 
@@ -57,20 +86,12 @@ export default function DVIRPage() {
   }, [defects, filterStatus, searchQuery]);
 
   const filteredHistory = useMemo(() => {
-    if (!selectedVehicle) return inspections;
-    return inspections
-      .filter((h) => h.vehicleNumber === selectedVehicle)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [inspections, selectedVehicle]);
-
-  const uniqueVehicles = useMemo(() => {
-    const seen = new Set<string>();
-    return inspections.filter((i) => {
-      if (seen.has(i.vehicleNumber)) return false;
-      seen.add(i.vehicleNumber);
-      return true;
-    });
-  }, [inspections]);
+    let result = history;
+    if (selectedVehicle) {
+      result = result.filter((h) => h.vehicleNumber === selectedVehicle);
+    }
+    return [...result].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [history, selectedVehicle]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
@@ -241,39 +262,31 @@ export default function DVIRPage() {
                   onClick={() => setShowVehicleSearch(!showVehicleSearch)}
                   className="w-full h-9 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors text-sm"
                 >
-                  <span>
-                    {selectedVehicle ? `Vehicle: ${selectedVehicle}` : "All vehicles"}
-                  </span>
+                  <span>Vehicle: {selectedVehicle ?? 'All'}</span>
                 </button>
 
                 {showVehicleSearch && (
-                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    <button
-                      onClick={() => { setSelectedVehicle(""); setShowVehicleSearch(false); }}
-                      className={cn(
-                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default",
-                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-wl-bg-root"
-                      )}
-                    >
-                      All vehicles
-                    </button>
-                    {uniqueVehicles.map((vehicle) => (
+                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
+                    {vehicles.map((v) => (
                       <button
-                        key={vehicle.id}
+                        key={v.vehicleId}
                         onClick={() => {
-                          setSelectedVehicle(vehicle.vehicleNumber);
+                          setSelectedVehicleNum(v.vehicleNumber);
                           setShowVehicleSearch(false);
                         }}
                         className={cn(
-                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
-                          selectedVehicle === vehicle.vehicleNumber
+                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
+                          selectedVehicle === v.vehicleNumber
                             ? "bg-blue-500/10 text-blue-400"
                             : "text-gray-400 hover:bg-wl-bg-root"
                         )}
                       >
-                        {vehicle.vehicleNumber}
+                        {v.vehicleNumber}
                       </button>
                     ))}
+                    {vehicles.length === 0 && (
+                      <div className="px-3 py-2 text-xs text-gray-500">No vehicles found</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -356,9 +369,9 @@ export default function DVIRPage() {
         <>
           {/* Form mode */}
           <DVIRForm
-            vehicleNumber={selectedVehicle || ""}
-            driverId=""
-            driverName=""
+            vehicleNumber={selectedVehicle ?? ''}
+            driverId={vehicles.find((v) => v.vehicleNumber === selectedVehicle)?.driverId ?? ''}
+            driverName={vehicles.find((v) => v.vehicleNumber === selectedVehicle)?.driverName ?? ''}
             inspectionType={inspectionType}
             onSubmit={async (data) => {
               try {
