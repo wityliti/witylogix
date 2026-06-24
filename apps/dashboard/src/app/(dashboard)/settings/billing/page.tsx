@@ -1,6 +1,6 @@
 'use client';
 
-import { useApiQuery } from '@/hooks/use-api';
+import { useApiQuery, useApiList } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -28,48 +28,37 @@ interface Invoice {
   downloadUrl: string;
 }
 
-interface BillingData {
-  invoices: Invoice[];
-  usageMetrics: Array<{
-    name: string;
-    current: number;
-    limit: number;
-    percentage: number;
-    unit: string;
-  }>;
+interface SubscriptionSummary {
   plan: string;
-  monthlyPrice: number;
-  renewalDate: string;
-  billingAddress?: {
-    name?: string;
-    company?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-    postalCode?: string;
-  };
-  paymentMethod?: {
-    brand?: string;
-    last4?: string;
-    expiryMonth?: number;
-    expiryYear?: number;
-    status?: string;
+  status: string;
+  nextBillingDate: string | null;
+  limits: {
+    shipments: { used: number; limit: number };
+    drivers: { used: number; limit: number };
+    apiCalls: { used: number; limit: number };
+    notifications: { used: number; limit: number };
   };
 }
 
 export default function BillingPage() {
-  const { data: billingData, loading, error, refetch } = useApiQuery<BillingData>('/api/v4/billing');
+  const { data: subscription, loading: subLoading, error: subError, refetch: refetchSub } = useApiQuery<SubscriptionSummary>('/api/v4/billing/subscription');
+  const { items: invoices, loading: invLoading, error: invError, refetch: refetchInv } = useApiList<Invoice>('/api/v4/billing/invoices');
+
+  const loading = subLoading || invLoading;
+  const error = subError || invError;
+  const refetch = () => { refetchSub(); refetchInv(); };
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const invoices: Invoice[] = billingData?.invoices ?? [];
-  const usageMetrics = billingData?.usageMetrics ?? [];
-  const plan = billingData?.plan ?? '—';
-  const monthlyPrice = billingData?.monthlyPrice;
-  const renewalDate = billingData?.renewalDate ? new Date(billingData.renewalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
-  const billingAddress = billingData?.billingAddress;
-  const paymentMethod = billingData?.paymentMethod;
+  const usageMetrics = subscription ? [
+    { name: "Shipments", current: subscription.limits.shipments.used, limit: subscription.limits.shipments.limit, percentage: Math.round((subscription.limits.shipments.used / (subscription.limits.shipments.limit || 1)) * 100), unit: "deliveries" },
+    { name: "Drivers", current: subscription.limits.drivers.used, limit: subscription.limits.drivers.limit, percentage: Math.round((subscription.limits.drivers.used / (subscription.limits.drivers.limit || 1)) * 100), unit: "active" },
+    { name: "API Calls", current: subscription.limits.apiCalls.used, limit: subscription.limits.apiCalls.limit, percentage: Math.round((subscription.limits.apiCalls.used / (subscription.limits.apiCalls.limit || 1)) * 100), unit: "requests" },
+  ] : [];
+
+  const planName = subscription?.plan ?? "—";
+  const renewalDate = subscription?.nextBillingDate ? new Date(subscription.nextBillingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : "—";
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -99,10 +88,10 @@ export default function BillingPage() {
                   Current Plan
                 </p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  {plan}
+                  {planName}
                 </h3>
                 <p className="text-gray-400 mt-2">
-                  Professional tier for growing businesses
+                  {subscription?.status ? `Status: ${subscription.status}` : "—"}
                 </p>
               </div>
 
@@ -111,10 +100,10 @@ export default function BillingPage() {
                   Monthly Cost
                 </p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  {monthlyPrice != null ? `$${monthlyPrice.toFixed(2)}` : '—'}
+                  {invoices[0] ? `$${invoices[0].amount.toFixed(2)}` : "—"}
                 </h3>
                 <p className="text-gray-400 mt-2">
-                  Billed on 1st of each month
+                  Most recent charge
                 </p>
               </div>
 
@@ -338,6 +327,9 @@ export default function BillingPage() {
               <p className="text-gray-400 text-sm text-center py-8">No invoices yet.</p>
             )}
             <div className="space-y-2">
+              {invoices.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-6">No invoices yet</p>
+              ) : null}
               {invoices.map((invoice) => (
                 <div
                   key={invoice.id}
@@ -396,9 +388,7 @@ export default function BillingPage() {
           <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-gray-400">
             Your subscription will automatically renew on{" "}
-            <strong>{renewalDate}</strong>
-            {monthlyPrice != null && <> at ${monthlyPrice.toFixed(2)}</>}. You can cancel anytime
-            before the renewal date.
+            <strong>{renewalDate}</strong>. You can cancel anytime before the renewal date.
           </div>
         </div>
       </div>

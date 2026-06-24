@@ -48,6 +48,27 @@ interface Customer {
   tags: string[];
 }
 
+function normalizeApiCustomer(c: any): Customer {
+  const orderCount = c._count?.orders ?? c.ordersCount ?? 0;
+  const totalSpent = c.orders?.reduce((s: number, o: any) => s + (o.totalAmount ?? 0), 0) ?? c.totalSpent ?? 0;
+  const lastOrder = c.orders?.[0]?.createdAt ?? c.lastOrder ?? null;
+  return {
+    id: c.id,
+    name: c.name ?? c.companyName ?? c.email ?? "Unknown",
+    email: c.email ?? "",
+    phone: c.phone ?? "",
+    store: c.shop?.name ?? c.store ?? "",
+    ordersCount: orderCount,
+    totalSpent,
+    lastOrder: lastOrder ? new Date(lastOrder).toISOString().split("T")[0] : "—",
+    status: orderCount > 100 ? "vip" : orderCount > 0 ? "active" : "inactive",
+    joined: c.createdAt ? new Date(c.createdAt).toISOString().split("T")[0] : "",
+    addresses: c.addresses ?? [],
+    notes: c.notes ?? "",
+    tags: c.tags ?? [],
+  };
+}
+
 const getStatusBadgeVariant = (status: Customer["status"]): "success" | "warning" | "danger" | "info" | "default" => {
   switch (status) {
     case "active":
@@ -334,7 +355,8 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
 
 // Main Page
 export default function AdminCustomersPage() {
-  const { items: customers, loading, error, refetch } = useApiList<Customer>('/api/v4/customers');
+  const { items: rawCustomers, loading, error, refetch } = useApiList<any>('/api/v4/admin/customers');
+  const customers: Customer[] = rawCustomers.map(normalizeApiCustomer);
   const [searchTerm, setSearchTerm] = useState('');
   const [storeFilter, setStoreFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'vip'>('all');

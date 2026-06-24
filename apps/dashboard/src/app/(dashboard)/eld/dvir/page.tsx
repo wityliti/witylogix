@@ -43,9 +43,23 @@ interface InspectionHistory {
   criticalDefects: number;
 }
 
+function normalizeInspection(raw: any): InspectionHistory {
+  return {
+    id: raw.id ?? "",
+    vehicleNumber: raw.vehicleNumber ?? raw.vehicleId ?? "",
+    driverId: raw.driverId ?? "",
+    driverName: raw.driverName ?? "",
+    type: raw.type ?? "PRE_TRIP",
+    status: raw.status ?? "PASSED",
+    date: raw.date ?? raw.createdAt ?? new Date().toISOString(),
+    defectsCount: raw.defectsCount ?? 0,
+    criticalDefects: raw.criticalDefects ?? 0,
+  };
+}
+
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: vehicles, loading: vehiclesLoading, error: vehiclesError, refetch: refetchVehicles } = useApiList<Vehicle>("/api/v4/eld/dvir");
+  const { items: data, loading, error, refetch } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
   const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
 
@@ -56,12 +70,14 @@ export default function DVIRPage() {
   const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
 
-  const { items: historyItems, loading: historyLoading, error: historyError } = useApiList<InspectionHistory>(
-    selectedVehicle ? `/api/v4/eld/dvir/history?vehicleNumber=${encodeURIComponent(selectedVehicle)}` : '/api/v4/eld/dvir/history'
-  );
+  const inspectionsUrl = selectedVehicle
+    ? `/api/v4/eld/dvir/inspections?vehicleId=${encodeURIComponent(selectedVehicle)}`
+    : "/api/v4/eld/dvir/inspections";
+  const { items: rawInspections, loading: inspectionsLoading } = useApiList<any>(inspectionsUrl);
+  const inspectionHistory = rawInspections.map(normalizeInspection);
 
-  if (vehiclesLoading) return <TableSkeleton rows={10} columns={6} />;
-  if (vehiclesError) return <ErrorState message={vehiclesError.message} onRetry={refetchVehicles} />;
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   // Set default vehicle from list
   const defaultVehicleNumber = vehicles[0]?.number ?? "";
@@ -82,9 +98,9 @@ export default function DVIRPage() {
     return result;
   }, [defects, filterStatus, searchQuery]);
 
-  const sortedHistory = useMemo(() => {
-    return [...historyItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [historyItems]);
+  const filteredHistory = useMemo(() => {
+    return [...inspectionHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [inspectionHistory]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
@@ -294,16 +310,11 @@ export default function DVIRPage() {
             </CardHeader>
 
             <CardContent>
-              {historyLoading ? (
+              {inspectionsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
                 </div>
-              ) : historyError ? (
-                <div className="flex flex-col items-center justify-center py-8 text-red-400">
-                  <AlertTriangle className="w-8 h-8 mb-2" />
-                  <p className="text-sm">Failed to load history</p>
-                </div>
-              ) : sortedHistory.length === 0 ? (
+              ) : filteredHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                   <Calendar className="w-12 h-12 mb-3 opacity-50" />
                   <p className="text-sm font-medium">No inspections yet</p>
@@ -311,7 +322,7 @@ export default function DVIRPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {sortedHistory.map((inspection) => (
+                  {filteredHistory.map((inspection: InspectionHistory) => (
                     <div
                       key={inspection.id}
                       className="p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] hover:border-blue-500/30 transition-all"
@@ -368,9 +379,9 @@ export default function DVIRPage() {
         <>
           {/* Form mode */}
           <DVIRForm
-            vehicleNumber={activeVehicle || "UNKNOWN"}
-            driverId="current"
-            driverName="Current Driver"
+            vehicleNumber={selectedVehicle || (data[0]?.number ?? "")}
+            driverId=""
+            driverName=""
             inspectionType={inspectionType}
             onSubmit={async (data) => {
               try {

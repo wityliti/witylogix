@@ -36,10 +36,20 @@ interface LineItem {
   taxable: boolean;
 }
 
+function normalizeCustomer(raw: any): Customer {
+  return {
+    id: raw.id ?? "",
+    name: raw.name ?? raw.companyName ?? "",
+    email: raw.email ?? raw.contactEmail ?? "",
+    address: raw.address ?? raw.billingAddress ?? "",
+  };
+}
 
 export default function CreateInvoicePage() {
   const router = useRouter();
   const { addToast } = useToast();
+  const { items: rawCustomers } = useApiList<any>("/api/v4/customers");
+  const allCustomers = rawCustomers.map(normalizeCustomer);
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -63,9 +73,6 @@ export default function CreateInvoicePage() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  const { items: allCustomers } = useApiList<Customer>('/api/v4/customers', { limit: 200 });
-
-  // Filtered customers for search
   const filteredCustomers = useMemo(() => {
     if (!customerSearch) return allCustomers;
     const search = customerSearch.toLowerCase();

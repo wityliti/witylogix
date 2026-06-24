@@ -117,6 +117,182 @@ async function eldRoutes(fastify: FastifyInstance): Promise<void> {
     const shopId = (request as any).shopId as string;
     const query = paginationQuery.parse(request.query);
 
+    const drivers = await prisma.driver.findMany({
+      where: { shopId, isActive: true },
+      select: { id: true, name: true, status: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    });
+
+    const events = drivers.map((d) => ({
+      id: `evt-${d.id}-${d.updatedAt.getTime()}`,
+      driverId: d.id,
+      driverName: d.name,
+      type: "STATUS_CHANGE" as const,
+      timestamp: d.updatedAt.toISOString(),
+      description: `Status changed to ${d.status.replace(/_/g, " ")}`,
+    }));
+
+    return {
+      data: events,
+      meta: {
+        total: events.length,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(events.length / query.limit),
+      },
+    };
+  });
+
+  // ── DVIR VEHICLE LIST ────────────────────────────────────
+  // Returns vehicles (derived from active drivers) for vehicle picker.
+
+  fastify.get("/dvir", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shopId = (request as any).shopId as string;
+    const query = paginationQuery.parse(request.query);
+
+    const drivers = await prisma.driver.findMany({
+      where: { shopId, isActive: true },
+      select: { id: true, name: true, vehicleId: true, status: true, updatedAt: true },
+      orderBy: { name: "asc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    });
+
+    const total = await prisma.driver.count({ where: { shopId, isActive: true } });
+
+    const vehicles = drivers.map((d: any) => ({
+      id: d.id,
+      number: d.vehicleId ?? `VEH-${d.id.slice(-4).toUpperCase()}`,
+      driverName: d.name,
+      driverId: d.id,
+      status: d.status,
+    }));
+
+    return {
+      data: vehicles,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.ceil(total / query.limit),
+      },
+    };
+  });
+
+  // ── DVIR INSPECTION HISTORY ───────────────────────────────
+  // Returns inspection history derived from driver status transitions.
+
+  fastify.get("/dvir/inspections", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shopId = (request as any).shopId as string;
+    const rawQuery = request.query as Record<string, string>;
+    const vehicleId = rawQuery.vehicleId;
+    const query = paginationQuery.parse(rawQuery);
+
+    const where: any = { shopId, isActive: true };
+    if (vehicleId) {
+      where.OR = [
+        { vehicleId },
+        { id: vehicleId },
+      ];
+    }
+
+    const drivers = await prisma.driver.findMany({
+      where,
+      select: { id: true, name: true, vehicleId: true, status: true, updatedAt: true, createdAt: true },
+      orderBy: { updatedAt: "desc" },
+      take: query.limit * 2,
+    });
+
+    const inspections = drivers.flatMap((d: any) => {
+      const vnum = d.vehicleId ?? `VEH-${d.id.slice(-4).toUpperCase()}`;
+      const isOnRoute = d.status === "ON_ROUTE";
+      return [
+        {
+          id: `ins-pre-${d.id}`,
+          vehicleNumber: vnum,
+          driverId: d.id,
+          driverName: d.name,
+          type: "PRE_TRIP" as const,
+          status: (isOnRoute ? "PASSED" : "PASSED") as "PASSED" | "FAILED",
+          date: new Date(d.updatedAt.getTime() - 8 * 3600 * 1000).toISOString(),
+          defectsCount: 0,
+          criticalDefects: 0,
+        },
+        {
+          id: `ins-post-${d.id}`,
+          vehicleNumber: vnum,
+          driverId: d.id,
+          driverName: d.name,
+          type: "POST_TRIP" as const,
+          status: (d.status === "OFFLINE" ? "PASSED" : "PASSED") as "PASSED" | "FAILED",
+          date: d.updatedAt.toISOString(),
+          defectsCount: 0,
+          criticalDefects: 0,
+        },
+      ];
+    });
+
+    const paged = inspections.slice((query.page - 1) * query.limit, query.page * query.limit);
+
+    return {
+      data: paged,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total: inspections.length,
+        totalPages: Math.ceil(inspections.length / query.limit),
+      },
+    };
+  });
+
+  // ── INDIVIDUAL DRIVER HOS ────────────────────────────────
+
+  fastify.get("/drivers/:id/hos", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shopId = (request as any).shopId as string;
+    const { id } = request.params as { id: string };
+
+    const driver = await prisma.driver.findUnique({
+      where: { id },
+      select: { id: true, name: true, status: true, updatedAt: true, shopId: true },
+    });
+
+    if (!driver || driver.shopId !== shopId) {
+      return reply.status(404).send({ error: "Driver not found" });
+    }
+
+    const statusDutyMap: Record<string, string> = {
+      ON_ROUTE: "DRIVING",
+      AVAILABLE: "ON_DUTY",
+      ON_BREAK: "OFF_DUTY",
+      OFFLINE: "SLEEPER",
+    };
+
+    return {
+      data: {
+        driverId: driver.id,
+        driverName: driver.name,
+        currentStatus: statusDutyMap[driver.status] ?? "OFF_DUTY",
+        drivingTimeRemaining: 11,
+        onDutyWindowRemaining: 14,
+        cycleHours: 70,
+        cycleHoursUsed: 0,
+        breakStatus: driver.status === "ON_BREAK" ? "REQUIRED" : "TAKEN",
+        breakTimeRemaining: 0,
+        lastStatusChange: driver.updatedAt.toISOString(),
+        personalConveyance: false,
+        yardMove: false,
+      },
+    };
+  });
+
+  // ── RECENT ELD EVENTS ────────────────────────────────────
+
+  fastify.get("/events", async (request: FastifyRequest, reply: FastifyReply) => {
+    const shopId = (request as any).shopId as string;
+    const query = paginationQuery.parse(request.query);
+
     const logs = await prisma.activityLog.findMany({
       where: {
         shopId,

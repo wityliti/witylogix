@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -40,14 +41,21 @@ interface AuthProvider {
   };
 }
 
-const TYPE_META: Record<string, { icon: string; capabilities: string[] }> = {
-  AUTH0:        { icon: '🔐', capabilities: ['SSO', 'MFA', 'Social Login', 'Role Mapping'] },
-  GOOGLE:       { icon: '🔵', capabilities: ['OAuth2', 'OpenID Connect', 'Social Login'] },
-  MICROSOFT:    { icon: '🟦', capabilities: ['SSO', 'Azure AD', 'Enterprise'] },
-  OKTA:         { icon: '🟠', capabilities: ['SSO', 'MFA', 'LDAP Sync'] },
-  CUSTOM_OAUTH: { icon: '🔑', capabilities: ['Custom Providers', 'Enterprise SSO'] },
-  SAML:         { icon: '🏢', capabilities: ['Enterprise SSO', 'Okta', 'Azure AD'] },
+const PROVIDER_ICONS: Record<string, string> = {
+  auth0: "🔐", clerk: "🎫", cognito: "☁️", firebase: "🔥", oidc: "🔑", saml: "🏢",
 };
+
+function normalizeProvider(raw: any): AuthProvider {
+  return {
+    id: raw.id ?? "",
+    name: raw.name ?? raw.type ?? "",
+    type: (raw.type ?? "oidc") as AuthProvider["type"],
+    status: raw.isActive ? "connected" : (raw.status ?? "disconnected"),
+    icon: raw.icon ?? PROVIDER_ICONS[raw.type] ?? "🔑",
+    capabilities: raw.capabilities ?? [],
+    config: raw.config,
+  };
+}
 
 function normalizeProvider(raw: Record<string, unknown>): AuthProvider {
   const type = (raw.type as string) ?? 'CUSTOM_OAUTH';
@@ -76,10 +84,15 @@ const PLATFORM_ROLES = [
 ];
 
 export default function AuthProvidersPage() {
-  const { items: rawProviders, loading, error, refetch } = useApiList<Record<string, unknown>>('/api/v4/auth-providers');
-  const providers: AuthProvider[] = rawProviders.map(normalizeProvider);
-
+  const { items: rawProviders, loading, error, refetch } = useApiList<any>("/api/v4/auth-providers");
+  const [providers, setProviders] = useState<AuthProvider[]>([]);
   const [activeTab, setActiveTab] = useState("providers");
+
+  useEffect(() => {
+    if (rawProviders.length > 0) {
+      setProviders(rawProviders.map(normalizeProvider));
+    }
+  }, [rawProviders]);
   const [selectedProvider, setSelectedProvider] = useState<AuthProvider | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
@@ -89,10 +102,15 @@ export default function AuthProvidersPage() {
   const [isTesting, setIsTesting] = useState(false);
   const [configForm, setConfigForm] = useState({ domain: '', clientId: '', clientSecret: '' });
 
-  const { execute: testConnection } = useApiMutation('POST', '/api/v4/auth-providers/:id/test');
-  const { execute: deleteProvider } = useApiMutation('DELETE', '/api/v4/auth-providers/:id');
-  const { execute: setDefaultProvider } = useApiMutation('PATCH', '/api/v4/auth-providers/:id/default');
-  const { execute: createProvider } = useApiMutation('POST', '/api/v4/auth-providers');
+  const handleTestConnection = async (providerId: string) => {
+    setTestResult(null);
+    try {
+      await api.post(`/api/v4/auth-providers/${providerId}/test`, {});
+      setTestResult({ status: "success", message: "Connection successful! Auth provider is reachable and properly configured." });
+    } catch {
+      setTestResult({ status: "error", message: "Connection failed. Check your provider configuration." });
+    }
+  };
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -155,6 +173,9 @@ export default function AuthProvidersPage() {
     { id: "role-mapping", label: "Role Mapping", icon: "🔗" },
     { id: "settings", label: "Settings", icon: "⚙️" },
   ];
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
