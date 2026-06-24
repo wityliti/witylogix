@@ -4,14 +4,24 @@ import { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { AlertCircle, TrendingUp } from "lucide-react";
-import { useApiList } from "@/hooks/use-api";
+import { AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
+import { useApiQuery } from "@/hooks/use-api";
 
-interface DailyStat { date: string; count: number; }
-interface StatsPayload {
+interface DailyStat { date: string; count: number }
+interface ChannelInfo { count: number; percentage: number }
+interface FailedTemplate { name: string; failureCount: number; failureRate: number }
+interface NotificationStatsData {
   dailyStats: DailyStat[];
-  channelBreakdown: Record<string, number>;
-  failedTemplates: Array<{ template: string; count: number }>;
+  channels: Record<string, ChannelInfo>;
+  failedTemplates: FailedTemplate[];
+  summary: {
+    totalToday: number;
+    totalYesterday: number;
+    totalFailed: number;
+    totalSent: number;
+    deliveryRate: number;
+    failureRate: number;
+  };
 }
 
 interface NotificationStatsWidgetProps { className?: string; }
@@ -31,40 +41,43 @@ interface NotificationStatsData {
 }
 
 const CHANNEL_COLORS: Record<string, string> = {
-  email: "#3B82F6",
-  sms: "#10B981",
+  email:    "#3B82F6",
+  sms:      "#10B981",
   whatsapp: "#25D366",
-  push: "#F59E0B",
+  push:     "#F59E0B",
 };
 
-const SimpleLineChart = ({ data }: { data: NotificationStat[] }) => {
-  if (data.length === 0) return <div className="h-16 flex items-center justify-center text-xs text-gray-500">No data</div>;
-  const maxValue = Math.max(...data.map((d) => d.count), 1);
+function SimpleBarChart({ data }: { data: DailyStat[] }) {
+  const max = Math.max(...data.map((d) => d.count), 1);
   return (
     <div className="h-16 relative flex items-end gap-1 px-2">
-      {data.map((d, idx) => (
-        <div
-          key={idx}
-          className="flex-1 bg-[var(--wl-primary)]/40 hover:bg-[var(--wl-primary)]/60 rounded-t transition-colors"
-          style={{ height: `${(d.count / maxValue) * 60}px` }}
-          title={`${d.count} notifications`}
-        />
-      ))}
+      {data.map((d, i) => {
+        const h = Math.max(4, (d.count / max) * 60);
+        return (
+          <div
+            key={i}
+            className="flex-1 bg-[var(--wl-primary)]/40 hover:bg-[var(--wl-primary)]/70 rounded-t transition-colors"
+            style={{ height: `${h}px` }}
+            title={`${d.date}: ${d.count} sent`}
+          />
+        );
+      })}
     </div>
   );
-};
+}
 
-const DonutChart = ({ data }: { data: Record<string, { count: number; percentage: number }> }) => {
+function DonutChart({ channels }: { channels: Record<string, ChannelInfo> }) {
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
-  const channels = Object.entries(data);
+  const entries = Object.entries(channels);
   let offset = 0;
-  const segments = channels.map(([channel, stats]) => {
-    const segmentLength = (stats.percentage / 100) * circumference;
-    const dashoffset = offset;
-    offset += segmentLength;
-    return { channel, percentage: stats.percentage, dashArray: `${segmentLength} ${circumference}`, dashOffset: dashoffset };
+  const segments = entries.map(([ch, info]) => {
+    const len = (info.percentage / 100) * circumference;
+    const s = { ch, percentage: info.percentage, dashArray: `${len} ${circumference}`, dashOffset: offset };
+    offset += len;
+    return s;
   });
+  const total = entries.reduce((s, [, v]) => s + v.count, 0);
 
   const totalAvg = Math.round(channels.reduce((sum, [, s]) => sum + s.count, 0) / 7);
 
@@ -74,9 +87,10 @@ const DonutChart = ({ data }: { data: Record<string, { count: number; percentage
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
           {segments.map((seg) => (
             <circle
-              key={segment.channel}
-              cx="50" cy="50" r={radius} fill="none"
-              stroke={CHANNEL_COLORS[segment.channel] ?? "#6B7280"}
+              key={seg.ch}
+              cx="50" cy="50" r={radius}
+              fill="none"
+              stroke={CHANNEL_COLORS[seg.ch] ?? "#6b7280"}
               strokeWidth="8"
               strokeDasharray={seg.dashArray}
               strokeDashoffset={-seg.dashOffset}
@@ -84,98 +98,85 @@ const DonutChart = ({ data }: { data: Record<string, { count: number; percentage
             />
           ))}
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-xs text-[var(--wl-text-secondary)]">Today</p>
-            <p className="text-2xl font-bold text-[var(--wl-text-primary)]">{totalAvg}</p>
-            <p className="text-xs text-[var(--wl-text-secondary)]">avg/day</p>
+        <div className="absolute inset-0 flex items-center justify-center text-center">
+          <div>
+            <p className="text-xs text-[var(--wl-text-secondary)]">Total</p>
+            <p className="text-xl font-bold text-[var(--wl-text-primary)]">{total}</p>
+            <p className="text-xs text-[var(--wl-text-secondary)]">7 days</p>
           </div>
         </div>
       </div>
       <div className="ml-4 space-y-2">
-        {channels.map(([channel, stats]) => (
-          <div key={channel} className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHANNEL_COLORS[channel] ?? "#6B7280" }} />
+        {entries.map(([ch, info]) => (
+          <div key={ch} className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHANNEL_COLORS[ch] ?? "#6b7280" }} />
             <span className="text-xs text-[var(--wl-text-secondary)] capitalize">
-              {s.channel}: {s.pct}%
+              {ch}: {info.percentage}%
             </span>
           </div>
         ))}
       </div>
     </div>
   );
-};
+}
+
+function StatCardSkeleton() {
+  return (
+    <div className="border border-[var(--wl-border)] rounded-lg p-6 space-y-3">
+      <Skeleton className="h-3 w-20" />
+      <Skeleton className="h-8 w-16" />
+    </div>
+  );
+}
 
 export function NotificationStatsWidget({ className }: NotificationStatsWidgetProps) {
-  const { items: logs, loading } = useApiList<any>("/api/v4/notifications/delivery-log", { limit: 200 });
+  const { data, loading, error } = useApiQuery<NotificationStatsData>("/api/v4/notifications/stats");
 
-  const { dailyStats, channelBreakdown, failedTemplates, stats } = useMemo(() => {
-    if (logs.length === 0) {
-      return { dailyStats: [], channelBreakdown: {}, failedTemplates: [], stats: { totalToday: 0, changePercent: "0", failureRate: "0", failedCount: 0 } };
-    }
-
-    // Build daily stats for last 7 days
-    const now = new Date();
-    const dayMap: Record<string, number> = {};
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      dayMap[d.toDateString()] = 0;
-    }
-    logs.forEach((log) => {
-      const d = new Date(log.sentAt ?? log.createdAt ?? Date.now()).toDateString();
-      if (d in dayMap) dayMap[d]++;
-    });
-    const dailyStats: NotificationStat[] = Object.entries(dayMap).map(([ds, count]) => ({ timestamp: new Date(ds), count }));
-
-    const totalToday = dailyStats[dailyStats.length - 1]?.count ?? 0;
-    const totalYesterday = dailyStats[dailyStats.length - 2]?.count ?? 0;
-    const changePercent = totalYesterday > 0
-      ? (((totalToday - totalYesterday) / totalYesterday) * 100).toFixed(1)
-      : "0";
-
-    // Channel breakdown
-    const channelCounts: Record<string, number> = {};
-    logs.forEach((log) => {
-      const ch = (log.channel ?? "email").toLowerCase();
-      channelCounts[ch] = (channelCounts[ch] ?? 0) + 1;
-    });
-    const totalLogs = logs.length;
-    const channelBreakdown: Record<string, { count: number; percentage: number }> = {};
-    Object.entries(channelCounts).forEach(([ch, count]) => {
-      channelBreakdown[ch] = { count, percentage: Math.round((count / totalLogs) * 100) };
-    });
-
-    // Failed logs
-    const failed = logs.filter((log) => log.status === "FAILED" || log.status === "BOUNCED");
-    const failedCount = failed.length;
-    const failureRate = totalLogs > 0 ? ((failedCount / totalLogs) * 100).toFixed(1) : "0";
-
-    // Failed templates (group by template name)
-    const templateFails: Record<string, number> = {};
-    failed.forEach((log) => {
-      const name = log.templateName ?? log.template ?? "Unknown Template";
-      templateFails[name] = (templateFails[name] ?? 0) + 1;
-    });
-    const failedTemplates = Object.entries(templateFails)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 3)
-      .map(([name, failureCount]) => ({
-        name,
-        failureCount,
-        failureRate: totalLogs > 0 ? ((failureCount / totalLogs) * 100).toFixed(1) : "0",
-      }));
-
-    return { dailyStats, channelBreakdown, failedTemplates, stats: { totalToday, changePercent, failureRate, failedCount } };
-  }, [logs]);
+  const stats = useMemo(() => {
+    if (!data) return null;
+    const { summary, dailyStats } = data;
+    const changePercent =
+      summary.totalYesterday > 0
+        ? (((summary.totalToday - summary.totalYesterday) / summary.totalYesterday) * 100).toFixed(1)
+        : "0";
+    return { ...summary, changePercent, dailyStats };
+  }, [data]);
 
   if (loading) {
     return (
       <div className={cn("space-y-6", className)}>
-        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-32 w-full rounded-lg" />)}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+        <div className="border border-[var(--wl-border)] rounded-lg p-6">
+          <Skeleton className="h-4 w-40 mb-4" />
+          <Skeleton className="h-16 w-full" />
+        </div>
       </div>
     );
   }
+
+  if (error || !stats || !data) {
+    return (
+      <div className={cn("flex items-center justify-center py-16 text-center", className)}>
+        <div>
+          <AlertCircle className="w-8 h-8 text-wl-danger-400 mx-auto mb-2 opacity-70" />
+          <p className="text-sm text-[var(--wl-text-secondary)]">Unable to load notification stats</p>
+        </div>
+      </div>
+    );
+  }
+
+  const changeFloat = parseFloat(stats.changePercent);
+  const isUp = changeFloat >= 0;
+
+  const dateLabels = stats.dailyStats;
+  const firstDate = dateLabels[0]?.date ? new Date(dateLabels[0].date).toLocaleDateString("en", { month: "short", day: "numeric" }) : "";
+  const lastDate = dateLabels[dateLabels.length - 1]?.date
+    ? new Date(dateLabels[dateLabels.length - 1].date).toLocaleDateString("en", { month: "short", day: "numeric" })
+    : "";
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -185,64 +186,83 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Sent Today</p>
             <div className="flex items-end gap-2">
               <p className="text-2xl font-bold text-[var(--wl-text-primary)]">{stats.totalToday}</p>
-              <div className={cn("flex items-center gap-1 text-xs font-semibold", parseFloat(stats.changePercent) >= 0 ? "text-[var(--wl-success)]" : "text-[var(--wl-danger)]")}>
-                <TrendingUp className="w-3 h-3" />
-                {parseFloat(stats.changePercent) > 0 ? "+" : ""}{stats.changePercent}%
+              <div className={cn("flex items-center gap-1 text-xs font-semibold", isUp ? "text-[var(--wl-success)]" : "text-[var(--wl-danger)]")}>
+                {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {isUp ? "+" : ""}{stats.changePercent}%
               </div>
             </div>
           </CardContent>
         </Card>
         <Card className="border border-[var(--wl-border)]">
           <CardContent className="pt-6">
-            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Delivery Rate</p>
-            <p className="text-2xl font-bold text-[var(--wl-success)]">{(100 - parseFloat(stats.failureRate)).toFixed(1)}%</p>
-            <p className="text-xs text-[var(--wl-text-secondary)] mt-1">{stats.failedCount} failed</p>
+            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              Delivery Rate
+            </p>
+            <p className="text-2xl font-bold text-[var(--wl-success)]">{stats.deliveryRate.toFixed(1)}%</p>
+            <p className="text-xs text-[var(--wl-text-secondary)] mt-1">{stats.totalFailed} failed</p>
           </CardContent>
         </Card>
         <Card className="border border-[var(--wl-border)]">
           <CardContent className="pt-6">
-            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Bounce Rate</p>
-            <p className="text-2xl font-bold text-[var(--wl-warning)]">{stats.failureRate}%</p>
+            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              Bounce Rate
+            </p>
+            <p className="text-2xl font-bold text-[var(--wl-warning)]">{stats.failureRate.toFixed(1)}%</p>
             <p className="text-xs text-[var(--wl-text-secondary)] mt-1">Last 7 days</p>
           </CardContent>
         </Card>
       </div>
 
       <Card className="border border-[var(--wl-border)]">
-        <CardHeader><CardTitle className="text-sm">Notifications — Last 7 Days</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-sm">Notifications — Last 7 Days</CardTitle>
+        </CardHeader>
         <CardContent>
-          <SimpleLineChart data={dailyStats} />
-          {dailyStats.length >= 2 && (
-            <div className="flex justify-between mt-4 px-2 text-xs text-[var(--wl-text-secondary)]">
-              <span>{dailyStats[0]?.timestamp.toLocaleDateString([], { month: "short", day: "numeric" })}</span>
-              <span>{dailyStats[dailyStats.length - 1]?.timestamp.toLocaleDateString([], { month: "short", day: "numeric" })}</span>
-            </div>
+          {data.dailyStats.length > 0 ? (
+            <>
+              <SimpleBarChart data={data.dailyStats} />
+              <div className="flex justify-between mt-4 px-2 text-xs text-[var(--wl-text-secondary)]">
+                <span>{firstDate}</span>
+                <span>{lastDate}</span>
+              </div>
+            </>
+          ) : (
+            <p className="text-xs text-[var(--wl-text-secondary)] py-4 text-center">No data for the last 7 days</p>
           )}
         </CardContent>
       </Card>
 
-      {Object.keys(channelBreakdown).length > 0 && (
+      {Object.keys(data.channels).length > 0 && (
         <Card className="border border-[var(--wl-border)]">
-          <CardHeader><CardTitle className="text-sm">Channel Breakdown</CardTitle></CardHeader>
-          <CardContent><DonutChart data={channelBreakdown} /></CardContent>
+          <CardHeader>
+            <CardTitle className="text-sm">Channel Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DonutChart channels={data.channels} />
+          </CardContent>
         </Card>
       )}
 
-      {failedTemplates.length > 0 && (
+      {data.failedTemplates.length > 0 && (
         <Card className="border border-[var(--wl-border)]">
-          <CardHeader><CardTitle className="text-sm">Top Failed Templates</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Top Failed Templates</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {failedTemplates.map((template, idx) => (
-                <div key={idx} className="flex items-start justify-between p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]">
+              {data.failedTemplates.map((t, i) => (
+                <div
+                  key={i}
+                  className="flex items-start justify-between p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]"
+                >
                   <div className="flex items-start gap-2 flex-1">
                     <AlertCircle className="w-4 h-4 text-[var(--wl-danger)] flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-[var(--wl-text-primary)]">{template.name}</p>
-                      <p className="text-xs text-[var(--wl-text-secondary)]">{template.failureCount} failures</p>
+                      <p className="text-sm font-medium text-[var(--wl-text-primary)]">{t.name}</p>
+                      <p className="text-xs text-[var(--wl-text-secondary)]">{t.failureCount} failures</p>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold text-[var(--wl-danger)]">{template.failureRate}%</span>
+                  <span className="text-xs font-semibold text-[var(--wl-danger)]">{t.failureRate}%</span>
                 </div>
               ))}
             </div>
