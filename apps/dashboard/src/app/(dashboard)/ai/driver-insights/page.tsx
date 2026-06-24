@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery, useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import type { DriverMarker } from '@/components/map/driver-layer';
 
 const WLMap = dynamic(
@@ -114,13 +115,15 @@ export default function DriverInsightsPage() {
   const [sortBy, setSortBy] = useState<'score' | 'onTime' | 'efficiency' | 'rating'>('score');
   const [view, setView] = useState<'list' | 'map'>('list');
 
-  const { data, loading } = useApiQuery<LeaderboardResponse>(
+  const { data, loading, error, refetch } = useApiQuery<LeaderboardResponse>(
     `/api/v4/ai/analytics/leaderboard?period=${period}`,
   );
 
   const { items: dispatchDrivers } = useApiList<DispatchDriver>(
     view === 'map' ? '/api/v4/dispatch/drivers?limit=200' : null!,
   );
+
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const rawEntries: LeaderboardEntry[] = data?.data?.entries ?? [];
 

@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { ErrorState } from "@/components/ui/error-state";
+import { Card, CardHeader, CardTitle, CardContent } from "../../../../../components/ui/card";
+import { StatCard } from "../../../../../components/ui/stat-card";
+import { Badge } from "../../../../../components/ui/badge";
+import { Button } from "../../../../../components/ui/button";
+import { LoadingSkeleton } from "../../../../../components/ui/loading-skeleton";
+import { ErrorState } from "../../../../../components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -21,11 +21,8 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { useApiQuery, useApiMutation } from "@/hooks/use-api";
-
-/* ══════════════════════════════════════════════════════════════
-   Types
-═══════════════════════════════════════════════════════════════*/
+import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 
 interface WorkflowStep {
   id: string;
@@ -40,24 +37,24 @@ interface WorkflowStep {
   compensationStatus?: "pending" | "completed" | "failed";
 }
 
-interface ApiExecution {
+interface WorkflowExecutionDetail {
   executionId: string;
   workflowName: string;
-  status: string;
+  status: "running" | "completed" | "failed" | "compensating";
   startedAt: string;
-  completedAt?: string | null;
-  durationMs?: number | null;
-  input?: Record<string, unknown> | null;
-  output?: Record<string, unknown> | null;
-  error?: { message?: string; stack?: string } | string | null;
-  steps?: WorkflowStep[];
-  metadata?: Record<string, unknown> | null;
+  completedAt?: string;
+  durationMs?: number;
+  input: Record<string, any>;
+  output?: Record<string, any>;
+  error?: Record<string, any>;
+  steps: WorkflowStep[];
+  metadata?: Record<string, any>;
   createdAt: string;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Helpers
-═══════════════════════════════════════════════════════════════*/
+interface ExecutionResponse {
+  data: WorkflowExecutionDetail;
+}
 
 function formatDuration(ms: number | null | undefined): string {
   if (!ms) return "—";
@@ -68,43 +65,38 @@ function formatDuration(ms: number | null | undefined): string {
   return `${min}m ${sec % 60}s`;
 }
 
-function formatDateTime(isoStr: string): string {
-  return new Date(isoStr).toLocaleString("en-US", {
+const getStatusBadgeVariant = (
+  status: "running" | "completed" | "failed" | "compensating"
+): "info" | "success" | "danger" | "warning" => {
+  switch (status) {
+    case "running": return "info";
+    case "completed": return "success";
+    case "failed": return "danger";
+    case "compensating": return "warning";
+    default: return "default" as any;
+  }
+};
+
+const formatDateTime = (isoStr: string): string => {
+  return new Date(isoStr).toLocaleDateString("en-US", {
     month: "short", day: "numeric", year: "numeric",
     hour: "2-digit", minute: "2-digit", second: "2-digit",
   });
 }
 
-function normalizeStatus(s: string): "running" | "completed" | "failed" | "compensating" {
-  if (s === "running" || s === "in_progress") return "running";
-  if (s === "completed" || s === "success") return "completed";
-  if (s === "compensating") return "compensating";
-  return "failed";
-}
+const formatDuration = (ms?: number): string => {
+  if (!ms) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}m ${rem}s`;
+};
 
-function getStatusIcon(status: string) {
-  const s = normalizeStatus(status);
-  if (s === "completed") return <CheckCircle2 size={20} className="text-emerald-500" />;
-  if (s === "failed")    return <AlertCircle size={20} className="text-red-500" />;
-  if (s === "running")   return <Loader2 size={20} className="text-blue-500 animate-spin" />;
-  return <RotateCcw size={20} className="text-amber-500" />;
-}
-
-function getStatusBadgeVariant(s: string): "info" | "success" | "danger" | "warning" {
-  const n = normalizeStatus(s);
-  if (n === "running")       return "info";
-  if (n === "completed")     return "success";
-  if (n === "compensating")  return "warning";
-  return "danger";
-}
-
-/* ══════════════════════════════════════════════════════════════
-   Components
-═══════════════════════════════════════════════════════════════*/
-
-function JsonViewer({ data }: { data: Record<string, unknown> }) {
+function JsonViewer({ data }: { data: Record<string, any> }) {
   return (
-    <pre className="bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg p-3 text-xs text-gray-400 overflow-auto font-mono leading-relaxed max-h-64">
+    <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 text-xs text-gray-400 overflow-auto font-mono leading-relaxed">
       {JSON.stringify(data, null, 2)}
     </pre>
   );
@@ -115,63 +107,58 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
   if (steps.length === 0) {
     return (
-      <p className="text-gray-400 text-sm text-center py-6">
-        No step-level execution data available for this workflow.
+      <p className="text-sm text-gray-400 text-center py-6">
+        No step details available for this execution.
       </p>
     );
   }
 
   return (
     <div className="relative pl-6">
-      <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-[#1e1e2e]" />
+      <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-wl-bg-elevated" />
       {steps.map((step, idx) => (
         <div key={step.id} className={cn("relative", idx < steps.length - 1 ? "mb-5" : "")}>
-          <div className="absolute -left-5 top-2 w-4 h-4 rounded-full bg-[#0a0a0f] border-2 border-[#1e1e2e] flex items-center justify-center">
+          <div className="absolute -left-5 top-2 w-4.5 h-4.5 rounded-full bg-wl-bg-root border-4 border-wl-border-default flex items-center justify-center">
             <div
               className="w-2 h-2 rounded-full"
               style={{
                 background:
-                  step.status === "completed" ? "#10b981"
-                  : step.status === "failed"    ? "#ef4444"
-                  : step.status === "running"   ? "#3b82f6"
-                  : "#f59e0b",
+                  step.status === "completed" ? "#10b981" :
+                  step.status === "failed" ? "#ef4444" :
+                  step.status === "running" ? "#3b82f6" : "#f59e0b",
               }}
             />
           </div>
 
           <Card
             onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
-            className={cn(
-              "cursor-pointer transition-all",
-              expandedStep === step.id ? "border-blue-500/60 bg-[#1a1a2e]" : "bg-[#12121a] border-[#1e1e2e]"
-            )}
+            className="cursor-pointer transition-all bg-wl-bg-surface border border-wl-border-default"
+            style={{
+              borderColor: expandedStep === step.id ? "#3b82f6" : undefined,
+              background: expandedStep === step.id ? "#1a1a2e" : "#12121a",
+            }}
           >
             <div className="p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">
                 {getStatusIcon(step.status)}
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs text-gray-400 font-semibold">Step {step.number}</span>
-                    <h4 className="text-sm font-semibold text-white">{step.name}</h4>
-                    <Badge
-                      variant={
-                        step.status === "completed" ? "success"
-                        : step.status === "failed"   ? "danger"
-                        : step.status === "running"  ? "info"
-                        : "warning"
-                      }
-                    >
+                    <h4 className="m-0 text-sm font-semibold text-white">{step.name}</h4>
+                    <Badge variant={step.status === "completed" ? "success" : step.status === "failed" ? "danger" : step.status === "running" ? "info" : "warning"}>
                       {step.status}
                     </Badge>
                   </div>
                   <span className="text-xs text-gray-400">Duration: {step.duration}</span>
                 </div>
               </div>
-              {expandedStep === step.id ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />}
+              <div className="flex items-center gap-2">
+                {expandedStep === step.id ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+              </div>
             </div>
 
             {expandedStep === step.id && (
-              <div className="px-4 pb-4 border-t border-[#1e1e2e] mt-0 pt-4">
+              <div className="mt-4 pt-4 border-t border-wl-border-default">
                 {step.input && (
                   <div className="mb-4">
                     <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Input</h5>
@@ -186,9 +173,9 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
                 {step.error && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-red-400 uppercase mb-2 tracking-wider">Error</h5>
+                    <h5 className="text-xs font-semibold text-red-500 uppercase mb-2 tracking-wider">Error Details</h5>
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                      <p className="text-red-400 text-sm font-medium mb-2">{step.error.message}</p>
+                      <p className="m-0 mb-2 text-red-500 text-sm font-medium">{step.error.message}</p>
                       {step.error.stack && (
                         <pre className="text-xs text-gray-400 font-mono overflow-auto whitespace-pre-wrap break-words">
                           {step.error.stack}
@@ -199,7 +186,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
                 {step.compensationStatus && (
                   <div>
-                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Compensation</h5>
+                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">Compensation Status</h5>
                     <Badge variant={step.compensationStatus === "completed" ? "success" : step.compensationStatus === "failed" ? "danger" : "warning"}>
                       {step.compensationStatus}
                     </Badge>
@@ -222,83 +209,83 @@ export default function WorkflowExecutionDetailPage() {
   const params = useParams();
   const { data: raw, loading, error, refetch } = useApiQuery<{data: any}>(`/api/v4/workflow/executions/${params.id}`);
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
+  const params = useParams();
+  const id = params?.id as string;
 
-  const { data: execution, loading, error, refetch } = useApiQuery<ApiExecution>(`/api/v4/workflow/executions/${id}`);
-  const { execute: cancelExecution, loading: cancelling } = useApiMutation<unknown>('POST', `/api/v4/workflow/executions/${id}/cancel`);
+  const { data, loading, error, refetch } = useApiQuery<ExecutionResponse>(
+    id ? `/api/v4/workflow/executions/${id}` : null
+  );
 
-  if (loading) return <LoadingSkeleton className="m-6" />;
-  if (error)   return <ErrorState message={error.message} onRetry={refetch} />;
-  if (!execution) return null;
+  const execution = data?.data;
 
-  const steps: WorkflowStep[] = Array.isArray(execution.steps) ? execution.steps : [];
-  const status = normalizeStatus(execution.status);
-  const completedSteps = steps.filter((s) => s.status === "completed").length;
-  const failedSteps    = steps.filter((s) => s.status === "failed").length;
-  const totalDuration  = formatDuration(execution.durationMs);
-
-  const context: Record<string, string> = {};
-  if (execution.metadata && typeof execution.metadata === "object") {
-    Object.entries(execution.metadata).forEach(([k, v]) => {
-      if (typeof v === "string" || typeof v === "number") context[k] = String(v);
-    });
-  }
-
-  const errorObj = typeof execution.error === "object" && execution.error !== null
-    ? execution.error as { message?: string; stack?: string }
-    : execution.error
-      ? { message: String(execution.error) }
-      : null;
+  const [cancelling, setCancelling] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
   const handleCancel = async () => {
-    await cancelExecution({ reason: "Cancelled by admin" });
-    refetch();
+    if (!execution || cancelling) return;
+    setCancelling(true);
+    try {
+      await api.post(`/api/v4/workflow/executions/${id}/cancel`, {});
+      refetch();
+    } finally {
+      setCancelling(false);
+    }
   };
 
+  const handleRetry = async () => {
+    if (!execution || retrying) return;
+    setRetrying(true);
+    try {
+      refetch();
+    } finally {
+      setRetrying(false);
+    }
+  };
+
+  if (loading) return <LoadingSkeleton />;
+  if (error || !execution) return <ErrorState message={error?.message ?? 'Execution not found'} onRetry={refetch} />;
+
+  const steps = execution.steps ?? [];
+  const completedSteps = steps.filter(s => s.status === 'completed').length;
+  const failedSteps = steps.filter(s => s.status === 'failed').length;
+
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
-      {/* Sticky header */}
-      <div className="flex items-center justify-between p-5 px-6 border-b border-[#1e1e2e] bg-[#12121a] sticky top-0 z-40">
+    <div className="bg-wl-bg-root min-h-screen">
+      <div className="flex items-center justify-between p-5 px-6 border-b border-wl-border-default bg-wl-bg-surface backdrop-blur-sm sticky top-0 z-40">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/admin/workflows")}
-            className="flex items-center gap-1.5"
-          >
-            <ChevronLeft size={16} />
+          <Button variant="ghost" size="sm" onClick={() => router.push("/admin/workflows")} className="flex items-center gap-1">
+            <ChevronLeft size={18} />
             Back
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-white">{execution.workflowName}</h1>
-            <p className="text-xs text-gray-400 mt-0.5 font-mono">{execution.executionId}</p>
+            <h1 className="text-xl font-bold text-white m-0 tracking-tight">{execution.workflowName}</h1>
+            <p className="text-sm text-gray-400 m-0 mt-0.5">{execution.executionId}</p>
           </div>
           <Badge variant={getStatusBadgeVariant(execution.status)}>{status.toUpperCase()}</Badge>
         </div>
 
         <div className="flex gap-2">
-          {status === "running" && (
-            <Button variant="secondary" size="sm" onClick={handleCancel} disabled={cancelling} className="flex items-center gap-1.5">
-              <Square size={14} />
+          {execution.status === "running" && (
+            <Button variant="secondary" size="sm" onClick={handleCancel} disabled={cancelling}>
+              <Square size={16} />
               {cancelling ? "Cancelling…" : "Cancel"}
             </Button>
           )}
-          {(status === "failed" || status === "completed") && (
-            <Button variant="primary" size="sm" className="flex items-center gap-1.5">
-              <RotateCcw size={14} />
-              Retry
+          {(execution.status === "failed" || execution.status === "completed") && (
+            <Button variant="primary" size="sm" onClick={handleRetry} disabled={retrying}>
+              <RotateCcw size={16} />
+              {retrying ? "Retrying…" : "Retry Workflow"}
             </Button>
           )}
         </div>
       </div>
 
       <div className="p-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Total Steps" value={steps.length || "—"} accentColor="#3b82f6" index={0} />
-          <StatCard label="Completed"   value={completedSteps || "—"} accentColor="#10b981" index={1} />
-          <StatCard label="Failed"      value={failedSteps || "—"} accentColor="#ef4444" index={2} />
-          <StatCard label="Duration"    value={totalDuration} accentColor="#8b5cf6" index={3} />
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
+          <StatCard label="Total Steps" value={steps.length} accentColor="#3b82f6" index={0} />
+          <StatCard label="Completed" value={completedSteps} accentColor="#10b981" index={1} />
+          <StatCard label="Failed" value={failedSteps} accentColor="#ef4444" index={2} />
+          <StatCard label="Duration" value={formatDuration(execution.durationMs)} accentColor="#3b82f6" index={3} />
         </div>
 
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
@@ -310,46 +297,32 @@ export default function WorkflowExecutionDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Metadata grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {/* Input */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardHeader>
-              <CardTitle className="text-white">Input Data</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {execution.input
-                ? <JsonViewer data={execution.input as Record<string, unknown>} />
-                : <p className="text-gray-400 text-xs">No input data</p>}
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 mb-6">
+          {execution.input && (
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
+              <CardHeader><CardTitle className="text-white">Input Data</CardTitle></CardHeader>
+              <CardContent><JsonViewer data={execution.input as Record<string, any>} /></CardContent>
+            </Card>
+          )}
 
-          {/* Context / Metadata */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardHeader>
-              <CardTitle className="text-white">Execution Context</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {Object.keys(context).length > 0 ? (
+          {execution.metadata && (
+            <Card className="bg-wl-bg-surface border border-wl-border-default">
+              <CardHeader><CardTitle className="text-white">Execution Context</CardTitle></CardHeader>
+              <CardContent>
                 <div className="flex flex-col gap-3">
-                  {Object.entries(context).slice(0, 8).map(([k, v]) => (
-                    <div key={k} className="flex gap-2">
-                      <span className="text-xs font-semibold text-gray-400 min-w-20 uppercase tracking-wider">{k}</span>
-                      <span className="text-sm text-white font-mono break-all">{v}</span>
+                  {Object.entries(execution.metadata).map(([key, value]) => (
+                    <div key={key} className="flex gap-2">
+                      <span className="text-xs font-semibold text-gray-400 min-w-20 uppercase tracking-wider">{key}</span>
+                      <span className="text-sm text-white font-mono">{String(value)}</span>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-gray-400 text-xs">No context metadata</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Timeline */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardHeader>
-              <CardTitle className="text-white">Timeline</CardTitle>
-            </CardHeader>
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
+            <CardHeader><CardTitle className="text-white">Timeline</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
                 <div>
@@ -380,9 +353,8 @@ export default function WorkflowExecutionDetailPage() {
           </Card>
         </div>
 
-        {/* Error summary (when execution failed) */}
-        {status === "failed" && errorObj && (
-          <Card className="border-l-4 border-l-red-500 mb-6 bg-[#12121a]">
+        {execution.status === "failed" && execution.error && (
+          <Card className="border-l-4 border-l-red-500 mb-6">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <AlertCircle size={20} className="text-red-500" />
@@ -390,24 +362,26 @@ export default function WorkflowExecutionDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-red-400 text-sm font-medium mb-2">{errorObj.message ?? "Unknown error"}</p>
-              {errorObj.stack && (
-                <pre className="text-xs text-gray-400 font-mono overflow-auto whitespace-pre-wrap break-words bg-[#1a1a2e] border border-[#1e1e2e] rounded p-3">
-                  {errorObj.stack}
-                </pre>
-              )}
+              <JsonViewer data={execution.error as Record<string, any>} />
             </CardContent>
           </Card>
         )}
 
-        {/* Output (if available) */}
-        {execution.output && Object.keys(execution.output).length > 0 && (
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        {execution.status === "failed" && steps.some(s => s.error) && (
+          <Card className="border-l-4 border-l-red-500 mb-6">
             <CardHeader>
-              <CardTitle className="text-white">Output Data</CardTitle>
+              <div className="flex items-center gap-2">
+                <AlertCircle size={20} className="text-red-500" />
+                <CardTitle>Step Errors</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <JsonViewer data={execution.output as Record<string, unknown>} />
+              {steps.filter(s => s.error).map(step => (
+                <div key={step.id} className="mb-3">
+                  <p className="m-0 mb-1 text-red-500 text-sm font-semibold">Step {step.number}: {step.name}</p>
+                  <p className="m-0 text-gray-400 text-sm">{step.error?.message}</p>
+                </div>
+              ))}
             </CardContent>
           </Card>
         )}

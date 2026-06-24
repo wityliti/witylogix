@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
 import { useDeliveryHeatmap } from '@/hooks/use-dashboard-stats';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   TrendingUp,
   TrendingDown,
@@ -172,7 +173,7 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('7d');
   const [viewMode, setViewMode] = useState<'charts' | 'heatmap'>('charts');
 
-  const { data, loading } = useApiQuery<AnalyticsOverview>(`/api/v4/analytics/overview?range=${timeRange}`);
+  const { data, loading, error, refetch } = useApiQuery<AnalyticsOverview>(`/api/v4/analytics/overview?range=${timeRange}`);
   const { data: heatmapData, loading: heatmapLoading } = useDeliveryHeatmap();
 
   const metrics = data?.metrics;
@@ -184,6 +185,8 @@ export default function AnalyticsPage() {
   const maxHourly = hourly.length > 0
     ? Math.max(...hourly.map((h) => Math.max(h.orders, h.deliveries)), 1)
     : 1;
+
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen">
@@ -351,8 +354,8 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-indigo-500"
-                          style={{ width: `${zone.pct}%`, opacity: 1 - i * 0.12 }}
+                          className="h-full rounded-full"
+                          style={{ width: `${zone.pct}%`, background: `linear-gradient(90deg, #818cf8, #6366f1)`, opacity: 1 - i * 0.12 }}
                         />
                       </div>
                     </div>

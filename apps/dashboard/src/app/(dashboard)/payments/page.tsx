@@ -43,6 +43,24 @@ interface MonthlyRevenue {
   payments: number;
 }
 
+const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function buildMonthlyRevenue(payments: Payment[]): MonthlyRevenue[] {
+  const map = new Map<string, MonthlyRevenue>();
+  for (const p of payments) {
+    if (p.status !== 'completed') continue;
+    const d = new Date(p.date);
+    const key = MONTH_ABBR[d.getMonth()];
+    const existing = map.get(key);
+    if (existing) {
+      existing.revenue += p.amount;
+      existing.payments += 1;
+    } else {
+      map.set(key, { month: key, revenue: p.amount, payments: 1 });
+    }
+  }
+  return Array.from(map.values());
+}
 
 const getStatusBadgeVariant = (
   status: PaymentStatus
@@ -405,10 +423,6 @@ export default function PaymentsPage() {
           <TrendingUp className="w-5 h-5" />
           Monthly Revenue
         </h2>
-        {monthlyRevenue.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-12">No completed payments yet</p>
-        ) : (
-        <>
         <div className="h-80 flex items-end justify-center">
           <RevenueChart data={monthlyRevenue} />
         </div>

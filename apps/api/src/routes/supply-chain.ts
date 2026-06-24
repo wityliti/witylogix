@@ -10,6 +10,7 @@
  *   GET /warehouses        Warehouse (location) utilisation summary
  *   GET /reorder-alerts    Items below reorder threshold
  *   GET /stock-gauges      Per-SKU stock level gauges
+ *   GET /transfers         Inventory movements of type TRANSFER
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -433,7 +434,67 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
     return { data, total: data.length };
   });
 
-  // ── BATCH PICKING ─────────────────────────────────────────────────────
+  // ── TRANSFERS ─────────────────────────────────────────────────────────
+
+  fastify.get("/transfers", async (request: FastifyRequest, _reply: FastifyReply) => {
+    const query = paginationSchema.parse(request.query);
+    const { page, limit } = query;
+    const shopId = request.shopId;
+
+    const [movements, total] = await Promise.all([
+      (request.tenantDb as any).inventoryMovement.findMany({
+        where: { type: "TRANSFER", item: { shopId } },
+        include: { item: { select: { productId: true } } },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" as const },
+      }),
+      (request.tenantDb as any).inventoryMovement.count({
+        where: { type: "TRANSFER", item: { shopId } },
+      }),
+    ]);
+
+    // Enrich with location names
+    const locationIds = [
+      ...new Set([
+        ...movements.map((m: any) => m.fromLocationId).filter(Boolean),
+        ...movements.map((m: any) => m.toLocationId).filter(Boolean),
+      ]),
+    ] as string[];
+    const locations = locationIds.length > 0
+      ? await (request.tenantDb as any).location?.findMany({
+          where: { id: { in: locationIds } },
+          select: { id: true, name: true },
+        }).catch(() => [])
+      : [];
+    const locationMap = new Map((locations as any[]).map((l: any) => [l.id, l.name as string]));
+
+    // Enrich with product title for SKU display
+    const productIds = [...new Set(movements.map((m: any) => m.item?.productId).filter(Boolean))] as string[];
+    const products = productIds.length > 0
+      ? await request.tenantDb.product.findMany({
+          where: { shopId, id: { in: productIds } },
+          select: { id: true, title: true },
+        })
+      : [];
+    const productMap = new Map(products.map((p) => [p.id, p.title]));
+
+    const data = movements.map((m: any) => ({
+      id: m.id,
+      fromWarehouse: m.fromLocationId ? (locationMap.get(m.fromLocationId) ?? m.fromLocationId) : "Unknown",
+      toWarehouse: m.toLocationId ? (locationMap.get(m.toLocationId) ?? m.toLocationId) : "Unknown",
+      sku: m.item?.productId ?? "Unknown",
+      productName: m.item?.productId ? (productMap.get(m.item.productId) ?? "Unknown") : "Unknown",
+      qty: m.quantity,
+      reference: m.reference ?? null,
+      status: m.toLocationId ? "completed" : "in-transit",
+      createdDate: m.createdAt.toISOString(),
+    }));
+
+    return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+  });
+
+  // ── BATCH PICKING ─────────────────────────────────────────────────────────
 
   fastify.get("/batches", async (request: FastifyRequest, _reply: FastifyReply) => {
     const shopId = request.shopId;

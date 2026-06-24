@@ -22,29 +22,13 @@ import {
 } from "lucide-react";
 
 type DefectStatus = "REPORTED" | "ACKNOWLEDGED" | "REPAIRED" | "CERTIFIED";
-type InspectionStatus = "PASSED" | "FAILED";
-
-interface Vehicle {
-  id: string;
-  number: string;
-  driverName: string;
-}
-
-interface InspectionHistory {
-  id: string;
-  vehicleNumber: string;
-  vehicleId: string;
-  driverId: string;
-  driverName: string;
-  type: "PRE_TRIP" | "POST_TRIP";
-  status: InspectionStatus;
-  date: string;
-  defectsCount: number;
-  criticalDefects: number;
-  mileage?: number;
-}
 
 export default function DVIRPage() {
+  const { defects, isLoading: defectsLoading, error: defectsError, refetch: refetchDefects, updateDefectStatus } = useDVIR();
+  const { items: inspections, loading: inspectionsLoading, error: inspectionsError, refetch: refetchInspections } = useDvirInspections();
+  const { execute: submitInspection } = useApiMutation("POST", "/api/v4/eld/dvir");
+  const { addToast } = useToast();
+
   const [showForm, setShowForm] = useState(false);
   const [inspectionType, setInspectionType] = useState<"PRE_TRIP" | "POST_TRIP">("PRE_TRIP");
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,15 +36,10 @@ export default function DVIRPage() {
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
   const [selectedVehicleNum, setSelectedVehicleNum] = useState<string | null>(null);
 
-  const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: vehicles, loading: vehiclesLoading, error: vehiclesError, refetch: refetchVehicles } = useApiList<Vehicle>("/api/v4/eld/dvir");
-  const { items: history, loading: historyLoading } = useApiList<InspectionHistory>(
-    `/api/v4/eld/dvir/history${selectedVehicle ? `?vehicleNumber=${encodeURIComponent(selectedVehicle)}` : ""}`
-  );
-  const { execute: submitInspection } = useApiMutation("POST", "/api/v4/eld/dvir");
-  const { addToast } = useToast();
+  const loading = defectsLoading && inspectionsLoading;
 
-  const activeVehicle = selectedVehicle || vehicles[0]?.number || "";
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (defectsError) return <ErrorState message={defectsError.message} onRetry={refetchDefects} />;
 
   const filteredDefects = useMemo(() => {
     let result = defects;
@@ -78,20 +57,23 @@ export default function DVIRPage() {
   }, [defects, filterStatus, searchQuery]);
 
   const filteredHistory = useMemo(() => {
-    const base = activeVehicle
-      ? history.filter((h) => h.vehicleNumber === activeVehicle)
-      : history;
-    return [...base].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [history, activeVehicle]);
+    if (!selectedVehicle) return inspections;
+    return inspections
+      .filter((h) => h.vehicleNumber === selectedVehicle)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [inspections, selectedVehicle]);
+
+  const uniqueVehicles = useMemo(() => {
+    const seen = new Set<string>();
+    return inspections.filter((i) => {
+      if (seen.has(i.vehicleNumber)) return false;
+      seen.add(i.vehicleNumber);
+      return true;
+    });
+  }, [inspections]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  if (vehiclesLoading) return <TableSkeleton rows={10} columns={6} />;
-  if (vehiclesError) return <ErrorState message={vehiclesError.message} onRetry={refetchVehicles} />;
 
   return (
     <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
@@ -258,36 +240,37 @@ export default function DVIRPage() {
                   onClick={() => setShowVehicleSearch(!showVehicleSearch)}
                   className="w-full h-9 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors text-sm"
                 >
-                  <span>Vehicle: {activeVehicle || "All Vehicles"}</span>
+                  <span>
+                    {selectedVehicle ? `Vehicle: ${selectedVehicle}` : "All vehicles"}
+                  </span>
                 </button>
 
-                {showVehicleSearch && vehicles.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
+                {showVehicleSearch && (
+                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     <button
                       onClick={() => { setSelectedVehicle(""); setShowVehicleSearch(false); }}
                       className={cn(
-                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e]",
-                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-[#0a0a0f]"
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default",
+                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-wl-bg-root"
                       )}
                     >
-                      All Vehicles
+                      All vehicles
                     </button>
-                    {vehicles.map((vehicle) => (
+                    {uniqueVehicles.map((vehicle) => (
                       <button
                         key={v.vehicleId}
                         onClick={() => {
-                          setSelectedVehicleNum(v.vehicleNumber);
+                          setSelectedVehicle(vehicle.vehicleNumber);
                           setShowVehicleSearch(false);
                         }}
                         className={cn(
-                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
-                          selectedVehicle === v.vehicleNumber
+                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-wl-border-default last:border-0",
+                          selectedVehicle === vehicle.vehicleNumber
                             ? "bg-blue-500/10 text-blue-400"
                             : "text-gray-400 hover:bg-wl-bg-root"
                         )}
                       >
-                        {vehicle.number}
-                        {vehicle.driverName && <span className="text-gray-500 ml-1">— {vehicle.driverName}</span>}
+                        {vehicle.vehicleNumber}
                       </button>
                     ))}
                     {vehicles.length === 0 && (
@@ -299,7 +282,7 @@ export default function DVIRPage() {
             </CardHeader>
 
             <CardContent>
-              {historyLoading ? (
+              {inspectionsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
                 </div>
@@ -307,7 +290,11 @@ export default function DVIRPage() {
                 <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                   <Calendar className="w-12 h-12 mb-3 opacity-50" />
                   <p className="text-sm font-medium">No inspections yet</p>
-                  <p className="text-xs mt-1">Inspection records appear as deliveries are completed</p>
+                  <p className="text-xs mt-1">
+                    {selectedVehicle
+                      ? `No inspections recorded for ${selectedVehicle}`
+                      : "Schedule the first inspection to get started"}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -371,16 +358,25 @@ export default function DVIRPage() {
         <>
           {/* Form mode */}
           <DVIRForm
-            vehicleNumber={activeVehicle}
-            driverId={vehicles.find((v) => v.number === activeVehicle)?.id ?? ""}
-            driverName={vehicles.find((v) => v.number === activeVehicle)?.driverName ?? ""}
+            vehicleNumber={selectedVehicle || ""}
+            driverId=""
+            driverName=""
             inspectionType={inspectionType}
             onSubmit={async (formData) => {
               try {
-                await submitInspection(formData);
-                addToast({ type: "success", title: "Inspection submitted", message: "DVIR inspection has been recorded." });
+                await submitInspection(data);
+                addToast({
+                  type: "success",
+                  title: "Inspection submitted",
+                  message: "DVIR inspection has been recorded.",
+                });
+                refetchInspections();
               } catch {
-                addToast({ type: "error", title: "Submission failed", message: "Could not submit inspection. Please try again." });
+                addToast({
+                  type: "error",
+                  title: "Submission failed",
+                  message: "Could not submit inspection. Please try again.",
+                });
               }
               setShowForm(false);
             }}

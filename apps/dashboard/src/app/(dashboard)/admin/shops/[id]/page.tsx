@@ -18,17 +18,24 @@ import {
   Lock,
   Crown,
   Zap,
+  RefreshCw,
 } from "lucide-react";
-import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { useApiQuery, useApiList } from '@/hooks/use-api';
+import { useParams } from 'next/navigation';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { api } from '@/lib/api';
 
-interface StoreDetail {
+interface ShopApiData {
   id: string;
   name: string;
   shopifyDomain?: string;
   email?: string;
-  planTier?: string;
-  status: "ACTIVE" | "SUSPENDED";
-  installedAt: string;
+  status: string;
+  suspendedAt?: string;
+  suspensionReason?: string;
+  createdAt: string;
+  updatedAt: string;
   usage: {
     orders: number;
     users: number;
@@ -36,62 +43,42 @@ interface StoreDetail {
     suspension?: { suspendedAt: string; reason?: string } | null;
   };
   subscription?: {
-    planTier: string;
-    status: string;
-    billingCycleEnd: string;
+    planTier?: string;
+    status?: string;
+    billingCycleEnd?: string;
   } | null;
+  users?: Array<{ id: string; role: string }>;
 }
 
-interface BillingRecord {
+interface ActivityItem {
   id: string;
-  date: string;
-  description: string;
-  amount: number;
-  currency: string;
-  status: "paid" | "pending" | "failed";
-}
-
-interface ActivityEntry {
-  id: string;
-  timestamp: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  type: string;
   action: string;
-  details: string;
-  actor: string;
-  severity: "info" | "warning" | "error";
+  timestamp: string;
+  metadata?: Record<string, unknown>;
+  shopName?: string;
 }
-
-const STATUS_COLOR: Record<string, string> = {
-  ACTIVE: "#22c55e",
-  SUSPENDED: "#ef4444",
-  active: "#22c55e",
-  trialing: "#a78bfa",
-  past_due: "#f59e0b",
-  cancelled: "#6b7280",
-};
-
-const PLAN_COLOR: Record<string, string> = {
-  FREE: "#94a3b8",
-  STARTER: "#3b82f6",
-  GROWTH: "#8b5cf6",
-  ENTERPRISE: "#ec4899",
-};
-
-const BILLING_STATUS_COLOR: Record<string, string> = {
-  paid: "#22c55e",
-  pending: "#f59e0b",
-  failed: "#ef4444",
-};
-
-const SEVERITY_COLOR: Record<string, string> = {
-  info: "#6C63FF",
-  warning: "#f59e0b",
-  error: "#ef4444",
-};
 
 export default function AdminShopDetail() {
-  const { id } = useParams<{ id: string }>();
-  const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
+  const params = useParams();
+  const shopId = params.id as string;
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
+    shopId ? `/api/v4/admin/stores/${shopId}` : null,
+  );
+
+  const { items: activityLogs, loading: activityLoading } = useApiList<ActivityItem>(
+    shopId ? `/api/v4/admin/activity?limit=20` : null,
+  );
+
+  const shop = shopData?.data;
 
   const { data: store, loading: storeLoading, error: storeError, refetch: refetchStore } = useApiQuery<StoreDetail>(`/api/v4/admin/stores/${id}`);
   const { data: billingData, loading: billingLoading } = useApiQuery<{ data: BillingRecord[] }>(`/api/v4/admin/stores/${id}/billing`);
@@ -99,32 +86,79 @@ export default function AdminShopDetail() {
 
   const { execute: suspendStore, loading: suspending } = useApiMutation<unknown>('POST', `/api/v4/admin/stores/${id}/suspend`);
 
-  const billing: BillingRecord[] = (billingData as unknown as { data: BillingRecord[] })?.data ?? [];
-  const activity: ActivityEntry[] = (activityData as unknown as { data: ActivityEntry[] })?.data ?? [];
-
-  const loading = storeLoading;
-
-  if (loading) return <LoadingSkeleton className="m-6" />;
-  if (storeError) return <ErrorState message={storeError.message} onRetry={refetchStore} />;
-  if (!store) return null;
-
-  const planTier = (store.subscription?.planTier ?? store.planTier ?? "FREE").toUpperCase();
-  const statusColor = STATUS_COLOR[store.status] ?? "#6C63FF";
-  const planColor = PLAN_COLOR[planTier] ?? "#6C63FF";
-  const subStatus = store.subscription?.status ?? "active";
-
-  const handleSuspend = async () => {
-    await suspendStore({});
-    setShowSuspendConfirm(false);
-    refetchStore();
+  const getStatusColor = (status: string) => {
+    const s = (status || "").toLowerCase();
+    switch (s) {
+      case "active": return "#22c55e";
+      case "suspended": return "#ef4444";
+      case "trial": return "#f59e0b";
+      default: return "#6C63FF";
+    }
   };
 
+  const getPlanColor = (plan?: string) => {
+    switch ((plan || "").toLowerCase()) {
+      case "free": return "#94a3b8";
+      case "starter": return "#3b82f6";
+      case "growth": return "#8b5cf6";
+      case "enterprise": return "#ec4899";
+      default: return "#6C63FF";
+    }
+  };
+
+  const handleSuspend = async () => {
+    setActionLoading("suspend");
+    try {
+      await api.put(`/api/v4/admin/stores/${shopId}/suspend`, { reason: "Manual suspension by admin" });
+      await refetch();
+      setShowSuspendConfirm(false);
+    } catch {
+      // error handled by UI
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRestore = async () => {
+    setActionLoading("restore");
+    try {
+      await api.put(`/api/v4/admin/stores/${shopId}/restore`, {});
+      await refetch();
+    } catch {
+      // error handled by UI
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  if (error || !shop) {
+    return (
+      <div className="p-6">
+        <ErrorState message={error?.message || "Shop not found"} onRetry={refetch} />
+      </div>
+    );
+  }
+
+  const planTier = shop.subscription?.planTier || "unknown";
+  const isSuspended = shop.status === "SUSPENDED";
+
   return (
-    <div className="bg-[#0a0a0f] min-h-screen">
+    <div className="bg-wl-bg-root-root">
       {/* Header */}
-      <div className="px-6 py-6 border-b border-[#1e1e2e] flex gap-4 items-center">
-        <Link href="/admin" className="text-blue-500 no-underline flex items-center gap-2 hover:opacity-80 text-sm">
-          <ArrowLeft size={18} />
+      <div className="px-6 py-6 border-b border-wl-border-default flex gap-4 items-center justify-between">
+        <Link
+          href="/admin"
+          className="text-blue-600 no-underline flex items-center gap-2 hover:opacity-80"
+        >
+          <ArrowLeft size={20} />
           Back to Shops
         </Link>
         <Button variant="ghost" size="sm" onClick={refetch}>
@@ -134,13 +168,16 @@ export default function AdminShopDetail() {
 
       <div className="p-6 space-y-6">
         {/* Shop Header Card */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-white mb-1">{store.name}</h1>
-                {store.shopifyDomain && <p className="text-gray-400 text-sm">{store.shopifyDomain}</p>}
-                {store.email && <p className="text-gray-500 text-xs mt-0.5">{store.email}</p>}
+                <h1 className="text-2xl font-bold text-white mb-2">
+                  {shop.name}
+                </h1>
+                <p className="text-gray-400 text-sm">
+                  {shop.shopifyDomain || shop.email || shop.id}
+                </p>
               </div>
               <div className="flex gap-2 items-center">
                 <Badge
@@ -150,16 +187,16 @@ export default function AdminShopDetail() {
                     border: `1px solid ${statusColor}40`,
                   }}
                 >
-                  {store.status}
+                  {shop.status}
                 </Badge>
                 <Badge
                   style={{
-                    background: `${planColor}20`,
-                    color: planColor,
-                    border: `1px solid ${planColor}40`,
+                    background: getPlanColor(planTier) + "20",
+                    color: getPlanColor(planTier),
+                    border: `1px solid ${getPlanColor(planTier)}40`,
                   }}
                 >
-                  {planTier}
+                  {planTier.toUpperCase()}
                 </Badge>
                 {shopData.planTier && (
                   <Badge
@@ -175,31 +212,24 @@ export default function AdminShopDetail() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-[#1e1e2e]">
+            {/* Store Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border-default">
               <div>
-                <p className="text-gray-400 mb-1 text-xs">Member Since</p>
-                <p className="text-white text-sm font-medium">
-                  {new Date(store.installedAt).toLocaleDateString()}
-                </p>
+                <p className="text-gray-400 mb-1 text-xs">Store ID</p>
+                <p className="text-white text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
+              </div>
+              <div>
+                <p className="text-gray-400 mb-1 text-xs">Email</p>
+                <p className="text-white text-sm font-medium">{shop.email || "—"}</p>
               </div>
               <div>
                 <p className="text-gray-400 mb-1 text-xs">Plan Status</p>
-                <Badge
-                  style={{
-                    background: `${STATUS_COLOR[subStatus] ?? "#6C63FF"}20`,
-                    color: STATUS_COLOR[subStatus] ?? "#6C63FF",
-                    border: `1px solid ${STATUS_COLOR[subStatus] ?? "#6C63FF"}40`,
-                  }}
-                >
-                  {subStatus}
-                </Badge>
+                <p className="text-white text-sm font-medium">{shop.subscription?.status || "—"}</p>
               </div>
               <div>
-                <p className="text-gray-400 mb-1 text-xs">Billing Cycle End</p>
+                <p className="text-gray-400 mb-1 text-xs">Member Since</p>
                 <p className="text-white text-sm font-medium">
-                  {store.subscription?.billingCycleEnd
-                    ? new Date(store.subscription.billingCycleEnd).toLocaleDateString()
-                    : '—'}
+                  {new Date(shop.createdAt).toLocaleDateString()}
                 </p>
               </div>
               {store.usage.suspension && (
@@ -209,86 +239,88 @@ export default function AdminShopDetail() {
                 </div>
               )}
             </div>
+
+            {isSuspended && shop.usage.suspension && (
+              <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded-lg">
+                <p className="text-red-400 text-sm font-medium">Suspended</p>
+                {shop.usage.suspension.reason && (
+                  <p className="text-red-300 text-xs mt-1">{shop.usage.suspension.reason}</p>
+                )}
+                <p className="text-gray-400 text-xs mt-1">
+                  Since: {new Date(shop.usage.suspension.suspendedAt).toLocaleString()}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Usage Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-4 flex justify-between items-start">
-              <div>
-                <p className="text-gray-400 text-xs mb-2">Total Orders</p>
-                <p className="text-2xl font-bold text-white">{store.usage.orders.toLocaleString()}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-400 mb-2 text-xs">Total Orders</p>
+                  <p className="text-2xl font-bold text-white">
+                    {shop.usage.orders.toLocaleString()}
+                  </p>
+                </div>
+                <ShoppingCart size={24} className="text-blue-600" />
               </div>
               <ShoppingCart size={24} className="text-blue-500" />
             </CardContent>
           </Card>
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-4 flex justify-between items-start">
-              <div>
-                <p className="text-gray-400 text-xs mb-2">Drivers</p>
-                <p className="text-2xl font-bold text-white">{store.usage.drivers}</p>
+
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-400 mb-2 text-xs">Team Users</p>
+                  <p className="text-2xl font-bold text-white">
+                    {shop.usage.users.toLocaleString()}
+                  </p>
+                </div>
+                <Users size={24} className="text-purple-500" />
               </div>
               <Truck size={24} className="text-purple-500" />
             </CardContent>
           </Card>
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-4 flex justify-between items-start">
-              <div>
-                <p className="text-gray-400 text-xs mb-2">Team Members</p>
-                <p className="text-2xl font-bold text-white">{store.usage.users}</p>
+
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-400 mb-2 text-xs">Drivers</p>
+                  <p className="text-2xl font-bold text-white">
+                    {shop.usage.drivers}
+                  </p>
+                </div>
+                <Truck size={24} className="text-blue-500" />
               </div>
               <Users size={24} className="text-emerald-500" />
             </CardContent>
           </Card>
         )}
 
-        {/* Billing History */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
-          <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">Billing History</h3>
-            {billingLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-10 rounded bg-[#1e1e2e] animate-pulse" />
-                ))}
+          <Card className="bg-wl-bg-surface border border-wl-border-default">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-400 mb-2 text-xs">Next Billing</p>
+                  <p className="text-sm font-bold text-white">
+                    {shop.subscription?.billingCycleEnd
+                      ? new Date(shop.subscription.billingCycleEnd).toLocaleDateString()
+                      : "—"}
+                  </p>
+                </div>
+                <Activity size={24} className="text-emerald-500" />
               </div>
-            ) : billing.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-6">No billing records found</p>
-            ) : (
-              <div className="max-h-72 overflow-y-auto">
-                {billing.map((record, index) => (
-                  <div
-                    key={record.id}
-                    className={cn("py-3 flex justify-between items-center", index < billing.length - 1 && "border-b border-[#1e1e2e]")}
-                  >
-                    <div>
-                      <p className="text-white text-sm">{record.description}</p>
-                      <p className="text-gray-400 text-xs">{new Date(record.date).toLocaleDateString()}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p className="text-white text-sm font-semibold">
-                        {record.currency.toUpperCase()} {Number(record.amount).toFixed(2)}
-                      </p>
-                      <Badge
-                        style={{
-                          background: `${BILLING_STATUS_COLOR[record.status] ?? "#6C63FF"}20`,
-                          color: BILLING_STATUS_COLOR[record.status] ?? "#6C63FF",
-                          border: `1px solid ${BILLING_STATUS_COLOR[record.status] ?? "#6C63FF"}40`,
-                        }}
-                      >
-                        {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Admin Actions */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+        <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
           <CardContent className="p-5">
             <h3 className="text-base font-semibold text-white mb-4">Admin Actions</h3>
             <div className="flex gap-3 flex-wrap">
@@ -296,21 +328,37 @@ export default function AdminShopDetail() {
                 <Crown size={16} />
                 Upgrade Plan
               </Button>
-              <Button
-                onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
-                disabled={store.status === "SUSPENDED" || suspending}
-                className="bg-amber-500 text-white border-none px-4 py-2 rounded text-sm font-medium flex items-center gap-2"
+
+              {isSuspended ? (
+                <button
+                  onClick={handleRestore}
+                  disabled={actionLoading === "restore"}
+                  className="bg-emerald-500 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
+                >
+                  <Lock size={16} />
+                  {actionLoading === "restore" ? "Restoring…" : "Restore Shop"}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
+                  className="bg-amber-500 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90"
+                >
+                  <Lock size={16} />
+                  Suspend Shop
+                </button>
+              )}
+
+              <Link
+                href={`/admin/users?shopId=${shop.id}`}
+                className="bg-blue-600/10 text-blue-400 border border-blue-600/40 px-4 py-2 rounded text-sm font-medium flex items-center gap-2 hover:opacity-80 no-underline"
               >
-                <Lock size={16} />
-                {store.status === "SUSPENDED" ? "Already Suspended" : "Suspend Shop"}
-              </Button>
-              <Button className="bg-blue-600/10 text-blue-500 border border-blue-600/30 px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
                 <Zap size={16} />
-                Impersonate
-              </Button>
-              <Button
+                View Users
+              </Link>
+
+              <button
                 onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                className="bg-red-500/10 text-red-400 border border-red-500/30 px-4 py-2 rounded text-sm font-medium flex items-center gap-2"
+                className="bg-red-500/10 text-red-500 border border-red-500/40 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80"
               >
                 <Trash2 size={16} />
                 Delete Account
@@ -318,16 +366,23 @@ export default function AdminShopDetail() {
             </div>
 
             {showSuspendConfirm && (
-              <div className="mt-4 p-3 bg-[#0a0a0f] rounded border border-amber-600/30">
+              <div className="mt-4 p-3 bg-amber-900/20 border border-amber-900/40 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
                   <p className="text-white text-sm">Suspending this shop will disable all access and API calls. This can be reversed.</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleSuspend} disabled={suspending} className="bg-amber-500 text-white text-xs px-4 py-2 rounded">
-                    {suspending ? "Suspending…" : "Confirm Suspension"}
-                  </Button>
-                  <Button onClick={() => setShowSuspendConfirm(false)} variant="secondary" className="text-xs px-4 py-2">
+                  <button
+                    onClick={handleSuspend}
+                    disabled={actionLoading === "suspend"}
+                    className="bg-amber-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90 disabled:opacity-50"
+                  >
+                    {actionLoading === "suspend" ? "Suspending…" : "Confirm Suspension"}
+                  </button>
+                  <button
+                    onClick={() => setShowSuspendConfirm(false)}
+                    className="bg-wl-bg-elevated text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                  >
                     Cancel
                   </Button>
                 </div>
@@ -335,14 +390,21 @@ export default function AdminShopDetail() {
             )}
 
             {showDeleteConfirm && (
-              <div className="mt-4 p-3 bg-[#0a0a0f] rounded border border-red-500/30">
+              <div className="mt-4 p-3 bg-red-900/20 border border-red-900/40 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
                   <p className="text-white text-sm">Deleting this account is permanent and cannot be undone.</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button className="bg-red-500 text-white text-xs px-4 py-2 rounded">Confirm Delete</Button>
-                  <Button onClick={() => setShowDeleteConfirm(false)} variant="secondary" className="text-xs px-4 py-2">Cancel</Button>
+                  <button className="bg-red-500 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
+                    Confirm Delete
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="bg-wl-bg-elevated text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             )}
@@ -350,34 +412,28 @@ export default function AdminShopDetail() {
         </Card>
 
         {/* Activity Log */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">Activity Log</h3>
+            <h3 className="text-base font-semibold text-white mb-4">Platform Activity Log</h3>
             {activityLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-14 rounded bg-[#1e1e2e] animate-pulse" />
-                ))}
-              </div>
-            ) : activity.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-6">No activity logs found</p>
+              <LoadingSkeleton />
+            ) : activityLogs.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-8">No activity records found</p>
             ) : (
               <div className="max-h-96 overflow-y-auto">
-                {activity.map((log, index) => (
+                {activityLogs.map((log, index) => (
                   <div
                     key={log.id}
-                    className={cn("py-3 flex gap-3", index < activity.length - 1 && "border-b border-[#1e1e2e]")}
+                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-wl-border-default")}
                   >
-                    <div
-                      className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5"
-                      style={{ background: SEVERITY_COLOR[log.severity] ?? "#6C63FF" }}
-                    />
+                    <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-blue-500" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm capitalize">{log.action}</p>
-                      <p className="text-gray-400 text-xs">{log.details}</p>
-                      <div className="flex gap-3 items-center mt-1">
-                        <span className="text-gray-500 text-xs capitalize">{log.actor}</span>
-                        <span className="text-gray-500 text-xs">{new Date(log.timestamp).toLocaleString()}</span>
+                      <p className="text-white mb-1 text-sm">{log.action}</p>
+                      <div className="flex gap-3 items-center">
+                        <span className="text-gray-400 text-xs">By: {log.userName}</span>
+                        <span className="text-gray-400 text-xs">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </div>

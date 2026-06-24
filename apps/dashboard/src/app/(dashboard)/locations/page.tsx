@@ -10,8 +10,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 import { WLMap } from "@/components/map/wl-map";
-import { LocationPinLayer } from "@/components/map/location-pin-layer";
-import { LayoutGrid, Map } from "lucide-react";
+import { PinLayer, type Pin } from "@/components/map/pin-layer";
 
 // Dynamic imports — avoids SSR issues with Leaflet
 const WLMap = dynamic(
@@ -215,34 +214,6 @@ export default function LocationsPage() {
           </div>
         </div>
 
-        {/* Map View */}
-        {viewMode === "map" && (
-          <div className="mb-6 rounded-xl overflow-hidden border border-[#1e1e2e]" style={{ height: "520px" }}>
-            <WLMap className="w-full h-full" onReady={handleMainMapReady}>
-              {mainMapId && (
-                <LocationPinLayer
-                  mapId={mainMapId}
-                  locations={filtered.filter((l) => l.latitude && l.longitude).map((l) => ({
-                    id: l.id,
-                    name: l.name,
-                    type: l.type,
-                    latitude: l.latitude,
-                    longitude: l.longitude,
-                    status: l.status,
-                    isDefault: l.isDefault,
-                    city: l.city,
-                  }))}
-                  selectedId={selectedLocation?.id ?? null}
-                  onLocationClick={(id) => {
-                    const loc = locations.find((l) => l.id === id) ?? null;
-                    setSelectedLocation(loc?.id === selectedLocation?.id ? null : loc);
-                  }}
-                />
-              )}
-            </WLMap>
-          </div>
-        )}
-
         {/* Locations Grid + Detail */}
         <div
           className={cn("grid gap-5")}
@@ -316,7 +287,7 @@ export default function LocationsPage() {
                 </Badge>
 
                 {/* Stats Grid */}
-                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-[#1e1e2e] mb-3")}>
+                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
                   <div>
                     <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
                     <div
@@ -525,7 +496,7 @@ export default function LocationsPage() {
                       <table className={cn("w-full border-collapse text-xs")}>
                         <tbody>
                           {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
-                            <tr key={day} className={cn("border-b border-[#1e1e2e]")}>
+                            <tr key={day} className={cn("border-b border-wl-border-default")}>
                               <td
                                 className={cn("p-2 pr-3 text-gray-300 font-medium whitespace-nowrap")}
                               >
@@ -548,49 +519,37 @@ export default function LocationsPage() {
                   </div>
                 )}
 
-                <div className={cn("h-px bg-[#1e1e2e]")} />
+                <div className={cn("h-px bg-wl-bg-elevated")} />
 
                 {/* Map */}
                 <div>
                   <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
                     Location
                   </div>
-                  {selectedLocation.latitude && selectedLocation.longitude ? (
-                    <div className="rounded-lg overflow-hidden border border-[#1e1e2e]" style={{ height: 180 }}>
-                      <WLMap
-                        className="w-full h-full"
-                        center={[selectedLocation.latitude, selectedLocation.longitude]}
-                        zoom={14}
-                        onReady={handleDetailMapReady}
-                      >
-                        {detailMapId && (
-                          <LocationPinLayer
-                            mapId={detailMapId}
-                            locations={[{
-                              id: selectedLocation.id,
-                              name: selectedLocation.name,
-                              type: selectedLocation.type,
-                              latitude: selectedLocation.latitude,
-                              longitude: selectedLocation.longitude,
-                              status: selectedLocation.status,
-                              isDefault: selectedLocation.isDefault,
-                              city: selectedLocation.city,
-                            }]}
-                            selectedId={selectedLocation.id}
-                          />
-                        )}
-                      </WLMap>
-                    </div>
-                  ) : (
-                    <div className={cn("bg-[#1a1a2e] border border-[#1e1e2e] rounded-md p-4 text-center text-xs text-gray-500")}>
-                      No coordinates available
-                    </div>
-                  )}
+                  <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
+                    <WLMap
+                      center={[selectedLocation.longitude, selectedLocation.latitude]}
+                      zoom={12}
+                    >
+                      <PinLayer
+                        pins={[{
+                          id: selectedLocation.id,
+                          lng: selectedLocation.longitude,
+                          lat: selectedLocation.latitude,
+                          status: selectedLocation.status === 'ACTIVE' ? 'assigned' : selectedLocation.status === 'MAINTENANCE' ? 'delayed' : 'open',
+                          label: selectedLocation.name,
+                        } satisfies Pin]}
+                      />
+                    </WLMap>
+                  </div>
+                  <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
+                    {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
+                  </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div
-                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-[#1e1e2e]")}
+                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-default")}
                 >
                   <Button variant="primary" size="sm">
                     Edit

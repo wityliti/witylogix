@@ -259,21 +259,39 @@ export default async function shopifyCheckoutRoutes(app: FastifyInstance): Promi
    * Geocode an address using Google Maps
    */
   app.get<{ Querystring: any }>('/geocode', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!process.env.GOOGLE_MAPS_API_KEY) {
+      return reply.status(503).send({
+        error: 'Geocoding not configured',
+        message: 'Set GOOGLE_MAPS_API_KEY to enable address geocoding',
+      });
+    }
+
     try {
       const { address } = GeocodeQuerySchema.parse(request.query);
 
-      // Use Google Maps API (would be implemented with Google Maps service)
-      // For now, return mock data
-      const mockResult = {
-        address,
-        latitude: 40.7128,
-        longitude: -74.006,
-        zipcode: '10001',
-        city: 'New York',
-        state: 'NY',
-      };
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+      const res = await fetch(url);
+      const json = await res.json() as any;
 
-      return reply.send(mockResult);
+      if (json.status !== 'OK' || !json.results?.[0]) {
+        return reply.status(404).send({ error: 'Address not found' });
+      }
+
+      const result = json.results[0];
+      const { lat, lng } = result.geometry.location;
+      const components: any[] = result.address_components ?? [];
+
+      const get = (type: string) =>
+        components.find((c: any) => c.types.includes(type))?.long_name ?? '';
+
+      return reply.send({
+        address: result.formatted_address,
+        latitude: lat,
+        longitude: lng,
+        zipcode: get('postal_code'),
+        city: get('locality') || get('sublocality') || get('postal_town'),
+        state: get('administrative_area_level_1'),
+      });
     } catch (error) {
       app.log.error(error);
       return reply.status(400).send({

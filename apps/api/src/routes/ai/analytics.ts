@@ -13,72 +13,20 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { requireAuth } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
 import {
-  calculateDriverScore,
-  calculateDriverScoreBatch,
   predictDeliveryWindow,
   detectAnomalies,
   calculateCO2,
   getCO2Summary,
-  type RouteDataPoint,
-  type PlannedRouteSegment,
   type Stop,
-  type DriverMetrics,
   type DeliveryContext,
 } from '@witylogix/core/ai-analytics';
-import { getLeaderboard, type ScoringPeriod } from '@witylogix/core/driver-scoring';
+import { getLeaderboard, aggregateAllDrivers, type ScoringPeriod } from '@witylogix/core/driver-scoring';
 import { prisma } from '@witylogix/db';
 
 // ─── Zod Schemas ────────────────────────────────────────────
-
-const coordSchema = z.object({
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-});
-
-const stopSchema = z.object({
-  id: z.string(),
-  lat: z.number(),
-  lng: z.number(),
-  plannedArrivalTime: z.number(),
-  plannedDuration: z.number(),
-  actualArrivalTime: z.number().optional(),
-  actualDuration: z.number().optional(),
-  orderId: z.string(),
-  type: z.enum(['delivery', 'pickup', 'service']),
-});
-
-const routeDataPointSchema = z.object({
-  lat: z.number(),
-  lng: z.number(),
-  timestamp: z.number(),
-  speedKmh: z.number().optional(),
-});
-
-const routeEfficiencySchema = z.object({
-  routeId: z.string(),
-  plannedDistance: z.number().positive(),
-  plannedDuration: z.number().positive(),
-  plannedStops: z.array(stopSchema),
-  actualDistance: z.number().positive(),
-  actualDuration: z.number().positive(),
-  gpsTrace: z.array(routeDataPointSchema),
-});
-
-const driverScoreSchema = z.object({
-  driverId: z.string(),
-  dateStart: z.number().int(),
-  dateEnd: z.number().int(),
-  totalDeliveries: z.number().nonnegative(),
-  onTimeDeliveries: z.number().nonnegative(),
-  firstAttemptSuccessful: z.number().nonnegative(),
-  averageCustomerRating: z.number().min(0).max(5),
-  averageRouteEfficiency: z.number().min(0).max(100),
-  percentSpeedCompliant: z.number().min(0).max(100),
-  zoneId: z.string().optional(),
-});
 
 const predictDeliverySchema = z.object({
   orderId: z.string(),
@@ -94,22 +42,6 @@ const predictDeliverySchema = z.object({
       temperature: z.number(),
     })
     .optional(),
-});
-
-const anomalyDetectionSchema = z.object({
-  routeId: z.string(),
-  stops: z.array(stopSchema),
-  gpsTrace: z.array(routeDataPointSchema),
-  driverHistoricalStopDurations: z.array(z.number()).optional(),
-});
-
-const co2CalculationSchema = z.object({
-  routeId: z.string(),
-  distance: z.number().positive(),
-  duration: z.number().positive(),
-  idleTime: z.number().nonnegative(),
-  vehicleType: z.enum(['van', 'truck', 'bike', 'ev']),
-  terrainType: z.enum(['city', 'highway', 'suburban', 'rural']).optional(),
 });
 
 // ─── Route Plugin ───────────────────────────────────────────
@@ -199,42 +131,14 @@ export default async function aiAnalyticsRoutes(
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { driverId } = request.params as { driverId: string };
+        const tenantId = request.tenantId ?? '';
 
-        // Mock driver metrics (in production, fetch from database)
-        const mockMetrics: DriverMetrics = {
-          driverId,
-          dateRange: {
-            start: Date.now() - 7 * 24 * 60 * 60 * 1000,
-            end: Date.now(),
-          },
-          deliveries: {
-            totalCount: 45,
-            onTimeCount: 41,
-            firstAttemptSuccessCount: 43,
-          },
-          ratings: {
-            average: 4.6,
-            count: 42,
-          },
-          routeEfficiency: {
-            average: 87,
-            count: 45,
-          },
-          speedCompliance: {
-            percentWithinLimit: 92,
-            averageExcessKmh: 3,
-          },
-          zoneId: 'zone_1',
-        };
+        const scores = await aggregateAllDrivers(tenantId, 'weekly', [driverId], prisma);
+        const score = scores[0];
 
-        // Mock historical scores for trend analysis
-        const historicalScores = [78, 80, 82, 84, 85];
-
-        const score = calculateDriverScore(
-          mockMetrics,
-          {},
-          historicalScores,
-        );
+        if (!score) {
+          return reply.code(404).send({ error: 'Driver not found or no data available' });
+        }
 
         return reply.code(200).send({
           data: score,
@@ -296,43 +200,48 @@ export default async function aiAnalyticsRoutes(
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { routeId } = request.params as { routeId: string };
+        const db = (request as any).tenantDb;
 
-        // Mock route data
-        const mockRoute = {
-          routeId,
-          stops: [
-            {
-              id: 'stop_1',
-              lat: 40.7128,
-              lng: -74.006,
-              plannedArrivalTime: 1000000,
-              plannedDuration: 5,
-              actualArrivalTime: 1000050,
-              actualDuration: 20, // Unusually long
-              orderId: 'ord_1',
-              type: 'delivery' as const,
-            },
-            {
-              id: 'stop_2',
-              lat: 40.7480,
-              lng: -73.9862,
-              plannedArrivalTime: 2000000,
-              plannedDuration: 5,
-              actualArrivalTime: 3000000, // Large gap
-              actualDuration: 5,
-              orderId: 'ord_2',
-              type: 'delivery' as const,
-            },
-          ],
-          gpsTrace: [
-            { lat: 40.7128, lng: -74.006, timestamp: 1000000, speedKmh: 30 },
-            { lat: 40.715, lng: -73.995, timestamp: 2000000, speedKmh: 35 },
-            { lat: 40.7480, lng: -73.9862, timestamp: 3000000, speedKmh: 25 },
-          ],
-          driverHistoricalStopDurations: [3, 4, 5, 4, 3, 5, 4],
+        const route = await db.route.findUnique({
+          where: { id: routeId },
+          include: { stops: { orderBy: { sequence: 'asc' } } },
+        });
+
+        if (!route) return reply.code(404).send({ error: 'Route not found' });
+
+        const stopTypeMap: Record<string, Stop['type']> = {
+          DELIVERY: 'delivery',
+          PICKUP: 'pickup',
+          RETURN: 'service',
+          DEPOT: 'service',
         };
 
-        const result = detectAnomalies(mockRoute);
+        const stops: Stop[] = route.stops.map((s: any) => {
+          const plannedArrival = s.estimatedArrival?.getTime() ?? 0;
+          const actualArrival = s.actualArrival?.getTime() ?? undefined;
+          const departed = s.departedAt?.getTime();
+          const actualDuration =
+            departed && actualArrival ? (departed - actualArrival) / 60000 : undefined;
+          const nextStop = route.stops[route.stops.indexOf(s) + 1];
+          const plannedDuration =
+            nextStop?.estimatedArrival && s.estimatedArrival
+              ? (nextStop.estimatedArrival.getTime() - s.estimatedArrival.getTime()) / 60000
+              : 5;
+
+          return {
+            id: s.id,
+            lat: 0,
+            lng: 0,
+            plannedArrivalTime: plannedArrival,
+            plannedDuration: Math.max(1, plannedDuration),
+            actualArrivalTime: actualArrival,
+            actualDuration,
+            orderId: s.orderId ?? s.id,
+            type: stopTypeMap[s.stopType] ?? 'delivery',
+          };
+        });
+
+        const result = detectAnomalies({ routeId, stops, gpsTrace: [] });
 
         return reply.code(200).send({
           data: result,
@@ -356,7 +265,6 @@ export default async function aiAnalyticsRoutes(
       try {
         const { routeId } = request.params as { routeId: string };
 
-        // Mock route data
         const report = calculateCO2(
           routeId,
           45000, // 45km

@@ -13,8 +13,7 @@ import { DriverLeaderboard } from "./components/driver-leaderboard";
 import { EfficiencyHeatmap } from "./components/efficiency-heatmap";
 import { CO2Tracker } from "./components/co2-tracker";
 import { SLACompliance } from "./components/sla-compliance";
-import { WLMap } from "@/components/map/wl-map";
-import { RouteEfficiencyLayer } from "@/components/map/route-efficiency-layer";
+import { Map, BarChart3 } from "lucide-react";
 import type {
   RoutePerformanceSummary,
   PlannedVsActualDataPoint,
@@ -23,7 +22,24 @@ import type {
   CO2TrackerData,
   SLAComplianceData,
 } from "@witylogix/core/analytics";
-import type { RouteEfficiencyPoint } from "@/components/map/route-efficiency-layer";
+import type { DeliveryPin } from "@/components/map/delivery-performance-layer";
+
+// Dynamically import map to avoid SSR
+const WLMap = dynamic(
+  () => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })),
+  { ssr: false, loading: () => <div className="h-full w-full animate-pulse bg-wl-bg-elevated rounded-xl" /> }
+);
+const DeliveryPerformanceLayer = dynamic(
+  () => import("@/components/map/delivery-performance-layer").then((m) => ({ default: m.DeliveryPerformanceLayer })),
+  { ssr: false }
+);
+
+// ─── Types ────────────────────────────────────────────────────
+
+interface GeoResponse {
+  data: DeliveryPin[];
+  count: number;
+}
 
 type Period = "24h" | "7d" | "30d";
 type ViewMode = "charts" | "map";
@@ -72,8 +88,7 @@ function MapStats({ pins }: { pins: DeliveryPin[] }) {
 
 export default function RoutePerformancePage() {
   const [period, setPeriod] = useState<Period>("30d");
-  const [viewMode, setViewMode] = useState<ViewMode>("charts");
-  const [mapId, setMapId] = useState<string | null>(null);
+  const [view, setView] = useState<ViewMode>("charts");
 
   const dateRange = {
     from: new Date(Date.now() - getPeriodDays(period) * 24 * 60 * 60 * 1000),
@@ -100,8 +115,8 @@ export default function RoutePerformancePage() {
   const slaQ = useApiQuery<SLAComplianceData>(
     `/api/v4/analytics/route-performance/sla-compliance?${qs}`
   );
-  const geoQ = useApiQuery<RouteEfficiencyPoint[]>(
-    `/api/v4/analytics/route-performance/geo?dateFrom=${dateRange.from.toISOString()}&dateTo=${dateRange.to.toISOString()}`
+  const geoQ = useApiQuery<GeoResponse>(
+    view === "map" ? `/api/v4/analytics/route-performance/geo?${qs}&limit=1000` : null
   );
 
   const summary = summaryQ.data;
@@ -136,27 +151,42 @@ export default function RoutePerformancePage() {
 
       <div className={cn("min-h-screen bg-wl-bg-root")}>
         <div className={cn("max-w-full px-6 py-6")}>
-          {/* Controls bar */}
+          {/* Controls row */}
           <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
             <h2 className="text-lg font-semibold text-wl-text-primary">
               Planned vs Actual Analytics
             </h2>
-            <div className="flex gap-2 items-center">
-              {/* Period selector */}
-              <div className="flex gap-1 bg-wl-bg-elevated rounded-lg p-1">
-                {(["24h", "7d", "30d"] as Period[]).map((p) => (
-                  <Button
-                    key={p}
-                    variant={period === p ? "primary" : "secondary"}
-                    size="sm"
-                    onClick={() => setPeriod(p)}
-                  >
-                    {p}
-                  </Button>
-                ))}
-              </div>
+            <div className="flex items-center gap-2">
               {/* View toggle */}
-              <div className="flex gap-1 bg-wl-bg-elevated rounded-lg p-1">
+              <div className="flex rounded-lg border border-white/[0.08] overflow-hidden">
+                <button
+                  onClick={() => setView("charts")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                    view === "charts"
+                      ? "bg-white/10 text-white/80"
+                      : "text-white/30 hover:text-white/50"
+                  )}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Charts
+                </button>
+                <button
+                  onClick={() => setView("map")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-white/[0.08]",
+                    view === "map"
+                      ? "bg-white/10 text-white/80"
+                      : "text-white/30 hover:text-white/50"
+                  )}
+                >
+                  <Map className="w-3.5 h-3.5" />
+                  Map
+                </button>
+              </div>
+
+              {/* Period selector */}
+              {(["24h", "7d", "30d"] as Period[]).map((p) => (
                 <Button
                   variant={viewMode === "charts" ? "primary" : "secondary"}
                   size="sm"
@@ -189,104 +219,43 @@ export default function RoutePerformancePage() {
             ))}
           </div>
 
-          {viewMode === "map" ? (
-            /* ── Map View ─────────────────────────────────────────── */
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-wl-text-primary">
-                  Delivery Efficiency by City
-                </h3>
-                <div className="flex items-center gap-4 text-xs text-wl-text-secondary">
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
-                    ≥90% on-time
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
-                    70–90%
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
-                    &lt;70%
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative h-[520px] rounded-xl overflow-hidden border border-wl-border-subtle">
-                {geoQ.loading && (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-wl-bg-root/80">
-                    <div className="animate-spin w-8 h-8 border-2 border-wl-primary-500 border-t-transparent rounded-full" />
+          {/* Map View */}
+          {view === "map" && (
+            <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] mb-8" style={{ height: 520 }}>
+              {geoQ.loading ? (
+                <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 rounded-full border-2 border-wl-primary-400 border-t-transparent animate-spin" />
+                    <p className="text-sm text-white/40">Loading delivery map…</p>
                   </div>
-                )}
-                {!geoQ.loading && (geoQ.data ?? []).length === 0 && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-wl-bg-root/90">
-                    <MapIcon className="w-10 h-10 text-wl-text-tertiary mb-2" />
-                    <p className="text-wl-text-secondary text-sm">No delivery location data yet</p>
-                    <p className="text-wl-text-tertiary text-xs mt-1">
-                      Complete some routes to see city-level efficiency
+                </div>
+              ) : geoPins.length > 0 ? (
+                <WLMap center={[0, 20]} zoom={2} className="h-full w-full">
+                  <DeliveryPerformanceLayer pins={geoPins} />
+                </WLMap>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
+                  <div className="flex flex-col items-center gap-3 text-center max-w-xs">
+                    <Map className="w-10 h-10 text-white/10" />
+                    <p className="text-sm font-medium text-white/30">No geo-tagged deliveries</p>
+                    <p className="text-xs text-white/15">
+                      Delivery map requires orders with lat/lng coordinates stored in the delivery location field.
                     </p>
                   </div>
-                )}
-                <WLMap
-                  center={[39.5, -98.35]}
-                  zoom={4}
-                  className="h-full w-full"
-                  onReady={setMapId}
-                />
-                {mapId && (
-                  <RouteEfficiencyLayer
-                    mapId={mapId}
-                    points={geoQ.data ?? []}
-                  />
-                )}
-              </div>
-
-              {/* City table */}
-              {(geoQ.data ?? []).length > 0 && (
-                <div className="bg-wl-bg-elevated rounded-xl border border-wl-border-subtle overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-wl-border-subtle">
-                        <th className="px-4 py-3 text-left font-medium text-wl-text-secondary">City</th>
-                        <th className="px-4 py-3 text-right font-medium text-wl-text-secondary">Deliveries</th>
-                        <th className="px-4 py-3 text-right font-medium text-wl-text-secondary">On-Time %</th>
-                        <th className="px-4 py-3 text-right font-medium text-wl-text-secondary">Avg Variance</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(geoQ.data ?? []).map((pt) => (
-                        <tr key={pt.city} className="border-b border-wl-border-subtle/50 hover:bg-wl-bg-surface/50">
-                          <td className="px-4 py-2.5 text-wl-text-primary font-medium">{pt.city}</td>
-                          <td className="px-4 py-2.5 text-right text-wl-text-secondary">{pt.deliveryCount}</td>
-                          <td className="px-4 py-2.5 text-right">
-                            <span
-                              className={cn(
-                                "font-semibold",
-                                pt.onTimePercentage >= 90 ? "text-emerald-400" :
-                                pt.onTimePercentage >= 70 ? "text-amber-400" : "text-red-400"
-                              )}
-                            >
-                              {pt.onTimePercentage.toFixed(1)}%
-                            </span>
-                          </td>
-                          <td className="px-4 py-2.5 text-right text-wl-text-secondary">
-                            {pt.avgVarianceMinutes > 0
-                              ? `+${pt.avgVarianceMinutes}m`
-                              : pt.avgVarianceMinutes < 0
-                              ? `${pt.avgVarianceMinutes}m`
-                              : "on time"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               )}
+              {geoPins.length > 0 && (
+                <>
+                  <MapStats pins={geoPins} />
+                  <MapLegend />
+                </>
+              )}
             </div>
-          ) : (
-            /* ── Charts View ──────────────────────────────────────── */
+          )}
+
+          {/* Charts View */}
+          {view === "charts" && (
             <div className="space-y-8">
-              {/* Planned vs Actual Chart */}
               <PlannedActualChart
                 data={pvaQ.data ?? []}
                 dateRange={dateRange}
@@ -294,7 +263,6 @@ export default function RoutePerformancePage() {
                 error={pvaQ.error?.message}
               />
 
-              {/* Driver Leaderboard & Efficiency Heatmap */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <DriverLeaderboard
                   data={driversQ.data ?? []}
@@ -310,7 +278,6 @@ export default function RoutePerformancePage() {
                 />
               </div>
 
-              {/* CO2 & SLA Compliance */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {co2Q.data && (
                   <CO2Tracker data={co2Q.data} dateRange={dateRange} isLoading={co2Q.loading} />

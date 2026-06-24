@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "@/lib/api";
 
 export type SyncPlatform = "shopify" | "woocommerce" | "bigcommerce" | "magento" | "etsy" | "ebay" | "square" | "amazon";
 export type SyncHealthStatus = "healthy" | "warning" | "error";
@@ -121,16 +122,7 @@ export function useSyncStatus(config?: UseSyncStatusConfig): UseSyncStatusReturn
       setIsLoading(true);
       setError(undefined);
 
-      const response = await fetch("/api/orders/sync/status", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch sync status: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await api.get<{ platformHealth: PlatformHealth[]; recentSyncJobs: SyncJob[] }>("/api/v4/orders/sync/status");
       setPlatformHealth(data.platformHealth || []);
       setRecentSyncJobs(data.recentSyncJobs || []);
       cacheTimeRef.current = now;
@@ -150,16 +142,7 @@ export function useSyncStatus(config?: UseSyncStatusConfig): UseSyncStatusReturn
   const triggerSync = useCallback(async (platform: SyncPlatform) => {
     try {
       setError(undefined);
-      const response = await fetch(`/api/orders/sync/trigger`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to trigger sync: ${response.statusText}`);
-      }
-
+      await api.post("/api/v4/orders/sync/trigger", { platform });
       setTimeout(() => revalidate(), 1000);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sync trigger failed";
@@ -171,15 +154,7 @@ export function useSyncStatus(config?: UseSyncStatusConfig): UseSyncStatusReturn
   const retryFailedSync = useCallback(async (jobId: string) => {
     try {
       setError(undefined);
-      const response = await fetch(`/api/orders/sync/jobs/${jobId}/retry`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to retry sync: ${response.statusText}`);
-      }
-
+      await api.post(`/api/v4/orders/sync/jobs/${jobId}/retry`);
       setTimeout(() => revalidate(), 1000);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Retry failed";
@@ -233,16 +208,7 @@ export function useSyncTrigger(): UseSyncTriggerReturn {
     try {
       setIsLoading(true);
       setError(undefined);
-
-      const response = await fetch("/api/orders/sync/trigger", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to trigger sync: ${response.statusText}`);
-      }
+      await api.post("/api/v4/orders/sync/trigger", { platform });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sync trigger failed";
       setError(message);
@@ -279,16 +245,7 @@ export function useConflicts(): UseConflictsReturn {
       setIsLoading(true);
       setError(undefined);
 
-      const response = await fetch("/api/orders/conflicts", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch conflicts: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await api.get<{ conflicts: SyncConflict[] }>("/api/v4/orders/conflicts");
       setConflicts(data.conflicts || []);
       cacheTimeRef.current = now;
     } catch (err) {
@@ -304,17 +261,7 @@ export function useConflicts(): UseConflictsReturn {
     async (conflictId: string, resolveAction: "external" | "internal" | "skip", manualValue?: string) => {
       try {
         setError(undefined);
-
-        const response = await fetch(`/api/orders/conflicts/${conflictId}/resolve`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: resolveAction, value: manualValue }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to resolve conflict: ${response.statusText}`);
-        }
-
+        await api.post(`/api/v4/orders/conflicts/${conflictId}/resolve`, { action: resolveAction, value: manualValue });
         setConflicts((prev) => prev.filter((c) => c.id !== conflictId));
       } catch (err) {
         const message = err instanceof Error ? err.message : "Resolution failed";
@@ -329,17 +276,7 @@ export function useConflicts(): UseConflictsReturn {
     async (field: string, resolveAction: "external" | "internal") => {
       try {
         setError(undefined);
-
-        const response = await fetch("/api/orders/conflicts/bulk-resolve", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ field, action: resolveAction }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to bulk resolve: ${response.statusText}`);
-        }
-
+        await api.post("/api/v4/orders/conflicts/bulk-resolve", { field, action: resolveAction });
         await fetchConflicts(true);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Bulk resolution failed";
@@ -388,16 +325,7 @@ export function useSyncMetrics(): UseSyncMetricsReturn {
       setIsLoading(true);
       setError(undefined);
 
-      const response = await fetch("/api/orders/sync/metrics", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch metrics: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await api.get<{ metrics: SyncMetrics | null }>("/api/v4/orders/sync/metrics");
       setMetrics(data.metrics || null);
       cacheTimeRef.current = now;
     } catch (err) {

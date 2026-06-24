@@ -105,105 +105,18 @@ export default async function notificationsV2Routes(app: FastifyInstance) {
     }
   });
 
-  // ── GET /stats — 7-day daily totals + channel breakdown + failed templates ──
-
-  app.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    const shopId = request.shopId;
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-    const logs = await (request.tenantDb as any).notificationLog.findMany({
-      where: { shopId, createdAt: { gte: sevenDaysAgo } },
-      select: { createdAt: true, channel: true, eventType: true, status: true },
-    });
-
-    // Daily stats: last 7 days (newest last)
-    const dayMap = new Map<string, number>();
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-      dayMap.set(d.toISOString().slice(0, 10), 0);
-    }
-    for (const log of logs) {
-      const day = new Date(log.createdAt).toISOString().slice(0, 10);
-      if (dayMap.has(day)) dayMap.set(day, (dayMap.get(day) ?? 0) + 1);
-    }
-    const dailyStats = Array.from(dayMap.entries()).map(([date, count]) => ({
-      date,
-      count,
-    }));
-
-    // Channel breakdown
-    const channelCounts = new Map<string, number>();
-    for (const log of logs) {
-      const ch = (log.channel as string).toLowerCase();
-      channelCounts.set(ch, (channelCounts.get(ch) ?? 0) + 1);
-    }
-    const total = logs.length;
-    const channels: Record<string, { count: number; percentage: number }> = {};
-    for (const [ch, cnt] of channelCounts.entries()) {
-      channels[ch] = {
-        count: cnt,
-        percentage: total > 0 ? Math.round((cnt / total) * 100) : 0,
+  // ── GET /log — paginated NotificationLog with header stats ────────────────
+  app.get('/log', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const db = (request as any).tenantDb;
+      const q = request.query as {
+        page?: string;
+        limit?: string;
+        channel?: string;
+        status?: string;
+        dateFrom?: string;
+        dateTo?: string;
       };
-    }
-
-    // Failed templates: top 5 by failure count
-    const failedLogs = (logs as any[]).filter(
-      (l) => l.status === "FAILED" || l.status === "BOUNCED"
-    );
-    const failedByType = new Map<string, number>();
-    const totalByType = new Map<string, number>();
-    for (const log of logs as any[]) {
-      totalByType.set(log.eventType, (totalByType.get(log.eventType) ?? 0) + 1);
-    }
-    for (const log of failedLogs) {
-      failedByType.set(log.eventType, (failedByType.get(log.eventType) ?? 0) + 1);
-    }
-    const failedTemplates = Array.from(failedByType.entries())
-      .map(([eventType, failureCount]) => ({
-        name: eventType
-          .replace(/_/g, " ")
-          .replace(/\./g, " — ")
-          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
-        failureCount,
-        failureRate:
-          (totalByType.get(eventType) ?? 0) > 0
-            ? parseFloat(
-                ((failureCount / totalByType.get(eventType)!) * 100).toFixed(1)
-              )
-            : 0,
-      }))
-      .sort((a, b) => b.failureCount - a.failureCount)
-      .slice(0, 5);
-
-    const totalFailed = failedLogs.length;
-
-    return reply.send({
-      data: {
-        dailyStats,
-        channels:
-          Object.keys(channels).length > 0
-            ? channels
-            : { email: { count: 0, percentage: 0 } },
-        failedTemplates,
-        summary: {
-          totalToday: dailyStats[dailyStats.length - 1]?.count ?? 0,
-          totalYesterday: dailyStats[dailyStats.length - 2]?.count ?? 0,
-          totalFailed,
-          totalSent: total,
-          deliveryRate:
-            total > 0
-              ? parseFloat((((total - totalFailed) / total) * 100).toFixed(1))
-              : 100,
-          failureRate:
-            total > 0
-              ? parseFloat(((totalFailed / total) * 100).toFixed(1))
-              : 0,
-        },
-      },
-    });
-  });
-
-  // ── POST /test ────────────────────────────────────────────────────────────
 
       const page = Math.max(1, parseInt(q.page ?? '1', 10));
       const limit = Math.min(100, parseInt(q.limit ?? '50', 10));
@@ -367,94 +280,5 @@ export default async function notificationsV2Routes(app: FastifyInstance) {
   // ── GET /status — health check ────────────────────────────────────────────
   app.get('/status', async (_req, reply) => {
     return reply.send({ status: 'ok' });
-  });
-
-  // ── GET /stats ────────────────────────────────────────────────────────────
-
-  app.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const shopId = request.shopId;
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-      type DailyRow = { date: Date; count: bigint };
-      type ChannelRow = { channel: string; count: bigint };
-      type TemplateRow = { event_type: string; failure_count: bigint; total_count: bigint };
-
-      const [dailyRows, channelRows, templateRows, totalSent, failedCount, deliveredCount] =
-        await Promise.all([
-          prisma.$queryRaw<DailyRow[]>`
-            SELECT DATE(created_at) AS date, COUNT(*)::bigint AS count
-            FROM notification_logs
-            WHERE shop_id = ${shopId}::uuid
-              AND created_at >= ${sevenDaysAgo}
-            GROUP BY DATE(created_at)
-            ORDER BY date
-          `,
-          prisma.$queryRaw<ChannelRow[]>`
-            SELECT channel, COUNT(*)::bigint AS count
-            FROM notification_logs
-            WHERE shop_id = ${shopId}::uuid
-              AND created_at >= ${sevenDaysAgo}
-            GROUP BY channel
-          `,
-          prisma.$queryRaw<TemplateRow[]>`
-            SELECT event_type,
-              COUNT(CASE WHEN status IN ('FAILED','BOUNCED') THEN 1 END)::bigint AS failure_count,
-              COUNT(*)::bigint AS total_count
-            FROM notification_logs
-            WHERE shop_id = ${shopId}::uuid
-              AND created_at >= ${sevenDaysAgo}
-            GROUP BY event_type
-            HAVING COUNT(CASE WHEN status IN ('FAILED','BOUNCED') THEN 1 END) > 0
-            ORDER BY failure_count DESC
-            LIMIT 5
-          `,
-          prisma.notificationLog.count({ where: { shopId, createdAt: { gte: sevenDaysAgo } } }),
-          prisma.notificationLog.count({ where: { shopId, createdAt: { gte: sevenDaysAgo }, status: { in: ['FAILED', 'BOUNCED'] } } }),
-          prisma.notificationLog.count({ where: { shopId, createdAt: { gte: sevenDaysAgo }, status: 'DELIVERED' } }),
-        ]);
-
-      const dailyStats = dailyRows.map((r) => ({
-        date: r.date.toISOString().split('T')[0],
-        count: Number(r.count),
-      }));
-
-      const channelTotal = channelRows.reduce((s, r) => s + Number(r.count), 0) || 1;
-      const channelBreakdown = {
-        email: { count: 0, percentage: 0 },
-        sms: { count: 0, percentage: 0 },
-        whatsapp: { count: 0, percentage: 0 },
-        push: { count: 0, percentage: 0 },
-      };
-      channelRows.forEach((r) => {
-        const key = r.channel.toLowerCase() as keyof typeof channelBreakdown;
-        if (key in channelBreakdown) {
-          channelBreakdown[key] = {
-            count: Number(r.count),
-            percentage: Math.round((Number(r.count) / channelTotal) * 100),
-          };
-        }
-      });
-
-      const failedTemplates = templateRows.map((r) => ({
-        name: r.event_type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()),
-        failureCount: Number(r.failure_count),
-        failureRate: Number(r.total_count) > 0
-          ? Math.round((Number(r.failure_count) / Number(r.total_count)) * 1000) / 10
-          : 0,
-      }));
-
-      return reply.send({
-        dailyStats,
-        channelBreakdown,
-        failedTemplates,
-        totalSent,
-        deliveredCount,
-        failedCount,
-      });
-    } catch (error) {
-      app.log.error(error, 'notifications stats error');
-      return reply.status(500).send({ error: 'Internal server error' });
-    }
   });
 }

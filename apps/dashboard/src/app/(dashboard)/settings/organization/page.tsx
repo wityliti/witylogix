@@ -36,6 +36,15 @@ interface BillingInfo {
   monthlyPrice: number;
   cycleStart: string;
   nextBilling: string;
+  usageMetrics?: UsageMetric[];
+}
+
+interface UsageMetric {
+  name: string;
+  current: number;
+  limit: number;
+  percentage: number;
+  unit: string;
 }
 
 export default function OrganizationPage() {
@@ -77,11 +86,7 @@ export default function OrganizationPage() {
     }
   };
 
-  const usageStats = [
-    { label: "Orders/Month", current: 8450, limit: 10000, color: "bg-blue-500" },
-    { label: "Active Drivers", current: 45, limit: 100, color: "bg-emerald-500" },
-    { label: "API Calls/Month", current: 2800000, limit: 5000000, color: "bg-amber-500" },
-  ];
+  const usageMetrics = billing?.usageMetrics ?? [];
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -216,16 +221,16 @@ export default function OrganizationPage() {
                     ${billing?.monthlyPrice ?? 0}
                   </p>
                 </div>
-                <div className="p-4 bg-[var(--wl-bg-secondary)] rounded-lg">
-                  <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-1">
+                <div className="p-4 bg-wl-bg-elevated rounded-lg">
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-1">
                     Cycle Start
                   </p>
                   <p className="text-lg font-semibold text-white">
                     {billing?.cycleStart ?? '—'}
                   </p>
                 </div>
-                <div className="p-4 bg-[var(--wl-bg-secondary)] rounded-lg">
-                  <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-1">
+                <div className="p-4 bg-wl-bg-elevated rounded-lg">
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-1">
                     Next Billing
                   </p>
                   <p className="text-lg font-semibold text-white">
@@ -234,29 +239,37 @@ export default function OrganizationPage() {
                 </div>
               </div>
 
-              <div>
-                <h4 className="text-sm font-semibold text-white mb-4">
-                  Usage Statistics
-                </h4>
-                <div className="space-y-4">
-                  {usageStats.map((stat, idx) => (
-                    <div key={idx}>
-                      <div className="flex justify-between items-end mb-2">
-                        <span className="text-sm text-white">{stat.label}</span>
-                        <span className="text-xs text-gray-400">
-                          {stat.current.toLocaleString()} / {stat.limit.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="w-full bg-wl-bg-root rounded-full h-2">
-                        <div
-                          className={cn("h-2 rounded-full transition-all", stat.color)}
-                          style={{ width: `${Math.min((stat.current / stat.limit) * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+              {usageMetrics.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-4">
+                    Usage Statistics
+                  </h4>
+                  <div className="space-y-4">
+                    {usageMetrics.map((metric) => {
+                      const barColor =
+                        metric.percentage >= 90 ? "bg-red-500"
+                        : metric.percentage >= 70 ? "bg-amber-500"
+                        : "bg-blue-500";
+                      return (
+                        <div key={metric.name}>
+                          <div className="flex justify-between items-end mb-2">
+                            <span className="text-sm text-white">{metric.name}</span>
+                            <span className="text-xs text-gray-400">
+                              {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
+                            </span>
+                          </div>
+                          <div className="w-full bg-wl-bg-root rounded-full h-2">
+                            <div
+                              className={cn("h-2 rounded-full transition-all", barColor)}
+                              style={{ width: `${Math.min(metric.percentage, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
             <CardFooter>
               <Button variant="primary">Upgrade Plan</Button>

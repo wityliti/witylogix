@@ -16,11 +16,26 @@ import {
   BarChart3,
   Phone,
   Map,
+  LayoutList,
 } from 'lucide-react';
 import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { WLMap } from '@/components/map/wl-map';
-import { LiveTrackingLayer } from '@/components/map/live-tracking-layer';
+import dynamic from 'next/dynamic';
+
+/* ═══════════════════════════════════════════════════════════
+   LIVE TRACKING — List/Map split view, real data, 30s refresh
+   ═══════════════════════════════════════════════════════════ */
+
+const TrackingMapView = dynamic(
+  () => import('../components/tracking-map-view'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full rounded-xl bg-wl-bg-overlay border border-wl-border-default flex items-center justify-center">
+        <div className="w-7 h-7 rounded-full border-2 border-wl-border-strong border-t-blue-500 animate-spin" />
+      </div>
+    ),
+  },
+);
 
 interface ApiOrder {
   id: string;
@@ -255,217 +270,41 @@ export default function LiveTracking() {
 
       <div className="max-w-7xl mx-auto p-6 space-y-5">
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400 font-semibold uppercase">Active Deliveries</p>
-                <Truck size={18} className="text-blue-500" />
-              </div>
-              <p className="text-4xl font-bold text-white">{inTransitCount}</p>
-              <p className="text-xs text-gray-500 mt-2">{activeOrders.length} total active</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400 font-semibold uppercase">Delivered Today</p>
-                <TrendingUp size={18} className="text-emerald-500" />
-              </div>
-              <p className="text-4xl font-bold text-white">{deliveredCount}</p>
-              <p className="text-xs text-emerald-500 mt-2">
-                {orders.length > 0 ? Math.round((deliveredCount / orders.length) * 100) : 0}% completion rate
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400 font-semibold uppercase">Total Orders</p>
-                <Clock size={18} className="text-amber-500" />
-              </div>
-              <p className="text-4xl font-bold text-white">{orders.length}</p>
-              <p className="text-xs text-gray-500 mt-2">{orders.filter(o => o.status === 'pending').length} pending</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400 font-semibold uppercase">Cancelled</p>
-                <AlertCircle size={18} className="text-red-500" />
-              </div>
-              <p className="text-4xl font-bold text-white">{orders.filter(o => o.status === 'cancelled').length}</p>
-              <p className="text-xs text-gray-500 mt-2">orders cancelled</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Live Map */}
-        <Card className="bg-[#12121a] border border-[#1e1e2e] overflow-hidden">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-[#1e1e2e]">
-              <Map size={15} className="text-blue-400" />
-              <p className="text-xs font-semibold text-white uppercase tracking-wide">Live Map</p>
-              <span className="ml-auto text-xs text-gray-500">{activeOrders.length} orders plotted</span>
-            </div>
-            <div className="h-[400px]">
-              <WLMap className="w-full h-full" onReady={handleMapReady} />
-              {mapId && (
-                <LiveTrackingLayer
-                  mapId={mapId}
-                  orders={activeOrders.map((o) => ({
-                    id: o.id,
-                    customerName: o.customerName,
-                    status: o.status,
-                    city: o.deliveryAddress?.city ?? null,
-                    address: o.deliveryAddress
-                      ? `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`
-                      : null,
-                    estimatedDelivery: o.estimatedDelivery ?? null,
-                    driverName: o.driver?.name ?? null,
-                  }))}
-                  selectedId={selectedOrderId}
-                  onOrderClick={setSelectedOrderId}
-                />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          {/* Orders List */}
-          <Card className="bg-[#12121a] border border-[#1e1e2e]">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Active Orders</h2>
-
-              {activeOrders.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8">No active orders</p>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {activeOrders.map((order) => {
-                    const progress = STATUS_PROGRESS[order.status] ?? 0;
-                    return (
-                      <button
-                        key={order.id}
-                        onClick={() => setSelectedOrderId(order.id)}
-                        className={cn(
-                          'p-4 rounded-lg text-left transition-all border',
-                          selectedOrderId === order.id
-                            ? 'border-blue-500 bg-[#1a1a2e]'
-                            : 'border-[#1e1e2e] bg-[#1a1a2e] hover:border-[#2e2e3e]',
-                        )}
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <p className="text-sm font-semibold text-white font-mono">#{order.id.slice(0, 8)}</p>
-                            <p className="text-xs text-gray-400 mt-1">{order.customerName}</p>
-                          </div>
-                          <Badge variant={getStatusBadgeVariant(order.status)}>
-                            {order.status.replace(/_/g, ' ')}
-                          </Badge>
-                        </div>
-
-                        <div className="mb-2">
-                          <div className="flex justify-between items-center mb-1">
-                            <p className="text-xs text-gray-400">Progress</p>
-                            <p className="text-xs font-semibold text-gray-300">{progress}%</p>
-                          </div>
-                          <div className="h-1.5 rounded overflow-hidden bg-[#1e1e2e]">
-                            <div
-                              className="h-full transition-all"
-                              style={{ width: `${progress}%`, backgroundColor: getStatusColor(order.status) }}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <p className="text-xs text-gray-400">
-                            {order.deliveryAddress.street}, {order.deliveryAddress.city}
-                          </p>
-                          {order.estimatedDelivery && (
-                            <p className="text-xs font-semibold text-blue-500">
-                              ETA: {new Date(order.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Right Sidebar */}
-          <div className="flex flex-col gap-4">
-            {/* Selected Order Details */}
-            {selectedOrder && (
-              <Card className="bg-[#12121a] border border-blue-500/30">
-                <CardContent className="p-5">
-                  <p className="text-xs font-semibold text-blue-500 mb-3 uppercase">Order Details</p>
-
-                  <div className="mb-3">
-                    <p className="text-xs text-gray-400 mb-1">Order ID</p>
-                    <p className="text-xs font-mono font-semibold text-white">#{selectedOrder.id.slice(0, 8)}</p>
-                  </div>
-
-                  <div className="mb-3">
-                    <p className="text-xs text-gray-400 mb-1">Customer</p>
-                    <p className="text-xs text-white">{selectedOrder.customerName}</p>
-                  </div>
-
-                  <div className="mb-3">
-                    <p className="text-xs text-gray-400 mb-1">Destination</p>
-                    <p className="text-xs text-white">
-                      {selectedOrder.deliveryAddress.street}, {selectedOrder.deliveryAddress.city}
-                    </p>
-                  </div>
-
-                  {selectedOrder.estimatedDelivery && (
-                    <div className="mb-4">
-                      <p className="text-xs text-gray-400 mb-1">ETA</p>
-                      <p className="text-xs text-white">
-                        {new Date(selectedOrder.estimatedDelivery).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-
-                  {selectedOrder.driver && (
-                    <div className="mb-4 p-3 rounded bg-[#1a1a2e] border border-[#1e1e2e]">
-                      <p className="text-xs text-gray-400 mb-1">Driver</p>
-                      <p className="text-xs font-semibold text-white">{selectedOrder.driver.name}</p>
-                      {selectedOrder.driver.phone && (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="w-full mt-2 flex items-center justify-center gap-1"
-                          onClick={() => window.location.href = `tel:${selectedOrder.driver!.phone}`}
-                        >
-                          <Phone size={14} /> {selectedOrder.driver.phone}
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Timeline */}
-            {selectedOrder && (
-              <Card className="bg-[#12121a] border border-[#1e1e2e]">
-                <CardContent className="p-5">
-                  <p className="text-xs font-semibold text-white mb-4 uppercase">Delivery Timeline</p>
-                  <StatusTimeline status={selectedOrder.status} />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Statistics */}
-            <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              label: 'Active Deliveries',
+              value: inTransitCount,
+              sub: `${activeOrders.length} total active`,
+              icon: <Truck size={18} className="text-blue-400" />,
+              color: 'text-blue-400',
+            },
+            {
+              label: 'Delivered Today',
+              value: deliveredCount,
+              sub: `${orders.length > 0 ? Math.round((deliveredCount / orders.length) * 100) : 0}% completion`,
+              icon: <TrendingUp size={18} className="text-emerald-400" />,
+              color: 'text-emerald-400',
+            },
+            {
+              label: 'Total Orders',
+              value: orders.length,
+              sub: `${orders.filter((o) => o.status === 'pending').length} pending`,
+              icon: <Clock size={18} className="text-amber-400" />,
+              color: 'text-wl-text-primary',
+            },
+            {
+              label: 'Cancelled',
+              value: orders.filter((o) => o.status === 'cancelled').length,
+              sub: 'orders cancelled',
+              icon: <AlertCircle size={18} className="text-red-400" />,
+              color: 'text-red-400',
+            },
+          ].map((m) => (
+            <Card
+              key={m.label}
+              className="bg-wl-bg-surface border-wl-border-default"
+            >
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs text-wl-text-muted font-semibold uppercase">

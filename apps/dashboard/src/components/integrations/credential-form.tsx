@@ -110,14 +110,9 @@ export function CredentialForm({
   };
 
   const handleOAuthConnect = () => {
-    setOauthConnected(true);
-    const expiryDate = new Date();
-    expiryDate.setHours(expiryDate.getHours() + 24);
-    setTokenExpiry(expiryDate);
-    setTestResult({
-      status: 'success',
-      message: 'OAuth connection initiated. Complete authorization in the popup.',
-    });
+    // Redirect to backend OAuth initiation endpoint; backend returns the provider's authorize URL
+    const redirectUrl = `/api/v4/integrations/${encodeURIComponent(providerId)}/oauth/authorize`;
+    window.location.href = redirectUrl;
   };
 
   return (

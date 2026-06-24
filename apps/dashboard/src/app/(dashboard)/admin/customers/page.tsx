@@ -486,8 +486,8 @@ export default function AdminCustomersPage() {
                         <tr
                           key={customer.id}
                           className={cn(
-                            "border-b border-wl-border-default transition-all cursor-pointer hover:bg-wl-bg-elevated",
-                            idx % 2 === 0 ? "bg-wl-bg-root" : "bg-wl-bg-surface",
+                            "border-b border-wl-border-default transition-all cursor-pointer",
+                            idx % 2 === 0 ? "bg-wl-bg-root min-h-screen" : "bg-wl-bg-surface"
                           )}
                           onClick={() => handleCustomerClick(customer)}
                         >

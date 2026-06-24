@@ -34,14 +34,6 @@ interface ApiDriver {
   vehicleType: string;
 }
 
-interface DriverOption {
-  id: string;
-  name: string;
-  vehicleType?: string | null;
-  status?: string;
-  isActive?: boolean;
-}
-
 type StepType = 'stops' | 'constraints' | 'optimize' | 'review' | 'dispatch';
 
 const STEPS: { id: StepType; label: string; description: string }[] = [
@@ -85,9 +77,6 @@ export default function RoutePlanningPage() {
   const [showMap, setShowMap] = useState(false);
 
   const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
-
-  const { items: drivers } = useApiList<DriverOption>('/api/v4/drivers', { limit: 100 });
-  const activeDrivers = drivers.filter((d) => d.isActive !== false);
 
   const currentStepIdx = STEPS.findIndex((s) => s.id === state.currentStep);
 
@@ -517,32 +506,26 @@ export default function RoutePlanningPage() {
                     <div className="text-2xl font-bold text-blue-500">{state.stops.length}</div>
                   </div>
 
-                  {/* Driver Assignment Section */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-3">
-                      Preferred Driver (Optional)
-                    </label>
-                    <select
-                      value={state.constraints.driverId || ''}
-                      onChange={(e) =>
-                        updateConstraints({ driverId: e.target.value })
-                      }
-                      className={cn(
-                        'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-[#0a0a0f] text-white',
-                        'border border-[#1e1e2e]',
-                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-                        'transition-colors'
-                      )}
-                    >
-                      <option value="">Any driver</option>
-                      {activeDrivers.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name}{d.vehicleType ? ` (${d.vehicleType})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {state.selectedResult && (
+                    <>
+                      <div>
+                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Distance</div>
+                        <div className="text-xl font-bold text-blue-400">
+                          {state.selectedResult.totalDistance.toFixed(1)} km
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Duration</div>
+                        <div className="text-xl font-bold text-amber-500">
+                          {Math.round(state.selectedResult.totalDuration)} min
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">Provider</div>
+                        <Badge variant="info">{state.selectedResult.provider.toUpperCase()}</Badge>
+                      </div>
+                    </>
+                  )}
                 </div>
               </Card>
 
@@ -557,112 +540,9 @@ export default function RoutePlanningPage() {
                   <div className="text-sm text-blue-400">
                     Click &quot;Optimize Route&quot; to calculate routes
                   </div>
-                )}
-              </Card>
-            )}
-
-            {/* STEP 4: REVIEW */}
-            {state.currentStep === 'review' && (
-              <Card className="p-6 border-[#1e1e2e] bg-[#12121a]">
-                <div className="mb-6">
-                  <h2 className="text-lg font-bold text-white mb-1">
-                    Review Route
-                  </h2>
-                  <p className="text-sm text-gray-400">
-                    Check the optimized route details before dispatching.
-                  </p>
-                </div>
-
-                <RouteSummary
-                  result={state.selectedResult}
-                  stops={state.stops}
-                />
-              </Card>
-            )}
-
-            {/* STEP 5: DISPATCH */}
-            {state.currentStep === 'dispatch' && (
-              <Card className="p-6 border-[#1e1e2e] bg-[#12121a]">
-                <div className="mb-6">
-                  <h2 className="text-lg font-bold text-white mb-1">
-                    Dispatch & Schedule
-                  </h2>
-                  <p className="text-sm text-gray-400">
-                    Assign driver, save as template, and schedule the route.
-                  </p>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Driver Assignment */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-3">
-                      Assign Driver
-                    </label>
-                    <select
-                      value={state.assignedDriver || ''}
-                      onChange={(e) => setAssignedDriver(e.target.value)}
-                      className={cn(
-                        'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-[#0a0a0f] text-white',
-                        'border border-[#1e1e2e]',
-                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-                        'transition-colors'
-                      )}
-                    >
-                      <option value="">Select a driver...</option>
-                      {activeDrivers.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name}{d.vehicleType ? ` (${d.vehicleType})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Schedule */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-3">
-                      Schedule
-                    </label>
-                    <select
-                      value={state.dispatchSchedule || ''}
-                      onChange={(e) => setDispatchSchedule(e.target.value)}
-                      className={cn(
-                        'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-[#0a0a0f] text-white',
-                        'border border-[#1e1e2e]',
-                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-                        'transition-colors'
-                      )}
-                    >
-                      <option value="">Dispatch immediately</option>
-                      <option value="tomorrow-9am">Tomorrow at 9:00 AM</option>
-                      <option value="tomorrow-2pm">Tomorrow at 2:00 PM</option>
-                      <option value="custom">Pick date & time</option>
-                    </select>
-                  </div>
-
-                  {/* Save as Template */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-3">
-                      Save as Template (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Template name..."
-                      onChange={(e) => setTemplate(e.target.value, undefined)}
-                      className={cn(
-                        'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-[#0a0a0f] text-white',
-                        'border border-[#1e1e2e]',
-                        'placeholder-gray-400',
-                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-                        'transition-colors'
-                      )}
-                    />
-                  </div>
-                </div>
-              </Card>
-            )}
+                </Card>
+              )}
+            </div>
           </div>
         )}
 

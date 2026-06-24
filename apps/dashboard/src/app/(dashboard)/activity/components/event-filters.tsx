@@ -4,24 +4,18 @@ import { useState } from "react";
 import { ChevronDown, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface FilterState {
+  types: string[];
+  severities: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+  userId: string | null;
+}
+
 interface EventFiltersProps {
-  filters: {
-    types: string[];
-    severities: string[];
-    startDate: Date | null;
-    endDate: Date | null;
-    userId: string | null;
-  };
-  setFilters: (
-    filters: {
-      types: string[];
-      severities: string[];
-      startDate: Date | null;
-      endDate: Date | null;
-      userId: string | null;
-    }
-  ) => void;
-  users?: Array<{ id: string; name: string }>;
+  filters: FilterState;
+  setFilters: (filters: FilterState) => void;
+  users?: { id: string; name: string }[];
 }
 
 const EVENT_TYPES = [
@@ -40,7 +34,11 @@ const SEVERITY_LEVELS = [
   { id: "error", label: "Error", color: "var(--wl-danger-400)" },
 ];
 
-export function EventFilters({ filters, setFilters, users = [] }: EventFiltersProps) {
+export function EventFilters({
+  filters,
+  setFilters,
+  users = [],
+}: EventFiltersProps) {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -257,22 +255,23 @@ export function EventFilters({ filters, setFilters, users = [] }: EventFiltersPr
             <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showUserDropdown && "rotate-180")} />
           </button>
 
-          {showUserDropdown && (
-            <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
-              <div className="p-3 space-y-2">
-                {users.map((user) => (
-                  <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
-                    <input
-                      type="radio"
-                      name="user"
-                      checked={filters.userId === user.id}
-                      onChange={() => handleUserSelect(user.id)}
-                      className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
-                    />
-                    <span className="text-sm text-wl-text-primary">{user.name}</span>
-                  </label>
-                ))}
-              </div>
+        {showUserDropdown && (
+          <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
+            <div className="p-3 space-y-2">
+              {users.map((user) => (
+                <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
+                  <input
+                    type="radio"
+                    name="user"
+                    checked={filters.userId === user.id}
+                    onChange={() => handleUserSelect(user.id)}
+                    className="w-4 h-4 rounded-full accent-wl-primary-500 cursor-pointer"
+                  />
+                  <span className="text-sm text-wl-text-primary">
+                    {user.name}
+                  </span>
+                </label>
+              ))}
             </div>
           )}
         </div>

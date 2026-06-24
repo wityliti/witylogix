@@ -931,3 +931,45 @@ export default async function paymentRoutes(
     return reply.send({ success: true, defaultGateway: id });
   });
 }
+
+function getGatewayIcon(type: string): string {
+  const icons: Record<string, string> = {
+    credit_card: "💳",
+    debit_card: "💳",
+    cod: "💰",
+    bank_transfer: "🏦",
+    wallet: "👛",
+    stripe: "💳",
+    paypal: "🅿️",
+    square: "◻️",
+  };
+  return icons[type] ?? "💳";
+}
+
+function getSupportedMethods(type: string): string[] {
+  const methods: Record<string, string[]> = {
+    credit_card: ["card", "apple_pay", "google_pay"],
+    debit_card: ["card"],
+    cod: ["cash"],
+    bank_transfer: ["bank_transfer"],
+    wallet: ["wallet"],
+    stripe: ["card", "apple_pay", "google_pay", "bank_transfer"],
+    paypal: ["paypal", "card"],
+    square: ["card", "apple_pay", "google_pay"],
+  };
+  return methods[type] ?? ["card"];
+}
+
+function getGatewayFee(type: string): { percent: number; fixed: number } {
+  const fees: Record<string, { percent: number; fixed: number }> = {
+    credit_card: { percent: 2.9, fixed: 30 },
+    debit_card: { percent: 2.6, fixed: 0 },
+    cod: { percent: 0, fixed: 0 },
+    bank_transfer: { percent: 0.8, fixed: 25 },
+    wallet: { percent: 1.5, fixed: 0 },
+    stripe: { percent: 2.9, fixed: 30 },
+    paypal: { percent: 2.9, fixed: 30 },
+    square: { percent: 2.6, fixed: 0 },
+  };
+  return fees[type] ?? { percent: 2.9, fixed: 30 };
+}
