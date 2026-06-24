@@ -62,75 +62,6 @@ export default function PaymentSettingsPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const mockGatewayConfigs: GatewayConfig[] = gateways.length > 0 ? gateways : [
-    {
-    id: 'stripe-prod',
-    name: 'Stripe',
-    code: 'stripe',
-    status: 'connected',
-    isDefault: true,
-    isProduction: true,
-    icon: '💳',
-    supportedMethods: ['card', 'apple_pay', 'google_pay', 'bank_transfer'],
-    transactionFeePercent: 2.9,
-    fixedFeeInCents: 30,
-    config: {
-      publicKey: 'pk_live_abc123***',
-    },
-    healthScore: 100,
-    monthlyVolume: 25000000,
-  },
-  {
-    id: 'paypal-prod',
-    name: 'PayPal',
-    code: 'paypal',
-    status: 'connected',
-    isDefault: false,
-    isProduction: true,
-    icon: '🅿️',
-    supportedMethods: ['paypal', 'card'],
-    transactionFeePercent: 2.9,
-    fixedFeeInCents: 30,
-    config: {
-      clientId: 'AXyz123***',
-    },
-    healthScore: 98,
-    monthlyVolume: 12000000,
-  },
-  {
-    id: 'square-prod',
-    name: 'Square',
-    code: 'square',
-    status: 'connected',
-    isDefault: false,
-    isProduction: true,
-    icon: '◻️',
-    supportedMethods: ['card', 'apple_pay', 'google_pay'],
-    transactionFeePercent: 2.6,
-    fixedFeeInCents: 0,
-    config: {
-      accessToken: 'sq_live_***',
-      locationId: 'L123ABC***',
-    },
-    healthScore: 100,
-    monthlyVolume: 8500000,
-  },
-  {
-    id: 'cod-live',
-    name: 'Cash on Delivery',
-    code: 'cod',
-    status: 'connected',
-    isDefault: false,
-    isProduction: true,
-    icon: '💰',
-    supportedMethods: ['cash'],
-    transactionFeePercent: 0,
-    fixedFeeInCents: 0,
-    healthScore: 100,
-    monthlyVolume: 5000000,
-  },
-];
-
   const transactionFeesComparison = [
     { gateway: 'Stripe', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
     { gateway: 'PayPal', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
@@ -205,8 +136,18 @@ export default function PaymentSettingsPage() {
         />
 
           {activeTab === 'overview' && <div className="space-y-6">
+            {gateways.length === 0 && (
+              <Card className="border-dashed border-2 border-[#1e1e2e] bg-[#12121a]">
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <DollarSign className="w-12 h-12 text-gray-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">No payment gateways configured</h3>
+                  <p className="text-gray-400 text-sm mb-6">Connect a payment gateway to start processing payments.</p>
+                  <Button variant="primary" size="sm"><Plus className="w-4 h-4 mr-2" />Add Gateway</Button>
+                </CardContent>
+              </Card>
+            )}
             <div className="grid gap-6 md:grid-cols-2">
-              {mockGatewayConfigs.map((gateway) => (
+              {gateways.map((gateway) => (
                 <Card
                   key={gateway.id}
                   className={cn(
@@ -370,7 +311,7 @@ export default function PaymentSettingsPage() {
           </div>}
 
           {activeTab === 'configuration' && <div className="space-y-6">
-            {mockGatewayConfigs
+            {gateways
               .filter((g) => g.status === 'connected')
               .map((gateway) => (
                 <Card key={gateway.id}>

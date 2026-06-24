@@ -22,15 +22,13 @@ import {
   Eye,
   EyeOff,
   Shield,
-  Server,
   TestTube,
-  ChevronRight,
 } from 'lucide-react';
 
 interface AuthProvider {
   id: string;
   name: string;
-  type: 'auth0' | 'clerk' | 'cognito' | 'firebase' | 'oidc' | 'saml';
+  type: string;
   status: 'connected' | 'disconnected';
   icon: string;
   capabilities: string[];
@@ -42,104 +40,113 @@ interface AuthProvider {
   };
 }
 
-const mockProviders: AuthProvider[] = [
-  {
-    id: "auth0-prod",
-    name: "Auth0",
-    type: "auth0",
-    status: "connected",
-    icon: "🔐",
-    capabilities: ["SSO", "MFA", "Social Login", "Role Mapping"],
-    config: {
-      domain: "witylogix.auth0.com",
-      clientId: "abc123***",
-      callbackUrl: "https://app.witylogix.com/auth/callback",
-    },
-  },
-  {
-    id: "clerk-dev",
-    name: "Clerk",
-    type: "clerk",
-    status: "disconnected",
-    icon: "🎫",
-    capabilities: ["SSO", "Multi-org", "Session Management"],
-  },
-  {
-    id: "cognito-dev",
-    name: "AWS Cognito",
-    type: "cognito",
-    status: "disconnected",
-    icon: "☁️",
-    capabilities: ["User Pools", "Identity Federation", "MFA"],
-  },
-  {
-    id: "firebase-test",
-    name: "Firebase Auth",
-    type: "firebase",
-    status: "disconnected",
-    icon: "🔥",
-    capabilities: ["Email/Password", "Social", "Phone Auth"],
-  },
-  {
-    id: "oidc-generic",
-    name: "Generic OIDC",
-    type: "oidc",
-    status: "disconnected",
-    icon: "🔑",
-    capabilities: ["Custom Providers", "Enterprise SSO"],
-  },
-  {
-    id: "saml-enterprise",
-    name: "SAML 2.0",
-    type: "saml",
-    status: "disconnected",
-    icon: "🏢",
-    capabilities: ["Enterprise SSO", "Okta", "Azure AD"],
-  },
-];
+const TYPE_META: Record<string, { icon: string; capabilities: string[] }> = {
+  AUTH0:        { icon: '🔐', capabilities: ['SSO', 'MFA', 'Social Login', 'Role Mapping'] },
+  GOOGLE:       { icon: '🔵', capabilities: ['OAuth2', 'OpenID Connect', 'Social Login'] },
+  MICROSOFT:    { icon: '🟦', capabilities: ['SSO', 'Azure AD', 'Enterprise'] },
+  OKTA:         { icon: '🟠', capabilities: ['SSO', 'MFA', 'LDAP Sync'] },
+  CUSTOM_OAUTH: { icon: '🔑', capabilities: ['Custom Providers', 'Enterprise SSO'] },
+  SAML:         { icon: '🏢', capabilities: ['Enterprise SSO', 'Okta', 'Azure AD'] },
+};
 
-const roleMapping = [
-  { externalRole: "admin", witylogixRole: "SUPER_ADMIN" },
-  { externalRole: "manager", witylogixRole: "ADMIN" },
-  { externalRole: "dispatcher", witylogixRole: "DISPATCHER" },
-  { externalRole: "viewer", witylogixRole: "VIEWER" },
-  { externalRole: "driver", witylogixRole: "DRIVER" },
+function normalizeProvider(raw: Record<string, unknown>): AuthProvider {
+  const type = (raw.type as string) ?? 'CUSTOM_OAUTH';
+  const meta = TYPE_META[type] ?? { icon: '🔑', capabilities: [] };
+  return {
+    id: raw.id as string,
+    name: (raw.name as string) ?? type,
+    type,
+    status: (raw.enabled as boolean) ? 'connected' : 'disconnected',
+    icon: meta.icon,
+    capabilities: meta.capabilities,
+    config: {
+      domain: (raw.authUrl as string | undefined),
+      clientId: (raw.clientId as string | undefined),
+      callbackUrl: (raw.redirectUri as string | undefined),
+    },
+  };
+}
+
+const PLATFORM_ROLES = [
+  { role: 'SUPER_ADMIN', description: 'Full access to all features and settings' },
+  { role: 'ADMIN', description: 'Manage team members, configurations, and reports' },
+  { role: 'DISPATCHER', description: 'Dispatch orders, track deliveries, manage routes' },
+  { role: 'VIEWER', description: 'Read-only access to dashboard and reports' },
+  { role: 'DRIVER', description: 'Driver app access for assigned deliveries' },
 ];
 
 export default function AuthProvidersPage() {
-  const [providers, setProviders] = useState<AuthProvider[]>(mockProviders);
+  const { items: rawProviders, loading, error, refetch } = useApiList<Record<string, unknown>>('/api/v4/auth-providers');
+  const providers: AuthProvider[] = rawProviders.map(normalizeProvider);
+
   const [activeTab, setActiveTab] = useState("providers");
   const [selectedProvider, setSelectedProvider] = useState<AuthProvider | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-  const [isMappingModalOpen, setIsMappingModalOpen] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
-  const [activeProvider, setActiveProvider] = useState<string>("auth0-prod");
+  const [activeProvider, setActiveProvider] = useState<string>('');
   const [testResult, setTestResult] = useState<{ status: "success" | "error"; message: string } | null>(null);
   const [jitProvisioning, setJitProvisioning] = useState(true);
+  const [isTesting, setIsTesting] = useState(false);
+  const [configForm, setConfigForm] = useState({ domain: '', clientId: '', clientSecret: '' });
 
-  const handleTestConnection = (providerId: string) => {
-    setTimeout(() => {
-      setTestResult({
-        status: "success",
-        message: "Connection successful! Auth provider is reachable and properly configured.",
-      });
-    }, 1500);
-  };
+  const { execute: testConnection } = useApiMutation('POST', '/api/v4/auth-providers/:id/test');
+  const { execute: deleteProvider } = useApiMutation('DELETE', '/api/v4/auth-providers/:id');
+  const { execute: setDefaultProvider } = useApiMutation('PATCH', '/api/v4/auth-providers/:id/default');
+  const { execute: createProvider } = useApiMutation('POST', '/api/v4/auth-providers');
 
-  const handleConfigSave = () => {
-    setIsConfigModalOpen(false);
-    if (selectedProvider) {
-      setProviders((prev) =>
-        prev.map((p) => (p.id === selectedProvider.id ? { ...p, status: "connected" } : p))
-      );
-      setActiveProvider(selectedProvider.id);
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const activeProviderObj = providers.find((p) => p.id === activeProvider) ?? providers.find((p) => p.status === 'connected');
+
+  const handleTestConnection = async (providerId: string) => {
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      await testConnection({ id: providerId });
+      setTestResult({ status: 'success', message: 'Connection successful! Auth provider is reachable and properly configured.' });
+    } catch {
+      setTestResult({ status: 'error', message: 'Connection test failed. Check your configuration.' });
+    } finally {
+      setIsTesting(false);
     }
   };
 
-  const handleDeleteProvider = (providerId: string) => {
-    setProviders((prev) => prev.filter((p) => p.id !== providerId));
-    if (activeProvider === providerId) {
-      setActiveProvider(providers[0]?.id || "");
+  const handleOpenConfig = (provider: AuthProvider | null) => {
+    setSelectedProvider(provider);
+    setConfigForm({
+      domain: provider?.config?.domain ?? '',
+      clientId: provider?.config?.clientId ?? '',
+      clientSecret: '',
+    });
+    setIsConfigModalOpen(true);
+  };
+
+  const handleConfigSave = async () => {
+    try {
+      await createProvider({
+        ...(selectedProvider ? { id: selectedProvider.id } : {}),
+        type: selectedProvider?.type ?? 'CUSTOM_OAUTH',
+        name: selectedProvider?.name,
+        authUrl: configForm.domain,
+        clientId: configForm.clientId,
+        clientSecret: configForm.clientSecret,
+      });
+    } catch {
+      // ignore — refetch will reflect actual state
+    }
+    setIsConfigModalOpen(false);
+    await refetch();
+    if (selectedProvider) setActiveProvider(selectedProvider.id);
+  };
+
+  const handleDeleteProvider = async (providerId: string) => {
+    try {
+      await deleteProvider({ id: providerId });
+      await refetch();
+      if (activeProvider === providerId) setActiveProvider('');
+    } catch {
+      // silently fail — refetch will reflect actual state
     }
   };
 
@@ -165,15 +172,30 @@ export default function AuthProvidersPage() {
         {/* PROVIDERS TAB */}
         {activeTab === "providers" && (
           <div>
+            {/* Empty state */}
+            {providers.length === 0 && (
+              <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <Shield className="w-12 h-12 text-gray-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">No auth providers configured</h3>
+                  <p className="text-gray-400 text-sm mb-6">Connect an SSO provider to enable single sign-on for your team.</p>
+                  <Button variant="primary" onClick={() => handleOpenConfig(null)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Auth Provider
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Active Provider Info */}
-            {providers.find((p) => p.id === activeProvider) && (
+            {activeProviderObj && (
               <Card className="mb-8 border-l-4 border-l-emerald-500 bg-[#12121a] border border-[#1e1e2e]">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
                       <Badge variant="success">Active Provider</Badge>
                       <span className="text-base font-semibold text-[var(--wl-text-primary)]">
-                        {providers.find((p) => p.id === activeProvider)?.name}
+                        {activeProviderObj.name}
                       </span>
                     </div>
                     <span className="text-sm text-[var(--wl-text-tertiary)]">
@@ -254,10 +276,7 @@ export default function AuthProvidersPage() {
                   <CardFooter className="flex gap-2 pt-0">
                     <Button
                       variant={provider.status === "connected" ? "secondary" : "primary"}
-                      onClick={() => {
-                        setSelectedProvider(provider);
-                        setIsConfigModalOpen(true);
-                      }}
+                      onClick={() => handleOpenConfig(provider)}
                       className="flex-1"
                     >
                       {provider.status === "connected" ? "Reconfigure" : "Connect"}
@@ -346,9 +365,9 @@ export default function AuthProvidersPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {roleMapping.map((mapping, idx) => (
+                      {PLATFORM_ROLES.map((r, idx) => (
                         <tr
-                          key={idx}
+                          key={r.role}
                           className={cn(
                             "border-b border-[#1e1e2e]",
                             idx % 2 === 1 && "bg-[#1a1a2e]"
@@ -356,25 +375,17 @@ export default function AuthProvidersPage() {
                         >
                           <td className="py-4 px-4 text-white">
                             <code className="bg-[#0a0a0f] px-2 py-1 rounded text-xs text-gray-400">
-                              {mapping.externalRole}
+                              {r.role.toLowerCase()}
                             </code>
                           </td>
                           <td className="py-4 px-4 text-white">
-                            <Badge variant="primary">{mapping.witylogixRole}</Badge>
+                            <Badge variant="primary">{r.role}</Badge>
                           </td>
                           <td className="py-4 px-4 text-gray-400 text-xs">
-                            {mapping.witylogixRole === "SUPER_ADMIN" && "Full access"}
-                            {mapping.witylogixRole === "ADMIN" && "Manage team, config"}
-                            {mapping.witylogixRole === "DISPATCHER" && "Dispatch, track"}
-                            {mapping.witylogixRole === "VIEWER" && "View-only access"}
-                            {mapping.witylogixRole === "DRIVER" && "Driver app access"}
+                            {r.description}
                           </td>
                           <td className="py-4 px-4 text-center">
-                            <Button
-                              variant="ghost"
-                              onClick={() => setIsMappingModalOpen(true)}
-                              className="p-1 text-xs"
-                            >
+                            <Button variant="ghost" className="p-1 text-xs">
                               Edit
                             </Button>
                           </td>
@@ -497,7 +508,11 @@ export default function AuthProvidersPage() {
             <label className="block text-sm font-semibold text-white mb-2">
               Domain / Tenant
             </label>
-            <Input placeholder="e.g., witylogix.auth0.com" defaultValue={selectedProvider?.config?.domain || ""} />
+            <Input
+              placeholder="e.g., witylogix.auth0.com"
+              value={configForm.domain}
+              onChange={(e) => setConfigForm((f) => ({ ...f, domain: e.target.value }))}
+            />
           </div>
 
           {/* Client ID */}
@@ -507,21 +522,17 @@ export default function AuthProvidersPage() {
             </label>
             <div className="flex gap-2">
               <Input
-                type={showSecrets[selectedProvider?.id || ""] ? "text" : "password"}
+                type={showSecrets['clientId'] ? "text" : "password"}
                 placeholder="Your client ID"
-                defaultValue={selectedProvider?.config?.clientId || ""}
+                value={configForm.clientId}
+                onChange={(e) => setConfigForm((f) => ({ ...f, clientId: e.target.value }))}
                 className="flex-1"
               />
               <Button
                 variant="ghost"
-                onClick={() =>
-                  setShowSecrets((prev) => ({
-                    ...prev,
-                    [selectedProvider?.id || ""]: !prev[selectedProvider?.id || ""],
-                  }))
-                }
+                onClick={() => setShowSecrets((prev) => ({ ...prev, clientId: !prev['clientId'] }))}
               >
-                {showSecrets[selectedProvider?.id || ""] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showSecrets['clientId'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </Button>
             </div>
           </div>
@@ -533,21 +544,17 @@ export default function AuthProvidersPage() {
             </label>
             <div className="flex gap-2">
               <Input
-                type={showSecrets[selectedProvider?.id || ""] ? "text" : "password"}
+                type={showSecrets['clientSecret'] ? "text" : "password"}
                 placeholder="Your client secret"
-                defaultValue={selectedProvider?.config?.clientSecret || ""}
+                value={configForm.clientSecret}
+                onChange={(e) => setConfigForm((f) => ({ ...f, clientSecret: e.target.value }))}
                 className="flex-1"
               />
               <Button
                 variant="ghost"
-                onClick={() =>
-                  setShowSecrets((prev) => ({
-                    ...prev,
-                    [selectedProvider?.id || ""]: !prev[selectedProvider?.id || ""],
-                  }))
-                }
+                onClick={() => setShowSecrets((prev) => ({ ...prev, clientSecret: !prev['clientSecret'] }))}
               >
-                {showSecrets[selectedProvider?.id || ""] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showSecrets['clientSecret'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </Button>
             </div>
           </div>
@@ -580,48 +587,6 @@ export default function AuthProvidersPage() {
         </div>
       </Modal>
 
-      {/* Role Mapping Modal */}
-      <Modal
-        isOpen={isMappingModalOpen}
-        onClose={() => setIsMappingModalOpen(false)}
-        title="Edit Role Mapping"
-        size="md"
-        footer={
-          <div className="flex gap-3 justify-end">
-            <Button variant="secondary" onClick={() => setIsMappingModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={() => setIsMappingModalOpen(false)}>
-              Save Mapping
-            </Button>
-          </div>
-        }
-      >
-        <div className="flex flex-col gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-white mb-2">
-              External Role Claim
-            </label>
-            <Input placeholder="e.g., admin, manager, viewer" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-white mb-2">
-              Map to Witylogix Role
-            </label>
-            <Select
-              options={[
-                { value: "SUPER_ADMIN", label: "Super Admin" },
-                { value: "ADMIN", label: "Admin" },
-                { value: "DISPATCHER", label: "Dispatcher" },
-                { value: "VIEWER", label: "Viewer" },
-                { value: "DRIVER", label: "Driver" },
-              ]}
-              defaultValue="ADMIN"
-              onChange={() => {}}
-            />
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

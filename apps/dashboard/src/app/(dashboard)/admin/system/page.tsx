@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +19,9 @@ import {
   CheckCircle2,
   Clock,
 } from "lucide-react";
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 
 interface ServiceHealth {
   name: string;
@@ -41,70 +41,6 @@ interface SystemMetrics {
   deploymentVersion: string;
 }
 
-const mockServices: ServiceHealth[] = [
-  {
-    name: "API Server",
-    status: "healthy",
-    uptime24h: 99.98,
-    uptime7d: 99.94,
-    uptime30d: 99.87,
-    responseTime: 45,
-    lastChecked: "2026-03-12 14:32:10",
-  },
-  {
-    name: "Dashboard",
-    status: "healthy",
-    uptime24h: 100.0,
-    uptime7d: 99.99,
-    uptime30d: 99.95,
-    responseTime: 32,
-    lastChecked: "2026-03-12 14:32:05",
-  },
-  {
-    name: "Worker Service",
-    status: "healthy",
-    uptime24h: 99.85,
-    uptime7d: 99.72,
-    uptime30d: 99.48,
-    responseTime: 120,
-    lastChecked: "2026-03-12 14:31:55",
-  },
-  {
-    name: "Redis Cache",
-    status: "healthy",
-    uptime24h: 99.99,
-    uptime7d: 99.98,
-    uptime30d: 99.97,
-    responseTime: 2,
-    lastChecked: "2026-03-12 14:32:15",
-  },
-  {
-    name: "PostgreSQL",
-    status: "healthy",
-    uptime24h: 100.0,
-    uptime7d: 99.99,
-    uptime30d: 99.96,
-    responseTime: 85,
-    lastChecked: "2026-03-12 14:32:00",
-  },
-  {
-    name: "Nginx Load Balancer",
-    status: "degraded",
-    uptime24h: 99.5,
-    uptime7d: 99.3,
-    uptime30d: 98.9,
-    responseTime: 12,
-    lastChecked: "2026-03-12 14:31:45",
-  },
-];
-
-const mockMetrics: SystemMetrics = {
-  memoryUsage: 68,
-  cpuUsage: 42,
-  activeConnections: 3542,
-  deploymentTime: "2026-03-11 09:45:32",
-  deploymentVersion: "v4.9.2",
-};
 
 function StatusBadge({ status }: { status: "healthy" | "degraded" | "critical" }) {
   const variants: Record<typeof status, any> = {
@@ -393,12 +329,24 @@ function UsageGauge({
   );
 }
 
+interface SystemData {
+  services: ServiceHealth[];
+  metrics: SystemMetrics;
+}
+
 export default function SystemPage() {
+  const { data, loading, error, refetch } = useApiQuery<SystemData>('/api/v4/admin/system');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const services = data?.services ?? [];
+  const metrics = data?.metrics;
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await refetch();
     setIsRefreshing(false);
   };
 
@@ -436,7 +384,7 @@ export default function SystemPage() {
             Service Status
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mockServices.map((service) => (
+            {services.map((service) => (
               <ServiceCard key={service.name} service={service} />
             ))}
           </div>
@@ -446,78 +394,80 @@ export default function SystemPage() {
         <ResponseTimeChart />
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <UsageGauge
-            label="Memory Usage"
-            value={mockMetrics.memoryUsage}
-            icon={HardDrive}
-          />
-          <UsageGauge
-            label="CPU Usage"
-            value={mockMetrics.cpuUsage}
-            icon={Cpu}
-          />
+        {metrics && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <UsageGauge
+              label="Memory Usage"
+              value={metrics.memoryUsage}
+              icon={HardDrive}
+            />
+            <UsageGauge
+              label="CPU Usage"
+              value={metrics.cpuUsage}
+              icon={Cpu}
+            />
 
-          <Card>
-            <CardContent className="pt-5">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-4">
-                Active Connections
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">
-                  {mockMetrics.activeConnections.toLocaleString()}
-                </span>
-                <span className="text-sm text-emerald-500">+12%</span>
-              </div>
-              <p className="text-xs text-gray-400 mt-4">
-                Connected clients across all services
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardContent className="pt-5">
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-4">
+                  Active Connections
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-white">
+                    {metrics.activeConnections.toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-4">
+                  Connected clients across all services
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Deployment Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Last Deployment</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-white flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  Version {mockMetrics.deploymentVersion}
-                </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Deployed on {mockMetrics.deploymentTime}
-                </p>
-              </div>
-              <Button variant="secondary" size="md">
-                View Changelog
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Health Check Alerts */}
-        <Card className="border border-amber-600/30 bg-amber-600/40">
-          <CardContent className="pt-5">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="text-sm font-semibold text-amber-500">
-                  Degraded Performance on Nginx Load Balancer
-                </h4>
-                <p className="text-sm text-gray-400 mt-1">
-                  Response times are elevated (average 12ms). Consider investigating connection pooling or scaling horizontal load balancing capacity.
-                </p>
-                <Button variant="secondary" size="sm" className="mt-3">
-                  View Details
+        {metrics && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Last Deployment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    Version {metrics.deploymentVersion ?? '—'}
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Deployed on {metrics.deploymentTime ?? '—'}
+                  </p>
+                </div>
+                <Button variant="secondary" size="md">
+                  View Changelog
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Health Check Alerts */}
+        {services.filter(s => s.status !== 'healthy').map(s => (
+          <Card key={s.name} className="border border-amber-600/30 bg-amber-600/40">
+            <CardContent className="pt-5">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-amber-500">
+                    {s.status === 'critical' ? 'Critical' : 'Degraded'} Performance on {s.name}
+                  </h4>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Average response time: {s.responseTime}ms. Last checked: {s.lastChecked}.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

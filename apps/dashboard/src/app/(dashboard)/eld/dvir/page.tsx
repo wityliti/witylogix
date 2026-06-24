@@ -40,46 +40,23 @@ interface InspectionHistory {
   criticalDefects: number;
 }
 
-const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
-  {
-    id: "ins-1",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "PRE_TRIP",
-    status: "PASSED",
-    date: new Date(Date.now() - 86400000).toISOString(),
-    defectsCount: 0,
-    criticalDefects: 0,
-  },
-  {
-    id: "ins-2",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "POST_TRIP",
-    status: "FAILED",
-    date: new Date(Date.now() - 43200000).toISOString(),
-    defectsCount: 2,
-    criticalDefects: 0,
-  },
-];
 
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: data, loading, error, refetch, pagination } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
+  const { items: vehicles, loading: vehiclesLoading, error: vehiclesError, refetch: refetchVehicles } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
+  const { items: inspectionHistory, loading: historyLoading, refetch: refetchHistory } = useApiList<InspectionHistory>("/api/v4/eld/inspections");
   const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
   const { addToast } = useToast();
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const [showForm, setShowForm] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<string>("WTY-4501");
+  const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [inspectionType, setInspectionType] = useState<"PRE_TRIP" | "POST_TRIP">("PRE_TRIP");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
+
+  if (vehiclesLoading) return <TableSkeleton rows={10} columns={6} />;
+  if (vehiclesError) return <ErrorState message={vehiclesError.message} onRetry={refetchVehicles} />;
 
   const filteredDefects = useMemo(() => {
     let result = defects;
@@ -97,12 +74,12 @@ export default function DVIRPage() {
   }, [defects, filterStatus, searchQuery]);
 
   const filteredHistory = useMemo(() => {
-    let result = MOCK_INSPECTION_HISTORY;
+    let result = inspectionHistory;
     if (selectedVehicle) {
       result = result.filter((h) => h.vehicleNumber === selectedVehicle);
     }
-    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedVehicle]);
+    return [...result].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [inspectionHistory, selectedVehicle]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
@@ -278,7 +255,7 @@ export default function DVIRPage() {
 
                 {showVehicleSearch && (
                   <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
-                    {data.map((vehicle) => (
+                    {vehicles.map((vehicle) => (
                       <button
                         key={vehicle.id}
                         onClick={() => {
@@ -367,8 +344,8 @@ export default function DVIRPage() {
           {/* Form mode */}
           <DVIRForm
             vehicleNumber={selectedVehicle}
-            driverId="drv-1"
-            driverName="Carlos Martinez"
+            driverId=""
+            driverName=""
             inspectionType={inspectionType}
             onSubmit={async (data) => {
               try {

@@ -42,7 +42,6 @@ interface MonthlyRevenue {
   payments: number;
 }
 
-
 const getStatusBadgeVariant = (
   status: PaymentStatus
 ): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
@@ -259,6 +258,26 @@ export default function PaymentsPage() {
       completedCount: completed.length,
       pendingCount: pending.length,
     };
+  }, [payments]);
+
+  const monthlyRevenue = useMemo(() => {
+    const byMonth: Record<string, { revenue: number; payments: number }> = {};
+    for (const p of payments) {
+      if (p.status !== 'completed') continue;
+      const d = new Date(p.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      if (!byMonth[key]) byMonth[key] = { revenue: 0, payments: 0 };
+      byMonth[key].revenue += p.amount;
+      byMonth[key].payments += 1;
+    }
+    return Object.entries(byMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-3)
+      .map(([, v], i) => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return { month: months[i] ?? '—', ...v };
+      });
   }, [payments]);
 
   const handleExportCSV = useCallback(() => {

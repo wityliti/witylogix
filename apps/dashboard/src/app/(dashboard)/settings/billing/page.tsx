@@ -40,6 +40,21 @@ interface BillingData {
   plan: string;
   monthlyPrice: number;
   renewalDate: string;
+  billingAddress?: {
+    name?: string;
+    company?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+  };
+  paymentMethod?: {
+    brand?: string;
+    last4?: string;
+    expiryMonth?: number;
+    expiryYear?: number;
+    status?: string;
+  };
 }
 
 export default function BillingPage() {
@@ -48,46 +63,13 @@ export default function BillingPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const mockInvoices: Invoice[] = billingData?.invoices ?? [
-  {
-    id: "inv-2026-03",
-    date: "2026-03-01",
-    period: "March 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-03.pdf",
-  },
-  {
-    id: "inv-2026-02",
-    date: "2026-02-01",
-    period: "February 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-02.pdf",
-  },
-  {
-    id: "inv-2026-01",
-    date: "2026-01-01",
-    period: "January 2026",
-    amount: 499.99,
-    status: "paid",
-    downloadUrl: "/invoices/2026-01.pdf",
-  },
-  {
-    id: "inv-2025-12",
-    date: "2025-12-01",
-    period: "December 2025",
-    amount: 399.99,
-    status: "paid",
-    downloadUrl: "/invoices/2025-12.pdf",
-  },
-];
-
-  const usageMetrics = billingData?.usageMetrics ?? [
-    { name: "API Requests", current: 450000, limit: 500000, percentage: 90, unit: "requests" },
-    { name: "Webhooks", current: 1200, limit: 2000, percentage: 60, unit: "calls" },
-    { name: "Storage", current: 4.5, limit: 100, percentage: 4.5, unit: "GB" },
-  ];
+  const invoices: Invoice[] = billingData?.invoices ?? [];
+  const usageMetrics = billingData?.usageMetrics ?? [];
+  const plan = billingData?.plan ?? '—';
+  const monthlyPrice = billingData?.monthlyPrice;
+  const renewalDate = billingData?.renewalDate ? new Date(billingData.renewalDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+  const billingAddress = billingData?.billingAddress;
+  const paymentMethod = billingData?.paymentMethod;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -117,7 +99,7 @@ export default function BillingPage() {
                   Current Plan
                 </p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  Pro
+                  {plan}
                 </h3>
                 <p className="text-gray-400 mt-2">
                   Professional tier for growing businesses
@@ -129,7 +111,7 @@ export default function BillingPage() {
                   Monthly Cost
                 </p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  $499.99
+                  {monthlyPrice != null ? `$${monthlyPrice.toFixed(2)}` : '—'}
                 </h3>
                 <p className="text-gray-400 mt-2">
                   Billed on 1st of each month
@@ -141,7 +123,7 @@ export default function BillingPage() {
                   Renewal Date
                 </p>
                 <h3 className="text-3xl font-bold text-white mt-2">
-                  April 1
+                  {renewalDate}
                 </h3>
                 <p className="text-gray-400 mt-2">
                   Next billing cycle
@@ -213,40 +195,39 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-[#1a1a2e] rounded-lg p-6 mb-6 border border-[#1e1e2e]">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-8 bg-gradient-to-br from-[#1434CB] to-[#0066FF] rounded flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">VISA</span>
+            {paymentMethod ? (
+              <div className="bg-[#1a1a2e] rounded-lg p-6 mb-6 border border-[#1e1e2e]">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-8 bg-gradient-to-br from-[#1434CB] to-[#0066FF] rounded flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">{(paymentMethod.brand ?? 'CARD').toUpperCase()}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">
+                        {paymentMethod.brand ?? 'Card'} ending in {paymentMethod.last4 ?? '****'}
+                      </p>
+                      {paymentMethod.expiryMonth && paymentMethod.expiryYear && (
+                        <p className="text-sm text-gray-500">
+                          Expires {String(paymentMethod.expiryMonth).padStart(2, '0')}/{String(paymentMethod.expiryYear).slice(-2)}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-white">
-                      Visa ending in 4242
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Expires 12/27
-                    </p>
-                  </div>
+                  <Badge variant="success" className="bg-emerald-500">
+                    {paymentMethod.status ?? 'Active'}
+                  </Badge>
                 </div>
-                <Badge variant="success" className="bg-emerald-500">
-                  Active
-                </Badge>
+                <div className="flex gap-2">
+                  <Button variant="secondary" className="border-[#1e1e2e] text-white hover:bg-[#0a0a0f]">Update</Button>
+                  <Button variant="ghost" className="text-red-400">Remove</Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  className="border-[#1e1e2e] text-white hover:bg-[#0a0a0f]"
-                >
-                  Update
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="text-red-400"
-                >
-                  Remove
-                </Button>
+            ) : (
+              <div className="bg-[#1a1a2e] rounded-lg p-6 mb-6 border border-dashed border-[#1e1e2e] text-center">
+                <CreditCard className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                <p className="text-gray-400 text-sm">No payment method on file</p>
               </div>
-            </div>
+            )}
 
             <Button
               variant="secondary"
@@ -271,7 +252,8 @@ export default function BillingPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Sarah Johnson"
+                    defaultValue={billingAddress?.name ?? ''}
+                    placeholder="Full name"
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -281,7 +263,8 @@ export default function BillingPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Witylogix Inc."
+                    defaultValue={billingAddress?.company ?? ''}
+                    placeholder="Company name"
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -293,7 +276,8 @@ export default function BillingPage() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="123 Logistics Boulevard, Suite 456"
+                  defaultValue={billingAddress?.address ?? ''}
+                  placeholder="Street address"
                   className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -305,7 +289,8 @@ export default function BillingPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="San Francisco"
+                    defaultValue={billingAddress?.city ?? ''}
+                    placeholder="City"
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -315,7 +300,8 @@ export default function BillingPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="CA"
+                    defaultValue={billingAddress?.state ?? ''}
+                    placeholder="State"
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -325,7 +311,8 @@ export default function BillingPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue="94105"
+                    defaultValue={billingAddress?.postalCode ?? ''}
+                    placeholder="Postal code"
                     className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -347,8 +334,11 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {invoices.length === 0 && (
+              <p className="text-gray-400 text-sm text-center py-8">No invoices yet.</p>
+            )}
             <div className="space-y-2">
-              {mockInvoices.map((invoice) => (
+              {invoices.map((invoice) => (
                 <div
                   key={invoice.id}
                   className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
@@ -406,7 +396,8 @@ export default function BillingPage() {
           <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-gray-400">
             Your subscription will automatically renew on{" "}
-            <strong>April 1, 2026</strong> at $499.99. You can cancel anytime
+            <strong>{renewalDate}</strong>
+            {monthlyPrice != null && <> at ${monthlyPrice.toFixed(2)}</>}. You can cancel anytime
             before the renewal date.
           </div>
         </div>
