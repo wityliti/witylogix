@@ -188,6 +188,31 @@ export default function RoutePerformancePage() {
               {/* Period selector */}
               {(["24h", "7d", "30d"] as Period[]).map((p) => (
                 <Button
+                  key={p}
+                  variant={period === p ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => setPeriod(p)}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Charts
+                </button>
+                <button
+                  onClick={() => setView("map")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-white/[0.08]",
+                    view === "map"
+                      ? "bg-white/10 text-white/80"
+                      : "text-white/30 hover:text-white/50"
+                  )}
+                >
+                  <Map className="w-3.5 h-3.5" />
+                  Map
+                </button>
+              </div>
+
+              {/* Period selector */}
+              {(["24h", "7d", "30d"] as Period[]).map((p) => (
+                <Button
                   variant={viewMode === "charts" ? "primary" : "secondary"}
                   size="sm"
                   onClick={() => setViewMode("charts")}

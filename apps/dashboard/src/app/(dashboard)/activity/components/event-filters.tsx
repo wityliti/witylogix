@@ -12,6 +12,14 @@ interface FilterState {
   userId: string | null;
 }
 
+interface FilterState {
+  types: string[];
+  severities: string[];
+  startDate: Date | null;
+  endDate: Date | null;
+  userId: string | null;
+}
+
 interface EventFiltersProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;

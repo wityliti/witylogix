@@ -67,6 +67,9 @@ export default function CreateInvoicePage() {
   const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
   const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
 
+  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
+  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
+
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null

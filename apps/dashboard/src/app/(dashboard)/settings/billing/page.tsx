@@ -67,8 +67,8 @@ export default function BillingPage() {
   const [addressForm, setAddressForm] = useState<BillingAddress | null>(null);
   const [savingAddress, setSavingAddress] = useState(false);
 
-  const { items: quotas, loading: quotasLoading, error: quotasError } =
-    useApiList<QuotaItem>('/api/v4/billing/quotas');
+  const [addressForm, setAddressForm] = useState<BillingAddress | null>(null);
+  const [savingAddress, setSavingAddress] = useState(false);
 
   const addr = addressForm ?? billing?.billingAddress ?? {};
   const invoices = billing?.invoices ?? [];

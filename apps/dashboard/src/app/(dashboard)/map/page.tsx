@@ -53,7 +53,7 @@ interface ApiRoute {
   id: string;
   name?: string;
   status: string;
-  driver?: { name: string } | null;
+  driver?: { name: string };
   _count?: { stops: number };
   startLat?: number | null;
   startLng?: number | null;

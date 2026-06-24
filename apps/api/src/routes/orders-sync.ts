@@ -52,33 +52,7 @@ export async function registerOrdersSyncRoutes(fastify: FastifyInstance): Promis
         isConnected: i.isEnabled,
       }));
 
-      const syncEvents = await db.integrationEvent.findMany({
-        where: { shopId, eventType: 'SYNC', appSlug: { in: ECOMMERCE_SLUGS } },
-        orderBy: { timestamp: 'desc' },
-        take: 20,
-      });
-
-      const recentSyncJobs = syncEvents.map((e) => {
-        const meta = (e.metadata ?? {}) as Record<string, unknown>;
-        const ordersProcessed = typeof meta.ordersProcessed === 'number' ? meta.ordersProcessed : 0;
-        const ordersCreated = typeof meta.ordersCreated === 'number' ? meta.ordersCreated : 0;
-        const ordersFailed = typeof meta.ordersFailed === 'number' ? meta.ordersFailed : 0;
-        const statusRaw = typeof meta.status === 'string' ? meta.status : 'completed';
-        const status = statusRaw === 'running' ? 'running' : statusRaw === 'failed' ? 'failed' : 'completed';
-        return {
-          id: e.id,
-          platform: e.appSlug,
-          status,
-          startTime: e.timestamp.toISOString(),
-          endTime: typeof meta.endTime === 'string' ? meta.endTime : e.timestamp.toISOString(),
-          ordersProcessed,
-          ordersCreated,
-          ordersFailed,
-          errorMessage: typeof meta.errorMessage === 'string' ? meta.errorMessage : null,
-        };
-      });
-
-      return { platformHealth, recentSyncJobs };
+      return { platformHealth, recentSyncJobs: [] };
     },
   );
 
