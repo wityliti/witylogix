@@ -537,6 +537,118 @@ export default async function paymentRoutes(
     }
   );
 
+  // ─── Gateway Management ──────────────────────────────────────
+  // Gateways are stored in Shop.settings.paymentGateways (JSON array).
+  // No hardcoded defaults — if nothing is configured, returns empty array.
+
+  // GET /gateways — List configured payment gateways
+  fastify.get(
+    "/gateways",
+    async (request: any, reply: FastifyReply) => {
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
+
+      const settings: Record<string, unknown> =
+        shop?.settings && typeof shop.settings === "object" && !Array.isArray(shop.settings)
+          ? (shop.settings as Record<string, unknown>)
+          : {};
+
+      const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
+
+      return reply.code(200).send({
+        success: true,
+        data: gateways,
+      });
+    },
+  );
+
+  // PATCH /gateways/:id/default — Set a gateway as the default
+  fastify.patch(
+    "/gateways/:id/default",
+    async (request: any, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
+
+      const settings: Record<string, unknown> =
+        shop?.settings && typeof shop.settings === "object" && !Array.isArray(shop.settings)
+          ? (shop.settings as Record<string, unknown>)
+          : {};
+
+      const gateways: any[] = Array.isArray(settings.paymentGateways)
+        ? settings.paymentGateways
+        : [];
+
+      const idx = gateways.findIndex((g) => g.id === id);
+      if (idx === -1) {
+        return reply.code(404).send({ success: false, error: `Gateway ${id} not found` });
+      }
+
+      const updated = gateways.map((g) => ({ ...g, isDefault: g.id === id }));
+
+      await request.tenantDb.shop.update({
+        where: { id: request.shopId },
+        data: {
+          settings: {
+            ...settings,
+            paymentGateways: updated,
+          },
+        },
+      });
+
+      return reply.code(200).send({
+        success: true,
+        data: updated[idx],
+      });
+    },
+  );
+
+  // DELETE /gateways/:id — Remove a gateway from configuration
+  fastify.delete(
+    "/gateways/:id",
+    async (request: any, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+
+      const shop = await request.tenantDb.shop.findUnique({
+        where: { id: request.shopId },
+        select: { settings: true },
+      });
+
+      const settings: Record<string, unknown> =
+        shop?.settings && typeof shop.settings === "object" && !Array.isArray(shop.settings)
+          ? (shop.settings as Record<string, unknown>)
+          : {};
+
+      const gateways: any[] = Array.isArray(settings.paymentGateways)
+        ? settings.paymentGateways
+        : [];
+
+      const idx = gateways.findIndex((g) => g.id === id);
+      if (idx === -1) {
+        return reply.code(404).send({ success: false, error: `Gateway ${id} not found` });
+      }
+
+      const remaining = gateways.filter((g) => g.id !== id);
+
+      await request.tenantDb.shop.update({
+        where: { id: request.shopId },
+        data: {
+          settings: {
+            ...settings,
+            paymentGateways: remaining,
+          },
+        },
+      });
+
+      return reply.code(200).send({ success: true, data: { deleted: true } });
+    },
+  );
+
   // GET /reconciliation — Reconciliation view: match payments against invoices
   fastify.get(
     "/reconciliation",
