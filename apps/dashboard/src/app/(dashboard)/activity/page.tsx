@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   AlertCircle,
-  ArrowRight,
   Download,
   Package,
   Truck,
@@ -27,7 +26,6 @@ import { EventTimeline } from './components/event-timeline';
 import { EventFilters } from './components/event-filters';
 import { useApiList } from '@/hooks/use-api';
 
-// Types
 export interface ActivityEvent {
   id: string;
   type: 'order' | 'shipment' | 'driver' | 'system' | 'webhook' | 'workflow';
@@ -45,7 +43,7 @@ export interface ActivityEvent {
     id: string;
     name: string;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export default function ActivityPage() {
@@ -60,22 +58,18 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
-  const [events, setEvents] = useState<ActivityEvent[]>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hasMore, setHasMore] = useState(true);
 
+  // Live mode: poll the real API every 30 seconds
   useEffect(() => {
-    if (apiEvents.length > 0) setEvents(apiEvents);
-  }, [apiEvents]);
+    if (!isLiveMode) return;
+    const interval = setInterval(() => refetch(), 30000);
+    return () => clearInterval(interval);
+  }, [isLiveMode, refetch]);
 
-  if (loading && events.length === 0) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  // Filter and search logic
   const filteredEvents = useCallback(() => {
-    return (events || []).filter((event) => {
-      // Search filter
+    return (apiEvents || []).filter((event) => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
@@ -85,62 +79,25 @@ export default function ActivityPage() {
           event.user?.name.toLowerCase().includes(query);
         if (!matchesSearch) return false;
       }
-
-      // Type filter
-      if (filters.types.length > 0 && !filters.types.includes(event.type)) {
-        return false;
-      }
-
-      // Severity filter
-      if (
-        filters.severities.length > 0 &&
-        !filters.severities.includes(event.severity)
-      ) {
-        return false;
-      }
-
-      // Date range filter
-      if (filters.startDate && new Date(event.timestamp) < filters.startDate) {
-        return false;
-      }
-      if (filters.endDate && new Date(event.timestamp) > filters.endDate) {
-        return false;
-      }
-
-      // User filter
-      if (filters.userId && event.user?.id !== filters.userId) {
-        return false;
-      }
-
+      if (filters.types.length > 0 && !filters.types.includes(event.type)) return false;
+      if (filters.severities.length > 0 && !filters.severities.includes(event.severity)) return false;
+      if (filters.startDate && new Date(event.timestamp) < filters.startDate) return false;
+      if (filters.endDate && new Date(event.timestamp) > filters.endDate) return false;
+      if (filters.userId && event.user?.id !== filters.userId) return false;
       return true;
     });
-  }, [events, searchQuery, filters]);
+  }, [apiEvents, searchQuery, filters]);
 
-  const displayedEvents = filteredEvents();
-
-  // Live mode: poll the API every 30 seconds for new events
-  useEffect(() => {
-    if (!isLiveMode) return;
-    const interval = setInterval(() => { refetch(); }, 30_000);
-    return () => clearInterval(interval);
-  }, [isLiveMode, refetch]);
-
-  // Debounced search
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    searchTimeoutRef.current = setTimeout(() => {
-      // Search is already filtered in filteredEvents
-    }, 300);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
   };
 
-  // Export events as CSV
   const handleExport = () => {
+    const displayed = filteredEvents();
     const csvContent = [
       ["ID", "Type", "Severity", "Title", "Description", "Timestamp", "User"],
-      ...displayedEvents.map((event) => [
+      ...displayed.map((event) => [
         event.id,
         event.type,
         event.severity,
@@ -162,46 +119,34 @@ export default function ActivityPage() {
     window.URL.revokeObjectURL(url);
   };
 
-  // Get event icon
   const getEventIcon = (type: ActivityEvent['type']) => {
     const iconProps = 'w-4 h-4';
     switch (type) {
-      case 'order':
-        return <Package className={iconProps} />;
-      case 'shipment':
-        return <Truck className={iconProps} />;
-      case 'driver':
-        return <Users className={iconProps} />;
-      case 'system':
-        return <Zap className={iconProps} />;
-      case 'webhook':
-        return <Webhook className={iconProps} />;
-      case 'workflow':
-        return <GitBranch className={iconProps} />;
-      default:
-        return <AlertCircle className={iconProps} />;
+      case 'order': return <Package className={iconProps} />;
+      case 'shipment': return <Truck className={iconProps} />;
+      case 'driver': return <Users className={iconProps} />;
+      case 'system': return <Zap className={iconProps} />;
+      case 'webhook': return <Webhook className={iconProps} />;
+      case 'workflow': return <GitBranch className={iconProps} />;
+      default: return <AlertCircle className={iconProps} />;
     }
   };
 
-  // Get severity badge variant
   const getSeverityBadgeVariant = (severity: ActivityEvent['severity']) => {
     switch (severity) {
-      case 'error':
-        return 'danger';
-      case 'warning':
-        return 'warning';
-      case 'success':
-        return 'success';
-      case 'info':
-        return 'info';
-      default:
-        return 'default';
+      case 'error': return 'danger';
+      case 'warning': return 'warning';
+      case 'success': return 'success';
+      case 'info': return 'info';
+      default: return 'default';
     }
   };
 
-  const selectedEvent = selectedEventId
-    ? displayedEvents.find((e) => e.id === selectedEventId)
-    : null;
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const displayedEvents = filteredEvents();
+  const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
 
   return (
     <div
@@ -221,7 +166,6 @@ export default function ActivityPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {/* Live indicator */}
               <div
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-md border",
@@ -242,9 +186,7 @@ export default function ActivityPage() {
                 <span
                   className={cn(
                     "text-xs font-medium",
-                    isLiveMode
-                      ? "text-emerald-500"
-                      : "text-gray-300"
+                    isLiveMode ? "text-emerald-500" : "text-gray-300"
                   )}
                 >
                   {isLiveMode ? "Live" : "Paused"}
@@ -265,7 +207,6 @@ export default function ActivityPage() {
 
           {/* Search and filters */}
           <div className="space-y-4">
-            {/* Search bar */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <Input
@@ -291,10 +232,8 @@ export default function ActivityPage() {
               )}
             </div>
 
-            {/* Filters */}
             <EventFilters filters={filters} setFilters={setFilters} />
 
-            {/* Active filters display */}
             {(filters.types.length > 0 ||
               filters.severities.length > 0 ||
               filters.startDate ||
@@ -320,9 +259,7 @@ export default function ActivityPage() {
                 {filters.severities.map((severity) => (
                   <Badge
                     key={severity}
-                    variant={getSeverityBadgeVariant(
-                      severity as ActivityEvent["severity"]
-                    )}
+                    variant={getSeverityBadgeVariant(severity as ActivityEvent["severity"]) as Parameters<typeof Badge>[0]['variant']}
                     className="gap-1.5 cursor-pointer hover:opacity-80"
                     onClick={() => {
                       setFilters((prev) => ({
@@ -335,26 +272,20 @@ export default function ActivityPage() {
                     <X className="w-3 h-3 ml-1" />
                   </Badge>
                 ))}
-                {(filters.types.length > 0 ||
-                  filters.severities.length > 0 ||
-                  filters.startDate ||
-                  filters.endDate ||
-                  filters.userId) && (
-                  <button
-                    onClick={() =>
-                      setFilters({
-                        types: [],
-                        severities: [],
-                        startDate: null,
-                        endDate: null,
-                        userId: null,
-                      })
-                    }
-                    className="text-xs text-blue-400 hover:text-blue-300 font-medium"
-                  >
-                    Clear all
-                  </button>
-                )}
+                <button
+                  onClick={() =>
+                    setFilters({
+                      types: [],
+                      severities: [],
+                      startDate: null,
+                      endDate: null,
+                      userId: null,
+                    })
+                  }
+                  className="text-xs text-blue-400 hover:text-blue-300 font-medium"
+                >
+                  Clear all
+                </button>
               </div>
             )}
           </div>
@@ -380,16 +311,12 @@ export default function ActivityPage() {
             }
             action={
               searchQuery
-                ? {
-                    label: "Clear search",
-                    onClick: () => setSearchQuery(""),
-                  }
+                ? { label: "Clear search", onClick: () => setSearchQuery("") }
                 : undefined
             }
           />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Timeline */}
             <div className="lg:col-span-2">
               <EventTimeline
                 events={displayedEvents}
@@ -399,19 +326,17 @@ export default function ActivityPage() {
                 isLive={isLiveMode}
                 getEventIcon={getEventIcon}
                 getSeverityBadge={(severity) => (
-                  <Badge variant={getSeverityBadgeVariant(severity)}>
+                  <Badge variant={getSeverityBadgeVariant(severity) as Parameters<typeof Badge>[0]['variant']}>
                     {severity}
                   </Badge>
                 )}
               />
             </div>
 
-            {/* Event detail panel */}
             {selectedEvent && (
               <div className="lg:col-span-1">
                 <Card className="sticky top-24 h-fit">
                   <CardContent className="p-6 space-y-6">
-                    {/* Header */}
                     <div>
                       <button
                         onClick={() => setSelectedEventId(null)}
@@ -428,39 +353,28 @@ export default function ActivityPage() {
                           {getEventIcon(selectedEvent.type)}
                         </div>
                         <div className="flex-1">
-                          <Badge variant={getSeverityBadgeVariant(selectedEvent.severity)}>
-                            {selectedEvent.severity.charAt(0).toUpperCase() +
-                              selectedEvent.severity.slice(1)}
+                          <Badge variant={getSeverityBadgeVariant(selectedEvent.severity) as Parameters<typeof Badge>[0]['variant']}>
+                            {selectedEvent.severity.charAt(0).toUpperCase() + selectedEvent.severity.slice(1)}
                           </Badge>
                         </div>
                       </div>
                     </div>
 
                     <div className="border-t border-[#1e1e2e] pt-4">
-                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                        Description
-                      </p>
-                      <p className="text-sm text-white">
-                        {selectedEvent.description}
-                      </p>
+                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Description</p>
+                      <p className="text-sm text-white">{selectedEvent.description}</p>
                     </div>
 
                     {selectedEvent.user && (
                       <div className="border-t border-[#1e1e2e] pt-4">
-                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
-                          Triggered by
-                        </p>
+                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">Triggered by</p>
                         <div className="flex items-center gap-3">
                           <Avatar size="sm">
                             <AvatarFallback name={selectedEvent.user.name} />
                           </Avatar>
                           <div>
-                            <p className="text-sm font-medium text-white">
-                              {selectedEvent.user.name}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {selectedEvent.user.id}
-                            </p>
+                            <p className="text-sm font-medium text-white">{selectedEvent.user.name}</p>
+                            <p className="text-xs text-gray-400">{selectedEvent.user.id}</p>
                           </div>
                         </div>
                       </div>
@@ -468,54 +382,33 @@ export default function ActivityPage() {
 
                     {selectedEvent.entity && (
                       <div className="border-t border-[#1e1e2e] pt-4">
-                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
-                          Related entity
-                        </p>
+                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">Related entity</p>
                         <div className="bg-[#12121a] rounded-md p-3 border border-[#1e1e2e]">
-                          <p className="text-xs text-gray-300 mb-1">
-                            {selectedEvent.entity.type.toUpperCase()}
-                          </p>
-                          <p className="text-sm font-medium text-blue-400">
-                            {selectedEvent.entity.name}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            ID: {selectedEvent.entity.id}
-                          </p>
+                          <p className="text-xs text-gray-300 mb-1">{selectedEvent.entity.type.toUpperCase()}</p>
+                          <p className="text-sm font-medium text-blue-400">{selectedEvent.entity.name}</p>
+                          <p className="text-xs text-gray-400 mt-1">ID: {selectedEvent.entity.id}</p>
                         </div>
                       </div>
                     )}
 
                     <div className="border-t border-[#1e1e2e] pt-4">
-                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                        Timestamp
-                      </p>
-                      <p className="text-sm text-white">
-                        {new Date(selectedEvent.timestamp).toLocaleString()}
-                      </p>
+                      <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Timestamp</p>
+                      <p className="text-sm text-white">{new Date(selectedEvent.timestamp).toLocaleString()}</p>
                     </div>
 
-                    {selectedEvent.metadata &&
-                      Object.keys(selectedEvent.metadata).length > 0 && (
-                        <div className="border-t border-[#1e1e2e] pt-4">
-                          <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
-                            Metadata
-                          </p>
-                          <div className="space-y-2">
-                            {Object.entries(selectedEvent.metadata).map(
-                              ([key, value]) => (
-                                <div key={key} className="text-xs">
-                                  <span className="text-gray-300">
-                                    {key}:
-                                  </span>
-                                  <span className="text-white ml-2">
-                                    {String(value)}
-                                  </span>
-                                </div>
-                              )
-                            )}
-                          </div>
+                    {selectedEvent.metadata && Object.keys(selectedEvent.metadata).length > 0 && (
+                      <div className="border-t border-[#1e1e2e] pt-4">
+                        <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">Metadata</p>
+                        <div className="space-y-2">
+                          {Object.entries(selectedEvent.metadata).map(([key, value]) => (
+                            <div key={key} className="text-xs">
+                              <span className="text-gray-300">{key}:</span>
+                              <span className="text-white ml-2">{String(value)}</span>
+                            </div>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

@@ -28,18 +28,21 @@ import { ChannelSidebar } from "@/components/collaboration/channel-sidebar";
 import { useApiList } from '@/hooks/use-api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { useAuth } from '@/lib/auth-context';
 
 interface MentionSuggestion extends User {
   highlighted: boolean;
 }
 
 function TeamCollaborationPage() {
+  const { user, token } = useAuth();
+
   const collaboration = useCollaboration({
     url: process.env.NEXT_PUBLIC_REALTIME_URL,
-    token: "", // This would come from auth context in real app
-    userId: "current-user", // This would come from auth context
-    userName: "Current User", // This would come from auth context
-    autoConnect: false, // Start manual for demo
+    token: token ?? "",
+    userId: user?.id ?? "",
+    userName: user?.name ?? "",
+    autoConnect: !!token && !!user,
   });
 
   const [showThreadPanel, setShowThreadPanel] = useState(false);
@@ -248,7 +251,7 @@ function TeamCollaborationPage() {
           <div className="flex-1 flex flex-col">
             <MessageList
               messages={collaboration.messages}
-              currentUserId="current-user"
+              currentUserId={user?.id ?? ""}
               isLoadingOlder={collaboration.isLoadingMessages}
               onLoadOlder={collaboration.loadOlderMessages}
               onReply={handleOpenThread}
@@ -308,7 +311,7 @@ function TeamCollaborationPage() {
             <ThreadPanel
               threadId={selectedThreadId}
               messages={collaboration.threadMessages}
-              currentUserId="current-user"
+              currentUserId={user?.id ?? ""}
               onClose={() => {
                 setShowThreadPanel(false);
                 collaboration.closeThread();
