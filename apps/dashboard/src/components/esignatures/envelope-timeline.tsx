@@ -34,7 +34,9 @@ interface EnvelopeTimelineProps {
   className?: string;
 }
 
-const getIcon = (type: TimelineEvent["type"]) => {
+const getIcon = (
+  type: TimelineEvent["type"]
+) => {
   switch (type) {
     case "created":
       return PackageIcon;
