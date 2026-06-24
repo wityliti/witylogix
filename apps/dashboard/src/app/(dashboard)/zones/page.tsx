@@ -15,6 +15,7 @@ import { ZoneSearch } from '@/components/zones/zone-search';
 import { KpiStrip } from '@/components/zones/kpi-strip';
 import { ZoneInspector } from '@/components/zones/zone-inspector';
 import { track } from '@/lib/track';
+import { api } from '@/lib/api';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
 import { useZoneOverlays } from '@/hooks/use-zone-overlays';
 
@@ -66,7 +67,6 @@ function EmptyZones() {
 
 export default function ZonesPage() {
   const router = useRouter();
-  const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
   const { data: geojson, refetch: refetchZones } = useZonesGeoJson();
   const [overlays, setOverlays] = useState<OverlayState>(DEFAULT_OVERLAYS);
   const { data: overlaysData } = useZoneOverlays(overlays.window);
@@ -127,7 +127,7 @@ export default function ZonesPage() {
         className="relative h-[calc(100vh-64px)] w-full"
         style={{ background: 'var(--wl-bg-root)' }}
       >
-        <WLMap maptilerKey={maptilerKey} center={DEFAULT_CENTER} zoom={11}>
+        <WLMap center={DEFAULT_CENTER} zoom={11}>
           {geojson && (
             <ZoneLayer zones={geojson} selectedId={selectedId} onSelect={setSelectedId} />
           )}
@@ -146,11 +146,7 @@ export default function ZonesPage() {
                   zoneId: selectedZone.id,
                   type: shape.type,
                 });
-                await fetch(`/api/v4/zones/${selectedZone.id}`, {
-                  method: 'PATCH',
-                  headers: { 'content-type': 'application/json' },
-                  body: JSON.stringify({ shape }),
-                });
+                await api.patch(`/api/v4/zones/${selectedZone.id}`, { shape });
                 setDrawing(false);
                 await refetchZones();
               }}
@@ -187,14 +183,10 @@ export default function ZonesPage() {
               overlay={overlay}
               mode={mode}
               onSave={async (patch) => {
-                await fetch(`/api/v4/zones/${selectedZone.id}`, {
-                  method: 'PATCH',
-                  headers: { 'content-type': 'application/json' },
-                  body: JSON.stringify(patch),
-                });
+                await api.patch(`/api/v4/zones/${selectedZone.id}`, patch);
               }}
               onDelete={async () => {
-                await fetch(`/api/v4/zones/${selectedZone.id}`, { method: 'DELETE' });
+                await api.delete(`/api/v4/zones/${selectedZone.id}`);
                 setSelectedId(null);
                 await refetchZones();
               }}

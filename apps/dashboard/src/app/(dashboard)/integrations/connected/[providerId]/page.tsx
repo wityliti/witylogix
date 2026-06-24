@@ -273,7 +273,7 @@ export default function IntegrationDetailPage() {
                       );
                       setShowTestResult({
                         success: true,
-                        message: (result as { message?: string }).message ?? "Connection test completed",
+                        message: result.message || "Connection test completed",
                       });
                     } catch (err) {
                       setShowTestResult({

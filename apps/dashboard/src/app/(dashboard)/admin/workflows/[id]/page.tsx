@@ -114,6 +114,16 @@ const formatDuration = (ms?: number): string => {
   return `${m}m ${rem}s`;
 };
 
+const formatDuration = (ms?: number): string => {
+  if (!ms) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}m ${rem}s`;
+};
+
 function JsonViewer({ data }: { data: Record<string, any> }) {
   return (
     <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 text-xs text-gray-400 overflow-auto font-mono leading-relaxed">

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Card } from '@/components/ui/card';
@@ -151,13 +152,7 @@ export default function CODReconciliationPage() {
     setRemitError(null);
     setRemitSuccess(null);
     try {
-      const res = await fetch('/api/v4/finance/cod/remit', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deliveryIds: Array.from(selectedIds) }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message ?? 'Failed to mark as remitted');
+      const json = await api.patch<{ data: { updated: number } }>('/api/v4/finance/cod/remit', { deliveryIds: Array.from(selectedIds) });
       setRemitSuccess(`${json.data.updated} deliveries marked as remitted.`);
       setSelectedIds(new Set());
       refetchSummary();

@@ -100,6 +100,16 @@ export default function AdminShopDetail() {
 
   const shop = shopData?.data;
 
+  const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
+    shopId ? `/api/v4/admin/stores/${shopId}` : null,
+  );
+
+  const { items: activityLogs, loading: activityLoading } = useApiList<ActivityItem>(
+    shopId ? `/api/v4/admin/activity?limit=20` : null,
+  );
+
+  const shop = shopData?.data;
+
   const { data: store, loading: storeLoading, error: storeError, refetch: refetchStore } = useApiQuery<StoreDetail>(`/api/v4/admin/stores/${id}`);
   const { data: billingData, loading: billingLoading } = useApiQuery<{ data: BillingRecord[] }>(`/api/v4/admin/stores/${id}/billing`);
   const { data: activityData, loading: activityLoading } = useApiQuery<{ data: ActivityEntry[] }>(`/api/v4/admin/stores/${id}/activity`);

@@ -307,6 +307,49 @@ export function LiveKPICounters({ className }: LiveKPICountersProps) {
     ];
   }, [data]);
 
+  const metrics = useMemo<KPIMetric[]>(() => {
+    if (!data) return [];
+    const onTime = data.onTimeRate ?? 0;
+    return [
+      {
+        label: "Orders Today",
+        value: data.totalOrders,
+        previousValue: 0,
+        icon: <Package className="w-5 h-5" />,
+        unit: "orders",
+        status: "good",
+        sparkline: [data.totalOrders],
+      },
+      {
+        label: "Active Deliveries",
+        value: data.totalDeliveries,
+        previousValue: 0,
+        icon: <Truck className="w-5 h-5" />,
+        unit: "in transit",
+        status: "good",
+        sparkline: [data.totalDeliveries],
+      },
+      {
+        label: "Available Drivers",
+        value: data.activeDrivers,
+        previousValue: 0,
+        icon: <Users className="w-5 h-5" />,
+        unit: "drivers",
+        status: data.activeDrivers < 5 ? "critical" : data.activeDrivers < 10 ? "warning" : "good",
+        sparkline: [data.activeDrivers],
+      },
+      {
+        label: "SLA Performance",
+        value: Math.round(onTime * 10) / 10,
+        previousValue: 0,
+        icon: <Gauge className="w-5 h-5" />,
+        unit: "%",
+        status: onTime < 85 ? "critical" : onTime < 95 ? "warning" : "good",
+        sparkline: [onTime],
+      },
+    ];
+  }, [data]);
+
   const metrics = statsToMetrics(stats);
   return (
     <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
