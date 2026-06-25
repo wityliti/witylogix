@@ -39,7 +39,7 @@ const FulfillmentTracker = ({
   shipped: shippedProp = 0,
   delivered: deliveredProp = 0,
   slaTotalHours = 48,
-  slaDueTime,
+  slaDueTime = undefined,
   isOverdue = false,
   className,
 }: FulfillmentTrackerProps) => {

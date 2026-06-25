@@ -13,7 +13,7 @@ import {
   Users,
   Gauge,
 } from "lucide-react";
-import { useDashboardStats, type DashboardStats } from "@/hooks/use-dashboard-stats";
+import { useApiQuery } from "@/hooks/use-api";
 
 interface KPIMetric {
   label: string;
@@ -23,6 +23,18 @@ interface KPIMetric {
   unit: string;
   status: "good" | "warning" | "critical";
   sparkline: number[];
+}
+
+interface DashboardStats {
+  ordersToday?: number;
+  activeDeliveries?: number;
+  availableDrivers?: number;
+  slaPerformance?: number;
+  // snake_case variants
+  orders_today?: number;
+  active_deliveries?: number;
+  available_drivers?: number;
+  sla_performance?: number;
 }
 
 interface LiveKPICountersProps {
@@ -161,22 +173,78 @@ function KPICardSkeleton() {
   );
 }
 
-interface AnalyticsOverview {
-  totalOrders: number;
-  totalDeliveries: number;
-  activeDrivers: number;
-  onTimeRate: number;
-  avgDeliveryTime: number;
+function getDriverStatus(value: number): "good" | "warning" | "critical" {
+  if (value < 10) return "critical";
+  if (value < 15) return "warning";
+  return "good";
+}
+
+function getSlaStatus(value: number): "good" | "warning" | "critical" {
+  if (value < 92) return "critical";
+  if (value < 95) return "warning";
+  return "good";
+}
+
+function buildMetrics(stats: DashboardStats): KPIMetric[] {
+  const ordersToday = stats.ordersToday ?? stats.orders_today ?? 0;
+  const activeDeliveries = stats.activeDeliveries ?? stats.active_deliveries ?? 0;
+  const availableDrivers = stats.availableDrivers ?? stats.available_drivers ?? 0;
+  const slaPerformance = stats.slaPerformance ?? stats.sla_performance ?? 0;
+
+  return [
+    {
+      label: "Orders Today",
+      value: ordersToday,
+      previousValue: 0,
+      icon: <Package className="w-5 h-5" />,
+      unit: "orders",
+      status: "good",
+      sparkline: [],
+    },
+    {
+      label: "Active Deliveries",
+      value: activeDeliveries,
+      previousValue: 0,
+      icon: <Truck className="w-5 h-5" />,
+      unit: "in transit",
+      status: "good",
+      sparkline: [],
+    },
+    {
+      label: "Available Drivers",
+      value: availableDrivers,
+      previousValue: 0,
+      icon: <Users className="w-5 h-5" />,
+      unit: "drivers",
+      status: getDriverStatus(availableDrivers),
+      sparkline: [],
+    },
+    {
+      label: "SLA Performance",
+      value: slaPerformance,
+      previousValue: 0,
+      icon: <Gauge className="w-5 h-5" />,
+      unit: "%",
+      status: getSlaStatus(slaPerformance),
+      sparkline: [],
+    },
+  ];
 }
 
 export function LiveKPICounters({ className }: LiveKPICountersProps) {
-  const { data, loading, refetch } = useApiQuery<AnalyticsOverview>('/api/v4/analytics/overview?range=today');
+  const { data, loading, error, refetch } = useApiQuery<DashboardStats>(
+    "/api/v4/dashboard/stats"
+  );
 
-  // Poll every 60 seconds for fresh data
+  // Poll every 60s
   useEffect(() => {
-    const interval = setInterval(() => { refetch(); }, 60_000);
+    const interval = setInterval(() => {
+      refetch();
+    }, 60000);
     return () => clearInterval(interval);
   }, [refetch]);
+
+  const metrics: KPIMetric[] = data ? buildMetrics(data) : [];
 
   const metrics = useMemo<KPIMetric[]>(() => {
     if (!data) return [];
@@ -355,9 +423,15 @@ export function LiveKPICounters({ className }: LiveKPICountersProps) {
     <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
       {loading
         ? Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-        : metrics.map((metric, i) => (
-            <KPICard key={i} metric={metric} />
-          ))}
+        : error
+          ? (
+            <div className="col-span-4 text-sm text-wl-danger-400 text-center py-4">
+              Failed to load metrics. <button onClick={refetch} className="underline">Retry</button>
+            </div>
+          )
+          : metrics.map((metric, i) => (
+              <KPICard key={i} metric={metric} />
+            ))}
     </div>
   );
 }

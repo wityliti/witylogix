@@ -22,6 +22,7 @@ interface VitalsChartProps {
   className?: string;
 }
 
+
 interface VitalMetric {
   name: string;
   unit: string;
@@ -33,14 +34,21 @@ interface VitalMetric {
   change: number;
 }
 
-const getTrend = (current: number, previous: number | undefined): "up" | "down" | "stable" => {
-  if (previous === undefined) return "stable";
-  const diff = current - previous;
-  if (Math.abs(diff) < 0.5) return "stable";
-  return diff > 0 ? "up" : "down";
-};
+function calcTrend(
+  latestVal: number,
+  prevVal: number | undefined
+): { trend: "up" | "down" | "stable"; change: number } {
+  if (prevVal === undefined) return { trend: "stable", change: 0 };
+  const diff = latestVal - prevVal;
+  const pct = prevVal !== 0 ? (diff / prevVal) * 100 : 0;
+  if (Math.abs(pct) < 0.5) return { trend: "stable", change: 0 };
+  return { trend: diff > 0 ? "up" : "down", change: Math.round(diff * 10) / 10 };
+}
 
-const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): VitalMetric[] => [
+const getMetricsFromReadings = (
+  latest: VitalReading,
+  prev: VitalReading | undefined
+): VitalMetric[] => [
   {
     name: "Heart Rate",
     unit: "bpm",
@@ -48,8 +56,7 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     normalMax: 100,
     color: "wl-primary-400",
     value: latest.heartRate,
-    trend: getTrend(latest.heartRate, previous?.heartRate),
-    change: previous ? Math.round(latest.heartRate - previous.heartRate) : 0,
+    ...calcTrend(latest.heartRate, prev?.heartRate),
   },
   {
     name: "BP Systolic",
@@ -58,8 +65,7 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     normalMax: 120,
     color: "wl-info-400",
     value: latest.bpSystolic,
-    trend: getTrend(latest.bpSystolic, previous?.bpSystolic),
-    change: previous ? Math.round(latest.bpSystolic - previous.bpSystolic) : 0,
+    ...calcTrend(latest.bpSystolic, prev?.bpSystolic),
   },
   {
     name: "BP Diastolic",
@@ -68,8 +74,7 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     normalMax: 80,
     color: "wl-info-400",
     value: latest.bpDiastolic,
-    trend: getTrend(latest.bpDiastolic, previous?.bpDiastolic),
-    change: previous ? Math.round(latest.bpDiastolic - previous.bpDiastolic) : 0,
+    ...calcTrend(latest.bpDiastolic, prev?.bpDiastolic),
   },
   {
     name: "Temperature",
@@ -78,8 +83,7 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     normalMax: 99,
     color: "wl-warning-400",
     value: latest.temperature,
-    trend: getTrend(latest.temperature, previous?.temperature),
-    change: previous ? Math.round((latest.temperature - previous.temperature) * 10) / 10 : 0,
+    ...calcTrend(latest.temperature, prev?.temperature),
   },
   {
     name: "SpO2",
@@ -88,8 +92,7 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     normalMax: 100,
     color: "wl-success-400",
     value: latest.spO2,
-    trend: getTrend(latest.spO2, previous?.spO2),
-    change: previous ? Math.round((latest.spO2 - previous.spO2) * 10) / 10 : 0,
+    ...calcTrend(latest.spO2, prev?.spO2),
   },
   {
     name: "Weight",
@@ -98,8 +101,7 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     normalMax: 180,
     color: "wl-danger-400",
     value: latest.weight,
-    trend: getTrend(latest.weight, previous?.weight),
-    change: previous ? Math.round((latest.weight - previous.weight) * 10) / 10 : 0,
+    ...calcTrend(latest.weight, prev?.weight),
   },
 ];
 
@@ -140,17 +142,16 @@ const VitalsChart = ({
         <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
           Vital Signs Chart
         </h3>
-        <div className="flex flex-col items-center py-12 text-wl-text-tertiary">
-          <ActivityIcon className="w-10 h-10 mb-3 opacity-30" />
-          <p className="text-sm">No vital readings recorded</p>
+        <div className="text-sm text-wl-text-secondary text-center py-8">
+          No vital signs recorded yet.
         </div>
       </Card>
     );
   }
 
   const latestReading = readings[readings.length - 1];
-  const previousReading = readings.length > 1 ? readings[readings.length - 2] : undefined;
-  const metrics = getMetricsFromReadings(latestReading, previousReading);
+  const prevReading = readings.length >= 2 ? readings[readings.length - 2] : undefined;
+  const metrics = getMetricsFromReadings(latestReading, prevReading);
 
   const now = Date.now();
   const rangeMs =

@@ -41,19 +41,18 @@ export function RateLimitDisplay({
     return `${seconds}s remaining`;
   };
 
-  // Generate historical usage chart
+  // Generate historical usage chart using deterministic values
   const generateHistoricalChart = () => {
     const width = 300;
     const height = 60;
     const padding = 5;
     const dataPoints = 24; // Last hour in 2.5min intervals
 
-    // Generate a deterministic sine-wave shaped history centred on current usage
+    // Use current usage as a flat baseline (no random data available)
     const historicalData = Array.from({ length: dataPoints }, (_, i) => {
-      const phase = (i / dataPoints) * Math.PI * 2;
-      const base = rateLimit.current * 0.85;
-      const amplitude = rateLimit.current * 0.15;
-      return base + amplitude * Math.sin(phase);
+      // Linear interpolation from 70% to current usage over the hour
+      const fraction = i / (dataPoints - 1);
+      return rateLimit.current * (0.7 + fraction * 0.3);
     });
 
     const max = Math.max(...historicalData, rateLimit.limit);

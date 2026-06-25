@@ -35,6 +35,7 @@ interface PatientCardProps {
   className?: string;
 }
 
+
 const getRiskColor = (
   level: "low" | "medium" | "high"
 ): "success" | "warning" | "danger" => {

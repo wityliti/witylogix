@@ -7,8 +7,44 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { BadgeVariant } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronUp, Clock, Package, AlertCircle } from "lucide-react";
-import { useOrders, type Order } from "@/hooks/use-orders";
+import {
+  ChevronUp,
+  Clock,
+  Package,
+  AlertCircle,
+} from "lucide-react";
+import { useApiQuery } from "@/hooks/use-api";
+
+interface Order {
+  id: string;
+  customerId: string;
+  customerName: string;
+  status: "pending" | "assigned" | "in-transit" | "delivered" | "cancelled";
+  createdAt: Date;
+  amount: number;
+  itemCount: number;
+}
+
+interface ApiOrder {
+  id: string;
+  customerName?: string;
+  customer?: {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  status: string;
+  createdAt: string;
+  totalAmount?: number;
+  lineItems?: unknown[];
+}
+
+interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
 interface LiveOrderFeedProps {
   className?: string;
@@ -24,8 +60,44 @@ const statusConfig: Record<string, { badge: BadgeVariant; label: string }> = {
   cancelled:  { badge: "danger",   label: "Cancelled" },
 };
 
-function timeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+const statusLabels: Record<Order["status"], string> = {
+  pending: "Pending",
+  assigned: "Assigned",
+  "in-transit": "In Transit",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
+
+function normalizeStatus(raw: string): Order["status"] {
+  const s = raw?.toUpperCase();
+  if (s === "PENDING") return "pending";
+  if (s === "ASSIGNED") return "assigned";
+  if (s === "PICKED_UP" || s === "IN_TRANSIT" || s === "OUT_FOR_DELIVERY") return "in-transit";
+  if (s === "DELIVERED") return "delivered";
+  if (s === "CANCELLED" || s === "CANCELED") return "cancelled";
+  return "pending";
+}
+
+function mapApiOrder(o: ApiOrder): Order {
+  const customerName =
+    o.customerName ||
+    (o.customer
+      ? `${o.customer.firstName ?? ""} ${o.customer.lastName ?? ""}`.trim()
+      : "Unknown Customer");
+
+  return {
+    id: o.id,
+    customerId: o.customer?.id ?? "",
+    customerName: customerName || "Unknown Customer",
+    status: normalizeStatus(o.status),
+    createdAt: new Date(o.createdAt),
+    amount: o.totalAmount ?? 0,
+    itemCount: o.lineItems?.length ?? 0,
+  };
+}
+
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   return `${Math.floor(seconds / 3600)}h ago`;
@@ -106,41 +178,35 @@ export function LiveOrderFeed({
   className,
   onOrderClick,
 }: LiveOrderFeedProps) {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
 
-  const { items: rawOrders, loading: isLoading, refetch } =
-    useApiList<any>('/api/v4/orders', { limit: 10 });
+  const { data, loading, refetch } = useApiQuery<{ data: ApiOrder[]; meta: PaginationMeta }>(
+    "/api/v4/orders?limit=10&sort=createdAt:desc"
+  );
 
-  const orders = useMemo<Order[]>(() =>
-    rawOrders.map((o) => ({
-      id: o.id,
-      customerId: o.customerId ?? o.id,
-      customerName: o.customerName ?? "Unknown",
-      status: STATUS_NORMALIZE[o.status] ?? "pending",
-      createdAt: new Date(o.createdAt),
-      amount: o.totalAmount ?? o.totalPrice ?? 0,
-      itemCount: o.itemCount ?? o.items?.length ?? 0,
-    })),
-  [rawOrders]);
-
-  // Poll for new orders every 30 seconds
+  // Map API response to local Order shape whenever data changes
   useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, [refetch]);
-
-  // Notify when new orders arrive
-  useEffect(() => {
-    if (orders.length > prevCountRef.current && prevCountRef.current > 0) {
-      setNewOrderCount((prev) => (isScrolled ? prev + (orders.length - prevCountRef.current) : 0));
+    if (data?.data) {
+      setOrders(data.data.map(mapApiOrder));
     }
-    prevCountRef.current = orders.length;
-  }, [orders.length, isScrolled]);
+  }, [data]);
+
+  // Poll for new orders every 30s (unless paused while user hovers)
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      refetch().then(() => {
+        if (isScrolled) {
+          setNewOrderCount((prev) => prev + 1);
+        }
+      });
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isPaused, isScrolled, refetch]);
 
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;

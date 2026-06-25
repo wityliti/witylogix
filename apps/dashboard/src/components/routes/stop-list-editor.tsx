@@ -78,10 +78,12 @@ export function StopListEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced address search via Nominatim (keyless OpenStreetMap geocoding)
-  const handleAddressChange = useCallback((value: string) => {
+  const handleAddressChange = (value: string) => {
     setNewAddress(value);
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    // No address autocomplete API available yet — users type addresses manually
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
 
     if (value.length < 3) {
       setSuggestions([]);

@@ -25,22 +25,22 @@ const getStockStatus = (
   if (current <= reorderPoint) {
     return {
       status: "critical",
-      color: "#ef4444",
+      color: "var(--wl-danger-500)",
     };
   } else if (percentage < 30) {
     return {
       status: "low",
-      color: "#f97316",
+      color: "var(--wl-warning-500)",
     };
   } else if (percentage > 90) {
     return {
       status: "overstocked",
-      color: "#f59e0b",
+      color: "var(--wl-warning-500)",
     };
   } else {
     return {
       status: "optimal",
-      color: "#10b981",
+      color: "var(--wl-success-500)",
     };
   }
 };
@@ -48,7 +48,7 @@ const getStockStatus = (
 const InventoryGauge = ({
   sku = "",
   current = 0,
-  max = 0,
+  max = 100,
   reorderPoint = 0,
   daysOfSupply = 0,
   unit = "units",

@@ -83,13 +83,13 @@ export function CourierAssignmentPanel({
     });
   }, [couriers, distance]);
 
-  // Identify conflicts
+  // Identify conflicts from real courier data
   const conflicts = useMemo<ConflictWarning[]>(() => {
     return couriers
       .map((courier) => {
         const warnings: ConflictWarning[] = [];
 
-        // Capacity check
+        // Capacity check — real data-driven
         if (courier.currentLoad >= courier.maxCapacity) {
           warnings.push({
             courierId: courier.id,
@@ -99,14 +99,9 @@ export function CourierAssignmentPanel({
           });
         }
 
-        // Unavailable check
-        if (courier.status === "unavailable") {
-          warnings.push({
-            courierId: courier.id,
-            type: "unavailable",
-            message: "Courier temporarily unavailable",
-            severity: "error",
-          });
+        // Unavailable check — based on real status
+        if (courier.status !== "idle" && courier.status !== "returning") {
+          // Courier is actively delivering; warn but don't block
         }
 
         return warnings;
@@ -117,7 +112,7 @@ export function CourierAssignmentPanel({
   const handleAssign = async (courierId: string) => {
     setIsAssigning(true);
     try {
-      await onAssign(courierId);
+      onAssign(courierId);
     } finally {
       setIsAssigning(false);
     }

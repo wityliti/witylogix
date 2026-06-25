@@ -34,7 +34,10 @@ interface EnvelopeTimelineProps {
   className?: string;
 }
 
-const getIcon = (type: TimelineEvent["type"]) => {
+
+const getIcon = (
+  type: TimelineEvent["type"]
+) => {
   switch (type) {
     case "created":
       return PackageIcon;
@@ -173,6 +176,19 @@ const EnvelopeTimeline = ({
   events = [],
   className,
 }: EnvelopeTimelineProps) => {
+  if (events.length === 0) {
+    return (
+      <Card className={cn("w-full p-6", className)}>
+        <h3 className="text-lg font-semibold text-wl-text-primary mb-2">
+          Envelope Status Timeline
+        </h3>
+        <div className="text-sm text-wl-text-secondary text-center py-8">
+          No timeline events yet.
+        </div>
+      </Card>
+    );
+  }
+
   const sortedEvents = [...events].sort(
     (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
   );

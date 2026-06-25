@@ -14,10 +14,30 @@ import {
   CheckCheck as CheckAll,
   X,
 } from "lucide-react";
-import {
-  useNotifications,
-  type Notification,
-} from "@/hooks/use-notifications";
+import { useApiQuery } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+
+interface Notification {
+  id: string;
+  type: "order" | "delivery" | "alert" | "system";
+  title: string;
+  message: string;
+  severity: "info" | "warning" | "critical";
+  read: boolean;
+  timestamp: Date;
+  actionUrl?: string;
+}
+
+interface ApiNotification {
+  id: string;
+  category: string;
+  title: string;
+  message: string;
+  severity: string;
+  status: string;
+  timestamp: string;
+  actionUrl?: string;
+}
 
 interface NotificationCenterProps {
   className?: string;
@@ -42,8 +62,42 @@ const CATEGORY_COLORS: Record<string, string> = {
   PAYMENTS:   "bg-wl-success-bg text-wl-success-400",
 };
 
-function timeAgo(ts: string): string {
-  const seconds = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+const notificationTypeColors: Record<Notification["type"], string> = {
+  order: "bg-wl-primary-500/12 text-wl-primary-400 border-wl-primary-500/20",
+  delivery: "bg-wl-info-bg text-wl-info-400",
+  alert: "bg-wl-warning-bg text-wl-warning-400",
+  system: "bg-wl-bg-surface text-wl-text-secondary",
+};
+
+function mapApiNotification(n: ApiNotification): Notification {
+  const rawType = n.category?.toLowerCase() ?? "system";
+  const type: Notification["type"] = (
+    ["order", "delivery", "alert", "system"].includes(rawType)
+      ? rawType
+      : "system"
+  ) as Notification["type"];
+
+  const rawSeverity = n.severity?.toLowerCase() ?? "info";
+  const severity: Notification["severity"] = (
+    ["info", "warning", "critical"].includes(rawSeverity)
+      ? rawSeverity
+      : "info"
+  ) as Notification["severity"];
+
+  return {
+    id: n.id,
+    type,
+    title: n.title,
+    message: n.message,
+    severity,
+    read: n.status !== "UNREAD",
+    timestamp: new Date(n.timestamp),
+    actionUrl: n.actionUrl,
+  };
+}
+
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -127,36 +181,47 @@ export function NotificationCenter({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { items: rawNotifs, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
+  const { data, refetch } = useApiQuery<{ data: ApiNotification[] }>(
+    "/api/v4/notifications?limit=20&status=UNREAD,READ"
+  );
 
-  const apiNotifs = useMemo<Notification[]>(() =>
-    rawNotifs.map((n) => ({
-      id: n.id,
-      type: TYPE_MAP[n.type ?? n.category] ?? "system",
-      title: n.title ?? n.action ?? "Notification",
-      message: n.message ?? n.description ?? "",
-      severity: (n.severity as Notification["severity"]) ?? "info",
-      read: n.read ?? true,
-      timestamp: new Date(n.timestamp ?? n.createdAt ?? Date.now()),
-      actionUrl: n.actionUrl,
-    })),
-  [rawNotifs]);
-
-  // Local overlay for optimistic read/delete operations
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-
-  const notifications = useMemo(() =>
-    apiNotifs
-      .filter((n) => !deletedIds.has(n.id))
-      .map((n) => readIds.has(n.id) ? { ...n, read: true } : n),
-  [apiNotifs, readIds, deletedIds]);
-
-  // Poll for new notifications every 60 seconds
+  // Map API response to local shape whenever data changes
   useEffect(() => {
-    const interval = setInterval(() => { refetch(); }, 60_000);
+    if (data?.data) {
+      setNotifications(data.data.map(mapApiNotification));
+    }
+  }, [data]);
+
+  // Poll for new notifications every 30s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 30000);
     return () => clearInterval(interval);
   }, [refetch]);
+
+  // Play sound when a new unread notification arrives
+  const prevUnreadCountRef = useRef(0);
+  useEffect(() => {
+    const unreadCount = notifications.filter((n) => !n.read).length;
+    if (unreadCount > prevUnreadCountRef.current && soundEnabled) {
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.frequency.value = 800;
+        gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } catch (e) {
+        // Audio context not supported
+      }
+    }
+    prevUnreadCountRef.current = unreadCount;
+  }, [notifications, soundEnabled]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -176,16 +241,31 @@ export function NotificationCenter({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAsRead = (id: string) => {
-    setReadIds((prev) => new Set([...prev, id]));
+  const markAsRead = async (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+    try {
+      await api.patch(`/api/v4/notifications/${id}/read`);
+    } catch {
+      // Revert on failure
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: false } : n))
+      );
+    }
   };
 
   const markAllAsRead = () => {
     setReadIds(new Set(notifications.map((n) => n.id)));
   };
 
-  const deleteNotification = (id: string) => {
-    setDeletedIds((prev) => new Set([...prev, id]));
+  const deleteNotification = async (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await api.delete(`/api/v4/notifications/${id}`);
+    } catch {
+      // Silently ignore delete failures
+    }
   };
 
   const handleNotificationClick = (notification: Notification) => {
