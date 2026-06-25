@@ -21,6 +21,7 @@ import {
 } from "@/hooks/use-product-sync";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   AlertCircle,
   Check,
@@ -141,7 +142,7 @@ const WITYLOGIX_FIELDS: SyncField[] = [
 ];
 
 export default function ProductSyncPage() {
-  const { items: rawConnections, loading: connectionsLoading } = useApiList<RawConnection>(
+  const { items: rawConnections, loading: connectionsLoading, error: connectionsError, refetch: refetchConnections } = useApiList<RawConnection>(
     '/api/v4/integrations/connections'
   );
   const platforms = rawConnections
@@ -223,6 +224,7 @@ export default function ProductSyncPage() {
   };
 
   if (connectionsLoading) return <LoadingSkeleton />;
+  if (connectionsError) return <ErrorState title="Failed to load connected platforms" error={connectionsError} onRetry={refetchConnections} />;
 
   return (
     <div className="space-y-6">

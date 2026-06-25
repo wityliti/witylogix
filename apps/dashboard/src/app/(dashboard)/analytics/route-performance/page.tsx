@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useApiQuery } from "@/hooks/use-api";
 import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
+import { ErrorState } from "@/components/ui/error-state";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PlannedActualChart } from "./components/planned-actual-chart";
@@ -97,7 +98,7 @@ export default function RoutePerformancePage() {
   const qs = `period=${period}&dateFrom=${dateRange.from.toISOString()}&dateTo=${dateRange.to.toISOString()}`;
 
   const summaryQ = useApiQuery<RoutePerformanceSummary>(
-    `/api/v4/analytics/route-performance?${qs}`
+    `/api/v4/analytics/route-performance?${qs}`,
   );
   const pvaQ = useApiQuery<PlannedVsActualDataPoint[]>(
     `/api/v4/analytics/route-performance/planned-vs-actual?${qs}&granularity=daily`
@@ -117,6 +118,8 @@ export default function RoutePerformancePage() {
   const geoQ = useApiQuery<GeoResponse>(
     view === "map" ? `/api/v4/analytics/route-performance/geo?${qs}&limit=1000` : null
   );
+
+  if (summaryQ.error) return <ErrorState title="Failed to load route performance data" error={summaryQ.error} onRetry={summaryQ.refetch} />;
 
   const summary = summaryQ.data;
   const geoPins: DeliveryPin[] = geoQ.data?.data ?? [];

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 
 // ── Types ─────────────────────────────────────────────────────────
 // Match actual /api/v4/ai/eta-v2/* response shapes
@@ -215,7 +216,7 @@ export default function EtaAccuracyPage() {
 
   const days = period === '24h' ? 1 : period === '7d' ? 7 : 30;
 
-  const { data: perfData, loading: perfLoading } =
+  const { data: perfData, loading: perfLoading, error: perfError, refetch: refetchPerf } =
     useApiQuery<ModelPerformanceResponse>('/api/v4/ai/eta-v2/model-performance');
 
   const { data: featData, loading: featLoading } =
@@ -228,6 +229,8 @@ export default function EtaAccuracyPage() {
 
   const { data: healthData } =
     useApiQuery<EtaHealthResponse>('/api/v4/ai/eta-v2/health');
+
+  if (perfError) return <ErrorState title="Failed to load ETA accuracy data" error={perfError} onRetry={refetchPerf} />;
 
   const metrics  = perfData?.metrics  ?? [];
   const features = featData?.features ?? [];

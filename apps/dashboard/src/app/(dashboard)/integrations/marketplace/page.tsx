@@ -17,6 +17,7 @@ import {
   Loader2,
   ChevronDown,
 } from 'lucide-react';
+import { ErrorState } from '@/components/ui/error-state';
 
 /* ═══════════════════════════════════════════════════════════
    INTEGRATION MARKETPLACE — Catalog Page
@@ -269,7 +270,7 @@ export default function MarketplacePage() {
   const [isSearching, setIsSearching] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const { items: connections } = useApiList<{ slug: string }>('/api/v4/integrations/connections');
+  const { items: connections, error: connectionsError, refetch: refetchConnections } = useApiList<{ slug: string }>('/api/v4/integrations/connections');
   const connectedSlugs = useMemo(() => new Set(connections.map((c) => c.slug)), [connections]);
 
   // Debounce search input
@@ -343,6 +344,8 @@ export default function MarketplacePage() {
   // Get active filter count
   const activeFilterCount =
     selectedCategories.length + (debouncedSearch ? 1 : 0);
+
+  if (connectionsError) return <ErrorState title="Failed to load integrations" error={connectionsError} onRetry={refetchConnections} />;
 
   return (
     <>

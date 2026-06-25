@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   ChevronLeft,
   CheckCircle,
@@ -53,7 +54,7 @@ export default function IntegrationDetailPage() {
   const params = useParams();
   const connectionId = params.providerId as string;
 
-  const { connections, getStatus, pauseSync, resumeSync, forceSync, disconnect } =
+  const { connections, getStatus, pauseSync, resumeSync, forceSync, disconnect, isLoading: connectionsLoading, error: connectionsError, revalidate } =
     useIntegrationStatus({ enablePolling: true });
 
   const connection = getStatus(connectionId);
@@ -78,6 +79,8 @@ export default function IntegrationDetailPage() {
     success: boolean;
     message: string;
   } | null>(null);
+
+  if (connectionsError && !connectionsLoading) return <ErrorState title="Failed to load integration" message={connectionsError} onRetry={revalidate} />;
 
   if (!connection) {
     const isLoading = connections.length === 0;
