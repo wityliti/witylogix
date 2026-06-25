@@ -269,11 +269,9 @@ const ReportBuilderCard = ({
 
       {showPreview && (
         <div className="p-4 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
-          <p className="text-xs font-semibold text-wl-text-secondary mb-2">
-            Preview
-          </p>
-          <div className="w-full h-48 bg-wl-bg-sunken rounded flex items-center justify-center">
-            <span className="text-xs text-wl-text-secondary">Run report to see preview</span>
+          <p className="text-xs font-semibold text-wl-text-secondary mb-2">Preview</p>
+          <div className="w-full h-24 flex items-center justify-center text-xs text-wl-text-secondary border border-dashed border-wl-border-default rounded">
+            Run report to see preview
           </div>
         </div>
       )}

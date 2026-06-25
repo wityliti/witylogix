@@ -80,9 +80,9 @@ export function StopListEditor({
 
   const handleAddressChange = (value: string) => {
     setNewAddress(value);
-    // No address autocomplete API available yet — users type addresses manually
-    setSuggestions([]);
+    // Autocomplete suggestions require a geocoding API integration
     setShowSuggestions(false);
+    setSuggestions([]);
   };
 
     if (value.length < 3) {

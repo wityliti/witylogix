@@ -46,11 +46,11 @@ const getStockStatus = (
 };
 
 const InventoryGauge = ({
-  sku = "",
-  current = 0,
-  max = 100,
-  reorderPoint = 0,
-  daysOfSupply = 0,
+  sku,
+  current,
+  max,
+  reorderPoint,
+  daysOfSupply,
   unit = "units",
   className,
 }: InventoryGaugeProps) => {

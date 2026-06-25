@@ -5,8 +5,11 @@ import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useOrderStats, useOrders } from '@/hooks/use-orders';
+import { useDrivers } from '@/hooks/use-drivers';
 import { useDashboardStats } from '@/hooks/use-dashboard-stats';
-import { useApiList } from '@/hooks/use-api';
 
 // Shapes matching the real API responses
 interface ApiOrder {
@@ -173,14 +176,48 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
 }
 
 export default function HomePage() {
-  const { data: stats, loading: statsLoading, error: statsError } = useDashboardStats();
-  const { items: recentOrders, loading: ordersLoading } = useApiList<ApiOrder>('/api/v4/orders', { limit: 5 });
-  const { items: drivers, loading: driversLoading } = useApiList<ApiDriver>('/api/v4/drivers', { limit: 8 });
+  const { data: orderStats, loading: statsLoading } = useOrderStats();
+  const { data: dashStats, loading: dashLoading } = useDashboardStats();
+  const { items: recentApiOrders, loading: ordersLoading } = useOrders({ limit: 5, sort: '-createdAt' } as any);
+  const { items: drivers, loading: driversLoading } = useDrivers({ limit: 4 });
 
-  const driverUtilization =
-    drivers.length > 0
-      ? Math.round((drivers.filter((d) => d.status !== 'OFFLINE').length / drivers.length) * 100)
-      : 0;
+  const recentOrders: Order[] = recentApiOrders.map((o: any) => ({
+    id: o.id,
+    customerId: o.customerId,
+    status: (o.status as Order['status']) ?? 'pending',
+    eta: o.estimatedDelivery
+      ? new Date(o.estimatedDelivery).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      : undefined,
+    destination: o.deliveryAddress
+      ? `${o.deliveryAddress.street ?? ''}, ${o.deliveryAddress.city ?? ''}`.trim().replace(/^,\s*/, '')
+      : undefined,
+    createdAt: new Date(o.createdAt),
+  }));
+
+  const displayDrivers: Driver[] = drivers.map((d: any) => ({
+    id: d.id,
+    name: d.name,
+    status: (['available', 'en-route', 'delivering', 'offline'].includes(d.status)
+      ? d.status
+      : d.status === 'on_delivery' ? 'delivering'
+      : d.status === 'online' ? 'available'
+      : 'offline') as Driver['status'],
+    activeDeliveries: d.activeDeliveries ?? 0,
+    utilization: d.completionRate ?? 0,
+  }));
+
+  const totalOrders = dashStats?.totalOrdersToday ?? orderStats?.totalOrders ?? 0;
+  const activeDeliveries = dashStats?.pendingDeliveries ?? 0;
+  const driverUtilization = drivers.length > 0
+    ? Math.round((drivers.filter((d: any) => d.status !== 'offline').length / drivers.length) * 100)
+    : 0;
+  const todayRevenue = dashStats?.totalRevenueToday != null
+    ? `$${dashStats.totalRevenueToday.toFixed(2)}`
+    : orderStats?.totalRevenue != null
+      ? `$${orderStats.totalRevenue.toFixed(2)}`
+      : '—';
+
+  const overallLoading = statsLoading && dashLoading;
 
   return (
     <div className="bg-zinc-950 min-h-screen">
@@ -214,30 +251,38 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard
             label="Total Orders"
-            value={stats?.totalOrders ?? '—'}
-            subtitle="All time"
+            value={totalOrders}
+            subtitle="Today"
+            trend="up"
+            trendValue={undefined}
             variant="primary"
-            loading={statsLoading}
+            loading={overallLoading}
           />
           <KPICard
-            label="Delivered Today"
-            value={stats?.deliveredToday ?? '—'}
-            subtitle="Completed deliveries"
+            label="Active Deliveries"
+            value={activeDeliveries}
+            subtitle="In progress"
+            trend="up"
+            trendValue={undefined}
             variant="success"
-            loading={statsLoading}
+            loading={overallLoading}
           />
           <KPICard
-            label="Active Drivers"
-            value={stats ? `${stats.activeDrivers} / ${stats.totalDrivers}` : '—'}
-            subtitle={`${driverUtilization}% utilization`}
-            loading={statsLoading}
+            label="Driver Utilization"
+            value={`${driverUtilization}%`}
+            subtitle={`${drivers.filter((d: any) => d.status !== 'offline').length} active drivers`}
+            trend={driverUtilization > 70 ? 'up' : 'down'}
+            trendValue={undefined}
+            loading={driversLoading}
           />
           <KPICard
             label="Revenue"
-            value={stats ? `$${stats.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
-            subtitle="Total revenue"
+            value={todayRevenue}
+            subtitle="Today"
+            trend="up"
+            trendValue={undefined}
             variant="success"
-            loading={statsLoading}
+            loading={overallLoading}
           />
         </div>
 
@@ -277,7 +322,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <div className="-mx-6 px-6">
-                  {statsLoading ? (
+                  {ordersLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="h-16 bg-zinc-800 rounded animate-pulse" />
@@ -320,14 +365,9 @@ export default function HomePage() {
                 <div className="grid gap-4">
                   {driversLoading
                     ? Array.from({ length: 4 }).map((_, i) => <DriverStatusCard key={i} loading={true} />)
-                    : drivers.length > 0
-                      ? drivers.slice(0, 4).map((driver) => <DriverStatusCard key={driver.id} driver={driver} />)
-                      : (
-                        <div className="text-center py-6">
-                          <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" size={32} className="mx-auto text-gray-600 mb-2" />
-                          <p className="text-sm text-gray-500">No drivers found</p>
-                        </div>
-                      )}
+                    : displayDrivers.length === 0
+                      ? <p className="text-sm text-gray-500 text-center py-4">No drivers found</p>
+                      : displayDrivers.map((driver) => <DriverStatusCard key={driver.id} driver={driver} />)}
                 </div>
                 {drivers.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-zinc-800">
