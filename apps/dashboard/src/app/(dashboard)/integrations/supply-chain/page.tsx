@@ -174,28 +174,25 @@ export default function SupplyChainIntegrationsPage() {
             label="Connected Warehouses"
             value={totalWarehouses}
             icon={<Warehouse size={16} />}
-            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Items Tracked"
             value={totalItems > 0 ? `${Math.floor(totalItems / 1000)}K` : '—'}
             icon={<Package size={16} />}
-            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Synced"
             value={syncedCount}
             icon={<TrendingUp size={16} />}
-            accentColor="#3b82f6"
             index={2}
           />
           <StatCard
             label="Connection Errors"
             value={connections.filter((w) => w.syncStatus === "FAILED").length}
             icon={<AlertTriangle size={16} />}
-            accentColor="#3b82f6"
+            accentColor="var(--wl-danger-500)"
             index={3}
           />
         </div>

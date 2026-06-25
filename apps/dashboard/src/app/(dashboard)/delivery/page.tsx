@@ -352,19 +352,19 @@ export default function DeliveryPage() {
             label="Pending"
             value={loading ? '—' : stats.pending}
             icon={<Clock className="w-5 h-5" />}
-            accentColor="#f59e0b"
+            accentColor="var(--wl-warning-500)"
           />
           <StatCard
             label="Delivered"
             value={loading ? '—' : stats.delivered}
             icon={<CheckCircle className="w-5 h-5" />}
-            accentColor="#10b981"
+            accentColor="var(--wl-success-500)"
           />
           <StatCard
             label="Failed"
             value={loading ? '—' : stats.failed}
             icon={<XCircle className="w-5 h-5" />}
-            accentColor="#ef4444"
+            accentColor="var(--wl-danger-500)"
           />
         </div>
 

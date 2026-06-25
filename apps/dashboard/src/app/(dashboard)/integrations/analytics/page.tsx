@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/ui/stat-card';
 import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   BarChart3,
   TrendingUp,
@@ -156,16 +157,7 @@ export default function AnalyticsIntegrationsPage() {
   );
 
   if (connectionsError) {
-    return (
-      <div className="p-6">
-        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-          <p className="text-sm text-red-400">Failed to load analytics integrations</p>
-          <Button onClick={refetchConnections} variant="secondary" size="sm" className="mt-3">
-            Retry
-          </Button>
-        </div>
-      </div>
-    );
+    return <ErrorState message={connectionsError.message} onRetry={refetchConnections} />;
   }
 
   return (
@@ -194,28 +186,27 @@ export default function AnalyticsIntegrationsPage() {
             label="Active Connections"
             value={activeConnections.length}
             icon={<BarChart3 size={16} />}
-            accentColor="#059669"
+            accentColor="var(--wl-success-600)"
             index={0}
           />
           <StatCard
             label="Connected Dashboards"
             value={totalDashboards}
             icon={<TrendingUp size={16} />}
-            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Connections"
             value={connections.length}
             icon={<RefreshCw size={16} />}
-            accentColor="#0284c7"
+            accentColor="var(--wl-info-500)"
             index={2}
           />
           <StatCard
             label="Total Embeds"
             value={totalEmbeds}
             icon={<Eye size={16} />}
-            accentColor="#d97706"
+            accentColor="var(--wl-warning-500)"
             index={3}
           />
         </div>
