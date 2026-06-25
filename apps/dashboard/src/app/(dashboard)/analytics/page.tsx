@@ -268,16 +268,16 @@ export default function AnalyticsPage() {
         ) : metrics ? (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <MetricTile label="Total Orders" value={metrics.totalOrders.toLocaleString()} icon={Package} accent="#818cf8" delay={0} />
-              <MetricTile label="Deliveries" value={metrics.totalDeliveries.toLocaleString()} icon={Truck} accent="#34d399" delay={50} />
-              <MetricTile label="Active Drivers" value={metrics.activeDrivers} icon={Users} accent="#60a5fa" delay={100} />
-              <MetricTile label="Avg Delivery" value={metrics.avgDeliveryTime} suffix="min" icon={Clock} accent="#fbbf24" delay={150} />
+              <MetricTile label="Total Orders" value={metrics.totalOrders.toLocaleString()} icon={Package} accent="var(--wl-primary-400)" delay={0} />
+              <MetricTile label="Deliveries" value={metrics.totalDeliveries.toLocaleString()} icon={Truck} accent="var(--wl-success-400)" delay={50} />
+              <MetricTile label="Active Drivers" value={metrics.activeDrivers} icon={Users} accent="var(--wl-info-400)" delay={100} />
+              <MetricTile label="Avg Delivery" value={metrics.avgDeliveryTime} suffix="min" icon={Clock} accent="var(--wl-warning-400)" delay={150} />
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <MetricTile label="On-Time Rate" value={metrics.onTimeRate} suffix="%" icon={Zap} accent="#a78bfa" />
-              <MetricTile label="Customer Rating" value={metrics.customerSatisfaction.toFixed(1)} suffix="/5" icon={Activity} accent="#f472b6" />
-              <MetricTile label="Revenue" value={`$${(metrics.revenue / 1000).toFixed(0)}k`} icon={BarChart3} accent="#2dd4bf" />
-              <MetricTile label="Failed Deliveries" value={metrics.failedDeliveries} icon={RefreshCw} accent="#f87171" />
+              <MetricTile label="On-Time Rate" value={metrics.onTimeRate} suffix="%" icon={Zap} accent="var(--wl-primary-300)" />
+              <MetricTile label="Customer Rating" value={metrics.customerSatisfaction.toFixed(1)} suffix="/5" icon={Activity} accent="var(--wl-primary-500)" />
+              <MetricTile label="Revenue" value={`$${(metrics.revenue / 1000).toFixed(0)}k`} icon={BarChart3} accent="var(--wl-success-500)" />
+              <MetricTile label="Failed Deliveries" value={metrics.failedDeliveries} icon={RefreshCw} accent="var(--wl-danger-400)" />
             </div>
           </>
         ) : (
@@ -304,7 +304,7 @@ export default function AnalyticsPage() {
               <div className="h-24 rounded-lg bg-white/[0.03] animate-pulse" />
             ) : hourly.length > 0 ? (
               <>
-                <MiniBarChart data={hourly} dataKey="orders" color="#6366f1" maxVal={maxHourly} />
+                <MiniBarChart data={hourly} dataKey="orders" color="var(--wl-primary-500)" maxVal={maxHourly} />
                 <div className="flex justify-between mt-2 text-[10px] text-white/20 px-0.5">
                   <span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span>
                 </div>
@@ -352,7 +352,7 @@ export default function AnalyticsPage() {
                       <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full"
-                          style={{ width: `${zone.pct}%`, background: `linear-gradient(90deg, #818cf8, #6366f1)`, opacity: 1 - i * 0.12 }}
+                          style={{ width: `${zone.pct}%`, background: `linear-gradient(90deg, var(--wl-primary-400), var(--wl-primary-500))`, opacity: 1 - i * 0.12 }}
                         />
                       </div>
                     </div>

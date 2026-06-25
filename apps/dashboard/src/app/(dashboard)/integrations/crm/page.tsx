@@ -131,25 +131,24 @@ export default function CRMIntegrationPage() {
           <StatCard
             label="Connected Providers"
             value={connectedCount}
-            accentColor="#10b981"
+            accentColor="var(--wl-success-500)"
             index={0}
           />
           <StatCard
             label="Total Contacts"
             value={totalContacts.toLocaleString()}
-            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Active Deals"
             value={totalDeals}
-            accentColor="#f59e0b"
+            accentColor="var(--wl-warning-500)"
             index={2}
           />
           <StatCard
             label="Sync Success Rate"
             value={`${syncSuccessRate}%`}
-            accentColor="#0ea5e9"
+            accentColor="var(--wl-info-500)"
             index={3}
           />
         </div>

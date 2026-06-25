@@ -193,28 +193,27 @@ export default function LastMileIntegrationPage() {
             label="Providers Connected"
             value={connectedCount}
             isLoading={isLoading}
-            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Total Deliveries"
             value={overallStats?.total ?? 0}
             isLoading={isLoading}
-            accentColor="#10b981"
+            accentColor="var(--wl-success-500)"
             index={1}
           />
           <StatCard
             label="Success Rate"
             value={overallStats?.successRate ?? '—'}
             isLoading={isLoading}
-            accentColor="#f59e0b"
+            accentColor="var(--wl-warning-500)"
             index={2}
           />
           <StatCard
             label="Active Now"
             value={totalActiveDeliveries}
             isLoading={statsLoading}
-            accentColor="#60a5fa"
+            accentColor="var(--wl-primary-400)"
             index={3}
           />
         </div>

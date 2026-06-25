@@ -403,28 +403,25 @@ export default function FuelIntegrationsPage() {
             label="Connected Providers"
             value={activeProviders}
             icon={<Plug size={16} />}
-            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Total Fuel Spend"
             value={totalSpend > 0 ? `$${(totalSpend / 1000).toFixed(1)}K` : '$0'}
             icon={<DollarSign size={16} />}
-            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Transactions"
             value={transactions.length}
             icon={<Clock size={16} />}
-            accentColor="#3b82f6"
             index={2}
           />
           <StatCard
             label="Fraud Alerts"
             value={flaggedCount}
             icon={<AlertTriangle size={16} />}
-            accentColor={flaggedCount > 0 ? '#f59e0b' : '#3b82f6'}
+            accentColor={flaggedCount > 0 ? 'var(--wl-warning-500)' : undefined}
             index={3}
           />
         </div>

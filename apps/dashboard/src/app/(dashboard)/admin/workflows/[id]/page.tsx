@@ -282,10 +282,10 @@ export default function WorkflowExecutionDetailPage() {
 
       <div className="p-6">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
-          <StatCard label="Total Steps" value={steps.length} accentColor="#3b82f6" index={0} />
-          <StatCard label="Completed" value={completedSteps} accentColor="#10b981" index={1} />
-          <StatCard label="Failed" value={failedSteps} accentColor="#ef4444" index={2} />
-          <StatCard label="Duration" value={formatDuration(execution.durationMs)} accentColor="#3b82f6" index={3} />
+          <StatCard label="Total Steps" value={steps.length} index={0} />
+          <StatCard label="Completed" value={completedSteps} accentColor="var(--wl-success-500)" index={1} />
+          <StatCard label="Failed" value={failedSteps} accentColor="var(--wl-danger-500)" index={2} />
+          <StatCard label="Duration" value={formatDuration(execution.durationMs)} index={3} />
         </div>
 
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
