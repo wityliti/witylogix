@@ -18,10 +18,10 @@ interface StatsPayload {
 interface NotificationStatsWidgetProps { className?: string; }
 
 const CHANNEL_COLORS: Record<string, string> = {
-  email: "#3B82F6",
-  sms: "#10B981",
-  whatsapp: "#25D366",
-  push: "#F59E0B",
+  email: "var(--wl-primary-500)",
+  sms: "var(--wl-success-500)",
+  whatsapp: "var(--wl-success-400)",
+  push: "var(--wl-warning-500)",
 };
 
 const SimpleLineChart = ({ data }: { data: DailyStat[] }) => {
@@ -61,7 +61,7 @@ const DonutChart = ({ data }: { data: Record<string, number> }) => {
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
           {segments.map((s) => (
             <circle key={s.channel} cx="50" cy="50" r={radius} fill="none"
-              stroke={CHANNEL_COLORS[s.channel] ?? "#6B7280"}
+              stroke={CHANNEL_COLORS[s.channel] ?? "var(--wl-neutral-500)"}
               strokeWidth="8"
               strokeDasharray={s.dashArray}
               strokeDashoffset={-s.dashOffset}
@@ -78,7 +78,7 @@ const DonutChart = ({ data }: { data: Record<string, number> }) => {
       <div className="ml-4 space-y-2">
         {segments.map((s) => (
           <div key={s.channel} className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHANNEL_COLORS[s.channel] ?? "#6B7280" }} />
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHANNEL_COLORS[s.channel] ?? "var(--wl-neutral-500)" }} />
             <span className="text-xs text-[var(--wl-text-secondary)] capitalize">
               {s.channel}: {s.pct}%
             </span>
