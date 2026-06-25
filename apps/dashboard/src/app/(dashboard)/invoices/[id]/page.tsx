@@ -267,17 +267,7 @@ export default function InvoiceDetailPage() {
     if (isPdfLoading || !invoice) return;
     setIsPdfLoading(true);
     try {
-      const token = document.cookie
-        .split('; ')
-        .find(c => c.startsWith('auth-token='))
-        ?.split('=')[1];
-      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
-      const res = await fetch(`${apiBase}/api/v4/invoices/${invoiceId}/pdf`, {
-        credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error('Failed to generate PDF');
-      const blob = await res.blob();
+      const blob = await api.download(`/api/v4/invoices/${invoiceId}/pdf`);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
