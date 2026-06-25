@@ -212,8 +212,8 @@ function ConfigureForm({
           </button>
           <button
             onClick={onDelete}
-            className="flex-1 text-[11px] rounded py-1"
-            style={{ background: 'var(--wl-danger-600)', color: '#fff' }}
+            className="flex-1 text-[11px] rounded py-1 text-white"
+            style={{ background: 'var(--wl-danger-600)' }}
           >
             Confirm Delete
           </button>
