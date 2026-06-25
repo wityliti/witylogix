@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface OAuthCallbackHandlerProps {
@@ -70,22 +71,12 @@ export function OAuthCallbackHandler({
 
         // Exchange authorization code for access token
         setMessage("Exchanging authorization code...");
-        const response = await fetch("/api/integrations/crm/oauth/callback", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code,
-            state,
-            platformId,
-          }),
-        });
+        const result = await api.post<{ connectionId: string }>(
+          "/api/v4/integrations/crm/oauth/callback",
+          { code, state, platformId }
+        );
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || "Failed to exchange authorization code");
-        }
-
-        const { connectionId } = await response.json();
+        const { connectionId } = result;
 
         // Clean up session storage
         sessionStorage.removeItem("oauth_state");

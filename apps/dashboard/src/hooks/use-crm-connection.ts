@@ -6,10 +6,10 @@
  * - OAuth2 flow handling
  * - Sync triggering and monitoring
  * - Health status checking
- * - Token storage and refresh
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "@/lib/api";
 
 export interface CrmPlatform {
   id: "salesforce" | "hubspot" | "zoho" | "pipedrive" | "ms-dynamics";
@@ -141,18 +141,11 @@ export function useCrmConnection(): UseCrmConnectionReturn {
           throw new Error("No authorization code received");
         }
 
-        // Exchange code for token
-        const response = await fetch("/api/integrations/crm/oauth/callback", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: data.code }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to exchange authorization code");
-        }
-
-        const connectionData: CrmConnection = await response.json();
+        const result = await api.post<{ data: CrmConnection }>(
+          "/api/v4/integrations/crm/oauth/callback",
+          { code: data.code }
+        );
+        const connectionData = result.data;
         setConnection(connectionData);
 
         // Clean up session storage
@@ -183,24 +176,11 @@ export function useCrmConnection(): UseCrmConnectionReturn {
           throw new Error("No active CRM connection");
         }
 
-        const response = await fetch(
-          `/api/integrations/crm/${connection.id}/sync-config`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              direction: config.direction,
-              objectTypes: config.objectTypes,
-            }),
-          }
+        const result = await api.patch<{ data: CrmConnection }>(
+          `/api/v4/integrations/crm/${connection.id}/sync-config`,
+          { direction: config.direction, objectTypes: config.objectTypes }
         );
-
-        if (!response.ok) {
-          throw new Error("Failed to configure sync settings");
-        }
-
-        const updated: CrmConnection = await response.json();
-        setConnection(updated);
+        setConnection(result.data);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to configure sync settings";
@@ -222,16 +202,10 @@ export function useCrmConnection(): UseCrmConnectionReturn {
         throw new Error("No active CRM connection");
       }
 
-      const response = await fetch(
-        `/api/integrations/crm/${connection.id}/test`,
-        { method: "POST" }
+      const result = await api.post<{ success: boolean; message: string }>(
+        `/api/v4/integrations/crm/${connection.id}/test`,
+        {}
       );
-
-      if (!response.ok) {
-        throw new Error("Connection test failed");
-      }
-
-      const result = await response.json();
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Connection test failed";
@@ -251,17 +225,11 @@ export function useCrmConnection(): UseCrmConnectionReturn {
         throw new Error("No active CRM connection");
       }
 
-      const response = await fetch(
-        `/api/integrations/crm/${connection.id}/activate`,
-        { method: "POST" }
+      const result = await api.post<{ data: CrmConnection }>(
+        `/api/v4/integrations/crm/${connection.id}/activate`,
+        {}
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to activate connection");
-      }
-
-      const updated: CrmConnection = await response.json();
-      setConnection(updated);
+      setConnection(result.data);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to activate connection";
@@ -281,15 +249,7 @@ export function useCrmConnection(): UseCrmConnectionReturn {
         throw new Error("No active CRM connection");
       }
 
-      const response = await fetch(
-        `/api/integrations/crm/${connection.id}`,
-        { method: "DELETE" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to disconnect");
-      }
-
+      await api.delete(`/api/v4/integrations/crm/${connection.id}`);
       setConnection(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to disconnect";
@@ -309,17 +269,13 @@ export function useCrmConnection(): UseCrmConnectionReturn {
         throw new Error("No active CRM connection");
       }
 
-      const response = await fetch(
-        `/api/integrations/crm/${connection.id}/sync`,
-        { method: "POST" }
+      const result = await api.post<{ data: { lastSyncAt: string } }>(
+        `/api/v4/integrations/crm/${connection.id}/sync`,
+        {}
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to trigger sync");
-      }
-
-      const updated: CrmConnection = await response.json();
-      setConnection(updated);
+      setConnection((prev) =>
+        prev ? { ...prev, lastSync: result.data.lastSyncAt } : prev
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to trigger sync";
       setError(message);
@@ -356,18 +312,11 @@ export function useOAuthFlow() {
         setIsProcessing(true);
         setError(undefined);
 
-        const response = await fetch("/api/integrations/crm/oauth/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ platformId, code }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to exchange authorization code");
-        }
-
-        const { accessToken } = await response.json();
-        return accessToken;
+        const result = await api.post<{ accessToken: string }>(
+          "/api/v4/integrations/crm/oauth/token",
+          { platformId, code }
+        );
+        return result.accessToken;
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Token exchange failed";
@@ -381,23 +330,16 @@ export function useOAuthFlow() {
   );
 
   const refreshToken = useCallback(
-    async (platformId: string, refreshToken: string): Promise<string> => {
+    async (platformId: string, token: string): Promise<string> => {
       try {
         setIsProcessing(true);
         setError(undefined);
 
-        const response = await fetch("/api/integrations/crm/oauth/refresh", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ platformId, refreshToken }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to refresh token");
-        }
-
-        const { accessToken } = await response.json();
-        return accessToken;
+        const result = await api.post<{ accessToken: string }>(
+          "/api/v4/integrations/crm/oauth/refresh",
+          { platformId, refreshToken: token }
+        );
+        return result.accessToken;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Token refresh failed";
         setError(message);
@@ -413,7 +355,7 @@ export function useOAuthFlow() {
 }
 
 /**
- * Hook for CRM metrics and sync activity
+ * Hook for CRM metrics derived from the providers list
  */
 export interface UseCrmMetricsReturn {
   metrics: {
@@ -426,6 +368,13 @@ export interface UseCrmMetricsReturn {
   isLoading: boolean;
   error?: string;
   revalidate: () => Promise<void>;
+}
+
+interface ProviderItem {
+  status: "connected" | "disconnected";
+  lastSync: string;
+  contactsCount: number;
+  dealsCount: number;
 }
 
 export function useCrmMetrics(): UseCrmMetricsReturn {
@@ -444,14 +393,24 @@ export function useCrmMetrics(): UseCrmMetricsReturn {
       setIsLoading(true);
       setError(undefined);
 
-      const response = await fetch("/api/integrations/crm/metrics");
+      const result = await api.get<{ data: ProviderItem[] }>(
+        "/api/v4/integrations/crm/providers"
+      );
+      const providers = result.data ?? [];
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch CRM metrics");
-      }
+      const lastSyncTime = providers
+        .map((p) => p.lastSync)
+        .filter(Boolean)
+        .sort()
+        .at(-1);
 
-      const data = await response.json();
-      setMetrics(data);
+      setMetrics({
+        totalContactsSynced: providers.reduce((sum, p) => sum + (p.contactsCount ?? 0), 0),
+        totalDealsSynced: providers.reduce((sum, p) => sum + (p.dealsCount ?? 0), 0),
+        lastSyncTime,
+        activeSyncs: providers.filter((p) => p.status === "connected").length,
+        failedSyncs: providers.filter((p) => p.status === "disconnected").length,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch metrics";
       setError(message);
@@ -461,10 +420,9 @@ export function useCrmMetrics(): UseCrmMetricsReturn {
   }, []);
 
   useEffect(() => {
-    revalidate();
+    void revalidate();
 
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(revalidate, 30000);
+    const interval = setInterval(() => { void revalidate(); }, 30000);
 
     return () => clearInterval(interval);
   }, [revalidate]);

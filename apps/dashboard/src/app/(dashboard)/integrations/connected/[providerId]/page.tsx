@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
 import { useApiQuery } from "@/hooks/use-api";
+import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -234,15 +235,13 @@ export default function IntegrationDetailPage() {
                   className="w-full justify-center"
                   onClick={async () => {
                     try {
-                      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-                      const response = await fetch(
-                        `${API_BASE}/api/v4/integrations/${connectionId}/test`,
-                        { method: "POST" }
+                      const result = await api.post<{ message?: string }>(
+                        `/api/v4/integrations/${connectionId}/test`,
+                        {}
                       );
-                      const result = await response.json();
                       setShowTestResult({
-                        success: response.ok,
-                        message: result.message || "Connection test completed",
+                        success: true,
+                        message: result.message ?? "Connection test completed",
                       });
                     } catch (err) {
                       setShowTestResult({
