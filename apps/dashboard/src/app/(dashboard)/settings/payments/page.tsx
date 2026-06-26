@@ -106,7 +106,7 @@ export default function PaymentSettingsPage() {
     setShowSecrets((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const copyToClipboard = (text: string): void => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 

@@ -62,6 +62,9 @@ export default function ActivityPage() {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const uniqueUsers = useMemo(() => {
     const seen = new Set<string>();
     const users: { id: string; name: string }[] = [];
@@ -74,49 +77,9 @@ export default function ActivityPage() {
     return users;
   }, [apiEvents]);
 
-  // Filter and search logic
-  const filteredEvents = useCallback(() => {
-    return (apiEvents || []).filter((event) => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          event.title.toLowerCase().includes(query) ||
-          event.description.toLowerCase().includes(query) ||
-          event.entity?.name.toLowerCase().includes(query) ||
-          event.user?.name.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-
-      // Type filter
-      if (filters.types.length > 0 && !filters.types.includes(event.type)) {
-        return false;
-      }
-
-      // Severity filter
-      if (
-        filters.severities.length > 0 &&
-        !filters.severities.includes(event.severity)
-      ) {
-        return false;
-      }
-
-      // Date range filter
-      if (filters.startDate && new Date(event.timestamp) < filters.startDate) {
-        return false;
-      }
-      if (filters.endDate && new Date(event.timestamp) > filters.endDate) {
-        return false;
-      }
-
-      // User filter
-      if (filters.userId && event.user?.id !== filters.userId) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [apiEvents, searchQuery, filters]);
+  useEffect(() => {
+    if (apiEvents.length > 0) setEvents(apiEvents);
+  }, [apiEvents]);
 
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
@@ -204,9 +167,11 @@ export default function ActivityPage() {
     }
   };
 
-  const selectedEvent = selectedEventId
-    ? displayedEvents.find((e) => e.id === selectedEventId)
-    : null;
+  if (loading && events.length === 0) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const displayedEvents = filteredEvents();
+  const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
 
   return (
     <div
@@ -277,7 +242,7 @@ export default function ActivityPage() {
                 type="text"
                 placeholder="Search by title, description, entity, or user..."
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
                   "pl-10 pr-4 py-2.5 w-full",
                   "bg-wl-bg-surface border border-wl-border-default",

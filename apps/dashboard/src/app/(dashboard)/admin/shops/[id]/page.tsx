@@ -18,11 +18,10 @@ import {
   Crown,
   Zap,
   RefreshCw,
+  Truck,
+  Trash2,
 } from "lucide-react";
 import { useApiQuery, useApiList } from '@/hooks/use-api';
-import { useParams } from 'next/navigation';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
 import { api } from '@/lib/api';
 
 interface ShopApiData {
@@ -142,6 +141,7 @@ export default function AdminShopDetail() {
 
   const planTier = shop.subscription?.planTier || "unknown";
   const isSuspended = shop.status === "SUSPENDED";
+  const statusColor = getStatusColor(shop.status);
 
   return (
     <div className="bg-wl-bg-root-root">
@@ -214,6 +214,12 @@ export default function AdminShopDetail() {
                   {new Date(shop.createdAt).toLocaleDateString()}
                 </p>
               </div>
+              {shop.usage.suspension && (
+                <div>
+                  <p className="text-gray-400 mb-1 text-xs">Suspended</p>
+                  <p className="text-red-400 text-xs">{shop.usage.suspension.reason ?? 'No reason given'}</p>
+                </div>
+              )}
             </div>
 
             {isSuspended && shop.usage.suspension && (
@@ -241,7 +247,7 @@ export default function AdminShopDetail() {
                     {shop.usage.orders.toLocaleString()}
                   </p>
                 </div>
-                <ShoppingCart size={24} className="text-blue-600" />
+                <ShoppingCart size={24} className="text-blue-500" />
               </div>
             </CardContent>
           </Card>

@@ -21,17 +21,17 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
 
 const WLMap = dynamic(
-  () => import('@/components/map/wl-map').then((m) => m.WLMap),
-  { ssr: false },
+  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
+  { ssr: false, loading: () => <div className="h-full bg-wl-bg-elevated rounded-xl animate-pulse" /> },
 );
 const DemandZoneLayer = dynamic(
   () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
   { ssr: false },
 );
-import { ErrorState } from '@/components/ui/error-state';
 
 interface DemandData {
   zones: Array<{

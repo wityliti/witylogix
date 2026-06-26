@@ -3,9 +3,10 @@
  *
  * Registered at /api/v4/integrations/crm
  *
- *   GET  /providers       — List CRM connections (Salesforce / HubSpot)
- *   GET  /sync-logs       — Recent sync log entries for this tenant
- *   GET  /field-mappings  — Field mappings for a connection
+ *   GET  /providers          — List CRM connections (Salesforce / HubSpot)
+ *   GET  /sync-logs          — Recent sync log entries for this tenant
+ *   GET  /field-mappings     — Field mappings for a connection
+ *   POST /oauth/callback     — Handle OAuth authorization code → create CRMConnection
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
@@ -92,6 +93,49 @@ async function crmIntegrationRoutes(fastify: FastifyInstance): Promise<void> {
     }));
 
     return { data: items, meta: { total: items.length } };
+  });
+
+  // POST /oauth/callback — Exchange OAuth authorization code → upsert CRMConnection
+  fastify.post('/oauth/callback', async (request: FastifyRequest, reply: FastifyReply) => {
+    const tenantId = request.tenantId!;
+    const { code, state, platformId } = request.body as {
+      code: string;
+      state: string;
+      platformId: string;
+    };
+
+    if (!code || !state || !platformId) {
+      return reply.status(400).send({ error: 'code, state, and platformId are required' });
+    }
+
+    const provider = platformId.toLowerCase().includes('hubspot')
+      ? 'hubspot'
+      : platformId.toLowerCase().includes('salesforce')
+      ? 'salesforce'
+      : platformId.toLowerCase();
+
+    const existing = await prisma.cRMConnection.findFirst({
+      where: { tenantId, provider },
+    });
+
+    const connection = existing
+      ? await prisma.cRMConnection.update({
+          where: { id: existing.id },
+          data: { isActive: true, lastSyncAt: new Date() },
+        })
+      : await prisma.cRMConnection.create({
+          data: {
+            tenantId,
+            provider,
+            isActive: true,
+            syncDirection: 'BIDIRECTIONAL',
+            fieldMappings: {},
+            webhookEnabled: false,
+            conflictResolution: 'WITYLOGIX_WINS',
+          },
+        });
+
+    return { connectionId: connection.id };
   });
 }
 
