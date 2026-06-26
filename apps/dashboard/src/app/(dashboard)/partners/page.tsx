@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { Search, Plus, Grid2x2, List, Filter } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Search, Plus, Grid2x2, List, Filter, Map as MapIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,9 @@ import {
   type PartnerStatus,
   type PartnerCategory,
 } from "@/components/partners";
+import type { CoveragePartner } from "@/components/map/partner-coverage-layer";
+
+const PartnersMapView = dynamic(() => import("./components/partners-map-view"), { ssr: false });
 
 interface InstalledIntegration {
   slug: string;
@@ -58,6 +62,7 @@ interface Partner {
   activeDeliveries: number;
   rating: number;
   totalRatings: number;
+  serviceAreas: string[];
 }
 
 const ROUTING_SLUGS = new Set(["onfleet", "stuart", "uber-direct", "lalamove", "doordash-drive"]);
@@ -92,10 +97,11 @@ function integrationToPartner(
     activeDeliveries: stat?.activeDeliveries ?? 0,
     rating: typeof cfg.rating === "number" ? cfg.rating : 0,
     totalRatings: typeof cfg.totalRatings === "number" ? cfg.totalRatings : 0,
+    serviceAreas: Array.isArray(cfg.serviceAreas) ? (cfg.serviceAreas as string[]) : [],
   };
 }
 
-type ViewMode = "grid" | "list";
+type ViewMode = "grid" | "list" | "map";
 type SortBy = "name" | "rating" | "deliveries";
 
 export default function PartnersPage() {
@@ -156,6 +162,17 @@ export default function PartnersPage() {
 
     return sorted;
   }, [partners, searchQuery, selectedStatus, sortBy]);
+
+  const coveragePartners = useMemo<CoveragePartner[]>(
+    () =>
+      filtered.map((p) => ({
+        id: p.id,
+        name: p.name,
+        status: p.status === "active" ? "active" : p.status === "inactive" ? "inactive" : "pending",
+        serviceAreas: p.serviceAreas,
+      })),
+    [filtered]
+  );
 
   const stats = useMemo(() => {
     const active = partners.filter((p) => p.status === "active").length;
@@ -223,7 +240,7 @@ export default function PartnersPage() {
         isLoading={loading}
       />
 
-      {/* Filters & Controls */}
+      {/* Filters & View Controls */}
       <Card className="flex flex-col gap-4 lg:flex-row lg:items-end lg:gap-3">
         <div className="flex-1">
           <Input
@@ -259,7 +276,8 @@ export default function PartnersPage() {
             <option value="deliveries">Active Deliveries</option>
           </select>
 
-          <div className="flex items-center gap-2 border border-wl-border-default rounded-md p-2">
+          {/* View mode toggle: Grid / List / Map */}
+          <div className="flex items-center gap-1 border border-wl-border-default rounded-md p-1.5">
             <button
               onClick={() => setViewMode("grid")}
               className={cn(
@@ -284,82 +302,108 @@ export default function PartnersPage() {
             >
               <List className="w-4 h-4" />
             </button>
+            <button
+              onClick={() => setViewMode("map")}
+              className={cn(
+                "p-1.5 rounded transition-colors",
+                viewMode === "map"
+                  ? "bg-blue-500/20 text-blue-400"
+                  : "text-wl-text-secondary hover:text-white"
+              )}
+              title="Map view"
+            >
+              <MapIcon className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </Card>
 
-      {/* Partners Grid/List */}
-      {filtered.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center gap-4 py-16">
-          <Filter className="w-12 h-12 text-wl-text-tertiary" />
-          <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-white">No partners found</h3>
-            <p className="text-sm text-wl-text-secondary">
-              {partners.length === 0
-                ? "Add a courier partner to get started"
-                : "Try adjusting your search filters"}
-            </p>
-          </div>
-          {partners.length === 0 && (
-            <Button variant="primary" size="md" onClick={handleAddPartner}>
-              <Plus className="w-4 h-4" />
-              Add Partner
-            </Button>
-          )}
-        </Card>
-      ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((partner) => (
-            <PartnerCard
-              key={partner.id}
-              {...partner}
-              onViewDetails={handleViewDetails}
-              onConfigure={handleConfigure}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((partner) => (
-            <Card key={partner.id} className="flex items-center justify-between gap-4 p-4">
-              <div className="flex items-center gap-4 flex-1">
-                {partner.logoUrl ? (
-                  <div className="w-12 h-12 rounded-md bg-wl-bg-surface flex items-center justify-center">
-                    <img
-                      src={partner.logoUrl}
-                      alt={partner.name}
-                      className="w-10 h-10 object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-black font-bold text-sm">
-                    {partner.name.substring(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white">{partner.name}</h3>
-                  <p className="text-sm text-wl-text-secondary">
-                    {partner.activeDeliveries} active deliveries · {partner.successRate}% success
-                    rate{partner.rating > 0 ? ` · ${partner.rating.toFixed(1)}★` : ""}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="secondary" size="sm" onClick={() => handleViewDetails(partner.id)}>
-                  Details
-                </Button>
-                <Button variant="primary" size="sm" onClick={() => handleConfigure(partner.id)}>
-                  Configure
-                </Button>
-              </div>
-            </Card>
-          ))}
+      {/* Map View */}
+      {viewMode === "map" && (
+        <div className="h-[500px] rounded-xl overflow-hidden border border-wl-border-default">
+          <PartnersMapView
+            partners={coveragePartners}
+            onPartnerClick={(id) => handleViewDetails(id)}
+          />
         </div>
       )}
 
-      <div className="text-sm text-wl-text-secondary text-center">
-        Showing {filtered.length} of {partners.length} partners
-      </div>
+      {/* Partners Grid/List */}
+      {viewMode !== "map" && (
+        <>
+          {filtered.length === 0 ? (
+            <Card className="flex flex-col items-center justify-center gap-4 py-16">
+              <Filter className="w-12 h-12 text-wl-text-tertiary" />
+              <div className="flex flex-col items-center gap-2">
+                <h3 className="text-lg font-semibold text-white">No partners found</h3>
+                <p className="text-sm text-wl-text-secondary">
+                  {partners.length === 0
+                    ? "Add a courier partner to get started"
+                    : "Try adjusting your search filters"}
+                </p>
+              </div>
+              {partners.length === 0 && (
+                <Button variant="primary" size="md" onClick={handleAddPartner}>
+                  <Plus className="w-4 h-4" />
+                  Add Partner
+                </Button>
+              )}
+            </Card>
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((partner) => (
+                <PartnerCard
+                  key={partner.id}
+                  {...partner}
+                  onViewDetails={handleViewDetails}
+                  onConfigure={handleConfigure}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filtered.map((partner) => (
+                <Card key={partner.id} className="flex items-center justify-between gap-4 p-4">
+                  <div className="flex items-center gap-4 flex-1">
+                    {partner.logoUrl ? (
+                      <div className="w-12 h-12 rounded-md bg-wl-bg-surface flex items-center justify-center">
+                        <img
+                          src={partner.logoUrl}
+                          alt={partner.name}
+                          className="w-10 h-10 object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-black font-bold text-sm">
+                        {partner.name.substring(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white">{partner.name}</h3>
+                      <p className="text-sm text-wl-text-secondary">
+                        {partner.activeDeliveries} active deliveries · {partner.successRate}% success
+                        rate{partner.rating > 0 ? ` · ${partner.rating.toFixed(1)}★` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="secondary" size="sm" onClick={() => handleViewDetails(partner.id)}>
+                      Details
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={() => handleConfigure(partner.id)}>
+                      Configure
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <div className="text-sm text-wl-text-secondary text-center">
+            Showing {filtered.length} of {partners.length} partners
+          </div>
+        </>
+      )}
     </div>
   );
 }

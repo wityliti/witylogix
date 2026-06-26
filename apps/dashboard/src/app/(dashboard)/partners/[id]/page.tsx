@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -12,6 +13,8 @@ import {
   CheckCircle,
   Settings,
 } from "lucide-react";
+
+const PartnersMapView = dynamic(() => import("../components/partners-map-view"), { ssr: false });
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
@@ -220,17 +223,29 @@ export default function PartnerDetailPage() {
             </CardHeader>
             <CardContent>
               {serviceAreas.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {serviceAreas.map((area) => (
-                    <span
-                      key={area}
-                      className="inline-flex items-center px-3 py-2 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium"
-                    >
-                      <MapPin className="w-3 h-3 mr-1.5" />
-                      {area}
-                    </span>
-                  ))}
-                </div>
+                <>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {serviceAreas.map((area) => (
+                      <span
+                        key={area}
+                        className="inline-flex items-center px-3 py-2 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium"
+                      >
+                        <MapPin className="w-3 h-3 mr-1.5" />
+                        {area}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="h-64 rounded-lg overflow-hidden border border-wl-border-default">
+                    <PartnersMapView
+                      partners={[{
+                        id: partner.slug,
+                        name: partner.name,
+                        status: partner.isEnabled && partner.healthStatus !== "UNHEALTHY" ? "active" : "inactive",
+                        serviceAreas,
+                      }]}
+                    />
+                  </div>
+                </>
               ) : (
                 <p className="text-gray-400 text-sm">No service areas configured yet.</p>
               )}
