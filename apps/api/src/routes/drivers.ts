@@ -128,6 +128,7 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
               addressLine1: true,
               city: true,
               estimatedArrival: true,
+              deliveryLocation: true,
             },
           },
           routes: {
