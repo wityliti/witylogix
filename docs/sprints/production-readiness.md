@@ -603,7 +603,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Zones | `/zones`, `/zones/[id]`, `/zones/new` | ✅ WIT-350 (sub-pages: feature flags removed, error states, router nav) |
 | Profile | `/profile` | ✅ WIT-523 (fake sessions removed) |
 | Stores | `/stores` | ✅ |
-| Partners | `/partners` | ✅ |
+| Partners | `/partners`, `/partners/[id]` | ✅ WIT-573 (Grid/List/Map toggle; `PartnerCoverageLayer` plots service-area cities on WLMap; detail page adds map in Service Coverage card; supply-chain/orders Approve/Reject buttons wired to real API + per-tab loading/error states) |
 | Calendar | `/calendar` | ✅ WIT-525 (useApiList + real calendar rules) |
 | Support | `/support` | ✅ WIT-525 (useApiQuery + useApiMutation) |
 | Operations | `/operations` | ✅ WIT-525 (real API throughout) |
@@ -659,6 +659,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-533 | `feat/WIT-533-routes-design-tokens-plan-map` | Routes 6 pages: 105 hex CSS → WL design tokens; routes/plan List↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); routes/[id]/edit Save Changes fix; removed getPriorityColor() hex helper | existing route endpoints | 105 CSS signals | merged #287 |
 | WIT-534 | `feat/WIT-534-dashboard-ai-analytics-design-tokens` | AI 3 pages + Analytics 3 pages: 31 hex CSS → WL design tokens; ai/driver-insights List↔Map toggle (WLMap + DriverLayer tier-coloured); ai/route-efficiency Score↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); analytics/route-performance legend hex → CSS vars | `GET /api/v4/dispatch/drivers` (existing), `GET /api/v4/routes/:id` (existing) | 31 CSS signals; 2 new map views | open |
 | WIT-346 | `feat/WIT-346-dashboard-field-service` | Field Service overview + jobs: 3 new API endpoints (stats/schedule/jobs), overview page rewritten from hardcoded arrays to real useApiQuery×2+useApiList, jobs page endpoint fixed | `GET /api/v4/field-service/stats`, `GET /api/v4/field-service/schedule`, `GET /api/v4/field-service/jobs` | hardcoded schedule[]/technicians[]→0 | #314 |
+| WIT-573 | `feat/WIT-573-partners-map-supply-chain-ux` | Partners list: Grid/List/Map view toggle; WLMap + `PartnerCoverageLayer` (city-name→lat/lng lookup, status-coloured markers, useFitBounds, click popup). Partners detail: service-area map card in Overview tab. Supply Chain Orders: `wavesError`/`batchesError`/`returnsError` error states per tab + `TableSkeleton` loading states; Returns Approve/Reject buttons wired to `POST /api/v4/returns/:id/approve|reject` with loading feedback. New shared util: `src/lib/city-coords.ts` (CITY_COORDS + lookupCity). New map layer: `components/map/partner-coverage-layer.tsx`. | `POST /api/v4/returns/:id/approve`, `POST /api/v4/returns/:id/reject` (existing) | 0 new mock signals; 2 new map views; 2 dead buttons fixed | open |
 
 ---
 

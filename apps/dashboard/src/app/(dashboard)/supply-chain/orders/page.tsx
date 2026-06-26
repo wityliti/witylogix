@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { useApiList } from '@/hooks/use-api';
 import { Header } from '@/components/layout/header';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { api } from '@/lib/api';
 
 interface FilterOptions {
   status: string;
@@ -53,10 +54,11 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 export default function OrdersPage() {
   const orders = useOrders();
   const fulfillment = useFulfillment();
-  const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
-  const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
-  const { items: returnQueue } = useApiList<ReturnItem>('/api/v4/returns');
+  const { items: wavePlans, loading: wavesLoading, error: wavesError } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking, loading: batchesLoading, error: batchesError } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: returnQueue, loading: returnsLoading, error: returnsError, refetch: refetchReturns } = useApiList<ReturnItem>('/api/v4/returns');
   const { items: warehouseItems } = useApiList<{ name: string }>('/api/v4/supply-chain/warehouses');
+  const [returnsActionLoading, setReturnsActionLoading] = useState<string | null>(null);
 
   const warehouseOptions = useMemo(
     () => ['All', ...warehouseItems.map((w) => w.name)],
@@ -70,6 +72,16 @@ export default function OrdersPage() {
   });
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'orders' | 'waves' | 'batches' | 'returns'>('orders');
+
+  const handleReturnAction = useCallback(async (id: string, action: 'approve' | 'reject') => {
+    setReturnsActionLoading(`${id}:${action}`);
+    try {
+      await api.post(`/api/v4/returns/${id}/${action}`, {});
+      await refetchReturns();
+    } catch { /* error is non-fatal, user can retry */ } finally {
+      setReturnsActionLoading(null);
+    }
+  }, [refetchReturns]);
 
   // Filter orders
   const filteredOrders = orders.orders.filter((order) => {
@@ -354,8 +366,10 @@ export default function OrdersPage() {
             <Button variant="primary">Create Wave</Button>
           </div>
 
-          {wavePlans.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">No wave plans found. Create a wave to start batch fulfillment.</div>
+          {wavesLoading && <TableSkeleton rows={3} columns={4} />}
+          {wavesError && <ErrorState message="Failed to load wave plans" onRetry={() => window.location.reload()} />}
+          {!wavesLoading && !wavesError && wavePlans.length === 0 ? (
+            <div className="text-center py-10 text-wl-text-secondary">No wave plans found. Create a wave to start batch fulfillment.</div>
           ) : null}
           {wavePlans.map((wave) => (
             <Card key={wave.waveId}>
@@ -421,8 +435,10 @@ export default function OrdersPage() {
             Batch Picking Tasks
           </h3>
 
-          {batchPicking.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">No batch picking tasks found.</div>
+          {batchesLoading && <TableSkeleton rows={3} columns={3} />}
+          {batchesError && <ErrorState message="Failed to load batch picking tasks" onRetry={() => window.location.reload()} />}
+          {!batchesLoading && !batchesError && batchPicking.length === 0 ? (
+            <div className="text-center py-10 text-wl-text-secondary">No batch picking tasks found.</div>
           ) : null}
           {batchPicking.map((batch) => (
             <Card key={batch.batchId}>
@@ -489,8 +505,10 @@ export default function OrdersPage() {
             Returns Queue
           </h3>
 
-          {returnQueue.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">No returns in queue.</div>
+          {returnsLoading && <TableSkeleton rows={3} columns={4} />}
+          {returnsError && <ErrorState message="Failed to load returns" onRetry={refetchReturns} />}
+          {!returnsLoading && !returnsError && returnQueue.length === 0 ? (
+            <div className="text-center py-10 text-wl-text-secondary">No returns in queue.</div>
           ) : null}
           {returnQueue.map((returnItem) => (
             <Card key={returnItem.id}>
@@ -526,11 +544,23 @@ export default function OrdersPage() {
 
                 {returnItem.status === 'pending-approval' && (
                   <div className="flex gap-2">
-                    <Button variant="secondary" size="sm" className="flex-1">
-                      Reject
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      disabled={returnsActionLoading !== null}
+                      onClick={() => handleReturnAction(returnItem.id, 'reject')}
+                    >
+                      {returnsActionLoading === `${returnItem.id}:reject` ? 'Rejecting…' : 'Reject'}
                     </Button>
-                    <Button variant="primary" size="sm" className="flex-1">
-                      Approve
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="flex-1"
+                      disabled={returnsActionLoading !== null}
+                      onClick={() => handleReturnAction(returnItem.id, 'approve')}
+                    >
+                      {returnsActionLoading === `${returnItem.id}:approve` ? 'Approving…' : 'Approve'}
                     </Button>
                   </div>
                 )}
