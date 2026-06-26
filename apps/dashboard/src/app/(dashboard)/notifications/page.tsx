@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { Header } from "@/components/layout/header";
 import {
   Card,
@@ -25,6 +26,8 @@ import {
   Trash2,
   Check,
   ChevronDown,
+  LayoutList,
+  Map,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -34,6 +37,19 @@ import {
   type NotificationChannel,
 } from "@/hooks/use-notifications";
 import { ErrorState } from "@/components/ui/error-state";
+
+const NotificationsCoverageMap = dynamic(
+  () =>
+    import("./components/notifications-coverage-map").then(
+      (m) => m.NotificationsCoverageMap,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[520px] rounded-xl bg-wl-bg-overlay border border-wl-border-default animate-pulse" />
+    ),
+  },
+);
 
 /**
  * Notification Inbox Page - Professional Dark Theme
@@ -55,6 +71,7 @@ export default function NotificationsPage() {
     deleteBulk,
   } = useNotifications();
 
+  const [view, setView] = useState<"inbox" | "coverage">("inbox");
   const [activeTab, setActiveTab] = useState<"all" | "unread" | "read">("all");
   const [selectedCategory, setSelectedCategory] = useState<
     NotificationCategory | "ALL"
@@ -170,14 +187,57 @@ export default function NotificationsPage() {
         title="Notifications"
         subtitle="Manage and view all your notifications"
         actions={
-          <Link href="/notifications/preferences">
-            <Button variant="secondary" size="sm">
-              Preferences
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center gap-1 p-1 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
+              <button
+                onClick={() => setView("inbox")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                  view === "inbox"
+                    ? "bg-wl-primary text-white"
+                    : "text-wl-text-muted hover:text-wl-text-primary",
+                )}
+              >
+                <LayoutList className="w-3.5 h-3.5" />
+                Inbox
+              </button>
+              <button
+                onClick={() => setView("coverage")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                  view === "coverage"
+                    ? "bg-wl-primary text-white"
+                    : "text-wl-text-muted hover:text-wl-text-primary",
+                )}
+              >
+                <Map className="w-3.5 h-3.5" />
+                Coverage Map
+              </button>
+            </div>
+            <Link href="/notifications/preferences">
+              <Button variant="secondary" size="sm">
+                Preferences
+              </Button>
+            </Link>
+          </div>
         }
       />
 
+      {/* Coverage Map view */}
+      {view === "coverage" && (
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-wl-text-primary">Notification Coverage Map</h2>
+            <p className="text-sm text-wl-text-secondary mt-0.5">
+              Geographic heatmap of where notifications were sent, based on delivery addresses of associated orders.
+            </p>
+          </div>
+          <NotificationsCoverageMap />
+        </main>
+      )}
+
+      {view === "inbox" && (
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Tab Navigation */}
@@ -471,6 +531,7 @@ export default function NotificationsPage() {
           )}
         </div>
       </main>
+      )}
     </div>
   );
 }

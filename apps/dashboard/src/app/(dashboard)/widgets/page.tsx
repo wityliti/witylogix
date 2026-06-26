@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Settings, Trash2, Plus, BarChart3, LineChart, PieChart, Table2, MapPin, Activity, Calendar, RefreshCw } from 'lucide-react';
 import { useApiList, useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
+import { ErrorState } from '@/components/ui/error-state';
 
 interface Widget {
   id: string;
@@ -100,10 +101,7 @@ export default function WidgetsPage() {
             ))}
           </div>
         ) : error ? (
-          <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center mb-8">
-            <p className="text-red-400 mb-4">Failed to load widgets.</p>
-            <Button variant="secondary" size="sm" onClick={refetch}>Retry</Button>
-          </Card>
+          <ErrorState message={error.message} onRetry={refetch} />
         ) : (
           <>
             {/* Active Widgets */}

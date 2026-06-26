@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { Download, ChevronDown, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import {
   useDeliveryLog,
   type DeliveryStatus,
@@ -104,6 +106,28 @@ export default function DeliveryLogPage() {
 
     return { total, delivered, failed, bounced, rate };
   }, [entries]);
+
+  if (isLoading && entries.length === 0) {
+    return (
+      <div className="min-h-screen bg-wl-bg-root">
+        <Header title="Delivery Log" subtitle="Track notification delivery status and history" />
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <LoadingSkeleton />
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-wl-bg-root">
+        <Header title="Delivery Log" subtitle="Track notification delivery status and history" />
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorState message={error.message} onRetry={() => window.location.reload()} />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-wl-bg-root">
