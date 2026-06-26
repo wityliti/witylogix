@@ -6,6 +6,7 @@
  *   GET  /log                  Paginated NotificationLog with filters + stats
  *   GET  /delivery-log         Same, formatted as DeliveryLogEntry for the delivery-log page
  *   POST /delivery-log/export  Stub export (returns empty URL — downstream CSV is client-side)
+ *   GET  /coverage             Geographic heatmap — notifications joined to order deliveryLocation
  *   GET  /status               Health check
  */
 
@@ -275,6 +276,78 @@ export default async function notificationsV2Routes(app: FastifyInstance) {
   // ── POST /delivery-log/export — stub (client-side CSV handles the real work) ──
   app.post('/delivery-log/export', async (_req, reply) => {
     return reply.send({ url: '' });
+  });
+
+  // ── GET /coverage — geographic heatmap of notification recipients ─────────
+  app.get('/coverage', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const db = (request as any).tenantDb;
+      const q = request.query as { days?: string; channel?: string };
+      const days = Math.min(90, Math.max(1, parseInt(q.days ?? '30', 10)));
+      const since = new Date(Date.now() - days * 86_400_000);
+
+      const where: Record<string, unknown> = {
+        createdAt: { gte: since },
+        orderId: { not: null },
+      };
+      if (q.channel) where.channel = q.channel.toUpperCase();
+
+      // Fetch notifications that have an associated order
+      const logs: Array<{ orderId: string | null; channel: string }> =
+        await db.notificationLog.findMany({
+          where,
+          select: { orderId: true, channel: true },
+          take: 5000,
+        });
+
+      // Collect unique orderIds
+      const orderIds = [...new Set(logs.map((l) => l.orderId).filter(Boolean))] as string[];
+      if (orderIds.length === 0) {
+        return reply.send({ data: [] });
+      }
+
+      // Fetch orders with deliveryLocation coordinates
+      const orders: Array<{ id: string; deliveryLocation: unknown }> =
+        await db.order.findMany({
+          where: { id: { in: orderIds }, deliveryLocation: { not: null } },
+          select: { id: true, deliveryLocation: true },
+        });
+
+      // Build orderId → { lat, lng } map
+      const coordMap = new Map<string, { lat: number; lng: number }>();
+      for (const o of orders) {
+        const loc = o.deliveryLocation as any;
+        const lat = loc?.lat ?? loc?.latitude;
+        const lng = loc?.lng ?? loc?.longitude;
+        if (typeof lat === 'number' && typeof lng === 'number') {
+          coordMap.set(o.id, { lat, lng });
+        }
+      }
+
+      // Aggregate by ~0.05° grid cell (≈5 km) per channel
+      const cellMap = new Map<string, { lat: number; lng: number; count: number; channel: string }>();
+      for (const log of logs) {
+        if (!log.orderId) continue;
+        const coord = coordMap.get(log.orderId);
+        if (!coord) continue;
+        const gridLat = Math.round(coord.lat / 0.05) * 0.05;
+        const gridLng = Math.round(coord.lng / 0.05) * 0.05;
+        const key = `${gridLat}|${gridLng}|${log.channel}`;
+        const cell = cellMap.get(key);
+        if (cell) {
+          cell.count += 1;
+        } else {
+          cellMap.set(key, { lat: gridLat, lng: gridLng, count: 1, channel: log.channel });
+        }
+      }
+
+      const data = Array.from(cellMap.values());
+      return reply.send({ data });
+    } catch (err) {
+      request.log.error(err, 'Failed to fetch notification coverage');
+      reply.status(500);
+      return { error: 'Failed to fetch notification coverage' };
+    }
   });
 
   // ── GET /status — health check ────────────────────────────────────────────

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { MapPin, AlertCircle, Users, Truck, LayoutList, Map } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { MapPin, Users, Truck, LayoutList, Map } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { useApiList } from "@/hooks/use-api";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
@@ -102,16 +103,19 @@ export default function TrackingPage() {
     items: drivers,
     loading: driversLoading,
     error: driversError,
+    refetch: refetchDrivers,
   } = useApiList<ApiDriver>("/api/v4/dispatch/drivers", { limit: 50 });
 
   const {
     items: orders,
     loading: ordersLoading,
     error: ordersError,
+    refetch: refetchOrders,
   } = useApiList<ApiOrder>("/api/v4/orders", { limit: 50 });
 
   const loading = driversLoading || ordersLoading;
   const error = driversError || ordersError;
+  const refetch = useCallback(async () => { await Promise.all([refetchDrivers(), refetchOrders()]); }, [refetchDrivers, refetchOrders]);
 
   const activeOrders = useMemo(
     () =>
@@ -194,12 +198,7 @@ export default function TrackingPage() {
       {/* Error banner */}
       {error && (
         <div className="max-w-7xl mx-auto px-6 pt-4">
-          <Card className="bg-red-900/20 border-red-800">
-            <CardContent className="p-4 flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-red-300">{error.message}</p>
-            </CardContent>
-          </Card>
+          <ErrorState message={error.message} onRetry={refetch} />
         </div>
       )}
 

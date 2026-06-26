@@ -18,6 +18,8 @@ import {
   Plus,
 } from "lucide-react";
 import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { ErrorState } from "@/components/ui/error-state";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 interface SupportTicket {
   id: string;
@@ -120,6 +122,9 @@ export default function SupportPage() {
   );
 
   const tickets = ticketsData?.data ?? [];
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
