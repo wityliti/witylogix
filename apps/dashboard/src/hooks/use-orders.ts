@@ -82,10 +82,11 @@ export interface OrderStats {
  * Order filters
  */
 export interface OrderFilters extends ApiFilters {
-  status?: OrderStatus;
-  customerId?: string;
-  dateFrom?: string;
-  dateTo?: string;
+  status?: string;
+  driverId?: string;
+  deliveryDate?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 /**

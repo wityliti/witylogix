@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import { use, useMemo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
@@ -149,7 +149,7 @@ export default function CampaignDetailPage({
         : null,
     );
 
-  const runAction = async (action: () => Promise<unknown>) => {
+  const runAction = useCallback(async (action: () => Promise<unknown>) => {
     setActionLoading(true);
     setActionError(null);
     try {
@@ -160,12 +160,14 @@ export default function CampaignDetailPage({
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [refetch]);
 
   const pieData = useMemo(() => {
     if (!campaign) return [];
-    const sent = campaign.stats.total_events || 0;
-    const { delivered, opened, failed } = campaign.stats;
+    const sent = campaign.sentCount || 0;
+    const delivered = campaign.deliveredCount;
+    const opened = campaign.openedCount;
+    const failed = campaign.failedCount;
     return [
       {
         label: "Opened",
@@ -207,14 +209,14 @@ export default function CampaignDetailPage({
     );
   }
 
-  const sent = campaign.stats.total_events || 0;
-  const { delivered, opened, clicked, failed } = campaign.stats;
-  const deliveryRate =
-    sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
-  const openRate =
-    delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : "0.0";
-  const clickRate =
-    opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
+  const sent = campaign.sentCount || 0;
+  const delivered = campaign.deliveredCount;
+  const opened = campaign.openedCount;
+  const clicked = campaign.clickedCount;
+  const failed = campaign.failedCount;
+  const deliveryRate = sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
+  const openRate = delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : "0.0";
+  const clickRate = opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
 
   const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
     { key: "overview", label: "Overview", icon: <BarChart3 size={14} /> },
@@ -227,7 +229,7 @@ export default function CampaignDetailPage({
     <div className="min-h-screen bg-wl-bg-root">
       <Header
         title={campaign.name}
-        subtitle={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.created_at)}`}
+        subtitle={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.createdAt)}`}
       />
 
       <div className="p-6 max-w-7xl mx-auto">
@@ -247,9 +249,9 @@ export default function CampaignDetailPage({
             <Badge variant={statusVariant(campaign.status)}>
               {campaign.status}
             </Badge>
-            {campaign.sent_at && (
+            {campaign.startedAt && (
               <span className="text-sm text-wl-text-secondary">
-                Sent {formatRelativeTime(campaign.sent_at)}
+                Sent {formatRelativeTime(campaign.startedAt)}
               </span>
             )}
           </div>

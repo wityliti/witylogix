@@ -23,10 +23,10 @@ function toOrderPinStatus(status: string): OrderPinStatus {
   return 'pending';
 }
 
-/* ═════════════════════════════════════════════════════════════
-   PROFESSIONAL ORDERS MANAGEMENT PAGE
-   Logistics-focused interface with filtering, pagination, and actions
-   ═════════════════════════════════════════════════════════════ */
+const OrderLayer = dynamic(
+  () => import('@/components/map/order-layer').then((m) => m.OrderLayer),
+  { ssr: false, loading: () => <div className="h-[480px] bg-zinc-900 rounded-lg animate-pulse" /> }
+);
 
 const STATUS_TABS = [
   { key: 'all', label: 'All Orders' },
@@ -137,8 +137,7 @@ export default function OrdersPage() {
   // Pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = startIdx + itemsPerPage;
-  const paginatedOrders = filtered.slice(startIdx, endIdx);
+  const paginatedOrders = filtered.slice(startIdx, startIdx + itemsPerPage);
 
   // Map pins — only orders that have delivery coordinates
   const orderPins = useMemo<OrderPin[]>(() =>
@@ -433,13 +432,11 @@ export default function OrdersPage() {
                   <tr>
                     <td colSpan={8}>
                       <div className="flex flex-col items-center justify-center py-16 px-6">
-                        <div className="w-12 h-12 rounded-full bg-wl-bg-elevated/50 flex items-center justify-center mb-4">
-                          <Search className="w-6 h-6 text-wl-text-tertiary" />
+                        <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+                          <Search className="w-6 h-6 text-zinc-600" />
                         </div>
-                        <h3 className="text-lg font-semibold text-wl-text-primary mb-1">
-                          No orders found
-                        </h3>
-                        <p className="text-sm text-wl-text-tertiary text-center max-w-sm">
+                        <h3 className="text-lg font-semibold text-zinc-200 mb-1">No orders found</h3>
+                        <p className="text-sm text-zinc-500 text-center max-w-sm">
                           {search || dateRange?.from || dateRange?.to
                             ? 'Try adjusting your filters or search terms'
                             : 'No orders yet. Create your first order to get started.'}
@@ -448,125 +445,76 @@ export default function OrdersPage() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedOrders.map((order, idx) => (
-                    <tr
-                      key={order.id}
-                      className={cn(
-                        'border-b border-wl-border-default/50 last:border-b-0',
-                        'hover:bg-wl-bg-elevated/30 transition-colors animate-in fade-in slide-in-from-top-2',
-                        `animation-delay-[${idx * 50}ms]`
-                      )}
-                    >
-                      {/* Order ID */}
-                      <td className="px-6 py-4">
-                        <a
-                          href={`#order-${order.id}`}
-                          className={cn(
-                            'font-mono font-semibold text-sm',
-                            'text-amber-400 hover:text-amber-300',
-                            'transition-colors cursor-pointer'
-                          )}
-                        >
-                          #{order.id.slice(0, 8)}
-                        </a>
-                      </td>
-
-                      {/* Customer */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              'w-8 h-8 rounded-full flex items-center justify-center',
-                              'text-xs font-semibold text-white',
-                              getAvatarBgColor(order.customerName)
-                            )}
+                    paginatedOrders.map((order, idx) => (
+                      <tr
+                        key={order.id}
+                        className={cn(
+                          'border-b border-zinc-800/50 last:border-b-0 hover:bg-zinc-800/30 transition-colors cursor-pointer',
+                          selectedOrderId === order.id && 'bg-violet-950/20'
+                        )}
+                        onClick={() => setSelectedOrderId((p) => (p === order.id ? null : order.id))}
+                      >
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/orders/${order.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="font-mono font-semibold text-sm text-amber-400 hover:text-amber-300 transition-colors"
                           >
-                            {getAvatarInitials(order.customerName)}
+                            #{order.orderNumber ?? order.id.slice(0, 8)}
+                          </Link>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', avatarColor(order.customerName))}>
+                              {avatarInitials(order.customerName)}
+                            </div>
+                            <span className="text-zinc-100 font-medium text-sm">{order.customerName}</span>
                           </div>
-                          <span className="text-wl-text-primary font-medium text-sm">
-                            {order.customerName}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-zinc-300 text-sm" title={`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`}>
+                            {truncate(`${order.deliveryAddress.street}, ${order.city || order.deliveryAddress.city}`, 38)}
                           </span>
-                        </div>
-                      </td>
-
-                      {/* Destination */}
-                      <td className="px-6 py-4">
-                        <span className="text-wl-text-secondary text-sm" title={order.deliveryAddress.street}>
-                          {truncateAddress(
-                            `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`,
-                            35
-                          )}
-                        </span>
-                      </td>
-
-                      {/* Status Badge */}
-                      <td className="px-6 py-4">
-                        <Badge
-                          variant={getStatusVariant(order.status)}
-                          className="text-xs font-semibold"
-                        >
-                          {order.status.replace(/_/g, ' ')}
-                        </Badge>
-                      </td>
-
-                      {/* Items Count */}
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-wl-bg-elevated text-xs font-semibold text-wl-text-primary">
-                          {order.items.length}
-                        </span>
-                      </td>
-
-                      {/* Total Amount */}
-                      <td className="px-6 py-4 text-right">
-                        <span className="font-mono font-semibold text-wl-text-primary text-sm">
-                          {formatCurrency(order.totalAmount)}
-                        </span>
-                      </td>
-
-                      {/* Created Date */}
-                      <td className="px-6 py-4">
-                        <span className="text-wl-text-secondary text-sm">
-                          {new Date(order.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </td>
-
-                      {/* Actions Dropdown */}
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-elevated/50"
-                          >
-                            View
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-elevated/50"
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-wl-text-secondary hover:text-red-400 hover:bg-red-950/20"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge variant={statusVariant(order.status)} className="text-xs font-semibold">
+                            {order.status.replace(/_/g, ' ')}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                            {order.itemCount || order.items.length}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="font-mono font-semibold text-zinc-100 text-sm">
+                            {formatCurrency(order.totalAmount)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-zinc-400 text-sm">
+                            {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Link
+                              href={`/orders/${order.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50">
+                                View
+                              </Button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
 
         {/* Pagination */}
         {totalPages > 1 && (

@@ -54,9 +54,9 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 export default function OrdersPage() {
   const orders = useOrders();
   const fulfillment = useFulfillment();
-  const { items: wavePlans, loading: wavesLoading, error: wavesError } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
-  const { items: batchPicking, loading: batchesLoading, error: batchesError } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
-  const { items: returnQueue, loading: returnsLoading, error: returnsError, refetch: refetchReturns } = useApiList<ReturnItem>('/api/v4/returns');
+  const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: returnQueue } = useApiList<RawReturn>('/api/v4/returns');
   const { items: warehouseItems } = useApiList<{ name: string }>('/api/v4/supply-chain/warehouses');
   const [returnsActionLoading, setReturnsActionLoading] = useState<string | null>(null);
 
@@ -383,48 +383,30 @@ export default function OrdersPage() {
                       {new Date(wave.createdDate).toLocaleString()}
                     </p>
                   </div>
-                  <Badge
-                    variant={
-                      wave.status === 'completed'
-                        ? 'success'
-                        : wave.status === 'picking'
-                        ? 'info'
-                        : 'warning'
-                    }
-                  >
-                    {wave.status}
-                  </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <p className="text-xs text-wl-neutral-300">Orders</p>
-                    <p className="text-xl font-bold text-white">
-                      {wave.ordersCount}
-                    </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs text-gray-300">Orders</p>
+                      <p className="text-xl font-bold text-white">{wave.ordersCount}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-300">Items</p>
+                      <p className="text-xl font-bold text-white">{wave.itemsCount}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-300">Est. Completion</p>
+                      <p className="text-sm text-white">{new Date(wave.estimatedCompletionTime).toLocaleTimeString()}</p>
+                    </div>
+                    <div>
+                      <Button variant="secondary" size="sm" className="w-full">View Details</Button>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-wl-neutral-300">Items</p>
-                    <p className="text-xl font-bold text-white">
-                      {wave.itemsCount}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-wl-neutral-300">Est. Completion</p>
-                    <p className="text-sm text-white">
-                      {new Date(wave.estimatedCompletionTime).toLocaleTimeString()}
-                    </p>
-                  </div>
-                  <div>
-                    <Button variant="secondary" size="sm" className="w-full">
-                      View Details
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           ))}
+
         </div>
       )}
 
@@ -516,52 +498,17 @@ export default function OrdersPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h4 className="text-sm font-semibold text-white">
-                      {returnItem.orderNumber}
+                      {returnItem.order?.externalOrderNumber ?? returnItem.id}
                     </h4>
-                    <p className="text-xs text-wl-text-secondary mt-1">
-                      {returnItem.customerName}
-                    </p>
-                    <p className="text-xs text-wl-neutral-300 mt-1">
-                      Reason: {returnItem.reason}
+                    <p className="text-xs text-gray-400 mt-1">
+                      {returnItem.order?.customerName ?? 'Unknown'}
                     </p>
                   </div>
-                  <Badge
-                    variant={
-                      returnItem.status === 'restocked'
-                        ? 'success'
-                        : returnItem.status === 'approved'
-                        ? 'info'
-                        : 'warning'
-                    }
-                  >
-                    {returnItem.status.replace(/-/g, ' ')}
-                  </Badge>
                 </div>
-
-                <p className="text-xs text-wl-text-secondary mb-3">
-                  Submitted: {new Date(returnItem.submittedDate).toLocaleString()}
-                </p>
-
                 {returnItem.status === 'pending-approval' && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1"
-                      disabled={returnsActionLoading !== null}
-                      onClick={() => handleReturnAction(returnItem.id, 'reject')}
-                    >
-                      {returnsActionLoading === `${returnItem.id}:reject` ? 'Rejecting…' : 'Reject'}
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      className="flex-1"
-                      disabled={returnsActionLoading !== null}
-                      onClick={() => handleReturnAction(returnItem.id, 'approve')}
-                    >
-                      {returnsActionLoading === `${returnItem.id}:approve` ? 'Approving…' : 'Approve'}
-                    </Button>
+                  <div className="flex gap-2 mt-3">
+                    <Button variant="secondary" size="sm" className="flex-1">Reject</Button>
+                    <Button variant="primary" size="sm" className="flex-1">Approve</Button>
                   </div>
                 )}
               </CardContent>

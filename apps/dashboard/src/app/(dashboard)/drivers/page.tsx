@@ -138,31 +138,23 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
             <MessageCircle className="w-4 h-4" />
             Message
           </Button>
-          <Button variant="ghost" size="sm" className="flex-1">
-            Assign
-          </Button>
         </div>
       </CardContent>
     </Card>
   );
 };
 
+// ── Page ─────────────────────────────────────────────────────
+
 export default function DriversPage() {
   const router = useRouter();
+  const { items: driversData, loading, error, refetch: refetchDrivers } = useApiList<ApiDriver>('/api/v4/drivers', { limit: 100 });
+  const { items: dispatchDrivers, loading: dispatchLoading } = useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
   const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
-  const { items: driversData, loading: driversLoading, error: driversError, refetch: refetchDrivers } =
-    useApiList<ApiDriver>('/api/v4/drivers');
-
-  const { items: dispatchDrivers, loading: dispatchLoading } =
-    useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
-
-  const loading = driversLoading;
-  const error = driversError;
-
-  const driverTabs = [
-    { id: 'all', label: 'All', count: driversData.length },
+  const driverTabs = useMemo(() => [
+    { id: 'all',       label: 'All',       count: driversData.length },
     { id: 'available', label: 'Available', count: driversData.filter((d) => normalizeStatus(d.status) === 'available').length },
     { id: 'en_route', label: 'En Route', count: driversData.filter((d) => normalizeStatus(d.status) === 'en_route').length },
     { id: 'delivering', label: 'Delivering', count: driversData.filter((d) => normalizeStatus(d.status) === 'delivering').length },

@@ -54,7 +54,6 @@ function normalizeCustomer(raw: Record<string, unknown>): Customer {
 export default function CreateInvoicePage() {
   const router = useRouter();
   const { addToast } = useToast();
-
   const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
   const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
 

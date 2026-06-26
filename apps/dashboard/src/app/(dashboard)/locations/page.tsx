@@ -344,27 +344,21 @@ export default function LocationsPage() {
               </Card>
             ))}
           </div>
-
-          {/* Location Detail Panel */}
           {selectedLocation && (
-            <Card
-              className={cn("animate-in sticky flex flex-col")}
-              style={{
-                // Intentional inline: dynamic top and maxHeight calculations
-                top: "calc(var(--wl-header-height) + var(--wl-space-6))",
-                maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
-                overflowY: "auto",
-              }}
-            >
-              <div className={cn("flex justify-between items-start mb-4")}>
-                <div>
-                  <div className={cn("flex gap-2 items-center mb-1")}>
-                    <span className={cn("text-lg font-bold text-white")}>
-                      {selectedLocation.name}
-                    </span>
-                    {selectedLocation.isDefault && (
-                      <span className={cn("text-base text-blue-400")}>★</span>
-                    )}
+            <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
+          )}
+        </div>
+
+        {/* MAP VIEW - removed duplicate implementation */}
+        {view === "map" && filtered.length > 0 && false && (
+          <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 400px" : "1fr" }}>
+            <div>
+              {/* Type legend */}
+              <div className={cn("flex gap-4 flex-wrap mb-3")}>
+                {(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => (
+                  <div key={t} className={cn("flex items-center gap-1.5 text-xs text-gray-400")}>
+                    <span className="inline-block w-3 h-3 rounded-full" style={{ background: TYPE_DOT[t] }} />
+                    {typeLabel(t)}
                   </div>
                   <Badge variant={typeVariant(selectedLocation.type)} dot>
                     {typeLabel(selectedLocation.type)}
@@ -415,14 +409,20 @@ export default function LocationsPage() {
                       {selectedLocation.phone}
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+            {selectedLocation && (
+              <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
+            )}
+          </div>
+        )}
 
                   {selectedLocation.email && (
                     <div className={cn("text-sm text-wl-neutral-300 font-mono")}>
                       {selectedLocation.email}
                     </div>
-                  )}
-
-                </div>
+                  </div>
 
                 <div className={cn("h-px bg-wl-bg-elevated")} />
 
@@ -535,11 +535,14 @@ export default function LocationsPage() {
                     </Button>
                   )}
                 </div>
-              </div>
-            </Card>
-          )}
-        </div>
-        )} {/* end viewMode === "list" */}
+                </Card>
+              ))}
+            </div>
+            {selectedLocation && (
+              <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
+            )}
+          </div>
+        )}
       </div>
     </>
   );

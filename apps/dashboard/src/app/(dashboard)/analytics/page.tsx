@@ -150,7 +150,8 @@ function WeeklyChart({ data }: { data: AnalyticsOverview['weekly'] }) {
             </div>
             <span className="text-[10px] text-white/30 font-medium">{d.day}</span>
           </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
