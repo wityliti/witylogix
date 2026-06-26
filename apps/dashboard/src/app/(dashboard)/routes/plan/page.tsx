@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { StopListEditor, RouteSummary, RouteOptimizerControls } from '@/components/routes';
 import { useRoutePlanner } from '@/hooks/use-route-planner';
 import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import type { StopMarker } from '@/components/map/route-stop-markers-layer';
 
 const WLMap = dynamic(() => import('@/components/map/wl-map').then((m) => m.WLMap), {
@@ -76,7 +77,9 @@ export default function RoutePlanningPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
 
-  const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
+  const { items: drivers, error: driversError, refetch: refetchDrivers } = useApiList<ApiDriver>('/api/v4/drivers');
+
+  if (driversError) return <ErrorState title="Failed to load drivers" error={driversError} onRetry={refetchDrivers} />;
 
   const currentStepIdx = STEPS.findIndex((s) => s.id === state.currentStep);
 

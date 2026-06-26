@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { useToast } from '@/components/ui/toast';
 import {
   Smartphone,
@@ -49,7 +50,7 @@ export default function MobileConfigPage() {
   const { addToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: shopResp, loading: shopLoading } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
+  const { data: shopResp, loading: shopLoading, error: shopError, refetch: refetchShop } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
   const saveMutation = useApiMutation<unknown>('PATCH', '/api/v4/shops/me');
 
   // Branding state
@@ -157,6 +158,7 @@ export default function MobileConfigPage() {
   }, [shopResp]);
 
   if (shopLoading) return <TableSkeleton rows={8} columns={2} />;
+  if (shopError) return <ErrorState title="Failed to load mobile configuration" error={shopError} onRetry={refetchShop} />;
 
   // Toggle feature
   const toggleFeature = (featureId: string) => {
