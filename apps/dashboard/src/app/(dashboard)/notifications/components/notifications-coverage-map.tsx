@@ -28,8 +28,8 @@ function FitBoundsController({ points }: { points: HeatmapPoint[] }) {
   const map = useWLMap();
   useFitBounds(
     map,
-    points.map((p) => [p.lng, p.lat] as [number, number]),
-    { padding: 60 },
+    points.map((p) => ({ lng: p.lng, lat: p.lat })),
+    60,
   );
   return null;
 }
@@ -79,7 +79,7 @@ function CoverageMapInner({ channel }: { channel: ChannelFilter }) {
 
   return (
     <div className="relative w-full h-[520px] rounded-xl overflow-hidden border border-wl-border-default">
-      <WLMap className="w-full h-full">
+      <WLMap center={[0, 20]} zoom={2} className="w-full h-full">
         <HeatmapLayer points={points} />
         <FitBoundsController points={points} />
       </WLMap>

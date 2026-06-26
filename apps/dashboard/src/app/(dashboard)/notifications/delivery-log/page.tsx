@@ -39,6 +39,7 @@ export default function DeliveryLogPage() {
   const {
     entries,
     isLoading,
+    error,
     hasMore,
     searchQuery,
     filters,
