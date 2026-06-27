@@ -125,7 +125,7 @@ export default function NotificationsConfigPage() {
     },
   ];
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Notification Preferences"
         subtitle="Configure notification channels for different event types"

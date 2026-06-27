@@ -158,7 +158,7 @@ function ScoreArc({ score }: { score: number }) {
   const y2f = cy + r * Math.sin(toRad(fillEnd));
   const largeArcBase = sweep > 180 ? 1 : 0;
   const largeArcFill = (score / 100) * sweep > 180 ? 1 : 0;
-  const accent = score >= 90 ? '#818cf8' : score >= 75 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171';
+  const accent = score >= 90 ? '#818cf8' : score >= 75 ? 'var(--wl-success-400)' : score >= 60 ? 'var(--wl-warning-400)' : 'var(--wl-danger-400)';
   return (
     <svg viewBox="0 0 140 140" className="w-36 h-36">
       <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArcBase} 1 ${x2b} ${y2b}`} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" strokeLinecap="round" />
@@ -440,9 +440,9 @@ export default function DriverDetailPage() {
               {/* Score breakdown */}
               <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
                 <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">Score Breakdown</h3>
-                <BreakdownRow label="On-Time Delivery"    value={score.breakdown.onTimeScore}          icon={Clock}       accent="#34d399" />
-                <BreakdownRow label="Customer Rating"     value={score.breakdown.customerRatingScore}   icon={Star}        accent="#fbbf24" />
-                <BreakdownRow label="POD Compliance"      value={score.breakdown.podComplianceScore}    icon={Camera}      accent="#60a5fa" />
+                <BreakdownRow label="On-Time Delivery"    value={score.breakdown.onTimeScore}          icon={Clock}       accent="var(--wl-success-400)" />
+                <BreakdownRow label="Customer Rating"     value={score.breakdown.customerRatingScore}   icon={Star}        accent="var(--wl-warning-400)" />
+                <BreakdownRow label="POD Compliance"      value={score.breakdown.podComplianceScore}    icon={Camera}      accent="var(--wl-info-400)" />
                 <BreakdownRow label="Route Efficiency"    value={score.breakdown.routeEfficiencyScore}  icon={Route}       accent="#818cf8" />
                 <BreakdownRow label="Reliability"         value={score.breakdown.reliabilityScore}      icon={ShieldCheck} accent="#a78bfa" />
               </div>
@@ -454,9 +454,9 @@ export default function DriverDetailPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { label: 'Deliveries',    value: metrics.totalDeliveries.toLocaleString(), icon: BarChart3, accent: '#818cf8' },
-                  { label: 'On-Time Rate',  value: `${onTimePct.toFixed(1)}%`,               icon: Clock,     accent: '#34d399' },
-                  { label: 'Avg Rating',    value: avgRating.toFixed(2),                     icon: Star,      accent: '#fbbf24', suffix: '/ 5' },
-                  { label: 'POD Rate',      value: `${podPct.toFixed(1)}%`,                  icon: Camera,    accent: '#60a5fa' },
+                  { label: 'On-Time Rate',  value: `${onTimePct.toFixed(1)}%`,               icon: Clock,     accent: 'var(--wl-success-400)' },
+                  { label: 'Avg Rating',    value: avgRating.toFixed(2),                     icon: Star,      accent: 'var(--wl-warning-400)', suffix: '/ 5' },
+                  { label: 'POD Rate',      value: `${podPct.toFixed(1)}%`,                  icon: Camera,    accent: 'var(--wl-info-400)' },
                 ].map(({ label, value, suffix, icon: Icon, accent }) => (
                   <div key={label} className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-4 group hover:border-white/[0.12] transition-all">
                     <div className="absolute top-0 left-0 right-0 h-[2px] opacity-40" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />

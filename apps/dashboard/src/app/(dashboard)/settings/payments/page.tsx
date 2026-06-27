@@ -121,7 +121,7 @@ export default function PaymentSettingsPage() {
     }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Payment Gateways"
         subtitle="Configure and manage payment processing providers"
