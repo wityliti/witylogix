@@ -5,7 +5,6 @@ import { useApiQuery, useApiMutation } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import { Tabs } from '@/components/ui/tabs';
-import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import {
   CheckCircle,
@@ -25,6 +23,7 @@ import {
   Shield,
   Plus,
   TestTube,
+  Copy,
 } from 'lucide-react';
 
 interface AuthProvider {

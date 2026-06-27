@@ -78,6 +78,9 @@ interface DriverProfile {
   _count: { orders: number };
 }
 
+type DriverScoreResponse = DriverScoreData;
+type HistoryResponse = { history: HistoryEntry[] };
+
 
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -236,31 +239,6 @@ export default function DriverDetailPage() {
     );
   }
 
-  const { score, driver, metrics } = scoreData;
-  const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
-
-  if (scoreLoading) return <PageSkeleton />;
-
-  if (scoreError || !scoreData) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 px-6">
-        <AlertCircle className="w-8 h-8 text-red-400/60" />
-        <p className="text-sm text-white/40 text-center max-w-sm">
-          {scoreError?.message ?? 'Driver scoring data not available'}
-        </p>
-        <button
-          onClick={refetch}
-          className="flex items-center gap-1.5 px-4 py-2 text-xs text-white/50 border border-white/[0.08] rounded-lg hover:border-white/[0.15] transition-colors"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Retry
-        </button>
-        <Link href="/drivers" className="text-xs text-white/30 hover:text-white/50 mt-1">← Back to Drivers</Link>
-      </div>
-    );
-  }
-
-  const history = historyItems ?? [];
   const tier = TIER_STYLE[scoreData.tier] ?? TIER_STYLE.bronze;
   const scoreDelta = scoreData.previousScore != null
     ? scoreData.compositeScore - scoreData.previousScore
@@ -286,7 +264,7 @@ export default function DriverDetailPage() {
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-white/90 tracking-tight">
-                  {driver.name}
+                  {scoreData.driverName}
                 </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
@@ -295,16 +273,10 @@ export default function DriverDetailPage() {
                   <span className="text-xs font-mono text-white/20">#{scoreData.rank}</span>
                 )}
               </div>
-              {profileData?.email && (
-                <div className="flex items-center gap-1.5 text-sm text-white/35 mt-0.5">
-                  <Mail className="w-3 h-3" />
-                  {profileData.email}
-                </div>
-              )}
-              {profileData?.phone && (
+              {scoreData.driverName && (
                 <div className="flex items-center gap-1.5 text-xs text-white/25 font-mono mt-0.5">
                   <Phone className="w-3 h-3" />
-                  {profileData.phone}
+                  {scoreData.driverId}
                 </div>
               )}
             </div>
@@ -326,7 +298,7 @@ export default function DriverDetailPage() {
           <div className="space-y-4">
             {/* Score dial */}
             <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
-              <ScoreArc score={score.compositeScore} />
+              <ScoreArc score={scoreData.compositeScore} />
               <p className="text-xs text-white/30 mt-1">Composite Score</p>
               {scoreDelta !== null && (
                 <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
@@ -397,11 +369,9 @@ export default function DriverDetailPage() {
                   { label: 'Avg Delivery Time', value: `${scoreData.metrics.avgDeliveryMinutes} min` },
                   { label: 'Late Deliveries',   value: scoreData.metrics.lateCount.toString() },
                   { label: 'Incidents',          value: scoreData.metrics.incidentCount.toString() },
-                  { label: 'Active Orders',      value: profileData?._count.orders.toString() ?? '—' },
-                  { label: 'Vehicle',            value: profileData?.vehicleType ?? '—' },
-                  { label: 'Member Since',       value: profileData?.createdAt
-                      ? new Date(profileData.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
-                      : '—' },
+                  { label: 'Active Orders',      value: '—' },
+                  { label: 'Vehicle',            value: '—' },
+                  { label: 'Member Since',       value: '—' },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-white/[0.02] rounded-lg p-3">
                     <p className="text-[10px] text-white/25 mb-1">{label}</p>
@@ -411,22 +381,6 @@ export default function DriverDetailPage() {
               </div>
             </div>
 
-            {profileData && (
-              <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
-                <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Vehicle</h3>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/[0.04] flex items-center justify-center">
-                    <Truck className="w-5 h-5 text-blue-400/70" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white/70">{profileData.vehicleType || 'Unknown'}</p>
-                    {profileData.vehiclePlate && (
-                      <p className="text-xs font-mono text-white/30">{profileData.vehiclePlate}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

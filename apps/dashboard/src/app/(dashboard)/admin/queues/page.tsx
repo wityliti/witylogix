@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery, useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 
 interface QueueStats {
   name: string;
@@ -84,11 +84,6 @@ export default function QueuesPage() {
   const queues = queuesData?.data?.queues ?? [];
   const dlqItems = queuesData?.data?.dlq ?? [];
   const jobs = jobsData?.data ?? [];
-
-  const { items: queues, loading: queuesLoading, error: queuesError, refetch: refetchQueues } = useApiList<QueueStats>('/api/v4/admin/queues');
-  const { items: jobs, loading: jobsLoading, error: jobsError } = useApiList<JobItem>('/api/v4/admin/queues/jobs');
-  const { items: scheduledJobs, loading: scheduledLoading } = useApiList<ScheduledJob>('/api/v4/admin/queues/scheduled');
-  const { items: dlqItems, loading: dlqLoading } = useApiList<DLQItem>('/api/v4/admin/queues/dlq');
 
   const filteredJobs = useMemo(() => {
     return jobs.filter(job => {

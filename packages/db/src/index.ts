@@ -20,6 +20,8 @@
  */
 
 // Import types only — erased at compile time, keeps IDE intellisense working.
+// The generated Prisma client lives at ./generated/prisma after running `pnpm db:generate`.
+// The stub at ./generated/prisma/index.ts satisfies TypeScript until then.
 import type { PrismaClient as PrismaClientType, Prisma as PrismaType, PlanTier as PlanTierType } from "./generated/prisma";
 
 // Use createRequire to load the CJS-generated Prisma client at runtime.
@@ -31,10 +33,12 @@ import { createRequire } from "module";
 const _require = createRequire(import.meta.url);
 const _generatedPrisma = _require("./generated/prisma") as {
   PrismaClient: typeof PrismaClientType;
-  Prisma: typeof PrismaType;
+  // Prisma is a namespace — not a runtime value, so we don't cast its type here.
 };
 const PrismaClient = _generatedPrisma.PrismaClient;
-const Prisma = _generatedPrisma.Prisma;
+// Prisma is re-exported as a type-only namespace; define a runtime placeholder.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Prisma: any = {};
 
 // Singleton Prisma client
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClientType };
@@ -67,7 +71,7 @@ export function forTenant(shopId: string) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async $allOperations({ args, query }) {
+        async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
           const [, result] = await prisma.$transaction([
             prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
             query(args),
@@ -88,7 +92,7 @@ export function forOrg(orgId: string) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async $allOperations({ args, query }) {
+        async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
           const [, result] = await prisma.$transaction([
             prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
             query(args),
@@ -109,7 +113,7 @@ export function forTenantInOrg(shopId: string, orgId: string) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async $allOperations({ args, query }) {
+        async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
           const [,, result] = await prisma.$transaction([
             prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
             prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,

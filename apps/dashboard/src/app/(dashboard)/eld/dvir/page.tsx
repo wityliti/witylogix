@@ -34,12 +34,9 @@ export default function DVIRPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
-  const [selectedVehicleNum, setSelectedVehicleNum] = useState<string | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<string>("");
 
   const loading = defectsLoading && inspectionsLoading;
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (defectsError) return <ErrorState message={defectsError.message} onRetry={refetchDefects} />;
 
   const filteredDefects = useMemo(() => {
     let result = defects;
@@ -74,6 +71,9 @@ export default function DVIRPage() {
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (defectsError) return <ErrorState message={defectsError.message} onRetry={refetchDefects} />;
 
   return (
     <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
@@ -258,7 +258,7 @@ export default function DVIRPage() {
                     </button>
                     {uniqueVehicles.map((vehicle) => (
                       <button
-                        key={v.vehicleId}
+                        key={vehicle.vehicleNumber}
                         onClick={() => {
                           setSelectedVehicle(vehicle.vehicleNumber);
                           setShowVehicleSearch(false);
@@ -273,7 +273,7 @@ export default function DVIRPage() {
                         {vehicle.vehicleNumber}
                       </button>
                     ))}
-                    {vehicles.length === 0 && (
+                    {uniqueVehicles.length === 0 && (
                       <div className="px-3 py-2 text-xs text-gray-500">No vehicles found</div>
                     )}
                   </div>
@@ -298,7 +298,7 @@ export default function DVIRPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {filteredHistory.map((inspection: InspectionHistory) => (
+                  {filteredHistory.map((inspection) => (
                     <div
                       key={inspection.id}
                       className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default hover:border-blue-500/30 transition-all"
@@ -364,7 +364,7 @@ export default function DVIRPage() {
             inspectionType={inspectionType}
             onSubmit={async (formData) => {
               try {
-                await submitInspection(data);
+                await submitInspection(formData);
                 addToast({
                   type: "success",
                   title: "Inspection submitted",

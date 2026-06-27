@@ -1,12 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useApiQuery } from "@/hooks/use-api";
 import { cn } from "@/lib/utils";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
-import { useApiQuery } from "@/hooks/use-api";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +64,29 @@ function isErrorEvent(e: IntegrationEvent): boolean {
   return t === "ERROR" || t === "HEALTH_CHECK" && (e.metadata as Record<string, unknown>)?.healthy === false;
 }
 
+interface UsageMetric {
+  label: string;
+  period: string;
+  value: number;
+  unit: string;
+}
+
+interface ActivityLogEntry {
+  id: string;
+  type: string;
+  description: string;
+  status: string;
+  timestamp: string;
+}
+
+interface ErrorEntry {
+  id: string;
+  message: string;
+  context?: string;
+  stackTrace?: string;
+  timestamp: string;
+}
+
 interface IntegrationStatsData {
   usageMetrics: UsageMetric[];
   activityLog: ActivityLogEntry[];
@@ -89,7 +111,7 @@ export default function IntegrationDetailPage() {
   const params = useParams();
   const connectionId = params.providerId as string;
 
-  const { getStatus, pauseSync, resumeSync, forceSync, disconnect } =
+  const { isLoading: connectionsLoading, getStatus, pauseSync, resumeSync, forceSync, disconnect } =
     useIntegrationStatus({ enablePolling: true });
   const connection = getStatus(connectionId);
 
@@ -115,7 +137,7 @@ export default function IntegrationDetailPage() {
   } | null>(null);
 
   if (!connection) {
-    const isLoading = connections.length === 0;
+    const isLoading = connectionsLoading;
     return (
       <div className="space-y-8">
         <Link
@@ -391,25 +413,25 @@ export default function IntegrationDetailPage() {
                   const isExpanded = expandedErrors.has(error.id);
 
                   return (
-                    <div key={event.id} className="border border-red-500/20 rounded-lg bg-red-500/5">
+                    <div key={error.id} className="border border-red-500/20 rounded-lg bg-red-500/5">
                       <button
                         onClick={() => {
                           const newSet = new Set(expandedErrors);
-                          if (isExpanded) newSet.delete(event.id);
-                          else newSet.add(event.id);
+                          if (isExpanded) newSet.delete(error.id);
+                          else newSet.add(error.id);
                           setExpandedErrors(newSet);
                         }}
                         className="w-full p-3 text-left hover:bg-red-500/10 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-sm font-medium text-red-500">{errorMsg}</p>
-                            {context && (
-                              <p className="text-xs text-gray-500 mt-1">{context}</p>
+                            <p className="text-sm font-medium text-red-500">{error.message}</p>
+                            {error.context && (
+                              <p className="text-xs text-gray-500 mt-1">{error.context}</p>
                             )}
                           </div>
                           <span className="text-xs text-gray-500 ml-2">
-                            {new Date(event.timestamp).toLocaleString()}
+                            {new Date(error.timestamp).toLocaleString()}
                           </span>
                         </div>
                       </button>

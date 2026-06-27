@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -18,6 +19,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   FileText,
+  Download,
   Infinity as InfinityIcon,
 } from 'lucide-react';
 
@@ -63,9 +65,6 @@ interface BillingData {
 
 export default function BillingPage() {
   const { data: billing, loading, error, refetch } = useApiQuery<BillingData>('/api/v4/billing');
-
-  const [addressForm, setAddressForm] = useState<BillingAddress | null>(null);
-  const [savingAddress, setSavingAddress] = useState(false);
 
   const [addressForm, setAddressForm] = useState<BillingAddress | null>(null);
   const [savingAddress, setSavingAddress] = useState(false);

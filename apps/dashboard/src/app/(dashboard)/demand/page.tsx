@@ -22,21 +22,16 @@ import { Card } from '@/components/ui/card';
 import { useApiQuery } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
-
-const WLMap = dynamic(
-  () => import('@/components/map/wl-map').then((m) => m.WLMap),
-  { ssr: false },
-);
-const DemandZoneLayer = dynamic(
-  () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
-  { ssr: false },
-);
 import { ErrorState } from '@/components/ui/error-state';
 import type { ZonePoint } from '@/components/map/zone-heat-layer';
 
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
   { ssr: false, loading: () => <div className="h-full bg-[#0d0d14] rounded-xl animate-pulse" /> },
+);
+const DemandZoneLayer = dynamic(
+  () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
+  { ssr: false },
 );
 const ZoneHeatLayer = dynamic(
   () => import('@/components/map/zone-heat-layer').then((m) => ({ default: m.ZoneHeatLayer })),

@@ -18,8 +18,6 @@ import { Modal } from "@/components/ui/modal";
 import { api } from '@/lib/api';
 import { useApiList } from '@/hooks/use-api';
 import { useToast } from '@/components/ui/toast';
-import { useApiList } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 
@@ -56,23 +54,6 @@ function normalizeCustomer(raw: Record<string, unknown>): Customer {
 export default function CreateInvoicePage() {
   const router = useRouter();
   const { addToast } = useToast();
-  const { items: rawCustomers } = useApiList<any>("/api/v4/customers");
-  const allCustomers = rawCustomers.map(normalizeCustomer);
-
-  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
-  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
-
-  const { items: customerItems, loading: customersLoading } = useApiList<Customer>('/api/v4/customers');
-
-  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
-  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
-
-  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
-  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
-
-  const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
-  const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
-
   const { items: rawCustomers, loading: customersLoading } = useApiList<Record<string, unknown>>('/api/v4/customers', { limit: 100 });
   const realCustomers = useMemo(() => rawCustomers.map(normalizeCustomer), [rawCustomers]);
 
@@ -81,7 +62,6 @@ export default function CreateInvoicePage() {
     null
   );
   const [customerSearch, setCustomerSearch] = useState("");
-  const { items: customerItems } = useApiList<Customer>('/api/v4/customers', customerSearch ? { search: customerSearch, limit: 10 } : { limit: 10 });
   const [billingStartDate, setBillingStartDate] = useState("");
   const [billingEndDate, setBillingEndDate] = useState("");
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -98,26 +78,6 @@ export default function CreateInvoicePage() {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSending, setIsSending] = useState(false);
-
-  const { items: rawCustomers, loading: customersLoading } = useApiList<any>('/api/v4/customers', { limit: 100 });
-
-  const allCustomers: Customer[] = useMemo(
-    () =>
-      rawCustomers.map((c) => ({
-        id: c.id,
-        name: c.name ?? [c.firstName, c.lastName].filter(Boolean).join(" ") || c.email || "Unknown",
-        email: c.email ?? "",
-        address: (c.addresses as any[])?.[0]
-          ? [
-              (c.addresses as any[])[0].address1,
-              (c.addresses as any[])[0].city,
-              (c.addresses as any[])[0].province,
-              (c.addresses as any[])[0].country,
-            ].filter(Boolean).join(", ")
-          : "",
-      })),
-    [rawCustomers]
-  );
 
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {

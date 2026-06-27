@@ -256,9 +256,9 @@ export default function CampaignsPage() {
     const active = items.filter(
       (c) => c.status === "SENDING" || c.status === "SCHEDULED",
     ).length;
-    const totalSent = items.reduce((sum, c) => sum + (c.sent ?? 0), 0);
-    const totalOpened = items.reduce((sum, c) => sum + (c.opened ?? 0), 0);
-    const totalClicked = items.reduce((sum, c) => sum + (c.clicked ?? 0), 0);
+    const totalSent = items.reduce((sum, c) => sum + (c.sentCount ?? 0), 0);
+    const totalOpened = items.reduce((sum, c) => sum + (c.openedCount ?? 0), 0);
+    const totalClicked = items.reduce((sum, c) => sum + (c.clickedCount ?? 0), 0);
     const avgOpenRate =
       totalSent > 0 ? ((totalOpened / totalSent) * 100).toFixed(1) : "0";
     const avgClickRate =
@@ -531,16 +531,16 @@ export default function CampaignsPage() {
                               </Badge>
                             </td>
                             <td className="py-3 px-4 text-right text-wl-text-secondary">
-                              {formatNumber(campaign.sent ?? 0)}
+                              {formatNumber(campaign.sentCount ?? 0)}
                             </td>
                             <td className="py-3 px-4 text-right text-wl-text-secondary">
-                              {(campaign.sent ?? 0) > 0
-                                ? `${((campaign.opened / campaign.sent) * 100).toFixed(0)}%`
+                              {(campaign.sentCount ?? 0) > 0
+                                ? `${((campaign.openedCount / campaign.sentCount) * 100).toFixed(0)}%`
                                 : "—"}
                             </td>
                             <td className="py-3 px-4 text-right text-wl-text-secondary">
-                              {(campaign.sent ?? 0) > 0
-                                ? `${((campaign.clicked / campaign.sent) * 100).toFixed(0)}%`
+                              {(campaign.sentCount ?? 0) > 0
+                                ? `${((campaign.clickedCount / campaign.sentCount) * 100).toFixed(0)}%`
                                 : "—"}
                             </td>
                             <td className="py-3 px-4 text-right text-wl-text-tertiary text-xs">

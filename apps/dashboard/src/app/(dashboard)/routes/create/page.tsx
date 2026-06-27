@@ -150,6 +150,15 @@ export default function CreateRoutePage() {
     }
   };
 
+  const getPriorityColor = (priority: string): string => {
+    switch (priority) {
+      case "high":   return "#ef4444";
+      case "medium": return "#f59e0b";
+      case "low":    return "#22c55e";
+      default:       return "#6b7280";
+    }
+  };
+
   const estimatedDistance = formData.stops.length * 3.5;
   const estimatedDuration = formData.stops.length * 15 + 30;
 

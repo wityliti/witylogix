@@ -97,8 +97,8 @@ interface ReorderAlert {
 
 export default function InventoryPage() {
   const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/supply-chain/inventory');
-  const { items: stockGauges } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
-  const { items: reorderAlerts } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
+  const { items: stockGauges, loading: gaugesLoading } = useApiList<StockGauge>('/api/v4/supply-chain/stock-gauges');
+  const { items: reorderAlerts, loading: alertsLoading } = useApiList<ReorderAlert>('/api/v4/supply-chain/reorder-alerts');
   const { items: transfers, loading: transfersLoading } = useApiList<InventoryTransfer>('/api/v4/supply-chain/transfers');
   const { data: warehousesData } = useApiQuery<{ data: WarehouseData[] }>('/api/v4/supply-chain/warehouses');
   const warehouseItems = warehousesData?.data ?? [];
