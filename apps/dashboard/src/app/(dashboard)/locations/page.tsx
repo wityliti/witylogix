@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
@@ -9,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
-import { WLMap } from "@/components/map/wl-map";
-import { PinLayer, type Pin } from "@/components/map/pin-layer";
+import { LayoutGrid, Map } from "lucide-react";
 
 // Dynamic imports — avoids SSR issues with Leaflet
 const WLMap = dynamic(
@@ -95,11 +95,6 @@ export default function LocationsPage() {
   const [search, setSearch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
-  const [detailMapId, setDetailMapId] = useState<string | null>(null);
-
-  const handleDetailMapReady = useCallback((id: string) => setDetailMapId(id), []);
-  const [mainMapId, setMainMapId] = useState<string | null>(null);
-  const handleMainMapReady = useCallback((id: string) => setMainMapId(id), []);
 
   const filtered = useMemo(() => {
     return locations.filter((loc) => {
@@ -138,11 +133,11 @@ export default function LocationsPage() {
               {(["grid", "map"] as const).map((v) => (
                 <button
                   key={v}
-                  onClick={() => setView(v)}
-                  aria-pressed={view === v}
+                  onClick={() => setViewMode(v)}
+                  aria-pressed={viewMode === v}
                   className={cn(
                     "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
-                    view === v ? "bg-blue-600 text-white" : "bg-[#12121a] text-gray-400 hover:text-white"
+                    viewMode === v ? "bg-blue-600 text-white" : "bg-[#12121a] text-gray-400 hover:text-white"
                   )}
                 >
                   {v}
@@ -214,200 +209,12 @@ export default function LocationsPage() {
           </div>
         </div>
 
-        {/* Locations Grid + Detail */}
-        <div
-          className={cn("grid gap-5")}
-          style={{
-            // Intentional inline: dynamic grid layout
-            gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr"
-          }}
-        >
-
-          {/* Locations Grid */}
-          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
-            {filtered.map((location, i) => (
-              <Card
-                key={location.id}
-                hover
-                onClick={() => setSelectedLocation(selectedLocation?.id === location.id ? null : location)}
-                className={cn("cursor-pointer relative overflow-hidden flex flex-col")}
-                style={{
-                  // Intentional inline: dynamic animation, opacity, and borderColor
-                  animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
-                  opacity: 0,
-                  borderColor: selectedLocation?.id === location.id ? "var(--blue-500)" : undefined,
-                }}
-              >
-
-                {/* Status indicator line */}
-                <div
-                  className={cn(
-                    "absolute top-0 left-0 right-0 h-0.5",
-                    location.status === "ACTIVE"
-                      ? "bg-emerald-500"
-                      : location.status === "MAINTENANCE"
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                  )}
-                />
-
-
-                {/* Header */}
-                <div className={cn("flex justify-between items-start mb-3")}>
-                  <div className={cn("flex-1 min-w-0")}>
-                    <div className={cn("flex gap-2 items-center mb-1")}>
-                      <span className={cn("text-base font-bold text-white")}>
-                        {location.name}
-                      </span>
-                      {location.isDefault && (
-                        <span className={cn("text-sm opacity-80 text-blue-400")}>★</span>
-                      )}
-                    </div>
-                    <Badge variant={typeVariant(location.type)} dot>
-                      {typeLabel(location.type)}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Address */}
-                <div className={cn("mb-3 text-xs text-gray-300")}>
-                  <div>{location.addressLine1}</div>
-                  <div>
-                    {location.city}, {location.province} {location.postalCode}
-                  </div>
-                </div>
-
-                {/* Status badge */}
-                <Badge
-                  variant={statusVariant(location.status)}
-                  dot
-                  className={cn("mb-3 w-fit")}
-                >
-                  {location.status}
-                </Badge>
-
-                {/* Stats Grid */}
-                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
-                  <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
-                    <div
-                      className={cn(
-                        "text-base font-bold font-mono",
-                        location.activeShipments > 0 ? "text-blue-400" : "text-gray-400"
-                      )}
-                    >
-                      {location.activeShipments}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Total Processed</div>
-                    <div className={cn("text-base font-bold font-mono text-emerald-500")}>
-                      {location.totalProcessed}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Avg Prep Time</div>
-                    <div className={cn("text-base font-bold font-mono text-gray-300")}>
-                      {location.avgPrepTime}m
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Status</div>
-                    <div
-                      className={cn(
-                        "text-xs font-semibold",
-                        location.status === "ACTIVE"
-                          ? "text-emerald-500"
-                          : location.status === "MAINTENANCE"
-                            ? "text-amber-500"
-                            : "text-red-500"
-                      )}
-                    >
-                      {location.status}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Operating Hours Preview */}
-                {location.operatingHours && (
-                  <div className={cn("text-xs text-gray-400")}>
-                    <div className={cn("mb-1 font-semibold text-gray-300")}>Hours</div>
-                    <div>Mon: {location.operatingHours.Monday.open} - {location.operatingHours.Monday.close}</div>
-                    <div>Sat: {location.operatingHours.Saturday.open} - {location.operatingHours.Saturday.close}</div>
-                  </div>
-                )}
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* MAP VIEW */}
-        {view === "map" && filtered.length > 0 && (
-          <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 400px" : "1fr" }}>
-            <div>
-              {/* Type legend */}
-              <div className={cn("flex gap-4 flex-wrap mb-3")}>
-                {(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => (
-                  <div key={t} className={cn("flex items-center gap-1.5 text-xs text-gray-400")}>
-                    <span className="inline-block w-3 h-3 rounded-full" style={{ background: TYPE_DOT[t] }} />
-                    {typeLabel(t)}
-                  </div>
-                ))}
-              </div>
-
-              <Badge
-                variant={statusVariant(selectedLocation.status)}
-                dot
-                className={cn("mb-4 w-fit")}
-              >
-                {selectedLocation.status}
-              </Badge>
-
-              <div className={cn("flex flex-col gap-4 flex-1")}>
-                {/* Address Info */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider")}>
-                    Address
-                  </div>
-                  <div className={cn("text-sm text-white font-medium")}>
-                    {selectedLocation.addressLine1}
-                  </div>
-                  <div className={cn("text-sm text-gray-300")}>
-                    {selectedLocation.city}, {selectedLocation.province} {selectedLocation.postalCode}
-                  </div>
-                  <div className={cn("text-xs text-gray-400 mt-1")}>
-                    {selectedLocation.country}
-                  </div>
-                </div>
-
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Contact Info */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider")}>
-                    Contact
-                  </div>
-                  {selectedLocation.phone && (
-                    <div className={cn("text-sm text-gray-300 mb-1 font-mono")}>
-                      {selectedLocation.phone}
-                    </div>
-                  )}
-                </WLMap>
-              </div>
-            </div>
-            {selectedLocation && (
-              <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
-            )}
-          </div>
-        )}
-
         {/* GRID VIEW */}
-        {view === "grid" && filtered.length > 0 && (
-          <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr" }}>
+        {viewMode === "grid" && (
+          <div
+            className={cn("grid gap-5")}
+            style={{ gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr" }}
+          >
             <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
               {filtered.map((location, i) => (
                 <Card
@@ -422,148 +229,161 @@ export default function LocationsPage() {
                   }}
                 >
                   {/* Status indicator line */}
-                  <div className={cn("absolute top-0 left-0 right-0 h-0.5",
-                    location.status === "ACTIVE" ? "bg-emerald-500"
-                      : location.status === "MAINTENANCE" ? "bg-amber-500"
-                      : "bg-red-500"
-                  )} />
+                  <div
+                    className={cn(
+                      "absolute top-0 left-0 right-0 h-0.5",
+                      location.status === "ACTIVE"
+                        ? "bg-emerald-500"
+                        : location.status === "MAINTENANCE"
+                          ? "bg-amber-500"
+                          : "bg-red-500"
+                    )}
+                  />
 
+                  {/* Header */}
                   <div className={cn("flex justify-between items-start mb-3")}>
                     <div className={cn("flex-1 min-w-0")}>
                       <div className={cn("flex gap-2 items-center mb-1")}>
-                        <span className={cn("text-base font-bold text-white")}>{location.name}</span>
-                        {location.isDefault && <span className={cn("text-sm opacity-80 text-blue-400")}>★</span>}
+                        <span className={cn("text-base font-bold text-white")}>
+                          {location.name}
+                        </span>
+                        {location.isDefault && (
+                          <span className={cn("text-sm opacity-80 text-blue-400")}>★</span>
+                        )}
                       </div>
-                      <Badge variant={typeVariant(location.type)} dot>{typeLabel(location.type)}</Badge>
+                      <Badge variant={typeVariant(location.type)} dot>
+                        {typeLabel(location.type)}
+                      </Badge>
                     </div>
-                  )}
-
-                </div>
-
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Performance Stats */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
-                    Performance
                   </div>
 
+                  {/* Address */}
                   <div className={cn("mb-3 text-xs text-gray-300")}>
                     <div>{location.addressLine1}</div>
-                    <div>{location.city}, {location.province} {location.postalCode}</div>
+                    <div>
+                      {location.city}, {location.province} {location.postalCode}
+                    </div>
                   </div>
 
-                  <Badge variant={statusVariant(location.status)} dot className={cn("mb-3 w-fit")}>
+                  {/* Status badge */}
+                  <Badge
+                    variant={statusVariant(location.status)}
+                    dot
+                    className={cn("mb-3 w-fit")}
+                  >
                     {location.status}
                   </Badge>
 
-                  <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-[#1e1e2e] mb-3")}>
+                  {/* Stats Grid */}
+                  <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
                     <div>
                       <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
-                      <div className={cn("text-base font-bold font-mono", location.activeShipments > 0 ? "text-blue-400" : "text-gray-400")}>
+                      <div
+                        className={cn(
+                          "text-base font-bold font-mono",
+                          location.activeShipments > 0 ? "text-blue-400" : "text-gray-400"
+                        )}
+                      >
                         {location.activeShipments}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-gray-400 mb-1")}>Total Processed</div>
-                      <div className={cn("text-base font-bold font-mono text-emerald-500")}>{location.totalProcessed}</div>
+                      <div className={cn("text-base font-bold font-mono text-emerald-500")}>
+                        {location.totalProcessed}
+                      </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-gray-400 mb-1")}>Avg Prep Time</div>
-                      <div className={cn("text-base font-bold font-mono text-gray-300")}>{location.avgPrepTime}m</div>
+                      <div className={cn("text-base font-bold font-mono text-gray-300")}>
+                        {location.avgPrepTime}m
+                      </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-gray-400 mb-1")}>Status</div>
-                      <div className={cn("text-xs font-semibold",
-                        location.status === "ACTIVE" ? "text-emerald-500"
-                          : location.status === "MAINTENANCE" ? "text-amber-500"
-                          : "text-red-500"
-                      )}>
+                      <div
+                        className={cn(
+                          "text-xs font-semibold",
+                          location.status === "ACTIVE"
+                            ? "text-emerald-500"
+                            : location.status === "MAINTENANCE"
+                              ? "text-amber-500"
+                              : "text-red-500"
+                        )}
+                      >
                         {location.status}
                       </div>
                     </div>
                   </div>
 
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Operating Hours */}
-                {selectedLocation.operatingHours && (
-                  <div>
-                    <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
-                      Operating Hours
+                  {/* Operating Hours Preview */}
+                  {location.operatingHours && (
+                    <div className={cn("text-xs text-gray-400")}>
+                      <div className={cn("mb-1 font-semibold text-gray-300")}>Hours</div>
+                      {location.operatingHours.Monday && (
+                        <div>Mon: {location.operatingHours.Monday.open} - {location.operatingHours.Monday.close}</div>
+                      )}
+                      {location.operatingHours.Saturday && (
+                        <div>Sat: {location.operatingHours.Saturday.open} - {location.operatingHours.Saturday.close}</div>
+                      )}
                     </div>
-                    <div className={cn("text-xs overflow-x-auto")}>
-                      <table className={cn("w-full border-collapse text-xs")}>
-                        <tbody>
-                          {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
-                            <tr key={day} className={cn("border-b border-wl-border-default")}>
-                              <td
-                                className={cn("p-2 pr-3 text-gray-300 font-medium whitespace-nowrap")}
-                              >
-                                {day}
-                              </td>
-                              <td
-                                className={cn(
-                                  "p-2",
-                                  hours.open === "closed" ? "text-gray-400 font-sans" : "text-white font-mono"
-                                )}
-                              >
-                                {hours.open === "closed" ? "Closed" : `${hours.open} - ${hours.close}`}
-                              </td>
-
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Map */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
-                    Location
-                  </div>
-                  <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
-                    <WLMap
-                      center={[selectedLocation.longitude, selectedLocation.latitude]}
-                      zoom={12}
-                    >
-                      <PinLayer
-                        pins={[{
-                          id: selectedLocation.id,
-                          lng: selectedLocation.longitude,
-                          lat: selectedLocation.latitude,
-                          status: selectedLocation.status === 'ACTIVE' ? 'assigned' : selectedLocation.status === 'MAINTENANCE' ? 'delayed' : 'open',
-                          label: selectedLocation.name,
-                        } satisfies Pin]}
-                      />
-                    </WLMap>
-                  </div>
-                  <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
-                    {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div
-                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-default")}
-                >
-                  <Button variant="primary" size="sm">
-                    Edit
-                  </Button>
-                  <Button variant="secondary" size="sm">
-                    {selectedLocation.status === "ACTIVE" ? "Deactivate" : "Activate"}
-                  </Button>
-                  {!selectedLocation.isDefault && (
-                    <Button variant="ghost" size="sm">
-                      Set Default
-                    </Button>
                   )}
                 </Card>
               ))}
+            </div>
+            {selectedLocation && (
+              <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
+            )}
+          </div>
+        )}
+
+        {/* MAP VIEW */}
+        {viewMode === "map" && (
+          <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 400px" : "1fr" }}>
+            <div>
+              {/* Type legend */}
+              <div className={cn("flex gap-4 flex-wrap mb-3")}>
+                {(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => (
+                  <div key={t} className={cn("flex items-center gap-1.5 text-xs text-gray-400")}>
+                    <span className="inline-block w-3 h-3 rounded-full" style={{ background: TYPE_DOT[t] }} />
+                    {typeLabel(t)}
+                  </div>
+                ))}
+              </div>
+
+              <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 520 }}>
+                <WLMap
+                  center={[0, 20]}
+                  zoom={2}
+                  className="w-full h-full"
+                >
+                  {filtered.length > 0 && (
+                    <LocationMarkerLayer
+                      mapId="main-map"
+                      locations={filtered.map((loc) => ({
+                        id: loc.id,
+                        name: loc.name,
+                        type: loc.type,
+                        status: loc.status,
+                        addressLine1: loc.addressLine1,
+                        city: loc.city,
+                        province: loc.province,
+                        country: loc.country,
+                        latitude: loc.latitude,
+                        longitude: loc.longitude,
+                        activeShipments: loc.activeShipments,
+                        totalProcessed: loc.totalProcessed,
+                        avgPrepTime: loc.avgPrepTime,
+                        isDefault: loc.isDefault,
+                      }))}
+                      selectedId={selectedLocation?.id ?? null}
+                    />
+                  )}
+                </WLMap>
+              </div>
             </div>
             {selectedLocation && (
               <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
@@ -577,7 +397,6 @@ export default function LocationsPage() {
 
 /* ── Location Detail Panel ── */
 function LocationDetailPanel({ location: loc, onClose }: { location: Location; onClose: () => void }) {
-  const [detailMapId, setDetailMapId] = useState<string | null>(null);
 
   return (
     <Card
@@ -662,10 +481,9 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
           <div>
             <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>Map</div>
             <div className={cn("rounded-lg overflow-hidden border border-[#1e1e2e]")} style={{ height: 160 }}>
-              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} onReady={setDetailMapId} className="w-full h-full">
-                {detailMapId && (
+              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} className="w-full h-full">
                   <LocationMarkerLayer
-                    mapId={detailMapId}
+                    mapId="detail-map"
                     locations={[{
                       id: loc.id,
                       name: loc.name,
@@ -684,7 +502,6 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
                     }]}
                     selectedId={loc.id}
                   />
-                )}
               </WLMap>
             </div>
             <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>

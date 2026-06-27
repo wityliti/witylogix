@@ -19,11 +19,9 @@ import {
   Crown,
   Zap,
   RefreshCw,
+  Truck,
 } from "lucide-react";
 import { useApiQuery, useApiList } from '@/hooks/use-api';
-import { useParams } from 'next/navigation';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
 import { api } from '@/lib/api';
 
 interface ShopApiData {
@@ -79,42 +77,6 @@ export default function AdminShopDetail() {
   );
 
   const shop = shopData?.data;
-
-  const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
-    shopId ? `/api/v4/admin/stores/${shopId}` : null,
-  );
-
-  const { items: activityLogs, loading: activityLoading } = useApiList<ActivityItem>(
-    shopId ? `/api/v4/admin/activity?limit=20` : null,
-  );
-
-  const shop = shopData?.data;
-
-  const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
-    shopId ? `/api/v4/admin/stores/${shopId}` : null,
-  );
-
-  const { items: activityLogs, loading: activityLoading } = useApiList<ActivityItem>(
-    shopId ? `/api/v4/admin/activity?limit=20` : null,
-  );
-
-  const shop = shopData?.data;
-
-  const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
-    shopId ? `/api/v4/admin/stores/${shopId}` : null,
-  );
-
-  const { items: activityLogs, loading: activityLoading } = useApiList<ActivityItem>(
-    shopId ? `/api/v4/admin/activity?limit=20` : null,
-  );
-
-  const shop = shopData?.data;
-
-  const { data: store, loading: storeLoading, error: storeError, refetch: refetchStore } = useApiQuery<StoreDetail>(`/api/v4/admin/stores/${id}`);
-  const { data: billingData, loading: billingLoading } = useApiQuery<{ data: BillingRecord[] }>(`/api/v4/admin/stores/${id}/billing`);
-  const { data: activityData, loading: activityLoading } = useApiQuery<{ data: ActivityEntry[] }>(`/api/v4/admin/stores/${id}/activity`);
-
-  const { execute: suspendStore, loading: suspending } = useApiMutation<unknown>('POST', `/api/v4/admin/stores/${id}/suspend`);
 
   const getStatusColor = (status: string) => {
     const s = (status || "").toLowerCase();
@@ -179,9 +141,10 @@ export default function AdminShopDetail() {
 
   const planTier = shop.subscription?.planTier || "unknown";
   const isSuspended = shop.status === "SUSPENDED";
+  const statusColor = getStatusColor(shop.status);
 
   return (
-    <div className="bg-wl-bg-root-root">
+    <div className="bg-wl-bg-root">
       {/* Header */}
       <div className="px-6 py-6 border-b border-wl-border-default flex gap-4 items-center justify-between">
         <Link
@@ -228,17 +191,6 @@ export default function AdminShopDetail() {
                 >
                   {planTier.toUpperCase()}
                 </Badge>
-                {shopData.planTier && (
-                  <Badge
-                    style={{
-                      background: getPlanColor(shopData.planTier.toLowerCase()) + "20",
-                      color: getPlanColor(shopData.planTier.toLowerCase()),
-                      border: `1px solid ${getPlanColor(shopData.planTier.toLowerCase())}40`,
-                    }}
-                  >
-                    {shopData.planTier.toUpperCase()}
-                  </Badge>
-                )}
               </div>
             </div>
 
@@ -262,12 +214,6 @@ export default function AdminShopDetail() {
                   {new Date(shop.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              {store.usage.suspension && (
-                <div>
-                  <p className="text-gray-400 mb-1 text-xs">Suspended</p>
-                  <p className="text-red-400 text-xs">{store.usage.suspension.reason ?? 'No reason given'}</p>
-                </div>
-              )}
             </div>
 
             {isSuspended && shop.usage.suspension && (
@@ -295,9 +241,8 @@ export default function AdminShopDetail() {
                     {shop.usage.orders.toLocaleString()}
                   </p>
                 </div>
-                <ShoppingCart size={24} className="text-blue-600" />
+                <ShoppingCart size={24} className="text-blue-500" />
               </div>
-              <ShoppingCart size={24} className="text-blue-500" />
             </CardContent>
           </Card>
 
@@ -312,7 +257,6 @@ export default function AdminShopDetail() {
                 </div>
                 <Users size={24} className="text-purple-500" />
               </div>
-              <Truck size={24} className="text-purple-500" />
             </CardContent>
           </Card>
 
@@ -327,10 +271,8 @@ export default function AdminShopDetail() {
                 </div>
                 <Truck size={24} className="text-blue-500" />
               </div>
-              <Users size={24} className="text-emerald-500" />
             </CardContent>
           </Card>
-        )}
 
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-4">
@@ -390,9 +332,8 @@ export default function AdminShopDetail() {
                 onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
                 className="bg-red-500/10 text-red-500 border border-red-500/40 px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80"
               >
-                <Trash2 size={16} />
                 Delete Account
-              </Button>
+              </button>
             </div>
 
             {showSuspendConfirm && (
@@ -414,7 +355,7 @@ export default function AdminShopDetail() {
                     className="bg-wl-bg-elevated text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
                   >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}

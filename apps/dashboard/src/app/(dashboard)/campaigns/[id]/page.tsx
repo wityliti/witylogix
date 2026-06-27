@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useMemo, useState } from "react";
+import { use, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
@@ -68,6 +68,15 @@ interface Campaign {
   startedAt: string | null;
   completedAt: string | null;
   createdAt: string;
+  sent_at?: string;
+  created_at: string;
+  stats: {
+    total_events: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    failed: number;
+  };
 }
 
 interface CampaignEvent {
@@ -84,6 +93,11 @@ interface CampaignRecipient {
   phone?: string;
   status: string;
   sent_at?: string;
+}
+
+interface ReachPoint {
+  lat: number;
+  lng: number;
 }
 
 const statusVariant = (
@@ -121,6 +135,14 @@ const eventIcon = (type: EventType) => {
 
 type ActiveTab = "overview" | "events" | "recipients" | "map";
 
+function CampaignSkeleton() {
+  return (
+    <div className="min-h-screen bg-wl-bg-root p-8">
+      <TableSkeleton rows={6} />
+    </div>
+  );
+}
+
 export default function CampaignDetailPage({
   params,
 }: {
@@ -128,9 +150,11 @@ export default function CampaignDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const [mapId, setMapId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const handleMapReady = useCallback((mid: string) => setMapId(mid), []);
 
   const {
     data: campaign,
@@ -192,42 +216,6 @@ export default function CampaignDetailPage({
       },
     ];
   }, [campaign]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-wl-bg-root p-8">
-        <TableSkeleton rows={6} />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Skeleton className="h-64 rounded-xl" />
-        <Skeleton className="h-64 rounded-xl" />
-      </div>
-    </>
-  );
-}
-
-// ─── Page ──────────────────────────────────────────────────
-
-export default function CampaignDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
-  const [mapId, setMapId] = useState<string | null>(null);
-  const handleMapReady = useCallback((mid: string) => setMapId(mid), []);
-
-  const {
-    data: campaign,
-    loading,
-    error,
-    refetch,
-  } = useApiQuery<Campaign>(`/api/v4/campaigns/${id}`);
-
-  // API returns { data: ReachPoint[] }; useApiQuery unwraps to ReachPoint[]
-  const { data: reachPoints, loading: geoLoading } = useApiQuery<ReachPoint[]>(
-    `/api/v4/campaigns/${id}/geo`
-  );
 
   if (loading) return <CampaignSkeleton />;
 
@@ -372,8 +360,7 @@ export default function CampaignDetailPage({
               Edit
             </Button>
           </div>
-        }
-      />
+        </div>
 
         {/* Stats row */}
         <div

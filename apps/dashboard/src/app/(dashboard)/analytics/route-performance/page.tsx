@@ -12,7 +12,6 @@ import { DriverLeaderboard } from "./components/driver-leaderboard";
 import { EfficiencyHeatmap } from "./components/efficiency-heatmap";
 import { CO2Tracker } from "./components/co2-tracker";
 import { SLACompliance } from "./components/sla-compliance";
-import { Map, BarChart3 } from "lucide-react";
 import type {
   RoutePerformanceSummary,
   PlannedVsActualDataPoint,
@@ -167,7 +166,7 @@ export default function RoutePerformancePage() {
                       : "text-white/30 hover:text-white/50"
                   )}
                 >
-                  <BarChart3 className="w-3.5 h-3.5" />
+                  <BarChart2 className="w-3.5 h-3.5" />
                   Charts
                 </button>
                 <button
@@ -179,7 +178,7 @@ export default function RoutePerformancePage() {
                       : "text-white/30 hover:text-white/50"
                   )}
                 >
-                  <Map className="w-3.5 h-3.5" />
+                  <MapIcon className="w-3.5 h-3.5" />
                   Map
                 </button>
               </div>
@@ -227,7 +226,7 @@ export default function RoutePerformancePage() {
               ) : (
                 <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
                   <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-                    <Map className="w-10 h-10 text-white/10" />
+                    <MapIcon className="w-10 h-10 text-white/10" />
                     <p className="text-sm font-medium text-white/30">No geo-tagged deliveries</p>
                     <p className="text-xs text-white/15">
                       Delivery map requires orders with lat/lng coordinates stored in the delivery location field.
