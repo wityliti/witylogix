@@ -2,7 +2,7 @@
 
 export function PageHeader() {
   return (
-    <div className="border-b border-[#1e1e2e]">
+    <div className="border-b border-wl-border-default">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold text-white mb-2">
           Design System

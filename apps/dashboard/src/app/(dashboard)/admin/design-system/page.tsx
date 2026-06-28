@@ -142,7 +142,7 @@ const CopyToken = ({ token }: { token: string }) => {
 // Color Palette Section
 const ColorPaletteSection = () => {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+    <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
         <Palette className="w-5 h-5 text-gray-400" />
         <CardTitle>Color Palette</CardTitle>
@@ -158,7 +158,7 @@ const ColorPaletteSection = () => {
                 {Object.entries(colors).map(([tokenName, hexValue]) => (
                   <div key={tokenName} className="flex gap-3 items-start">
                     <div
-                      className="w-15 h-15 rounded-md border border-[#1e1e2e]-default flex-shrink-0"
+                      className="w-15 h-15 rounded-md border border-wl-border-default-default flex-shrink-0"
                       style={{ backgroundColor: hexValue }}
                     />
                     <div className="flex-1 min-w-0">
@@ -184,7 +184,7 @@ const ColorPaletteSection = () => {
 // Typography Section
 const TypographySection = () => {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+    <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
         <Type className="w-5 h-5 text-gray-400" />
         <CardTitle>Typography</CardTitle>
@@ -192,7 +192,7 @@ const TypographySection = () => {
       <CardContent>
         <div className="grid gap-4">
           {TYPOGRAPHY_SAMPLES.map((sample, idx) => (
-            <div key={idx} className={cn("flex items-center gap-4 pb-4", { "border-b border-[#1e1e2e]": idx < TYPOGRAPHY_SAMPLES.length - 1 })}>
+            <div key={idx} className={cn("flex items-center gap-4 pb-4", { "border-b border-wl-border-default": idx < TYPOGRAPHY_SAMPLES.length - 1 })}>
               <div className="min-w-20">
                 <p className="m-0 text-xs font-semibold text-gray-400 uppercase tracking-widest">
                   {sample.name}
@@ -217,7 +217,7 @@ const TypographySection = () => {
 // Spacing Section
 const SpacingSection = () => {
   return (
-    <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+    <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
         <Layout className="w-5 h-5 text-gray-400" />
         <CardTitle>Spacing Scale</CardTitle>
@@ -261,7 +261,7 @@ const ComponentsShowcase = () => {
   return (
     <div className="grid gap-6">
       {/* Buttons */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="pb-3">
           <CardTitle>Buttons</CardTitle>
         </CardHeader>
@@ -279,7 +279,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Badges */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="pb-3">
           <CardTitle>Badges</CardTitle>
         </CardHeader>
@@ -296,7 +296,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Inputs & Selects */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="pb-3">
           <CardTitle>Form Elements</CardTitle>
         </CardHeader>
@@ -327,7 +327,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Stat Cards */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="pb-3">
           <CardTitle>Stat Cards</CardTitle>
         </CardHeader>
@@ -359,7 +359,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Tabs */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="pb-3">
           <CardTitle>Tabs</CardTitle>
         </CardHeader>
@@ -379,7 +379,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Modal Trigger */}
-      <Card className="bg-[#12121a] border-[#1e1e2e]">
+      <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="pb-3">
           <CardTitle>Modal</CardTitle>
         </CardHeader>
@@ -418,7 +418,7 @@ export default function DesignSystemPage() {
   const [activeTab, setActiveTab] = useState("colors");
 
   return (
-    <div className="bg-[#0a0a0f]-root">
+    <div className="bg-wl-bg-root">
       <Header
         title="Design System"
         subtitle="Comprehensive guide to colors, typography, spacing, and components"

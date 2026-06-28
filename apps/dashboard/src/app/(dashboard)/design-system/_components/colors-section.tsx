@@ -32,7 +32,7 @@ export function ColorsSection() {
               ].map((color) => (
                 <div key={color.name}>
                   <div
-                    className="w-full h-24 rounded-md mb-2 border border-[#1e1e2e]"
+                    className="w-full h-24 rounded-md mb-2 border border-wl-border-default"
                     style={{ backgroundColor: color.hex }}
                   />
                   <p className="text-xs font-mono text-gray-300">
@@ -53,7 +53,7 @@ export function ColorsSection() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <div
-                  className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
+                  className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#34d399" }}
                 />
                 <p className="text-sm font-semibold text-white">
@@ -69,7 +69,7 @@ export function ColorsSection() {
 
               <div>
                 <div
-                  className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
+                  className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#fbbf24" }}
                 />
                 <p className="text-sm font-semibold text-white">
@@ -85,7 +85,7 @@ export function ColorsSection() {
 
               <div>
                 <div
-                  className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
+                  className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#f87171" }}
                 />
                 <p className="text-sm font-semibold text-white">
@@ -101,7 +101,7 @@ export function ColorsSection() {
 
               <div>
                 <div
-                  className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
+                  className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#60a5fa" }}
                 />
                 <p className="text-sm font-semibold text-white">
@@ -132,7 +132,7 @@ export function ColorsSection() {
               ].map((color) => (
                 <div key={color.name}>
                   <div
-                    className="w-full h-20 rounded-md mb-2 border border-[#1e1e2e]"
+                    className="w-full h-20 rounded-md mb-2 border border-wl-border-default"
                     style={{ backgroundColor: color.hex }}
                   />
                   <p className="text-sm font-semibold text-white">

@@ -29,13 +29,13 @@ export function PreviewSection({
         <p className="text-xs text-gray-400">{description}</p>
       </div>
 
-      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-md p-6 flex items-center justify-center min-h-24">
+      <div className="bg-wl-bg-surface border border-wl-border-default rounded-md p-6 flex items-center justify-center min-h-24">
         {preview}
       </div>
 
       <button
         onClick={() => setShowCode(!showCode)}
-        className="flex items-center gap-2 text-xs font-medium text-gray-300 hover:text-white transition-colors"
+        className="flex items-center gap-2 text-xs font-medium text-wl-text-secondary hover:text-wl-text-primary transition-colors"
       >
         {showCode ? (
           <>

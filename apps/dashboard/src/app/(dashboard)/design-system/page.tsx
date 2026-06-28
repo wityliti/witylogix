@@ -19,7 +19,7 @@ export default function DesignSystemPage() {
   const [activeTab, setActiveTab] = useState('buttons');
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       {/* Header */}
       <PageHeader />
 

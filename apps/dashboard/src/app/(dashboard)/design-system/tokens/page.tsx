@@ -147,7 +147,7 @@ interface CopyState {
 function ColorSwatch({ color }: { color: string }) {
   return (
     <div
-      className="w-full h-20 rounded-lg border border-[#1e1e2e] transition-all hover:border-[#2a2a3e]"
+      className="w-full h-20 rounded-lg border border-wl-border-default transition-all hover:border-wl-border-strong"
       style={{ backgroundColor: color }}
     />
   );
@@ -156,7 +156,7 @@ function ColorSwatch({ color }: { color: string }) {
 function ShadowPreview({ shadow }: { shadow: string }) {
   return (
     <div
-      className="w-full h-20 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
+      className="w-full h-20 bg-wl-bg-surface rounded-lg border border-wl-border-default"
       style={{ boxShadow: shadow }}
     />
   );
