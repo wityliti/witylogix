@@ -1,15 +1,20 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { DollarSign, Clock, CheckCircle, Download, TrendingUp } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, Download, TrendingUp, Map, List } from 'lucide-react';
+
+const CodMapView = dynamic(() => import('./components/cod-map-view').then((m) => m.CodMapView), {
+  ssr: false,
+  loading: () => <div className="h-[520px] flex items-center justify-center text-wl-text-tertiary text-sm">Loading map…</div>,
+});
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -47,6 +52,8 @@ interface CODDelivery {
   driver: { id: string; name: string };
   order: { id: string; shopifyOrderNumber: string } | null;
   shipment: { id: string; shipmentNumber: string } | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
 }
 
 interface DeliveriesResponse {
@@ -110,6 +117,7 @@ export default function CODReconciliationPage() {
   const [remitting, setRemitting] = useState(false);
   const [remitError, setRemitError] = useState<string | null>(null);
   const [remitSuccess, setRemitSuccess] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const summaryParams = new URLSearchParams();
   if (from) summaryParams.set('from', new Date(from).toISOString());
@@ -176,6 +184,18 @@ export default function CODReconciliationPage() {
 
   const totals = summary?.totals;
 
+  const mapPoints = deliveries
+    .filter((d) => d.deliveryLat !== null && d.deliveryLng !== null)
+    .map((d) => ({
+      id: d.id,
+      deliveryLat: d.deliveryLat as number,
+      deliveryLng: d.deliveryLng as number,
+      status: d.status as any,
+      amount: d.amount,
+      driverName: d.driver.name,
+      orderNumber: d.order?.shopifyOrderNumber,
+    }));
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -188,7 +208,7 @@ export default function CODReconciliationPage() {
                 Track and reconcile Cash on Delivery payments
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <input
                 type="date"
                 value={from}
@@ -202,6 +222,33 @@ export default function CODReconciliationPage() {
                 onChange={(e) => { setTo(e.target.value); setPage(1); }}
                 className="px-3 py-2 text-sm rounded-lg bg-wl-bg-elevated border border-wl-border-subtle text-wl-text-primary focus:outline-none focus:border-wl-primary-400"
               />
+              {/* View toggle */}
+              <div className="flex rounded-lg overflow-hidden border border-wl-border-subtle">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors',
+                    viewMode === 'list'
+                      ? 'bg-wl-primary-500 text-wl-text-inverse'
+                      : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary',
+                  )}
+                >
+                  <List className="w-4 h-4" />
+                  List
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors border-l border-wl-border-subtle',
+                    viewMode === 'map'
+                      ? 'bg-wl-primary-500 text-wl-text-inverse'
+                      : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary',
+                  )}
+                >
+                  <Map className="w-4 h-4" />
+                  Map
+                </button>
+              </div>
               <Button variant="secondary" size="sm" onClick={handleExportCSV}>
                 <Download className="w-4 h-4 mr-1.5" />
                 Export CSV
@@ -280,140 +327,146 @@ export default function CODReconciliationPage() {
           </Card>
         )}
 
-        {/* Deliveries Table */}
-        <Card className="bg-wl-bg-elevated border-wl-border-subtle overflow-hidden">
-          <div className="p-4 border-b border-wl-border-subtle flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-wl-text-primary">
-              Outstanding Deliveries
-              {pagination && (
-                <span className="ml-2 text-xs font-normal text-wl-text-tertiary">
-                  ({pagination.total} total)
-                </span>
+        {/* Deliveries: List or Map */}
+        {viewMode === 'map' ? (
+          <div className="h-[520px]">
+            <CodMapView points={mapPoints} />
+          </div>
+        ) : (
+          <Card className="bg-wl-bg-elevated border-wl-border-subtle overflow-hidden">
+            <div className="p-4 border-b border-wl-border-subtle flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-wl-text-primary">
+                Outstanding Deliveries
+                {pagination && (
+                  <span className="ml-2 text-xs font-normal text-wl-text-tertiary">
+                    ({pagination.total} total)
+                  </span>
+                )}
+              </h2>
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-wl-text-secondary">{selectedIds.size} selected</span>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleRemit}
+                    disabled={remitting}
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                    {remitting ? 'Processing…' : 'Mark as Remitted'}
+                  </Button>
+                </div>
               )}
-            </h2>
-            {selectedIds.size > 0 && (
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-wl-text-secondary">{selectedIds.size} selected</span>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleRemit}
-                  disabled={remitting}
-                >
-                  <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                  {remitting ? 'Processing…' : 'Mark as Remitted'}
-                </Button>
+            </div>
+
+            {remitError && (
+              <div className="px-4 py-2 bg-wl-error-subtle border-b border-wl-error/20 text-xs text-wl-error">
+                {remitError}
               </div>
             )}
-          </div>
+            {remitSuccess && (
+              <div className="px-4 py-2 bg-wl-success-subtle border-b border-wl-success/20 text-xs text-wl-success">
+                {remitSuccess}
+              </div>
+            )}
 
-          {remitError && (
-            <div className="px-4 py-2 bg-wl-error-subtle border-b border-wl-error/20 text-xs text-wl-error">
-              {remitError}
-            </div>
-          )}
-          {remitSuccess && (
-            <div className="px-4 py-2 bg-wl-success-subtle border-b border-wl-success/20 text-xs text-wl-success">
-              {remitSuccess}
-            </div>
-          )}
-
-          {deliveriesLoading ? (
-            <div className="p-8 text-center text-wl-text-tertiary text-sm">Loading deliveries…</div>
-          ) : deliveriesError ? (
-            <div className="p-4"><ErrorState error={deliveriesError} /></div>
-          ) : deliveries.length === 0 ? (
-            <div className="p-8 text-center text-wl-text-tertiary text-sm">
-              No outstanding COD deliveries for this period.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-wl-border-subtle">
-                    <th className="px-4 py-3 text-left">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.size === deliveries.length && deliveries.length > 0}
-                        onChange={toggleAll}
-                        className="rounded border-wl-border-subtle"
-                      />
-                    </th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Order</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Shipment</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Driver</th>
-                    <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">Amount</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Status</th>
-                    <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Collected At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deliveries.map((d) => (
-                    <tr
-                      key={d.id}
-                      className={cn(
-                        'border-b border-wl-border-subtle last:border-0 hover:bg-wl-bg-tertiary/50 transition-colors',
-                        selectedIds.has(d.id) && 'bg-wl-primary-500/5',
-                      )}
-                    >
-                      <td className="px-4 py-3">
+            {deliveriesLoading ? (
+              <div className="p-8 text-center text-wl-text-tertiary text-sm">Loading deliveries…</div>
+            ) : deliveriesError ? (
+              <div className="p-4"><ErrorState error={deliveriesError} /></div>
+            ) : deliveries.length === 0 ? (
+              <div className="p-8 text-center text-wl-text-tertiary text-sm">
+                No outstanding COD deliveries for this period.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-wl-border-subtle">
+                      <th className="px-4 py-3 text-left">
                         <input
                           type="checkbox"
-                          checked={selectedIds.has(d.id)}
-                          onChange={() => toggleSelect(d.id)}
+                          checked={selectedIds.size === deliveries.length && deliveries.length > 0}
+                          onChange={toggleAll}
                           className="rounded border-wl-border-subtle"
                         />
-                      </td>
-                      <td className="px-4 py-3 text-wl-text-primary">
-                        {d.order?.shopifyOrderNumber ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-wl-text-secondary">
-                        {d.shipment?.shipmentNumber ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-wl-text-primary">{d.driver.name}</td>
-                      <td className="px-4 py-3 text-right font-medium text-wl-text-primary">
-                        ${d.amount} {d.currency}
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={d.status} />
-                      </td>
-                      <td className="px-4 py-3 text-wl-text-secondary text-xs">
-                        {d.collectedAt ? new Date(d.collectedAt).toLocaleDateString() : '—'}
-                      </td>
+                      </th>
+                      <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Order</th>
+                      <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Shipment</th>
+                      <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Driver</th>
+                      <th className="text-right px-4 py-3 text-wl-text-secondary font-medium">Amount</th>
+                      <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Status</th>
+                      <th className="text-left px-4 py-3 text-wl-text-secondary font-medium">Collected At</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {pagination && pagination.pages > 1 && (
-            <div className="p-4 border-t border-wl-border-subtle flex items-center justify-between">
-              <span className="text-xs text-wl-text-tertiary">
-                Page {pagination.page} of {pagination.pages}
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={page >= pagination.pages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
+                  </thead>
+                  <tbody>
+                    {deliveries.map((d) => (
+                      <tr
+                        key={d.id}
+                        className={cn(
+                          'border-b border-wl-border-subtle last:border-0 hover:bg-wl-bg-tertiary/50 transition-colors',
+                          selectedIds.has(d.id) && 'bg-wl-primary-500/5',
+                        )}
+                      >
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(d.id)}
+                            onChange={() => toggleSelect(d.id)}
+                            className="rounded border-wl-border-subtle"
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-wl-text-primary">
+                          {d.order?.shopifyOrderNumber ?? '—'}
+                        </td>
+                        <td className="px-4 py-3 text-wl-text-secondary">
+                          {d.shipment?.shipmentNumber ?? '—'}
+                        </td>
+                        <td className="px-4 py-3 text-wl-text-primary">{d.driver.name}</td>
+                        <td className="px-4 py-3 text-right font-medium text-wl-text-primary">
+                          ${d.amount} {d.currency}
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusBadge status={d.status} />
+                        </td>
+                        <td className="px-4 py-3 text-wl-text-secondary text-xs">
+                          {d.collectedAt ? new Date(d.collectedAt).toLocaleDateString() : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          )}
-        </Card>
+            )}
+
+            {/* Pagination */}
+            {pagination && pagination.pages > 1 && (
+              <div className="p-4 border-t border-wl-border-subtle flex items-center justify-between">
+                <span className="text-xs text-wl-text-tertiary">
+                  Page {pagination.page} of {pagination.pages}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={page >= pagination.pages}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
       </div>
     </div>
   );

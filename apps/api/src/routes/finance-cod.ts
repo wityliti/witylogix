@@ -187,17 +187,28 @@ export default async function financeCodRoutes(fastify: FastifyInstance): Promis
         take: limit,
         include: {
           driver: { select: { id: true, name: true, phone: true } },
-          order: { select: { id: true, shopifyOrderNumber: true, totalPrice: true } },
+          order: { select: { id: true, shopifyOrderNumber: true, totalPrice: true, deliveryLocation: true } },
           shipment: { select: { id: true, shipmentNumber: true } },
         },
       }),
       db.cODCollection.count({ where }),
     ]);
 
-    const serialised = records.map((r: any) => ({
-      ...r,
-      amount: centsToDecimal(r.amount),
-    }));
+    const serialised = records.map((r: any) => {
+      let deliveryLat: number | null = null;
+      let deliveryLng: number | null = null;
+      if (r.order?.deliveryLocation) {
+        try {
+          const loc =
+            typeof r.order.deliveryLocation === 'string'
+              ? JSON.parse(r.order.deliveryLocation)
+              : r.order.deliveryLocation;
+          if (typeof loc.lat === 'number') deliveryLat = loc.lat;
+          if (typeof loc.lng === 'number') deliveryLng = loc.lng;
+        } catch {}
+      }
+      return { ...r, amount: centsToDecimal(r.amount), deliveryLat, deliveryLng };
+    });
 
     return {
       data: serialised,
