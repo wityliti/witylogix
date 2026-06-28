@@ -49,9 +49,6 @@ const formatDateTime = (isoStr: string): string => {
 export default function CollectionsPage() {
   const { items, loading, error, refetch, pagination } = useApiList<Collection>('/api/v4/collections');
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "auto" | "manual">("all");
   const [expandedCollection, setExpandedCollection] = useState<string | null>(null);
@@ -60,15 +57,8 @@ export default function CollectionsPage() {
 
   const pageSize = 10;
 
-  // Calculate stats
-  const totalCollections = items.length;
-  const totalProducts = items.reduce((sum, c) => sum + c.productCount, 0);
-  const autoCollections = items.filter((c) => c.type === "auto").length;
-  const manualCollections = items.filter((c) => c.type === "manual").length;
-
-  // Filter and sort
   const filtered = useMemo(() => {
-    let result = items.filter((c) => {
+    const result = items.filter((c) => {
       if (typeFilter !== "all" && c.type !== typeFilter) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -92,7 +82,16 @@ export default function CollectionsPage() {
     });
 
     return result;
-  }, [search, typeFilter, sortBy]);
+  }, [items, search, typeFilter, sortBy]);
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  // Calculate stats
+  const totalCollections = items.length;
+  const totalProducts = items.reduce((sum, c) => sum + c.productCount, 0);
+  const autoCollections = items.filter((c) => c.type === "auto").length;
+  const manualCollections = items.filter((c) => c.type === "manual").length;
 
   const paginatedItems = filtered.slice(
     (currentPage - 1) * pageSize,
@@ -211,8 +210,8 @@ export default function CollectionsPage() {
               </thead>
               <tbody>
                 {paginatedItems.map((collection, idx) => (
-                  <tbody key={collection.id}>
-                    <tr className={cn(
+                  <>
+                    <tr key={collection.id} className={cn(
                       "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors",
                       idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated/40"
                     )}>
@@ -302,7 +301,7 @@ export default function CollectionsPage() {
                         </td>
                       </tr>
                     )}
-                  </tbody>
+                  </>
                 ))}
               </tbody>
             </table>

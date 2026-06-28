@@ -67,9 +67,6 @@ export default function POSPage() {
   const loading = overviewLoading || txnLoading || terminalsLoading;
   const overview = overviewData ?? DEFAULT_OVERVIEW;
 
-  if (loading) return <LoadingSkeleton />;
-  if (overviewError) return <ErrorState message={overviewError.message} onRetry={refetchOverview} />;
-
   const [selectedTerminal, setSelectedTerminal] = useState<string | null>(null);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
 
@@ -92,6 +89,9 @@ export default function POSPage() {
       other: total > 0 ? ((overview.paymentBreakdown.other / total) * 100).toFixed(1) : "0",
     };
   }, [overview.paymentBreakdown]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (overviewError) return <ErrorState message={overviewError.message} onRetry={refetchOverview} />;
 
   return (
     <>

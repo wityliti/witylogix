@@ -78,20 +78,7 @@ export default function FieldServicePage() {
   const loading = statsLoading || schedLoading || jobsLoading;
   const anyError = statsError || schedError || jobsError;
 
-  if (loading) return <LoadingSkeleton />;
-  if (anyError) {
-    return (
-      <ErrorState
-        message={(statsError ?? schedError ?? jobsError)?.message ?? 'Failed to load field service data'}
-        onRetry={() => { refetchStats(); refetchSched(); refetchJobs(); }}
-      />
-    );
-  }
-
   const schedule = scheduleData ?? [];
-  const technicians = Array.from(
-    new Map(schedule.map((s) => [s.technicianId, { id: s.technicianId, name: s.technicianName }])).values()
-  ).filter((t) => t.id);
 
   const filteredSchedule = useMemo(
     () => (selectedTech ? schedule.filter((s) => s.technicianId === selectedTech) : schedule),
@@ -107,6 +94,20 @@ export default function FieldServicePage() {
     () => allJobs.filter((o) => o.status === 'completed').slice(0, 8),
     [allJobs]
   );
+
+  if (loading) return <LoadingSkeleton />;
+  if (anyError) {
+    return (
+      <ErrorState
+        message={(statsError ?? schedError ?? jobsError)?.message ?? 'Failed to load field service data'}
+        onRetry={() => { refetchStats(); refetchSched(); refetchJobs(); }}
+      />
+    );
+  }
+
+  const technicians = Array.from(
+    new Map(schedule.map((s) => [s.technicianId, { id: s.technicianId, name: s.technicianName }])).values()
+  ).filter((t) => t.id);
 
   const overview = {
     totalTechnicians: technicians.length,

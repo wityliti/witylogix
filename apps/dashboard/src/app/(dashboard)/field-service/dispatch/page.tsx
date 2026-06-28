@@ -78,6 +78,16 @@ export default function DispatchPage() {
   const loading = ordersLoading || driversLoading;
   const error = ordersError || driversError;
 
+  const allTechs = drivers as (DispatchDriver & { status: TechnicianStatus })[];
+
+  const filteredTechs = useMemo(
+    () =>
+      statusFilter === 'all'
+        ? allTechs
+        : allTechs.filter((t) => t.status === statusFilter),
+    [allTechs, statusFilter]
+  );
+
   if (loading) return <LoadingSkeleton />;
   if (error)
     return (
@@ -89,16 +99,6 @@ export default function DispatchPage() {
         }}
       />
     );
-
-  const allTechs = drivers as (DispatchDriver & { status: TechnicianStatus })[];
-
-  const filteredTechs = useMemo(
-    () =>
-      statusFilter === 'all'
-        ? allTechs
-        : allTechs.filter((t) => t.status === statusFilter),
-    [allTechs, statusFilter]
-  );
 
   const selectedTechData = selectedTech ? allTechs.find((t) => t.id === selectedTech) : null;
 

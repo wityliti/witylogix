@@ -38,9 +38,6 @@ export default function DVIRPage() {
 
   const loading = defectsLoading && inspectionsLoading;
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (defectsError) return <ErrorState message={defectsError.message} onRetry={refetchDefects} />;
-
   const filteredDefects = useMemo(() => {
     let result = defects;
     if (filterStatus !== "ALL") {
@@ -71,6 +68,9 @@ export default function DVIRPage() {
       return true;
     });
   }, [inspections]);
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (defectsError) return <ErrorState message={defectsError.message} onRetry={refetchDefects} />;
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
   const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;

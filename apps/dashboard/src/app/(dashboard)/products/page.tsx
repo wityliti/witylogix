@@ -49,9 +49,6 @@ const formatDateTime = (isoStr: string): string => {
 export default function ProductsPage() {
   const { items, loading, error, refetch, pagination } = useApiList<Product>('/api/v4/products');
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"title" | "type" | "lastSyncAt">("title");
   const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
@@ -61,6 +58,9 @@ export default function ProductsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const pageSize = 10;
 
