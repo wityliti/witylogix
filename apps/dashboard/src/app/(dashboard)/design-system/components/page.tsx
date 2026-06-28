@@ -64,7 +64,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
   };
 
   return (
-    <Card className="overflow-hidden bg-[#12121a] border-[#1e1e2e]">
+    <Card className="overflow-hidden bg-wl-bg-surface border-wl-border-default">
       <CardHeader>
         <CardTitle className="text-white">{title}</CardTitle>
         <CardDescription className="text-gray-400">{description}</CardDescription>
@@ -72,7 +72,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
 
       <CardContent className="space-y-4">
         {/* Preview */}
-        <div className="border border-[#1e1e2e] rounded-lg p-6 bg-[#1a1a2e] flex items-center justify-center min-h-40">
+        <div className="border border-wl-border-default rounded-lg p-6 bg-wl-bg-elevated flex items-center justify-center min-h-40">
           {preview}
         </div>
 
@@ -86,7 +86,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
               onClick={handleCopyCode}
               className={cn(
                 "flex items-center gap-1 px-2 py-1 text-xs rounded",
-                "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
                 "transition-colors",
                 copiedCode && "bg-emerald-500/20 border-emerald-500"
               )}
@@ -104,7 +104,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
               )}
             </button>
           </div>
-          <pre className="bg-[#1a1a2e] border border-[#1e1e2e] rounded p-4 text-xs overflow-x-auto">
+          <pre className="bg-wl-bg-elevated border border-wl-border-default rounded p-4 text-xs overflow-x-auto">
             <code className="text-gray-400 font-mono">{code}</code>
           </pre>
         </div>
@@ -128,9 +128,9 @@ export default function ComponentGalleryPage() {
   const [toastVisible, setToastVisible] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-wl-bg-root text-wl-text-primary">
       {/* Header */}
-      <div className="border-b border-[#1e1e2e] sticky top-0 z-40 bg-[#0a0a0f]/80 backdrop-blur-sm">
+      <div className="border-b border-wl-border-default sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Component Gallery</h1>
           <p className="text-gray-400">
@@ -163,7 +163,7 @@ export default function ComponentGalleryPage() {
           />
 
           {/* BUTTON CONTROLS */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Button Props</CardTitle>
             </CardHeader>
@@ -180,8 +180,8 @@ export default function ComponentGalleryPage() {
                       className={cn(
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonVariant === v
-                          ? "bg-blue-500 text-white"
-                          : "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e] text-gray-300"
+                          ? "bg-wl-primary text-wl-text-inverse"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-gray-300"
                       )}
                     >
                       {v}
@@ -202,8 +202,8 @@ export default function ComponentGalleryPage() {
                       className={cn(
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonSize === s
-                          ? "bg-blue-500 text-white"
-                          : "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e] text-gray-300"
+                          ? "bg-wl-primary text-wl-text-inverse"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-gray-300"
                       )}
                     >
                       {s}
@@ -242,7 +242,7 @@ export default function ComponentGalleryPage() {
           />
 
           {/* BADGE CONTROLS */}
-          <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Badge Props</CardTitle>
             </CardHeader>
@@ -259,8 +259,8 @@ export default function ComponentGalleryPage() {
                       className={cn(
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         badgeVariant === v
-                          ? "bg-blue-500 text-white"
-                          : "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e] text-gray-300"
+                          ? "bg-wl-primary text-wl-text-inverse"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-gray-300"
                       )}
                     >
                       {v}
@@ -287,7 +287,7 @@ export default function ComponentGalleryPage() {
             title="Card"
             description="Container for grouped content"
             preview={
-              <Card className="w-full max-w-xs bg-[#12121a] border-[#1e1e2e]">
+              <Card className="w-full max-w-xs bg-wl-bg-surface border-wl-border-default">
                 <CardHeader>
                   <CardTitle className="text-white">Card Title</CardTitle>
                   <CardDescription className="text-gray-400">Card subtitle or description</CardDescription>
@@ -482,11 +482,11 @@ export default function ComponentGalleryPage() {
             description="Tab navigation component"
             preview={
               <Tabs defaultValue="tab1">
-                <div className="flex gap-2 mb-4 border-b border-[#1e1e2e]">
-                  <button className="px-3 py-2 text-sm border-b-2 border-blue-500 text-blue-400 font-medium">
+                <div className="flex gap-2 mb-4 border-b border-wl-border-default">
+                  <button className="px-3 py-2 text-sm border-b-2 border-wl-primary text-wl-primary font-medium">
                     Tab 1
                   </button>
-                  <button className="px-3 py-2 text-sm text-gray-300 hover:text-white">
+                  <button className="px-3 py-2 text-sm text-wl-text-secondary hover:text-wl-text-primary">
                     Tab 2
                   </button>
                 </div>

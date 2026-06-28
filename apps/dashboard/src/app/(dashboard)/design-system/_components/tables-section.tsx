@@ -16,7 +16,7 @@ export function TablesSection() {
         <Card className="w-full overflow-hidden">
           <table>
             <thead>
-              <tr className="border-b border-[#1e1e2e]">
+              <tr className="border-b border-wl-border-default">
                 <th className="text-left px-4 py-3 font-semibold text-white">
                   ID
                 </th>
@@ -54,7 +54,7 @@ export function TablesSection() {
               ].map((row, idx) => (
                 <tr
                   key={idx}
-                  className="border-b border-[#1e1e2e] hover:bg-[#12121a] transition-colors"
+                  className="border-b border-wl-border-default hover:bg-wl-bg-surface transition-colors"
                 >
                   <td className="px-4 py-3 text-gray-300">
                     {row.id}
