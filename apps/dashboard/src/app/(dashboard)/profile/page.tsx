@@ -31,6 +31,15 @@ interface User {
   role: string;
 }
 
+const DEFAULT_PROFILE = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  timezone: 'America/New_York',
+  role: 'User',
+};
+
 export default function ProfilePage() {
   const { data: userProfile, loading, error, refetch } = useApiQuery<User>('/api/v4/users/me');
   const [isEditing, setIsEditing] = useState(false);
@@ -39,26 +48,17 @@ export default function ProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const profile = userProfile || {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    timezone: 'America/New_York',
-    role: 'User',
-  };
-
-  const [editForm, setEditForm] = useState({ ...profile });
-
+  const [editForm, setEditForm] = useState(userProfile ?? DEFAULT_PROFILE);
   const [passwordForm, setPasswordForm] = useState({
     current: "",
     new: "",
     confirm: "",
   });
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const profile = userProfile || DEFAULT_PROFILE;
 
   const handleEditChange = (field: string, value: string) => {
     setEditForm((prev) => ({

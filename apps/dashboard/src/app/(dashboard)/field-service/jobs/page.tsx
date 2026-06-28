@@ -117,9 +117,6 @@ export default function JobsPage() {
     '/api/v4/field-service/jobs'
   );
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const filteredOrders = useMemo(() => {
     let result = [...allOrders];
     if (statusFilter !== 'all') result = result.filter((o) => o.status === statusFilter);
@@ -137,8 +134,6 @@ export default function JobsPage() {
     return result;
   }, [allOrders, statusFilter, priorityFilter, typeFilter, searchTerm]);
 
-  const selectedJobData = selectedJob ? allOrders.find((o) => o.id === selectedJob) : null;
-
   const jobPins = useMemo<OrderPin[]>(() => {
     return allOrders
       .filter((o) => o.lat != null && o.lng != null)
@@ -153,6 +148,11 @@ export default function JobsPage() {
         priority: toJobPinPriority(o.priority),
       }));
   }, [allOrders]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const selectedJobData = selectedJob ? allOrders.find((o) => o.id === selectedJob) : null;
 
   async function handleCreateOrder(e: React.FormEvent) {
     e.preventDefault();

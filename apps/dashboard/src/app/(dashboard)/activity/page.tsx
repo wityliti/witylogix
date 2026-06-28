@@ -61,6 +61,9 @@ export default function ActivityPage() {
     userId: null as string | null,
   });
   const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
+  const [hasMore, setHasMore] = useState(true);
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const uniqueUsers = useMemo(() => {
     const seen = new Set<string>();
@@ -73,13 +76,6 @@ export default function ActivityPage() {
     }
     return users;
   }, [apiEvents]);
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [hasMore, setHasMore] = useState(true);
 
   // Filter and search logic
   const filteredEvents = useCallback(() => {
@@ -125,14 +121,17 @@ export default function ActivityPage() {
     });
   }, [events, searchQuery, filters]);
 
-  const displayedEvents = filteredEvents();
-
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
     const interval = setInterval(() => { refetch(); }, 30000);
     return () => clearInterval(interval);
   }, [isLiveMode, refetch]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const displayedEvents = filteredEvents();
 
   // Debounced search
   const handleSearchChange = (value: string) => {

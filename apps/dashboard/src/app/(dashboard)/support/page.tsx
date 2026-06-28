@@ -123,9 +123,6 @@ export default function SupportPage() {
 
   const tickets = ticketsData?.data ?? [];
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -139,6 +136,9 @@ export default function SupportPage() {
     },
     [formData, createTicket, refetch]
   );
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   // Group FAQs by category
   const faqSections = faqs.reduce(
