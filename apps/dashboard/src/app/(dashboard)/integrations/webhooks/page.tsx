@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CardSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   useWebhookMonitor,
   type WebhookEndpoint,
 } from '@/hooks/use-integration-health';
 import {
-  AlertCircle,
   RefreshCw,
   Plus,
   Trash2,
@@ -153,24 +153,25 @@ export default function WebhooksPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-        <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <div>
-            <h3 className="font-semibold text-white">
-              Failed to load webhooks
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">{error}</p>
-            <Button
-              onClick={revalidate}
-              variant="secondary"
-              size="sm"
-              className="mt-3"
-            >
-              Try Again
-            </Button>
-          </div>
+      <ErrorState
+        title="Failed to load webhooks"
+        message={error}
+        onRetry={revalidate}
+      />
+    );
+  }
+
+  if (isLoading && !webhooks) {
+    return (
+      <div className="space-y-8 p-6">
+        <div className="flex gap-2">
+          <div className="h-9 w-24 rounded-lg bg-wl-bg-elevated animate-pulse" />
+          <div className="h-9 w-32 rounded-lg bg-wl-bg-elevated animate-pulse" />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
+        </div>
+        <TableSkeleton rows={5} columns={5} />
       </div>
     );
   }

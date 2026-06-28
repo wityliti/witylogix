@@ -5,12 +5,13 @@ import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CardSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   useIntegrationHealth,
   useIntegrationAlerts,
   type Provider,
 } from "@/hooks/use-integration-health";
-import { useApiList } from "@/hooks/use-api";
 import {
   Search,
   RefreshCw,
@@ -130,18 +131,26 @@ export default function IntegrationsPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-        <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <div>
-            <h3 className="font-semibold text-white">
-              Failed to load health data
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">{error}</p>
-            <Button onClick={revalidate} variant="secondary" size="sm" className="mt-3">
-              Try Again
-            </Button>
-          </div>
+      <ErrorState
+        title="Failed to load integration health"
+        message={error}
+        onRetry={revalidate}
+      />
+    );
+  }
+
+  if (isLoading && !health) {
+    return (
+      <div className="space-y-8 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
       </div>
     );
