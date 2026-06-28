@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useApiQuery, useApiList } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
@@ -7,8 +9,13 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { DollarSign, AlertCircle } from 'lucide-react';
+import { DollarSign, AlertCircle, BarChart3, Map } from 'lucide-react';
 import Link from 'next/link';
+
+const FinanceMapView = dynamic(
+  () => import('./components/finance-map-view').then((m) => m.FinanceMapView),
+  { ssr: false },
+);
 
 interface InvoiceSummary {
   totalInvoices: number;
@@ -33,7 +40,11 @@ interface Payment {
   reference?: string;
 }
 
+type ViewMode = 'charts' | 'map';
+
 export default function FinancePage() {
+  const [viewMode, setViewMode] = useState<ViewMode>('charts');
+
   const { data: summaryData, loading: summaryLoading, error: summaryError } =
     useApiQuery<{ summary: InvoiceSummary }>('/api/v4/invoices/summary');
   const {
@@ -59,18 +70,49 @@ export default function FinancePage() {
               <h1 className="text-2xl font-bold text-white">Finance</h1>
               <p className="text-sm text-gray-400 mt-1">Revenue, invoices, and payments</p>
             </div>
-            <Link href="/invoices/create">
-              <Button variant="primary" size="md">
-                <DollarSign className="w-4 h-4" />
-                Create Invoice
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3">
+              {/* View toggle */}
+              <div className="flex items-center rounded-lg border border-wl-border-default bg-wl-bg-surface overflow-hidden">
+                <button
+                  onClick={() => setViewMode('charts')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
+                    viewMode === 'charts'
+                      ? 'bg-wl-primary-600 text-white'
+                      : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
+                  )}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Charts
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
+                    viewMode === 'map'
+                      ? 'bg-wl-primary-600 text-white'
+                      : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
+                  )}
+                >
+                  <Map className="w-4 h-4" />
+                  Revenue Map
+                </button>
+              </div>
+
+              <Link href="/invoices/create">
+                <Button variant="primary" size="md">
+                  <DollarSign className="w-4 h-4" />
+                  Create Invoice
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6 max-w-7xl">
+          {/* KPI cards — always visible */}
           {summary && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
@@ -100,91 +142,97 @@ export default function FinancePage() {
             </div>
           )}
 
-          {summary && (
-            <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default')}>
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5" />
-                Invoice Status Breakdown
-              </h2>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                {Object.entries(summary.byStatus).map(([status, count]) => (
-                  <div key={status}>
-                    <p className="text-xs font-medium text-gray-400 capitalize">{status}</p>
-                    <p
-                      className={cn(
-                        'text-2xl font-bold mt-2',
-                        status === 'paid'
-                          ? 'text-emerald-500'
-                          : status === 'overdue'
-                            ? 'text-red-500'
-                            : status === 'voided'
-                              ? 'text-gray-500'
-                              : 'text-white',
-                      )}
-                    >
-                      {count}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden')}>
-            <h2 className="text-lg font-semibold text-white mb-4">Recent Payments</h2>
-            {payments.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No payments found</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-wl-border-default">
-                      <th className="text-left px-4 py-3 font-semibold text-gray-400">Date</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-400">Reference</th>
-                      <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400">Method</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payments.slice(0, 10).map((payment) => (
-                      <tr key={payment.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                        <td className="px-4 py-3 text-gray-300">
-                          {new Date(payment.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-3 text-white">
-                          {payment.reference || payment.id.slice(0, 8)}
-                        </td>
-                        <td className="text-right px-4 py-3 font-medium text-white">
-                          $
-                          {parseFloat(payment.amount).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </td>
-                        <td className="text-center px-4 py-3">
-                          <Badge variant="primary">{payment.method?.toLowerCase() ?? '—'}</Badge>
-                        </td>
-                        <td className="text-center px-4 py-3">
-                          <Badge
-                            variant={
-                              payment.status === 'COMPLETED'
-                                ? 'success'
-                                : payment.status === 'FAILED'
-                                  ? 'danger'
-                                  : 'warning'
-                            }
-                          >
-                            {payment.status?.toLowerCase() ?? '—'}
-                          </Badge>
-                        </td>
-                      </tr>
+          {viewMode === 'map' ? (
+            <FinanceMapView days={30} className="h-[600px]" />
+          ) : (
+            <>
+              {summary && (
+                <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default')}>
+                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    Invoice Status Breakdown
+                  </h2>
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                    {Object.entries(summary.byStatus).map(([status, count]) => (
+                      <div key={status}>
+                        <p className="text-xs font-medium text-gray-400 capitalize">{status}</p>
+                        <p
+                          className={cn(
+                            'text-2xl font-bold mt-2',
+                            status === 'paid'
+                              ? 'text-emerald-500'
+                              : status === 'overdue'
+                                ? 'text-red-500'
+                                : status === 'voided'
+                                  ? 'text-gray-500'
+                                  : 'text-white',
+                          )}
+                        >
+                          {count}
+                        </p>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
+                  </div>
+                </Card>
+              )}
+
+              <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden')}>
+                <h2 className="text-lg font-semibold text-white mb-4">Recent Payments</h2>
+                {payments.length === 0 ? (
+                  <p className="text-gray-400 text-center py-8">No payments found</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-wl-border-default">
+                          <th className="text-left px-4 py-3 font-semibold text-gray-400">Date</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-400">Reference</th>
+                          <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
+                          <th className="text-center px-4 py-3 font-semibold text-gray-400">Method</th>
+                          <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {payments.slice(0, 10).map((payment) => (
+                          <tr key={payment.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
+                            <td className="px-4 py-3 text-gray-300">
+                              {new Date(payment.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3 text-white">
+                              {payment.reference || payment.id.slice(0, 8)}
+                            </td>
+                            <td className="text-right px-4 py-3 font-medium text-white">
+                              $
+                              {parseFloat(payment.amount).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
+                            <td className="text-center px-4 py-3">
+                              <Badge variant="primary">{payment.method?.toLowerCase() ?? '—'}</Badge>
+                            </td>
+                            <td className="text-center px-4 py-3">
+                              <Badge
+                                variant={
+                                  payment.status === 'COMPLETED'
+                                    ? 'success'
+                                    : payment.status === 'FAILED'
+                                      ? 'danger'
+                                      : 'warning'
+                                }
+                              >
+                                {payment.status?.toLowerCase() ?? '—'}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+            </>
+          )}
         </div>
       </div>
     </div>
