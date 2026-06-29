@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CardSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   useProviderDetail,
   type ProviderMetrics,
 } from '@/hooks/use-integration-health';
 import {
-  AlertCircle,
   ArrowUp,
   ArrowDown,
   CheckCircle,
@@ -192,15 +192,23 @@ export default function ProvidersPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-        <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <div>
-            <h3 className="font-semibold text-white">
-              Failed to load provider
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">{error}</p>
-          </div>
+      <ErrorState
+        title="Failed to load provider metrics"
+        message={error}
+      />
+    );
+  }
+
+  if (isLoading && !metrics) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="h-10 w-80 rounded-lg bg-wl-bg-elevated animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
         </div>
       </div>
     );

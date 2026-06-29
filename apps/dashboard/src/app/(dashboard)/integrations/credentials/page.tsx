@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CardSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   useCredentialManager,
   type Credential,
   type RotationSchedule,
 } from '@/hooks/use-integration-health';
 import {
-  AlertCircle,
   AlertTriangle,
   CheckCircle,
   RefreshCw,
@@ -189,23 +189,24 @@ export default function CredentialsPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-        <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-          <div>
-            <h3 className="font-semibold text-white">
-              Failed to load credentials
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">{error}</p>
-            <Button
-              onClick={revalidate}
-              variant="secondary"
-              size="sm"
-              className="mt-3"
-            >
-              Try Again
-            </Button>
-          </div>
+      <ErrorState
+        title="Failed to load credentials"
+        message={error}
+        onRetry={revalidate}
+      />
+    );
+  }
+
+  if (isLoading && !credentials) {
+    return (
+      <div className="space-y-8 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
+        </div>
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-20 rounded-lg bg-wl-bg-elevated animate-pulse" />
+          ))}
         </div>
       </div>
     );
