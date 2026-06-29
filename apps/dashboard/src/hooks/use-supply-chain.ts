@@ -63,6 +63,11 @@ export interface WarehouseUtilization {
   activeOrders: number;
   pendingPutaway: number;
   cycleCountsScheduled: number;
+  lat?: number | null;
+  lng?: number | null;
+  city?: string | null;
+  itemCount?: number;
+  totalQuantity?: number;
 }
 
 export interface ReorderAlert {

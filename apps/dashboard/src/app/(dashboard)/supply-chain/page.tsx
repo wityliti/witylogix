@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/card';
 import { StatCard } from '@/components/ui/stat-card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,8 @@ import {
   Plus,
   Package,
   Warehouse,
+  List,
+  Map as MapIcon,
 } from 'lucide-react';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
@@ -23,6 +26,11 @@ import {
   useDemandPlanning,
   useWarehouseOps,
 } from '@/hooks/use-supply-chain';
+
+const SupplyChainWarehouseMap = dynamic(
+  () => import('./components/supply-chain-warehouse-map').then((m) => ({ default: m.SupplyChainWarehouseMap })),
+  { ssr: false, loading: () => <div className="h-96 bg-wl-bg-surface rounded-xl border border-wl-border-default animate-pulse" /> },
+);
 
 interface PipelineStage {
   stage: string;
@@ -46,6 +54,7 @@ export default function SupplyChainPage() {
   const demand = useDemandPlanning();
   const warehouse = useWarehouseOps();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   const isLoading = inventory.loading || orders.loading || fulfillment.loading || demand.loading || warehouse.loading;
   const anyError = inventory.error || orders.error || fulfillment.error || demand.error || warehouse.error;
@@ -132,7 +141,34 @@ export default function SupplyChainPage() {
               <h1 className="text-3xl font-bold text-white">Supply Chain</h1>
               <p className="text-sm text-gray-400 mt-1">Inventory, orders, and warehouse operations</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              {/* List / Map toggle */}
+              <div className="flex rounded-lg border border-wl-border-default overflow-hidden">
+                <button
+                  onClick={() => setView('list')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                    view === 'list'
+                      ? 'bg-wl-primary-600 text-white'
+                      : 'bg-wl-bg-surface text-wl-text-secondary hover:text-wl-text-primary'
+                  )}
+                >
+                  <List className="w-3.5 h-3.5" />
+                  List
+                </button>
+                <button
+                  onClick={() => setView('map')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                    view === 'map'
+                      ? 'bg-wl-primary-600 text-white'
+                      : 'bg-wl-bg-surface text-wl-text-secondary hover:text-wl-text-primary'
+                  )}
+                >
+                  <MapIcon className="w-3.5 h-3.5" />
+                  Map
+                </button>
+              </div>
               <Button variant="secondary" size="md">
                 <AlertCircle className="w-4 h-4 mr-2" />
                 Alerts
@@ -166,8 +202,15 @@ export default function SupplyChainPage() {
             ))}
           </div>
 
-          {/* Two-Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Map View */}
+          {view === 'map' && (
+            <div className="h-[520px]">
+              <SupplyChainWarehouseMap warehouses={warehouse.warehouses} />
+            </div>
+          )}
+
+          {/* Two-Column Layout — hidden in map mode */}
+          {view === 'list' && <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Order Fulfillment Pipeline */}
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -264,7 +307,7 @@ export default function SupplyChainPage() {
                 </div>
               </div>
             </Card>
-          </div>
+          </div>}
 
           {/* Demand vs Supply */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
