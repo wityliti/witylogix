@@ -27,9 +27,10 @@ import type {
   CRMPagedResult,
   CRMProvider,
 } from '@witylogix/core/integrations/crm';
+import { prisma } from '@witylogix/db';
 import { requireAuth } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
-import { NotFoundError, ValidationError, ForbiddenError } from '../../lib/errors.js';
+import { NotFoundError, ValidationError } from '../../lib/errors.js';
 
 // ─── SCHEMAS ─────────────────────────────────────────────────────
 
@@ -91,46 +92,122 @@ interface CRMService {
   logWebhookEvent(event: unknown): Promise<void>;
 }
 
-// ─── MOCK CRM SERVICE ────────────────────────────────────────────
+// ─── PRISMA CRM SERVICE ──────────────────────────────────────────
 
-class MockCRMService implements CRMService {
-  private connections: Map<string, StoredCRMConnection> = new Map();
-  private fieldMappings: Map<string, CRMFieldMapping[]> = new Map();
-
+class PrismaCRMService implements CRMService {
   async getConnection(tenantId: string, provider: CRMProvider): Promise<StoredCRMConnection | null> {
-    const key: string = `${tenantId}:${provider}`;
-    return this.connections.get(key) || null;
+    const conn = await prisma.cRMConnection.findFirst({
+      where: { tenantId, provider, isActive: true },
+    });
+    if (!conn) return null;
+    return {
+      id: conn.id,
+      tenantId: conn.tenantId,
+      provider: conn.provider as CRMProvider,
+      accessToken: conn.accessToken,
+      refreshToken: conn.refreshToken ?? undefined,
+      expiresAt: conn.expiresAt ?? undefined,
+      instanceUrl: conn.instanceUrl ?? undefined,
+      orgId: conn.orgId ?? undefined,
+      email: conn.email ?? undefined,
+      isActive: conn.isActive,
+      lastSyncAt: conn.lastSyncAt ?? undefined,
+      createdAt: conn.createdAt,
+      updatedAt: conn.updatedAt,
+      clientId: conn.clientId ?? '',
+      clientSecret: conn.clientSecret ?? '',
+    };
   }
 
   async saveConnection(connection: StoredCRMConnection): Promise<void> {
-    const key: string = `${connection.tenantId}:${connection.provider}`;
-    this.connections.set(key, connection);
+    await prisma.cRMConnection.upsert({
+      where: {
+        unique_tenant_provider: {
+          tenantId: connection.tenantId,
+          provider: connection.provider,
+        },
+      },
+      update: {
+        accessToken: connection.accessToken,
+        refreshToken: connection.refreshToken ?? null,
+        expiresAt: connection.expiresAt ?? null,
+        instanceUrl: connection.instanceUrl ?? null,
+        orgId: connection.orgId ?? null,
+        email: connection.email ?? null,
+        isActive: connection.isActive,
+        lastSyncAt: connection.lastSyncAt ?? null,
+        clientId: connection.clientId,
+        clientSecret: connection.clientSecret,
+      },
+      create: {
+        tenantId: connection.tenantId,
+        provider: connection.provider,
+        accessToken: connection.accessToken,
+        refreshToken: connection.refreshToken ?? null,
+        expiresAt: connection.expiresAt ?? null,
+        instanceUrl: connection.instanceUrl ?? null,
+        orgId: connection.orgId ?? null,
+        email: connection.email ?? null,
+        isActive: connection.isActive,
+        lastSyncAt: connection.lastSyncAt ?? null,
+        clientId: connection.clientId,
+        clientSecret: connection.clientSecret,
+      },
+    });
   }
 
   async getFieldMappings(connectionId: string): Promise<CRMFieldMapping[]> {
-    return this.fieldMappings.get(connectionId) || [];
+    const rows = await prisma.cRMFieldMapping.findMany({
+      where: { connectionId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      connectionId: r.connectionId,
+      witylogixField: r.witylogixField,
+      crmField: r.crmField,
+      recordType: r.recordType as 'contact' | 'account' | 'opportunity' | 'deal' | 'activity',
+      direction: r.direction as 'bidirectional' | 'to_crm' | 'from_crm',
+      transformation: (r.transformation as 'none' | 'uppercase' | 'lowercase' | 'phone_format' | 'custom') ?? undefined,
+      transformationScript: r.transformationScript ?? undefined,
+      isRequired: r.isRequired,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    }));
   }
 
   async saveFieldMapping(mapping: CRMFieldMapping): Promise<void> {
-    const connectionId: string = mapping.connectionId;
-    const mappings: CRMFieldMapping[] = this.fieldMappings.get(connectionId) || [];
-    const index: number = mappings.findIndex((m: CRMFieldMapping) => m.id === mapping.id);
-
-    if (index >= 0) {
-      mappings[index] = mapping;
-    } else {
-      mappings.push(mapping);
-    }
-
-    this.fieldMappings.set(connectionId, mappings);
+    await prisma.cRMFieldMapping.upsert({
+      where: { id: mapping.id },
+      update: {
+        witylogixField: mapping.witylogixField,
+        crmField: mapping.crmField,
+        recordType: mapping.recordType,
+        direction: mapping.direction,
+        transformation: mapping.transformation ?? null,
+        transformationScript: mapping.transformationScript ?? null,
+        isRequired: mapping.isRequired,
+      },
+      create: {
+        id: mapping.id,
+        connectionId: mapping.connectionId,
+        witylogixField: mapping.witylogixField,
+        crmField: mapping.crmField,
+        recordType: mapping.recordType,
+        direction: mapping.direction,
+        transformation: mapping.transformation ?? null,
+        transformationScript: mapping.transformationScript ?? null,
+        isRequired: mapping.isRequired,
+      },
+    });
   }
 
   async logWebhookEvent(event: unknown): Promise<void> {
-    console.log('[CRM Webhook]', JSON.stringify(event, null, 2));
+    console.log('[CRM Webhook]', JSON.stringify(event));
   }
 }
 
-const crmService: CRMService = new MockCRMService();
+const crmService: CRMService = new PrismaCRMService();
 
 // ─── ROUTE HANDLERS ─────────────────────────────────────────────
 
@@ -589,3 +666,5 @@ export async function registerCRMRoutes(fastify: FastifyInstance): Promise<void>
     handleUpsertFieldMapping,
   );
 }
+
+export default registerCRMRoutes;

@@ -243,6 +243,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/users.js"), { prefix: "/api/v4/users" });
   await safeRegister(import("./routes/integrations.js"), { prefix: "/api/v4/integrations" });
   await safeRegister(import("./routes/integrations/crm.js"), { prefix: "/api/v4/integrations/crm" });
+  await safeRegister(import("./routes/crm/crm.js"), { prefix: "/api/v4" });
   await safeRegister(import("./routes/shipments.js"), { prefix: "/api/v4/shipments" });
   await safeRegister(import("./routes/locations.js"), { prefix: "/api/v4/locations" });
   await safeRegister(import("./routes/shipping-profiles.js"), { prefix: "/api/v4/shipping-profiles" });

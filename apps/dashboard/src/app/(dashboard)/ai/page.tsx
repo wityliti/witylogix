@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { CardSkeleton } from '@/components/ui/loading-skeleton';
 import { useApiQuery } from '@/hooks/use-api';
 
 interface FeatureCard {
@@ -82,12 +83,17 @@ function useFeatureUsageCounts() {
   const demand = useApiQuery<DemandStats>('/api/ai/demand');
   const slots = useApiQuery<SlotStats>('/api/ai/slots/recommend');
 
+  const isLoading = eta.loading || leaderboard.loading || demand.loading || slots.loading;
+
   return {
-    '/api/ai/eta/statistics': eta.data?.totalPredictions30d ?? eta.data?.count ?? 0,
-    '/api/ai/analytics/leaderboard': leaderboard.data?.totalEntries ?? leaderboard.data?.count ?? 0,
-    '/api/ai/demand': demand.data?.totalForecasts ?? demand.data?.count ?? 0,
-    '/api/ai/slots/recommend': slots.data?.totalRecommendations ?? slots.data?.count ?? 0,
-  } as Record<string, number>;
+    isLoading,
+    counts: {
+      '/api/ai/eta/statistics': eta.data?.totalPredictions30d ?? eta.data?.count ?? 0,
+      '/api/ai/analytics/leaderboard': leaderboard.data?.totalEntries ?? leaderboard.data?.count ?? 0,
+      '/api/ai/demand': demand.data?.totalForecasts ?? demand.data?.count ?? 0,
+      '/api/ai/slots/recommend': slots.data?.totalRecommendations ?? slots.data?.count ?? 0,
+    } as Record<string, number>,
+  };
 }
 
 function AiFeatureCard({ card, usageCount }: { card: FeatureCard; usageCount: number }) {
@@ -146,7 +152,7 @@ function AiFeatureCard({ card, usageCount }: { card: FeatureCard; usageCount: nu
 }
 
 export default function AiHubPage() {
-  const usageCounts = useFeatureUsageCounts();
+  const { isLoading, counts } = useFeatureUsageCounts();
 
   return (
     <div className="flex flex-col gap-8 p-6 max-w-6xl mx-auto">
@@ -170,18 +176,26 @@ export default function AiHubPage() {
       </div>
 
       {/* Feature grid */}
-      <div
-        data-testid="ai-feature-grid"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-      >
-        {FEATURE_CARDS.map((card) => (
-          <AiFeatureCard
-            key={card.name}
-            card={card}
-            usageCount={card.statsPath ? (usageCounts[card.statsPath] ?? 0) : 0}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {FEATURE_CARDS.map((card) => (
+            <CardSkeleton key={card.name} className="h-40" />
+          ))}
+        </div>
+      ) : (
+        <div
+          data-testid="ai-feature-grid"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
+          {FEATURE_CARDS.map((card) => (
+            <AiFeatureCard
+              key={card.name}
+              card={card}
+              usageCount={card.statsPath ? (counts[card.statsPath] ?? 0) : 0}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
