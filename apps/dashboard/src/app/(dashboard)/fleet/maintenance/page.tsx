@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -10,6 +11,11 @@ import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
 import { Plus, AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { useApiList } from '@/hooks/use-api';
+
+const MaintenanceMapView = dynamic(
+  () => import('./components/maintenance-map-view'),
+  { ssr: false },
+);
 
 const getStatusColor = (status: string): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
   const map: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
@@ -48,7 +54,7 @@ interface MaintenanceRecord {
 
 export default function MaintenancePage() {
   const pageSize = 10;
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'map'>('list');
   const [currentPage, setCurrentPage] = useState(1);
   const { items: allMaintenance, loading, error, refetch } = useApiList<MaintenanceRecord>('/api/v4/fleet/maintenance');
 
@@ -176,6 +182,17 @@ export default function MaintenancePage() {
               >
                 Calendar
               </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'px-3 py-2 text-xs font-medium rounded-md transition-colors',
+                  viewMode === 'map'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
+                )}
+              >
+                Map
+              </button>
             </div>
           </CardContent>
         </Card>
@@ -267,6 +284,12 @@ export default function MaintenancePage() {
               </CardContent>
             </Card>
           </>
+        )}
+
+        {viewMode === 'map' && (
+          <div className="h-[600px]">
+            <MaintenanceMapView maintenance={allMaintenance} />
+          </div>
         )}
       </main>
     </>

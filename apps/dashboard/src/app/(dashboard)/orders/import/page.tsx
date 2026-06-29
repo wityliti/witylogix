@@ -63,7 +63,7 @@ export default function OrderImportPage() {
 
   const [triggerLoading, setTriggerLoading] = useState(false);
 
-  const { items: connections, loading: statusLoading } = useApiList<{
+  const { items: connections, loading: statusLoading, error: connectionsError } = useApiList<{
     id: string;
     providerName: string;
     status: string;
@@ -162,6 +162,14 @@ export default function OrderImportPage() {
       />
 
       <div className="p-6 space-y-6">
+        {connectionsError && (
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+            <span className="text-amber-400 text-sm font-medium">
+              Could not load platform connections — platform status may be incomplete.
+            </span>
+          </div>
+        )}
+
         {/* Sync Stats Dashboard */}
         {metrics && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
