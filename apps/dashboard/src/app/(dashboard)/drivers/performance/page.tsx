@@ -8,7 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useApiList } from "@/hooks/use-api";
+import dynamic from 'next/dynamic';
+import { Map as MapIcon, List } from 'lucide-react';
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
+
+const DriverPerformanceMapView = dynamic(
+  () => import('./components/driver-performance-map-view'),
+  { ssr: false },
+);
 
 /* ═══════════════════════════════════════════════════════════
    DRIVER PERFORMANCE LEADERBOARD
@@ -74,8 +81,9 @@ const formatRating = (rating: number): string => rating.toFixed(1);
 // ─── Main Component ────────────────────────────────────────
 
 export default function DriverPerformancePage() {
-  const { items: drivers, loading, error, refetch } = useApiList<DriverPerformance>('/api/v4/driver-scoring');
+  const { items: drivers, loading, error, refetch } = useApiList<DriverPerformance>('/api/v4/driver-scoring/leaderboard');
   const [period, setPeriod] = useState<ScoringPeriod>("weekly");
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [selectedDriver, setSelectedDriver] = useState<DriverPerformance | null>(null);
 
   // Calculate stats
@@ -105,6 +113,26 @@ export default function DriverPerformancePage() {
         subtitle={`${drivers.length} drivers tracked · Top performer: ${topThree[0]?.name ?? 'N/A'}`}
         actions={
           <div className="flex gap-2">
+            <div className="flex gap-1 border border-wl-border-default rounded-md p-0.5 bg-wl-bg-root">
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5',
+                  viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-wl-text-secondary hover:text-white',
+                )}
+              >
+                <List className="w-3.5 h-3.5" /> List
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5',
+                  viewMode === 'map' ? 'bg-blue-500 text-white' : 'text-wl-text-secondary hover:text-white',
+                )}
+              >
+                <MapIcon className="w-3.5 h-3.5" /> Map
+              </button>
+            </div>
             <Button variant="secondary" size="md">
               Export
             </Button>
@@ -136,6 +164,12 @@ export default function DriverPerformancePage() {
             </button>
           ))}
         </div>
+
+        {viewMode === 'map' ? (
+          <div className="h-[600px]">
+            <DriverPerformanceMapView drivers={drivers} />
+          </div>
+        ) : <>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
@@ -382,6 +416,7 @@ export default function DriverPerformancePage() {
             </div>
           </Card>
         )}
+        </>}
       </div>
     </>
   );
