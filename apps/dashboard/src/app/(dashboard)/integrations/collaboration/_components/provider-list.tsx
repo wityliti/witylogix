@@ -63,7 +63,7 @@ export function ProviderList({
                   <h3 className="text-lg font-semibold text-white">
                     {provider.name}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-wl-text-tertiary mt-1">
                     {provider.status === 'connected' &&
                       `Connected on ${provider.connectedAt}`}
                     {provider.status === 'disconnected' && 'Not connected'}
@@ -85,7 +85,7 @@ export function ProviderList({
                   provider.status === 'error' &&
                     'bg-red-500/20 text-red-400 border border-red-500/50',
                   provider.status === 'disconnected' &&
-                    'bg-gray-500/20 text-gray-400'
+                    'bg-wl-neutral-500/20 text-wl-text-secondary'
                 )}
               >
                 {provider.status === 'connected' && (
@@ -108,7 +108,7 @@ export function ProviderList({
             {provider.status === 'connected' && (
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-wl-border-default">
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 uppercase">
+                  <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                     Last Sync
                   </p>
                   <p className="text-sm text-white mt-1 flex items-center gap-1">
@@ -117,7 +117,7 @@ export function ProviderList({
                   </p>
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 uppercase">
+                  <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                     Channels
                   </p>
                   <p className="text-sm text-white mt-1">
@@ -132,7 +132,7 @@ export function ProviderList({
               <div className="space-y-4 mb-6 pb-6 border-b border-wl-border-default">
                 {provider.config.channels && provider.config.channels.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+                    <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-2">
                       Connected Channels
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -151,11 +151,11 @@ export function ProviderList({
 
                 {provider.config.webhookUrl && (
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+                    <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-2">
                       Webhook URL
                     </p>
                     <div className="bg-wl-bg-surface rounded-lg p-3 flex items-center justify-between font-mono text-xs">
-                      <span className="text-gray-500 truncate">
+                      <span className="text-wl-text-tertiary truncate">
                         {provider.config.webhookUrl.substring(0, 50)}...
                       </span>
                       <Button

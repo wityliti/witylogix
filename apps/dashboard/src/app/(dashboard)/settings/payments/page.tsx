@@ -146,9 +146,9 @@ export default function PaymentSettingsPage() {
               <Card className="border-dashed border-2 border-wl-border-default bg-wl-bg-surface">
                 <CardContent className="flex items-center justify-center py-16">
                   <div className="text-center">
-                    <DollarSign className="w-10 h-10 mx-auto text-gray-600 mb-4" />
+                    <DollarSign className="w-10 h-10 mx-auto text-wl-text-tertiary mb-4" />
                     <p className="text-sm font-medium text-white mb-2">No payment gateways configured</p>
-                    <p className="text-xs text-gray-400 mb-4">
+                    <p className="text-xs text-wl-text-secondary mb-4">
                       Cash on Delivery is always available. Add a payment method to unlock card processing.
                     </p>
                   </div>
@@ -181,7 +181,7 @@ export default function PaymentSettingsPage() {
 
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-400">Status</span>
+                        <span className="text-sm text-wl-text-secondary">Status</span>
                         <div className="flex items-center gap-2">
                           {gateway.status === 'connected' ? (
                             <>
@@ -198,7 +198,7 @@ export default function PaymentSettingsPage() {
                       </div>
 
                       <div>
-                        <span className="text-sm text-gray-400 block mb-2">Supported Methods</span>
+                        <span className="text-sm text-wl-text-secondary block mb-2">Supported Methods</span>
                         <div className="flex flex-wrap gap-1">
                           {gateway.supportedMethods.map((method) => (
                             <Badge key={method} variant="default" className="text-xs capitalize bg-wl-bg-elevated">
@@ -211,7 +211,7 @@ export default function PaymentSettingsPage() {
                       {gateway.healthScore !== undefined && (
                         <div className="grid grid-cols-1 gap-3">
                           <div className="bg-wl-bg-elevated rounded-lg p-3">
-                            <span className="text-xs text-gray-400">Health Score</span>
+                            <span className="text-xs text-wl-text-secondary">Health Score</span>
                             <p className="text-lg font-semibold text-blue-500 mt-1">{gateway.healthScore}%</p>
                           </div>
                         </div>
@@ -266,9 +266,9 @@ export default function PaymentSettingsPage() {
             <Card className="border-dashed border-2 border-wl-border-default bg-wl-bg-surface">
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
-                  <Plus className="w-8 h-8 mx-auto text-gray-400 mb-3" />
+                  <Plus className="w-8 h-8 mx-auto text-wl-text-secondary mb-3" />
                   <p className="text-sm font-medium text-white mb-2">Add Payment Gateway</p>
-                  <p className="text-xs text-gray-400 mb-4">
+                  <p className="text-xs text-wl-text-secondary mb-4">
                     Connect Stripe, PayPal, or Square. Requires API keys in environment configuration.
                   </p>
                   <Button variant="primary" size="sm">
@@ -285,7 +285,7 @@ export default function PaymentSettingsPage() {
           <div className="space-y-6">
             {gateways.filter((g) => g.status === 'connected').length === 0 ? (
               <Card className="bg-wl-bg-surface border border-wl-border-default">
-                <CardContent className="py-12 text-center text-gray-400">
+                <CardContent className="py-12 text-center text-wl-text-secondary">
                   No connected gateways to configure.
                 </CardContent>
               </Card>
@@ -319,7 +319,7 @@ export default function PaymentSettingsPage() {
 
                       {gateway.code === 'cod' && (
                         <div className="p-4 bg-wl-bg-elevated rounded-lg">
-                          <p className="text-sm text-gray-400">
+                          <p className="text-sm text-wl-text-secondary">
                             Cash on Delivery requires no API credentials. Collect payment upon delivery.
                           </p>
                         </div>
@@ -327,7 +327,7 @@ export default function PaymentSettingsPage() {
 
                       {!gateway.config?.lastDigits && gateway.code !== 'cod' && (
                         <div className="p-4 bg-wl-bg-elevated rounded-lg">
-                          <p className="text-sm text-gray-400">
+                          <p className="text-sm text-wl-text-secondary">
                             <Shield className="w-3 h-3 inline mr-1" />
                             Credentials are configured via environment variables and never stored in plain text.
                           </p>
@@ -350,7 +350,7 @@ export default function PaymentSettingsPage() {
 
               <CardContent>
                 {transactionFeesComparison.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-8">
+                  <p className="text-sm text-wl-text-secondary text-center py-8">
                     No fee data available. Configure payment gateways to see fee comparison.
                   </p>
                 ) : (
@@ -381,7 +381,7 @@ export default function PaymentSettingsPage() {
                                 {savings100 > 0 ? (
                                   <span className="text-emerald-500 font-medium">+${(savings100 / 100).toFixed(2)}</span>
                                 ) : (
-                                  <span className="text-gray-400">—</span>
+                                  <span className="text-wl-text-secondary">—</span>
                                 )}
                               </td>
                             </tr>
@@ -393,7 +393,7 @@ export default function PaymentSettingsPage() {
                 )}
 
                 <div className="mt-6 p-4 bg-wl-bg-elevated rounded-lg">
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-wl-text-secondary">
                     <DollarSign className="w-3 h-3 inline mr-2" />
                     Fees shown are estimates. Actual fees may vary based on payment method, region, and volume discounts.
                   </p>

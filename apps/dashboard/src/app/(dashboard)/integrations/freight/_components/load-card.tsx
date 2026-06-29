@@ -34,43 +34,43 @@ export function LoadCard({ load, onBook, onDetails }: LoadCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-4 h-4 text-gray-400" />
+              <MapPin className="w-4 h-4 text-wl-text-secondary" />
               <span className="text-sm font-semibold text-white">
                 {load.origin}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">→</span>
-              <span className="text-sm text-gray-300">{load.destination}</span>
+              <span className="text-xs text-wl-text-secondary">→</span>
+              <span className="text-sm text-wl-neutral-300">{load.destination}</span>
             </div>
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-emerald-400">
               ${load.bestRate}
             </div>
-            <div className="text-xs text-gray-400">best rate</div>
+            <div className="text-xs text-wl-text-secondary">best rate</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
           <div>
-            <span className="text-gray-400">Distance:</span>
+            <span className="text-wl-text-secondary">Distance:</span>
             <p className="text-white font-medium">{load.distance} mi</p>
           </div>
           <div>
-            <span className="text-gray-400">Weight:</span>
+            <span className="text-wl-text-secondary">Weight:</span>
             <p className="text-white font-medium">{load.weight} lbs</p>
           </div>
           <div>
-            <span className="text-gray-400">Equipment:</span>
+            <span className="text-wl-text-secondary">Equipment:</span>
             <p className="text-white font-medium">{load.equipment}</p>
           </div>
           <div>
-            <span className="text-gray-400">Carriers:</span>
+            <span className="text-wl-text-secondary">Carriers:</span>
             <p className="text-white font-medium">{load.carriers}</p>
           </div>
           <div className="col-span-2">
-            <span className="text-gray-400">Pickup:</span>
+            <span className="text-wl-text-secondary">Pickup:</span>
             <p className="text-white font-medium">{load.pickup}</p>
           </div>
         </div>

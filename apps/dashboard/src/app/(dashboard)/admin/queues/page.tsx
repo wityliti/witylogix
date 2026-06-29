@@ -100,7 +100,7 @@ export default function QueuesPage() {
       case "active": return "bg-blue-100 text-blue-800";
       case "waiting": return "bg-yellow-100 text-yellow-800";
       case "delayed": return "bg-purple-100 text-purple-800";
-      default: return "bg-gray-100 text-gray-800";
+      default: return "bg-wl-bg-surface text-wl-text-primary";
     }
   };
 
@@ -116,7 +116,7 @@ export default function QueuesPage() {
 
   if (loading && queues.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-wl-bg-surface">
         <Header title="Queue Management" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <LoadingSkeleton />
@@ -127,7 +127,7 @@ export default function QueuesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-wl-bg-surface">
         <Header title="Queue Management" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <ErrorState message={error.message} onRetry={refetch} />
@@ -137,7 +137,7 @@ export default function QueuesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-wl-bg-surface">
       <Header
         title="Queue Management"
         actions={
@@ -151,7 +151,7 @@ export default function QueuesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {queues.length === 0 ? (
           <Card className="mb-8">
-            <CardContent className="py-12 text-center text-gray-500">
+            <CardContent className="py-12 text-center text-wl-text-tertiary">
               No queues found. Queues are created on first use.
             </CardContent>
           </Card>
@@ -177,22 +177,22 @@ export default function QueuesPage() {
                   <CardContent>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Active</span>
+                        <span className="text-wl-text-tertiary">Active</span>
                         <span className="font-semibold text-blue-600">{queue.active}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Waiting</span>
+                        <span className="text-wl-text-tertiary">Waiting</span>
                         <span className="font-semibold">{queue.waiting}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Failed</span>
+                        <span className="text-wl-text-tertiary">Failed</span>
                         <span className={cn("font-semibold", queue.failed > 0 && "text-red-600")}>
                           {queue.failed}
                         </span>
                       </div>
                       <div className="mt-3 pt-3 border-t">
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Completed</span>
+                          <span className="text-wl-text-tertiary">Completed</span>
                           <span className="font-semibold">{queue.completed.toLocaleString()}</span>
                         </div>
                       </div>
@@ -220,7 +220,7 @@ export default function QueuesPage() {
                               <span>Error Rate</span>
                               <span className="font-semibold">{q.errorRate.toFixed(2)}%</span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="w-full bg-wl-neutral-200 rounded-full h-2">
                               <div
                                 className="bg-red-600 h-2 rounded-full"
                                 style={{ width: `${Math.min(q.errorRate, 100)}%` }}
@@ -268,7 +268,7 @@ export default function QueuesPage() {
                         Clear Completed
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-3">
+                    <p className="text-xs text-wl-text-tertiary mt-3">
                       Queue controls operate on the {selectedQueue} queue in real-time via Redis.
                     </p>
                   </CardContent>
@@ -293,7 +293,7 @@ export default function QueuesPage() {
                 <select
                   value={jobStatusFilter}
                   onChange={e => setJobStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="px-3 py-2 border border-wl-border-default rounded-md text-sm"
                 >
                   <option value="all">Active</option>
                   <option value="waiting">Waiting</option>
@@ -306,11 +306,11 @@ export default function QueuesPage() {
           </CardHeader>
           <CardContent>
             {!selectedQueue ? (
-              <p className="text-center text-gray-500 py-8">Select a queue above to view its jobs.</p>
+              <p className="text-center text-wl-text-tertiary py-8">Select a queue above to view its jobs.</p>
             ) : jobsLoading ? (
               <LoadingSkeleton />
             ) : filteredJobs.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No jobs found in this queue.</p>
+              <p className="text-center text-wl-text-tertiary py-8">No jobs found in this queue.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -327,7 +327,7 @@ export default function QueuesPage() {
                   </thead>
                   <tbody>
                     {filteredJobs.map(job => (
-                      <tr key={job.id} className="border-b hover:bg-gray-50">
+                      <tr key={job.id} className="border-b hover:bg-wl-bg-surface">
                         <td className="py-3 px-4 font-mono text-xs">{job.id.slice(0, 8)}</td>
                         <td className="py-3 px-4">{job.name}</td>
                         <td className="py-3 px-4">
@@ -340,19 +340,19 @@ export default function QueuesPage() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-24 bg-gray-200 rounded-full h-2">
+                            <div className="w-24 bg-wl-neutral-200 rounded-full h-2">
                               <div
                                 className="bg-blue-600 h-2 rounded-full"
                                 style={{ width: `${job.progress}%` }}
                               />
                             </div>
-                            <span className="text-xs text-gray-600">{job.progress}%</span>
+                            <span className="text-xs text-wl-text-tertiary">{job.progress}%</span>
                           </div>
                         </td>
                         <td className="py-3 px-4 text-xs">
                           {job.attempts}/{job.maxAttempts}
                         </td>
-                        <td className="py-3 px-4 text-xs text-gray-600">
+                        <td className="py-3 px-4 text-xs text-wl-text-tertiary">
                           {new Date(job.createdAt).toLocaleString()}
                         </td>
                         <td className="py-3 px-4">
@@ -397,7 +397,7 @@ export default function QueuesPage() {
           </CardHeader>
           <CardContent>
             {dlqItems.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-wl-text-tertiary">
                 No items in dead letter queue
               </div>
             ) : (
@@ -410,15 +410,15 @@ export default function QueuesPage() {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <p className="font-semibold text-sm">{item.jobName}</p>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-wl-text-tertiary">
                           Queue: {item.queue} · ID: {item.jobId.slice(0, 8)}
                         </p>
                       </div>
                       <Badge variant="danger">{item.category}</Badge>
                     </div>
-                    <p className="text-sm text-gray-700 mb-3">{item.failedReason}</p>
+                    <p className="text-sm text-wl-text-primary mb-3">{item.failedReason}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-600">
+                      <span className="text-xs text-wl-text-tertiary">
                         {new Date(item.failedAt).toLocaleString()}
                       </span>
                       <div className="flex gap-2">
@@ -445,7 +445,7 @@ export default function QueuesPage() {
             <CardTitle>Scheduled / Repeatable Jobs</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 py-4 text-center">
+            <p className="text-sm text-wl-text-tertiary py-4 text-center">
               Repeatable job schedules are configured in the worker service. Select a queue above and filter by "Delayed" to see upcoming repeatable jobs.
             </p>
           </CardContent>

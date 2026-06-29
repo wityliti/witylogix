@@ -20,7 +20,7 @@ export function PlatformStats({
       <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
           <div className="text-3xl font-bold text-white">{connected}</div>
-          <p className="text-sm text-gray-500 mt-1">Connected Platforms</p>
+          <p className="text-sm text-wl-text-tertiary mt-1">Connected Platforms</p>
         </CardContent>
       </Card>
 
@@ -29,7 +29,7 @@ export function PlatformStats({
           <div className="text-3xl font-bold text-white">
             {totalProducts.toLocaleString()}
           </div>
-          <p className="text-sm text-gray-500 mt-1">Total Products Synced</p>
+          <p className="text-sm text-wl-text-tertiary mt-1">Total Products Synced</p>
         </CardContent>
       </Card>
 
@@ -38,14 +38,14 @@ export function PlatformStats({
           <div className="text-3xl font-bold text-white">
             {totalOrders.toLocaleString()}
           </div>
-          <p className="text-sm text-gray-500 mt-1">Total Orders Synced</p>
+          <p className="text-sm text-wl-text-tertiary mt-1">Total Orders Synced</p>
         </CardContent>
       </Card>
 
       <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
           <div className="text-3xl font-bold text-white">{syncErrors}</div>
-          <p className="text-sm text-gray-500 mt-1">Sync Errors</p>
+          <p className="text-sm text-wl-text-tertiary mt-1">Sync Errors</p>
         </CardContent>
       </Card>
     </div>

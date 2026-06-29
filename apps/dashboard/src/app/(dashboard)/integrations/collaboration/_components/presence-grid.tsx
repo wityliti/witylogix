@@ -23,7 +23,7 @@ function getStatusColor(status: string) {
     case 'busy':
       return 'bg-orange-500/20 text-orange-400 border-orange-500/50';
     case 'offline':
-      return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+      return 'bg-wl-neutral-500/20 text-wl-text-secondary border-wl-neutral-500/50';
     default:
       return '';
   }
@@ -49,7 +49,7 @@ export function PresenceGrid({ indicators }: PresenceGridProps) {
                   <h4 className="font-semibold text-white truncate">
                     {indicator.name}
                   </h4>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-wl-text-tertiary mt-1">
                     {indicator.lastActive}
                   </p>
                 </div>

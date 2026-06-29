@@ -126,7 +126,7 @@ export default function TrackingConfigPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white">Tracking Page Configuration</h1>
-            <p className="text-gray-400 text-sm mt-0.5">Customize your branded tracking page for customers</p>
+            <p className="text-wl-text-secondary text-sm mt-0.5">Customize your branded tracking page for customers</p>
           </div>
           {isDirty && (
             <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ export default function TrackingConfigPage() {
             {/* Feature Toggles */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <h3 className="text-lg font-semibold text-white mb-1">Page Features</h3>
-              <p className="text-gray-400 text-xs mb-4">Enable or disable tracking page features</p>
+              <p className="text-wl-text-secondary text-xs mb-4">Enable or disable tracking page features</p>
               <div className="space-y-3">
                 {featureToggles.map((feature) => {
                   const Icon = feature.icon;
@@ -181,7 +181,7 @@ export default function TrackingConfigPage() {
                         <Icon size={18} className="text-blue-500 shrink-0" />
                         <div>
                           <p className="text-white text-sm font-medium">{feature.label}</p>
-                          <p className="text-gray-400 text-xs">{feature.desc}</p>
+                          <p className="text-wl-text-secondary text-xs">{feature.desc}</p>
                         </div>
                       </div>
                       <button
@@ -209,7 +209,7 @@ export default function TrackingConfigPage() {
             {/* Custom Domain */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <h3 className="text-lg font-semibold text-white mb-1">Custom Domain</h3>
-              <p className="text-gray-400 text-xs mb-4">Your branded tracking page domain</p>
+              <p className="text-wl-text-secondary text-xs mb-4">Your branded tracking page domain</p>
               <div className="flex gap-2 items-center mb-3">
                 <input
                   type="text"
@@ -229,16 +229,16 @@ export default function TrackingConfigPage() {
                   {copied ? "Copied" : "Copy"}
                 </Button>
               </div>
-              <p className="text-gray-500 text-xs">Configure a CNAME DNS record pointing to <code className="text-blue-400">tracking.witylogix.com</code></p>
+              <p className="text-wl-text-tertiary text-xs">Configure a CNAME DNS record pointing to <code className="text-blue-400">tracking.witylogix.com</code></p>
             </Card>
 
             {/* SEO Settings */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <h3 className="text-lg font-semibold text-white mb-1">SEO Configuration</h3>
-              <p className="text-gray-400 text-xs mb-4">Meta tags shown in search results</p>
+              <p className="text-wl-text-secondary text-xs mb-4">Meta tags shown in search results</p>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Meta Title</label>
+                  <label className="block text-wl-neutral-300 text-xs font-medium mb-2">Meta Title</label>
                   <input
                     type="text"
                     value={config.metaTitle}
@@ -246,12 +246,12 @@ export default function TrackingConfigPage() {
                     maxLength={60}
                     className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50"
                   />
-                  <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-amber-400" : "text-gray-500")}>
+                  <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-amber-400" : "text-wl-text-tertiary")}>
                     {config.metaTitle.length}/60 characters
                   </p>
                 </div>
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Meta Description</label>
+                  <label className="block text-wl-neutral-300 text-xs font-medium mb-2">Meta Description</label>
                   <textarea
                     value={config.metaDescription}
                     onChange={(e) => update("metaDescription", e.target.value)}
@@ -259,7 +259,7 @@ export default function TrackingConfigPage() {
                     className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-blue-500/50 resize-none"
                     rows={3}
                   />
-                  <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-amber-400" : "text-gray-500")}>
+                  <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-amber-400" : "text-wl-text-tertiary")}>
                     {config.metaDescription.length}/160 characters
                   </p>
                 </div>
@@ -286,7 +286,7 @@ export default function TrackingConfigPage() {
                   </div>
                 )}
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                  <p className="text-gray-400 text-xs">Preview URL:</p>
+                  <p className="text-wl-text-secondary text-xs">Preview URL:</p>
                   <code className="text-blue-400 text-xs font-mono truncate max-w-[180px]">{trackingPageUrl}</code>
                 </div>
                 <div className="space-y-2">
@@ -295,18 +295,18 @@ export default function TrackingConfigPage() {
                   {config.liveMap && (
                     <div className="p-3 rounded text-xs border border-white/10 bg-white/5 flex items-center gap-2">
                       <MapPin size={14} style={{ color: config.primaryColor }} />
-                      <span className="text-gray-300">Live map enabled</span>
+                      <span className="text-wl-neutral-300">Live map enabled</span>
                     </div>
                   )}
                   {config.etaDisplay && (
                     <div className="flex items-center gap-2 p-2 rounded text-xs border border-white/10 bg-white/5">
                       <Clock size={14} style={{ color: config.primaryColor }} />
-                      <span className="text-gray-300">Arrives today by 6:30 PM</span>
+                      <span className="text-wl-neutral-300">Arrives today by 6:30 PM</span>
                     </div>
                   )}
                   {config.ratingWidget && (
                     <div className="p-2 rounded text-xs border border-white/10 bg-white/5">
-                      <p className="text-gray-400 mb-1">Rate your delivery</p>
+                      <p className="text-wl-text-secondary mb-1">Rate your delivery</p>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((s) => (
                           <Star key={s} size={14} style={{ color: config.primaryColor }} />
@@ -334,10 +334,10 @@ export default function TrackingConfigPage() {
                 <Palette size={18} className="text-blue-500" />
                 <h3 className="text-lg font-semibold text-white">Branding</h3>
               </div>
-              <p className="text-gray-400 text-xs mb-4">Customize colors and logo for the tracking page</p>
+              <p className="text-wl-text-secondary text-xs mb-4">Customize colors and logo for the tracking page</p>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Primary Color</label>
+                  <label className="block text-wl-neutral-300 text-xs font-medium mb-2">Primary Color</label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
@@ -349,13 +349,13 @@ export default function TrackingConfigPage() {
                       type="text"
                       value={config.primaryColor}
                       onChange={(e) => update("primaryColor", e.target.value)}
-                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
+                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Secondary Color</label>
+                  <label className="block text-wl-neutral-300 text-xs font-medium mb-2">Secondary Color</label>
                   <div className="flex gap-2 items-center">
                     <input
                       type="color"
@@ -367,21 +367,21 @@ export default function TrackingConfigPage() {
                       type="text"
                       value={config.secondaryColor}
                       onChange={(e) => update("secondaryColor", e.target.value)}
-                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-gray-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
+                      className="flex-1 px-2 py-1.5 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs font-mono focus:outline-none focus:border-blue-500/50"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 text-xs font-medium mb-2">Logo URL</label>
+                  <label className="block text-wl-neutral-300 text-xs font-medium mb-2">Logo URL</label>
                   <input
                     type="url"
                     value={config.logoUrl}
                     onChange={(e) => update("logoUrl", e.target.value)}
                     placeholder="https://example.com/logo.png"
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-gray-300 text-xs focus:outline-none focus:border-blue-500/50"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-neutral-300 text-xs focus:outline-none focus:border-blue-500/50"
                   />
-                  <p className="text-gray-500 text-xs mt-1">Recommended: 200×50px PNG or SVG</p>
+                  <p className="text-wl-text-tertiary text-xs mt-1">Recommended: 200×50px PNG or SVG</p>
                 </div>
               </div>
             </Card>

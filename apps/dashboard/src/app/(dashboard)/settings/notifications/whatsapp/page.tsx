@@ -210,7 +210,7 @@ export default function WhatsAppPage() {
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex-1">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-3">
                   Filter by Category
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -284,7 +284,7 @@ export default function WhatsAppPage() {
                   {TEMPLATES.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-wl-text-secondary text-sm">
                           No templates found
                         </p>
                       </TableCell>
@@ -297,7 +297,7 @@ export default function WhatsAppPage() {
                             <p className="text-sm font-medium text-white">
                               {template.name}
                             </p>
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className="text-xs text-wl-text-secondary mt-1">
                               ID: {template.id}
                             </p>
                           </div>
@@ -324,17 +324,17 @@ export default function WhatsAppPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-gray-400">
+                          <span className="text-sm text-wl-text-secondary">
                             {template.variables.length}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-gray-400">
+                          <span className="text-sm text-wl-text-secondary">
                             {template.language.toUpperCase()}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-gray-400">
+                          <span className="text-sm text-wl-text-secondary">
                             {template.lastEdited.toLocaleDateString()}
                           </span>
                         </TableCell>
@@ -355,7 +355,7 @@ export default function WhatsAppPage() {
                               }}
                               className="p-2 hover:bg-wl-bg-elevated rounded-lg transition-colors"
                             >
-                              <Edit className="w-4 h-4 text-gray-400" />
+                              <Edit className="w-4 h-4 text-wl-text-secondary" />
                             </button>
                             <button
                               onClick={() => handleDelete(template.id)}
@@ -401,7 +401,7 @@ export default function WhatsAppPage() {
                       key={idx}
                       className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                     >
-                      <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                      <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                         {component.type}
                       </p>
                       {component.text && (
@@ -414,7 +414,7 @@ export default function WhatsAppPage() {
                           {component.buttons.map((btn, bidx) => (
                             <div
                               key={bidx}
-                              className="flex items-center gap-2 text-xs text-gray-400"
+                              className="flex items-center gap-2 text-xs text-wl-text-secondary"
                             >
                               <span className="px-2 py-1 bg-blue-500/10 rounded text-blue-500">
                                 [{btn.type}]
@@ -431,7 +431,7 @@ export default function WhatsAppPage() {
                       <p className="text-xs font-semibold text-red-500 mb-1">
                         Rejection Reason:
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-wl-text-secondary">
                         {template.rejectionReason}
                       </p>
                     </div>

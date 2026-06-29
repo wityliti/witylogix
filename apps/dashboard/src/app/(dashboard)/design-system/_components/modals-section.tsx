@@ -12,7 +12,7 @@ export function ModalsSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Modals & Dialogs
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-neutral-300 mb-8">
           Modal dialog component with configurable sizes. Press Escape to close or
           click the backdrop.
         </p>
@@ -51,7 +51,7 @@ export function ModalsSection() {
               </div>
             }
           >
-            <p className="text-gray-300 mb-4">
+            <p className="text-wl-neutral-300 mb-4">
               This is a modal dialog. You can add any content here, including forms,
               messages, or confirmations.
             </p>
@@ -65,7 +65,7 @@ export function ModalsSection() {
             <CardHeader>
               <CardTitle>Modal Sizes</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-gray-300 space-y-2">
+            <CardContent className="text-sm text-wl-neutral-300 space-y-2">
               <p>Available sizes: sm, md, lg, full</p>
               <p>
                 Use the size prop to control modal dimensions.

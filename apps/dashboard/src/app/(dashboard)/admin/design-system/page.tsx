@@ -127,7 +127,7 @@ const CopyToken = ({ token }: { token: string }) => {
   return (
     <button
       onClick={handleCopy}
-      className="bg-transparent border-none cursor-pointer p-1 flex items-center justify-center text-gray-400 transition-all hover:text-white"
+      className="bg-transparent border-none cursor-pointer p-1 flex items-center justify-center text-wl-text-secondary transition-all hover:text-white"
       title="Copy token"
     >
       {copied ? (
@@ -144,14 +144,14 @@ const ColorPaletteSection = () => {
   return (
     <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
-        <Palette className="w-5 h-5 text-gray-400" />
+        <Palette className="w-5 h-5 text-wl-text-secondary" />
         <CardTitle>Color Palette</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6">
           {Object.entries(COLOR_TOKENS).map(([categoryName, colors]) => (
             <div key={categoryName}>
-              <h4 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-widest">
+              <h4 className="text-sm font-semibold text-wl-text-secondary mb-3 uppercase tracking-widest">
                 {categoryName}
               </h4>
               <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
@@ -165,7 +165,7 @@ const ColorPaletteSection = () => {
                       <p className="m-0 text-xs font-semibold text-white mb-0.5">
                         {tokenName}
                       </p>
-                      <code className="text-xs text-gray-400 font-mono flex items-center gap-1 justify-between">
+                      <code className="text-xs text-wl-text-secondary font-mono flex items-center gap-1 justify-between">
                         <span>{hexValue}</span>
                         <CopyToken token={hexValue} />
                       </code>
@@ -186,7 +186,7 @@ const TypographySection = () => {
   return (
     <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
-        <Type className="w-5 h-5 text-gray-400" />
+        <Type className="w-5 h-5 text-wl-text-secondary" />
         <CardTitle>Typography</CardTitle>
       </CardHeader>
       <CardContent>
@@ -194,10 +194,10 @@ const TypographySection = () => {
           {TYPOGRAPHY_SAMPLES.map((sample, idx) => (
             <div key={idx} className={cn("flex items-center gap-4 pb-4", { "border-b border-wl-border-default": idx < TYPOGRAPHY_SAMPLES.length - 1 })}>
               <div className="min-w-20">
-                <p className="m-0 text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                <p className="m-0 text-xs font-semibold text-wl-text-secondary uppercase tracking-widest">
                   {sample.name}
                 </p>
-                <code className="text-xs text-gray-400 font-mono">
+                <code className="text-xs text-wl-text-secondary font-mono">
                   {sample.size} / {sample.weight}
                 </code>
               </div>
@@ -219,7 +219,7 @@ const SpacingSection = () => {
   return (
     <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
-        <Layout className="w-5 h-5 text-gray-400" />
+        <Layout className="w-5 h-5 text-wl-text-secondary" />
         <CardTitle>Spacing Scale</CardTitle>
       </CardHeader>
       <CardContent>
@@ -227,10 +227,10 @@ const SpacingSection = () => {
           {SPACING_SCALE.map((space) => (
             <div key={space.name} className="flex items-center gap-4">
               <div className="min-w-16">
-                <p className="m-0 text-xs font-semibold text-gray-400">
+                <p className="m-0 text-xs font-semibold text-wl-text-secondary">
                   --wl-space-{space.name}
                 </p>
-                <p className="m-0 mt-0.5 text-xs text-gray-400">
+                <p className="m-0 mt-0.5 text-xs text-wl-text-secondary">
                   {space.label || "0"}
                 </p>
               </div>
@@ -241,7 +241,7 @@ const SpacingSection = () => {
                 }}
               />
               <div className="min-w-10 text-right">
-                <code className="text-xs text-gray-400 font-mono">
+                <code className="text-xs text-wl-text-secondary font-mono">
                   {space.value}px
                 </code>
               </div>
@@ -393,7 +393,7 @@ const ComponentsShowcase = () => {
                 <h2 className="text-xl font-bold text-white m-0 mb-3">
                   Modal Example
                 </h2>
-                <p className="text-gray-400 m-0 mb-4">
+                <p className="text-wl-text-secondary m-0 mb-4">
                   This is a sample modal dialog showing component usage in the design system.
                 </p>
                 <div className="flex gap-3 justify-end">

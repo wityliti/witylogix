@@ -44,7 +44,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
       <CardContent className="space-y-4">
         {/* Subject Line */}
         <div>
-          <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+          <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold">
             Subject
           </label>
           <div className="text-sm text-white mt-2 p-3 bg-wl-bg-surface rounded border border-wl-border-default font-mono">
@@ -54,17 +54,17 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
 
         {/* Preview */}
         <div>
-          <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+          <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold">
             Preview
           </label>
-          <div className="text-sm text-gray-400 mt-2 p-4 bg-wl-bg-surface rounded border border-wl-border-default">
+          <div className="text-sm text-wl-text-secondary mt-2 p-4 bg-wl-bg-surface rounded border border-wl-border-default">
             {template.preview}
           </div>
         </div>
 
         {/* Variables */}
         <div>
-          <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+          <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold">
             Available Variables
           </label>
           <div className="flex flex-wrap gap-2 mt-2">
@@ -80,7 +80,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
         {showTestEmail && (
           <div className="p-4 bg-wl-bg-surface rounded border border-blue-500/30 space-y-3">
             <div>
-              <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold block mb-2">
+              <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold block mb-2">
                 Recipient Email
               </label>
               <input

@@ -37,7 +37,7 @@ export function CategoryMapping() {
             >
               <div className="grid grid-cols-3 gap-4 items-center">
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">
+                  <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                     Shopify
                   </div>
                   <div className="text-sm font-medium text-white mt-1">
@@ -45,10 +45,10 @@ export function CategoryMapping() {
                   </div>
                 </div>
                 <div className="flex justify-center">
-                  <ChevronRight className="w-5 h-5 text-gray-500" />
+                  <ChevronRight className="w-5 h-5 text-wl-text-tertiary" />
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">
+                  <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                     External
                   </div>
                   <div className="text-sm font-medium text-white mt-1">

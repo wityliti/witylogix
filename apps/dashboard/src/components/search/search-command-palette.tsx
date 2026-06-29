@@ -126,7 +126,7 @@ export function SearchCommandPalette(): React.ReactElement {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-400 hover:border-gray-600 hover:bg-gray-800"
+        className="flex items-center gap-2 rounded-lg border border-wl-border-default bg-wl-bg-surface px-3 py-2 text-sm text-wl-text-secondary hover:border-wl-border-strong hover:bg-wl-bg-elevated"
         title="Press Cmd+K"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,7 +138,7 @@ export function SearchCommandPalette(): React.ReactElement {
           />
         </svg>
         <span className="hidden sm:inline">Search...</span>
-        <kbd className="rounded border border-gray-600 bg-gray-800 px-2 py-1 text-xs font-semibold text-gray-300">
+        <kbd className="rounded border border-wl-border-strong bg-wl-bg-elevated px-2 py-1 text-xs font-semibold text-wl-neutral-300">
           Cmd K
         </kbd>
       </button>
@@ -150,18 +150,18 @@ export function SearchCommandPalette(): React.ReactElement {
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-20"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-2xl rounded-lg bg-gray-900 shadow-xl">
+      <div className="w-full max-w-2xl rounded-lg bg-wl-bg-surface shadow-xl">
         {/* Search Input */}
-        <div className="border-b border-gray-700 p-4">
+        <div className="border-b border-wl-border-default p-4">
           <input
             {...search.register}
             autoFocus
             placeholder="Search orders, drivers, deliveries..."
-            className="w-full bg-transparent text-lg text-white outline-none placeholder:text-gray-500"
+            className="w-full bg-transparent text-lg text-white outline-none placeholder:text-wl-text-tertiary"
           />
           {search.isLoading && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-400">
-              <div className="h-3 w-3 animate-spin rounded-full border-2 border-gray-600 border-t-gray-300" />
+            <div className="mt-2 flex items-center gap-2 text-sm text-wl-text-secondary">
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-wl-border-strong border-t-gray-300" />
               Searching...
             </div>
           )}
@@ -174,8 +174,8 @@ export function SearchCommandPalette(): React.ReactElement {
         <div className="max-h-96 overflow-y-auto">
           {/* Quick Actions (when empty) */}
           {!search.query && search.recentSearches.length === 0 && (
-            <div className="border-b border-gray-700 p-4">
-              <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <div className="border-b border-wl-border-default p-4">
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-wl-text-tertiary">
                 Quick Actions
               </div>
               <div className="space-y-2">
@@ -190,7 +190,7 @@ export function SearchCommandPalette(): React.ReactElement {
                       "w-full rounded-lg px-4 py-2 text-left text-sm transition-colors",
                       search.selectedIndex === index
                         ? "bg-blue-600 text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        : "text-wl-neutral-300 hover:bg-wl-bg-elevated"
                     )}
                   >
                     {action.label}
@@ -202,14 +202,14 @@ export function SearchCommandPalette(): React.ReactElement {
 
           {/* Recent Searches (when empty query) */}
           {!search.query && search.recentSearches.length > 0 && (
-            <div className="border-b border-gray-700 p-4">
+            <div className="border-b border-wl-border-default p-4">
               <div className="mb-3 flex items-center justify-between">
-                <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <div className="text-xs font-semibold uppercase tracking-wider text-wl-text-tertiary">
                   Recent Searches
                 </div>
                 <button
                   onClick={() => search.clearRecentSearches()}
-                  className="text-xs text-gray-500 hover:text-gray-300"
+                  className="text-xs text-wl-text-tertiary hover:text-wl-neutral-300"
                 >
                   Clear
                 </button>
@@ -226,11 +226,11 @@ export function SearchCommandPalette(): React.ReactElement {
                       "w-full rounded-lg px-4 py-2 text-left text-sm transition-colors",
                       search.selectedIndex === index
                         ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:bg-gray-800"
+                        : "text-wl-text-secondary hover:bg-wl-bg-elevated"
                     )}
                   >
                     <svg
-                      className="mb-1 inline-block h-3 w-3 text-gray-500"
+                      className="mb-1 inline-block h-3 w-3 text-wl-text-tertiary"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -254,7 +254,7 @@ export function SearchCommandPalette(): React.ReactElement {
             <div className="p-4">
               {Object.entries(groupedResults).map(([entity, results]) => (
                 <div key={entity} className="mb-4 last:mb-0">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-wl-text-tertiary">
                     {entity === "orders"
                       ? "Orders"
                       : entity === "drivers"
@@ -274,7 +274,7 @@ export function SearchCommandPalette(): React.ReactElement {
                           "w-full rounded-lg px-4 py-2 text-left transition-colors",
                           search.selectedIndex === index
                             ? "bg-blue-600 text-white"
-                            : "hover:bg-gray-800"
+                            : "hover:bg-wl-bg-elevated"
                         )}
                       >
                         <div className="flex items-center justify-between">
@@ -283,7 +283,7 @@ export function SearchCommandPalette(): React.ReactElement {
                               {result.title}
                             </div>
                             {result.description && (
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-wl-text-secondary">
                                 {result.description}
                               </div>
                             )}
@@ -297,7 +297,7 @@ export function SearchCommandPalette(): React.ReactElement {
                                   ? "bg-green-900 text-green-300"
                                   : entity === "deliveries"
                                     ? "bg-purple-900 text-purple-300"
-                                    : "bg-gray-700 text-gray-300"
+                                    : "bg-wl-bg-overlay text-wl-neutral-300"
                             )}
                           >
                             {entity}
@@ -316,7 +316,7 @@ export function SearchCommandPalette(): React.ReactElement {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <svg
-                  className="mx-auto h-12 w-12 text-gray-600"
+                  className="mx-auto h-12 w-12 text-wl-text-tertiary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -328,38 +328,38 @@ export function SearchCommandPalette(): React.ReactElement {
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-                <p className="mt-2 text-sm text-gray-400">No results found</p>
-                <p className="text-xs text-gray-500">Try a different search term</p>
+                <p className="mt-2 text-sm text-wl-text-secondary">No results found</p>
+                <p className="text-xs text-wl-text-tertiary">Try a different search term</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-700 px-4 py-3">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="border-t border-wl-border-default px-4 py-3">
+          <div className="flex items-center justify-between text-xs text-wl-text-tertiary">
             <div className="flex gap-4">
               <div>
-                <kbd className="rounded border border-gray-700 bg-gray-800 px-2 py-1">
+                <kbd className="rounded border border-wl-border-default bg-wl-bg-elevated px-2 py-1">
                   ↑↓
                 </kbd>
                 {" "}to navigate
               </div>
               <div>
-                <kbd className="rounded border border-gray-700 bg-gray-800 px-2 py-1">
+                <kbd className="rounded border border-wl-border-default bg-wl-bg-elevated px-2 py-1">
                   ↵
                 </kbd>
                 {" "}to select
               </div>
               <div>
-                <kbd className="rounded border border-gray-700 bg-gray-800 px-2 py-1">
+                <kbd className="rounded border border-wl-border-default bg-wl-bg-elevated px-2 py-1">
                   esc
                 </kbd>
                 {" "}to close
               </div>
             </div>
             {search.results.length > 0 && (
-              <div className="text-gray-600">
+              <div className="text-wl-text-tertiary">
                 {search.results.length} result{search.results.length !== 1 ? "s" : ""}
               </div>
             )}

@@ -14,7 +14,7 @@ export function FormsSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Form Components
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-neutral-300 mb-8">
           Collections of form-related components: switches, checkboxes, and their
           combinations.
         </p>
@@ -29,7 +29,7 @@ export function FormsSection() {
                   checked={switchEnabled}
                   onChange={(checked) => setSwitchEnabled(checked)}
                 />
-                <span className="text-sm text-gray-300">
+                <span className="text-sm text-wl-neutral-300">
                   {switchEnabled ? "Enabled" : "Disabled"}
                 </span>
               </div>
@@ -46,7 +46,7 @@ export function FormsSection() {
                   checked={checkboxChecked}
                   onChange={(e) => setCheckboxChecked(e.target.checked)}
                 />
-                <span className="text-sm text-gray-300">
+                <span className="text-sm text-wl-neutral-300">
                   I agree to the terms
                 </span>
               </div>

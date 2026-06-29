@@ -10,7 +10,7 @@ export function BadgesSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Badges
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-neutral-300 mb-8">
           Badge component with 6 variants: default, success, warning, danger, info,
           and primary. Optional dot indicator.
         </p>

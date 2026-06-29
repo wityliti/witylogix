@@ -7,7 +7,7 @@ export function ColorsSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Color Palette
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-neutral-300 mb-8">
           Design tokens for colors used throughout the platform. Dark theme with
           amber primary color for logistics warmth.
         </p>
@@ -35,10 +35,10 @@ export function ColorsSection() {
                     className="w-full h-24 rounded-md mb-2 border border-wl-border-default"
                     style={{ backgroundColor: color.hex }}
                   />
-                  <p className="text-xs font-mono text-gray-300">
+                  <p className="text-xs font-mono text-wl-neutral-300">
                     {color.hex}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-wl-text-secondary">
                     {color.token}
                   </p>
                 </div>
@@ -59,10 +59,10 @@ export function ColorsSection() {
                 <p className="text-sm font-semibold text-white">
                   Success
                 </p>
-                <p className="text-xs font-mono text-gray-300">
+                <p className="text-xs font-mono text-wl-neutral-300">
                   #34d399
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   --emerald-500
                 </p>
               </div>
@@ -75,10 +75,10 @@ export function ColorsSection() {
                 <p className="text-sm font-semibold text-white">
                   Warning
                 </p>
-                <p className="text-xs font-mono text-gray-300">
+                <p className="text-xs font-mono text-wl-neutral-300">
                   #fbbf24
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   --amber-500
                 </p>
               </div>
@@ -91,10 +91,10 @@ export function ColorsSection() {
                 <p className="text-sm font-semibold text-white">
                   Danger
                 </p>
-                <p className="text-xs font-mono text-gray-300">
+                <p className="text-xs font-mono text-wl-neutral-300">
                   #f87171
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   --red-500
                 </p>
               </div>
@@ -107,10 +107,10 @@ export function ColorsSection() {
                 <p className="text-sm font-semibold text-white">
                   Info
                 </p>
-                <p className="text-xs font-mono text-gray-300">
+                <p className="text-xs font-mono text-wl-neutral-300">
                   #60a5fa
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   --blue-500
                 </p>
               </div>
@@ -138,7 +138,7 @@ export function ColorsSection() {
                   <p className="text-sm font-semibold text-white">
                     {color.name}
                   </p>
-                  <p className="text-xs font-mono text-gray-300">
+                  <p className="text-xs font-mono text-wl-neutral-300">
                     {color.hex}
                   </p>
                 </div>

@@ -68,7 +68,7 @@ export default function CreateLabelPage() {
             {step === 'package' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Destination</label>
+                  <label className="block text-sm font-medium text-wl-text-secondary mb-2">Destination</label>
                   <input
                     type="text"
                     value={formData.destination}
@@ -78,7 +78,7 @@ export default function CreateLabelPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Weight (lbs)</label>
+                  <label className="block text-sm font-medium text-wl-text-secondary mb-2">Weight (lbs)</label>
                   <input
                     type="number"
                     value={formData.weight}
@@ -116,7 +116,7 @@ export default function CreateLabelPage() {
                     }`}
                   >
                     <p className="font-medium text-white">{service}</p>
-                    <p className="text-xs text-gray-400">${{ Ground: "15.00", Express: "35.00", Overnight: "65.00" }[service] ?? "—"}</p>
+                    <p className="text-xs text-wl-text-secondary">${{ Ground: "15.00", Express: "35.00", Overnight: "65.00" }[service] ?? "—"}</p>
                   </div>
                 ))}
               </div>
@@ -125,9 +125,9 @@ export default function CreateLabelPage() {
             {step === 'review' && (
               <div className="space-y-4">
                 <div className="p-4 bg-wl-bg-elevated rounded border border-wl-border-default">
-                  <p className="text-sm text-gray-400">Destination: {formData.destination}</p>
-                  <p className="text-sm text-gray-400">Weight: {formData.weight} lbs</p>
-                  <p className="text-sm text-gray-400">Carrier: {formData.carrier} {formData.service}</p>
+                  <p className="text-sm text-wl-text-secondary">Destination: {formData.destination}</p>
+                  <p className="text-sm text-wl-text-secondary">Weight: {formData.weight} lbs</p>
+                  <p className="text-sm text-wl-text-secondary">Carrier: {formData.carrier} {formData.service}</p>
                 </div>
                 {error && (
                   <div className="p-3 bg-red-500/10 text-red-400 rounded flex gap-2 border border-red-500/30">

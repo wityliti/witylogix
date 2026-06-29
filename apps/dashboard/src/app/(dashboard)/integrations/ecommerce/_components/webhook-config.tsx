@@ -48,7 +48,7 @@ export function WebhookConfig({ platforms }: WebhookConfigProps) {
                         <div className="text-sm font-medium text-white">
                           {hook.event}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-wl-text-tertiary mt-1">
                           Last triggered:{' '}
                           {new Date(hook.lastTriggered).toLocaleString()}
                         </div>
@@ -65,7 +65,7 @@ export function WebhookConfig({ platforms }: WebhookConfigProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-gray-500"
+                          className="text-wl-text-tertiary"
                         >
                           <Settings className="w-4 h-4" />
                         </Button>

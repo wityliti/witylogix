@@ -109,7 +109,7 @@ export default function WidgetsPage() {
               <h2 className="text-lg font-semibold text-white mb-4">Active Widgets</h2>
               {activeWidgets.length === 0 ? (
                 <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center">
-                  <p className="text-gray-400">No active widgets. Add some from the gallery.</p>
+                  <p className="text-wl-text-secondary">No active widgets. Add some from the gallery.</p>
                 </Card>
               ) : (
                 <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
@@ -125,7 +125,7 @@ export default function WidgetsPage() {
                           </div>
                           <div>
                             <CardTitle className="text-base text-white">{widget.name}</CardTitle>
-                            {widget.size && <p className="text-xs text-gray-400 mt-1">{widget.size}</p>}
+                            {widget.size && <p className="text-xs text-wl-text-secondary mt-1">{widget.size}</p>}
                           </div>
                         </div>
                       </CardHeader>
@@ -134,7 +134,7 @@ export default function WidgetsPage() {
                           <Badge variant="success">Active</Badge>
                         </div>
                         <div
-                          className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-gray-400"
+                          className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary"
                           style={{ background: getWidgetColor(idx), height: '80px' }}
                         >
                           Widget Preview
@@ -160,7 +160,7 @@ export default function WidgetsPage() {
                 <h2 className="text-lg font-semibold text-white mb-4">Widget Gallery</h2>
                 {catalog.length === 0 ? (
                   <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center">
-                    <p className="text-gray-400">No widgets available in catalog.</p>
+                    <p className="text-wl-text-secondary">No widgets available in catalog.</p>
                   </Card>
                 ) : (
                   <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
@@ -178,9 +178,9 @@ export default function WidgetsPage() {
                           </div>
                         </CardHeader>
                         <CardContent className="flex-1 pt-0 pb-4 flex flex-col">
-                          <p className="text-sm text-gray-400 mb-4 flex-1">{widget.description}</p>
+                          <p className="text-sm text-wl-text-secondary mb-4 flex-1">{widget.description}</p>
                           <div
-                            className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-gray-400"
+                            className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary"
                             style={{ background: getWidgetColor(idx), height: '60px' }}
                           >
                             Preview

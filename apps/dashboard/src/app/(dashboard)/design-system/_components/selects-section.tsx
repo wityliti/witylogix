@@ -10,7 +10,7 @@ export function SelectsSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Select Dropdown
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-neutral-300 mb-8">
           Dropdown select component with label, error states, and size variants.
         </p>
 

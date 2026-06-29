@@ -26,27 +26,27 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="text-base font-semibold text-white">{template.name}</h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-wl-text-tertiary mt-1">
               {template.provider} • Created {template.created}
             </p>
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-blue-500">{template.usage}</p>
-            <p className="text-xs text-gray-500">times used</p>
+            <p className="text-xs text-wl-text-tertiary">times used</p>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-wl-border-default">
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Fields</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Fields</p>
             <p className="text-lg font-bold text-white mt-1">{template.fields}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Signers</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Signers</p>
             <p className="text-lg font-bold text-white mt-1">{template.signers}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Status</p>
             <Badge variant="success" className="mt-1 bg-green-500/20 text-green-400">
               Active
             </Badge>

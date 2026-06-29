@@ -276,7 +276,7 @@ export default function DemandPage() {
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-white">Demand Forecast</h1>
-              <p className="text-sm text-gray-400 mt-1">Real-time demand predictions and analytics</p>
+              <p className="text-sm text-wl-text-secondary mt-1">Real-time demand predictions and analytics</p>
             </div>
             <div className="flex gap-2 items-center">
               {/* Charts / Map toggle */}
@@ -287,7 +287,7 @@ export default function DemandPage() {
                     'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
                     viewMode === 'charts'
                       ? 'bg-blue-600 text-white'
-                      : 'bg-transparent text-gray-400 hover:text-white'
+                      : 'bg-transparent text-wl-text-secondary hover:text-white'
                   )}
                 >
                   <BarChart3 className="w-3.5 h-3.5" /> Charts
@@ -298,7 +298,7 @@ export default function DemandPage() {
                     'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
                     viewMode === 'map'
                       ? 'bg-blue-600 text-white'
-                      : 'bg-transparent text-gray-400 hover:text-white'
+                      : 'bg-transparent text-wl-text-secondary hover:text-white'
                   )}
                 >
                   <Map className="w-3.5 h-3.5" /> Map
@@ -319,7 +319,7 @@ export default function DemandPage() {
           <div className="flex flex-wrap gap-4">
             {/* Zone Selector */}
             <div className="flex items-center gap-2">
-              <label htmlFor="zone-select" className="text-sm font-medium text-gray-400">
+              <label htmlFor="zone-select" className="text-sm font-medium text-wl-text-secondary">
                 <MapPin className="w-4 h-4 inline mr-2" />
                 Zone
               </label>
@@ -346,7 +346,7 @@ export default function DemandPage() {
 
             {/* Date Range Selector */}
             <div className="flex items-center gap-2">
-              <label htmlFor="date-range" className="text-sm font-medium text-gray-400">
+              <label htmlFor="date-range" className="text-sm font-medium text-wl-text-secondary">
                 <Calendar className="w-4 h-4 inline mr-2" />
                 Period
               </label>
@@ -390,7 +390,7 @@ export default function DemandPage() {
             </WLMap>
           ) : (
             <div className="h-full flex items-center justify-center bg-wl-bg-root">
-              <p className="text-gray-400 text-sm">Loading zone map…</p>
+              <p className="text-wl-text-secondary text-sm">Loading zone map…</p>
             </div>
           )}
 
@@ -406,7 +406,7 @@ export default function DemandPage() {
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2 mt-1">
                 <div className="w-3 h-3 rounded-sm" style={{ background: color }} />
-                <span className="text-gray-300">{label}</span>
+                <span className="text-wl-neutral-300">{label}</span>
               </div>
             ))}
           </div>
@@ -417,7 +417,7 @@ export default function DemandPage() {
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {zones.slice(0, 8).map((z) => (
                 <div key={z.id} className="flex items-center justify-between gap-3">
-                  <span className="text-xs text-gray-300 truncate">{z.name}</span>
+                  <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-xs font-mono text-white">{z.predictedVolume}</span>
                     {z.trend === 'up' ? (
@@ -425,7 +425,7 @@ export default function DemandPage() {
                     ) : z.trend === 'down' ? (
                       <TrendingDown className="w-3 h-3 text-red-400" />
                     ) : (
-                      <span className="text-gray-500 text-[10px]">—</span>
+                      <span className="text-wl-text-tertiary text-[10px]">—</span>
                     )}
                   </div>
                 </div>
@@ -442,15 +442,15 @@ export default function DemandPage() {
           {/* KPI Metric Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Predicted</p>
+              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Total Predicted</p>
               <p className="text-3xl font-bold text-white mt-3">
                 {((metrics?.totalPredicted ?? 0) / 1000).toFixed(1)}k
               </p>
-              <p className="text-xs text-gray-500 mt-2">Volume units</p>
+              <p className="text-xs text-wl-text-tertiary mt-2">Volume units</p>
             </Card>
 
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current Actual</p>
+              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Current Actual</p>
               <p className="text-3xl font-bold text-white mt-3">
                 {((metrics?.totalActual ?? 0) / 1000).toFixed(1)}k
               </p>
@@ -470,13 +470,13 @@ export default function DemandPage() {
             </Card>
 
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Avg Confidence</p>
+              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Avg Confidence</p>
               <p className="text-3xl font-bold text-white mt-3">{metrics?.avgConfidence}%</p>
-              <p className="text-xs text-gray-500 mt-2">Prediction accuracy</p>
+              <p className="text-xs text-wl-text-tertiary mt-2">Prediction accuracy</p>
             </Card>
 
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Anomalies Detected</p>
+              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Anomalies Detected</p>
               <p className="text-3xl font-bold text-white mt-3">{metrics?.anomalyCount}</p>
               <Badge variant="warning" className="mt-2 text-xs">
                 Active Alerts
@@ -521,12 +521,12 @@ export default function DemandPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default">
-                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Zone</th>
-                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Predicted</th>
-                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Actual</th>
-                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Confidence</th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Trend</th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Anomalies</th>
+                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Zone</th>
+                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Predicted</th>
+                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Actual</th>
+                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Confidence</th>
+                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Trend</th>
+                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Anomalies</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -539,10 +539,10 @@ export default function DemandPage() {
                       )}
                     >
                       <td className="px-4 py-3 font-medium text-white">{zone.name}</td>
-                      <td className="text-right px-4 py-3 text-gray-300">
+                      <td className="text-right px-4 py-3 text-wl-neutral-300">
                         {zone.predictedVolume.toLocaleString()}
                       </td>
-                      <td className="text-right px-4 py-3 text-gray-300">
+                      <td className="text-right px-4 py-3 text-wl-neutral-300">
                         {zone.actualVolume.toLocaleString()}
                       </td>
                       <td className="text-right px-4 py-3">
@@ -558,14 +558,14 @@ export default function DemandPage() {
                         ) : zone.trend === 'down' ? (
                           <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />
                         ) : (
-                          <div className="w-4 h-4 border-l-2 border-gray-600 mx-auto" />
+                          <div className="w-4 h-4 border-l-2 border-wl-border-strong mx-auto" />
                         )}
                       </td>
                       <td className="text-center px-4 py-3">
                         {zone.anomalies > 0 ? (
                           <Badge variant="warning">{zone.anomalies}</Badge>
                         ) : (
-                          <span className="text-gray-500">—</span>
+                          <span className="text-wl-text-tertiary">—</span>
                         )}
                       </td>
                     </tr>
@@ -583,7 +583,7 @@ export default function DemandPage() {
             </h2>
 
             {anomalies.length === 0 ? (
-              <p className="text-gray-400 text-sm">No anomalies detected</p>
+              <p className="text-wl-text-secondary text-sm">No anomalies detected</p>
             ) : (
               <div className="space-y-3">
                 {anomalies.map((anomaly) => {
@@ -621,12 +621,12 @@ export default function DemandPage() {
                             <span className="text-sm font-medium text-white capitalize">
                               {anomaly.type.replace(/_/g, ' ')}
                             </span>
-                            <span className="text-xs text-gray-500">in {anomaly.zone}</span>
+                            <span className="text-xs text-wl-text-tertiary">in {anomaly.zone}</span>
                           </div>
-                          <p className="text-sm text-gray-300">{anomaly.description}</p>
+                          <p className="text-sm text-wl-neutral-300">{anomaly.description}</p>
 
                           {isExpanded && (
-                            <div className="mt-3 pt-3 border-t border-wl-border-default text-xs text-gray-500">
+                            <div className="mt-3 pt-3 border-t border-wl-border-default text-xs text-wl-text-tertiary">
                               <p>Detected: {timestamp.toLocaleString()}</p>
                               <div className="mt-2 flex gap-2">
                                 <Button variant="ghost" size="sm">
@@ -640,7 +640,7 @@ export default function DemandPage() {
                             </div>
                           )}
                         </div>
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                        <span className="text-xs text-wl-text-tertiary whitespace-nowrap">
                           {Math.round((Date.now() - timestamp.getTime()) / 60000)}m ago
                         </span>
                       </div>

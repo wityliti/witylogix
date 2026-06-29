@@ -443,7 +443,7 @@ export default function InvoiceDetailPage() {
             Back
           </Button>
         </div>
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-wl-text-secondary">
           <p className="text-lg">Invoice not found.</p>
         </div>
       </div>
@@ -473,7 +473,7 @@ export default function InvoiceDetailPage() {
                 </Badge>
               )}
             </div>
-            <p className="text-gray-400">
+            <p className="text-wl-text-secondary">
               Created {invoice.createdDate.toLocaleDateString()}
             </p>
           </div>
@@ -558,7 +558,7 @@ export default function InvoiceDetailPage() {
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4">
+                <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-4">
                   Bill To
                 </h3>
                 <div className="flex flex-col gap-1">
@@ -566,12 +566,12 @@ export default function InvoiceDetailPage() {
                     {invoice.customerName}
                   </p>
                   {invoice.customerEmail && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-wl-text-secondary">
                       {invoice.customerEmail}
                     </p>
                   )}
                   {invoice.customerAddress && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-wl-text-secondary">
                       {invoice.customerAddress}
                     </p>
                   )}
@@ -581,7 +581,7 @@ export default function InvoiceDetailPage() {
               <div className="text-right">
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs uppercase text-gray-400">
+                    <p className="text-xs uppercase text-wl-text-secondary">
                       Invoice Date
                     </p>
                     <p className="font-semibold text-white">
@@ -589,7 +589,7 @@ export default function InvoiceDetailPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase text-gray-400">
+                    <p className="text-xs uppercase text-wl-text-secondary">
                       Due Date
                     </p>
                     <p
@@ -652,7 +652,7 @@ export default function InvoiceDetailPage() {
               <div className="flex justify-end max-w-xs ml-auto space-y-3">
                 <div className="w-full">
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-400">Subtotal</span>
+                    <span className="text-wl-text-secondary">Subtotal</span>
                     <span className="text-white">
                       ${invoice.subtotal.toFixed(2)}
                     </span>
@@ -664,7 +664,7 @@ export default function InvoiceDetailPage() {
                     </div>
                   )}
                   <div className="flex justify-between mb-2 border-t border-wl-border-default pt-2">
-                    <span className="text-gray-400">Tax</span>
+                    <span className="text-wl-text-secondary">Tax</span>
                     <span className="text-white">
                       ${invoice.taxAmount.toFixed(2)}
                     </span>
@@ -685,7 +685,7 @@ export default function InvoiceDetailPage() {
             <Card className={cn("p-6 space-y-4 bg-wl-bg-surface border border-wl-border-default")}>
               {invoice.notes && (
                 <div>
-                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">
+                  <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-2">
                     Notes
                   </h3>
                   <p className="text-sm text-white">
@@ -695,7 +695,7 @@ export default function InvoiceDetailPage() {
               )}
               {invoice.terms && (
                 <div>
-                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">
+                  <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-2">
                     Terms & Conditions
                   </h3>
                   <p className="text-sm text-white">
@@ -716,7 +716,7 @@ export default function InvoiceDetailPage() {
             </h3>
             <div className="space-y-3">
               <div>
-                <p className="text-xs uppercase text-gray-400">
+                <p className="text-xs uppercase text-wl-text-secondary">
                   Total Amount
                 </p>
                 <p className="text-xl font-bold text-white">
@@ -724,7 +724,7 @@ export default function InvoiceDetailPage() {
                 </p>
               </div>
               <div className="border-t border-wl-border-default pt-3">
-                <p className="text-xs uppercase text-gray-400">
+                <p className="text-xs uppercase text-wl-text-secondary">
                   Amount Paid
                 </p>
                 <p className="text-lg font-bold text-emerald-600">
@@ -732,7 +732,7 @@ export default function InvoiceDetailPage() {
                 </p>
               </div>
               <div className="border-t border-wl-border-default pt-3">
-                <p className="text-xs uppercase text-gray-400">
+                <p className="text-xs uppercase text-wl-text-secondary">
                   Remaining Balance
                 </p>
                 <p
@@ -765,15 +765,15 @@ export default function InvoiceDetailPage() {
                       <p className="text-sm font-medium text-white">
                         ${payment.amount.toFixed(2)}
                       </p>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-wl-text-secondary">
                         {payment.date.toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-wl-text-secondary">
                       {payment.method.replace("_", " ")}
                     </p>
                     {payment.reference && (
-                      <p className="text-xs font-mono text-gray-400">
+                      <p className="text-xs font-mono text-wl-text-secondary">
                         Ref: {payment.reference}
                       </p>
                     )}
@@ -795,11 +795,11 @@ export default function InvoiceDetailPage() {
                     key={activity.id}
                     className="flex gap-3 pb-3 last:pb-0 border-b border-wl-border-default last:border-b-0"
                   >
-                    <div className="text-gray-400 mt-1">
+                    <div className="text-wl-text-secondary mt-1">
                       {getActivityIcon(activity.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-wl-text-secondary">
                         {getActivityDescription(activity)}
                       </p>
                     </div>
@@ -818,7 +818,7 @@ export default function InvoiceDetailPage() {
             <h2 className="text-lg font-bold text-white mb-2">
               Void Invoice?
             </h2>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-sm text-wl-text-secondary mb-6">
               Are you sure you want to void this invoice? This action cannot be
               undone.
             </p>

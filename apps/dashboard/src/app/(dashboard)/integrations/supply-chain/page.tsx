@@ -207,7 +207,7 @@ export default function SupplyChainIntegrationsPage() {
                 "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
                 view === v
                   ? "bg-blue-500 text-white"
-                  : "bg-transparent text-gray-300"
+                  : "bg-transparent text-wl-neutral-300"
               )}
             >
               {v}
@@ -222,7 +222,7 @@ export default function SupplyChainIntegrationsPage() {
               <h3 className={cn("text-sm font-semibold text-white")}>
                 Warehouse Connections ({connections.length})
               </h3>
-              <span className={cn("text-xs text-gray-300")}>
+              <span className={cn("text-xs text-wl-neutral-300")}>
                 {syncedCount} synced
               </span>
             </div>
@@ -237,7 +237,7 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📥</p>
                     <p className={cn("text-xs font-semibold text-white")}>Inbound</p>
-                    <p className={cn("text-xs text-gray-300 mt-1")}>PO Receipt</p>
+                    <p className={cn("text-xs text-wl-neutral-300 mt-1")}>PO Receipt</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
                     <div className={cn("w-12 h-0.5 bg-gradient-to-r from-blue-400 to-transparent")} />
@@ -245,7 +245,7 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>🏭</p>
                     <p className={cn("text-xs font-semibold text-white")}>Warehouse</p>
-                    <p className={cn("text-xs text-gray-300 mt-1")}>Storage & QC</p>
+                    <p className={cn("text-xs text-wl-neutral-300 mt-1")}>Storage & QC</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
                     <div className={cn("w-12 h-0.5 bg-gradient-to-r from-transparent to-emerald-400")} />
@@ -253,7 +253,7 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📤</p>
                     <p className={cn("text-xs font-semibold text-white")}>Outbound</p>
-                    <p className={cn("text-xs text-gray-300 mt-1")}>Shipping</p>
+                    <p className={cn("text-xs text-wl-neutral-300 mt-1")}>Shipping</p>
                   </div>
                 </div>
               </div>
@@ -261,7 +261,7 @@ export default function SupplyChainIntegrationsPage() {
 
             {/* Connection Cards */}
             {warehousesLoading && (
-              <div className={cn("text-sm text-gray-400 py-8 text-center")}>Loading connections...</div>
+              <div className={cn("text-sm text-wl-text-secondary py-8 text-center")}>Loading connections...</div>
             )}
             {warehousesError && (
               <div className={cn("text-sm text-red-400 py-8 text-center")}>
@@ -269,7 +269,7 @@ export default function SupplyChainIntegrationsPage() {
               </div>
             )}
             {!warehousesLoading && !warehousesError && connections.length === 0 && (
-              <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+              <div className={cn("py-12 text-center text-wl-text-secondary text-sm")}>
                 No supply-chain integrations connected yet. Click &quot;Connect Warehouse&quot; to get started.
               </div>
             )}
@@ -299,7 +299,7 @@ export default function SupplyChainIntegrationsPage() {
                           <p className={cn("text-sm font-semibold text-white")}>
                             {warehouse.name}
                           </p>
-                          <p className={cn("text-xs text-gray-300 mt-1")}>
+                          <p className={cn("text-xs text-wl-neutral-300 mt-1")}>
                             {warehouse.warehouseCount} locations
                           </p>
                         </div>
@@ -315,7 +315,7 @@ export default function SupplyChainIntegrationsPage() {
                       </Badge>
                     </div>
 
-                    <div className={cn("flex items-center justify-between text-xs text-gray-300 mb-3")}>
+                    <div className={cn("flex items-center justify-between text-xs text-wl-neutral-300 mb-3")}>
                       <span>Last sync: {warehouse.lastSync}</span>
                       {warehouse.errorCount > 0 && (
                         <span className={cn("text-red-500 font-semibold")}>
@@ -340,7 +340,7 @@ export default function SupplyChainIntegrationsPage() {
                                 )}
                               >
                                 <Warehouse size={14} className={cn("text-blue-400")} />
-                                <span className={cn("text-xs text-gray-400")}>
+                                <span className={cn("text-xs text-wl-text-secondary")}>
                                   Location {i + 1}
                                 </span>
                               </div>
@@ -355,13 +355,13 @@ export default function SupplyChainIntegrationsPage() {
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2 text-xs")}>
                             <div>
-                              <p className={cn("text-gray-300")}>Last Sync</p>
+                              <p className={cn("text-wl-neutral-300")}>Last Sync</p>
                               <p className={cn("font-semibold text-white")}>
                                 {warehouse.lastSync}
                               </p>
                             </div>
                             <div>
-                              <p className={cn("text-gray-300")}>Next Sync</p>
+                              <p className={cn("text-wl-neutral-300")}>Next Sync</p>
                               <p className={cn("font-semibold text-white")}>
                                 {warehouse.nextSync}
                               </p>
@@ -407,7 +407,7 @@ export default function SupplyChainIntegrationsPage() {
             </h3>
 
             {inventoryLoading && (
-              <div className={cn("text-sm text-gray-400 py-8 text-center")}>Loading inventory syncs...</div>
+              <div className={cn("text-sm text-wl-text-secondary py-8 text-center")}>Loading inventory syncs...</div>
             )}
             {inventoryError && (
               <div className={cn("text-sm text-red-400 py-8 text-center")}>
@@ -415,7 +415,7 @@ export default function SupplyChainIntegrationsPage() {
               </div>
             )}
             {!inventoryLoading && !inventoryError && syncs.length === 0 && (
-              <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+              <div className={cn("py-12 text-center text-wl-text-secondary text-sm")}>
                 Connect a supply-chain integration to see inventory sync configuration.
               </div>
             )}
@@ -427,7 +427,7 @@ export default function SupplyChainIntegrationsPage() {
                       <p className={cn("text-sm font-semibold text-white")}>
                         {sync.warehouse}
                       </p>
-                      <div className={cn("flex items-center gap-3 mt-1 text-xs text-gray-300")}>
+                      <div className={cn("flex items-center gap-3 mt-1 text-xs text-wl-neutral-300")}>
                         <span className={cn("px-2 py-1 rounded bg-wl-bg-surface font-medium")}>
                           {sync.mode.replace(/_/g, " ")}
                         </span>
@@ -450,19 +450,19 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
-                        <p className={cn("text-gray-300 mb-1")}>Items Tracked</p>
+                        <p className={cn("text-wl-neutral-300 mb-1")}>Items Tracked</p>
                         <p className={cn("font-bold text-white")}>
                           {(sync.itemsTracked / 1000).toFixed(1)}K
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-gray-300 mb-1")}>Last Update</p>
+                        <p className={cn("text-wl-neutral-300 mb-1")}>Last Update</p>
                         <p className={cn("font-bold text-white")}>
                           {sync.lastUpdate}
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-gray-300 mb-1")}>Success Rate</p>
+                        <p className={cn("text-wl-neutral-300 mb-1")}>Success Rate</p>
                         <p className={cn("font-bold text-emerald-500")}>
                           {sync.successRate}%
                         </p>
@@ -503,7 +503,7 @@ export default function SupplyChainIntegrationsPage() {
             <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Fulfillment SLA Dashboard
             </h3>
-            <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+            <div className={cn("py-12 text-center text-wl-text-secondary text-sm")}>
               Connect a supply-chain integration to see metrics
             </div>
           </div>
@@ -515,7 +515,7 @@ export default function SupplyChainIntegrationsPage() {
             <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Integration Health & Error Logs
             </h3>
-            <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+            <div className={cn("py-12 text-center text-wl-text-secondary text-sm")}>
               Connect a supply-chain integration to see metrics
             </div>
           </div>

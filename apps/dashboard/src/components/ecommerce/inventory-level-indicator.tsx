@@ -36,7 +36,7 @@ const getStockColor = (percentage: number): string => {
   if (percentage > 50) return 'bg-green-500 dark:bg-green-600';
   if (percentage >= 10) return 'bg-yellow-500 dark:bg-yellow-600';
   if (percentage > 0) return 'bg-red-500 dark:bg-red-600';
-  return 'bg-gray-300 dark:bg-gray-600';
+  return 'bg-wl-neutral-600';
 };
 
 const getStockLabel = (percentage: number): string => {
@@ -101,7 +101,7 @@ const InventoryLevelIndicator = forwardRef<
           {...props}
         >
           {/* Compact bar */}
-          <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="w-24 h-2 bg-wl-neutral-200 dark:bg-wl-bg-overlay rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full transition-all duration-300 ease-default rounded-full',
@@ -120,7 +120,7 @@ const InventoryLevelIndicator = forwardRef<
           <span
             className={cn(
               'text-xs font-semibold whitespace-nowrap',
-              isOutOfStock && 'text-gray-500 dark:text-gray-400',
+              isOutOfStock && 'text-wl-text-tertiary dark:text-wl-text-secondary',
               isLowStock && 'text-yellow-600 dark:text-yellow-400',
               !isLowStock && !isOutOfStock && 'text-green-600 dark:text-green-400'
             )}
@@ -142,8 +142,8 @@ const InventoryLevelIndicator = forwardRef<
         className={cn(
           'flex flex-col gap-3',
           'p-3 rounded-lg',
-          'bg-gray-50 dark:bg-gray-900/30',
-          'border border-gray-200 dark:border-gray-800',
+          'bg-wl-bg-surface dark:bg-wl-bg-surface/30',
+          'border border-wl-border-subtle',
           className
         )}
         {...props}
@@ -151,7 +151,7 @@ const InventoryLevelIndicator = forwardRef<
         {/* Header with title and alert */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-semibold text-wl-text-primary dark:text-wl-neutral-300">
               Stock Level
             </span>
             {showAlert && isLowStock && (
@@ -161,7 +161,7 @@ const InventoryLevelIndicator = forwardRef<
           <span
             className={cn(
               'text-xs font-semibold px-2 py-1 rounded',
-              isOutOfStock && 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+              isOutOfStock && 'bg-wl-bg-surface dark:bg-wl-bg-elevated text-wl-text-primary dark:text-wl-neutral-300',
               isLowStock && 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400',
               !isLowStock && !isOutOfStock && 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400'
             )}
@@ -172,7 +172,7 @@ const InventoryLevelIndicator = forwardRef<
 
         {/* Progress bar */}
         <div>
-          <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-wl-neutral-200 dark:bg-wl-bg-overlay rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full transition-all duration-300 ease-default rounded-full',
@@ -186,9 +186,9 @@ const InventoryLevelIndicator = forwardRef<
               aria-label="Stock level indicator"
             />
           </div>
-          <div className="flex justify-between mt-1 text-xs text-gray-600 dark:text-gray-400">
+          <div className="flex justify-between mt-1 text-xs text-wl-text-tertiary dark:text-wl-text-secondary">
             <span>0</span>
-            <span className="font-semibold text-gray-700 dark:text-gray-300">
+            <span className="font-semibold text-wl-text-primary dark:text-wl-neutral-300">
               {level} / {maxLevel}
             </span>
             <span>{maxLevel}</span>
@@ -198,14 +198,14 @@ const InventoryLevelIndicator = forwardRef<
         {/* Available and Reserved breakdown */}
         <div className="flex gap-4 text-xs">
           <div>
-            <span className="text-gray-600 dark:text-gray-400">Available:</span>
-            <span className="ml-1 font-semibold text-gray-900 dark:text-gray-100">
+            <span className="text-wl-text-tertiary dark:text-wl-text-secondary">Available:</span>
+            <span className="ml-1 font-semibold text-wl-text-primary dark:text-wl-text-primary">
               {available}
             </span>
           </div>
           {reserved > 0 && (
             <div>
-              <span className="text-gray-600 dark:text-gray-400">Reserved:</span>
+              <span className="text-wl-text-tertiary dark:text-wl-text-secondary">Reserved:</span>
               <span className="ml-1 font-semibold text-yellow-600 dark:text-yellow-400">
                 {reserved}
               </span>
@@ -215,7 +215,7 @@ const InventoryLevelIndicator = forwardRef<
 
         {/* Warehouse breakdown toggle */}
         {warehouses && warehouses.length > 0 && (
-          <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+          <div className="pt-2 border-t border-wl-border-subtle">
             <button
               onClick={() => setShowWarehouseDetail(!showWarehouseDetail)}
               className={cn(
@@ -234,12 +234,12 @@ const InventoryLevelIndicator = forwardRef<
                 {warehouses.map((wh) => (
                   <div
                     key={wh.warehouseId}
-                    className="text-xs p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700"
+                    className="text-xs p-2 bg-wl-bg-elevated rounded border border-wl-border-default"
                   >
-                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    <div className="font-semibold text-wl-text-primary dark:text-wl-neutral-300 mb-1">
                       {wh.warehouseName}
                     </div>
-                    <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-1">
+                    <div className="h-1.5 bg-wl-neutral-200 dark:bg-wl-bg-overlay rounded-full overflow-hidden mb-1">
                       <div
                         className={cn(
                           'h-full transition-all duration-200',
@@ -252,10 +252,10 @@ const InventoryLevelIndicator = forwardRef<
                         }}
                       />
                     </div>
-                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                    <div className="flex justify-between text-wl-text-tertiary dark:text-wl-text-secondary">
                       <span>{wh.available} avail</span>
                       <span>{wh.reserved} reserved</span>
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold text-wl-text-primary dark:text-wl-neutral-300">
                         {wh.total} total
                       </span>
                     </div>

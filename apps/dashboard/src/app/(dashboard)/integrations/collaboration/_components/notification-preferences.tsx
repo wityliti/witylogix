@@ -26,19 +26,19 @@ export function NotificationPreferences({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-wl-border-default">
-                <th className="text-left py-3 px-4 font-semibold text-gray-400">
+                <th className="text-left py-3 px-4 font-semibold text-wl-text-secondary">
                   Event
                 </th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-400">
+                <th className="text-center py-3 px-4 font-semibold text-wl-text-secondary">
                   Slack
                 </th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-400">
+                <th className="text-center py-3 px-4 font-semibold text-wl-text-secondary">
                   Teams
                 </th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-400">
+                <th className="text-center py-3 px-4 font-semibold text-wl-text-secondary">
                   Pusher
                 </th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-400">
+                <th className="text-center py-3 px-4 font-semibold text-wl-text-secondary">
                   Sound
                 </th>
               </tr>

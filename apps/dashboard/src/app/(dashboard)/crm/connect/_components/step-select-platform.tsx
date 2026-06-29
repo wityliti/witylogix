@@ -24,7 +24,7 @@ export function StepSelectPlatform({
   return (
     <WizardStep stepId={1} title="Select CRM Platform">
       <div className={cn('space-y-6')}>
-        <p className={cn('text-gray-300', 'leading-relaxed')}>
+        <p className={cn('text-wl-neutral-300', 'leading-relaxed')}>
           Choose which CRM platform you want to connect to Witylogix.
         </p>
 

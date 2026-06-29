@@ -123,7 +123,7 @@ export default function WidgetConfigPage() {
           <h1 className="text-3xl font-bold text-white mb-2">
             Widget Configuration
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-wl-text-secondary text-sm">
             Configure and customize your storefront widget
           </p>
         </div>
@@ -135,7 +135,7 @@ export default function WidgetConfigPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Widget Features</CardTitle>
-                <CardDescription className="text-gray-400">Enable widget features</CardDescription>
+                <CardDescription className="text-wl-text-secondary">Enable widget features</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Cart Selector Toggle */}
@@ -144,7 +144,7 @@ export default function WidgetConfigPage() {
                     <Settings size={18} className="text-blue-400" />
                     <div>
                       <p className="text-white text-sm font-medium">Cart Delivery Selector</p>
-                      <p className="text-gray-400 text-xs">Show delivery options</p>
+                      <p className="text-wl-text-secondary text-xs">Show delivery options</p>
                     </div>
                   </div>
                   <button
@@ -162,7 +162,7 @@ export default function WidgetConfigPage() {
                     <Globe size={18} className="text-blue-400" />
                     <div>
                       <p className="text-white text-sm font-medium">Shipping Calculator</p>
-                      <p className="text-gray-400 text-xs">Calculate shipping costs</p>
+                      <p className="text-wl-text-secondary text-xs">Calculate shipping costs</p>
                     </div>
                   </div>
                   <button
@@ -180,7 +180,7 @@ export default function WidgetConfigPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Appearance</CardTitle>
-                <CardDescription className="text-gray-400">Customize widget look and feel</CardDescription>
+                <CardDescription className="text-wl-text-secondary">Customize widget look and feel</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Position */}
@@ -427,7 +427,7 @@ export default function WidgetConfigPage() {
                   <Code size={18} />
                   Embed Code
                 </CardTitle>
-                <CardDescription className="text-gray-400">Copy and paste to your website</CardDescription>
+                <CardDescription className="text-wl-text-secondary">Copy and paste to your website</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div className="bg-wl-bg-root rounded border border-wl-border-default p-3 max-h-64 overflow-y-auto">

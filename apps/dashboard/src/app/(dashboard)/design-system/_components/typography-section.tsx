@@ -7,7 +7,7 @@ export function TypographySection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Typography
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-neutral-300 mb-8">
           Font family: DM Sans (sans), JetBrains Mono (mono). Text sizes from xs
           (11px) to 3xl (30px).
         </p>
@@ -19,7 +19,7 @@ export function TypographySection() {
             </h3>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Extra Small (11px)
                 </p>
                 <p className="text-xs">
@@ -27,7 +27,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Small (13px)
                 </p>
                 <p className="text-sm">
@@ -35,7 +35,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Base (14px)
                 </p>
                 <p className="text-base">
@@ -43,7 +43,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Large (17px)
                 </p>
                 <p className="text-lg">
@@ -51,7 +51,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Extra Large (20px)
                 </p>
                 <p className="text-xl">
@@ -59,7 +59,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   2XL (24px)
                 </p>
                 <p className="text-2xl">
@@ -67,7 +67,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   3XL (30px)
                 </p>
                 <p className="text-3xl">
@@ -83,7 +83,7 @@ export function TypographySection() {
             </h3>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Regular (400)
                 </p>
                 <p className="font-normal">
@@ -91,7 +91,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Medium (500)
                 </p>
                 <p className="font-medium">
@@ -99,7 +99,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Semibold (600)
                 </p>
                 <p className="font-semibold">
@@ -107,7 +107,7 @@ export function TypographySection() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-wl-text-secondary mb-1">
                   Bold (700)
                 </p>
                 <p className="font-bold">

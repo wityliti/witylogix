@@ -50,9 +50,9 @@ export function ConnectionStatusBadge({
         };
       case "disconnected":
         return {
-          color: "text-gray-600 dark:text-gray-400",
-          bgColor: "bg-gray-100 dark:bg-gray-800",
-          dotClass: "bg-gray-400",
+          color: "text-wl-text-tertiary dark:text-wl-text-secondary",
+          bgColor: "bg-wl-bg-surface dark:bg-wl-bg-elevated",
+          dotClass: "bg-wl-neutral-400",
           label: "Disconnected",
         };
       case "error":
@@ -78,9 +78,9 @@ export function ConnectionStatusBadge({
         };
       default:
         return {
-          color: "text-gray-600 dark:text-gray-400",
-          bgColor: "bg-gray-100 dark:bg-gray-800",
-          dotClass: "bg-gray-400",
+          color: "text-wl-text-tertiary dark:text-wl-text-secondary",
+          bgColor: "bg-wl-bg-surface dark:bg-wl-bg-elevated",
+          dotClass: "bg-wl-neutral-400",
           label: "Unknown",
         };
     }
@@ -127,7 +127,7 @@ export function ConnectionStatusBadge({
             className={cn(
               "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10",
               "px-2 py-1 rounded text-xs whitespace-nowrap",
-              "bg-gray-900 text-white dark:bg-gray-800",
+              "bg-wl-bg-surface text-white dark:bg-wl-bg-elevated",
               "shadow-lg"
             )}
           >
@@ -162,7 +162,7 @@ export function ConnectionStatusBadge({
           className={cn(
             "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10",
             "px-2 py-1 rounded text-xs whitespace-nowrap",
-            "bg-gray-900 text-white dark:bg-gray-800",
+            "bg-wl-bg-surface text-white dark:bg-wl-bg-elevated",
             "shadow-lg"
           )}
         >

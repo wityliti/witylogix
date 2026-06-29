@@ -36,7 +36,7 @@ export function ConflictRules() {
         <h2 className="text-xl font-bold text-white mb-2">
           Conflict Resolution Rules
         </h2>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-wl-text-tertiary">
           Define priority rules for when the same product field is synced from
           multiple platforms
         </p>
@@ -56,7 +56,7 @@ export function ConflictRules() {
                       {idx + 1}. {source}
                     </div>
                     {idx < rule.priority.length - 1 && (
-                      <ChevronRight className="w-4 h-4 text-gray-500" />
+                      <ChevronRight className="w-4 h-4 text-wl-text-tertiary" />
                     )}
                   </div>
                 ))}
@@ -92,7 +92,7 @@ export function ConflictRules() {
             <label className="text-sm font-medium text-white">
               Date Range
             </label>
-            <div className="text-sm text-gray-400 mt-2">Last 90 days</div>
+            <div className="text-sm text-wl-text-secondary mt-2">Last 90 days</div>
           </div>
           <div>
             <label className="text-sm font-medium text-white">

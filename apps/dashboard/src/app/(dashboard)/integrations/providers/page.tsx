@@ -57,7 +57,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
             style={{ height: `${metrics.latencyP50 * scale}px` }}
           />
           <div className="text-center text-xs">
-            <p className="text-gray-400">P50</p>
+            <p className="text-wl-text-secondary">P50</p>
             <p className="font-medium text-white">
               {metrics.latencyP50}ms
             </p>
@@ -71,7 +71,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
             style={{ height: `${metrics.latencyP95 * scale}px` }}
           />
           <div className="text-center text-xs">
-            <p className="text-gray-400">P95</p>
+            <p className="text-wl-text-secondary">P95</p>
             <p className="font-medium text-white">
               {metrics.latencyP95}ms
             </p>
@@ -85,7 +85,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
             style={{ height: `${metrics.latencyP99 * scale}px` }}
           />
           <div className="text-center text-xs">
-            <p className="text-gray-400">P99</p>
+            <p className="text-wl-text-secondary">P99</p>
             <p className="font-medium text-white">
               {metrics.latencyP99}ms
             </p>
@@ -96,15 +96,15 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
       <div className="flex gap-4 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-blue-500" />
-          <span className="text-gray-400">P50 (50th percentile)</span>
+          <span className="text-wl-text-secondary">P50 (50th percentile)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-amber-500" />
-          <span className="text-gray-400">P95 (95th percentile)</span>
+          <span className="text-wl-text-secondary">P95 (95th percentile)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-red-500" />
-          <span className="text-gray-400">P99 (99th percentile)</span>
+          <span className="text-wl-text-secondary">P99 (99th percentile)</span>
         </div>
       </div>
     </div>
@@ -140,7 +140,7 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
             }}>
               <div className="text-center bg-wl-bg-surface rounded-full w-24 h-24 flex items-center justify-center">
                 <div>
-                  <p className="text-sm text-gray-400">Total</p>
+                  <p className="text-sm text-wl-text-secondary">Total</p>
                   <p className="text-2xl font-bold text-white">
                     {total}
                   </p>
@@ -161,7 +161,7 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
                 <p className="text-sm font-medium text-white">
                   {entry[0]}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   {entry[1]} ({((entry[1] / total) * 100).toFixed(1)}%)
                 </p>
               </div>
@@ -182,7 +182,7 @@ export default function ProvidersPage() {
     useProviderDetail(selectedProviderId);
 
   const circuitBreakerColor = useMemo(() => {
-    if (!metrics) return "text-gray-400";
+    if (!metrics) return "text-wl-text-secondary";
     if (metrics.currentCircuitBreaker === "closed")
       return "text-emerald-500";
     if (metrics.currentCircuitBreaker === "half-open")
@@ -247,7 +247,7 @@ export default function ProvidersPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
-              <p className="text-sm text-gray-400 mb-2">Uptime</p>
+              <p className="text-sm text-wl-text-secondary mb-2">Uptime</p>
               <p className="text-3xl font-bold text-white">
                 {metrics.uptime.toFixed(1)}%
               </p>
@@ -256,7 +256,7 @@ export default function ProvidersPage() {
 
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
-              <p className="text-sm text-gray-400 mb-2">SLA Target</p>
+              <p className="text-sm text-wl-text-secondary mb-2">SLA Target</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-white">
                   {metrics.slaTarget}%
@@ -272,7 +272,7 @@ export default function ProvidersPage() {
 
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
-              <p className="text-sm text-gray-400 mb-2">Circuit Breaker</p>
+              <p className="text-sm text-wl-text-secondary mb-2">Circuit Breaker</p>
               <p className={cn("text-lg font-bold capitalize", circuitBreakerColor)}>
                 {metrics.currentCircuitBreaker}
               </p>
@@ -281,7 +281,7 @@ export default function ProvidersPage() {
 
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
-              <p className="text-sm text-gray-400 mb-2">Avg Latency</p>
+              <p className="text-sm text-wl-text-secondary mb-2">Avg Latency</p>
               <p className="text-2xl font-bold text-white">
                 {Math.round(metrics.latencyP50)}ms
               </p>
@@ -335,16 +335,16 @@ export default function ProvidersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default">
-                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                    <th className="text-left py-2 px-3 text-wl-text-secondary font-medium">
                       Status
                     </th>
-                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                    <th className="text-left py-2 px-3 text-wl-text-secondary font-medium">
                       Endpoint
                     </th>
-                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                    <th className="text-left py-2 px-3 text-wl-text-secondary font-medium">
                       Latency
                     </th>
-                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                    <th className="text-left py-2 px-3 text-wl-text-secondary font-medium">
                       Time
                     </th>
                   </tr>
@@ -374,7 +374,7 @@ export default function ProvidersPage() {
                       <td className="py-2 px-3 text-white">
                         {req.latency}ms
                       </td>
-                      <td className="py-2 px-3 text-gray-400 text-xs">
+                      <td className="py-2 px-3 text-wl-text-secondary text-xs">
                         {new Date(req.timestamp).toLocaleTimeString()}
                       </td>
                     </tr>
@@ -416,7 +416,7 @@ export default function ProvidersPage() {
                     <p className="font-medium text-white">
                       {incident.title}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {new Date(incident.timestamp).toLocaleString()}
                     </p>
                     <Badge

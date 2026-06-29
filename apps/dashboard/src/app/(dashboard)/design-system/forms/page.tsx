@@ -90,14 +90,14 @@ export default function FormsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-wl-bg-root">
       {/* Header */}
-      <div className="border-b border-[#1e1e2e]">
+      <div className="border-b border-wl-border-default">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <h1 className="text-3xl font-bold text-white mb-2">
             Form Components
           </h1>
-          <p className="text-gray-300 max-w-2xl">
+          <p className="text-wl-neutral-300 max-w-2xl">
             Complete showcase of form components with validation states, accessibility
             features, and real-world usage patterns.
           </p>
@@ -117,7 +117,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Input</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>Text input with label, error, and hint support</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Sizes: sm, md, lg</li>
@@ -133,7 +133,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Textarea</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>Multi-line text input for longer content</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Auto-resizable height</li>
@@ -148,7 +148,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Select</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>Dropdown select component</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Label support</li>
@@ -163,7 +163,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Checkbox & Switch</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>Boolean input components</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Checkbox for multiple selections</li>
@@ -244,7 +244,7 @@ export default function FormsPage() {
                       onChange={handleInputChange}
                       className="mt-1"
                     />
-                    <label className="text-sm text-gray-300 leading-relaxed">
+                    <label className="text-sm text-wl-neutral-300 leading-relaxed">
                       I agree to the terms and conditions and privacy policy *
                     </label>
                   </div>
@@ -256,7 +256,7 @@ export default function FormsPage() {
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex gap-3 pt-4 border-t border-[#1e1e2e]">
+                <div className="flex gap-3 pt-4 border-t border-wl-border-default">
                   <Button
                     type="submit"
                     variant="primary"
@@ -351,7 +351,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Labels</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>
                   All form inputs have associated labels using the label prop
                 </p>
@@ -368,7 +368,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Error Messages</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>
                   Error messages use color and icon, not color alone
                 </p>
@@ -385,7 +385,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Focus Management</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>
                   All inputs have visible focus indicators
                 </p>
@@ -402,7 +402,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Helper Text</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300 space-y-2">
+              <CardContent className="text-sm text-wl-neutral-300 space-y-2">
                 <p>
                   Hint text provides context without overwhelming users
                 </p>
@@ -491,7 +491,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Labels are Required</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300">
+              <CardContent className="text-sm text-wl-neutral-300">
                 Always use the label prop on inputs. Use an asterisk (*) for required fields.
               </CardContent>
             </Card>
@@ -500,7 +500,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Clear Error Messages</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300">
+              <CardContent className="text-sm text-wl-neutral-300">
                 Error messages should be specific and actionable. Tell users what went wrong and how to fix it.
               </CardContent>
             </Card>
@@ -509,7 +509,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Provide Helper Text</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300">
+              <CardContent className="text-sm text-wl-neutral-300">
                 Use the hint prop to provide context. For email fields, explain that it will be kept private.
               </CardContent>
             </Card>
@@ -518,7 +518,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Group Related Fields</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300">
+              <CardContent className="text-sm text-wl-neutral-300">
                 Use whitespace and card sections to group logically related form fields together.
               </CardContent>
             </Card>
@@ -527,7 +527,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Validate on Blur and Submit</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300">
+              <CardContent className="text-sm text-wl-neutral-300">
                 Validate individual fields on blur, then validate the entire form on submit. Use the error prop to display messages.
               </CardContent>
             </Card>
@@ -536,7 +536,7 @@ export default function FormsPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Disable Submit While Loading</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-300">
+              <CardContent className="text-sm text-wl-neutral-300">
                 Always disable the submit button while the form is being submitted to prevent duplicate submissions.
               </CardContent>
             </Card>

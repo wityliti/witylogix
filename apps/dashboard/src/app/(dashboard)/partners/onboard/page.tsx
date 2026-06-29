@@ -201,7 +201,7 @@ export default function OnboardPage() {
           <h1 className="text-3xl font-bold text-white mb-2">
             Onboard New Courier Partner
           </h1>
-          <p className="text-gray-300">
+          <p className="text-wl-neutral-300">
             Set up a new delivery partner integration in 3 easy steps
           </p>
         </div>
@@ -223,7 +223,7 @@ export default function OnboardPage() {
                         ? "bg-emerald-500/20 text-emerald-400"
                         : isActive
                           ? "bg-blue-500/20 text-blue-400 ring-2 ring-blue-400"
-                          : "bg-wl-bg-surface text-gray-300"
+                          : "bg-wl-bg-surface text-wl-neutral-300"
                     )}
                   >
                     {isCompleted ? (
@@ -232,7 +232,7 @@ export default function OnboardPage() {
                       <Icon className="w-5 h-5" />
                     )}
                   </div>
-                  <p className="text-xs font-medium text-center text-gray-300">
+                  <p className="text-xs font-medium text-center text-wl-neutral-300">
                     {config.title}
                   </p>
                 </div>
@@ -275,7 +275,7 @@ export default function OnboardPage() {
                           "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
                           isSelected
                             ? "bg-blue-500/20 text-blue-400"
-                            : "bg-wl-bg-surface text-gray-300"
+                            : "bg-wl-bg-surface text-wl-neutral-300"
                         )}
                       >
                         <Icon className="w-5 h-5" />
@@ -284,7 +284,7 @@ export default function OnboardPage() {
                         <h3 className="font-semibold text-white">
                           {partner.name}
                         </h3>
-                        <p className="text-sm text-gray-300">
+                        <p className="text-sm text-wl-neutral-300">
                           {partner.description}
                         </p>
                       </div>

@@ -68,7 +68,7 @@ export default function FinancePage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Finance</h1>
-              <p className="text-sm text-gray-400 mt-1">Revenue, invoices, and payments</p>
+              <p className="text-sm text-wl-text-secondary mt-1">Revenue, invoices, and payments</p>
             </div>
             <div className="flex items-center gap-3">
               {/* View toggle */}
@@ -116,25 +116,25 @@ export default function FinancePage() {
           {summary && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Total Billed</p>
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">Total Billed</p>
                 <p className="text-2xl font-bold text-emerald-500 mt-2">
                   ${summary.totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Collected</p>
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">Collected</p>
                 <p className="text-2xl font-bold text-white mt-2">
                   ${summary.totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Outstanding</p>
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">Outstanding</p>
                 <p className="text-2xl font-bold text-red-500 mt-2">
                   ${summary.totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Payment Rate</p>
+                <p className="text-xs font-medium text-wl-text-secondary uppercase">Payment Rate</p>
                 <p className="text-2xl font-bold text-white mt-2">
                   {summary.paymentRate.toFixed(1)}%
                 </p>
@@ -155,7 +155,7 @@ export default function FinancePage() {
                   <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                     {Object.entries(summary.byStatus).map(([status, count]) => (
                       <div key={status}>
-                        <p className="text-xs font-medium text-gray-400 capitalize">{status}</p>
+                        <p className="text-xs font-medium text-wl-text-secondary capitalize">{status}</p>
                         <p
                           className={cn(
                             'text-2xl font-bold mt-2',
@@ -164,7 +164,7 @@ export default function FinancePage() {
                               : status === 'overdue'
                                 ? 'text-red-500'
                                 : status === 'voided'
-                                  ? 'text-gray-500'
+                                  ? 'text-wl-text-tertiary'
                                   : 'text-white',
                           )}
                         >
@@ -179,23 +179,23 @@ export default function FinancePage() {
               <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden')}>
                 <h2 className="text-lg font-semibold text-white mb-4">Recent Payments</h2>
                 {payments.length === 0 ? (
-                  <p className="text-gray-400 text-center py-8">No payments found</p>
+                  <p className="text-wl-text-secondary text-center py-8">No payments found</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-wl-border-default">
-                          <th className="text-left px-4 py-3 font-semibold text-gray-400">Date</th>
-                          <th className="text-left px-4 py-3 font-semibold text-gray-400">Reference</th>
-                          <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
-                          <th className="text-center px-4 py-3 font-semibold text-gray-400">Method</th>
-                          <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
+                          <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Date</th>
+                          <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Reference</th>
+                          <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
+                          <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Method</th>
+                          <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {payments.slice(0, 10).map((payment) => (
                           <tr key={payment.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                            <td className="px-4 py-3 text-gray-300">
+                            <td className="px-4 py-3 text-wl-neutral-300">
                               {new Date(payment.createdAt).toLocaleDateString()}
                             </td>
                             <td className="px-4 py-3 text-white">

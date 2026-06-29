@@ -73,13 +73,13 @@ export default function ShippingLabelsPage() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Shipment #</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Destination</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Status</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Label</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Tracking #</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Shipment #</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Carrier</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Destination</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Status</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Label</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,9 +91,9 @@ export default function ShippingLabelsPage() {
                     <td className="p-3 px-4 text-white font-mono text-xs">
                       {shipment.trackingNumber ?? '—'}
                     </td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">{shipment.shipmentNumber}</td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">{shipment.carrier ?? '—'}</td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">
+                    <td className="p-3 px-4 text-wl-text-secondary text-sm">{shipment.shipmentNumber}</td>
+                    <td className="p-3 px-4 text-wl-text-secondary text-sm">{shipment.carrier ?? '—'}</td>
+                    <td className="p-3 px-4 text-wl-text-secondary text-sm">
                       {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
                     </td>
                     <td className="p-3 px-4">
@@ -124,7 +124,7 @@ export default function ShippingLabelsPage() {
                 ))}
                 {shipments.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-gray-500 text-sm">
+                    <td colSpan={7} className="p-8 text-center text-wl-text-tertiary text-sm">
                       No shipments found
                     </td>
                   </tr>
@@ -145,7 +145,7 @@ export default function ShippingLabelsPage() {
             >
               Previous
             </Button>
-            <span className="text-sm text-gray-400 self-center">
+            <span className="text-sm text-wl-text-secondary self-center">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <Button

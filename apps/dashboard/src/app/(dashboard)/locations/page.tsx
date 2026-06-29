@@ -156,7 +156,7 @@ export default function LocationsPage() {
                     "py-1 px-3 rounded-full border text-xs font-semibold cursor-pointer transition-all",
                     typeFilter === t
                       ? "bg-blue-500 text-wl-text-inverse border-blue-500"
-                      : "bg-transparent text-gray-400 border-wl-border-default"
+                      : "bg-transparent text-wl-text-secondary border-wl-border-default"
                   )}
                 >
                   {t === "ALL" ? "All Types" : typeLabel(t as LocationType)}
@@ -223,7 +223,7 @@ export default function LocationsPage() {
                 </div>
 
                 {/* Address */}
-                <div className={cn("mb-3 text-xs text-gray-300")}>
+                <div className={cn("mb-3 text-xs text-wl-neutral-300")}>
                   <div>{location.addressLine1}</div>
                   <div>
                     {location.city}, {location.province} {location.postalCode}
@@ -242,11 +242,11 @@ export default function LocationsPage() {
                 {/* Stats Grid */}
                 <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
                   <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
+                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Active Shipments</div>
                     <div
                       className={cn(
                         "text-base font-bold font-mono",
-                        location.activeShipments > 0 ? "text-blue-400" : "text-gray-400"
+                        location.activeShipments > 0 ? "text-blue-400" : "text-wl-text-secondary"
                       )}
                     >
                       {location.activeShipments}
@@ -254,21 +254,21 @@ export default function LocationsPage() {
                   </div>
 
                   <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Total Processed</div>
+                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Total Processed</div>
                     <div className={cn("text-base font-bold font-mono text-emerald-500")}>
                       {location.totalProcessed}
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Avg Prep Time</div>
-                    <div className={cn("text-base font-bold font-mono text-gray-300")}>
+                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Avg Prep Time</div>
+                    <div className={cn("text-base font-bold font-mono text-wl-neutral-300")}>
                       {location.avgPrepTime}m
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-xs text-gray-400 mb-1")}>Status</div>
+                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Status</div>
                     <div
                       className={cn(
                         "text-xs font-semibold",
@@ -287,8 +287,8 @@ export default function LocationsPage() {
 
                 {/* Operating Hours Preview */}
                 {location.operatingHours && (
-                  <div className={cn("text-xs text-gray-400")}>
-                    <div className={cn("mb-1 font-semibold text-gray-300")}>Hours</div>
+                  <div className={cn("text-xs text-wl-text-secondary")}>
+                    <div className={cn("mb-1 font-semibold text-wl-neutral-300")}>Hours</div>
                     <div>Mon: {location.operatingHours.Monday.open} - {location.operatingHours.Monday.close}</div>
                     <div>Sat: {location.operatingHours.Saturday.open} - {location.operatingHours.Saturday.close}</div>
                   </div>
@@ -324,7 +324,7 @@ export default function LocationsPage() {
                 </div>
                 <button
                   onClick={() => setSelectedLocation(null)}
-                  className={cn("bg-none border-none text-gray-400 cursor-pointer text-lg font-sans")}
+                  className={cn("bg-none border-none text-wl-text-secondary cursor-pointer text-lg font-sans")}
                 >
                   ✕
                 </button>
@@ -341,16 +341,16 @@ export default function LocationsPage() {
               <div className={cn("flex flex-col gap-4 flex-1")}>
                 {/* Address Info */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider")}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>
                     Address
                   </div>
                   <div className={cn("text-sm text-white font-medium")}>
                     {selectedLocation.addressLine1}
                   </div>
-                  <div className={cn("text-sm text-gray-300")}>
+                  <div className={cn("text-sm text-wl-neutral-300")}>
                     {selectedLocation.city}, {selectedLocation.province} {selectedLocation.postalCode}
                   </div>
-                  <div className={cn("text-xs text-gray-400 mt-1")}>
+                  <div className={cn("text-xs text-wl-text-secondary mt-1")}>
                     {selectedLocation.country}
                   </div>
                 </div>
@@ -359,17 +359,17 @@ export default function LocationsPage() {
 
                 {/* Contact Info */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider")}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>
                     Contact
                   </div>
                   {selectedLocation.phone && (
-                    <div className={cn("text-sm text-gray-300 mb-1 font-mono")}>
+                    <div className={cn("text-sm text-wl-neutral-300 mb-1 font-mono")}>
                       {selectedLocation.phone}
                     </div>
                   )}
 
                   {selectedLocation.email && (
-                    <div className={cn("text-sm text-gray-300 font-mono")}>
+                    <div className={cn("text-sm text-wl-neutral-300 font-mono")}>
                       {selectedLocation.email}
                     </div>
                   )}
@@ -380,27 +380,27 @@ export default function LocationsPage() {
 
                 {/* Performance Stats */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
                     Performance
                   </div>
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     <div>
-                      <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
+                      <div className={cn("text-xs text-wl-text-secondary mb-1")}>Active Shipments</div>
                       <div className={cn("text-lg font-bold font-mono text-blue-400")}>
                         {selectedLocation.activeShipments}
                       </div>
                     </div>
 
                     <div>
-                      <div className={cn("text-xs text-gray-400 mb-1")}>Total Processed</div>
+                      <div className={cn("text-xs text-wl-text-secondary mb-1")}>Total Processed</div>
                       <div className={cn("text-lg font-bold font-mono text-emerald-500")}>
                         {selectedLocation.totalProcessed}
                       </div>
                     </div>
 
                     <div>
-                      <div className={cn("text-xs text-gray-400 mb-1")}>Avg Prep Time</div>
-                      <div className={cn("text-lg font-bold font-mono text-gray-300")}>
+                      <div className={cn("text-xs text-wl-text-secondary mb-1")}>Avg Prep Time</div>
+                      <div className={cn("text-lg font-bold font-mono text-wl-neutral-300")}>
                         {selectedLocation.avgPrepTime}m
                       </div>
                     </div>
@@ -413,7 +413,7 @@ export default function LocationsPage() {
                 {/* Operating Hours */}
                 {selectedLocation.operatingHours && (
                   <div>
-                    <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
+                    <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
                       Operating Hours
                     </div>
                     <div className={cn("text-xs overflow-x-auto")}>
@@ -422,14 +422,14 @@ export default function LocationsPage() {
                           {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
                             <tr key={day} className={cn("border-b border-wl-border-default")}>
                               <td
-                                className={cn("p-2 pr-3 text-gray-300 font-medium whitespace-nowrap")}
+                                className={cn("p-2 pr-3 text-wl-neutral-300 font-medium whitespace-nowrap")}
                               >
                                 {day}
                               </td>
                               <td
                                 className={cn(
                                   "p-2",
-                                  hours.open === "closed" ? "text-gray-400 font-sans" : "text-white font-mono"
+                                  hours.open === "closed" ? "text-wl-text-secondary font-sans" : "text-white font-mono"
                                 )}
                               >
                                 {hours.open === "closed" ? "Closed" : `${hours.open} - ${hours.close}`}
@@ -447,7 +447,7 @@ export default function LocationsPage() {
 
                 {/* Map */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
                     Location
                   </div>
                   <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
@@ -466,7 +466,7 @@ export default function LocationsPage() {
                       />
                     </WLMap>
                   </div>
-                  <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
+                  <div className={cn("text-xs font-mono text-wl-text-tertiary mt-1 text-center")}>
                     {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
                   </div>
                 </div>

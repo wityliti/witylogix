@@ -60,7 +60,7 @@ function KPICard({ label, value, suffix, icon: Icon }: KPICardProps) {
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
+        <span className="text-xs font-semibold uppercase tracking-wider text-wl-neutral-300">
           {label}
         </span>
         {Icon && (
@@ -71,7 +71,7 @@ function KPICard({ label, value, suffix, icon: Icon }: KPICardProps) {
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-2xl font-bold text-white">{value}</span>
-        {suffix && <span className="text-sm text-gray-300">{suffix}</span>}
+        {suffix && <span className="text-sm text-wl-neutral-300">{suffix}</span>}
       </div>
     </Card>
   );
@@ -135,8 +135,8 @@ export default function PartnerDetailPage() {
           Back
         </Button>
         <Card className="flex flex-col items-center gap-4 py-16">
-          <Settings className="w-12 h-12 text-gray-300/50" />
-          <p className="text-gray-400">Partner &quot;{params.id}&quot; not found or not installed.</p>
+          <Settings className="w-12 h-12 text-wl-neutral-300/50" />
+          <p className="text-wl-text-secondary">Partner &quot;{params.id}&quot; not found or not installed.</p>
           <Button variant="primary" size="md" onClick={() => router.push("/dashboard/partners/onboard")}>
             Install Partner
           </Button>
@@ -162,7 +162,7 @@ export default function PartnerDetailPage() {
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-white">{partner.name}</h1>
-          <p className="text-gray-300 flex items-center gap-2">
+          <p className="text-wl-neutral-300 flex items-center gap-2">
             {partner.category}
             <Badge
               variant={
@@ -247,7 +247,7 @@ export default function PartnerDetailPage() {
                   </div>
                 </>
               ) : (
-                <p className="text-gray-400 text-sm">No service areas configured yet.</p>
+                <p className="text-wl-text-secondary text-sm">No service areas configured yet.</p>
               )}
             </CardContent>
           </Card>
@@ -260,15 +260,15 @@ export default function PartnerDetailPage() {
             <CardContent>
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <dt className="text-gray-400 mb-1">Slug</dt>
+                  <dt className="text-wl-text-secondary mb-1">Slug</dt>
                   <dd className="text-white font-mono">{partner.slug}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 mb-1">Category</dt>
+                  <dt className="text-wl-text-secondary mb-1">Category</dt>
                   <dd className="text-white">{partner.category}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 mb-1">Last Sync</dt>
+                  <dt className="text-wl-text-secondary mb-1">Last Sync</dt>
                   <dd className="text-white">
                     {partner.lastSyncAt
                       ? new Date(partner.lastSyncAt).toLocaleString()
@@ -276,12 +276,12 @@ export default function PartnerDetailPage() {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-gray-400 mb-1">Last Updated</dt>
+                  <dt className="text-wl-text-secondary mb-1">Last Updated</dt>
                   <dd className="text-white">{new Date(partner.updatedAt).toLocaleString()}</dd>
                 </div>
               </dl>
               {partner.description && (
-                <p className="mt-4 text-sm text-gray-400 border-t border-wl-border-default pt-4">
+                <p className="mt-4 text-sm text-wl-text-secondary border-t border-wl-border-default pt-4">
                   {partner.description}
                 </p>
               )}
@@ -437,7 +437,7 @@ export default function PartnerDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm mb-4">No service areas configured.</p>
+                <p className="text-wl-text-secondary text-sm mb-4">No service areas configured.</p>
               )}
               <Button variant="secondary" size="md">
                 Manage Service Areas

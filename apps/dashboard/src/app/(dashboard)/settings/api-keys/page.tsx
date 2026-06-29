@@ -123,7 +123,7 @@ export default function APIKeysPage() {
             <Card className="border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Create New API Key</CardTitle>
-                <CardDescription className="text-gray-400">Generate a new API key for your application</CardDescription>
+                <CardDescription className="text-wl-text-secondary">Generate a new API key for your application</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
@@ -150,7 +150,7 @@ export default function APIKeysPage() {
                           onChange={() => toggleScope(scope.id)}
                           className="w-4 h-4 rounded border-wl-border-default text-blue-500 cursor-pointer"
                         />
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-wl-text-secondary">
                           {scope.label}
                         </span>
                       </label>
@@ -160,7 +160,7 @@ export default function APIKeysPage() {
 
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 flex gap-2">
                   <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-wl-text-secondary">
                     Store your API key securely. You won't be able to see it again after creation.
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export default function APIKeysPage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Your API Keys</CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardDescription className="text-wl-text-secondary">
                 {apiKeys.length} {apiKeys.length === 1 ? "key" : "keys"} available
               </CardDescription>
             </CardHeader>
@@ -206,12 +206,12 @@ export default function APIKeysPage() {
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Key className="w-4 h-4 text-gray-400" />
+                            <Key className="w-4 h-4 text-wl-text-secondary" />
                             <p className="font-semibold text-white">
                               {apiKey.name}
                             </p>
                           </div>
-                          <p className="text-xs text-gray-400 font-mono">
+                          <p className="text-xs text-wl-text-secondary font-mono">
                             {apiKey.masked}
                           </p>
                         </div>
@@ -234,7 +234,7 @@ export default function APIKeysPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-4 sm:items-center text-xs text-gray-400 mb-3">
+                      <div className="flex flex-col sm:flex-row gap-4 sm:items-center text-xs text-wl-text-secondary mb-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           <span>Created: {apiKey.createdAt}</span>
@@ -255,7 +255,7 @@ export default function APIKeysPage() {
                         ))}
                       </div>
 
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-wl-text-secondary">
                         <span className="font-semibold">{apiKey.requestsPerDay}</span> requests today
                       </div>
 
@@ -287,8 +287,8 @@ export default function APIKeysPage() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <Key className="w-12 h-12 text-gray-400 mx-auto mb-3 opacity-30" />
-                  <p className="text-gray-400">
+                  <Key className="w-12 h-12 text-wl-text-secondary mx-auto mb-3 opacity-30" />
+                  <p className="text-wl-text-secondary">
                     No API keys created yet
                   </p>
                 </div>
@@ -299,7 +299,7 @@ export default function APIKeysPage() {
           {/* Documentation Link */}
           <Card className="bg-blue-500/5 border border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-6">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-wl-text-secondary">
                 Learn how to use the Witylogix API in our{" "}
                 <a
                   href="#"

@@ -33,9 +33,9 @@ const statusConfig: Record<
     label: 'Connected',
   },
   disconnected: {
-    bgColor: 'bg-gray-50 dark:bg-gray-500/10',
-    textColor: 'text-gray-700 dark:text-gray-400',
-    dotColor: 'bg-gray-400',
+    bgColor: 'bg-wl-neutral-500/10',
+    textColor: 'text-wl-text-primary dark:text-wl-text-secondary',
+    dotColor: 'bg-wl-neutral-400',
     label: 'Disconnected',
   },
   error: {

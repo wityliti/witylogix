@@ -70,7 +70,7 @@ export default function RealtimePage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Realtime Activity</h1>
-              <p className="text-sm text-gray-300 mt-1">Live event feed</p>
+              <p className="text-sm text-wl-neutral-300 mt-1">Live event feed</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -110,7 +110,7 @@ export default function RealtimePage() {
                     'px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap',
                     selectedType === type
                       ? 'bg-blue-500 text-white'
-                      : 'bg-wl-bg-elevated text-gray-300'
+                      : 'bg-wl-bg-elevated text-wl-neutral-300'
                   )}
                 >
                   {type === 'all' ? 'All' : type.replace('.', ' ')} ({count})
@@ -125,7 +125,7 @@ export default function RealtimePage() {
         <div className="space-y-3 max-w-4xl">
           {filtered.length === 0 ? (
             <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
-              <p className="text-gray-300">No events</p>
+              <p className="text-wl-neutral-300">No events</p>
             </Card>
           ) : (
             <div className="space-y-2">
@@ -134,7 +134,7 @@ export default function RealtimePage() {
                   key={event.id}
                   className="flex items-start gap-3 p-4 bg-wl-bg-surface border border-wl-border-default rounded-md hover:border-wl-border-strong transition-colors"
                 >
-                  <div className="mt-1 text-gray-300">
+                  <div className="mt-1 text-wl-neutral-300">
                     {getEventIcon(event.type)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -144,8 +144,8 @@ export default function RealtimePage() {
                         {event.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-300 break-words">{event.description}</p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-sm text-wl-neutral-300 break-words">{event.description}</p>
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {new Date(event.timestamp).toLocaleTimeString()}
                     </p>
                   </div>

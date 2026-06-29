@@ -42,7 +42,7 @@ export default function BrandingPage() {
         <Link href="/settings">
           <Button
             variant="ghost"
-            className="mb-8 text-gray-400 hover:text-white"
+            className="mb-8 text-wl-text-secondary hover:text-white"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
@@ -77,7 +77,7 @@ export default function BrandingPage() {
                   <p className="text-sm font-medium text-white mb-2">
                     Drag and drop your logo
                   </p>
-                  <p className="text-xs text-gray-500 mb-4">
+                  <p className="text-xs text-wl-text-tertiary mb-4">
                     PNG, SVG, or JPG (up to 5MB)
                   </p>
                   <Button
@@ -87,7 +87,7 @@ export default function BrandingPage() {
                     Choose File
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-3">
+                <p className="text-xs text-wl-text-tertiary mt-3">
                   Uploaded: 2026-02-15
                 </p>
               </div>
@@ -106,7 +106,7 @@ export default function BrandingPage() {
                   <p className="text-sm font-medium text-white mb-2">
                     Upload your favicon
                   </p>
-                  <p className="text-xs text-gray-500 mb-4">
+                  <p className="text-xs text-wl-text-tertiary mb-4">
                     ICO or PNG (32x32)
                   </p>
                   <Button
@@ -116,7 +116,7 @@ export default function BrandingPage() {
                     Choose File
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-3">
+                <p className="text-xs text-wl-text-tertiary mt-3">
                   Not uploaded yet
                 </p>
               </div>
@@ -224,7 +224,7 @@ export default function BrandingPage() {
               <input
                 type="text"
                 defaultValue="Track Your Shipment - Witylogix"
-                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -235,7 +235,7 @@ export default function BrandingPage() {
               <textarea
                 rows={3}
                 defaultValue="Enter your tracking number to see real-time updates about your shipment."
-                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -341,10 +341,10 @@ export default function BrandingPage() {
               <p className="text-sm font-medium text-white mb-2">
                 DNS Configuration
               </p>
-              <code className="text-xs text-gray-400 block bg-wl-bg-root p-2 rounded border border-wl-border-default font-mono">
+              <code className="text-xs text-wl-text-secondary block bg-wl-bg-root p-2 rounded border border-wl-border-default font-mono">
                 track.witylogix.com.wl-cdn.com
               </code>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-wl-text-tertiary mt-2">
                 CNAME record required for custom domain
               </p>
             </div>

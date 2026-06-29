@@ -189,7 +189,7 @@ export default function ELDOverviewPage() {
                           <p className="text-sm font-semibold text-white">
                             {driver.name}
                           </p>
-                          <p className="text-xs text-gray-400 mt-0.5">
+                          <p className="text-xs text-wl-text-secondary mt-0.5">
                             {driver.driverId}
                           </p>
                         </div>
@@ -208,14 +208,14 @@ export default function ELDOverviewPage() {
                         <span className={cn("text-lg", dutyStatusColor(driver.currentDuty))}>
                           {dutyStatusIcon[driver.currentDuty]}
                         </span>
-                        <span className="text-gray-400">
+                        <span className="text-wl-text-secondary">
                           {driver.currentDuty.replace(/_/g, " ")}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-3 text-xs">
                         <div className="flex-1">
-                          <span className="text-gray-400">Driving: </span>
+                          <span className="text-wl-text-secondary">Driving: </span>
                           <span
                             className={cn(
                               "font-semibold",
@@ -236,7 +236,7 @@ export default function ELDOverviewPage() {
                         )}
                       </div>
 
-                      <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-wl-border-default">
+                      <div className="text-xs text-wl-text-secondary mt-2 pt-2 border-t border-wl-border-default">
                         Updated {new Date(driver.lastUpdate).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -293,10 +293,10 @@ export default function ELDOverviewPage() {
                         {violation.severity === "CRITICAL" ? "⚠" : "ℹ"}
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-wl-text-secondary">
                       {violation.driverName}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-wl-text-tertiary mt-1">
                       {violation.duration}m ago
                     </p>
                   </div>
@@ -321,7 +321,7 @@ export default function ELDOverviewPage() {
           <CardContent className="space-y-4">
             <div className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-400">
+                <span className="text-xs font-semibold text-wl-text-secondary">
                   Completion Rate
                 </span>
                 <span className="text-lg font-bold text-emerald-500">
@@ -338,13 +338,13 @@ export default function ELDOverviewPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-400">Open Defects</span>
+                <span className="text-wl-text-secondary">Open Defects</span>
                 <span className="font-semibold text-amber-500">
                   {compliance?.openDefects ?? 0}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-400">Critical Issues</span>
+                <span className="text-wl-text-secondary">Critical Issues</span>
                 <span className="font-semibold text-red-500">
                   {compliance?.criticalDefects ?? 0}
                 </span>
@@ -400,8 +400,8 @@ export default function ELDOverviewPage() {
                           <p className="font-semibold text-white">
                             {event.driverName}
                           </p>
-                          <p className="text-gray-400">{event.description}</p>
-                          <p className="text-gray-500 mt-0.5">
+                          <p className="text-wl-text-secondary">{event.description}</p>
+                          <p className="text-wl-text-tertiary mt-0.5">
                             {new Date(event.timestamp).toLocaleDateString()} at{" "}
                             {new Date(event.timestamp).toLocaleTimeString([], {
                               hour: "2-digit",

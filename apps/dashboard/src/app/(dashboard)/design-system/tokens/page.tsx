@@ -165,7 +165,7 @@ function ShadowPreview({ shadow }: { shadow: string }) {
 function RadiusPreview({ radius }: { radius: string }) {
   return (
     <div
-      className="w-full h-20 bg-gradient-to-br from-blue-500 to-blue-600 border border-[#1e1e2e]"
+      className="w-full h-20 bg-gradient-to-br from-blue-500 to-blue-600 border border-wl-border-default"
       style={{ borderRadius: radius }}
     />
   );
@@ -181,7 +181,7 @@ function SpacingBar({ size, value }: { size: string; value: string }) {
         className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-sm transition-all"
         style={{ height: "24px", width: `${Math.min(numValue * 2, 100)}%` }}
       />
-      <div className="text-xs text-gray-400">{size}</div>
+      <div className="text-xs text-wl-text-secondary">{size}</div>
     </div>
   );
 }
@@ -288,13 +288,13 @@ export default function DesignTokensPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-wl-bg-root text-white">
       {/* Header */}
-      <div className="border-b border-[#1e1e2e] sticky top-0 z-40 bg-[#0a0a0f]/80 backdrop-blur-sm">
+      <div className="border-b border-wl-border-default sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Design Tokens</h1>
-            <p className="text-gray-300">Complete reference of all design system tokens</p>
+            <p className="text-wl-neutral-300">Complete reference of all design system tokens</p>
           </div>
 
           {/* Search */}
@@ -303,7 +303,7 @@ export default function DesignTokensPage() {
               placeholder="Search tokens by name, variable, or value..."
               value={searchQuery}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#12121a] border-[#1e1e2e] text-white placeholder-gray-400"
+              className="w-full bg-wl-bg-surface border-wl-border-default text-white placeholder-wl-text-secondary"
             />
           </div>
         </div>
@@ -322,19 +322,19 @@ export default function DesignTokensPage() {
               }
               className={cn(
                 "w-full flex items-center gap-3 mb-6 p-4 rounded-lg",
-                "bg-[#12121a] border border-[#1e1e2e]",
-                "hover:border-[#1e1e2e] transition-colors",
+                "bg-wl-bg-surface border border-wl-border-default",
+                "hover:border-wl-border-default transition-colors",
                 expandedCategory === category.id && "border-blue-500/30 bg-blue-500/5"
               )}
             >
               <span className="text-2xl">{category.icon}</span>
               <div className="text-left flex-1">
                 <h2 className="text-lg font-semibold">{category.name}</h2>
-                <p className="text-sm text-gray-300">{category.description}</p>
+                <p className="text-sm text-wl-neutral-300">{category.description}</p>
               </div>
               <span
                 className={cn(
-                  "text-gray-400 transition-transform",
+                  "text-wl-text-secondary transition-transform",
                   expandedCategory === category.id && "rotate-180"
                 )}
               >
@@ -350,7 +350,7 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
+                        className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="mb-3">
                           <ColorSwatch color={token.preview || token.value} />
@@ -360,7 +360,7 @@ export default function DesignTokensPage() {
                             <div className="text-sm font-semibold text-white">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 font-mono">
+                            <div className="text-xs text-wl-text-secondary font-mono">
                               {token.value}
                             </div>
                           </div>
@@ -370,7 +370,7 @@ export default function DesignTokensPage() {
                               onClick={() => handleCopy(token.cssVar, token.cssVar)}
                               className={cn(
                                 "flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                                "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                                "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                                 "transition-colors",
                                 copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                               )}
@@ -391,7 +391,7 @@ export default function DesignTokensPage() {
                               onClick={() => handleCopy(token.value, `${token.cssVar}-value`)}
                               className={cn(
                                 "flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                                "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                                "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                                 "transition-colors",
                                 copiedTokens[`${token.cssVar}-value`] && "bg-wl-success-500/20 border-wl-success-500"
                               )}
@@ -420,16 +420,16 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
+                        className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <div className="text-sm font-semibold text-white mb-2">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 space-y-1 font-mono">
+                            <div className="text-xs text-wl-text-secondary space-y-1 font-mono">
                               <div>{token.cssVar}</div>
-                              <div className="text-gray-300">{token.value}</div>
+                              <div className="text-wl-neutral-300">{token.value}</div>
                               {token.tailwind && <div>{token.tailwind}</div>}
                             </div>
                           </div>
@@ -445,7 +445,7 @@ export default function DesignTokensPage() {
                             onClick={() => handleCopy(token.cssVar, token.cssVar)}
                             className={cn(
                               "flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                              "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                              "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                               "transition-colors",
                               copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                             )}
@@ -473,13 +473,13 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
+                        className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="mb-3">
                           <div className="text-sm font-semibold text-white mb-2">
                             {token.name}
                           </div>
-                          <div className="text-xs text-gray-400 font-mono mb-3">
+                          <div className="text-xs text-wl-text-secondary font-mono mb-3">
                             {token.value}
                           </div>
                           <SpacingBar size={token.value} value={token.value} />
@@ -489,7 +489,7 @@ export default function DesignTokensPage() {
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                            "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -516,16 +516,16 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
+                        className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <div className="text-sm font-semibold text-white mb-2">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 font-mono space-y-1">
+                            <div className="text-xs text-wl-text-secondary font-mono space-y-1">
                               <div>{token.cssVar}</div>
-                              <div className="text-gray-300">{token.value}</div>
+                              <div className="text-wl-neutral-300">{token.value}</div>
                               {token.tailwind && <div>{token.tailwind}</div>}
                             </div>
                           </div>
@@ -536,7 +536,7 @@ export default function DesignTokensPage() {
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs mt-3",
-                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                            "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -563,13 +563,13 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
+                        className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="mb-3">
                           <div className="text-sm font-semibold text-white mb-2">
                             {token.name}
                           </div>
-                          <div className="text-xs text-gray-400 font-mono mb-3">
+                          <div className="text-xs text-wl-text-secondary font-mono mb-3">
                             {token.value}
                           </div>
                           <ShadowPreview shadow={token.value} />
@@ -579,7 +579,7 @@ export default function DesignTokensPage() {
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                            "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -606,14 +606,14 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
+                        className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <div className="text-sm font-semibold text-white">
                               {token.name}
                             </div>
-                            <div className="text-xs text-gray-400 font-mono">
+                            <div className="text-xs text-wl-text-secondary font-mono">
                               {token.value}
                             </div>
                           </div>
@@ -624,7 +624,7 @@ export default function DesignTokensPage() {
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
+                            "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -650,7 +650,7 @@ export default function DesignTokensPage() {
 
             {/* Empty State */}
             {expandedCategory === category.id && category.tokens.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-wl-text-secondary">
                 No tokens found matching your search
               </div>
             )}
@@ -659,7 +659,7 @@ export default function DesignTokensPage() {
 
         {filteredTokens.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-400 mb-4">No tokens found matching your search</p>
+            <p className="text-wl-text-secondary mb-4">No tokens found matching your search</p>
             <Button
               variant="secondary"
               onClick={() => setSearchQuery("")}

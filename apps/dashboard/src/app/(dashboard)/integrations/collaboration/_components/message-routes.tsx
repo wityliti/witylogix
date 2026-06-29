@@ -54,7 +54,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
             </div>
 
             <div className="mb-4 pb-4 border-b border-wl-border-default">
-              <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+              <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-2">
                 Conditions
               </p>
               <div className="flex flex-wrap gap-2">

@@ -262,7 +262,7 @@ export default function WebhooksDebuggerPage() {
               <CardContent>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {filteredEvents.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400">
+                    <div className="text-center py-8 text-wl-text-secondary">
                       {webhookEvents.length === 0
                         ? 'No webhook deliveries yet.'
                         : 'No events match your filters.'}
@@ -283,15 +283,15 @@ export default function WebhooksDebuggerPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               {getStatusIcon(event.status)}
-                              <span className="font-mono text-xs text-gray-400">
+                              <span className="font-mono text-xs text-wl-text-secondary">
                                 {new Date(event.timestamp).toLocaleTimeString()}
                               </span>
                               <Badge variant="info">{event.eventType}</Badge>
                             </div>
-                            <div className="text-sm text-gray-400 truncate">{event.endpointUrl}</div>
+                            <div className="text-sm text-wl-text-secondary truncate">{event.endpointUrl}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs font-mono text-gray-400">{event.duration}ms</div>
+                            <div className="text-xs font-mono text-wl-text-secondary">{event.duration}ms</div>
                             <Badge
                               variant={
                                 event.status === 'success'
@@ -324,7 +324,7 @@ export default function WebhooksDebuggerPage() {
                 {selectedEvent ? (
                   <div className="space-y-4">
                     <div>
-                      <div className="text-xs font-semibold text-gray-400 mb-1">Event ID</div>
+                      <div className="text-xs font-semibold text-wl-text-secondary mb-1">Event ID</div>
                       <div className="text-xs font-mono bg-wl-bg-elevated p-2 rounded flex items-center justify-between">
                         <span className="truncate">{selectedEvent.id}</span>
                         <Copy
@@ -335,24 +335,24 @@ export default function WebhooksDebuggerPage() {
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-gray-400 mb-1">Timestamp</div>
+                      <div className="text-xs font-semibold text-wl-text-secondary mb-1">Timestamp</div>
                       <div className="text-sm text-white">
                         {new Date(selectedEvent.timestamp).toLocaleString()}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-gray-400 mb-1">Event Type</div>
+                      <div className="text-xs font-semibold text-wl-text-secondary mb-1">Event Type</div>
                       <Badge variant="info">{selectedEvent.eventType}</Badge>
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-gray-400 mb-1">Endpoint</div>
-                      <div className="text-xs text-gray-400 break-all">{selectedEvent.endpointUrl}</div>
+                      <div className="text-xs font-semibold text-wl-text-secondary mb-1">Endpoint</div>
+                      <div className="text-xs text-wl-text-secondary break-all">{selectedEvent.endpointUrl}</div>
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-gray-400 mb-1">Status</div>
+                      <div className="text-xs font-semibold text-wl-text-secondary mb-1">Status</div>
                       <Badge
                         variant={
                           selectedEvent.status === 'success'
@@ -368,18 +368,18 @@ export default function WebhooksDebuggerPage() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <div className="text-xs font-semibold text-gray-400 mb-1">Duration</div>
+                        <div className="text-xs font-semibold text-wl-text-secondary mb-1">Duration</div>
                         <div className="text-sm font-mono text-white">{selectedEvent.duration}ms</div>
                       </div>
                       <div>
-                        <div className="text-xs font-semibold text-gray-400 mb-1">Status Code</div>
+                        <div className="text-xs font-semibold text-wl-text-secondary mb-1">Status Code</div>
                         <div className="text-sm font-mono text-white">{selectedEvent.statusCode ?? '—'}</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <div className="text-xs font-semibold text-gray-400 mb-1">Attempt</div>
+                        <div className="text-xs font-semibold text-wl-text-secondary mb-1">Attempt</div>
                         <div className="text-sm font-mono text-white">
                           {selectedEvent.attempt}/{selectedEvent.maxAttempts}
                         </div>
@@ -388,7 +388,7 @@ export default function WebhooksDebuggerPage() {
 
                     {selectedEvent.error && (
                       <div>
-                        <div className="text-xs font-semibold text-gray-400 mb-1">Error</div>
+                        <div className="text-xs font-semibold text-wl-text-secondary mb-1">Error</div>
                         <div className="text-xs text-red-500 bg-red-500/10 p-2 rounded">
                           {selectedEvent.error}
                         </div>
@@ -403,7 +403,7 @@ export default function WebhooksDebuggerPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-400">Select an event to view details</div>
+                  <div className="text-center py-8 text-wl-text-secondary">Select an event to view details</div>
                 )}
               </CardContent>
             </Card>

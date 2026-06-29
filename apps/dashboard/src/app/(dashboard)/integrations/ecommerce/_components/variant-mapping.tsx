@@ -35,19 +35,19 @@ export function VariantMapping() {
               key={idx}
               className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default"
             >
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+              <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-2">
                 {variant.attribute}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-xs text-gray-500">Shopify</div>
-                  <div className="text-sm text-gray-400 mt-1">
+                  <div className="text-xs text-wl-text-tertiary">Shopify</div>
+                  <div className="text-sm text-wl-text-secondary mt-1">
                     {variant.shopify}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">WooCommerce</div>
-                  <div className="text-sm text-gray-400 mt-1">
+                  <div className="text-xs text-wl-text-tertiary">WooCommerce</div>
+                  <div className="text-sm text-wl-text-secondary mt-1">
                     {variant.woo}
                   </div>
                 </div>

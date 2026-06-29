@@ -87,7 +87,7 @@ function tierColor(tier: string) {
   switch (tier) {
     case 'platinum': return { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-500/30' };
     case 'gold':     return { bg: 'bg-amber-500/15',  text: 'text-amber-300',  border: 'border-amber-500/30' };
-    case 'silver':   return { bg: 'bg-gray-400/15',   text: 'text-gray-300',   border: 'border-gray-400/30' };
+    case 'silver':   return { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-neutral-300',   border: 'border-wl-neutral-400/30' };
     case 'bronze':   return { bg: 'bg-orange-700/15', text: 'text-orange-400', border: 'border-orange-700/30' };
     default:         return { bg: 'bg-white/[0.05]',  text: 'text-white/30',   border: 'border-white/10' };
   }
@@ -95,7 +95,7 @@ function tierColor(tier: string) {
 
 function rankStyle(rank: number) {
   if (rank === 1) return 'bg-amber-500/20 text-amber-300';
-  if (rank === 2) return 'bg-gray-400/20 text-gray-300';
+  if (rank === 2) return 'bg-wl-neutral-400/20 text-wl-neutral-300';
   if (rank === 3) return 'bg-orange-700/20 text-orange-400';
   return 'bg-white/[0.05] text-white/25';
 }
@@ -241,7 +241,7 @@ export default function DriverInsightsPage() {
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />Platinum</span>
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" />Gold</span>
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-violet-400" />Silver</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-500" />Bronze</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-wl-neutral-500" />Bronze</span>
               </div>
             </div>
             {mapDrivers.length === 0 ? (
@@ -400,7 +400,7 @@ export default function DriverInsightsPage() {
         <div className="flex items-center gap-6 text-[11px] text-white/25">
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-400" />Platinum (≥90)</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" />Gold (80–89)</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400" />Silver (70–79)</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-neutral-400" />Silver (70–79)</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-600" />Bronze (&lt;70)</span>
           <span className="ml-auto">Powered by AI composite scoring · {toScoringPeriod(period)} window</span>
         </div>
