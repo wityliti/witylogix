@@ -44,7 +44,7 @@ function EndpointCard({
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-mono text-gray-400 truncate">
+              <p className="text-sm font-mono text-wl-text-secondary truncate">
                 {endpoint.url}
               </p>
               <div className="flex gap-2 mt-2">
@@ -76,13 +76,13 @@ function EndpointCard({
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <p className="text-gray-400">Success Rate</p>
+              <p className="text-wl-text-secondary">Success Rate</p>
               <p className="font-medium text-white mt-1">
                 {endpoint.successRate.toFixed(1)}%
               </p>
             </div>
             <div>
-              <p className="text-gray-400">Last Delivery</p>
+              <p className="text-wl-text-secondary">Last Delivery</p>
               <p className="font-medium text-white mt-1 truncate">
                 {new Date(endpoint.lastDeliveryTime).toLocaleString()}
               </p>
@@ -284,7 +284,7 @@ export default function WebhooksPage() {
                     }
                     className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
                   />
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
                 </div>
               </div>
 
@@ -384,19 +384,19 @@ export default function WebhooksPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div>
-                <p className="text-sm text-gray-400">Success Rate</p>
+                <p className="text-sm text-wl-text-secondary">Success Rate</p>
                 <p className="text-3xl font-bold text-emerald-500 mt-2">
                   {webhooks.successRate?.toFixed(1) ?? 0}%
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Successful Deliveries</p>
+                <p className="text-sm text-wl-text-secondary">Successful Deliveries</p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {successfulDeliveries.length}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Failed Deliveries</p>
+                <p className="text-sm text-wl-text-secondary">Failed Deliveries</p>
                 <p className="text-3xl font-bold text-red-500 mt-2">
                   {failedDeliveries.length}
                 </p>
@@ -475,21 +475,21 @@ export default function WebhooksPage() {
                         <p className="text-sm font-medium text-white truncate">
                           {delivery.eventType}
                         </p>
-                        <p className="text-xs text-gray-400 truncate">
+                        <p className="text-xs text-wl-text-secondary truncate">
                           {delivery.endpoint}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-wl-text-secondary">
                         {delivery.attempts} attempt{delivery.attempts !== 1 ? "s" : ""}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-wl-text-secondary">
                         {delivery.latency}ms
                       </span>
                       <ChevronDown
                         className={cn(
-                          "w-4 h-4 text-gray-400 transition-transform",
+                          "w-4 h-4 text-wl-text-secondary transition-transform",
                           expandedDeliveries[delivery.id] && "rotate-180"
                         )}
                       />
@@ -499,7 +499,7 @@ export default function WebhooksPage() {
                   {expandedDeliveries[delivery.id] && (
                     <div className="border-t border-neutral-700 bg-wl-bg-sunken p-3 space-y-3">
                       <div>
-                        <p className="text-xs font-medium text-gray-400 mb-1">
+                        <p className="text-xs font-medium text-wl-text-secondary mb-1">
                           Timestamp
                         </p>
                         <p className="text-sm text-white">
@@ -508,7 +508,7 @@ export default function WebhooksPage() {
                       </div>
                       {delivery.payload && (
                         <div>
-                          <p className="text-xs font-medium text-gray-400 mb-1">
+                          <p className="text-xs font-medium text-wl-text-secondary mb-1">
                             Payload
                           </p>
                           <pre className="text-xs bg-wl-bg-surface p-2 rounded border border-neutral-700 overflow-x-auto text-white">
@@ -554,7 +554,7 @@ export default function WebhooksPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-wl-text-secondary">
               {webhooks?.dlqCount} failed deliveries are waiting for retry.
             </p>
             <Button variant="secondary" size="sm" className="mt-3">

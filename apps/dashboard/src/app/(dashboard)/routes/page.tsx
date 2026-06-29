@@ -243,22 +243,22 @@ export default function RoutesPage() {
                         >
                           {route.name}
                           {route.isTemplate && (
-                            <span className="ml-2 text-xs text-gray-400">
+                            <span className="ml-2 text-xs text-wl-text-secondary">
                               (Template)
                             </span>
                           )}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 text-gray-300">
+                      <td className="px-6 py-4 text-wl-neutral-300">
                         {route.stopsCount}
                       </td>
-                      <td className="px-6 py-4 text-gray-300 font-mono">
+                      <td className="px-6 py-4 text-wl-neutral-300 font-mono">
                         {route.totalDistance.toFixed(1)} km
                       </td>
-                      <td className="px-6 py-4 text-gray-300">
+                      <td className="px-6 py-4 text-wl-neutral-300">
                         {formatDuration(route.totalDuration)}
                       </td>
-                      <td className="px-6 py-4 text-gray-300">
+                      <td className="px-6 py-4 text-wl-neutral-300">
                         {route.assignedDriver ?? '—'}
                       </td>
                       <td className="px-6 py-4">
@@ -266,7 +266,7 @@ export default function RoutesPage() {
                           {statusLabel(route.status)}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-gray-400 text-xs">
+                      <td className="px-6 py-4 text-wl-text-secondary text-xs">
                         {route.lastUsed}
                       </td>
                       <td className="px-6 py-4">
@@ -290,7 +290,7 @@ export default function RoutesPage() {
                             </Button>
                           )}
                           <button className="px-2 py-1 hover:bg-wl-bg-elevated rounded-md transition-colors">
-                            <MoreVertical className="w-4 h-4 text-gray-400" />
+                            <MoreVertical className="w-4 h-4 text-wl-text-secondary" />
                           </button>
                         </div>
                       </td>

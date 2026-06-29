@@ -24,8 +24,8 @@ const CustomersMapView = dynamic(
     loading: () => (
       <div className="w-full h-full bg-wl-bg-root rounded-xl border border-wl-border-default flex items-center justify-center">
         <div className="text-center">
-          <div className="w-6 h-6 rounded-full border-2 border-gray-600 border-t-white animate-spin mx-auto mb-2" />
-          <p className="text-xs text-gray-500">Loading map…</p>
+          <div className="w-6 h-6 rounded-full border-2 border-wl-border-strong border-t-white animate-spin mx-auto mb-2" />
+          <p className="text-xs text-wl-text-tertiary">Loading map…</p>
         </div>
       </div>
     ),
@@ -44,7 +44,7 @@ const TIER_BADGE_VARIANT = {
 const TIER_DOT: Record<string, string> = {
   enterprise: 'bg-amber-400',
   premium: 'bg-blue-400',
-  standard: 'bg-gray-500',
+  standard: 'bg-wl-neutral-500',
 };
 
 export default function CustomersPage() {
@@ -126,7 +126,7 @@ export default function CustomersPage() {
                 onClick={() => setView('grid')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  view === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  view === 'grid' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-white',
                 )}
               >
                 <LayoutGrid className="w-3.5 h-3.5" /> List
@@ -135,7 +135,7 @@ export default function CustomersPage() {
                 onClick={() => setView('map')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  view === 'map' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
+                  view === 'map' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-white',
                 )}
               >
                 <MapIcon className="w-3.5 h-3.5" /> Map
@@ -154,7 +154,7 @@ export default function CustomersPage() {
           {statCards.map((s, i) => (
             <Card key={i} className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-gray-400 font-medium">{s.label}</span>
+                <span className="text-xs text-wl-text-secondary font-medium">{s.label}</span>
                 {s.icon}
               </div>
               {s.value === null ? (
@@ -162,7 +162,7 @@ export default function CustomersPage() {
               ) : (
                 <div className="text-2xl font-bold text-white">{s.value}</div>
               )}
-              {s.change && <div className="text-xs text-gray-500 mt-1">{s.change}</div>}
+              {s.change && <div className="text-xs text-wl-text-tertiary mt-1">{s.change}</div>}
             </Card>
           ))}
         </div>
@@ -192,7 +192,7 @@ export default function CustomersPage() {
                   'px-3 py-1.5 rounded-full text-xs font-semibold border transition-all capitalize',
                   statusFilter === s
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-transparent text-gray-400 border-wl-border-default hover:border-gray-500',
+                    : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong',
                 )}
               >
                 {s === 'all' ? 'All' : s}
@@ -209,7 +209,7 @@ export default function CustomersPage() {
                   'px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5',
                   tierFilter === t
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-transparent text-gray-400 border-wl-border-default hover:border-gray-500',
+                    : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong',
                 )}
               >
                 {t !== 'all' && (
@@ -227,8 +227,8 @@ export default function CustomersPage() {
             {locLoading ? (
               <div className="w-full h-full bg-wl-bg-root rounded-xl border border-wl-border-default flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-6 h-6 rounded-full border-2 border-gray-600 border-t-white animate-spin mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">Loading customer locations…</p>
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-border-strong border-t-white animate-spin mx-auto mb-2" />
+                  <p className="text-sm text-wl-text-secondary">Loading customer locations…</p>
                 </div>
               </div>
             ) : (
@@ -244,13 +244,13 @@ export default function CustomersPage() {
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default bg-wl-bg-surface">
-                    <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
-                    <th className="p-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Contact</th>
-                    <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Orders</th>
-                    <th className="p-3 px-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Spent</th>
-                    <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Tier</th>
-                    <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
-                    <th className="p-3 px-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide"></th>
+                    <th className="p-3 px-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Customer</th>
+                    <th className="p-3 px-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Contact</th>
+                    <th className="p-3 px-4 text-center text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Orders</th>
+                    <th className="p-3 px-4 text-right text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Total Spent</th>
+                    <th className="p-3 px-4 text-center text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Tier</th>
+                    <th className="p-3 px-4 text-center text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">Status</th>
+                    <th className="p-3 px-4 text-center text-xs font-semibold text-wl-text-secondary uppercase tracking-wide"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -268,8 +268,8 @@ export default function CustomersPage() {
                       ? (
                         <tr>
                           <td colSpan={7} className="px-4 py-14 text-center">
-                            <Users className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-                            <p className="text-sm text-gray-400 mb-2">No customers found</p>
+                            <Users className="w-10 h-10 text-wl-text-tertiary mx-auto mb-3" />
+                            <p className="text-sm text-wl-text-secondary mb-2">No customers found</p>
                             {(search || statusFilter !== 'all' || tierFilter !== 'all') && (
                               <button
                                 onClick={() => { handleSearch(''); setStatusFilter('all'); setTierFilter('all'); }}
@@ -299,7 +299,7 @@ export default function CustomersPage() {
                                 <div className="min-w-0">
                                   <div className="font-semibold text-white text-sm truncate">{c.name}</div>
                                   {c.tags.length > 0 && (
-                                    <div className="text-[10px] text-gray-500 mt-0.5 truncate">
+                                    <div className="text-[10px] text-wl-text-tertiary mt-0.5 truncate">
                                       {c.tags.slice(0, 2).join(', ')}
                                     </div>
                                   )}
@@ -307,8 +307,8 @@ export default function CustomersPage() {
                               </div>
                             </td>
                             <td className="p-3 px-4">
-                              <div className="text-xs text-gray-300 truncate">{c.email ?? '—'}</div>
-                              {c.phone && <div className="text-[10px] text-gray-500 mt-0.5">{c.phone}</div>}
+                              <div className="text-xs text-wl-neutral-300 truncate">{c.email ?? '—'}</div>
+                              {c.phone && <div className="text-[10px] text-wl-text-tertiary mt-0.5">{c.phone}</div>}
                             </td>
                             <td className="p-3 px-4 text-center font-semibold text-white">{c.totalOrders}</td>
                             <td className="p-3 px-4 text-right font-semibold text-white">{fmt.format(c.totalSpent)}</td>
@@ -332,7 +332,7 @@ export default function CustomersPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-surface text-xs text-gray-400">
+            <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-surface text-xs text-wl-text-secondary">
               <span>{pagination.total} total customers</span>
               <div className="flex items-center gap-2">
                 <Button

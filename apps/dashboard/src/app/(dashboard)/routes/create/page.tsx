@@ -423,10 +423,10 @@ export default function CreateRoutePage() {
                     />
                   </WLMap>
                 ) : (
-                  <div className="w-full h-full bg-wl-bg-surface flex flex-col items-center justify-center text-gray-500 gap-3">
+                  <div className="w-full h-full bg-wl-bg-surface flex flex-col items-center justify-center text-wl-text-tertiary gap-3">
                     <MapPin className="w-10 h-10 opacity-20" />
                     <div className="text-sm font-medium">Map Preview</div>
-                    <div className="text-xs text-gray-600 text-center max-w-xs">
+                    <div className="text-xs text-wl-text-tertiary text-center max-w-xs">
                       {formData.stops.length === 0
                         ? 'Add stops in step 2 to see them on the map.'
                         : `${formData.stops.length} stop${formData.stops.length > 1 ? 's' : ''} added. The map will show coordinates once orders have delivery location data.`}

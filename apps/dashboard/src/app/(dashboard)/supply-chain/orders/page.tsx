@@ -154,7 +154,7 @@ export default function OrdersPage() {
               <div className="text-2xl font-bold text-white">
                 {stat.value}
               </div>
-              <p className="text-xs text-gray-300 mt-1">
+              <p className="text-xs text-wl-neutral-300 mt-1">
                 {stat.label}
               </p>
             </CardContent>
@@ -173,7 +173,7 @@ export default function OrdersPage() {
                 'px-1 py-3 text-sm font-medium border-b-2 transition-colors capitalize',
                 selectedTab === tab
                   ? 'border-blue-500 text-blue-500'
-                  : 'border-transparent text-gray-300 hover:text-white'
+                  : 'border-transparent text-wl-neutral-300 hover:text-white'
               )}
             >
               {tab}
@@ -266,7 +266,7 @@ export default function OrdersPage() {
                       <CardTitle className="text-base">
                         {order.orderNumber}
                       </CardTitle>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-wl-text-secondary mt-1">
                         {order.customer}
                       </p>
                     </div>
@@ -286,19 +286,19 @@ export default function OrdersPage() {
                 <CardContent>
                   <div className="space-y-2 text-xs mb-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Items:</span>
+                      <span className="text-wl-neutral-300">Items:</span>
                       <span className="font-semibold text-white">
                         {order.items}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Total:</span>
+                      <span className="text-wl-neutral-300">Total:</span>
                       <span className="font-semibold text-white">
                         ${order.total.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Priority:</span>
+                      <span className="text-wl-neutral-300">Priority:</span>
                       <Badge
                         variant={
                           order.priority === 'expedited'
@@ -312,14 +312,14 @@ export default function OrdersPage() {
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Created:</span>
-                      <span className="text-gray-400">
+                      <span className="text-wl-neutral-300">Created:</span>
+                      <span className="text-wl-text-secondary">
                         {new Date(order.createdDate).toLocaleDateString()}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Due:</span>
-                      <span className="text-gray-400">
+                      <span className="text-wl-neutral-300">Due:</span>
+                      <span className="text-wl-text-secondary">
                         {new Date(order.dueDate).toLocaleDateString()}
                       </span>
                     </div>
@@ -379,7 +379,7 @@ export default function OrdersPage() {
                     <CardTitle className="text-base">
                       {wave.waveId}
                     </CardTitle>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {new Date(wave.createdDate).toLocaleString()}
                     </p>
                   </div>
@@ -399,19 +399,19 @@ export default function OrdersPage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <p className="text-xs text-gray-300">Orders</p>
+                    <p className="text-xs text-wl-neutral-300">Orders</p>
                     <p className="text-xl font-bold text-white">
                       {wave.ordersCount}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-300">Items</p>
+                    <p className="text-xs text-wl-neutral-300">Items</p>
                     <p className="text-xl font-bold text-white">
                       {wave.itemsCount}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-300">Est. Completion</p>
+                    <p className="text-xs text-wl-neutral-300">Est. Completion</p>
                     <p className="text-sm text-white">
                       {new Date(wave.estimatedCompletionTime).toLocaleTimeString()}
                     </p>
@@ -448,11 +448,11 @@ export default function OrdersPage() {
                     <h4 className="text-sm font-semibold text-white">
                       {batch.batchId}
                     </h4>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {batch.location}
                     </p>
                     {batch.assignedTo && (
-                      <p className="text-xs text-gray-300 mt-1">
+                      <p className="text-xs text-wl-neutral-300 mt-1">
                         Assigned to: {batch.assignedTo}
                       </p>
                     )}
@@ -472,7 +472,7 @@ export default function OrdersPage() {
 
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-300">
+                    <span className="text-xs text-wl-neutral-300">
                       Progress: {batch.itemCount} items
                     </span>
                     <span className="text-xs font-semibold text-white">
@@ -518,10 +518,10 @@ export default function OrdersPage() {
                     <h4 className="text-sm font-semibold text-white">
                       {returnItem.orderNumber}
                     </h4>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {returnItem.customerName}
                     </p>
-                    <p className="text-xs text-gray-300 mt-1">
+                    <p className="text-xs text-wl-neutral-300 mt-1">
                       Reason: {returnItem.reason}
                     </p>
                   </div>
@@ -538,7 +538,7 @@ export default function OrdersPage() {
                   </Badge>
                 </div>
 
-                <p className="text-xs text-gray-400 mb-3">
+                <p className="text-xs text-wl-text-secondary mb-3">
                   Submitted: {new Date(returnItem.submittedDate).toLocaleString()}
                 </p>
 

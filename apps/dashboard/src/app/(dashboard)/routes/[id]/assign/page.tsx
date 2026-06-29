@@ -255,7 +255,7 @@ export default function RouteAssignPage() {
         <div>
           {/* Search */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-tertiary" />
             <Input
               placeholder="Search drivers by name, vehicle, or plate..."
               value={searchQuery}
@@ -335,7 +335,7 @@ export default function RouteAssignPage() {
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">No driver assigned yet.</p>
+                <p className="text-sm text-wl-text-tertiary">No driver assigned yet.</p>
               )}
             </CardContent>
           </Card>
@@ -350,7 +350,7 @@ export default function RouteAssignPage() {
             </CardHeader>
             <CardContent className="p-3 max-h-64 overflow-y-auto">
               {route.stops.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-4">No stops on this route.</p>
+                <p className="text-xs text-wl-text-tertiary text-center py-4">No stops on this route.</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {route.stops.map((stop) => (
@@ -363,7 +363,7 @@ export default function RouteAssignPage() {
                           {stop.customerName ?? `Stop ${stop.sequence + 1}`}
                         </div>
                         {stop.address && (
-                          <div className="text-gray-500 mt-0.5 truncate max-w-[260px]">
+                          <div className="text-wl-text-tertiary mt-0.5 truncate max-w-[260px]">
                             {stop.address}
                           </div>
                         )}

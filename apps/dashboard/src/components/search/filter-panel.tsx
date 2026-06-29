@@ -179,12 +179,12 @@ export function FilterPanel({
   }, [filters, onFiltersChange]);
 
   return (
-    <div className="flex h-full flex-col border-r border-gray-700 bg-gray-900">
+    <div className="flex h-full flex-col border-r border-wl-border-default bg-wl-bg-surface">
       {/* Header */}
-      <div className="border-b border-gray-700 p-4">
+      <div className="border-b border-wl-border-default p-4">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex w-full items-center justify-between text-lg font-semibold text-white hover:text-gray-300"
+          className="flex w-full items-center justify-between text-lg font-semibold text-white hover:text-wl-neutral-300"
         >
           <span>Filters</span>
           <svg
@@ -208,8 +208,8 @@ export function FilterPanel({
 
       {/* Active Filters Chips */}
       {filters.length > 0 && (
-        <div className="border-b border-gray-700 p-4">
-          <div className="mb-3 text-xs font-semibold text-gray-400">ACTIVE FILTERS</div>
+        <div className="border-b border-wl-border-default p-4">
+          <div className="mb-3 text-xs font-semibold text-wl-text-secondary">ACTIVE FILTERS</div>
           <div className="flex flex-wrap gap-2">
             {filters.map((filter) => (
               <div
@@ -243,9 +243,9 @@ export function FilterPanel({
                     type="checkbox"
                     checked={selectedStatuses.has(status)}
                     onChange={() => toggleStatus(status)}
-                    className="h-4 w-4 rounded border-gray-600 bg-gray-800 checked:bg-blue-600"
+                    className="h-4 w-4 rounded border-wl-border-strong bg-wl-bg-elevated checked:bg-blue-600"
                   />
-                  <span className="text-sm text-gray-300">{status}</span>
+                  <span className="text-sm text-wl-neutral-300">{status}</span>
                 </label>
               ))}
             </div>
@@ -263,7 +263,7 @@ export function FilterPanel({
                     "w-full rounded px-3 py-2 text-left text-sm transition-colors",
                     selectedDateShortcut === shortcut
                       ? "bg-blue-600 text-white"
-                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      : "bg-wl-bg-elevated text-wl-neutral-300 hover:bg-wl-bg-overlay"
                   )}
                 >
                   {shortcut}
@@ -272,23 +272,23 @@ export function FilterPanel({
             </div>
 
             {showDatePicker && (
-              <div className="mt-4 space-y-3 rounded bg-gray-800 p-3">
+              <div className="mt-4 space-y-3 rounded bg-wl-bg-elevated p-3">
                 <div>
-                  <label className="block text-xs text-gray-400">From</label>
+                  <label className="block text-xs text-wl-text-secondary">From</label>
                   <input
                     type="date"
                     value={dateRange[0]}
                     onChange={(e) => setDateRange([e.target.value, dateRange[1]])}
-                    className="mt-1 w-full rounded bg-gray-700 px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400">To</label>
+                  <label className="block text-xs text-wl-text-secondary">To</label>
                   <input
                     type="date"
                     value={dateRange[1]}
                     onChange={(e) => setDateRange([dateRange[0], e.target.value])}
-                    className="mt-1 w-full rounded bg-gray-700 px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 w-full rounded bg-wl-bg-overlay px-2 py-1 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <button
@@ -302,7 +302,7 @@ export function FilterPanel({
           </div>
 
           {/* Divider */}
-          <div className="mb-6 border-t border-gray-700" />
+          <div className="mb-6 border-t border-wl-border-default" />
 
           {/* Action Buttons */}
           {filters.length > 0 && (
@@ -315,7 +315,7 @@ export function FilterPanel({
               </button>
               <button
                 onClick={clearAllFilters}
-                className="w-full rounded bg-gray-800 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700"
+                className="w-full rounded bg-wl-bg-elevated px-4 py-2 text-sm font-medium text-wl-neutral-300 hover:bg-wl-bg-overlay"
               >
                 Clear All Filters
               </button>
@@ -327,14 +327,14 @@ export function FilterPanel({
       {/* Save Preset Modal */}
       {showSavePreset && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4">
-          <div className="rounded-lg bg-gray-900 p-6 shadow-xl">
+          <div className="rounded-lg bg-wl-bg-surface p-6 shadow-xl">
             <h2 className="mb-4 text-lg font-semibold text-white">Save Filter Preset</h2>
             <input
               type="text"
               placeholder="Preset name..."
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
-              className="mb-4 w-full rounded bg-gray-800 px-4 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500"
+              className="mb-4 w-full rounded bg-wl-bg-elevated px-4 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500"
               autoFocus
             />
             <div className="flex gap-2">
@@ -349,7 +349,7 @@ export function FilterPanel({
                   setShowSavePreset(false);
                   setPresetName("");
                 }}
-                className="flex-1 rounded bg-gray-800 px-4 py-2 text-gray-300 hover:bg-gray-700"
+                className="flex-1 rounded bg-wl-bg-elevated px-4 py-2 text-wl-neutral-300 hover:bg-wl-bg-overlay"
               >
                 Cancel
               </button>

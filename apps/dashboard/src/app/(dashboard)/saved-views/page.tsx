@@ -171,7 +171,7 @@ export default function SavedViewsPage() {
             <h2 className="text-lg font-semibold text-white mb-4">My Views</h2>
             {views.length === 0 ? (
               <Card className="bg-wl-bg-surface border-wl-border-default p-8 text-center">
-                <p className="text-gray-400">No saved views yet. Create your first view.</p>
+                <p className="text-wl-text-secondary">No saved views yet. Create your first view.</p>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -181,9 +181,9 @@ export default function SavedViewsPage() {
                       <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">
                           <CardTitle className="text-base mb-2 text-white">{view.name}</CardTitle>
-                          <p className="text-sm text-gray-400">{view.tableName ?? view.targetTable}</p>
+                          <p className="text-sm text-wl-text-secondary">{view.tableName ?? view.targetTable}</p>
                         </div>
-                        <button className="bg-transparent border-0 cursor-pointer p-0 text-gray-500 hover:text-gray-300 transition-colors">
+                        <button className="bg-transparent border-0 cursor-pointer p-0 text-wl-text-tertiary hover:text-wl-neutral-300 transition-colors">
                           <MoreVertical size={18} />
                         </button>
                       </div>
@@ -195,11 +195,11 @@ export default function SavedViewsPage() {
                       </div>
                       <div className="mb-4">
                         <div className="flex justify-between mb-2">
-                          <span className="text-xs text-gray-400">Filters</span>
+                          <span className="text-xs text-wl-text-secondary">Filters</span>
                           <span className="text-sm font-semibold text-white">{view.filters?.length ?? 0}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-xs text-gray-400">Visible Columns</span>
+                          <span className="text-xs text-wl-text-secondary">Visible Columns</span>
                           <span className="text-sm font-semibold text-white">{view.visibleColumns?.length ?? 0}</span>
                         </div>
                       </div>
@@ -222,7 +222,7 @@ export default function SavedViewsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="w-full mt-3 text-xs text-gray-400 hover:text-white"
+                          className="w-full mt-3 text-xs text-wl-text-secondary hover:text-white"
                           onClick={() => handleSetDefault(view.id)}
                         >
                           Set as Default
@@ -321,7 +321,7 @@ export default function SavedViewsPage() {
                   <label className="block text-sm font-semibold text-white mb-2">Visible Columns</label>
                   <div className="grid grid-cols-2 gap-3">
                     {availableColumns.map((col) => (
-                      <label key={col} className="flex items-center gap-2 cursor-pointer text-sm text-gray-300 hover:text-white transition-colors">
+                      <label key={col} className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-white transition-colors">
                         <input
                           type="checkbox"
                           checked={formData.visibleColumns.includes(col)}
@@ -359,7 +359,7 @@ export default function SavedViewsPage() {
                   </div>
                 </div>
 
-                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-300 hover:text-white transition-colors">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-white transition-colors">
                   <input
                     type="checkbox"
                     checked={formData.shareWithTeam}

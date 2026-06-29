@@ -171,17 +171,17 @@ export default function BillingPage() {
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Current Plan</p>
+                <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">Current Plan</p>
                 <h2 className="text-3xl font-bold text-white">{billing.plan}</h2>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Monthly Cost</p>
+                <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">Monthly Cost</p>
                 <h2 className="text-3xl font-bold text-white">
                   ${billing.monthlyPrice.toLocaleString()}
                 </h2>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Next Billing Date</p>
+                <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">Next Billing Date</p>
                 <h2 className="text-3xl font-bold text-white">
                   {new Date(billing.renewalDate).toLocaleDateString()}
                 </h2>
@@ -191,16 +191,16 @@ export default function BillingPage() {
             {/* Usage Metrics */}
             {billing.usageMetrics.length > 0 && (
               <div className="mt-8 pt-8 border-t border-wl-border-default">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-6">Usage This Month</h3>
+                <h3 className="text-sm font-semibold text-wl-text-secondary uppercase mb-6">Usage This Month</h3>
                 <div className="space-y-6">
                   {billing.usageMetrics.map((resource) => {
                     const quotaColor = getQuotaColor(resource.percentage);
                     return (
                       <div key={resource.name}>
                         <div className="flex items-center justify-between mb-3">
-                          <p className="text-sm font-semibold text-gray-300">{resource.name}</p>
+                          <p className="text-sm font-semibold text-wl-neutral-300">{resource.name}</p>
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-mono text-gray-400">
+                            <span className="text-sm font-mono text-wl-text-secondary">
                               {resource.current.toLocaleString()} / {fmt(resource.limit)}
                             </span>
                             <Badge variant={quotaColor} className="min-w-[55px] text-center">
@@ -221,7 +221,7 @@ export default function BillingPage() {
                             style={{ width: `${Math.min(resource.percentage, 100)}%` }}
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{resource.unit}</p>
+                        <p className="text-xs text-wl-text-tertiary mt-1">{resource.unit}</p>
                       </div>
                     );
                   })}
@@ -273,12 +273,12 @@ export default function BillingPage() {
                         <Badge variant="primary" className="mb-4">Current Plan</Badge>
                       )}
                       <h3 className="text-lg font-bold text-white mb-1">{plan.displayName}</h3>
-                      <p className="text-xs text-gray-400 mb-3">{plan.description}</p>
+                      <p className="text-xs text-wl-text-secondary mb-3">{plan.description}</p>
                       <div className="flex items-baseline gap-1 mb-5">
                         <span className="text-3xl font-bold text-white">
                           ${plan.features.monthlyPrice}
                         </span>
-                        <span className="text-gray-400">/month</span>
+                        <span className="text-wl-text-secondary">/month</span>
                       </div>
 
                       <div className="space-y-2.5 mb-4">
@@ -287,11 +287,11 @@ export default function BillingPage() {
                             {feat.included ? (
                               <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                             ) : (
-                              <X className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
+                              <X className="w-4 h-4 text-wl-text-tertiary flex-shrink-0 mt-0.5" />
                             )}
                             <span className={cn(
                               'text-xs',
-                              feat.included ? 'text-gray-300' : 'text-gray-500 line-through'
+                              feat.included ? 'text-wl-neutral-300' : 'text-wl-text-tertiary line-through'
                             )}>
                               {feat.label}
                             </span>
@@ -339,7 +339,7 @@ export default function BillingPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {billing.billingAddress ? (
-              <div className="bg-wl-bg-elevated rounded-lg p-4 border border-wl-border-default text-sm text-gray-300">
+              <div className="bg-wl-bg-elevated rounded-lg p-4 border border-wl-border-default text-sm text-wl-neutral-300">
                 <p className="font-medium text-white mb-1">Billing Address</p>
                 <p>{billing.billingAddress.line1}</p>
                 {billing.billingAddress.line2 && <p>{billing.billingAddress.line2}</p>}
@@ -348,7 +348,7 @@ export default function BillingPage() {
               </div>
             ) : (
               <div className="bg-wl-bg-elevated rounded-lg p-5 border border-wl-border-default">
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-wl-text-secondary">
                   Payment is processed through your Shopify store. Manage payment methods in your Shopify admin.
                 </p>
               </div>
@@ -369,10 +369,10 @@ export default function BillingPage() {
           </CardHeader>
           <CardContent>
             {billing.invoices.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">
+              <div className="text-center py-10 text-wl-text-secondary">
                 <TrendingUp className="w-8 h-8 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">No invoices yet</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-wl-text-tertiary mt-1">
                   Invoices will appear here after your first billing cycle
                 </p>
               </div>
@@ -381,23 +381,23 @@ export default function BillingPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left py-3 text-xs font-semibold text-gray-400 uppercase">Period</th>
-                      <th className="text-left py-3 text-xs font-semibold text-gray-400 uppercase">Date</th>
-                      <th className="text-right py-3 text-xs font-semibold text-gray-400 uppercase">Amount</th>
-                      <th className="text-left py-3 pl-4 text-xs font-semibold text-gray-400 uppercase">Status</th>
-                      <th className="text-center py-3 text-xs font-semibold text-gray-400 uppercase">PDF</th>
+                      <th className="text-left py-3 text-xs font-semibold text-wl-text-secondary uppercase">Period</th>
+                      <th className="text-left py-3 text-xs font-semibold text-wl-text-secondary uppercase">Date</th>
+                      <th className="text-right py-3 text-xs font-semibold text-wl-text-secondary uppercase">Amount</th>
+                      <th className="text-left py-3 pl-4 text-xs font-semibold text-wl-text-secondary uppercase">Status</th>
+                      <th className="text-center py-3 text-xs font-semibold text-wl-text-secondary uppercase">PDF</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#1a1a2e]">
                     {billing.invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="py-3 text-gray-300">{inv.period}</td>
-                        <td className="py-3 text-gray-400">
+                        <td className="py-3 text-wl-neutral-300">{inv.period}</td>
+                        <td className="py-3 text-wl-text-secondary">
                           {new Date(inv.date).toLocaleDateString()}
                         </td>
                         <td className="py-3 text-right font-mono font-semibold text-white">
                           ${Number(inv.amount).toFixed(2)}{' '}
-                          <span className="text-xs font-normal text-gray-500">
+                          <span className="text-xs font-normal text-wl-text-tertiary">
                             {inv.currency?.toUpperCase()}
                           </span>
                         </td>
@@ -431,7 +431,7 @@ export default function BillingPage() {
         {/* ── Auto-Renewal Notice ─────────────────────────────────────────── */}
         <div className="p-5 rounded-lg border border-amber-500/30 bg-amber-500/10 flex gap-4">
           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-300">
+          <p className="text-sm text-wl-neutral-300">
             Your subscription will automatically renew on{' '}
             <strong className="text-white">
               {new Date(billing.renewalDate).toLocaleDateString()}

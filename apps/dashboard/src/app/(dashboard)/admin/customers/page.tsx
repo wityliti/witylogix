@@ -89,7 +89,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
           {expandedSections.includes("overview") && (
             <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Name
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -97,7 +97,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Status
                 </p>
                 <Badge variant={getStatusBadgeVariant(customer.status)} className="text-xs capitalize">
@@ -105,7 +105,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </Badge>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Email
                 </p>
                 <a href={`mailto:${customer.email}`} className="text-blue-500 no-underline text-sm font-medium">
@@ -113,7 +113,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </a>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Phone
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -121,7 +121,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Store
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -129,7 +129,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Joined
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -158,7 +158,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
           {expandedSections.includes("orders") && (
             <div className="grid grid-cols-3 gap-4 mt-3">
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Total Orders
                 </p>
                 <p className="text-white text-lg font-bold m-0">
@@ -166,7 +166,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Total Spent
                 </p>
                 <p className="text-blue-500 text-lg font-bold m-0">
@@ -174,7 +174,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Last Order
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -207,7 +207,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   key={idx}
                   className="p-3 bg-wl-bg-root min-h-screen rounded-md border border-wl-border-default"
                 >
-                  <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
+                  <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                     {addr.type}
                   </p>
                   <p className="text-white text-sm m-0">
@@ -261,7 +261,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
             Notes
           </button>
           {expandedSections.includes("notes") && (
-            <p className="text-gray-400 text-sm m-2 p-3 bg-wl-bg-root min-h-screen rounded-md border border-wl-border-default">
+            <p className="text-wl-text-secondary text-sm m-2 p-3 bg-wl-bg-root min-h-screen rounded-md border border-wl-border-default">
               {customer.notes}
             </p>
           )}
@@ -318,7 +318,7 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
                 <Icon style={{ color: stat.color }} className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <p className="text-gray-400 text-xs font-semibold m-0 uppercase tracking-wide">
+                <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wide">
                   {stat.label}
                 </p>
                 <p className="text-white text-lg font-bold m-0 mt-1">
@@ -407,14 +407,14 @@ export default function AdminCustomersPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full p-2 pl-8 bg-wl-bg-root min-h-screen text-white border border-wl-border-default rounded-md text-sm"
               />
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
             </div>
 
             {/* Filters */}
             <div className="flex gap-3 flex-wrap mb-4">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-400" />
-                <span className="text-xs text-gray-400 font-semibold uppercase">
+                <Filter className="w-4 h-4 text-wl-text-secondary" />
+                <span className="text-xs text-wl-text-secondary font-semibold uppercase">
                   Store:
                 </span>
               </div>
@@ -433,7 +433,7 @@ export default function AdminCustomersPage() {
 
             <div className="flex gap-3 flex-wrap">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 font-semibold uppercase">
+                <span className="text-xs text-wl-text-secondary font-semibold uppercase">
                   Status:
                 </span>
               </div>
@@ -459,7 +459,7 @@ export default function AdminCustomersPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           {filteredCustomers.length > 0 ? (
             <>
-              <div className="p-3 border-b border-wl-border-default text-xs text-gray-400">
+              <div className="p-3 border-b border-wl-border-default text-xs text-wl-text-secondary">
                 Showing {filteredCustomers.length} of {customers.length} customers
               </div>
               <CardContent className="p-0">
@@ -471,7 +471,7 @@ export default function AdminCustomersPage() {
                           <th
                             key={header}
                             className={cn(
-                              "p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wide",
+                              "p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wide",
                               header === "Actions" && "text-center"
                             )}
                           >
@@ -499,10 +499,10 @@ export default function AdminCustomersPage() {
                           <td className="p-3 text-white font-medium">
                             {customer.name}
                           </td>
-                          <td className="p-3 text-gray-400 text-xs">
+                          <td className="p-3 text-wl-text-secondary text-xs">
                             {customer.email}
                           </td>
-                          <td className="p-3 text-gray-400 text-xs">
+                          <td className="p-3 text-wl-text-secondary text-xs">
                             {customer.phone}
                           </td>
                           <td className="p-3 text-white text-sm">
@@ -514,7 +514,7 @@ export default function AdminCustomersPage() {
                           <td className="p-3 text-blue-500 font-semibold">
                             ${customer.totalSpent.toLocaleString()}
                           </td>
-                          <td className="p-3 text-gray-400 text-xs">
+                          <td className="p-3 text-wl-text-secondary text-xs">
                             {customer.lastOrder}
                           </td>
                           <td className="p-3">
@@ -526,7 +526,7 @@ export default function AdminCustomersPage() {
                             className="p-3 text-center"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <button className="bg-transparent border-none text-gray-400 cursor-pointer p-1 inline-flex items-center justify-center transition-all hover:text-white">
+                            <button className="bg-transparent border-none text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all hover:text-white">
                               <MoreVertical />
                             </button>
                           </td>
@@ -539,11 +539,11 @@ export default function AdminCustomersPage() {
             </>
           ) : (
             <CardContent className="p-12 text-center flex flex-col items-center justify-center">
-              <AlertCircle className="w-12 h-12 text-gray-400 mb-3 opacity-30" />
+              <AlertCircle className="w-12 h-12 text-wl-text-secondary mb-3 opacity-30" />
               <p className="text-white font-medium m-0 mb-1">
                 No customers found
               </p>
-              <p className="text-gray-400 text-sm m-0">
+              <p className="text-wl-text-secondary text-sm m-0">
                 Try adjusting your filters
               </p>
             </CardContent>

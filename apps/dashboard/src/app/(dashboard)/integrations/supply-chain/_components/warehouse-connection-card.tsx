@@ -43,7 +43,7 @@ export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardPr
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <h3 className="text-base font-semibold text-white">{warehouse.name}</h3>
-            <p className="text-xs text-gray-500 mt-1">{warehouse.warehouseCount} warehouses</p>
+            <p className="text-xs text-wl-text-tertiary mt-1">{warehouse.warehouseCount} warehouses</p>
           </div>
           <Badge className={cn("capitalize border", getSyncStatusColor(warehouse.syncStatus))}>
             {warehouse.syncStatus}
@@ -52,11 +52,11 @@ export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardPr
 
         <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Last Sync</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Last Sync</p>
             <p className="text-sm font-semibold text-white mt-1">{warehouse.lastSync}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Next Sync</p>
+            <p className="text-xs font-medium text-wl-text-tertiary uppercase">Next Sync</p>
             <p className="text-sm font-semibold text-white mt-1">{warehouse.nextSync}</p>
           </div>
         </div>

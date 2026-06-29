@@ -141,7 +141,7 @@ export default function ProfilePage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
               <CardTitle className="text-white">Profile Information</CardTitle>
-              <CardDescription className="text-gray-400">Update your personal details</CardDescription>
+              <CardDescription className="text-wl-text-secondary">Update your personal details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                   type="email"
                   value={profileData.email}
                   disabled
-                  className="bg-wl-bg-elevated border-wl-border-default text-gray-400"
+                  className="bg-wl-bg-elevated border-wl-border-default text-wl-text-secondary"
                 />
               </div>
 
@@ -231,7 +231,7 @@ export default function ProfilePage() {
                 <Lock className="w-5 h-5" />
                 Change Password
               </CardTitle>
-              <CardDescription className="text-gray-400">Update your password regularly for security</CardDescription>
+              <CardDescription className="text-wl-text-secondary">Update your password regularly for security</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -259,7 +259,7 @@ export default function ProfilePage() {
                   />
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-secondary hover:text-white"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -267,7 +267,7 @@ export default function ProfilePage() {
                 {password.new && (
                   <div className="mt-2">
                     <div className="flex items-center gap-2 text-xs mb-1">
-                      <span className="text-gray-400">Strength:</span>
+                      <span className="text-wl-text-secondary">Strength:</span>
                       <div className="flex-1 h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
                         <div
                           className={cn("h-full transition-all", getStrengthColor())}
@@ -308,7 +308,7 @@ export default function ProfilePage() {
                     <Shield className="w-5 h-5" />
                     Two-Factor Authentication
                   </CardTitle>
-                  <CardDescription className="text-gray-400">
+                  <CardDescription className="text-wl-text-secondary">
                     Add an extra layer of security to your account
                   </CardDescription>
                 </div>
@@ -323,7 +323,7 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               {!mfaSetup ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-400 mb-4">
+                  <p className="text-wl-text-secondary mb-4">
                     Set up two-factor authentication using an authenticator app
                   </p>
                   <Button variant="primary" onClick={() => setMfaSetup(true)}>
@@ -333,7 +333,7 @@ export default function ProfilePage() {
               ) : (
                 <>
                   <div className="text-center py-4">
-                    <p className="text-sm text-gray-400 mb-3">
+                    <p className="text-sm text-wl-text-secondary mb-3">
                       Scan this QR code with your authenticator app
                     </p>
                     <img src={qrCode} alt="MFA QR Code" className="mx-auto border border-wl-border-default p-2 rounded" />
@@ -352,10 +352,10 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="bg-wl-bg-elevated p-4 rounded-lg border border-wl-border-default">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                    <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-3">
                       Backup Codes
                     </p>
-                    <p className="text-xs text-gray-400 mb-3">
+                    <p className="text-xs text-wl-text-secondary mb-3">
                       Save these codes in a secure location. Use them if you lose access to your authenticator.
                     </p>
                     <div className="space-y-2">

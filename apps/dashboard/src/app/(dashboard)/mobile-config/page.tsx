@@ -240,22 +240,22 @@ export default function MobileConfigPage() {
                 <div
                   className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-elevated hover:border-blue-500 hover:bg-blue-500/8"
                 >
-                  <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <Upload className="w-8 h-8 mx-auto mb-2 text-wl-text-secondary" />
                   <p className="text-sm font-medium text-white">
                     Drag logo or click to upload
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-wl-text-secondary mt-1">
                     PNG, JPG, WEBP (Max 2MB)
                   </p>
                 </div>
                 {logoUrl && (
                   <div className="mt-3 p-3 bg-wl-bg-elevated rounded-lg text-center">
                     <div
-                      className="w-15 h-15 mx-auto mb-2 bg-wl-bg-root rounded-lg flex items-center justify-center text-xs text-gray-400"
+                      className="w-15 h-15 mx-auto mb-2 bg-wl-bg-root rounded-lg flex items-center justify-center text-xs text-wl-text-secondary"
                     >
                       LOGO
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-wl-text-secondary">
                       {logoUrl}
                     </p>
                   </div>
@@ -273,7 +273,7 @@ export default function MobileConfigPage() {
                   onChange={(e) => setAppName(e.target.value)}
                   className="w-full px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-white text-sm outline-none transition-colors focus:border-blue-500"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-wl-text-secondary mt-1">
                   Displayed on home screen
                 </p>
               </div>
@@ -321,7 +321,7 @@ export default function MobileConfigPage() {
                     <p className="text-sm font-semibold text-white">
                       {feature.name}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {feature.description}
                     </p>
                   </div>
@@ -352,7 +352,7 @@ export default function MobileConfigPage() {
                     { value: "apple-maps", label: "Apple Maps" },
                   ]}
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-wl-text-secondary mt-1">
                   Default navigation app for route guidance
                 </p>
               </div>
@@ -379,7 +379,7 @@ export default function MobileConfigPage() {
                     <p className="text-sm font-semibold text-white">
                       {notification.name}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {notification.description}
                     </p>
                   </div>
@@ -517,7 +517,7 @@ export default function MobileConfigPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   Features Enabled
                 </p>
                 <p className="text-lg font-bold text-white mt-1">
@@ -525,7 +525,7 @@ export default function MobileConfigPage() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   Notifications Enabled
                 </p>
                 <p className="text-lg font-bold text-white mt-1">
@@ -533,7 +533,7 @@ export default function MobileConfigPage() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-wl-text-secondary">
                   Configuration Status
                 </p>
                 <Badge variant="success" className="mt-1">
@@ -543,10 +543,10 @@ export default function MobileConfigPage() {
             </div>
 
             <div className="p-3 bg-wl-bg-elevated rounded-lg mb-4">
-              <p className="text-xs font-semibold text-gray-400 mb-2">
+              <p className="text-xs font-semibold text-wl-text-secondary mb-2">
                 DEPLOYMENT NOTES
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-wl-text-secondary">
                 All configurations are ready for deployment to production. Click "Save Configuration" to apply these settings to the driver mobile app.
               </p>
             </div>

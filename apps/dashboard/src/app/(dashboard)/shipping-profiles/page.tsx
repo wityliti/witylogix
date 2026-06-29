@@ -215,8 +215,8 @@ export default function ShippingProfilesPage() {
                   className={cn(
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-200",
                     deliveryFilter === m
-                      ? "bg-blue-500 text-gray-900 border-blue-500"
-                      : "bg-transparent text-gray-400 border-wl-border-default",
+                      ? "bg-blue-500 text-wl-text-primary border-blue-500"
+                      : "bg-transparent text-wl-text-secondary border-wl-border-default",
                   )}
                 >
                   {m === "ALL"
@@ -281,7 +281,7 @@ export default function ShippingProfilesPage() {
                 {/* Description */}
                 {profile.description && (
                   <div
-                    className={cn("text-xs text-gray-300 mb-3 leading-relaxed")}
+                    className={cn("text-xs text-wl-neutral-300 mb-3 leading-relaxed")}
                   >
                     {profile.description}
                   </div>
@@ -308,7 +308,7 @@ export default function ShippingProfilesPage() {
                   )}
                 >
                   <div>
-                    <div className={cn("text-[10px] text-gray-400 mb-1")}>
+                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
                       Flat Rate
                     </div>
                     <div
@@ -316,7 +316,7 @@ export default function ShippingProfilesPage() {
                         "text-base font-bold font-mono",
                         profile.flatRate && profile.flatRate > 0
                           ? "text-blue-500"
-                          : "text-gray-400",
+                          : "text-wl-text-secondary",
                       )}
                     >
                       {profile.flatRate !== null
@@ -328,7 +328,7 @@ export default function ShippingProfilesPage() {
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-gray-400 mb-1")}>
+                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
                       Free Above
                     </div>
                     <div
@@ -336,7 +336,7 @@ export default function ShippingProfilesPage() {
                         "text-base font-bold font-mono",
                         profile.freeShippingAbove
                           ? "text-emerald-500"
-                          : "text-gray-400",
+                          : "text-wl-text-secondary",
                       )}
                     >
                       {profile.freeShippingAbove
@@ -346,22 +346,22 @@ export default function ShippingProfilesPage() {
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-gray-400 mb-1")}>
+                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
                       Processing Time
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-gray-300")}
+                      className={cn("text-base font-bold font-mono text-wl-neutral-300")}
                     >
                       {profile.processingTimeHours}h
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-gray-400 mb-1")}>
+                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
                       Min Order
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-gray-300")}
+                      className={cn("text-base font-bold font-mono text-wl-neutral-300")}
                     >
                       {profile.minOrderAmount
                         ? formatCurrency(Number(profile.minOrderAmount))
@@ -374,7 +374,7 @@ export default function ShippingProfilesPage() {
           ))}
 
           {filtered.length === 0 && (
-            <div className="col-span-full text-center py-12 text-gray-500">
+            <div className="col-span-full text-center py-12 text-wl-text-tertiary">
               No shipping profiles found
             </div>
           )}
@@ -391,7 +391,7 @@ export default function ShippingProfilesPage() {
             >
               Previous
             </Button>
-            <span className="text-sm text-gray-400 self-center">
+            <span className="text-sm text-wl-text-secondary self-center">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <Button

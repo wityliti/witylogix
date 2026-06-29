@@ -84,7 +84,7 @@ export default function CarriersSettingsPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back */}
         <Link href="/settings">
-          <Button variant="ghost" size="sm" className="mb-6 text-gray-400 hover:text-white gap-2">
+          <Button variant="ghost" size="sm" className="mb-6 text-wl-text-secondary hover:text-white gap-2">
             <ChevronLeft className="w-4 h-4" />
             Back to Settings
           </Button>
@@ -96,7 +96,7 @@ export default function CarriersSettingsPage() {
             <Package className="w-5 h-5 text-purple-400" />
           </div>
           <div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-wl-text-secondary">
               {configuredCount} of {rows.length} carriers configured
             </p>
           </div>
@@ -115,7 +115,7 @@ export default function CarriersSettingsPage() {
                     {carrier.configured ? (
                       <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
                     ) : (
-                      <AlertCircle className="w-4 h-4 text-gray-500 shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-wl-text-tertiary shrink-0" />
                     )}
                     {carrier.label}
                   </CardTitle>
@@ -124,7 +124,7 @@ export default function CarriersSettingsPage() {
                     className={
                       carrier.configured
                         ? "border-green-500/40 text-green-400 bg-green-500/10"
-                        : "border-gray-600 text-gray-500"
+                        : "border-wl-border-strong text-wl-text-tertiary"
                     }
                   >
                     {carrier.configured ? "Configured" : "Not configured"}
@@ -136,14 +136,14 @@ export default function CarriersSettingsPage() {
                 {carrier.meta && (
                   <>
                     <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+                      <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-1">
                         Coverage
                       </p>
-                      <p className="text-sm text-gray-300">{carrier.meta.coverage}</p>
+                      <p className="text-sm text-wl-neutral-300">{carrier.meta.coverage}</p>
                     </div>
 
                     <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+                      <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-1">
                         Services
                       </p>
                       <div className="flex flex-wrap gap-1.5">
@@ -151,7 +151,7 @@ export default function CarriersSettingsPage() {
                           <Badge
                             key={svc}
                             variant="default"
-                            className="text-xs border-white/10 text-gray-400"
+                            className="text-xs border-white/10 text-wl-text-secondary"
                           >
                             {svc}
                           </Badge>
@@ -169,7 +169,7 @@ export default function CarriersSettingsPage() {
                             </p>
                             <ul className="space-y-0.5">
                               {carrier.meta.configVars.map((v) => (
-                                <li key={v} className="text-xs font-mono text-gray-400">
+                                <li key={v} className="text-xs font-mono text-wl-text-secondary">
                                   {v}
                                 </li>
                               ))}
@@ -186,7 +186,7 @@ export default function CarriersSettingsPage() {
         </div>
 
         {/* Footer note */}
-        <p className="mt-6 text-xs text-gray-600 text-center">
+        <p className="mt-6 text-xs text-wl-text-tertiary text-center">
           Carrier adapters are configured via environment variables.
           Restart the API server after updating env vars.
         </p>

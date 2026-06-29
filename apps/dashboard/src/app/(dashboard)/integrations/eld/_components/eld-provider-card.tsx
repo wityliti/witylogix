@@ -69,7 +69,7 @@ export function ELDProviderCard({ provider }: ELDProviderCardProps) {
           <>
             <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase">
+                <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                   Drivers
                 </p>
                 <p className="text-2xl font-bold text-white mt-1">
@@ -77,7 +77,7 @@ export function ELDProviderCard({ provider }: ELDProviderCardProps) {
                 </p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase">
+                <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                   Vehicles
                 </p>
                 <p className="text-2xl font-bold text-white mt-1">
@@ -87,7 +87,7 @@ export function ELDProviderCard({ provider }: ELDProviderCardProps) {
             </div>
 
             <div className="mb-6">
-              <p className="text-xs font-medium text-gray-500 uppercase">
+              <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                 Last Sync
               </p>
               <p className="text-sm text-white mt-1 flex items-center gap-2">

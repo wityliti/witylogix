@@ -112,7 +112,7 @@ export default function EventsPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-white">Filters & Search</CardTitle>
             {Object.keys(filters).length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs text-gray-400">
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs text-wl-text-secondary">
                 <X className="w-3 h-3 mr-1" />
                 Clear All
               </Button>
@@ -123,7 +123,7 @@ export default function EventsPage() {
         <CardContent className="space-y-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
             <input
               type="text"
               placeholder="Search by event ID..."
@@ -143,7 +143,7 @@ export default function EventsPage() {
           {/* Filter Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Event Type</label>
+              <label className="block text-xs font-semibold text-wl-text-secondary mb-2 uppercase tracking-wide">Event Type</label>
               <select
                 value={filters.eventType || ""}
                 onChange={(e) => updateFilter("eventType", e.target.value)}
@@ -154,7 +154,7 @@ export default function EventsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Source</label>
+              <label className="block text-xs font-semibold text-wl-text-secondary mb-2 uppercase tracking-wide">Source</label>
               <select
                 value={(filters.source as string) || ""}
                 onChange={(e) => updateFilter("source", e.target.value as any)}
@@ -167,7 +167,7 @@ export default function EventsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Entity Type</label>
+              <label className="block text-xs font-semibold text-wl-text-secondary mb-2 uppercase tracking-wide">Entity Type</label>
               <select
                 value={filters.entityType || ""}
                 onChange={(e) => updateFilter("entityType", e.target.value)}
@@ -178,7 +178,7 @@ export default function EventsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Date From</label>
+              <label className="block text-xs font-semibold text-wl-text-secondary mb-2 uppercase tracking-wide">Date From</label>
               <input
                 type="date"
                 value={filters.dateFrom || ""}
@@ -202,7 +202,7 @@ export default function EventsPage() {
               className="w-4 h-4 rounded border-wl-border-default cursor-pointer bg-wl-bg-elevated"
               aria-label="Select all events"
             />
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-wl-text-secondary">
               {selectedEvents.size > 0 ? `${selectedEvents.size} selected` : "Select events"}
             </span>
           </div>
@@ -224,7 +224,7 @@ export default function EventsPage() {
           </div>
         ) : data.length === 0 ? (
           <Card className="p-8 bg-wl-bg-surface border-wl-border-default text-center">
-            <p className="text-gray-400">No events found</p>
+            <p className="text-wl-text-secondary">No events found</p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-3">
@@ -244,7 +244,7 @@ export default function EventsPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="text-sm font-semibold text-white mb-1">{event.action}</h4>
-                      <p className="text-xs text-gray-400 mb-2">{event.entityType} &bull; {new Date(event.timestamp).toLocaleTimeString()}</p>
+                      <p className="text-xs text-wl-text-secondary mb-2">{event.entityType} &bull; {new Date(event.timestamp).toLocaleTimeString()}</p>
                     </div>
                     <Badge variant="info" className="text-xs">{event.actorType}</Badge>
                   </div>

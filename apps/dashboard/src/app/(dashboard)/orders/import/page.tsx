@@ -166,43 +166,43 @@ export default function OrderImportPage() {
         {metrics && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Total Synced
               </p>
               <p className="text-3xl font-bold font-mono text-white">
                 {metrics.totalOrdersSynced}
               </p>
-              <p className="text-xs text-gray-400 mt-2">orders imported</p>
+              <p className="text-xs text-wl-text-secondary mt-2">orders imported</p>
             </Card>
 
             <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Pending
               </p>
               <p className="text-3xl font-bold font-mono text-blue-500">
                 {metrics.pendingOrders}
               </p>
-              <p className="text-xs text-gray-400 mt-2">awaiting sync</p>
+              <p className="text-xs text-wl-text-secondary mt-2">awaiting sync</p>
             </Card>
 
             <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Failed
               </p>
               <p className="text-3xl font-bold font-mono text-red-500">
                 {metrics.failedOrders}
               </p>
-              <p className="text-xs text-gray-400 mt-2">errors</p>
+              <p className="text-xs text-wl-text-secondary mt-2">errors</p>
             </Card>
 
             <Card className="p-5 bg-wl-bg-surface border border-wl-border-default">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Conflicts
               </p>
               <p className="text-3xl font-bold font-mono text-amber-500">
                 {metrics.activeConflicts}
               </p>
-              <p className="text-xs text-gray-400 mt-2">unresolved</p>
+              <p className="text-xs text-wl-text-secondary mt-2">unresolved</p>
             </Card>
           </div>
         )}
@@ -212,7 +212,7 @@ export default function OrderImportPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-lg font-bold text-white">Platform Status</h2>
-              <p className="text-sm text-gray-400 mt-1">Connection and health overview</p>
+              <p className="text-sm text-wl-text-secondary mt-1">Connection and health overview</p>
             </div>
             <Badge variant={statusLoading ? "info" : "default"}>
               {statusLoading ? "⟳ Updating..." : "Live"}
@@ -241,7 +241,7 @@ export default function OrderImportPage() {
                     <span className="text-2xl">{platform.icon}</span>
                     <div>
                       <p className="font-semibold text-white">{platform.name}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-wl-text-secondary">
                         {isConnected ? "Connected" : "Disconnected"}
                       </p>
                     </div>
@@ -255,7 +255,7 @@ export default function OrderImportPage() {
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: getHealthColor(health.status) }}
                         />
-                        <span className="text-xs font-medium text-gray-300">
+                        <span className="text-xs font-medium text-wl-neutral-300">
                           {health.status === "healthy"
                             ? "Healthy"
                             : health.status === "warning"
@@ -267,7 +267,7 @@ export default function OrderImportPage() {
                       </div>
 
                       {/* Last Sync Time */}
-                      <p className="text-xs text-gray-400 flex justify-between">
+                      <p className="text-xs text-wl-text-secondary flex justify-between">
                         <span>
                           {health.lastSyncTime
                             ? `Synced: ${new Date(health.lastSyncTime).toLocaleDateString()} ${new Date(health.lastSyncTime).toLocaleTimeString()}`

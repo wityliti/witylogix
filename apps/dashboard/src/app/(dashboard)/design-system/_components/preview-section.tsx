@@ -26,7 +26,7 @@ export function PreviewSection({
         <h4 className="text-sm font-semibold text-white mb-1">
           {title}
         </h4>
-        <p className="text-xs text-gray-400">{description}</p>
+        <p className="text-xs text-wl-text-secondary">{description}</p>
       </div>
 
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-md p-6 flex items-center justify-center min-h-24">

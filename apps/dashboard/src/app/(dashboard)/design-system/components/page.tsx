@@ -67,7 +67,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
     <Card className="overflow-hidden bg-wl-bg-surface border-wl-border-default">
       <CardHeader>
         <CardTitle className="text-white">{title}</CardTitle>
-        <CardDescription className="text-gray-400">{description}</CardDescription>
+        <CardDescription className="text-wl-text-secondary">{description}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -79,7 +79,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
         {/* Code */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
               Code
             </label>
             <button
@@ -105,7 +105,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
             </button>
           </div>
           <pre className="bg-wl-bg-elevated border border-wl-border-default rounded p-4 text-xs overflow-x-auto">
-            <code className="text-gray-400 font-mono">{code}</code>
+            <code className="text-wl-text-secondary font-mono">{code}</code>
           </pre>
         </div>
       </CardContent>
@@ -133,7 +133,7 @@ export default function ComponentGalleryPage() {
       <div className="border-b border-wl-border-default sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Component Gallery</h1>
-          <p className="text-gray-400">
+          <p className="text-wl-text-secondary">
             Interactive showcase of all design system components
           </p>
         </div>
@@ -169,7 +169,7 @@ export default function ComponentGalleryPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2 block">
                   Variant
                 </label>
                 <div className="flex gap-2 flex-wrap">
@@ -181,7 +181,7 @@ export default function ComponentGalleryPage() {
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonVariant === v
                           ? "bg-wl-primary text-wl-text-inverse"
-                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-gray-300"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300"
                       )}
                     >
                       {v}
@@ -191,7 +191,7 @@ export default function ComponentGalleryPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2 block">
                   Size
                 </label>
                 <div className="flex gap-2 flex-wrap">
@@ -203,7 +203,7 @@ export default function ComponentGalleryPage() {
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonSize === s
                           ? "bg-wl-primary text-wl-text-inverse"
-                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-gray-300"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300"
                       )}
                     >
                       {s}
@@ -248,7 +248,7 @@ export default function ComponentGalleryPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2 block">
                   Variant
                 </label>
                 <div className="flex gap-2 flex-wrap">
@@ -260,7 +260,7 @@ export default function ComponentGalleryPage() {
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         badgeVariant === v
                           ? "bg-wl-primary text-wl-text-inverse"
-                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-gray-300"
+                          : "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong text-wl-neutral-300"
                       )}
                     >
                       {v}
@@ -290,10 +290,10 @@ export default function ComponentGalleryPage() {
               <Card className="w-full max-w-xs bg-wl-bg-surface border-wl-border-default">
                 <CardHeader>
                   <CardTitle className="text-white">Card Title</CardTitle>
-                  <CardDescription className="text-gray-400">Card subtitle or description</CardDescription>
+                  <CardDescription className="text-wl-text-secondary">Card subtitle or description</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-300">
+                  <p className="text-sm text-wl-neutral-300">
                     This is the main content area of the card component.
                   </p>
                 </CardContent>
@@ -364,7 +364,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setSwitchEnabled(checked === true)}
                   id="switch-demo"
                 />
-                <label htmlFor="switch-demo" className="text-sm text-gray-300">
+                <label htmlFor="switch-demo" className="text-sm text-wl-neutral-300">
                   {switchEnabled ? "Enabled" : "Disabled"}
                 </label>
               </div>
@@ -387,7 +387,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setCheckboxChecked(checked === true)}
                   id="checkbox-demo"
                 />
-                <label htmlFor="checkbox-demo" className="text-sm text-gray-300">
+                <label htmlFor="checkbox-demo" className="text-sm text-wl-neutral-300">
                   {checkboxChecked ? "Checked" : "Unchecked"}
                 </label>
               </div>
@@ -423,7 +423,7 @@ export default function ComponentGalleryPage() {
               <div className="w-full max-w-xs space-y-4">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-gray-300">Progress: {progressValue}%</label>
+                    <label className="text-xs text-wl-neutral-300">Progress: {progressValue}%</label>
                   </div>
                   <Progress value={progressValue} />
                 </div>
@@ -651,7 +651,7 @@ export default function ComponentGalleryPage() {
                   <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-blue-500">Info Message</p>
-                    <p className="text-xs text-gray-400">This is an informational alert</p>
+                    <p className="text-xs text-wl-text-secondary">This is an informational alert</p>
                   </div>
                 </div>
               </div>

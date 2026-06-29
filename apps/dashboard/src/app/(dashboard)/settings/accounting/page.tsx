@@ -181,7 +181,7 @@ export default function AccountingSettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white">Accounting Integration</h1>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-wl-text-secondary">
           Connect your accounting software to automatically sync invoices and payments
         </p>
       </div>
@@ -225,17 +225,17 @@ export default function AccountingSettingsPage() {
                     {/* Connection Stats */}
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="bg-wl-bg-elevated rounded p-2">
-                        <div className="text-gray-400 text-xs">Synced</div>
+                        <div className="text-wl-text-secondary text-xs">Synced</div>
                         <div className="text-lg font-semibold text-white">{connection.syncedCount || 0}</div>
                       </div>
                       <div className="bg-wl-bg-elevated rounded p-2">
-                        <div className="text-gray-400 text-xs">Failed</div>
+                        <div className="text-wl-text-secondary text-xs">Failed</div>
                         <div className="text-lg font-semibold text-red-500">{connection.failedCount || 0}</div>
                       </div>
                     </div>
 
                     {connection.lastSyncAt && (
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-wl-text-secondary">
                         Last sync: {new Date(connection.lastSyncAt).toLocaleString()}
                       </div>
                     )}
@@ -317,7 +317,7 @@ export default function AccountingSettingsPage() {
                 <div className="flex items-center justify-between py-3 border-b border-wl-border-default">
                   <div>
                     <p className="font-medium text-white">Automatic Sync</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-wl-text-secondary">
                       Automatically sync new invoices to all connected providers
                     </p>
                   </div>
@@ -475,7 +475,7 @@ export default function AccountingSettingsPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center text-gray-400 py-8">
+                          <TableCell colSpan={5} className="text-center text-wl-text-secondary py-8">
                             No sync history
                           </TableCell>
                         </TableRow>

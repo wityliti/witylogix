@@ -100,7 +100,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
           {expandedSections.includes("overview") && (
             <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Name
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -108,7 +108,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Email
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -116,7 +116,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Role
                 </p>
                 <Badge
@@ -132,7 +132,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 </Badge>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Store
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -161,7 +161,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
           {expandedSections.includes("activity") && (
             <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Last Login
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -169,7 +169,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Created
                 </p>
                 <p className="text-white text-sm font-medium m-0">
@@ -230,7 +230,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   </Badge>
                 ))
               ) : (
-                <p className="text-gray-400 text-xs m-0">
+                <p className="text-wl-text-secondary text-xs m-0">
                   No auth providers connected
                 </p>
               )}
@@ -299,7 +299,7 @@ export default function AdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Total Users
                   </p>
                   <p className="text-white text-2xl font-bold m-0">
@@ -315,7 +315,7 @@ export default function AdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Active
                   </p>
                   <p className="text-white text-2xl font-bold m-0">
@@ -331,7 +331,7 @@ export default function AdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Admins
                   </p>
                   <p className="text-white text-2xl font-bold m-0">
@@ -347,7 +347,7 @@ export default function AdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs text-gray-400 m-0 mb-1 font-semibold uppercase">
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Pending Invites
                   </p>
                   <p className="text-white text-2xl font-bold m-0">
@@ -370,7 +370,7 @@ export default function AdminUsersPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full p-2 pl-8 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
             />
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
           </div>
           <Button variant="secondary" size="sm">
             <Filter className="w-4 h-4" />
@@ -386,22 +386,22 @@ export default function AdminUsersPage() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-wl-border-default bg-wl-bg-root min-h-screen">
-                  <th className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider">
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
                     User
                   </th>
-                  <th className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider">
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider">
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
                     Store
                   </th>
-                  <th className="p-3 text-center text-gray-400 font-semibold text-xs uppercase tracking-wider">
+                  <th className="p-3 text-center text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider">
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
                     Last Login
                   </th>
-                  <th className="p-3 text-center text-gray-400 font-semibold text-xs uppercase tracking-wider">
+                  <th className="p-3 text-center text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -425,7 +425,7 @@ export default function AdminUsersPage() {
                           <p className="text-white font-medium m-0">
                             {user.name}
                           </p>
-                          <p className="text-gray-400 text-xs m-0">
+                          <p className="text-wl-text-secondary text-xs m-0">
                             {user.email}
                           </p>
                         </div>
@@ -455,7 +455,7 @@ export default function AdminUsersPage() {
                         {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                       </Badge>
                     </td>
-                    <td className="p-3 text-gray-400 text-xs">
+                    <td className="p-3 text-wl-text-secondary text-xs">
                       {user.lastLogin}
                     </td>
                     <td className="p-3 text-center">

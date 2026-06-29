@@ -164,7 +164,7 @@ export default function InventoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Inventory Management</h2>
-          <p className="text-gray-300 mt-1">
+          <p className="text-wl-neutral-300 mt-1">
             Monitor stock levels, ABC analysis, and reorder alerts
           </p>
         </div>
@@ -252,7 +252,7 @@ export default function InventoryPage() {
                       <h4 className="text-sm font-medium text-white">
                         {gauge.name}
                       </h4>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-wl-text-secondary mt-0.5">
                         {gauge.sku}
                       </p>
                     </div>
@@ -286,7 +286,7 @@ export default function InventoryPage() {
                         style={{ height: `${Math.max(5, gaugePercentage)}%` }}
                       />
                     </div>
-                    <div className="text-xs text-gray-400 mt-2 text-center">
+                    <div className="text-xs text-wl-text-secondary mt-2 text-center">
                       {gauge.percentageFilled}% filled
                     </div>
                   </div>
@@ -294,19 +294,19 @@ export default function InventoryPage() {
                   {/* Levels */}
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Current:</span>
+                      <span className="text-wl-neutral-300">Current:</span>
                       <span className="font-semibold text-white">
                         {gauge.current}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Min:</span>
+                      <span className="text-wl-neutral-300">Min:</span>
                       <span className="font-semibold text-white">
                         {gauge.minimum}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Max:</span>
+                      <span className="text-wl-neutral-300">Max:</span>
                       <span className="font-semibold text-white">
                         {gauge.maximum}
                       </span>
@@ -339,17 +339,17 @@ export default function InventoryPage() {
                     {alert.productName}
                   </h4>
                   <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-wl-text-secondary">
                       Current: {alert.currentQty}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-wl-text-secondary">
                       Reorder Point: {alert.reorderPoint}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-wl-text-secondary">
                       Suggested Order: {alert.suggestedOrder}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 mt-1 text-xs text-gray-300">
+                  <div className="flex items-center gap-4 mt-1 text-xs text-wl-neutral-300">
                     <span>Vendor: {alert.vendor}</span>
                     <span>Lead Time: {alert.leadTime} days</span>
                   </div>
@@ -451,7 +451,7 @@ export default function InventoryPage() {
                       <h4 className="text-sm font-medium text-white">
                         {item.name}
                       </h4>
-                      <p className="text-xs text-gray-400">{item.sku}</p>
+                      <p className="text-xs text-wl-text-secondary">{item.sku}</p>
                     </div>
                     <Badge
                       variant={
@@ -468,25 +468,25 @@ export default function InventoryPage() {
 
                   <div className="space-y-1 text-xs mb-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Qty:</span>
+                      <span className="text-wl-neutral-300">Qty:</span>
                       <span className="font-semibold text-white">
                         {item.quantity}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Reorder:</span>
+                      <span className="text-wl-neutral-300">Reorder:</span>
                       <span className="font-semibold text-white">
                         {item.reorderPoint}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Unit Cost:</span>
+                      <span className="text-wl-neutral-300">Unit Cost:</span>
                       <span className="font-semibold text-white">
                         ${item.unitCost.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Location:</span>
+                      <span className="text-wl-neutral-300">Location:</span>
                       <span className="font-semibold text-white">
                         {item.warehouse}
                       </span>
@@ -545,13 +545,13 @@ export default function InventoryPage() {
                       {transfer.fromWarehouse} → {transfer.toWarehouse}
                     </h4>
                     <div className="flex items-center gap-4 mt-2">
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-wl-text-secondary">
                         SKU: {transfer.sku}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-wl-text-secondary">
                         Qty: {transfer.qty}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-wl-text-secondary">
                         Created: {new Date(transfer.createdDate).toLocaleDateString()}
                       </span>
                     </div>

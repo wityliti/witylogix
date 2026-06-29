@@ -164,7 +164,7 @@ export default function BulkOperationsPage() {
     <div className="min-h-screen bg-wl-bg-root p-6 text-white">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Bulk Operations</h1>
-        <p className="text-sm text-gray-400">Perform bulk actions on multiple orders at once</p>
+        <p className="text-sm text-wl-text-secondary">Perform bulk actions on multiple orders at once</p>
       </div>
 
       {/* Search and Filter */}
@@ -172,19 +172,19 @@ export default function BulkOperationsPage() {
         <p className="text-base font-semibold mb-4 text-white">Search & Filter Orders</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-300">Search Order ID or Customer</label>
+            <label className="text-sm font-medium text-wl-neutral-300">Search Order ID or Customer</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-300">Filter by Status</label>
+            <label className="text-sm font-medium text-wl-neutral-300">Filter by Status</label>
             <select
-              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -195,7 +195,7 @@ export default function BulkOperationsPage() {
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-300">&nbsp;</label>
+            <label className="text-sm font-medium text-wl-neutral-300">&nbsp;</label>
             <button
               onClick={() => { setSearchTerm(''); setFilterStatus(''); }}
               className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
@@ -209,7 +209,7 @@ export default function BulkOperationsPage() {
       {/* Selection bar */}
       {filteredOrders.length > 0 && (
         <div className="bg-wl-bg-root border border-wl-border-default rounded-lg p-4 mb-6 flex items-center justify-between">
-          <p className="text-sm text-gray-400 flex-1">
+          <p className="text-sm text-wl-text-secondary flex-1">
             {selectedOrders.size > 0
               ? `${selectedOrders.size} order${selectedOrders.size !== 1 ? 's' : ''} selected`
               : 'Select orders to perform bulk actions'}
@@ -238,11 +238,11 @@ export default function BulkOperationsPage() {
                     onChange={toggleSelectAll}
                   />
                 </th>
-                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400">Order ID</th>
-                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400">Customer</th>
-                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400">Total</th>
-                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400">Status</th>
-                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400">Date</th>
+                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-wl-text-secondary">Order ID</th>
+                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-wl-text-secondary">Customer</th>
+                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-wl-text-secondary">Total</th>
+                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-wl-text-secondary">Status</th>
+                <th className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-wl-text-secondary">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -256,17 +256,17 @@ export default function BulkOperationsPage() {
                       onChange={() => toggleOrderSelection(order.id)}
                     />
                   </td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300 font-mono">
+                  <td className="border-b border-wl-border-default p-3 text-sm text-wl-neutral-300 font-mono">
                     #{order.id.slice(0, 8)}
                   </td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{order.customerName}</td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">₹{order.totalAmount.toLocaleString()}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-wl-neutral-300">{order.customerName}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-wl-neutral-300">₹{order.totalAmount.toLocaleString()}</td>
                   <td className="border-b border-wl-border-default p-3 text-sm">
                     <Badge variant={STATUS_VARIANT[order.status] ?? 'default'}>
                       {order.status.replace(/_/g, ' ')}
                     </Badge>
                   </td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                  <td className="border-b border-wl-border-default p-3 text-sm text-wl-neutral-300">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
@@ -274,7 +274,7 @@ export default function BulkOperationsPage() {
             </tbody>
           </table>
         ) : (
-          <div className="p-6 text-center text-gray-400">No orders found</div>
+          <div className="p-6 text-center text-wl-text-secondary">No orders found</div>
         )}
       </div>
 
@@ -284,9 +284,9 @@ export default function BulkOperationsPage() {
           <p className="text-base font-semibold mb-4 text-white">Bulk Actions</p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-300">Select Action</label>
+              <label className="text-sm font-medium text-wl-neutral-300">Select Action</label>
               <select
-                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 value={bulkAction}
                 onChange={(e) => setBulkAction(e.target.value)}
               >
@@ -299,9 +299,9 @@ export default function BulkOperationsPage() {
 
             {bulkAction === 'update_status' && (
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-300">New Status</label>
+                <label className="text-sm font-medium text-wl-neutral-300">New Status</label>
                 <select
-                  className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-neutral-300 text-sm box-border focus:outline-none focus:border-blue-500"
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                 >
@@ -313,7 +313,7 @@ export default function BulkOperationsPage() {
             )}
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-300">&nbsp;</label>
+              <label className="text-sm font-medium text-wl-neutral-300">&nbsp;</label>
               <button
                 onClick={handleBulkAction}
                 disabled={!bulkAction || processing}
@@ -336,10 +336,10 @@ export default function BulkOperationsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-11/12 text-white">
             <h2 className="text-lg font-bold mb-4">Confirm Bulk Action</h2>
-            <div className="text-sm text-gray-300 mb-5 leading-relaxed space-y-2">
+            <div className="text-sm text-wl-neutral-300 mb-5 leading-relaxed space-y-2">
               <div>Action: <strong>{bulkAction === 'update_status' ? `Update Status → ${newStatus}` : 'Cancel Orders'}</strong></div>
               <div>Orders selected: <strong>{selectedOrders.size}</strong></div>
-              <div className="mt-4 text-gray-500">This will affect all selected orders. Continue?</div>
+              <div className="mt-4 text-wl-text-tertiary">This will affect all selected orders. Continue?</div>
             </div>
             <div className="flex gap-2.5 justify-end">
               <button
@@ -364,7 +364,7 @@ export default function BulkOperationsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-11/12 text-white">
             <h2 className="text-lg font-bold mb-4">Operation Complete</h2>
-            <div className="text-sm text-gray-300 mb-5 space-y-1">
+            <div className="text-sm text-wl-neutral-300 mb-5 space-y-1">
               <div className="text-emerald-500 font-semibold">
                 {operationResults.success} order{operationResults.success !== 1 ? 's' : ''} updated successfully
               </div>
@@ -377,8 +377,8 @@ export default function BulkOperationsPage() {
             <div className="mt-4 max-h-48 overflow-y-auto space-y-2">
               {operationResults.details.filter(d => d.status === 'error').map((detail, idx) => (
                 <div key={idx} className="bg-wl-bg-root border-l-4 border-l-red-500 rounded p-3">
-                  <p className="font-semibold text-sm text-gray-300 font-mono">#{detail.orderId.slice(0, 8)}</p>
-                  <p className="text-xs text-gray-400 mt-1">{detail.message}</p>
+                  <p className="font-semibold text-sm text-wl-neutral-300 font-mono">#{detail.orderId.slice(0, 8)}</p>
+                  <p className="text-xs text-wl-text-secondary mt-1">{detail.message}</p>
                 </div>
               ))}
             </div>

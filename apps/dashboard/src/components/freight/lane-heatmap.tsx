@@ -201,7 +201,7 @@ export function LaneHeatmap({
                         <p className="text-xs font-semibold text-white">
                           {view === "volume" ? lane.volume : `$${lane.costPerMile.toFixed(2)}`}
                         </p>
-                        <p className="text-xs text-gray-300 mt-1">
+                        <p className="text-xs text-wl-neutral-300 mt-1">
                           {lane.carriers} carrier{lane.carriers !== 1 ? 's' : ''}
                         </p>
                       </div>

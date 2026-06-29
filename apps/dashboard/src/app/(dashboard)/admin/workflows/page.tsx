@@ -169,7 +169,7 @@ export default function WorkflowExecutionsPage() {
                   "px-3 py-2 text-sm font-medium cursor-pointer bg-transparent border-0 border-b-2 transition-all capitalize",
                   isActive
                     ? "text-white border-b-blue-500"
-                    : "text-gray-400 border-b-transparent"
+                    : "text-wl-text-secondary border-b-transparent"
                 )}
               >
                 {tab === "all" ? "All" : tab}
@@ -197,7 +197,7 @@ export default function WorkflowExecutionsPage() {
         {error && !loading && (
           <Card className="p-6 text-center bg-wl-bg-surface border border-wl-border-default mb-5">
             <AlertCircle size={32} className="mx-auto mb-2 text-red-400" />
-            <p className="text-sm text-gray-400 mb-3">Failed to load workflow executions</p>
+            <p className="text-sm text-wl-text-secondary mb-3">Failed to load workflow executions</p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
           </Card>
         )}
@@ -209,11 +209,11 @@ export default function WorkflowExecutionsPage() {
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Workflow Name</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Started</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Duration</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Workflow Name</th>
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
+                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Started</th>
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Duration</th>
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -236,19 +236,19 @@ export default function WorkflowExecutionsPage() {
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                       Workflow Name
                     </th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                       Status
                     </th>
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                       Started
                     </th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                       Duration
                     </th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                       Actions
                     </th>
                   </tr>
@@ -265,17 +265,17 @@ export default function WorkflowExecutionsPage() {
                     >
                       <td className="p-3 px-4">
                         <div className="font-medium text-white">{execution.workflowName}</div>
-                        <div className="text-[11px] text-gray-500 font-mono mt-0.5">{execution.executionId}</div>
+                        <div className="text-[11px] text-wl-text-tertiary font-mono mt-0.5">{execution.executionId}</div>
                       </td>
                       <td className="p-3 px-4 text-center">
                         <Badge variant={getStatusBadgeVariant(execution.status)} dot>
                           {getStatusLabel(execution.status)}
                         </Badge>
                       </td>
-                      <td className="p-3 px-4 text-gray-400">
+                      <td className="p-3 px-4 text-wl-text-secondary">
                         {formatDateTime(execution.startedAt)}
                       </td>
-                      <td className="p-3 px-4 text-center text-gray-400">
+                      <td className="p-3 px-4 text-center text-wl-text-secondary">
                         {formatDuration(execution.durationMs)}
                       </td>
                       <td className="p-3 px-4 text-center">
@@ -299,12 +299,12 @@ export default function WorkflowExecutionsPage() {
           </Card>
         ) : !error ? (
           <Card className="text-center p-8 bg-wl-bg-surface border border-wl-border-default">
-            <div className="text-gray-400">
+            <div className="text-wl-text-secondary">
               <Activity size={40} className="mx-auto mb-3 opacity-50" />
               <h3 className="text-base font-semibold m-0 mb-2 text-white">
                 No executions found
               </h3>
-              <p className="text-sm m-0 text-gray-400">
+              <p className="text-sm m-0 text-wl-text-secondary">
                 {search || activeTab !== "all"
                   ? "Try adjusting your filters"
                   : "Start a new workflow to see executions here"}

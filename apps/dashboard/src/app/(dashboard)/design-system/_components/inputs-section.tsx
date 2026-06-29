@@ -10,7 +10,7 @@ export function InputsSection() {
         <h2 className="text-2xl font-bold text-white mb-2">
           Input Fields
         </h2>
-        <p className="text-gray-300 mb-8">
+        <p className="text-wl-neutral-300 mb-8">
           Text input component with support for labels, errors, hints, and icons.
           Available in small, medium, and large sizes.
         </p>

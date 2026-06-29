@@ -240,7 +240,7 @@ export default function ProfilePage() {
                     />
                     <button
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-wl-text-secondary transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-wl-text-secondary transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
                       {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                     />
                     <button
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-wl-text-secondary transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary cursor-pointer hover:text-wl-text-secondary transition-colors"
                     >
                       {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>

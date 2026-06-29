@@ -93,7 +93,7 @@ export default function MaintenancePage() {
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-white">{statusCounts.scheduled}</p>
-                <p className="text-xs text-gray-400 mt-1">Scheduled</p>
+                <p className="text-xs text-wl-text-secondary mt-1">Scheduled</p>
               </div>
             </CardContent>
           </Card>
@@ -101,7 +101,7 @@ export default function MaintenancePage() {
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-amber-400">{statusCounts.inProgress}</p>
-                <p className="text-xs text-gray-400 mt-1">In Progress</p>
+                <p className="text-xs text-wl-text-secondary mt-1">In Progress</p>
               </div>
             </CardContent>
           </Card>
@@ -109,7 +109,7 @@ export default function MaintenancePage() {
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-emerald-400">{statusCounts.completed}</p>
-                <p className="text-xs text-gray-400 mt-1">Completed</p>
+                <p className="text-xs text-wl-text-secondary mt-1">Completed</p>
               </div>
             </CardContent>
           </Card>
@@ -117,7 +117,7 @@ export default function MaintenancePage() {
             <CardContent className="pt-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-red-400">{statusCounts.overdue}</p>
-                <p className="text-xs text-gray-400 mt-1">Overdue</p>
+                <p className="text-xs text-wl-text-secondary mt-1">Overdue</p>
               </div>
             </CardContent>
           </Card>
@@ -138,7 +138,7 @@ export default function MaintenancePage() {
                   <div key={item.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-wl-border-default">
                     <div>
                       <p className="text-sm font-medium text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
-                      <p className="text-xs text-gray-400">{item.vehicleName} • Due {formatDate(item.scheduledDate)}</p>
+                      <p className="text-xs text-wl-text-secondary">{item.vehicleName} • Due {formatDate(item.scheduledDate)}</p>
                     </div>
                     <Button variant="danger" size="sm">
                       Action
@@ -160,7 +160,7 @@ export default function MaintenancePage() {
                   'px-3 py-2 text-xs font-medium rounded-md transition-colors',
                   viewMode === 'list'
                     ? 'bg-blue-500 text-white'
-                    : 'bg-wl-bg-elevated text-gray-400 hover:text-white',
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
                 )}
               >
                 List View
@@ -171,7 +171,7 @@ export default function MaintenancePage() {
                   'px-3 py-2 text-xs font-medium rounded-md transition-colors',
                   viewMode === 'calendar'
                     ? 'bg-blue-500 text-white'
-                    : 'bg-wl-bg-elevated text-gray-400 hover:text-white',
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
                 )}
               >
                 Calendar
@@ -188,22 +188,22 @@ export default function MaintenancePage() {
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Type</th>
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Vehicle</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Scheduled</th>
-                      <th className="p-3 px-4 text-right font-semibold text-gray-400">Cost</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Vendor</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Type</th>
+                      <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Vehicle</th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Scheduled</th>
+                      <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">Cost</th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Vendor</th>
+                      <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedMaintenance.map((item, idx) => (
                       <tr key={item.id} className={cn('border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken')}>
                         <td className="p-3 px-4 text-white font-semibold capitalize">{item.type.replace('-', ' ')}</td>
-                        <td className="p-3 px-4 text-gray-400 text-xs">{item.vehicleName}</td>
-                        <td className="p-3 px-4 text-center text-gray-400 text-xs">{formatDate(item.scheduledDate)}</td>
+                        <td className="p-3 px-4 text-wl-text-secondary text-xs">{item.vehicleName}</td>
+                        <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{formatDate(item.scheduledDate)}</td>
                         <td className="p-3 px-4 text-right text-white font-medium">{formatCurrency(item.actualCost || item.estimatedCost)}</td>
-                        <td className="p-3 px-4 text-center text-gray-400 text-xs">{item.vendor}</td>
+                        <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{item.vendor}</td>
                         <td className="p-3 px-4 text-center">
                           <Badge variant={getStatusColor(item.status)}>{item.status === 'in-progress' ? 'In Progress' : item.status}</Badge>
                         </td>
@@ -214,7 +214,7 @@ export default function MaintenancePage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-400">
+              <div className="flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-wl-text-secondary">
                 <div>
                   Showing {paginatedMaintenance.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
                   {Math.min(currentPage * pageSize, filteredMaintenance.length)} of {filteredMaintenance.length}
@@ -228,7 +228,7 @@ export default function MaintenancePage() {
                   >
                     Previous
                   </Button>
-                  <span className="px-3 py-1 flex items-center text-gray-400">
+                  <span className="px-3 py-1 flex items-center text-wl-text-secondary">
                     Page {currentPage} of {totalPages}
                   </span>
                   <Button
@@ -257,7 +257,7 @@ export default function MaintenancePage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-semibold text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
-                          <p className="text-xs text-gray-400 mt-1">{item.vehicleName}</p>
+                          <p className="text-xs text-wl-text-secondary mt-1">{item.vehicleName}</p>
                         </div>
                         <Badge variant={getStatusColor(item.status)}>{item.status === 'in-progress' ? 'In Progress' : item.status}</Badge>
                       </div>

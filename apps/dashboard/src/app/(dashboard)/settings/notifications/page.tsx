@@ -221,7 +221,7 @@ export default function NotificationsPage() {
                   />
                 </div>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-wl-text-secondary">
                 Notifications will be silenced from {quietHours.start} to {quietHours.end} daily
               </p>
             </CardContent>
@@ -232,7 +232,7 @@ export default function NotificationsPage() {
             <CardContent className="pt-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
                     Active Channels
                   </p>
                   <p className="text-2xl font-bold text-white">
@@ -240,7 +240,7 @@ export default function NotificationsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
                     Total Notifications
                   </p>
                   <p className="text-2xl font-bold text-white">
@@ -252,7 +252,7 @@ export default function NotificationsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
                     Quiet Hours
                   </p>
                   <Badge variant={quietHours.enabled ? "success" : "default"}>
@@ -260,7 +260,7 @@ export default function NotificationsPage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
                     Status
                   </p>
                   <Badge variant="success">Active</Badge>

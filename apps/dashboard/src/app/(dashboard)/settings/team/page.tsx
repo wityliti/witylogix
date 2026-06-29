@@ -211,7 +211,7 @@ export default function TeamPage() {
                           <p className="font-semibold text-white">
                             {member.name}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-wl-text-secondary">
                             {member.email}
                           </p>
                         </div>
@@ -273,7 +273,7 @@ export default function TeamPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                    <div className="flex items-center gap-4 text-xs text-wl-text-secondary">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         <span>Last active: {member.lastActive}</span>
@@ -326,12 +326,12 @@ export default function TeamPage() {
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3 flex-1">
-                          <Mail className="w-5 h-5 text-gray-400" />
+                          <Mail className="w-5 h-5 text-wl-text-secondary" />
                           <div>
                             <p className="font-semibold text-white">
                               {invitation.email}
                             </p>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-wl-text-secondary">
                               Invited: {invitation.invitedAt}
                             </p>
                           </div>
@@ -372,7 +372,7 @@ export default function TeamPage() {
                   <p className="text-sm font-semibold text-white mb-1">
                     Role Permissions
                   </p>
-                  <ul className="text-xs text-gray-400 space-y-1">
+                  <ul className="text-xs text-wl-text-secondary space-y-1">
                     <li><strong>Owner:</strong> Full access, can manage team and billing</li>
                     <li><strong>Admin:</strong> Full access to all features and settings</li>
                     <li><strong>Member:</strong> Can create and edit content</li>

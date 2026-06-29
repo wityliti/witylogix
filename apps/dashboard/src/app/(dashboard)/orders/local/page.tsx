@@ -176,14 +176,14 @@ export default function LocalOrdersPage() {
         <div className="flex items-start justify-between mb-2">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Local Delivery Orders</h1>
-            <p className="text-gray-400">{orders.length} orders total{orderPins.length > 0 && ` · ${orderPins.length} on map`}</p>
+            <p className="text-wl-text-secondary">{orders.length} orders total{orderPins.length > 0 && ` · ${orderPins.length} on map`}</p>
           </div>
           <div className="flex rounded overflow-hidden border border-wl-border-default">
             <button
               onClick={() => setView('list')}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                view === 'list' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-gray-400 hover:text-white',
+                view === 'list' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
               )}
             >
               <List size={13} /> List
@@ -192,7 +192,7 @@ export default function LocalOrdersPage() {
               onClick={() => setView('map')}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-wl-border-default',
-                view === 'map' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-gray-400 hover:text-white',
+                view === 'map' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
               )}
             >
               <Map size={13} /> Map
@@ -208,7 +208,7 @@ export default function LocalOrdersPage() {
             { key: 'delivered', label: 'Delivered', color: '#10b981' },
           ].map((stat) => (
             <Card key={stat.key} className="bg-wl-bg-surface border-wl-border-default p-4 min-w-[120px]">
-              <p className="text-xs text-gray-400 mb-1">{stat.label}</p>
+              <p className="text-xs text-wl-text-secondary mb-1">{stat.label}</p>
               <p className="text-lg font-semibold" style={{ color: stat.color }}>
                 {statusCounts[stat.key] ?? 0}
               </p>
@@ -227,7 +227,7 @@ export default function LocalOrdersPage() {
               style={{ height: 'calc(100vh - 320px)', minHeight: '400px' }}
             >
               {orderPins.length === 0 ? (
-                <div className="flex items-center justify-center h-full bg-wl-bg-surface text-gray-400 text-sm">
+                <div className="flex items-center justify-center h-full bg-wl-bg-surface text-wl-text-secondary text-sm">
                   <div className="text-center">
                     <MapPin size={28} className="mx-auto mb-2 opacity-40" />
                     <p>No geocoded orders to display</p>
@@ -254,7 +254,7 @@ export default function LocalOrdersPage() {
                   'px-3 py-1.5 rounded text-xs font-medium transition-all border',
                   statusFilter === s
                     ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-wl-bg-surface text-gray-400 border-wl-border-default hover:border-blue-500 hover:text-blue-400',
+                    : 'bg-wl-bg-surface text-wl-text-secondary border-wl-border-default hover:border-blue-500 hover:text-blue-400',
                 )}
               >
                 {s === 'all' ? 'All' : s.replace(/_/g, ' ')}
@@ -265,7 +265,7 @@ export default function LocalOrdersPage() {
 
           {/* Orders List */}
           {filteredOrders.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-wl-text-secondary">
               <Package size={32} className="mx-auto mb-3 opacity-50" />
               <p>No orders found</p>
             </div>
@@ -301,17 +301,17 @@ export default function LocalOrdersPage() {
                           </Badge>
                         </div>
 
-                        <p className="text-xs text-gray-400 mb-2">{order.customerName}</p>
+                        <p className="text-xs text-wl-text-secondary mb-2">{order.customerName}</p>
 
                         <div className="grid grid-cols-2 gap-2 mb-2">
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <span className="text-xs text-wl-text-secondary flex items-center gap-1">
                             <Clock size={12} />
                             {formatTimeWindow(order.timeSlot, order.deliveryDate)}
                           </span>
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <span className="text-xs text-wl-text-secondary flex items-center gap-1">
                             <Package size={12} /> {order.items.length} items
                           </span>
-                          <span className="text-xs text-gray-400 flex items-center gap-1 col-span-2">
+                          <span className="text-xs text-wl-text-secondary flex items-center gap-1 col-span-2">
                             <MapPin size={12} /> {formatAddress(order.deliveryAddress)}
                           </span>
                         </div>
@@ -349,7 +349,7 @@ export default function LocalOrdersPage() {
               <CardContent className="p-4 flex flex-col gap-4">
                 {/* Customer Info */}
                 <div>
-                  <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
+                  <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
                     <User size={14} /> Customer
                   </p>
                   <p className="text-sm font-semibold text-white">{selectedOrder.customerName}</p>
@@ -373,11 +373,11 @@ export default function LocalOrdersPage() {
 
                 {/* Delivery Details */}
                 <div className="border-t border-wl-border-default pt-3">
-                  <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
+                  <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
                     <MapPin size={14} /> Delivery
                   </p>
-                  <p className="text-xs text-gray-300">{formatAddress(selectedOrder.deliveryAddress)}</p>
-                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                  <p className="text-xs text-wl-neutral-300">{formatAddress(selectedOrder.deliveryAddress)}</p>
+                  <p className="text-xs text-wl-text-secondary mt-1 flex items-center gap-1">
                     <Clock size={12} />
                     {formatTimeWindow(selectedOrder.timeSlot, selectedOrder.deliveryDate)}
                   </p>
@@ -391,11 +391,11 @@ export default function LocalOrdersPage() {
                 {/* Order Details */}
                 <div className="border-t border-wl-border-default pt-3">
                   <div className="mb-2">
-                    <p className="text-xs text-gray-400 mb-0.5">Items</p>
+                    <p className="text-xs text-wl-text-secondary mb-0.5">Items</p>
                     <p className="text-sm font-semibold text-white">{selectedOrder.items.length}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Total</p>
+                    <p className="text-xs text-wl-text-secondary mb-0.5">Total</p>
                     <p className="text-base font-semibold text-blue-500">
                       {selectedOrder.currency || '₹'}{selectedOrder.totalAmount.toLocaleString()}
                     </p>
@@ -405,7 +405,7 @@ export default function LocalOrdersPage() {
                 {/* Driver Info */}
                 {selectedOrder.driver ? (
                   <div className="border-t border-wl-border-default pt-3 bg-wl-bg-root rounded p-3">
-                    <p className="text-xs text-gray-400 mb-1">Assigned Driver</p>
+                    <p className="text-xs text-wl-text-secondary mb-1">Assigned Driver</p>
                     <p className="text-sm font-semibold text-white">{selectedOrder.driver.name}</p>
                     {selectedOrder.driver.phone && (
                       <a
@@ -418,7 +418,7 @@ export default function LocalOrdersPage() {
                   </div>
                 ) : (
                   <div className="border-t border-wl-border-default pt-3">
-                    <p className="text-xs text-gray-400">No driver assigned</p>
+                    <p className="text-xs text-wl-text-secondary">No driver assigned</p>
                   </div>
                 )}
 
@@ -436,8 +436,8 @@ export default function LocalOrdersPage() {
           ) : (
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="p-6 text-center">
-                <AlertCircle size={24} className="text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">Select an order to view details</p>
+                <AlertCircle size={24} className="text-wl-text-secondary mx-auto mb-3" />
+                <p className="text-wl-text-secondary text-sm">Select an order to view details</p>
               </CardContent>
             </Card>
           )}

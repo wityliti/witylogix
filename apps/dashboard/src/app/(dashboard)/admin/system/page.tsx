@@ -86,7 +86,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-white">{service.name}</h4>
-              <p className="text-xs text-gray-400 mt-0.5">{service.responseTime}ms avg response</p>
+              <p className="text-xs text-wl-text-secondary mt-0.5">{service.responseTime}ms avg response</p>
             </div>
           </div>
           <StatusBadge status={service.status} />
@@ -94,20 +94,20 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
 
         <div className="grid grid-cols-3 gap-3 py-4 border-t border-wl-border-default">
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider">24h Uptime</p>
+            <p className="text-xs text-wl-text-secondary uppercase tracking-wider">24h Uptime</p>
             <p className="text-sm font-semibold text-white mt-1">{service.uptime24h}%</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider">7d Uptime</p>
+            <p className="text-xs text-wl-text-secondary uppercase tracking-wider">7d Uptime</p>
             <p className="text-sm font-semibold text-white mt-1">{service.uptime7d}%</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider">30d Uptime</p>
+            <p className="text-xs text-wl-text-secondary uppercase tracking-wider">30d Uptime</p>
             <p className="text-sm font-semibold text-white mt-1">{service.uptime30d}%</p>
           </div>
         </div>
 
-        <div className="text-xs text-gray-400 pt-3 border-t border-wl-border-default">
+        <div className="text-xs text-wl-text-secondary pt-3 border-t border-wl-border-default">
           Last checked: {new Date(service.lastChecked).toLocaleTimeString()}
         </div>
       </CardContent>
@@ -141,7 +141,7 @@ function UsageGauge({
     <Card>
       <CardContent className="pt-5 flex flex-col items-center">
         <Icon className={cn("w-6 h-6 mb-3", getColor(value))} />
-        <p className="text-xs text-gray-400 uppercase tracking-wider mb-4">{label}</p>
+        <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-4">{label}</p>
         <div className="relative w-24 h-24 mb-4">
           <svg width="100" height="100" viewBox="0 0 100 100" className="rotate-90">
             <circle cx="50" cy="50" r="45" fill="none" stroke="#1e1e2e" strokeWidth="3" />
@@ -204,7 +204,7 @@ export default function SystemPage() {
             <div>
               <h2 className="text-lg font-bold text-white mb-4">Service Status</h2>
               {services.length === 0 ? (
-                <p className="text-gray-400 text-sm">No services reporting. Check API connectivity.</p>
+                <p className="text-wl-text-secondary text-sm">No services reporting. Check API connectivity.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {services.map((service) => (
@@ -221,14 +221,14 @@ export default function SystemPage() {
                 <UsageGauge label="CPU Load" value={metrics.cpuUsage} icon={Cpu} />
                 <Card>
                   <CardContent className="pt-5">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-4">Process Uptime</p>
+                    <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-4">Process Uptime</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-bold text-white">
                         {formatUptime(metrics.uptimeSeconds)}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2">Heap: {metrics.heapUsedMb} MB</p>
-                    <p className="text-xs text-gray-400">RSS: {metrics.rssMb} MB</p>
+                    <p className="text-xs text-wl-text-secondary mt-2">Heap: {metrics.heapUsedMb} MB</p>
+                    <p className="text-xs text-wl-text-secondary">RSS: {metrics.rssMb} MB</p>
                   </CardContent>
                 </Card>
               </div>
@@ -243,22 +243,22 @@ export default function SystemPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Version</p>
+                      <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Version</p>
                       <p className="text-sm font-semibold text-white flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                         {metrics.deploymentVersion}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Node.js</p>
+                      <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Node.js</p>
                       <p className="text-sm font-semibold text-white">{metrics.nodeVersion}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Platform</p>
+                      <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Platform</p>
                       <p className="text-sm font-semibold text-white">{metrics.platform}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Checked At</p>
+                      <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Checked At</p>
                       <p className="text-sm font-semibold text-white">
                         {new Date(metrics.deploymentTime).toLocaleTimeString()}
                       </p>
@@ -280,7 +280,7 @@ export default function SystemPage() {
                           <h4 className="text-sm font-semibold text-amber-500">
                             {service.status === "critical" ? "Critical" : "Degraded"}: {service.name}
                           </h4>
-                          <p className="text-sm text-gray-400 mt-1">
+                          <p className="text-sm text-wl-text-secondary mt-1">
                             Response time: {service.responseTime}ms. Uptime (24h): {service.uptime24h}%.
                           </p>
                         </div>

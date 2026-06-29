@@ -167,7 +167,7 @@ export default function CRMIntegrationPage() {
               ))
             ) : providers.length === 0 ? (
               <Card className="p-6 col-span-full text-center">
-                <p className="text-gray-400">No CRM providers connected</p>
+                <p className="text-wl-text-secondary">No CRM providers connected</p>
               </Card>
             ) : (
               providers.map((provider) => (
@@ -201,7 +201,7 @@ export default function CRMIntegrationPage() {
                     </div>
                   )}
 
-                  <div className="space-y-2 text-xs text-gray-400 mb-3">
+                  <div className="space-y-2 text-xs text-wl-text-secondary mb-3">
                     <div className="flex justify-between">
                       <span>Contacts:</span>
                       <span className="text-white font-semibold">
@@ -223,7 +223,7 @@ export default function CRMIntegrationPage() {
                     {provider.lastSync && (
                       <div className="flex justify-between">
                         <span>Last Sync:</span>
-                        <span className="text-gray-500">
+                        <span className="text-wl-text-tertiary">
                           {formatDateTime(provider.lastSync)}
                         </span>
                       </div>
@@ -256,7 +256,7 @@ export default function CRMIntegrationPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-sm font-semibold text-white">Auto-Sync Enabled</h4>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-wl-text-tertiary mt-1">
                     Automatically sync data every 30 minutes
                   </p>
                 </div>
@@ -291,7 +291,7 @@ export default function CRMIntegrationPage() {
                         <span className="text-sm font-medium text-white capitalize">
                           {option === 'witylogix' ? 'Prefer Witylogix' : option === 'crm' ? 'Prefer CRM' : 'Manual Review'}
                         </span>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-wl-text-tertiary">
                           {option === 'witylogix'
                             ? 'Always use Witylogix data when conflicts occur'
                             : option === 'crm'
@@ -317,17 +317,17 @@ export default function CRMIntegrationPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default">
-                    <th className="p-3 text-left font-semibold text-gray-400">
+                    <th className="p-3 text-left font-semibold text-wl-text-secondary">
                       Witylogix Field
                     </th>
-                    <th className="p-3 text-left font-semibold text-gray-400">
+                    <th className="p-3 text-left font-semibold text-wl-text-secondary">
                       CRM Field
                     </th>
-                    <th className="p-3 text-left font-semibold text-gray-400">Type</th>
-                    <th className="p-3 text-center font-semibold text-gray-400">
+                    <th className="p-3 text-left font-semibold text-wl-text-secondary">Type</th>
+                    <th className="p-3 text-center font-semibold text-wl-text-secondary">
                       Required
                     </th>
-                    <th className="p-3 text-center font-semibold text-gray-400">
+                    <th className="p-3 text-center font-semibold text-wl-text-secondary">
                       Actions
                     </th>
                   </tr>
@@ -349,8 +349,8 @@ export default function CRMIntegrationPage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="p-3 text-gray-400">{mapping.crmField}</td>
-                      <td className="p-3 text-gray-400 text-xs">
+                      <td className="p-3 text-wl-text-secondary">{mapping.crmField}</td>
+                      <td className="p-3 text-wl-text-secondary text-xs">
                         <Badge variant="default">{mapping.type}</Badge>
                       </td>
                       <td className="p-3 text-center">
@@ -389,7 +389,7 @@ export default function CRMIntegrationPage() {
                     'px-3 py-1 text-xs font-semibold rounded-md border capitalize transition-all',
                     syncFilterType === type
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-default'
+                      : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-default'
                   )}
                 >
                   {type === 'all' ? 'All' : type}
@@ -404,7 +404,7 @@ export default function CRMIntegrationPage() {
                   <div key={i} className="h-12 bg-wl-bg-elevated/50 rounded animate-pulse" />
                 ))
               ) : filteredLogs.length === 0 ? (
-                <p className="text-center text-gray-400">No sync logs</p>
+                <p className="text-center text-wl-text-secondary">No sync logs</p>
               ) : (
                 filteredLogs.map((log, idx) => (
                   <div
@@ -432,15 +432,15 @@ export default function CRMIntegrationPage() {
                           >
                             {log.status}
                           </Badge>
-                          <span className="text-xs font-semibold text-gray-400 capitalize">
+                          <span className="text-xs font-semibold text-wl-text-secondary capitalize">
                             {log.type}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-wl-text-tertiary">
                             ({log.direction})
                           </span>
                         </div>
                         <p className="text-sm text-white mb-1">{log.details}</p>
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-3 text-xs text-wl-text-tertiary">
                           <span>{formatDateTime(log.timestamp)}</span>
                           <span>•</span>
                           <span>{log.recordsAffected} records affected</span>

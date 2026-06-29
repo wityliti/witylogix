@@ -464,7 +464,7 @@ function MigrationProgress({ migrationId, migrations }: { migrationId: string; m
   if (!migration) {
     return (
       <Card className="border border-wl-border-default bg-wl-bg-root p-6">
-        <p className="text-sm text-gray-400">Migration not found.</p>
+        <p className="text-sm text-wl-text-secondary">Migration not found.</p>
       </Card>
     );
   }

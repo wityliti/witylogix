@@ -98,7 +98,7 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-white text-sm leading-tight">{driver.name}</h3>
-              <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+              <div className="flex items-center gap-1 text-xs text-wl-text-secondary mt-1">
                 <Phone className="w-3 h-3" />
                 <span>{driver.phone}</span>
               </div>
@@ -111,18 +111,18 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
 
         <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-white/[0.05]">
           <div>
-            <div className="text-xs text-gray-400 mb-1">Active Orders</div>
+            <div className="text-xs text-wl-text-secondary mb-1">Active Orders</div>
             <div className="text-sm font-semibold text-white">{driver._count.orders}</div>
           </div>
           <div>
-            <div className="text-xs text-gray-400 mb-1">Vehicle</div>
+            <div className="text-xs text-wl-text-secondary mb-1">Vehicle</div>
             <div className="text-xs font-medium text-white flex items-center gap-1">
               <Truck className="w-3 h-3 text-blue-400" />
               {driver.vehicleType || '—'}
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-400 mb-1">Plate</div>
+            <div className="text-xs text-wl-text-secondary mb-1">Plate</div>
             <div className="text-sm font-semibold text-white">{driver.vehiclePlate || '—'}</div>
           </div>
         </div>

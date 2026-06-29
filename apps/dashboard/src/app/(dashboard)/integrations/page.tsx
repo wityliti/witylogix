@@ -73,7 +73,7 @@ function HealthGauge({ score, size = "lg" }: GaugeProps) {
         <div className={cn("font-bold", getColor(score), textSizeClass)}>
           {score}
         </div>
-        <div className="text-xs text-gray-400">Health</div>
+        <div className="text-xs text-wl-text-secondary">Health</div>
       </div>
     </div>
   );
@@ -168,7 +168,7 @@ export default function IntegrationsPage() {
                 size="md"
               />
               <div className="text-center">
-                <p className="text-sm text-gray-400">Aggregate Health</p>
+                <p className="text-sm text-wl-text-secondary">Aggregate Health</p>
               </div>
             </div>
           </CardContent>
@@ -178,7 +178,7 @@ export default function IntegrationsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p className="text-sm text-gray-400">Total Providers</p>
+              <p className="text-sm text-wl-text-secondary">Total Providers</p>
               <p className="text-3xl font-bold text-white">
                 {health?.totalProviders ?? 0}
               </p>
@@ -189,7 +189,7 @@ export default function IntegrationsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p className="text-sm text-gray-400 flex items-center gap-2">
+              <p className="text-sm text-wl-text-secondary flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-500" />
                 Healthy
               </p>
@@ -203,7 +203,7 @@ export default function IntegrationsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p className="text-sm text-gray-400 flex items-center gap-2">
+              <p className="text-sm text-wl-text-secondary flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
                 Degraded / Down
               </p>
@@ -266,11 +266,11 @@ export default function IntegrationsPage() {
                       <p className="font-medium text-white truncate">
                         {alert.title}
                       </p>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-wl-text-secondary mt-1">
                         {alert.description}
                       </p>
                       {alert.provider && (
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-wl-text-secondary mt-1">
                           Provider: {alert.provider}
                         </p>
                       )}
@@ -326,7 +326,7 @@ export default function IntegrationsPage() {
                       className="bg-gradient-to-t from-red-500 to-red-400 w-full rounded-t transition-all hover:from-red-400 hover:to-red-300"
                       style={{ height: `${height}%`, minHeight: "4px" }}
                     />
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-6 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400 whitespace-nowrap">
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-6 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-wl-text-secondary whitespace-nowrap">
                       {point.errorCount}
                     </div>
                   </div>
@@ -341,20 +341,20 @@ export default function IntegrationsPage() {
       <div className="flex gap-4 flex-wrap">
         <div className="flex-1 min-w-64">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
             <input
               type="text"
               placeholder="Search providers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white placeholder-wl-text-secondary focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </div>
 
         {categories.length > 0 && (
           <div className="flex gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
+            <Filter className="w-4 h-4 text-wl-text-secondary" />
             <select
               value={selectedCategory ?? ""}
               onChange={(e) =>
@@ -405,7 +405,7 @@ export default function IntegrationsPage() {
                     <h3 className="font-semibold text-white">
                       {provider.name}
                     </h3>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-wl-text-secondary mt-1">
                       {provider.category}
                     </p>
                   </div>
@@ -424,7 +424,7 @@ export default function IntegrationsPage() {
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Uptime</span>
+                    <span className="text-xs text-wl-text-secondary">Uptime</span>
                     <span className="text-sm font-medium text-white">
                       {provider.uptime.toFixed(1)}%
                     </span>
@@ -446,20 +446,20 @@ export default function IntegrationsPage() {
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <p className="text-gray-400">Health Score</p>
+                    <p className="text-wl-text-secondary">Health Score</p>
                     <p className="font-medium text-white">
                       {provider.healthScore}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-400">Errors</p>
+                    <p className="text-wl-text-secondary">Errors</p>
                     <p className="font-medium text-white">
                       {provider.errorCount}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 text-xs text-gray-400">
+                <div className="mt-4 text-xs text-wl-text-secondary">
                   Last check: {new Date(provider.lastCheckTime).toLocaleString()}
                 </div>
               </CardContent>
@@ -469,7 +469,7 @@ export default function IntegrationsPage() {
 
         {filteredProviders.length === 0 && !isLoading && (
           <div className="text-center py-12">
-            <p className="text-gray-400">No providers found</p>
+            <p className="text-wl-text-secondary">No providers found</p>
           </div>
         )}
       </div>

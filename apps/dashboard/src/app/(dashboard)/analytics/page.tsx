@@ -391,7 +391,7 @@ export default function AnalyticsPage() {
                     <div className={cn(
                       'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
                       i === 0 ? 'bg-amber-500/20 text-amber-400' :
-                      i === 1 ? 'bg-gray-400/20 text-gray-300' :
+                      i === 1 ? 'bg-wl-neutral-400/20 text-wl-neutral-300' :
                       i === 2 ? 'bg-orange-600/20 text-orange-400' :
                       'bg-white/[0.05] text-white/30'
                     )}>

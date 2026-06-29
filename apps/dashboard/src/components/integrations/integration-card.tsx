@@ -64,9 +64,9 @@ export function IntegrationCard({
     { color: string; label: string; bgColor: string }
   > = {
     available: {
-      color: "text-gray-600 dark:text-gray-400",
+      color: "text-wl-text-tertiary dark:text-wl-text-secondary",
       label: "Available",
-      bgColor: "bg-gray-100 dark:bg-gray-800",
+      bgColor: "bg-wl-bg-surface dark:bg-wl-bg-elevated",
     },
     connected: {
       color: "text-green-600 dark:text-green-400",

@@ -28,7 +28,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase">
+                    <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Sent
                     </p>
                     <p className="text-xl font-bold text-white mt-1">
@@ -36,7 +36,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase">
+                    <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Delivered
                     </p>
                     <p className="text-xl font-bold text-green-400 mt-1">
@@ -44,7 +44,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase">
+                    <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Failed
                     </p>
                     <p className="text-xl font-bold text-red-400 mt-1">
@@ -55,7 +55,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
 
                 <div className="pt-4 border-t border-wl-border-default">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-medium text-gray-500 uppercase">
+                    <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Success Rate
                     </p>
                     <p className="text-sm font-bold text-green-400">
@@ -71,7 +71,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                 </div>
 
                 <div className="pt-4 border-t border-wl-border-default">
-                  <p className="text-xs font-medium text-gray-500 uppercase">
+                  <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                     Avg Latency
                   </p>
                   <p className="text-lg font-bold text-white mt-1">

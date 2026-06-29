@@ -168,7 +168,7 @@ export default function AdminShopDetail() {
                 <h1 className="text-2xl font-bold text-white mb-2">
                   {shop.name}
                 </h1>
-                <p className="text-gray-400 text-sm">
+                <p className="text-wl-text-secondary text-sm">
                   {shop.shopifyDomain || shop.email || shop.id}
                 </p>
               </div>
@@ -197,19 +197,19 @@ export default function AdminShopDetail() {
             {/* Store Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border-default">
               <div>
-                <p className="text-gray-400 mb-1 text-xs">Store ID</p>
+                <p className="text-wl-text-secondary mb-1 text-xs">Store ID</p>
                 <p className="text-white text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
               </div>
               <div>
-                <p className="text-gray-400 mb-1 text-xs">Email</p>
+                <p className="text-wl-text-secondary mb-1 text-xs">Email</p>
                 <p className="text-white text-sm font-medium">{shop.email || "—"}</p>
               </div>
               <div>
-                <p className="text-gray-400 mb-1 text-xs">Plan Status</p>
+                <p className="text-wl-text-secondary mb-1 text-xs">Plan Status</p>
                 <p className="text-white text-sm font-medium">{shop.subscription?.status || "—"}</p>
               </div>
               <div>
-                <p className="text-gray-400 mb-1 text-xs">Member Since</p>
+                <p className="text-wl-text-secondary mb-1 text-xs">Member Since</p>
                 <p className="text-white text-sm font-medium">
                   {new Date(shop.createdAt).toLocaleDateString()}
                 </p>
@@ -222,7 +222,7 @@ export default function AdminShopDetail() {
                 {shop.usage.suspension.reason && (
                   <p className="text-red-300 text-xs mt-1">{shop.usage.suspension.reason}</p>
                 )}
-                <p className="text-gray-400 text-xs mt-1">
+                <p className="text-wl-text-secondary text-xs mt-1">
                   Since: {new Date(shop.usage.suspension.suspendedAt).toLocaleString()}
                 </p>
               </div>
@@ -236,7 +236,7 @@ export default function AdminShopDetail() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">Total Orders</p>
+                  <p className="text-wl-text-secondary mb-2 text-xs">Total Orders</p>
                   <p className="text-2xl font-bold text-white">
                     {shop.usage.orders.toLocaleString()}
                   </p>
@@ -250,7 +250,7 @@ export default function AdminShopDetail() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">Team Users</p>
+                  <p className="text-wl-text-secondary mb-2 text-xs">Team Users</p>
                   <p className="text-2xl font-bold text-white">
                     {shop.usage.users.toLocaleString()}
                   </p>
@@ -264,7 +264,7 @@ export default function AdminShopDetail() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">Drivers</p>
+                  <p className="text-wl-text-secondary mb-2 text-xs">Drivers</p>
                   <p className="text-2xl font-bold text-white">
                     {shop.usage.drivers}
                   </p>
@@ -278,7 +278,7 @@ export default function AdminShopDetail() {
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 mb-2 text-xs">Next Billing</p>
+                  <p className="text-wl-text-secondary mb-2 text-xs">Next Billing</p>
                   <p className="text-sm font-bold text-white">
                     {shop.subscription?.billingCycleEnd
                       ? new Date(shop.subscription.billingCycleEnd).toLocaleDateString()
@@ -394,7 +394,7 @@ export default function AdminShopDetail() {
             {activityLoading ? (
               <LoadingSkeleton />
             ) : activityLogs.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-8">No activity records found</p>
+              <p className="text-wl-text-secondary text-sm text-center py-8">No activity records found</p>
             ) : (
               <div className="max-h-96 overflow-y-auto">
                 {activityLogs.map((log, index) => (
@@ -406,8 +406,8 @@ export default function AdminShopDetail() {
                     <div className="flex-1 min-w-0">
                       <p className="text-white mb-1 text-sm">{log.action}</p>
                       <div className="flex gap-3 items-center">
-                        <span className="text-gray-400 text-xs">By: {log.userName}</span>
-                        <span className="text-gray-400 text-xs">
+                        <span className="text-wl-text-secondary text-xs">By: {log.userName}</span>
+                        <span className="text-wl-text-secondary text-xs">
                           {new Date(log.timestamp).toLocaleString()}
                         </span>
                       </div>

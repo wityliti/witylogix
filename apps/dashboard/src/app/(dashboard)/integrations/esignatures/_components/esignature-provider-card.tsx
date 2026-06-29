@@ -30,7 +30,7 @@ export function ESignatureProviderCard({ provider }: ESignatureProviderCardProps
             <div className="text-blue-500 text-2xl">{provider.icon}</div>
             <div>
               <h3 className="text-lg font-semibold text-white">{provider.name}</h3>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-wl-text-tertiary mt-1">
                 {provider.status === "connected" && `Connected on ${provider.connectedAt}`}
                 {provider.status === "disconnected" && "Not connected"}
                 {provider.status === "error" && "Connection error"}
@@ -58,16 +58,16 @@ export function ESignatureProviderCard({ provider }: ESignatureProviderCardProps
           <>
             <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase">Templates</p>
+                <p className="text-xs font-medium text-wl-text-tertiary uppercase">Templates</p>
                 <p className="text-2xl font-bold text-white mt-1">{provider.templates}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase">Envelopes</p>
+                <p className="text-xs font-medium text-wl-text-tertiary uppercase">Envelopes</p>
                 <p className="text-2xl font-bold text-white mt-1">{provider.envelopes?.toLocaleString()}</p>
               </div>
             </div>
             <div className="mb-6">
-              <p className="text-xs font-medium text-gray-500 uppercase">Last Sync</p>
+              <p className="text-xs font-medium text-wl-text-tertiary uppercase">Last Sync</p>
               <p className="text-sm text-white mt-1 flex items-center gap-2">
                 <Clock className="w-3 h-3 text-green-500" />
                 {provider.lastSync}

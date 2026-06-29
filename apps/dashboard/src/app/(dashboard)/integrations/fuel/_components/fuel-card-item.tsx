@@ -63,7 +63,7 @@ export function FuelCardItem({
             <h3 className="text-sm font-semibold text-white">
               {card.cardNumber}
             </h3>
-            <p className="text-xs text-gray-400 mt-1">{card.provider}</p>
+            <p className="text-xs text-wl-text-secondary mt-1">{card.provider}</p>
           </div>
           <Badge variant={statusVariant(card.status) as any}>
             {card.status}
@@ -72,22 +72,22 @@ export function FuelCardItem({
 
         <div className="space-y-2 text-xs mb-4">
           <div className="flex justify-between">
-            <span className="text-gray-400">Assigned to:</span>
+            <span className="text-wl-text-secondary">Assigned to:</span>
             <span className="text-white font-medium">{card.assignedTo}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-400">Last Used:</span>
+            <span className="text-wl-text-secondary">Last Used:</span>
             <span className="text-white font-medium">{card.lastUsed}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-400">Transactions:</span>
+            <span className="text-wl-text-secondary">Transactions:</span>
             <span className="text-white font-medium">{card.transactions}</span>
           </div>
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between mb-2">
-            <span className="text-xs text-gray-400">Monthly Spend</span>
+            <span className="text-xs text-wl-text-secondary">Monthly Spend</span>
             <span className="text-xs text-white font-medium">
               ${card.monthlySpend} / ${card.monthlyLimit}
             </span>
