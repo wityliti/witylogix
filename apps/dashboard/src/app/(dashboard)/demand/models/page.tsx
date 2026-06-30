@@ -8,6 +8,7 @@ import {
   TrendingUp,
   RefreshCw,
   Info,
+  BrainCircuit,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -129,7 +130,19 @@ export default function ModelsPage() {
 
           {/* Model Cards */}
           <div className="space-y-4">
-            {models.map((model) => {
+            {models.length === 0 ? (
+              <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
+                <BrainCircuit className="w-12 h-12 text-wl-text-tertiary mx-auto mb-4" />
+                <p className="text-wl-text-primary font-medium mb-1">No models available</p>
+                <p className="text-sm text-wl-text-secondary max-w-xs mx-auto">
+                  Demand forecast models will appear here once training is complete.
+                </p>
+                <Button variant="primary" size="sm" className="mt-4">
+                  <RefreshCw className="w-4 h-4" />
+                  Retrain Models
+                </Button>
+              </Card>
+            ) : models.map((model) => {
               const isExpanded = expandedModel === model.name;
               return (
                 <Card

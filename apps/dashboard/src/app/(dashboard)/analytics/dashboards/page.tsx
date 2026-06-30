@@ -89,8 +89,10 @@ export default function DashboardsPage() {
   const { items: dashboards, loading, error, refetch } = useApiList<DashboardItem>('/api/v4/analytics/dashboards');
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
+    setConfirmDeleteId(null);
     setDeletingId(id);
     try {
       await api.delete(`/api/v4/analytics/dashboards/${id}`);
@@ -106,6 +108,27 @@ export default function DashboardsPage() {
   return (
     <>
       {showCreate && <CreateDashboardModal onClose={() => setShowCreate(false)} onCreated={refetch} />}
+
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <Card className="w-full max-w-sm p-6 bg-wl-bg-elevated border-wl-border-default">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-2">Delete dashboard?</h2>
+            <p className="text-sm text-wl-text-secondary mb-6">
+              This action cannot be undone. All widgets in this dashboard will also be removed.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
+              <Button
+                variant="danger"
+                disabled={deletingId === confirmDeleteId}
+                onClick={() => handleDelete(confirmDeleteId)}
+              >
+                {deletingId === confirmDeleteId ? 'Deleting…' : 'Delete'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       <div className="flex flex-col min-h-screen bg-wl-bg-root">
         <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
@@ -153,9 +176,10 @@ export default function DashboardsPage() {
                           <Lock className="w-3.5 h-3.5 text-wl-text-tertiary" />
                         )}
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleDelete(dashboard.id); }}
+                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(dashboard.id); }}
                           disabled={deletingId === dashboard.id}
                           className="p-1 rounded hover:bg-red-500/15 hover:text-red-400 text-wl-text-tertiary transition-colors"
+                          aria-label={`Delete ${dashboard.name}`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
