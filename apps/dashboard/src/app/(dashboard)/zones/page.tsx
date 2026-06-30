@@ -14,6 +14,7 @@ import { OverlayControls, type OverlayState } from '@/components/zones/overlay-c
 import { ZoneSearch } from '@/components/zones/zone-search';
 import { KpiStrip } from '@/components/zones/kpi-strip';
 import { ZoneInspector } from '@/components/zones/zone-inspector';
+import { ErrorState } from '@/components/ui/error-state';
 import { track } from '@/lib/track';
 import { api } from '@/lib/api';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
@@ -30,9 +31,9 @@ const DEFAULT_CENTER: [number, number] = [77.12, 28.65]; // per-org override to 
 
 export default function ZonesPage() {
   const router = useRouter();
-  const { data: geojson, refetch: refetchZones } = useZonesGeoJson();
+  const { data: geojson, loading: zonesLoading, error: zonesError, refetch: refetchZones } = useZonesGeoJson();
   const [overlays, setOverlays] = useState<OverlayState>(DEFAULT_OVERLAYS);
-  const { data: overlaysData } = useZoneOverlays(overlays.window);
+  const { data: overlaysData, error: overlaysError } = useZoneOverlays(overlays.window);
   const [mode, setMode] = useState<ZoneMode>('monitor');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawing, setDrawing] = useState(false);
@@ -69,6 +70,8 @@ export default function ZonesPage() {
     slipping: overlaysData?.zones.filter((z) => z.health === 'slipping').length ?? 0,
   };
 
+  const fetchError = zonesError ?? overlaysError;
+
   useEffect(() => {
     track('zones.viewed', {
       mode,
@@ -90,6 +93,23 @@ export default function ZonesPage() {
         className="relative h-[calc(100vh-64px)] w-full"
         style={{ background: 'var(--wl-bg-root)' }}
       >
+        {/* Loading overlay — shown while zone geojson is fetching */}
+        {zonesLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-wl-bg-root/80 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-2 border-wl-primary-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-wl-text-secondary text-sm">Loading zones…</span>
+            </div>
+          </div>
+        )}
+        {/* Error overlay — shown if zone data fails to load */}
+        {fetchError && !zonesLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-wl-bg-root/90">
+            <div className="max-w-sm w-full px-4">
+              <ErrorState error={fetchError} onRetry={refetchZones} />
+            </div>
+          </div>
+        )}
         <WLMap center={DEFAULT_CENTER} zoom={11}>
           {geojson && (
             <ZoneLayer zones={geojson} selectedId={selectedId} onSelect={setSelectedId} />

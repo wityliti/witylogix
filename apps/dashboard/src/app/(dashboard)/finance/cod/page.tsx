@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -371,7 +372,7 @@ export default function CODReconciliationPage() {
             )}
 
             {deliveriesLoading ? (
-              <div className="p-8 text-center text-wl-text-tertiary text-sm">Loading deliveries…</div>
+              <div className="p-4"><TableSkeleton columns={7} rows={6} /></div>
             ) : deliveriesError ? (
               <div className="p-4"><ErrorState error={deliveriesError} /></div>
             ) : deliveries.length === 0 ? (

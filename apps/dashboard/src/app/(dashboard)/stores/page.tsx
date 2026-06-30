@@ -1,12 +1,27 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Store, Package, ShoppingCart, Zap, Globe, Settings } from 'lucide-react';
+import { RefreshCw, Store, Package, ShoppingCart, Zap, Globe, Settings, MapPin } from 'lucide-react';
 import { useApiQuery } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
+
+const StoreZoneCoverageMap = dynamic(
+  () => import('./components/store-zone-coverage-map').then((m) => m.StoreZoneCoverageMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-64 flex items-center justify-center bg-wl-bg-sunken rounded-lg border border-wl-border-subtle">
+        <div className="w-6 h-6 border-2 border-wl-primary-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  },
+);
 
 interface ShopProfile {
   id: string;
@@ -43,6 +58,7 @@ interface ShopStats {
 export default function StoresManagement() {
   const { data: shop, loading: shopLoading, error: shopError, refetch: refetchShop } = useApiQuery<ShopProfile>('/api/v4/shops/me');
   const { data: stats, loading: statsLoading, refetch: refetchStats } = useApiQuery<ShopStats>('/api/v4/shops/me/stats');
+  const { data: zonesGeoJson, loading: zonesLoading } = useZonesGeoJson();
 
   const loading = shopLoading || statsLoading;
 
@@ -188,6 +204,28 @@ export default function StoresManagement() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Zone Coverage Map */}
+            <div className="mt-8">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin size={16} className="text-wl-primary-400" />
+                <h2 className="text-base font-semibold text-white">Zone Coverage</h2>
+                {zonesLoading ? (
+                  <span className="text-wl-text-tertiary text-xs">Loading…</span>
+                ) : (
+                  <span className="text-wl-text-secondary text-xs">
+                    {zonesGeoJson?.features.length ?? 0} delivery zone{(zonesGeoJson?.features.length ?? 0) !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              {zonesLoading ? (
+                <div className="h-64 rounded-lg overflow-hidden border border-wl-border-subtle">
+                  <LoadingSkeleton className="h-full" />
+                </div>
+              ) : zonesGeoJson ? (
+                <StoreZoneCoverageMap zones={zonesGeoJson} />
+              ) : null}
+            </div>
           </>
         ) : null}
       </div>
