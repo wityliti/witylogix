@@ -8,7 +8,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Link2 } from 'lucide-react';
+import { Link2, FileX } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface ReconciliationData {
   bankTransactions: Array<{
@@ -32,6 +33,7 @@ interface ReconciliationData {
 
 export default function ReconciliationPage() {
   const [showUnmatched, setShowUnmatched] = useState(true);
+  const router = useRouter();
 
   const { data, loading, error } = useApiQuery<ReconciliationData>(
     '/api/v4/payments/reconciliation'
@@ -51,7 +53,7 @@ export default function ReconciliationPage() {
         <p className="text-wl-text-secondary text-sm text-center max-w-sm">
           Bank and internal records will appear here once payment data is available.
         </p>
-        <Button variant="primary" size="md" onClick={() => window.location.reload()}>
+        <Button variant="primary" size="md" onClick={() => router.refresh()}>
           Refresh
         </Button>
       </div>
@@ -133,7 +135,14 @@ export default function ReconciliationPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {bankTx.map((tx) => (
+                    {bankTx.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-10 text-center">
+                          <FileX className="w-8 h-8 text-wl-text-tertiary mx-auto mb-2" />
+                          <p className="text-sm text-wl-text-secondary">No bank transactions</p>
+                        </td>
+                      </tr>
+                    ) : bankTx.map((tx) => (
                       <tr key={tx.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
                         <td className="px-4 py-3 text-wl-text-secondary">{new Date(tx.date).toLocaleDateString()}</td>
                         <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
@@ -163,7 +172,14 @@ export default function ReconciliationPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {internalRecs.map((rec) => (
+                    {internalRecs.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-10 text-center">
+                          <FileX className="w-8 h-8 text-wl-text-tertiary mx-auto mb-2" />
+                          <p className="text-sm text-wl-text-secondary">No internal records</p>
+                        </td>
+                      </tr>
+                    ) : internalRecs.map((rec) => (
                       <tr key={rec.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
                         <td className="px-4 py-3 text-wl-text-secondary">{new Date(rec.date).toLocaleDateString()}</td>
                         <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
