@@ -86,10 +86,10 @@ const DeliveryMapView = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-[520px] rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+      <div className="w-full h-[520px] rounded-xl bg-wl-bg-surface border border-wl-border-default flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-zinc-600 border-t-white animate-spin mx-auto mb-3" />
-          <p className="text-sm text-zinc-500">Loading map…</p>
+          <div className="w-8 h-8 rounded-full border-2 border-wl-border-strong border-t-white animate-spin mx-auto mb-3" />
+          <p className="text-sm text-wl-text-tertiary">Loading map…</p>
         </div>
       </div>
     ),
@@ -244,12 +244,12 @@ export default function StandardDeliveryPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Shipment #</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Customer</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Address</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Driver</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">Scheduled</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Shipment #</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Customer</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Address</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Driver</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Status</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Scheduled</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -263,24 +263,24 @@ export default function StandardDeliveryPage() {
                         selectedId === shipment.id && 'bg-wl-primary/10',
                       )}
                     >
-                      <td className="px-4 py-3 font-medium text-white font-mono text-xs">
+                      <td className="px-4 py-3 font-medium text-wl-text-primary font-mono text-xs">
                         {shipment.shipmentNumber}
                       </td>
-                      <td className="px-4 py-3 text-zinc-300">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         {shipment.order?.customerName ?? shipment.recipientName ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         <span className="flex items-center gap-1">
                           {(shipment.addressLine1 || shipment.city) && (
-                            <MapPin className="w-3 h-3 flex-shrink-0 text-zinc-600" />
+                            <MapPin className="w-3 h-3 flex-shrink-0 text-wl-text-tertiary" />
                           )}
                           {formatAddress(shipment)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         {shipment.driver ? (
                           <span className="flex items-center gap-1">
-                            <User className="w-3 h-3 text-zinc-600" />
+                            <User className="w-3 h-3 text-wl-text-tertiary" />
                             {shipment.driver.name}
                           </span>
                         ) : '—'}
@@ -290,7 +290,7 @@ export default function StandardDeliveryPage() {
                           {displayStatus(shipment.status).replace('-', ' ')}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-zinc-400 text-xs">
+                      <td className="px-4 py-3 text-wl-text-secondary text-xs">
                         {formatDate(shipment.estimatedArrival ?? shipment.deliveryDate)}
                       </td>
                     </tr>

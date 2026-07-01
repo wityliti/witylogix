@@ -93,18 +93,18 @@ export default function DriversMapView({ drivers }: { drivers: DispatchDriver[] 
   const defaultCenter: [number, number] = [-0.1276, 51.5074];
 
   return (
-    <div className="relative w-full h-[520px] rounded-xl overflow-hidden border border-zinc-800">
+    <div className="relative w-full h-[520px] rounded-xl overflow-hidden border border-wl-border-default">
       {markers.length === 0 ? (
-        <div className="w-full h-full bg-zinc-900 flex flex-col items-center justify-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-            <svg className="w-6 h-6 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-full h-full bg-wl-bg-surface flex flex-col items-center justify-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-wl-bg-elevated flex items-center justify-center">
+            <svg className="w-6 h-6 text-wl-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-zinc-300">No driver locations available</p>
-            <p className="text-xs text-zinc-500 mt-1 max-w-64">
+            <p className="text-sm font-medium text-wl-text-secondary">No driver locations available</p>
+            <p className="text-xs text-wl-text-tertiary mt-1 max-w-64">
               Driver positions are reported from the mobile app. Ask drivers to enable location sharing.
             </p>
           </div>
@@ -124,8 +124,8 @@ export default function DriversMapView({ drivers }: { drivers: DispatchDriver[] 
           </WLMap>
 
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 bg-zinc-900/90 backdrop-blur-sm border border-zinc-700 rounded-lg p-3 z-10">
-            <p className="text-[10px] font-semibold text-zinc-400 uppercase mb-2">Driver Status</p>
+          <div className="absolute bottom-4 left-4 bg-wl-bg-surface/90 backdrop-blur-sm border border-wl-border-strong rounded-lg p-3 z-10">
+            <p className="text-[10px] font-semibold text-wl-text-secondary uppercase mb-2">Driver Status</p>
             <div className="space-y-1.5">
               {STATUS_LEGEND.map(({ status, color, label }) => {
                 const count = markers.filter((m) => m.status === status).length;
@@ -133,8 +133,8 @@ export default function DriversMapView({ drivers }: { drivers: DispatchDriver[] 
                 return (
                   <div key={status} className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                    <span className="text-xs text-zinc-300">{label}</span>
-                    <span className="text-xs font-mono text-zinc-500 ml-auto pl-2">{count}</span>
+                    <span className="text-xs text-wl-text-secondary">{label}</span>
+                    <span className="text-xs font-mono text-wl-text-tertiary ml-auto pl-2">{count}</span>
                   </div>
                 );
               })}
@@ -143,38 +143,38 @@ export default function DriversMapView({ drivers }: { drivers: DispatchDriver[] 
 
           {/* Selected driver popup */}
           {selectedDriver && (
-            <div className="absolute top-4 right-4 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg p-4 z-10 min-w-48">
+            <div className="absolute top-4 right-4 bg-wl-bg-surface/95 backdrop-blur-sm border border-wl-border-strong rounded-lg p-4 z-10 min-w-48">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-semibold text-white">{selectedDriver.name}</p>
+                <p className="text-sm font-semibold text-wl-text-primary">{selectedDriver.name}</p>
                 <button
                   onClick={() => setSelectedDriverId(null)}
-                  className="text-zinc-500 hover:text-zinc-300 transition-colors ml-2"
+                  className="text-wl-text-tertiary hover:text-wl-text-secondary transition-colors ml-2"
                   aria-label="Close"
                 >
                   ×
                 </button>
               </div>
-              <p className="text-xs text-zinc-400 mb-1">
+              <p className="text-xs text-wl-text-secondary mb-1">
                 Status:{' '}
                 <span className={cn(
                   'font-medium',
                   normaliseStatus(selectedDriver.status) === 'available' ? 'text-emerald-400' :
                   normaliseStatus(selectedDriver.status) === 'busy' ? 'text-amber-400' :
-                  'text-zinc-400'
+                  'text-wl-text-secondary'
                 )}>
                   {selectedDriver.status}
                 </span>
               </p>
               {selectedDriver.vehicleType && (
-                <p className="text-xs text-zinc-400">Vehicle: {selectedDriver.vehicleType}</p>
+                <p className="text-xs text-wl-text-secondary">Vehicle: {selectedDriver.vehicleType}</p>
               )}
               {selectedDriver.activeDeliveries != null && (
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-wl-text-secondary">
                   Active deliveries: {selectedDriver.activeDeliveries}
                 </p>
               )}
               {selectedDriver.location && selectedDriver.location !== 'Hub' && (
-                <p className="text-xs text-zinc-500 mt-1 truncate max-w-48" title={selectedDriver.location}>
+                <p className="text-xs text-wl-text-tertiary mt-1 truncate max-w-48" title={selectedDriver.location}>
                   {selectedDriver.location}
                 </p>
               )}
@@ -182,8 +182,8 @@ export default function DriversMapView({ drivers }: { drivers: DispatchDriver[] 
           )}
 
           {/* Driver count badge */}
-          <div className="absolute top-4 left-4 bg-zinc-900/90 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 z-10">
-            <span className="text-xs font-semibold text-zinc-300">
+          <div className="absolute top-4 left-4 bg-wl-bg-surface/90 backdrop-blur-sm border border-wl-border-strong rounded-lg px-3 py-1.5 z-10">
+            <span className="text-xs font-semibold text-wl-text-secondary">
               {markers.length} driver{markers.length !== 1 ? 's' : ''} on map
             </span>
           </div>

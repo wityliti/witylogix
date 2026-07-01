@@ -73,7 +73,7 @@ export default function CreateDriverPage() {
         <Card className="max-w-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="driver-name" className="block text-sm font-medium text-zinc-200 mb-1">
+              <label htmlFor="driver-name" className="block text-sm font-medium text-wl-text-primary mb-1">
                 Full name <span className="text-red-400">*</span>
               </label>
               <input
@@ -81,12 +81,12 @@ export default function CreateDriverPage() {
                 type="text"
                 value={form.name}
                 onChange={update('name')}
-                className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 required
               />
             </div>
             <div>
-              <label htmlFor="driver-phone" className="block text-sm font-medium text-zinc-200 mb-1">
+              <label htmlFor="driver-phone" className="block text-sm font-medium text-wl-text-primary mb-1">
                 Phone <span className="text-red-400">*</span>
               </label>
               <input
@@ -94,12 +94,12 @@ export default function CreateDriverPage() {
                 type="tel"
                 value={form.phone}
                 onChange={update('phone')}
-                className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 required
               />
             </div>
             <div>
-              <label htmlFor="driver-email" className="block text-sm font-medium text-zinc-200 mb-1">
+              <label htmlFor="driver-email" className="block text-sm font-medium text-wl-text-primary mb-1">
                 Email
               </label>
               <input
@@ -107,19 +107,19 @@ export default function CreateDriverPage() {
                 type="email"
                 value={form.email ?? ''}
                 onChange={update('email')}
-                className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="driver-vehicle" className="block text-sm font-medium text-zinc-200 mb-1">
+                <label htmlFor="driver-vehicle" className="block text-sm font-medium text-wl-text-primary mb-1">
                   Vehicle
                 </label>
                 <select
                   id="driver-vehicle"
                   value={form.vehicleType ?? 'VAN'}
                   onChange={update('vehicleType')}
-                  className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 >
                   <option value="VAN">Van</option>
                   <option value="TRUCK">Truck</option>
@@ -128,7 +128,7 @@ export default function CreateDriverPage() {
                 </select>
               </div>
               <div>
-                <label htmlFor="driver-plate" className="block text-sm font-medium text-zinc-200 mb-1">
+                <label htmlFor="driver-plate" className="block text-sm font-medium text-wl-text-primary mb-1">
                   License plate
                 </label>
                 <input
@@ -136,7 +136,7 @@ export default function CreateDriverPage() {
                   type="text"
                   value={form.licensePlate ?? ''}
                   onChange={update('licensePlate')}
-                  className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 />
               </div>
             </div>

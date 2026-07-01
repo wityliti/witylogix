@@ -168,9 +168,9 @@ export function DispatchLiveMap({
       {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[2px] z-10 pointer-events-none">
-          <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-700 rounded-lg px-4 py-2">
+          <div className="flex items-center gap-2 bg-wl-bg-surface/90 border border-wl-border-strong rounded-lg px-4 py-2">
             <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-medium text-zinc-200">Loading map data…</span>
+            <span className="text-xs font-medium text-wl-text-primary">Loading map data…</span>
           </div>
         </div>
       )}
@@ -178,47 +178,47 @@ export function DispatchLiveMap({
       {/* Empty state overlay */}
       {!isLoading && allPoints.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="text-center bg-zinc-900/80 border border-zinc-700 rounded-xl px-6 py-4 backdrop-blur-sm">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center mx-auto mb-2">
-              <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center bg-wl-bg-surface/80 border border-wl-border-strong rounded-xl px-6 py-4 backdrop-blur-sm">
+            <div className="w-8 h-8 rounded-lg bg-wl-bg-elevated flex items-center justify-center mx-auto mb-2">
+              <svg className="w-4 h-4 text-wl-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <p className="text-xs text-zinc-400">No location data yet</p>
-            <p className="text-xs text-zinc-500 mt-0.5">Drivers appear here once GPS is active</p>
+            <p className="text-xs text-wl-text-secondary">No location data yet</p>
+            <p className="text-xs text-wl-text-tertiary mt-0.5">Drivers appear here once GPS is active</p>
           </div>
         </div>
       )}
 
       {/* Legend */}
       <div className="absolute top-3 right-3 z-10 pointer-events-none">
-        <div className="bg-zinc-900/90 border border-zinc-700 rounded-lg p-2.5 backdrop-blur-sm space-y-1.5 text-xs">
-          <p className="text-zinc-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Legend</p>
+        <div className="bg-wl-bg-surface/90 border border-wl-border-strong rounded-lg p-2.5 backdrop-blur-sm space-y-1.5 text-xs">
+          <p className="text-wl-text-secondary font-semibold uppercase tracking-wider text-[10px] mb-1">Legend</p>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
-            <span className="text-zinc-300">{STATUS_LABEL.available}</span>
+            <span className="text-wl-text-secondary">{STATUS_LABEL.available}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0" />
-            <span className="text-zinc-300">{STATUS_LABEL.busy}</span>
+            <span className="text-wl-text-secondary">{STATUS_LABEL.busy}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-violet-400 flex-shrink-0" />
-            <span className="text-zinc-300">{STATUS_LABEL.break}</span>
+            <span className="text-wl-text-secondary">{STATUS_LABEL.break}</span>
           </div>
-          <div className="border-t border-zinc-700 my-1" />
+          <div className="border-t border-wl-border-default my-1" />
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-400 flex-shrink-0" />
-            <span className="text-zinc-300">Pending</span>
+            <span className="text-wl-text-secondary">Pending</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-orange-400 flex-shrink-0" />
-            <span className="text-zinc-300">Assigned</span>
+            <span className="text-wl-text-secondary">Assigned</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-teal-500 flex-shrink-0" />
-            <span className="text-zinc-300">In Transit</span>
+            <span className="text-wl-text-secondary">In Transit</span>
           </div>
         </div>
       </div>
@@ -226,14 +226,14 @@ export function DispatchLiveMap({
       {/* Live count badges */}
       <div className="absolute bottom-3 left-3 z-10 pointer-events-none flex gap-2">
         {driverMarkers.length > 0 && (
-          <div className="bg-zinc-900/90 border border-zinc-700 rounded-md px-2.5 py-1 backdrop-blur-sm flex items-center gap-1.5">
+          <div className="bg-wl-bg-surface/90 border border-wl-border-strong rounded-md px-2.5 py-1 backdrop-blur-sm flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-mono text-zinc-200">{driverMarkers.length} on map</span>
+            <span className="text-xs font-mono text-wl-text-primary">{driverMarkers.length} on map</span>
           </div>
         )}
         {orderPins.length > 0 && (
-          <div className="bg-zinc-900/90 border border-zinc-700 rounded-md px-2.5 py-1 backdrop-blur-sm">
-            <span className="text-xs font-mono text-zinc-200">{orderPins.length} stops</span>
+          <div className="bg-wl-bg-surface/90 border border-wl-border-strong rounded-md px-2.5 py-1 backdrop-blur-sm">
+            <span className="text-xs font-mono text-wl-text-primary">{orderPins.length} stops</span>
           </div>
         )}
       </div>
