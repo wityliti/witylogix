@@ -174,19 +174,19 @@ export default function OrdersPage() {
   }, [orders]);
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-wl-bg-root">
       {/* Page Header */}
       <Header
         title="Orders"
         subtitle={`${pagination.total} total orders${orderPins.length > 0 ? ` · ${orderPins.length} on map` : ''}`}
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-lg bg-zinc-800 p-0.5">
+            <div className="flex items-center gap-1 rounded-lg bg-wl-bg-elevated p-0.5">
               <button
                 onClick={() => setView('list')}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
-                  view === 'list' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
+                  view === 'list' ? 'bg-wl-bg-overlay text-wl-text-primary' : 'text-wl-text-secondary hover:text-wl-text-primary',
                 )}
               >
                 <List className="w-3.5 h-3.5" /> List
@@ -195,7 +195,7 @@ export default function OrdersPage() {
                 onClick={() => setView('map')}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
-                  view === 'map' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
+                  view === 'map' ? 'bg-wl-bg-overlay text-wl-text-primary' : 'text-wl-text-secondary hover:text-wl-text-primary',
                 )}
               >
                 <Map className="w-3.5 h-3.5" /> Map
@@ -234,7 +234,7 @@ export default function OrdersPage() {
         )}
 
         {/* Status Tabs */}
-        <div className="flex items-center gap-1 border-b border-zinc-800 pb-0 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1 border-b border-wl-border-default pb-0 overflow-x-auto scrollbar-hide">
           {STATUS_TABS.map((tab) => {
             const count = statusCounts[tab.key] || 0;
             const isActive = statusFilter === tab.key;
@@ -250,8 +250,8 @@ export default function OrdersPage() {
                   'relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-all',
                   'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:transition-all',
                   isActive
-                    ? 'text-white after:bg-white'
-                    : 'text-zinc-400 hover:text-zinc-300 after:bg-transparent'
+                    ? 'text-wl-text-primary after:bg-wl-text-primary'
+                    : 'text-wl-text-secondary hover:text-wl-text-primary after:bg-transparent'
                 )}
               >
                 {tab.label}
@@ -259,8 +259,8 @@ export default function OrdersPage() {
                   className={cn(
                     'ml-2 text-xs font-semibold px-2 py-0.5 rounded-full',
                     isActive
-                      ? 'bg-white/10 text-white'
-                      : 'bg-zinc-800 text-zinc-400'
+                      ? 'bg-white/10 text-wl-text-primary'
+                      : 'bg-wl-bg-elevated text-wl-text-secondary'
                   )}
                 >
                   {count}
@@ -271,11 +271,11 @@ export default function OrdersPage() {
         </div>
 
         {/* Filter & Sort Bar */}
-        <Card className="bg-zinc-900/50 border-zinc-800 p-4">
+        <Card className="bg-wl-bg-surface/50 border-wl-border-default p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* Search Input */}
             <div className="relative flex-1 lg:max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-600" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-wl-text-tertiary" />
               <input
                 type="text"
                 placeholder="Search orders, customers, destinations..."
@@ -286,9 +286,9 @@ export default function OrdersPage() {
                 }}
                 className={cn(
                   'w-full pl-10 pr-4 py-2 rounded-lg',
-                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100 text-sm',
-                  'placeholder:text-zinc-500',
-                  'focus:outline-none focus:ring-2 focus:ring-white/20 focus:bg-zinc-800',
+                  'bg-wl-bg-elevated/50 border border-wl-border-strong text-wl-text-primary text-sm',
+                  'placeholder:text-wl-text-tertiary',
+                  'focus:outline-none focus:ring-2 focus:ring-white/20 focus:bg-wl-bg-elevated',
                   'transition-all'
                 )}
               />
@@ -308,7 +308,7 @@ export default function OrdersPage() {
                 }}
                 className={cn(
                   'px-3 py-2 rounded-lg text-sm',
-                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
+                  'bg-wl-bg-elevated/50 border border-wl-border-strong text-wl-text-primary',
                   'focus:outline-none focus:ring-2 focus:ring-white/20',
                   'transition-all'
                 )}
@@ -325,7 +325,7 @@ export default function OrdersPage() {
                 }}
                 className={cn(
                   'px-3 py-2 rounded-lg text-sm',
-                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
+                  'bg-wl-bg-elevated/50 border border-wl-border-strong text-wl-text-primary',
                   'focus:outline-none focus:ring-2 focus:ring-white/20',
                   'transition-all'
                 )}
@@ -341,7 +341,7 @@ export default function OrdersPage() {
               }}
               className={cn(
                 'px-3 py-2 rounded-lg text-sm font-medium',
-                'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
+                'bg-wl-bg-elevated/50 border border-wl-border-strong text-wl-text-primary',
                 'focus:outline-none focus:ring-2 focus:ring-white/20',
                 'transition-all appearance-none cursor-pointer',
                 'pr-8'
@@ -365,14 +365,14 @@ export default function OrdersPage() {
         {/* Map View */}
         {view === 'map' && (
           <div
-            className="relative rounded-xl overflow-hidden border border-zinc-800"
+            className="relative rounded-xl overflow-hidden border border-wl-border-default"
             style={{ height: 'calc(100vh - 320px)', minHeight: '480px' }}
           >
             {orderPins.length === 0 ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900">
-                <MapPin className="w-10 h-10 mb-3 text-zinc-600" />
-                <p className="text-sm font-medium text-zinc-300">No orders with location data</p>
-                <p className="text-xs mt-1 text-zinc-500">Orders need delivery coordinates to appear on the map</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-wl-bg-surface">
+                <MapPin className="w-10 h-10 mb-3 text-wl-text-tertiary" />
+                <p className="text-sm font-medium text-wl-text-secondary">No orders with location data</p>
+                <p className="text-xs mt-1 text-wl-text-tertiary">Orders need delivery coordinates to appear on the map</p>
               </div>
             ) : (
               <OrdersMapView
@@ -387,44 +387,44 @@ export default function OrdersPage() {
         {/* Orders Table + Pagination (list view) */}
         {view === 'list' && (
         <>
-        <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
+        <Card className="bg-wl-bg-surface/50 border-wl-border-default overflow-hidden p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-zinc-800 bg-zinc-900/80">
+              <thead className="border-b border-wl-border-default bg-wl-bg-surface/80">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Order
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Customer
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Destination
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Items
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Total
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Created
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-wl-text-secondary uppercase tracking-wide">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-wl-border-default">
                 {loading ? (
                   Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
+                    <tr key={i} className="hover:bg-wl-bg-elevated/30 transition-colors">
                       <td colSpan={8}>
                         <div className="px-6 py-4">
-                          <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
+                          <div className="h-4 bg-wl-bg-elevated/50 rounded animate-pulse" />
                         </div>
                       </td>
                     </tr>
@@ -433,13 +433,13 @@ export default function OrdersPage() {
                   <tr>
                     <td colSpan={8}>
                       <div className="flex flex-col items-center justify-center py-16 px-6">
-                        <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
-                          <Search className="w-6 h-6 text-zinc-600" />
+                        <div className="w-12 h-12 rounded-full bg-wl-bg-elevated/50 flex items-center justify-center mb-4">
+                          <Search className="w-6 h-6 text-wl-text-tertiary" />
                         </div>
-                        <h3 className="text-lg font-semibold text-zinc-200 mb-1">
+                        <h3 className="text-lg font-semibold text-wl-text-primary mb-1">
                           No orders found
                         </h3>
-                        <p className="text-sm text-zinc-500 text-center max-w-sm">
+                        <p className="text-sm text-wl-text-tertiary text-center max-w-sm">
                           {search || dateRange?.from || dateRange?.to
                             ? 'Try adjusting your filters or search terms'
                             : 'No orders yet. Create your first order to get started.'}
@@ -452,8 +452,8 @@ export default function OrdersPage() {
                     <tr
                       key={order.id}
                       className={cn(
-                        'border-b border-zinc-800/50 last:border-b-0',
-                        'hover:bg-zinc-800/30 transition-colors animate-in fade-in slide-in-from-top-2',
+                        'border-b border-wl-border-default/50 last:border-b-0',
+                        'hover:bg-wl-bg-elevated/30 transition-colors animate-in fade-in slide-in-from-top-2',
                         `animation-delay-[${idx * 50}ms]`
                       )}
                     >
@@ -483,7 +483,7 @@ export default function OrdersPage() {
                           >
                             {getAvatarInitials(order.customerName)}
                           </div>
-                          <span className="text-zinc-100 font-medium text-sm">
+                          <span className="text-wl-text-primary font-medium text-sm">
                             {order.customerName}
                           </span>
                         </div>
@@ -491,7 +491,7 @@ export default function OrdersPage() {
 
                       {/* Destination */}
                       <td className="px-6 py-4">
-                        <span className="text-zinc-300 text-sm" title={order.deliveryAddress.street}>
+                        <span className="text-wl-text-secondary text-sm" title={order.deliveryAddress.street}>
                           {truncateAddress(
                             `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`,
                             35
@@ -511,21 +511,21 @@ export default function OrdersPage() {
 
                       {/* Items Count */}
                       <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-wl-bg-elevated text-xs font-semibold text-wl-text-primary">
                           {order.items.length}
                         </span>
                       </td>
 
                       {/* Total Amount */}
                       <td className="px-6 py-4 text-right">
-                        <span className="font-mono font-semibold text-zinc-100 text-sm">
+                        <span className="font-mono font-semibold text-wl-text-primary text-sm">
                           {formatCurrency(order.totalAmount)}
                         </span>
                       </td>
 
                       {/* Created Date */}
                       <td className="px-6 py-4">
-                        <span className="text-zinc-400 text-sm">
+                        <span className="text-wl-text-secondary text-sm">
                           {new Date(order.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -540,21 +540,21 @@ export default function OrdersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
+                            className="text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-elevated/50"
                           >
                             View
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
+                            className="text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-elevated/50"
                           >
                             Edit
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-zinc-400 hover:text-red-400 hover:bg-red-950/20"
+                            className="text-wl-text-secondary hover:text-red-400 hover:bg-red-950/20"
                           >
                             Cancel
                           </Button>
@@ -571,13 +571,13 @@ export default function OrdersPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between">
-            <div className="text-sm text-zinc-400">
+            <div className="text-sm text-wl-text-secondary">
               Showing{' '}
-              <span className="font-semibold text-zinc-200">{startIdx + 1}</span> to{' '}
-              <span className="font-semibold text-zinc-200">
+              <span className="font-semibold text-wl-text-primary">{startIdx + 1}</span> to{' '}
+              <span className="font-semibold text-wl-text-primary">
                 {Math.min(endIdx, filtered.length)}
               </span>{' '}
-              of <span className="font-semibold text-zinc-200">{filtered.length}</span> orders
+              of <span className="font-semibold text-wl-text-primary">{filtered.length}</span> orders
             </div>
 
             <div className="flex items-center gap-2">
@@ -604,7 +604,7 @@ export default function OrdersPage() {
 
                   if (!showPage && Math.abs(page - currentPage) === 2) {
                     return (
-                      <span key={`ellipsis-${page}`} className="text-zinc-500">
+                      <span key={`ellipsis-${page}`} className="text-wl-text-tertiary">
                         …
                       </span>
                     );
@@ -620,7 +620,7 @@ export default function OrdersPage() {
                         'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all',
                         isCurrentPage
                           ? 'bg-white text-black font-semibold'
-                          : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                          : 'bg-wl-bg-elevated text-wl-text-secondary hover:bg-wl-bg-overlay'
                       )}
                     >
                       {page}

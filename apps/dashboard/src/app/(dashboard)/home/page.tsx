@@ -1,12 +1,24 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useDashboardStats } from '@/hooks/use-dashboard-stats';
 import { useApiList } from '@/hooks/use-api';
+
+const HomeLiveMap = dynamic(
+  () => import('./components/home-live-map').then((m) => m.HomeLiveMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[280px] rounded-xl bg-wl-bg-surface border border-wl-border-default animate-pulse" />
+    ),
+  },
+);
 
 // Shapes matching the real API responses
 interface ApiOrder {
@@ -59,10 +71,10 @@ function KPICard({
 }) {
   if (loading) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 animate-pulse">
-        <div className="h-4 bg-zinc-800 rounded w-24 mb-4" />
-        <div className="h-8 bg-zinc-800 rounded w-32 mb-2" />
-        <div className="h-3 bg-zinc-800 rounded w-20" />
+      <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 animate-pulse">
+        <div className="h-4 bg-wl-bg-elevated rounded w-24 mb-4" />
+        <div className="h-8 bg-wl-bg-elevated rounded w-32 mb-2" />
+        <div className="h-3 bg-wl-bg-elevated rounded w-20" />
       </div>
     );
   }
@@ -71,11 +83,11 @@ function KPICard({
     default: 'var(--wl-primary)',
     primary: 'var(--wl-primary)',
     success: 'var(--wl-success)',
-    warning: '#f59e0b',
+    warning: 'var(--wl-warning-400)',
   }[variant];
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-900/80">
+    <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 transition-all duration-200 hover:border-wl-border-strong hover:bg-wl-bg-elevated">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-sm font-medium text-wl-text-secondary uppercase tracking-wide">{label}</h3>
       </div>
@@ -108,7 +120,7 @@ function OrderFeedItem({ order }: { order: ApiOrder }) {
   const eta = order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null;
 
   return (
-    <div className="border-b border-zinc-800 last:border-0 pb-4 last:pb-0 transition-all duration-200 hover:bg-zinc-900/50 px-4 py-3 rounded -mx-4">
+    <div className="border-b border-wl-border-default last:border-0 pb-4 last:pb-0 transition-all duration-200 hover:bg-wl-bg-surface/50 px-4 py-3 rounded -mx-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
@@ -140,10 +152,10 @@ const DRIVER_STATUS_CONFIG: Record<string, { bg: string; border: string; text: s
 function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loading?: boolean }) {
   if (loading) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 animate-pulse">
-        <div className="h-4 bg-zinc-800 rounded w-24 mb-3" />
-        <div className="h-6 bg-zinc-800 rounded w-32 mb-3" />
-        <div className="h-3 bg-zinc-800 rounded w-full" />
+      <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4 animate-pulse">
+        <div className="h-4 bg-wl-bg-elevated rounded w-24 mb-3" />
+        <div className="h-6 bg-wl-bg-elevated rounded w-32 mb-3" />
+        <div className="h-3 bg-wl-bg-elevated rounded w-full" />
       </div>
     );
   }
@@ -154,7 +166,7 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
   const activeDeliveries = driver._count?.orders ?? 0;
 
   return (
-    <div className={cn('bg-zinc-900 border border-zinc-800 rounded-lg p-4 transition-all duration-200 hover:border-zinc-700', config.bg)}>
+    <div className={cn('bg-wl-bg-surface border border-wl-border-default rounded-lg p-4 transition-all duration-200 hover:border-wl-border-strong', config.bg)}>
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="font-semibold text-wl-text-primary">{driver.name}</p>
@@ -183,7 +195,7 @@ export default function HomePage() {
       : 0;
 
   return (
-    <div className="bg-zinc-950 min-h-screen">
+    <div className="bg-wl-bg-root min-h-screen">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -264,6 +276,24 @@ export default function HomePage() {
           />
         </div>
 
+        {/* Live Delivery Map */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Map className="w-5 h-5" />
+                Live Delivery Map
+              </span>
+              <Link href="/map" className="text-xs font-normal text-wl-text-secondary hover:text-wl-text-primary transition-colors">
+                Open full map →
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <HomeLiveMap />
+          </CardContent>
+        </Card>
+
         {/* Main Grid: Left (Orders) + Right (Drivers) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Live Order Feed - Left Column */}
@@ -280,7 +310,7 @@ export default function HomePage() {
                   {ordersLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="h-16 bg-zinc-800 rounded animate-pulse" />
+                        <div key={i} className="h-16 bg-wl-bg-elevated rounded animate-pulse" />
                       ))}
                     </div>
                   ) : recentOrders.length > 0 ? (
@@ -297,7 +327,7 @@ export default function HomePage() {
                   )}
                 </div>
                 {recentOrders.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-zinc-800">
+                  <div className="mt-4 pt-4 border-t border-wl-border-default">
                     <Link href="/orders" className="text-sm text-wl-text-secondary hover:text-wl-text-primary transition-colors">
                       View all orders →
                     </Link>
@@ -330,7 +360,7 @@ export default function HomePage() {
                       )}
                 </div>
                 {drivers.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-zinc-800">
+                  <div className="mt-4 pt-4 border-t border-wl-border-default">
                     <Link href="/drivers" className="text-sm text-wl-text-secondary hover:text-wl-text-primary transition-colors">
                       View all drivers →
                     </Link>

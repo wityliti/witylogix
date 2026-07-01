@@ -67,7 +67,7 @@ export default function CreateCustomerPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="cust-first" className="block text-sm font-medium text-zinc-200 mb-1">
+                <label htmlFor="cust-first" className="block text-sm font-medium text-wl-text-primary mb-1">
                   First name
                 </label>
                 <input
@@ -75,11 +75,11 @@ export default function CreateCustomerPage() {
                   type="text"
                   value={form.firstName}
                   onChange={update('firstName')}
-                  className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 />
               </div>
               <div>
-                <label htmlFor="cust-last" className="block text-sm font-medium text-zinc-200 mb-1">
+                <label htmlFor="cust-last" className="block text-sm font-medium text-wl-text-primary mb-1">
                   Last name
                 </label>
                 <input
@@ -87,12 +87,12 @@ export default function CreateCustomerPage() {
                   type="text"
                   value={form.lastName}
                   onChange={update('lastName')}
-                  className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="cust-email" className="block text-sm font-medium text-zinc-200 mb-1">
+              <label htmlFor="cust-email" className="block text-sm font-medium text-wl-text-primary mb-1">
                 Email <span className="text-red-400">*</span>
               </label>
               <input
@@ -100,12 +100,12 @@ export default function CreateCustomerPage() {
                 type="email"
                 value={form.email}
                 onChange={update('email')}
-                className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
                 required
               />
             </div>
             <div>
-              <label htmlFor="cust-phone" className="block text-sm font-medium text-zinc-200 mb-1">
+              <label htmlFor="cust-phone" className="block text-sm font-medium text-wl-text-primary mb-1">
                 Phone
               </label>
               <input
@@ -113,7 +113,7 @@ export default function CreateCustomerPage() {
                 type="tel"
                 value={form.phone}
                 onChange={update('phone')}
-                className="w-full rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
               />
             </div>
             {error && <p className="text-sm text-red-400">{error}</p>}

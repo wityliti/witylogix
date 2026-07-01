@@ -131,7 +131,7 @@ const STATUS_DOT: Record<string, string> = {
   AVAILABLE: 'bg-emerald-400',
   ON_ROUTE: 'bg-amber-400',
   ON_BREAK: 'bg-violet-400',
-  OFFLINE: 'bg-zinc-500',
+  OFFLINE: 'bg-wl-text-tertiary',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -346,7 +346,7 @@ export default function DriverDetailPage() {
                 {/* Live status from profile */}
                 {profile && (
                   <span className="flex items-center gap-1.5 text-xs text-white/35">
-                    <span className={cn('w-2 h-2 rounded-full', STATUS_DOT[profile.status] ?? 'bg-zinc-500')} />
+                    <span className={cn('w-2 h-2 rounded-full', STATUS_DOT[profile.status] ?? 'bg-wl-text-tertiary')} />
                     {STATUS_LABEL[profile.status] ?? profile.status}
                   </span>
                 )}
