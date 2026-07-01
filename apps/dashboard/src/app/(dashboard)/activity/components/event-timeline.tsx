@@ -16,6 +16,8 @@ interface EventTimelineProps {
   isLive: boolean;
   getEventIcon: (type: ActivityEvent["type"]) => ReactNode;
   getSeverityBadge: (severity: ActivityEvent["severity"]) => ReactNode;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 // Helper function to format relative time
@@ -89,6 +91,8 @@ export function EventTimeline({
   isLive,
   getEventIcon,
   getSeverityBadge,
+  hasMore,
+  onLoadMore,
 }: EventTimelineProps) {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
 
@@ -294,12 +298,19 @@ export function EventTimeline({
         </div>
       ))}
 
-      {/* Load more / Infinite scroll placeholder */}
       {events.length > 0 && (
         <div className="text-center py-8">
-          <p className="text-xs text-wl-text-tertiary">
-            Showing {events.length} events
+          <p className="text-xs text-wl-text-tertiary mb-3">
+            Showing {events.length} event{events.length !== 1 ? "s" : ""}
           </p>
+          {hasMore && onLoadMore && (
+            <button
+              onClick={onLoadMore}
+              className="px-4 py-2 text-sm font-medium text-blue-400 border border-blue-400/30 rounded-md hover:bg-blue-500/10 transition-colors"
+            >
+              Load more
+            </button>
+          )}
         </div>
       )}
     </div>
