@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,23 @@ import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
-import { Users, User, Heart, Pill, AlertCircle, Plus } from 'lucide-react';
+import { useCustomerLocations } from '@/hooks/use-customers';
+import { Users, Heart, Pill, Plus, Map as MapIcon, LayoutGrid } from 'lucide-react';
+
+const PatientsMapView = dynamic(
+  () => import('../../customers/components/customers-map-view'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[520px] bg-wl-bg-root rounded-xl border border-wl-border-default flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-6 h-6 rounded-full border-2 border-wl-border-strong border-t-white animate-spin mx-auto mb-2" />
+          <p className="text-xs text-wl-text-tertiary">Loading map…</p>
+        </div>
+      </div>
+    ),
+  },
+);
 
 interface Patient {
   id: string;
@@ -256,7 +273,9 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 }
 
 export default function PatientsPage() {
+  const [view, setView] = useState<'list' | 'map'>('list');
   const { items: patients, loading, error, refetch } = useApiList<Patient>('/api/v4/customers?type=patient');
+  const { data: locations, loading: locLoading } = useCustomerLocations();
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -268,11 +287,41 @@ export default function PatientsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Patient Registry</h1>
-            <p className="text-wl-text-secondary">Manage and view patient records</p>
+            <p className="text-wl-text-secondary">
+              {view === 'map'
+                ? `${locations?.length ?? 0} patient${(locations?.length ?? 0) !== 1 ? 's' : ''} with known location`
+                : 'Manage and view patient records'}
+            </p>
           </div>
-          <Button variant="primary" className="flex items-center gap-2">
-            <Plus size={16} /> Add Patient
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border border-wl-border-default rounded-lg overflow-hidden">
+              <button
+                onClick={() => setView('list')}
+                className={cn(
+                  'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
+                  view === 'list'
+                    ? 'bg-wl-primary-500 text-white'
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
+                )}
+              >
+                <LayoutGrid size={14} /> List
+              </button>
+              <button
+                onClick={() => setView('map')}
+                className={cn(
+                  'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
+                  view === 'map'
+                    ? 'bg-wl-primary-500 text-white'
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
+                )}
+              >
+                <MapIcon size={14} /> Map
+              </button>
+            </div>
+            <Button variant="primary" className="flex items-center gap-2">
+              <Plus size={16} /> Add Patient
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -328,8 +377,22 @@ export default function PatientsPage() {
         </Card>
       </div>
 
-      {/* Patient Table */}
-      <PatientTable patients={patients} />
+      {/* Map or List */}
+      {view === 'map' ? (
+        <div>
+          {locLoading ? (
+            <div className="h-[520px] bg-wl-bg-surface border border-wl-border-default rounded-xl flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full border-2 border-wl-border-strong border-t-white animate-spin" />
+            </div>
+          ) : (
+            <div className="h-[520px]">
+              <PatientsMapView customers={locations ?? []} />
+            </div>
+          )}
+        </div>
+      ) : (
+        <PatientTable patients={patients} />
+      )}
     </div>
   );
 }
