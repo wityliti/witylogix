@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   AlertCircle,
-  ArrowRight,
   Download,
   Package,
   Truck,
@@ -49,7 +48,7 @@ export interface ActivityEvent {
 }
 
 export default function ActivityPage() {
-  const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
+  const { items: apiEvents, loading, error, refetch, pagination, setPage } = useApiList<ActivityEvent>('/api/v4/activity-logs');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isLiveMode, setIsLiveMode] = useState(true);
@@ -60,8 +59,6 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
-  const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
-  const [hasMore, setHasMore] = useState(true);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -79,7 +76,7 @@ export default function ActivityPage() {
 
   // Filter and search logic
   const filteredEvents = useCallback(() => {
-    return (events || []).filter((event) => {
+    return (apiEvents || []).filter((event) => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -119,7 +116,7 @@ export default function ActivityPage() {
 
       return true;
     });
-  }, [events, searchQuery, filters]);
+  }, [apiEvents, searchQuery, filters]);
 
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
@@ -411,6 +408,8 @@ export default function ActivityPage() {
                     {severity}
                   </Badge>
                 )}
+                hasMore={pagination.page < pagination.totalPages}
+                onLoadMore={() => setPage(pagination.page + 1)}
               />
             </div>
 
