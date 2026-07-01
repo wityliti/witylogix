@@ -162,15 +162,15 @@ export function HomeLiveMap() {
       {/* Legend */}
       <div className="absolute bottom-3 left-3 bg-wl-bg-surface/90 border border-wl-border-default rounded-lg px-3 py-2 backdrop-blur-sm space-y-1 text-xs">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#f5a623] inline-block" />
+          <span className="w-2.5 h-2.5 rounded-full bg-wl-primary-500 inline-block" />
           <span className="text-wl-text-secondary">Assigned</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] inline-block" />
+          <span className="w-2.5 h-2.5 rounded-full bg-wl-success-500 inline-block" />
           <span className="text-wl-text-secondary">In Transit</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#a78bfa] inline-block" />
+          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: '#a78bfa' }} />
           <span className="text-wl-text-secondary">Driver</span>
         </div>
       </div>

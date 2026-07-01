@@ -72,7 +72,7 @@ const platformConfig: Record<
   square: {
     name: 'Square',
     initials: 'SQ',
-    bgColor: 'bg-slate-700',
+    bgColor: 'bg-wl-bg-overlay',
     textColor: 'text-white',
   },
   amazon: {

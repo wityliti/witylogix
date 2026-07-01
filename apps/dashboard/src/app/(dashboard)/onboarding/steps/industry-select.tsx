@@ -55,7 +55,7 @@ const industries: {
     id: Industry.FIELD_SERVICE,
     label: "Field Service",
     icon: <Wrench className="w-5 h-5" />,
-    color: "from-slate-500 to-slate-600",
+    color: "from-wl-neutral-500 to-wl-neutral-600",
   },
   {
     id: Industry.MANUFACTURING,
