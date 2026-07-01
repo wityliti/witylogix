@@ -56,6 +56,9 @@ packages/*/package-lock.json
 # Claude-Flow runtime state
 **/.claude-flow/
 
+# Claude Code runtime lock files
+.claude/scheduled_tasks.lock
+
 # Playwright
 **/playwright-report/
 **/test-results/

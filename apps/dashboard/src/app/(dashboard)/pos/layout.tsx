@@ -30,7 +30,7 @@ export default function POSLayout({
   return (
     <>
       {/* Tab Navigation */}
-      <div className="border-b border-slate-700 bg-slate-900">
+      <div className="border-b border-wl-border-default bg-wl-bg-surface">
         <div className="flex items-center gap-1 px-6 pt-4">
           {tabs.map((tab) => (
             <Link
@@ -39,8 +39,8 @@ export default function POSLayout({
               className={cn(
                 "px-4 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap flex items-center gap-2",
                 isActive(tab.href)
-                  ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"
+                  ? "border-wl-primary-500 text-wl-primary-400"
+                  : "border-transparent text-wl-text-secondary hover:text-wl-text-primary hover:border-wl-border-strong"
               )}
             >
               <span>{tab.icon}</span>

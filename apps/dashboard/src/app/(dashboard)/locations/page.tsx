@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
@@ -11,6 +12,13 @@ import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 import { WLMap } from "@/components/map/wl-map";
 import { PinLayer, type Pin } from "@/components/map/pin-layer";
+import { LayoutGrid, Map } from "lucide-react";
+import type { MapLocation } from "./components/locations-overview-map";
+
+const LocationsOverviewMap = dynamic(
+  () => import('./components/locations-overview-map').then((m) => m.LocationsOverviewMap),
+  { ssr: false },
+);
 
 /* ═══════════════════════════════════════════════════════════
    LOCATIONS PAGE — Warehouse & store management with filtering
@@ -77,6 +85,7 @@ export default function LocationsPage() {
   const [typeFilter, setTypeFilter] = useState<LocationType | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   const filtered = useMemo(() => {
     return locations.filter((loc) => {
@@ -115,9 +124,40 @@ export default function LocationsPage() {
         title="Locations"
         subtitle={`${stats.totalLocations} total · ${stats.activeLocations} active`}
         actions={
-          <Button variant="primary" size="md">
-            + Add Location
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* List / Map toggle */}
+            <div className="flex rounded-md border border-wl-border-default overflow-hidden">
+              <button
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                  viewMode === "list"
+                    ? "bg-wl-bg-elevated text-wl-text-primary"
+                    : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary",
+                )}
+                title="List view"
+              >
+                <LayoutGrid size={14} />
+                List
+              </button>
+              <button
+                onClick={() => setViewMode("map")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                  viewMode === "map"
+                    ? "bg-wl-bg-elevated text-wl-text-primary"
+                    : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary",
+                )}
+                title="Map view"
+              >
+                <Map size={14} />
+                Map
+              </button>
+            </div>
+            <Button variant="primary" size="md">
+              + Add Location
+            </Button>
+          </div>
         }
       />
 
@@ -167,7 +207,15 @@ export default function LocationsPage() {
           </div>
         </div>
 
+        {/* Map view */}
+        {viewMode === "map" && (
+          <LocationsOverviewMap
+            locations={filtered as MapLocation[]}
+          />
+        )}
+
         {/* Locations Grid + Detail */}
+        {viewMode === "list" && (
         <div
           className={cn("grid gap-5")}
           style={{
@@ -491,6 +539,7 @@ export default function LocationsPage() {
             </Card>
           )}
         </div>
+        )} {/* end viewMode === "list" */}
       </div>
     </>
   );

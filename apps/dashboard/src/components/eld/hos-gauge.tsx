@@ -62,9 +62,9 @@ export function HOSGauge({
   };
 
   const getTextColor = (): string => {
-    if (percentage > 50) return "#10b981"; // success
-    if (percentage > 25) return "#f59e0b"; // warning
-    return "#ef4444"; // danger
+    if (percentage > 50) return "var(--wl-success-500)";
+    if (percentage > 25) return "var(--wl-warning-500)";
+    return "var(--wl-danger-500)";
   };
 
   // Format display time
@@ -125,8 +125,8 @@ export function HOSGauge({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#059669" stopOpacity="1" />
+            <stop offset="0%" style={{ stopColor: 'var(--wl-success-500)', stopOpacity: 0.8 }} />
+            <stop offset="100%" style={{ stopColor: 'var(--wl-success-600)', stopOpacity: 1 }} />
           </linearGradient>
 
           {/* Yellow gradient */}
@@ -137,8 +137,8 @@ export function HOSGauge({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#d97706" stopOpacity="1" />
+            <stop offset="0%" style={{ stopColor: 'var(--wl-warning-500)', stopOpacity: 0.8 }} />
+            <stop offset="100%" style={{ stopColor: 'var(--wl-warning-400)', stopOpacity: 1 }} />
           </linearGradient>
 
           {/* Red gradient */}
@@ -149,8 +149,8 @@ export function HOSGauge({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#dc2626" stopOpacity="1" />
+            <stop offset="0%" style={{ stopColor: 'var(--wl-danger-500)', stopOpacity: 0.8 }} />
+            <stop offset="100%" style={{ stopColor: 'var(--wl-danger-600)', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
 
