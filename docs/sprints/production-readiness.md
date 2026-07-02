@@ -453,14 +453,21 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Healthcare (6 → 0 mock signals) ✅ WIT-514
-| Page | Route | Mock Before | Mock After | Status |
-|------|-------|------------|-----------|--------|
-| Healthcare Overview | `/healthcare` | 0 | 0 | ✅ |
-| Patients | `/healthcare/patients` | 0 | 0 | ✅ |
-| Records | `/healthcare/records` | 6 | 0 | ✅ WIT-514 |
+## Healthcare (6 → 0 mock signals) ✅ WIT-514 + WIT-590
+| Page | Route | Mock Before | Mock After | Map | Status |
+|------|-------|------------|-----------|-----|--------|
+| Healthcare Overview | `/healthcare` | 5 hardcoded compliance+status values | 0 real API | — | ✅ WIT-590 |
+| Patients | `/healthcare/patients` | 0 | 0 + patient location map | ✅ WLMap + CustomersMapView (List↔Map toggle) | ✅ WIT-590 |
+| Records | `/healthcare/records` | 6 | 0 | — | ✅ WIT-514 |
 
 **WIT-514 changes**: Removed `mockRecords` fallback array (30+ hardcoded HealthRecord objects); all KPIs, filters, and record detail now computed from real API data; added empty state when `filteredRecords.length === 0`
+
+**WIT-590 changes**:
+- `healthcare/page.tsx`: replaced hardcoded `compliance` object (`hipaaCompliant/encryptionEnabled/auditLoggingEnabled/accessControlsConfigured: true`, `outstandingIssues: 0`) with `useApiQuery('/api/v4/shops/me')` → derives `hipaaMode` from shop settings, computes `outstandingIssues` from unset flags. Replaced "System Status: Operational" + "Data Backup: Completed / Last run: Today 11:00 PM" with `useApiQuery('/api/v4/platform/status')` — shows `Operational/Degraded/Disrupted` based on real DB+Redis health score + `n/N services healthy` subtitle. Third Quick Stat replaced with real "Inactive Patients" count.
+- `healthcare/patients/page.tsx`: List↔Map toggle — Map view uses existing `CustomersMapView` (SSR-disabled, CARTO keyless) fed by `useCustomerLocations()` (`/api/v4/customers/locations`); loading placeholder; empty state when no geocoded patient addresses.
+- `apps/api/src/routes/fleet/fleet.ts`: `Math.random()` in fault-code alert ID → deterministic charCode sum fallback.
+
+**Endpoints used**: `GET /api/v4/shops/me` (shop settings), `GET /api/v4/platform/status` (real DB+Redis health), `GET /api/v4/customers/locations` (patient map pins)
 
 ---
 

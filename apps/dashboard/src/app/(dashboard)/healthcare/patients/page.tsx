@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,13 @@ import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
-import { Users, User, Heart, Pill, AlertCircle, Plus } from 'lucide-react';
+import { useCustomerLocations } from '@/hooks/use-customers';
+import { Users, User, Heart, Pill, AlertCircle, Plus, List, Map as MapIcon } from 'lucide-react';
+
+const CustomersMapView = dynamic(
+  () => import('../../customers/components/customers-map-view'),
+  { ssr: false, loading: () => <div className="h-[500px] bg-wl-bg-surface rounded-xl animate-pulse" /> },
+);
 
 interface Patient {
   id: string;
@@ -257,9 +264,13 @@ function PatientTable({ patients }: { patients: Patient[] }) {
 
 export default function PatientsPage() {
   const { items: patients, loading, error, refetch } = useApiList<Patient>('/api/v4/customers?type=patient');
+  const { data: locations, loading: locLoading } = useCustomerLocations();
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const locationPins = Array.isArray(locations) ? locations : ((locations as any)?.data ?? []);
 
   return (
     <div className="min-h-screen bg-wl-bg-root p-6">
@@ -268,11 +279,42 @@ export default function PatientsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Patient Registry</h1>
-            <p className="text-wl-text-secondary">Manage and view patient records</p>
+            <p className="text-wl-text-secondary">
+              {viewMode === 'map'
+                ? `${locationPins.length} patient${locationPins.length !== 1 ? 's' : ''} mapped`
+                : 'Manage and view patient records'}
+            </p>
           </div>
-          <Button variant="primary" className="flex items-center gap-2">
-            <Plus size={16} /> Add Patient
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* View toggle */}
+            <div className="flex rounded-lg border border-wl-border-default overflow-hidden">
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
+                )}
+              >
+                <List size={13} /> List
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                  viewMode === 'map'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
+                )}
+              >
+                <MapIcon size={13} /> Map
+              </button>
+            </div>
+            <Button variant="primary" className="flex items-center gap-2">
+              <Plus size={16} /> Add Patient
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -328,8 +370,26 @@ export default function PatientsPage() {
         </Card>
       </div>
 
-      {/* Patient Table */}
-      <PatientTable patients={patients} />
+      {/* Map or List */}
+      {viewMode === 'map' ? (
+        <div className="rounded-xl overflow-hidden border border-wl-border-default" style={{ height: 520 }}>
+          {locLoading ? (
+            <div className="h-full bg-wl-bg-surface animate-pulse flex items-center justify-center">
+              <p className="text-wl-text-tertiary text-sm">Loading patient locations…</p>
+            </div>
+          ) : locationPins.length === 0 ? (
+            <div className="h-full bg-wl-bg-surface flex flex-col items-center justify-center gap-3">
+              <MapIcon className="w-10 h-10 text-wl-text-tertiary opacity-40" />
+              <p className="text-wl-text-secondary text-sm">No patient locations available</p>
+              <p className="text-wl-text-tertiary text-xs">Add address information to patients to see them on the map</p>
+            </div>
+          ) : (
+            <CustomersMapView customers={locationPins} />
+          )}
+        </div>
+      ) : (
+        <PatientTable patients={patients} />
+      )}
     </div>
   );
 }
