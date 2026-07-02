@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -41,6 +42,7 @@ interface MFAStatus {
 }
 
 export default function ProfilePage() {
+  const { addToast } = useToast();
   const { data: profile, loading, error, refetch } = useApiQuery<UserProfile>('/api/v4/users/profile');
   const { data: mfaStatus } = useApiQuery<MFAStatus>('/api/v4/users/mfa');
   const { execute: updateProfile } = useApiMutation('PATCH', '/api/v4/users/profile');
@@ -99,8 +101,9 @@ export default function ProfilePage() {
     try {
       await updateProfile(profileData);
       refetch();
+      addToast({ type: 'success', title: 'Profile updated' });
     } catch (err) {
-      console.error('Failed to update profile:', err);
+      addToast({ type: 'error', title: 'Failed to update profile', message: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }
@@ -113,8 +116,9 @@ export default function ProfilePage() {
         newPassword: password.new,
       });
       setPassword({ current: '', new: '', confirm: '' });
+      addToast({ type: 'success', title: 'Password changed' });
     } catch (err) {
-      console.error('Failed to change password:', err);
+      addToast({ type: 'error', title: 'Failed to change password', message: err instanceof Error ? err.message : undefined });
     }
   };
 
@@ -292,7 +296,7 @@ export default function ProfilePage() {
               </div>
             </CardContent>
             <CardFooter className="flex gap-3">
-              <Button variant="primary" disabled={!password.current || !password.new || password.new !== password.confirm}>
+              <Button variant="primary" onClick={handleChangePassword} disabled={!password.current || !password.new || password.new !== password.confirm}>
                 Update Password
               </Button>
               <Button variant="secondary">Cancel</Button>

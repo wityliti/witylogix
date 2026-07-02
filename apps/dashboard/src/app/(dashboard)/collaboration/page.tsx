@@ -27,6 +27,7 @@ import {
 import { MessageList } from "@/components/collaboration/message-list";
 import { ChannelSidebar } from "@/components/collaboration/channel-sidebar";
 import { useApiList } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 
@@ -35,6 +36,7 @@ interface MentionSuggestion extends User {
 }
 
 function TeamCollaborationPage() {
+  const { addToast } = useToast();
   const { user } = useAuth();
   const collaboration = useCollaboration({
     url: process.env.NEXT_PUBLIC_REALTIME_URL,
@@ -93,7 +95,8 @@ function TeamCollaborationPage() {
         );
         setShowMentionDropdown(results.length > 0);
       } catch (error) {
-        console.error("Failed to search mentions:", error);
+        // mention search failures are silent — user can still type manually
+        void error;
       }
     },
     [collaboration]
@@ -121,9 +124,9 @@ function TeamCollaborationPage() {
       messageInput.style.height = "auto";
       setShowMentionDropdown(false);
     } catch (error) {
-      console.error("Failed to send message:", error);
+      addToast({ type: 'error', title: 'Failed to send message', message: error instanceof Error ? error.message : undefined });
     }
-  }, [collaboration]);
+  }, [collaboration, addToast]);
 
   const handleEditMessage = useCallback(
     async (messageId: string, newContent: string) => {
@@ -132,10 +135,10 @@ function TeamCollaborationPage() {
         setEditingMessageId(null);
         setEditingContent("");
       } catch (error) {
-        console.error("Failed to edit message:", error);
+        addToast({ type: 'error', title: 'Failed to edit message', message: error instanceof Error ? error.message : undefined });
       }
     },
-    [collaboration]
+    [collaboration, addToast]
   );
 
   const handleDeleteMessage = useCallback(
@@ -148,10 +151,10 @@ function TeamCollaborationPage() {
       try {
         await collaboration.deleteMessage(messageId);
       } catch (error) {
-        console.error("Failed to delete message:", error);
+        addToast({ type: 'error', title: 'Failed to delete message', message: error instanceof Error ? error.message : undefined });
       }
     },
-    [collaboration, pendingDeleteMsgId]
+    [collaboration, pendingDeleteMsgId, addToast]
   );
 
   const handlePinMessage = useCallback(
@@ -159,10 +162,10 @@ function TeamCollaborationPage() {
       try {
         await collaboration.pinMessage(messageId);
       } catch (error) {
-        console.error("Failed to pin message:", error);
+        addToast({ type: 'error', title: 'Failed to pin message', message: error instanceof Error ? error.message : undefined });
       }
     },
-    [collaboration]
+    [collaboration, addToast]
   );
 
   const handleReactToMessage = useCallback(
@@ -170,10 +173,10 @@ function TeamCollaborationPage() {
       try {
         await collaboration.reactToMessage(messageId, emoji);
       } catch (error) {
-        console.error("Failed to react to message:", error);
+        addToast({ type: 'error', title: 'Failed to add reaction', message: error instanceof Error ? error.message : undefined });
       }
     },
-    [collaboration]
+    [collaboration, addToast]
   );
 
   const handleOpenThread = useCallback((messageId: string) => {
@@ -189,10 +192,11 @@ function TeamCollaborationPage() {
       await collaboration.createChannel(newChannelName, newChannelCategory);
       setNewChannelName("");
       setShowCreateChannelModal(false);
+      addToast({ type: 'success', title: 'Channel created' });
     } catch (error) {
-      console.error("Failed to create channel:", error);
+      addToast({ type: 'error', title: 'Failed to create channel', message: error instanceof Error ? error.message : undefined });
     }
-  }, [collaboration, newChannelName, newChannelCategory]);
+  }, [collaboration, newChannelName, newChannelCategory, addToast]);
 
   const pinnedMessages = useMemo(() => {
     return collaboration.messages.filter((m) => m.pinned);

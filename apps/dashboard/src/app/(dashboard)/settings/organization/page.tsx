@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -48,6 +49,7 @@ interface UsageMetric {
 }
 
 export default function OrganizationPage() {
+  const { addToast } = useToast();
   const { data: org, loading, error, refetch } = useApiQuery<Organization>('/api/v4/settings/organization');
   const { data: billing } = useApiQuery<BillingInfo>('/api/v4/billing');
   const { execute: updateOrg } = useApiMutation('PATCH', '/api/v4/settings/organization');
@@ -79,8 +81,9 @@ export default function OrganizationPage() {
     try {
       await updateOrg(orgData);
       refetch();
+      addToast({ type: 'success', title: 'Organization saved' });
     } catch (err) {
-      console.error('Failed to update organization:', err);
+      addToast({ type: 'error', title: 'Failed to save organization', message: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }

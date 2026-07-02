@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -39,6 +40,7 @@ interface APIKey {
 }
 
 export default function APIKeysPage() {
+  const { addToast } = useToast();
   const { items: apiKeys, loading, error, refetch } = useApiList<APIKey>('/api/v4/api-keys');
   const { execute: deleteKey } = useApiMutation('DELETE', '/api/v4/api-keys/:id');
   const { execute: createKey } = useApiMutation('POST', '/api/v4/api-keys');
@@ -77,8 +79,9 @@ export default function APIKeysPage() {
       setSelectedScopes([]);
       setShowCreateDialog(false);
       refetch();
+      addToast({ type: 'success', title: 'API key created' });
     } catch (err) {
-      console.error('Failed to create API key:', err);
+      addToast({ type: 'error', title: 'Failed to create API key', message: err instanceof Error ? err.message : undefined });
     }
   };
 
@@ -87,8 +90,9 @@ export default function APIKeysPage() {
       await deleteKey({ id });
       setDeleteConfirmId(null);
       refetch();
+      addToast({ type: 'success', title: 'API key revoked' });
     } catch (err) {
-      console.error('Failed to delete API key:', err);
+      addToast({ type: 'error', title: 'Failed to revoke API key', message: err instanceof Error ? err.message : undefined });
     }
   };
 
