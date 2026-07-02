@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { useApiMutation } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { Package, Truck, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 
 type Step = 'package' | 'carrier' | 'rates' | 'review';
@@ -21,6 +22,7 @@ interface CreateLabelPayload {
 
 export default function CreateLabelPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [step, setStep] = useState<Step>('package');
   const [formData, setFormData] = useState<CreateLabelPayload>({
     destination: '',
@@ -37,7 +39,7 @@ export default function CreateLabelPage() {
       await createLabel(formData);
       router.push('/shipping/labels');
     } catch (err) {
-      console.error('Failed to create label:', err);
+      addToast({ type: 'error', title: 'Failed to create label', message: err instanceof Error ? err.message : undefined });
     }
   };
 

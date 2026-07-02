@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -67,6 +68,7 @@ const DATE_FORMATS = [
 ];
 
 export default function PreferencesPage() {
+  const { addToast } = useToast();
   const { data: prefs, loading, error, refetch } = useApiQuery<UserPreferences>('/api/v4/settings/preferences');
   const { execute: updatePrefs } = useApiMutation('PATCH', '/api/v4/settings/preferences');
 
@@ -94,8 +96,9 @@ export default function PreferencesPage() {
     try {
       await updatePrefs(preferences);
       refetch();
+      addToast({ type: 'success', title: 'Preferences saved' });
     } catch (err) {
-      console.error('Failed to update preferences:', err);
+      addToast({ type: 'error', title: 'Failed to save preferences', message: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }

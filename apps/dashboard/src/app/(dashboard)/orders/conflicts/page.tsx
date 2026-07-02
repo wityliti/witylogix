@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import { useConflicts, type SyncPlatform, type SyncConflict } from "@/hooks/use-order-sync";
 import { useApiList } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 
 /* ═══════════════════════════════════════════════════════════
    CONFLICT RESOLUTION PAGE — Side-by-side diff view with
@@ -28,6 +29,7 @@ const PLATFORMS: Record<SyncPlatform, { name: string; icon: string }> = {
 };
 
 export default function ConflictsPage() {
+  const { addToast } = useToast();
   const [filterPlatform, setFilterPlatform] = useState<SyncPlatform | "all">("all");
   const [filterField, setFilterField] = useState<string | "all">("all");
   const [filterDateRange, setFilterDateRange] = useState<"all" | "today" | "week" | "month">("all");
@@ -89,7 +91,7 @@ export default function ConflictsPage() {
       setResolving((prev) => new Set(prev).add(conflictId));
       await resolveConflict(conflictId, action, manualValue);
     } catch (err) {
-      console.error("Resolution failed:", err);
+      addToast({ type: 'error', title: 'Resolution failed', message: err instanceof Error ? err.message : undefined });
     } finally {
       setResolving((prev) => {
         const next = new Set(prev);
@@ -105,7 +107,7 @@ export default function ConflictsPage() {
       setBulkResolvingField(field);
       await bulkResolveByType(field, action);
     } catch (err) {
-      console.error("Bulk resolution failed:", err);
+      addToast({ type: 'error', title: 'Bulk resolution failed', message: err instanceof Error ? err.message : undefined });
     } finally {
       setBulkResolvingField(null);
     }

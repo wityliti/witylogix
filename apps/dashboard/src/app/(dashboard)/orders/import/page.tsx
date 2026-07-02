@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SyncPlatform } from "@/hooks/use-order-sync";
 import { useApiList, useApiQuery } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { api } from '@/lib/api';
 
 /* ═══════════════════════════════════════════════════════════
@@ -57,6 +58,7 @@ const getHealthBadgeVariant = (status: "healthy" | "warning" | "error"): "succes
 };
 
 export default function OrderImportPage() {
+  const { addToast } = useToast();
   const [selectedPlatform, setSelectedPlatform] = useState<SyncPlatform | null>(null);
   const [wizardStep, setWizardStep] = useState<"select" | "configure" | "preview" | "import">("select");
   const [filterPlatform, setFilterPlatform] = useState<SyncPlatform | "all">("all");
@@ -127,8 +129,9 @@ export default function OrderImportPage() {
     setTriggerLoading(true);
     try {
       await api.post(`/api/v4/integrations/connections/${connection._connectionId}/force-sync`, {});
+      addToast({ type: 'success', title: 'Sync triggered', message: `${platform} sync started` });
     } catch (err) {
-      console.error('Sync trigger failed:', err);
+      addToast({ type: 'error', title: 'Sync trigger failed', message: err instanceof Error ? err.message : undefined });
     } finally {
       setTriggerLoading(false);
     }
