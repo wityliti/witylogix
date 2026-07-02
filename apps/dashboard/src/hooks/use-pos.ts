@@ -129,6 +129,23 @@ export function useTopSellingItems(filters?: ApiFilters): UseApiListResult<TopSe
   return useApiList<TopSellingItem>('/api/v4/pos/top-items', filters);
 }
 
+/**
+ * Terminal location — used for the map view.
+ */
+export interface TerminalLocation {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  city: string;
+  address: string;
+  status: 'online' | 'offline' | 'error';
+}
+
+export function useTerminalLocations(): UseApiQueryResult<TerminalLocation[]> {
+  return useApiQuery<TerminalLocation[]>('/api/v4/pos/terminal-locations');
+}
+
 export interface RefundResult {
   success: boolean;
   transactionId: string;

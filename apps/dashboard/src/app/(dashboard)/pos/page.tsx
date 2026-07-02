@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -14,9 +15,16 @@ import {
   useTransactions,
   useTerminals,
   useTopSellingItems,
+  useTerminalLocations,
   type POSOverview,
   type TransactionStatus,
 } from "@/hooks/use-pos";
+
+const WLMap = dynamic(() => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })), { ssr: false });
+const PosTerminalLayer = dynamic(
+  () => import("@/components/map/pos-terminal-layer").then((m) => ({ default: m.PosTerminalLayer })),
+  { ssr: false },
+);
 
 /**
  * POS Overview Page - Professional Dark Theme
@@ -63,12 +71,19 @@ export default function POSPage() {
   const { items: liveTransactions, loading: txnLoading } = useTransactions();
   const { items: terminals, loading: terminalsLoading } = useTerminals();
   const { items: topItems } = useTopSellingItems();
+  const { data: terminalLocations } = useTerminalLocations();
 
   const loading = overviewLoading || txnLoading || terminalsLoading;
   const overview = overviewData ?? DEFAULT_OVERVIEW;
 
   const [selectedTerminal, setSelectedTerminal] = useState<string | null>(null);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
+  const [terminalView, setTerminalView] = useState<"list" | "map">("list");
+
+  const mappableTerminals = useMemo(
+    () => (terminalLocations ?? []).filter((t) => t.lat !== 0 && t.lng !== 0),
+    [terminalLocations],
+  );
 
   // Get recent transactions (last 10)
   const recentTransactions = useMemo(
@@ -341,61 +356,105 @@ export default function POSPage() {
           {/* POS Terminal Status */}
           <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
             <CardHeader>
-              <CardTitle className="text-white">Terminal Status</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-white">Terminal Status</CardTitle>
+                {mappableTerminals.length > 0 && (
+                  <div className="flex items-center gap-1 bg-wl-bg-elevated rounded-md p-1">
+                    <button
+                      onClick={() => setTerminalView("list")}
+                      className={cn(
+                        "px-3 py-1 text-xs rounded transition-colors",
+                        terminalView === "list"
+                          ? "bg-wl-primary-500 text-white"
+                          : "text-wl-text-secondary hover:text-white"
+                      )}
+                    >
+                      List
+                    </button>
+                    <button
+                      onClick={() => setTerminalView("map")}
+                      className={cn(
+                        "px-3 py-1 text-xs rounded transition-colors",
+                        terminalView === "map"
+                          ? "bg-wl-primary-500 text-white"
+                          : "text-wl-text-secondary hover:text-white"
+                      )}
+                    >
+                      Map
+                    </button>
+                  </div>
+                )}
+              </div>
             </CardHeader>
 
-            <CardContent className="space-y-2">
-              {terminals.map((terminal, idx) => (
-                <div
-                  key={terminal.id}
-                  onClick={() => setSelectedTerminal(terminal.id)}
-                  className={cn(
-                    "p-3 bg-wl-bg-elevated rounded-md border transition-colors cursor-pointer opacity-0",
-                    selectedTerminal === terminal.id
-                      ? "border-blue-500 bg-wl-bg-elevated"
-                      : "border-wl-border-default hover:border-wl-border-strong"
-                  )}
-                  style={{
-                    animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-white flex items-center gap-2">
-                        <span>🖥️</span>
-                        <span className="truncate">{terminal.name}</span>
-                      </div>
-                      <div className="text-xs text-wl-text-secondary mt-0.5">
-                        {terminal.location}
-                      </div>
-                    </div>
-                    <Badge variant={terminalStatusVariant(terminal.status)}>
-                      {terminal.status}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2">
-                    <div>
-                      <div className="text-wl-text-secondary text-xs">Sales</div>
-                      <div className="text-white font-bold">
-                        ${terminal.totalSales.toFixed(0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-wl-text-secondary text-xs">Txns</div>
-                      <div className="text-white font-bold">
-                        {terminal.totalTransactions}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-wl-text-secondary text-xs">Last Activity</div>
-                      <div className="text-white font-bold">
-                        {terminal.lastActivity}
-                      </div>
-                    </div>
-                  </div>
+            <CardContent>
+              {terminalView === "map" && mappableTerminals.length > 0 ? (
+                <div className="h-64 rounded-md overflow-hidden">
+                  <WLMap center={[mappableTerminals[0].lng, mappableTerminals[0].lat]} zoom={11}>
+                    <PosTerminalLayer terminals={mappableTerminals} />
+                  </WLMap>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-2">
+                  {terminals.length === 0 ? (
+                    <div className="text-center py-8 text-wl-text-secondary text-sm">
+                      No terminals configured
+                    </div>
+                  ) : (
+                    terminals.map((terminal, idx) => (
+                      <div
+                        key={terminal.id}
+                        onClick={() => setSelectedTerminal(terminal.id)}
+                        className={cn(
+                          "p-3 bg-wl-bg-elevated rounded-md border transition-colors cursor-pointer opacity-0",
+                          selectedTerminal === terminal.id
+                            ? "border-blue-500 bg-wl-bg-elevated"
+                            : "border-wl-border-default hover:border-wl-border-strong"
+                        )}
+                        style={{
+                          animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
+                        }}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-white flex items-center gap-2">
+                              <span>🖥️</span>
+                              <span className="truncate">{terminal.name}</span>
+                            </div>
+                            <div className="text-xs text-wl-text-secondary mt-0.5">
+                              {terminal.location}
+                            </div>
+                          </div>
+                          <Badge variant={terminalStatusVariant(terminal.status)}>
+                            {terminal.status}
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2">
+                          <div>
+                            <div className="text-wl-text-secondary text-xs">Sales</div>
+                            <div className="text-white font-bold">
+                              ${terminal.totalSales.toFixed(0)}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-wl-text-secondary text-xs">Txns</div>
+                            <div className="text-white font-bold">
+                              {terminal.totalTransactions}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-wl-text-secondary text-xs">Last Activity</div>
+                            <div className="text-white font-bold">
+                              {terminal.lastActivity}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
