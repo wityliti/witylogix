@@ -569,7 +569,7 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
         if (diag?.faultCodes && Array.isArray(diag.faultCodes)) {
           for (const fc of diag.faultCodes) {
             alerts.push({
-              id: `fault-${fc.code || Math.random()}`,
+              id: `fault-${fc.code || String(fc.description || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)}`,
               vehicleId: id,
               alertType: 'FAULT_CODE',
               code: fc.code,
