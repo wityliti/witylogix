@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useOrders, Order } from '@/hooks/use-orders';
 import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
+import Link from 'next/link';
 
 const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
 
@@ -112,6 +113,19 @@ export default function OrdersPage() {
   // Filter orders by status
   const filtered = useMemo(() => {
     let result = orders;
+    if (statusFilter !== 'all') {
+      result = result.filter((o) => o.status.toUpperCase() === statusFilter);
+    }
+    if (dateRange?.from) {
+      const from = new Date(dateRange.from);
+      result = result.filter((o) => new Date(o.createdAt) >= from);
+    }
+    if (dateRange?.to) {
+      const to = new Date(dateRange.to);
+      result = result.filter((o) => new Date(o.createdAt) <= to);
+    }
+    return result;
+  }, [orders, statusFilter, dateRange]);
 
     if (statusFilter !== 'all') {
       result = result.filter(
@@ -297,37 +311,15 @@ export default function OrdersPage() {
             <div className="flex gap-3">
               <input
                 type="date"
-                value={dateRange?.from || ''}
-                onChange={(e) => {
-                  setDateRange((prev) => ({
-                    ...prev,
-                    from: e.target.value,
-                  } as any));
-                  setCurrentPage(1);
-                }}
-                className={cn(
-                  'px-3 py-2 rounded-lg text-sm',
-                  'bg-wl-bg-elevated/50 border border-wl-border-strong text-wl-text-primary',
-                  'focus:outline-none focus:ring-2 focus:ring-white/20',
-                  'transition-all'
-                )}
+                value={dateRange?.from ?? ''}
+                onChange={(e) => { setDateRange((p) => ({ ...p, from: e.target.value })); setCurrentPage(1); }}
+                className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
               <input
                 type="date"
-                value={dateRange?.to || ''}
-                onChange={(e) => {
-                  setDateRange((prev) => ({
-                    ...prev,
-                    to: e.target.value,
-                  } as any));
-                  setCurrentPage(1);
-                }}
-                className={cn(
-                  'px-3 py-2 rounded-lg text-sm',
-                  'bg-wl-bg-elevated/50 border border-wl-border-strong text-wl-text-primary',
-                  'focus:outline-none focus:ring-2 focus:ring-white/20',
-                  'transition-all'
-                )}
+                value={dateRange?.to ?? ''}
+                onChange={(e) => { setDateRange((p) => ({ ...p, to: e.target.value })); setCurrentPage(1); }}
+                className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
             </div>
 
@@ -429,22 +421,22 @@ export default function OrdersPage() {
                     </tr>
                   ))
                 ) : paginatedOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={8}>
-                      <div className="flex flex-col items-center justify-center py-16 px-6">
-                        <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
-                          <Search className="w-6 h-6 text-zinc-600" />
+                    <tr>
+                      <td colSpan={8}>
+                        <div className="flex flex-col items-center justify-center py-16 px-6">
+                          <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+                            <Search className="w-6 h-6 text-zinc-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-zinc-200 mb-1">No orders found</h3>
+                          <p className="text-sm text-zinc-500 text-center max-w-sm">
+                            {search || dateRange?.from || dateRange?.to
+                              ? 'Try adjusting your filters or search terms'
+                              : 'No orders yet. Create your first order to get started.'}
+                          </p>
                         </div>
-                        <h3 className="text-lg font-semibold text-zinc-200 mb-1">No orders found</h3>
-                        <p className="text-sm text-zinc-500 text-center max-w-sm">
-                          {search || dateRange?.from || dateRange?.to
-                            ? 'Try adjusting your filters or search terms'
-                            : 'No orders yet. Create your first order to get started.'}
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
+                      </td>
+                    </tr>
+                  ) : (
                     paginatedOrders.map((order, idx) => (
                       <tr
                         key={order.id}
@@ -516,8 +508,8 @@ export default function OrdersPage() {
             </div>
           </Card>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
+        {/* Pagination (list view only) */}
+        {view === 'list' && totalPages > 1 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-wl-text-secondary">
               Showing{' '}

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo, useState, useCallback } from "react";
+import { use, useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/header";
@@ -84,6 +84,12 @@ interface CampaignRecipient {
   sent_at?: string;
 }
 
+interface ReachPoint {
+  lat: number;
+  lng: number;
+  weight?: number;
+}
+
 const statusVariant = (
   s: CampaignStatus,
 ): "success" | "warning" | "danger" | "info" | "primary" | "default" =>
@@ -129,6 +135,8 @@ export default function CampaignDetailPage({
   const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [mapId, setMapId] = useState<string | null>(null);
+  const handleMapReady = useCallback((mid: string) => setMapId(mid), []);
 
   const {
     data: campaign,
@@ -137,17 +145,17 @@ export default function CampaignDetailPage({
     refetch,
   } = useApiQuery<Campaign>(`/api/v4/campaigns/${id}`);
 
-  const { items: events, loading: eventsLoading } =
-    useApiList<CampaignEvent>(
-      activeTab === "events" ? `/api/v4/campaigns/${id}/events` : null,
-    );
+  const { items: events, loading: eventsLoading } = useApiList<CampaignEvent>(
+    activeTab === "events" ? `/api/v4/campaigns/${id}/events` : null,
+  );
 
-  const { items: recipients, loading: recipientsLoading } =
-    useApiList<CampaignRecipient>(
-      activeTab === "recipients"
-        ? `/api/v4/campaigns/${id}/recipients`
-        : null,
-    );
+  const { items: recipients, loading: recipientsLoading } = useApiList<CampaignRecipient>(
+    activeTab === "recipients" ? `/api/v4/campaigns/${id}/recipients` : null,
+  );
+
+  const { data: reachPoints, loading: geoLoading } = useApiQuery<ReachPoint[]>(
+    `/api/v4/campaigns/${id}/geo`
+  );
 
   const runAction = useCallback(async (action: () => Promise<unknown>) => {
     setActionLoading(true);
@@ -164,42 +172,18 @@ export default function CampaignDetailPage({
 
   const pieData = useMemo(() => {
     if (!campaign) return [];
-    const sent = campaign.sentCount || 0;
-    const delivered = campaign.deliveredCount;
-    const opened = campaign.openedCount;
-    const failed = campaign.failedCount;
+    const s = campaign.sentCount;
+    const o = campaign.openedCount;
+    const d = campaign.deliveredCount;
+    const f = campaign.failedCount;
     return [
-      {
-        label: "Opened",
-        value: opened,
-        color: "var(--wl-info-500)",
-        pct: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0",
-      },
-      {
-        label: "Delivered (not opened)",
-        value: Math.max(0, delivered - opened),
-        color: "var(--wl-success-500)",
-        pct:
-          sent > 0
-            ? (((delivered - opened) / sent) * 100).toFixed(1)
-            : "0",
-      },
-      {
-        label: "Failed",
-        value: failed,
-        color: "var(--wl-danger-500)",
-        pct: sent > 0 ? ((failed / sent) * 100).toFixed(1) : "0",
-      },
+      { label: "Opened", value: o, color: "var(--wl-info-500)", pct: s > 0 ? ((o / s) * 100).toFixed(1) : "0" },
+      { label: "Delivered (not opened)", value: Math.max(0, d - o), color: "var(--wl-success-500)", pct: s > 0 ? (((d - o) / s) * 100).toFixed(1) : "0" },
+      { label: "Failed", value: f, color: "var(--wl-danger-500)", pct: s > 0 ? ((f / s) * 100).toFixed(1) : "0" },
     ];
   }, [campaign]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-wl-bg-root p-8">
-        <TableSkeleton rows={6} />
-      </div>
-    );
-  }
+  if (loading) return <TableSkeleton rows={6} />;
 
   if (error || !campaign) {
     return (
@@ -209,14 +193,17 @@ export default function CampaignDetailPage({
     );
   }
 
-  const sent = campaign.sentCount || 0;
+  const sent = campaign.sentCount;
   const delivered = campaign.deliveredCount;
   const opened = campaign.openedCount;
   const clicked = campaign.clickedCount;
   const failed = campaign.failedCount;
-  const deliveryRate = sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
-  const openRate = delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : "0.0";
-  const clickRate = opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
+  const deliveryRate =
+    sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
+  const openRate =
+    delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : "0.0";
+  const clickRate =
+    opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
 
   const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
     { key: "overview", label: "Overview", icon: <BarChart3 size={14} /> },

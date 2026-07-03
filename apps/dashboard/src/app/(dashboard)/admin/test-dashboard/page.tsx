@@ -116,7 +116,6 @@ export default function TestDashboardPage() {
                   <p className="text-sm text-wl-text-secondary mb-2">Total Tests</p>
                   <p className="text-3xl font-bold text-white">{stats.total}</p>
                 </div>
-                <BarChart3 className="w-8 h-8 text-blue-500 opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -129,7 +128,6 @@ export default function TestDashboardPage() {
                   <p className="text-3xl font-bold text-green-600">{stats.passed}</p>
                   <p className="text-xs text-wl-text-secondary mt-1">{passRate}% pass rate</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-green-600 opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -142,7 +140,6 @@ export default function TestDashboardPage() {
                   <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
                   <p className="text-xs text-wl-text-secondary mt-1">{failRate}% fail rate</p>
                 </div>
-                <AlertCircle className="w-8 h-8 text-red-600 opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -166,7 +163,6 @@ export default function TestDashboardPage() {
                   <p className="text-sm text-wl-text-secondary mb-2">Duration</p>
                   <p className="text-3xl font-bold text-white">{stats.duration}s</p>
                 </div>
-                <Zap className="w-8 h-8 text-purple-500 opacity-60" />
               </div>
             </CardContent>
           </Card>

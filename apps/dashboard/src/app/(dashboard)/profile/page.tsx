@@ -252,6 +252,14 @@ export default function ProfilePage() {
                   onClick={handleCancelEdit}
                   className="px-4 py-2 bg-wl-bg-elevated text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
                 >
+                  {profileMutation.loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  {profileMutation.loading ? 'Saving…' : 'Save Changes'}
+                </button>
+                <Button variant="ghost" size="md" onClick={handleCancelEdit}>
                   Cancel
                 </button>
               </div>
