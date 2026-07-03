@@ -355,16 +355,16 @@ describe('ConsentManager', () => {
   // ==================== Concurrent Modifications Tests ====================
   describe('Concurrent Modifications', () => {
     it('should handle rapid grant/revoke cycles', () => {
-      for (let i = 0; i < 10; i++) {
+      // 9 iterations: i=0..8, last is i=8 (8%2===0, granted=true)
+      for (let i = 0; i < 9; i++) {
         manager.recordConsent('user111', 'marketing', i % 2 === 0, 'api_call');
       }
 
       const status = manager.getConsentStatus('user111');
       const history = manager.getConsentHistory('user111');
 
-      expect(history).toHaveLength(10);
-      // getConsentStatus sorts by ID descending; in a tight loop all records share the same
-      // millisecond timestamp, so sort is stable and the first record (granted=true) wins
+      expect(history).toHaveLength(9);
+      // version-based sort in getConsentStatus: highest version (i=8, granted=true) wins
       expect(status.active['marketing']).toBe(true);
     });
 
