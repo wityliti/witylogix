@@ -51,7 +51,8 @@ model Customer {
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
-  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop           Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  returnRequests ReturnRequest[]
 
   @@unique([shopId, externalCustomerId, source])
   @@index([shopId, email])
