@@ -388,7 +388,7 @@ export default function BillingPage() {
                       <th className="text-center py-3 text-xs font-semibold text-wl-text-secondary uppercase">PDF</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1a1a2e]">
+                  <tbody className="divide-y divide-wl-border-default">
                     {billing.invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
                         <td className="py-3 text-wl-neutral-300">{inv.period}</td>

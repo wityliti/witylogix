@@ -150,7 +150,7 @@ function FeatureBar({ feature, importance, max }: { feature: string; importance:
           className="h-full rounded-full transition-all duration-500"
           style={{
             width: `${pct}%`,
-            background: 'linear-gradient(90deg, #818cf8, #6366f1)',
+            background: 'linear-gradient(90deg, var(--wl-chart-violet), var(--wl-chart-indigo))',
           }}
         />
       </div>
@@ -314,7 +314,7 @@ export default function EtaAccuracyPage() {
                 value={overall.mae.toFixed(1)}
                 suffix="min"
                 icon={Clock}
-                accent="#818cf8"
+                accent="var(--wl-chart-violet)"
                 sub={`RMSE ${overall.rmse.toFixed(1)} min · P90 ${overall.p90_error.toFixed(1)} min`}
               />
               <MetricCard
@@ -322,7 +322,7 @@ export default function EtaAccuracyPage() {
                 value={overall.accuracy_percentage.toFixed(1)}
                 suffix="%"
                 icon={Target}
-                accent="#34d399"
+                accent="var(--wl-success-400)"
                 sub={`${overall.sample_count.toLocaleString()} predictions`}
               />
               <MetricCard
@@ -330,14 +330,14 @@ export default function EtaAccuracyPage() {
                 value={overall.mape.toFixed(1)}
                 suffix="%"
                 icon={Zap}
-                accent="#60a5fa"
+                accent="var(--wl-info-400)"
                 sub={`P50 error ${overall.p50_error.toFixed(1)} min`}
               />
               <MetricCard
                 label="Degradation Alerts"
                 value={report?.degradation_alerts.length ?? 0}
                 icon={BarChart3}
-                accent={(report?.degradation_alerts.length ?? 0) > 0 ? '#f87171' : '#34d399'}
+                accent={(report?.degradation_alerts.length ?? 0) > 0 ? 'var(--wl-danger-400)' : 'var(--wl-success-400)'}
                 sub={
                   (report?.degradation_alerts.length ?? 0) > 0
                     ? 'Model drift detected'
@@ -439,8 +439,8 @@ export default function EtaAccuracyPage() {
                             style={{
                               width: `${barPct}%`,
                               background: isGood
-                                ? 'linear-gradient(90deg, #34d399, #10b981)'
-                                : 'linear-gradient(90deg, #fbbf24, #f59e0b)',
+                                ? 'linear-gradient(90deg, var(--wl-success-400), var(--wl-success-500))'
+                                : 'linear-gradient(90deg, var(--wl-warning-400), var(--wl-warning-500))',
                             }}
                           />
                         </div>

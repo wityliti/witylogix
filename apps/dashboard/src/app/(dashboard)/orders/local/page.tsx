@@ -202,10 +202,10 @@ export default function LocalOrdersPage() {
 
         <div className="flex gap-3 flex-wrap mt-4">
           {[
-            { key: 'pending', label: 'Pending', color: '#f59e0b' },
-            { key: 'assigned', label: 'Assigned', color: '#6366f1' },
-            { key: 'in_transit', label: 'In Transit', color: '#3b82f6' },
-            { key: 'delivered', label: 'Delivered', color: '#10b981' },
+            { key: 'pending', label: 'Pending', color: 'var(--wl-warning-500)' },
+            { key: 'assigned', label: 'Assigned', color: 'var(--wl-chart-indigo)' },
+            { key: 'in_transit', label: 'In Transit', color: 'var(--wl-info-500)' },
+            { key: 'delivered', label: 'Delivered', color: 'var(--wl-success-500)' },
           ].map((stat) => (
             <Card key={stat.key} className="bg-wl-bg-surface border-wl-border-default p-4 min-w-[120px]">
               <p className="text-xs text-wl-text-secondary mb-1">{stat.label}</p>

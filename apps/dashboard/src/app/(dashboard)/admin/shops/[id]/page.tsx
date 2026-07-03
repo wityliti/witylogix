@@ -82,20 +82,20 @@ export default function AdminShopDetail() {
   const getStatusColor = (status: string) => {
     const s = (status || "").toLowerCase();
     switch (s) {
-      case "active": return "#22c55e";
-      case "suspended": return "#ef4444";
-      case "trial": return "#f59e0b";
-      default: return "#6C63FF";
+      case "active": return "var(--wl-chart-green)";
+      case "suspended": return "var(--wl-danger-500)";
+      case "trial": return "var(--wl-warning-500)";
+      default: return "var(--wl-chart-violet)";
     }
   };
 
   const getPlanColor = (plan?: string) => {
     switch ((plan || "").toLowerCase()) {
-      case "free": return "#94a3b8";
-      case "starter": return "#3b82f6";
-      case "growth": return "#8b5cf6";
-      case "enterprise": return "#ec4899";
-      default: return "#6C63FF";
+      case "free": return "var(--wl-chart-slate)";
+      case "starter": return "var(--wl-info-500)";
+      case "growth": return "var(--wl-chart-purple)";
+      case "enterprise": return "var(--wl-chart-rose)";
+      default: return "var(--wl-chart-violet)";
     }
   };
 

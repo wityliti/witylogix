@@ -64,6 +64,17 @@ const config: Config = {
             500: 'var(--wl-info-500)',
             bg: 'var(--wl-info-bg)',
           },
+          chart: {
+            violet: 'var(--wl-chart-violet)',
+            purple: 'var(--wl-chart-purple)',
+            indigo: 'var(--wl-chart-indigo)',
+            pink: 'var(--wl-chart-pink)',
+            rose: 'var(--wl-chart-rose)',
+            orange: 'var(--wl-chart-orange)',
+            teal: 'var(--wl-chart-teal)',
+            slate: 'var(--wl-chart-slate)',
+            green: 'var(--wl-chart-green)',
+          },
           text: {
             primary: 'var(--wl-text-primary)',
             secondary: 'var(--wl-text-secondary)',

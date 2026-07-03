@@ -294,10 +294,10 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 mb-6">
       {[
-        { label: "Total Customers", value: customers.length.toString(), icon: Users, color: "#6366f1" },
-        { label: "Active", value: activeCustomers.toString(), icon: TrendingUp, color: "#10b981" },
-        { label: "VIP", value: vipCustomers.toString(), icon: ShoppingCart, color: "#f59e0b" },
-        { label: "Total Revenue", value: `$${(totalSpent / 1000).toFixed(0)}K`, icon: DollarSign, color: "#8b5cf6" },
+        { label: "Total Customers", value: customers.length.toString(), icon: Users, color: "var(--wl-chart-indigo)" },
+        { label: "Active", value: activeCustomers.toString(), icon: TrendingUp, color: "var(--wl-success-500)" },
+        { label: "VIP", value: vipCustomers.toString(), icon: ShoppingCart, color: "var(--wl-warning-500)" },
+        { label: "Total Revenue", value: `$${(totalSpent / 1000).toFixed(0)}K`, icon: DollarSign, color: "var(--wl-chart-purple)" },
       ].map((stat, idx) => {
         const Icon = stat.icon;
         return (
@@ -489,10 +489,10 @@ export default function AdminCustomersPage() {
                             idx % 2 === 0 ? "bg-wl-bg-root min-h-screen" : "bg-wl-bg-surface"
                           )}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "#12121a";
+                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-elevated)";
                           }}
                           onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "#0a0a0f" : "#12121a";
+                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-root)" : "var(--wl-bg-elevated)";
                           }}
                           onClick={() => handleCustomerClick(customer)}
                         >

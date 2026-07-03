@@ -144,13 +144,13 @@ export default function CreateRoutePage() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "#ff6b6b";
+        return "var(--wl-danger-400)";
       case "medium":
-        return "#ffd93d";
+        return "var(--wl-warning-400)";
       case "low":
-        return "#6bcf7f";
+        return "var(--wl-success-400)";
       default:
-        return "#8888a0";
+        return "var(--wl-neutral-400)";
     }
   };
 
@@ -342,8 +342,8 @@ export default function CreateRoutePage() {
                         key={stop.id}
                         className="p-3 rounded-md bg-wl-bg-surface border border-wl-border-default flex items-center gap-3 cursor-grab transition-all"
                         style={{
-                          backgroundColor: draggedStop === idx ? "#2563eb" : "#12121a",
-                          borderColor: draggedStop === idx ? "#2563eb" : "#1e1e2e",
+                          backgroundColor: draggedStop === idx ? "var(--wl-info-500)" : "var(--wl-bg-elevated)",
+                          borderColor: draggedStop === idx ? "var(--wl-info-500)" : "var(--wl-border-default)",
                           opacity: draggedStop === idx ? 0.7 : 1,
                         }}
                         draggable

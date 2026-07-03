@@ -371,7 +371,7 @@ function TeamCollaborationPage() {
           className={cn(
             "absolute bottom-64 left-64 z-50 bg-wl-bg-surface border border-wl-border-default",
             "rounded-lg shadow-lg max-h-48 overflow-y-auto",
-            "scrollbar-thin scrollbar-thumb-[#1e1e2e]"
+            "scrollbar-thin scrollbar-thumb-wl-bg-elevated"
           )}
         >
           {mentionSuggestions.map((user) => (
@@ -539,7 +539,7 @@ function ThreadPanel({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-[#1e1e2e]">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-wl-bg-elevated">
         {messages.map((msg) => (
           <div key={msg.id} className="text-xs">
             <p className="font-medium text-white">{msg.userName}</p>

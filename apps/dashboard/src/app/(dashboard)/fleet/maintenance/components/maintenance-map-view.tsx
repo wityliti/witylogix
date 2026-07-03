@@ -41,11 +41,11 @@ const MAINTENANCE_STATUS_MAP: Record<string, VehicleMapStatus> = {
 };
 
 const STATUS_DOT: Record<VehicleMapStatus, string> = {
-  ACTIVE: '#10b981',
-  IDLE: '#f59e0b',
-  OFFLINE: '#6b7280',
-  MAINTENANCE: '#3b82f6',
-  INACTIVE: '#4b5563',
+  ACTIVE: 'var(--wl-success-500)',
+  IDLE: 'var(--wl-warning-500)',
+  OFFLINE: 'var(--wl-neutral-500)',
+  MAINTENANCE: 'var(--wl-info-500)',
+  INACTIVE: 'var(--wl-neutral-600)',
 };
 
 const STATUS_LABEL: Record<VehicleMapStatus, string> = {

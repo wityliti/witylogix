@@ -80,12 +80,12 @@ export function BarChart({
 
   // Default colors
   const defaultColors = [
-    "#3b82f6",
-    "#10b981",
-    "#f59e0b",
-    "#ef4444",
-    "#8b5cf6",
-    "#ec4899",
+    "var(--wl-info-500)",
+    "var(--wl-success-500)",
+    "var(--wl-warning-500)",
+    "var(--wl-danger-500)",
+    "var(--wl-chart-purple)",
+    "var(--wl-chart-rose)",
   ];
 
   const chartSeries = series.map((s, i) => ({

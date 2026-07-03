@@ -106,7 +106,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
                   cy="60"
                   r="54"
                   fill="none"
-                  stroke="#2a2a3e"
+                  stroke="var(--wl-bg-elevated)"
                   strokeWidth="8"
                 />
                 <circle
@@ -114,7 +114,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
                   cy="60"
                   r="54"
                   fill="none"
-                  stroke="#10b981"
+                  stroke="var(--wl-success-500)"
                   strokeWidth="8"
                   strokeDasharray={`${(rate / 100) * 339.3} 339.3`}
                   strokeLinecap="round"

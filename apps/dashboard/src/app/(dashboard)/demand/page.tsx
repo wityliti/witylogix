@@ -398,11 +398,11 @@ export default function DemandPage() {
           <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs">
             <p className="font-semibold text-white mb-2">Demand Intensity</p>
             {[
-              { color: '#3b82f6', label: 'Low' },
-              { color: '#22c55e', label: 'Moderate' },
-              { color: '#eab308', label: 'High' },
-              { color: '#f97316', label: 'Very High' },
-              { color: '#ef4444', label: 'Critical' },
+              { color: 'var(--wl-info-500)', label: 'Low' },
+              { color: 'var(--wl-success-500)', label: 'Moderate' },
+              { color: 'var(--wl-warning-500)', label: 'High' },
+              { color: 'var(--wl-chart-orange)', label: 'Very High' },
+              { color: 'var(--wl-danger-500)', label: 'Critical' },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2 mt-1">
                 <div className="w-3 h-3 rounded-sm" style={{ background: color }} />

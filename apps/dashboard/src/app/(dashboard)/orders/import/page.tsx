@@ -42,7 +42,7 @@ const PLATFORMS: { id: SyncPlatform; name: string; icon: string }[] = [
 const getHealthColor = (status: "healthy" | "warning" | "error") => {
   const colors = {
     healthy: "var(--wl-success-400)",
-    warning: "#ffa500",
+    warning: "var(--wl-warning-500)",
     error: "var(--wl-danger-400)",
   };
   return colors[status];

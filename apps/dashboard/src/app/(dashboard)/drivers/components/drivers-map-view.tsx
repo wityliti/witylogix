@@ -65,10 +65,10 @@ function MapLayers({
 }
 
 const STATUS_LEGEND: { status: DriverStatus; color: string; label: string }[] = [
-  { status: 'available', color: '#10b981', label: 'Available' },
-  { status: 'busy', color: '#f59e0b', label: 'En Route / Delivering' },
-  { status: 'break', color: '#a78bfa', label: 'On Break' },
-  { status: 'offline', color: '#6b7280', label: 'Offline' },
+  { status: 'available', color: 'var(--wl-success-500)', label: 'Available' },
+  { status: 'busy', color: 'var(--wl-warning-500)', label: 'En Route / Delivering' },
+  { status: 'break', color: 'var(--wl-chart-purple)', label: 'On Break' },
+  { status: 'offline', color: 'var(--wl-neutral-500)', label: 'Offline' },
 ];
 
 export default function DriversMapView({ drivers }: { drivers: DispatchDriver[] }) {

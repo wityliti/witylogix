@@ -170,7 +170,7 @@ export function HomeLiveMap() {
           <span className="text-wl-text-secondary">In Transit</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: '#a78bfa' }} />
+          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: 'var(--wl-chart-purple)' }} />
           <span className="text-wl-text-secondary">Driver</span>
         </div>
       </div>

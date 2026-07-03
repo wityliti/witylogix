@@ -48,15 +48,15 @@ interface User {
 const getRoleColor = (role: User["role"]): string => {
   switch (role) {
     case "admin":
-      return "#ef4444";
+      return "var(--wl-danger-500)";
     case "manager":
-      return "#8b5cf6";
+      return "var(--wl-chart-purple)";
     case "operator":
-      return "#3b82f6";
+      return "var(--wl-info-500)";
     case "viewer":
-      return "#6b7280";
+      return "var(--wl-neutral-500)";
     default:
-      return "#6b7280";
+      return "var(--wl-neutral-500)";
   }
 };
 
@@ -412,7 +412,7 @@ export default function AdminUsersPage() {
                     key={user.id}
                     className="border-b border-wl-border-default transition-colors duration-200 cursor-pointer"
                     style={{
-                      backgroundColor: idx % 2 === 0 ? "transparent" : "#1a1a2e",
+                      backgroundColor: idx % 2 === 0 ? "transparent" : "var(--wl-bg-elevated)",
                     }}
                     onClick={() => handleUserClick(user)}
                   >

@@ -31,7 +31,7 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Manage your personal information and security",
     icon: <User className="w-5 h-5" />,
     href: "/settings/profile",
-    accent: "#818cf8",
+    accent: "var(--wl-chart-violet)",
   },
   {
     id: "organization",
@@ -39,7 +39,7 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Manage organization details and billing",
     icon: <Building2 className="w-5 h-5" />,
     href: "/settings/organization",
-    accent: "#34d399",
+    accent: "var(--wl-success-400)",
   },
   {
     id: "general",
@@ -47,7 +47,7 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Configure company information and localization",
     icon: <Shield className="w-5 h-5" />,
     href: "/settings/general",
-    accent: "#60a5fa",
+    accent: "var(--wl-info-400)",
   },
   {
     id: "api-keys",
@@ -55,7 +55,7 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Create and manage API keys for integrations",
     icon: <Key className="w-5 h-5" />,
     href: "/settings/api-keys",
-    accent: "#fbbf24",
+    accent: "var(--wl-warning-400)",
   },
   {
     id: "auth-providers",
@@ -63,7 +63,7 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Configure SSO and authentication settings",
     icon: <Shield className="w-5 h-5" />,
     href: "/settings/auth-providers",
-    accent: "#a78bfa",
+    accent: "var(--wl-chart-purple)",
   },
   {
     id: "billing",
@@ -71,7 +71,7 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Manage subscription and payment methods",
     icon: <CreditCard className="w-5 h-5" />,
     href: "/settings/billing",
-    accent: "#f472b6",
+    accent: "var(--wl-chart-pink)",
   },
   {
     id: "branding",
@@ -79,15 +79,15 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Customize colors, logos, and branding",
     icon: <Palette className="w-5 h-5" />,
     href: "/settings/branding",
-    accent: "#fb923c",
+    accent: "var(--wl-chart-orange)",
   },
   {
     id: "maps",
     label: "Maps",
-    description: "Configure Google Maps API and settings",
+    description: "Configure map settings and CARTO basemaps",
     icon: <Map className="w-5 h-5" />,
     href: "/settings/maps",
-    accent: "#2dd4bf",
+    accent: "var(--wl-chart-teal)",
   },
   {
     id: "preferences",
@@ -95,7 +95,7 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: "Customize your dashboard experience",
     icon: <Sliders className="w-5 h-5" />,
     href: "/settings/preferences",
-    accent: "#94a3b8",
+    accent: "var(--wl-chart-slate)",
   },
 ];
 

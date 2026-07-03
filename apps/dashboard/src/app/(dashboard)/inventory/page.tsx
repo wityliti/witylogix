@@ -224,10 +224,10 @@ export default function InventoryPage() {
                 <div className={cn("flex items-center gap-4 px-4 py-3 border-t border-wl-border-default text-xs text-wl-text-secondary flex-wrap")}>
                   <span className="font-medium text-wl-neutral-300">Stock stress:</span>
                   {[
-                    { color: "#3b82f6", label: "Healthy (0%)" },
-                    { color: "#22c55e", label: "Moderate (50%)" },
-                    { color: "#f59e0b", label: "High (85%)" },
-                    { color: "#ef4444", label: "Critical (100%)" },
+                    { color: "var(--wl-info-500)", label: "Healthy (0%)" },
+                    { color: "var(--wl-chart-green)", label: "Moderate (50%)" },
+                    { color: "var(--wl-warning-500)", label: "High (85%)" },
+                    { color: "var(--wl-danger-500)", label: "Critical (100%)" },
                   ].map(({ color, label }) => (
                     <span key={label} className="flex items-center gap-1.5">
                       <span className="w-3 h-3 rounded-full inline-block flex-shrink-0" style={{ backgroundColor: color }} />

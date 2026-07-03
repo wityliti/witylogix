@@ -28,7 +28,7 @@ const fmtPct = (val: number, total: number) =>
 const TIER_CONFIG = {
   enterprise: {
     label: 'Enterprise',
-    color: '#f59e0b',
+    color: 'var(--wl-warning-500)',
     bgClass: 'bg-amber-400/10 border-amber-400/30',
     dotClass: 'bg-amber-400',
     badgeVariant: 'warning' as const,
@@ -36,7 +36,7 @@ const TIER_CONFIG = {
   },
   premium: {
     label: 'Premium',
-    color: '#60a5fa',
+    color: 'var(--wl-info-400)',
     bgClass: 'bg-blue-400/10 border-blue-400/30',
     dotClass: 'bg-blue-400',
     badgeVariant: 'primary' as const,
@@ -44,7 +44,7 @@ const TIER_CONFIG = {
   },
   standard: {
     label: 'Standard',
-    color: '#6b7280',
+    color: 'var(--wl-neutral-500)',
     bgClass: 'bg-wl-neutral-500/10 border-wl-neutral-500/30',
     dotClass: 'bg-wl-neutral-500',
     badgeVariant: 'default' as const,

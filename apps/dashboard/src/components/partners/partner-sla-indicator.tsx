@@ -57,10 +57,10 @@ const PartnerSLAIndicator = forwardRef<
     };
 
     const getScoreColor = (percentage: number): string => {
-      if (percentage >= 95) return "#10b981";
-      if (percentage >= 85) return "#f59e0b";
-      if (percentage >= 75) return "#f97316";
-      return "#ef4444";
+      if (percentage >= 95) return "var(--wl-success-500)";
+      if (percentage >= 85) return "var(--wl-warning-500)";
+      if (percentage >= 75) return "var(--wl-chart-orange)";
+      return "var(--wl-danger-500)";
     };
 
     const getScoreBgColor = (percentage: number): string => {

@@ -98,10 +98,10 @@ function scoreColor(score: number) {
 }
 
 function scoreAccent(score: number) {
-  if (score >= 90) return '#34d399';
-  if (score >= 75) return '#60a5fa';
-  if (score >= 60) return '#fbbf24';
-  return '#f87171';
+  if (score >= 90) return 'var(--wl-success-400)';
+  if (score >= 75) return 'var(--wl-info-400)';
+  if (score >= 60) return 'var(--wl-warning-400)';
+  return 'var(--wl-danger-400)';
 }
 
 function BreakdownBar({ label, value, color, invert = false }: { label: string; value: number; color: string; invert?: boolean }) {
@@ -197,7 +197,7 @@ export default function RouteEfficiencyPage() {
   );
 
   const score: RouteEfficiencyScore | null = efficiencyData?.data ?? null;
-  const accent = score ? scoreAccent(score.score) : '#818cf8';
+  const accent = score ? scoreAccent(score.score) : 'var(--wl-chart-violet)';
   const selectedRoute = routes.find((r) => r.id === activeRouteId);
 
   const mapCoords: Array<[number, number]> = (routeDetail?.stops ?? [])
@@ -445,22 +445,22 @@ export default function RouteEfficiencyPage() {
                     <BreakdownBar
                       label="Distance Efficiency"
                       value={score.breakdown.distanceEfficiency}
-                      color="linear-gradient(90deg, #60a5fa, #3b82f6)"
+                      color="linear-gradient(90deg, var(--wl-info-400), var(--wl-info-500))"
                     />
                     <BreakdownBar
                       label="Time Efficiency"
                       value={score.breakdown.timeEfficiency}
-                      color="linear-gradient(90deg, #34d399, #10b981)"
+                      color="linear-gradient(90deg, var(--wl-success-400), var(--wl-success-500))"
                     />
                     <BreakdownBar
                       label="Stop Efficiency"
                       value={score.breakdown.stopEfficiency}
-                      color="linear-gradient(90deg, #818cf8, #6366f1)"
+                      color="linear-gradient(90deg, var(--wl-chart-violet), var(--wl-chart-indigo))"
                     />
                     <BreakdownBar
                       label="Idle Time (lower is better)"
                       value={score.breakdown.idleTimeRatio}
-                      color="linear-gradient(90deg, #f87171, #ef4444)"
+                      color="linear-gradient(90deg, var(--wl-danger-400), var(--wl-danger-500))"
                       invert
                     />
                   </div>

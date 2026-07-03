@@ -86,7 +86,7 @@ function HealthScoreGauge({ score }: { score: number }) {
         <text x="110" y="108" textAnchor="middle" dy="0.3em" fontSize="36" fontWeight="bold" fill="var(--wl-foreground)">
           {score.toFixed(0)}
         </text>
-        <text x="110" y="136" textAnchor="middle" fontSize="13" fill="#6b7280">Health Score</text>
+        <text x="110" y="136" textAnchor="middle" fontSize="13" fill="var(--wl-text-secondary)">Health Score</text>
       </svg>
       <Badge variant={score >= 95 ? 'success' : score >= 75 ? 'warning' : 'danger'} className="mt-2">
         {score >= 95 ? 'Excellent' : score >= 75 ? 'Degraded' : 'Critical'}

@@ -55,9 +55,9 @@ const priorityVariant = (p: Priority): 'default' | 'success' | 'warning' | 'dang
 
 const priorityColor = (p: Priority): string => {
   const colors: Record<Priority, string> = {
-    normal: '#6b7280',
-    high: '#f59e0b',
-    urgent: '#ef4444',
+    normal: 'var(--wl-neutral-500)',
+    high: 'var(--wl-warning-500)',
+    urgent: 'var(--wl-danger-500)',
   };
   return colors[p];
 };

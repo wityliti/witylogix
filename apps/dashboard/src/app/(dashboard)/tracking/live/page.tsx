@@ -90,11 +90,11 @@ const getStatusBadgeVariant = (
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  in_transit: '#3b82f6',
-  assigned: '#6366f1',
-  delivered: '#10b981',
-  pending: '#f59e0b',
-  confirmed: '#f59e0b',
+  in_transit: 'var(--wl-info-500)',
+  assigned: 'var(--wl-chart-indigo)',
+  delivered: 'var(--wl-success-500)',
+  pending: 'var(--wl-warning-500)',
+  confirmed: 'var(--wl-warning-500)',
 };
 
 function StatusTimeline({ status }: { status: string }) {
@@ -472,7 +472,7 @@ export default function LiveTracking() {
                                 style={{
                                   width: `${progress}%`,
                                   backgroundColor:
-                                    STATUS_COLOR[order.status] ?? '#60a5fa',
+                                    STATUS_COLOR[order.status] ?? 'var(--wl-info-400)',
                                 }}
                               />
                             </div>
@@ -588,15 +588,15 @@ export default function LiveTracking() {
                   </p>
                   <div className="flex flex-col gap-3">
                     {[
-                      { label: 'Delivered', count: deliveredCount, color: '#10b981' },
-                      { label: 'In Transit', count: inTransitCount, color: '#3b82f6' },
+                      { label: 'Delivered', count: deliveredCount, color: 'var(--wl-success-500)' },
+                      { label: 'In Transit', count: inTransitCount, color: 'var(--wl-info-500)' },
                       {
                         label: 'Pending',
                         count: orders.filter(
                           (o) =>
                             o.status === 'pending' || o.status === 'confirmed',
                         ).length,
-                        color: '#f59e0b',
+                        color: 'var(--wl-warning-500)',
                       },
                     ].map((stat) => (
                       <div key={stat.label}>

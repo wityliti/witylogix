@@ -48,9 +48,9 @@ export function FuelGauge({
 
   // Determine color based on fuel level
   const getColor = (level: number) => {
-    if (level < 25) return "#ef4444"; // red
-    if (level < 50) return "#f59e0b"; // yellow
-    return "#10b981"; // green
+    if (level < 25) return "var(--wl-danger-500)";
+    if (level < 50) return "var(--wl-warning-500)";
+    return "var(--wl-success-500)";
   };
 
   const getFillColor = (level: number) => {
@@ -107,16 +107,16 @@ export function FuelGauge({
       >
         <defs>
           <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#dc2626" stopOpacity="1" />
+            <stop offset="0%" stopColor="var(--wl-danger-400)" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="var(--wl-danger-500)" stopOpacity="1" />
           </linearGradient>
           <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#d97706" stopOpacity="1" />
+            <stop offset="0%" stopColor="var(--wl-warning-400)" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="var(--wl-warning-500)" stopOpacity="1" />
           </linearGradient>
           <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#059669" stopOpacity="1" />
+            <stop offset="0%" stopColor="var(--wl-success-400)" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="var(--wl-success-500)" stopOpacity="1" />
           </linearGradient>
         </defs>
 

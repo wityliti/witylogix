@@ -9,9 +9,9 @@ import { cn } from '@/lib/utils';
 import { Map as MapIcon } from 'lucide-react';
 
 const TIER_DOT: Record<string, string> = {
-  enterprise: '#f59e0b',
-  premium:    '#60a5fa',
-  standard:   '#6b7280',
+  enterprise: 'var(--wl-warning-500)',
+  premium:    'var(--wl-info-400)',
+  standard:   'var(--wl-neutral-500)',
 };
 
 interface MapLayersProps {

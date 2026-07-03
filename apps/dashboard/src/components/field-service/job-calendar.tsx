@@ -101,12 +101,12 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
 
     const getDefaultColor = (index: number): string => {
       const colors = [
-        "#3b82f6", // blue
-        "#10b981", // green
-        "#f59e0b", // amber
-        "#ef4444", // red
-        "#8b5cf6", // purple
-        "#06b6d4", // cyan
+        "var(--wl-info-500)",
+        "var(--wl-success-500)",
+        "var(--wl-warning-500)",
+        "var(--wl-danger-500)",
+        "var(--wl-chart-purple)",
+        "var(--wl-chart-teal)",
       ];
       return colors[index % colors.length];
     };
