@@ -101,11 +101,11 @@ export default function CreateOrderPage() {
 
   const getPriorityColor = (pri: string) => {
     const colors: Record<string, string> = {
-      'normal': '#8888a0',
-      'express': '#ffa500',
-      'same-day': '#ff4444'
+      'normal': 'var(--wl-neutral-400)',
+      'express': 'var(--wl-warning-500)',
+      'same-day': 'var(--wl-danger-500)',
     };
-    return colors[pri] || '#8888a0';
+    return colors[pri] || 'var(--wl-neutral-400)';
   };
 
   const buildPayload = (shopifyPrefix: string, extraTags: string[] = []) => ({

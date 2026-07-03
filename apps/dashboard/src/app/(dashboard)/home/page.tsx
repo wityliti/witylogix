@@ -143,10 +143,10 @@ function OrderFeedItem({ order }: { order: ApiOrder }) {
 }
 
 const DRIVER_STATUS_CONFIG: Record<string, { bg: string; border: string; text: string; dot: string; label: string }> = {
-  AVAILABLE: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/50', text: 'text-emerald-400', dot: '#10b981', label: 'AVAILABLE' },
-  ON_ROUTE: { bg: 'bg-blue-500/20', border: 'border-blue-500/50', text: 'text-blue-400', dot: '#3b82f6', label: 'EN ROUTE' },
-  ON_BREAK: { bg: 'bg-amber-500/20', border: 'border-amber-500/50', text: 'text-amber-400', dot: '#f59e0b', label: 'ON BREAK' },
-  OFFLINE: { bg: 'bg-wl-neutral-500/20', border: 'border-wl-neutral-500/50', text: 'text-wl-text-secondary', dot: '#6b7280', label: 'OFFLINE' },
+  AVAILABLE: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/50', text: 'text-emerald-400', dot: 'var(--wl-success-500)', label: 'AVAILABLE' },
+  ON_ROUTE: { bg: 'bg-blue-500/20', border: 'border-blue-500/50', text: 'text-blue-400', dot: 'var(--wl-info-500)', label: 'EN ROUTE' },
+  ON_BREAK: { bg: 'bg-amber-500/20', border: 'border-amber-500/50', text: 'text-amber-400', dot: 'var(--wl-warning-500)', label: 'ON BREAK' },
+  OFFLINE: { bg: 'bg-wl-neutral-500/20', border: 'border-wl-neutral-500/50', text: 'text-wl-text-secondary', dot: 'var(--wl-neutral-500)', label: 'OFFLINE' },
 };
 
 function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loading?: boolean }) {

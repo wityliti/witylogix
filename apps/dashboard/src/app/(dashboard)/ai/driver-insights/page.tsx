@@ -210,10 +210,10 @@ export default function DriverInsightsPage() {
         {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: 'Top Score',       value: top ? top.compositeScore.toFixed(1) : '—', suffix: '/100', icon: Trophy,   accent: '#fbbf24', sub: top?.driverName ?? '' },
-            { label: 'Fleet Avg Score', value: loading ? '…' : avgScore.toFixed(1),        suffix: '/100', icon: BarChart3, accent: '#818cf8', sub: `${entries.length} drivers` },
-            { label: 'Avg On-Time',     value: loading ? '…' : avgOnTime.toFixed(1),       suffix: '%',    icon: Target,   accent: '#34d399', sub: `${toScoringPeriod(period)} window` },
-            { label: 'Platinum Tier',   value: loading ? '…' : entries.filter((e) => e.tier === 'platinum').length, icon: Star, accent: '#f472b6', sub: 'scoring ≥ 90' },
+            { label: 'Top Score',       value: top ? top.compositeScore.toFixed(1) : '—', suffix: '/100', icon: Trophy,   accent: 'var(--wl-warning-400)', sub: top?.driverName ?? '' },
+            { label: 'Fleet Avg Score', value: loading ? '…' : avgScore.toFixed(1),        suffix: '/100', icon: BarChart3, accent: 'var(--wl-chart-violet)', sub: `${entries.length} drivers` },
+            { label: 'Avg On-Time',     value: loading ? '…' : avgOnTime.toFixed(1),       suffix: '%',    icon: Target,   accent: 'var(--wl-success-400)', sub: `${toScoringPeriod(period)} window` },
+            { label: 'Platinum Tier',   value: loading ? '…' : entries.filter((e) => e.tier === 'platinum').length, icon: Star, accent: 'var(--wl-chart-pink)', sub: 'scoring ≥ 90' },
           ].map(({ label, value, suffix, icon: Icon, accent, sub }) => (
             <div key={label} className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 group hover:border-white/[0.12] transition-all">
               <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-80 transition-opacity" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
@@ -352,14 +352,14 @@ export default function DriverInsightsPage() {
                       <span className={cn('text-xs font-mono', entry.breakdown.onTimeScore >= 90 ? 'text-emerald-400' : entry.breakdown.onTimeScore >= 75 ? 'text-amber-400' : 'text-red-400')}>
                         {entry.breakdown.onTimeScore.toFixed(1)}%
                       </span>
-                      <ScoreBar value={entry.breakdown.onTimeScore} color="#34d399" />
+                      <ScoreBar value={entry.breakdown.onTimeScore} color="var(--wl-success-400)" />
                     </div>
 
                     <div className="text-right flex flex-col items-end gap-1">
                       <span className={cn('text-xs font-mono', entry.breakdown.routeEfficiencyScore >= 85 ? 'text-emerald-400' : entry.breakdown.routeEfficiencyScore >= 70 ? 'text-amber-400' : 'text-red-400')}>
                         {entry.breakdown.routeEfficiencyScore.toFixed(1)}%
                       </span>
-                      <ScoreBar value={entry.breakdown.routeEfficiencyScore} color="#818cf8" />
+                      <ScoreBar value={entry.breakdown.routeEfficiencyScore} color="var(--wl-chart-violet)" />
                     </div>
 
                     <div className="text-right">

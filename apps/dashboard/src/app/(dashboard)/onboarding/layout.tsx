@@ -11,7 +11,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "linear-gradient(135deg, #0a0a0c 0%, #1a1a2e 50%, #0a0a0c 100%)",
+            "linear-gradient(135deg, var(--wl-bg-root) 0%, var(--wl-bg-elevated) 50%, var(--wl-bg-root) 100%)",
         }}
       />
 

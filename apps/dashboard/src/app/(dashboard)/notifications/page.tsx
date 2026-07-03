@@ -309,7 +309,7 @@ export default function NotificationsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-[#1e1e2e]">
+                <div className="divide-y divide-wl-border-default">
                   {/* Header Row */}
                   <div className="flex items-center gap-4 px-6 py-3 bg-wl-bg-elevated border-b border-wl-border-default">
                     <Checkbox

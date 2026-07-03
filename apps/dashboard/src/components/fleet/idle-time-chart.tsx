@@ -64,9 +64,9 @@ export function IdleTimeChart({
 
   // Get color based on idle hours
   const getBarColor = (hours: number) => {
-    if (hours < 1) return "#10b981"; // green
-    if (hours < 3) return "#f59e0b"; // yellow
-    return "#ef4444"; // red
+    if (hours < 1) return "var(--wl-success-500)";
+    if (hours < 3) return "var(--wl-warning-500)";
+    return "var(--wl-danger-500)";
   };
 
   // Calculate average if not provided

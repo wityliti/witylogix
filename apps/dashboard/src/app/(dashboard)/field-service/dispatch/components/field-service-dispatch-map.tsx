@@ -75,17 +75,17 @@ function MapLayers({
 }
 
 const STATUS_LEGEND = [
-  { color: '#10b981', label: 'Available' },
-  { color: '#f59e0b', label: 'En Route / On Job' },
-  { color: '#a78bfa', label: 'On Break' },
-  { color: '#6b7280', label: 'Offline' },
+  { color: 'var(--wl-success-500)', label: 'Available' },
+  { color: 'var(--wl-warning-500)', label: 'En Route / On Job' },
+  { color: 'var(--wl-chart-purple)', label: 'On Break' },
+  { color: 'var(--wl-neutral-500)', label: 'Offline' },
 ];
 
 const JOB_LEGEND = [
-  { color: '#60a5fa', label: 'Pending' },
-  { color: '#f5a623', label: 'Assigned' },
-  { color: '#10b981', label: 'In Transit' },
-  { color: '#ef4444', label: 'Delayed' },
+  { color: 'var(--wl-info-400)', label: 'Pending' },
+  { color: 'var(--wl-primary-500)', label: 'Assigned' },
+  { color: 'var(--wl-success-500)', label: 'In Transit' },
+  { color: 'var(--wl-danger-500)', label: 'Delayed' },
 ];
 
 export default function FieldServiceDispatchMap({

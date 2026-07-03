@@ -15,7 +15,7 @@ export default function AuthLayout({
         <div
           className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, #0a0a0c 0%, #1a1a2e 50%, #0a0a0c 100%)",
+            background: "linear-gradient(135deg, var(--wl-bg-root) 0%, var(--wl-bg-elevated) 50%, var(--wl-bg-root) 100%)",
           }}
         >
           {/* Animated gradient background elements */}

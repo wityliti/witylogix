@@ -45,9 +45,9 @@ export function Sparkline({
     let finalColor = color;
 
     if (trendColor) {
-      finalColor = trend === "up" ? "#10b981" : "#ef4444";
+      finalColor = trend === "up" ? "var(--wl-success-500)" : "var(--wl-danger-500)";
     } else if (!color) {
-      finalColor = "#3b82f6";
+      finalColor = "var(--wl-info-500)";
     }
 
     return { points, min, max, trend, finalColor };

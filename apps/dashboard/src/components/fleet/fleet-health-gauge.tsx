@@ -38,25 +38,25 @@ export function FleetHealthGauge({
       {
         name: "Vehicle Health",
         score: vehicleHealth,
-        color: "#3b82f6",
+        color: "var(--wl-info-500)",
         weight: 0.3,
       },
       {
         name: "Fuel Efficiency",
         score: fuelEfficiency,
-        color: "#10b981",
+        color: "var(--wl-success-500)",
         weight: 0.25,
       },
       {
         name: "Driver Behavior",
         score: driverBehavior,
-        color: "#f59e0b",
+        color: "var(--wl-warning-500)",
         weight: 0.25,
       },
       {
         name: "Maintenance",
         score: maintenanceCompliance,
-        color: "#8b5cf6",
+        color: "var(--wl-chart-purple)",
         weight: 0.2,
       },
     ],
@@ -108,9 +108,9 @@ export function FleetHealthGauge({
 
   // Scoring color
   const getScoreColor = (score: number): string => {
-    if (score >= 80) return "#10b981";
-    if (score >= 60) return "#f59e0b";
-    return "#ef4444";
+    if (score >= 80) return "var(--wl-success-500)";
+    if (score >= 60) return "var(--wl-warning-500)";
+    return "var(--wl-danger-500)";
   };
 
   return (

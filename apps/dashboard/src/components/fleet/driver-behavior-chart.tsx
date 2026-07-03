@@ -50,10 +50,10 @@ export function DriverBehaviorChart({
   );
 
   const eventTypes = [
-    { key: "harshBraking", label: "Harsh Braking", color: "#ef4444" },
-    { key: "rapidAcceleration", label: "Rapid Acceleration", color: "#f97316" },
-    { key: "speeding", label: "Speeding", color: "#eab308" },
-    { key: "sharpTurns", label: "Sharp Turns", color: "#3b82f6" },
+    { key: "harshBraking", label: "Harsh Braking", color: "var(--wl-danger-500)" },
+    { key: "rapidAcceleration", label: "Rapid Acceleration", color: "var(--wl-chart-orange)" },
+    { key: "speeding", label: "Speeding", color: "var(--wl-warning-500)" },
+    { key: "sharpTurns", label: "Sharp Turns", color: "var(--wl-info-500)" },
   ];
 
   // Bar dimensions

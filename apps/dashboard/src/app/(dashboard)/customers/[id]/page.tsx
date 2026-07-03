@@ -251,12 +251,12 @@ export default function CustomerDetailPage() {
     .slice(0, 2);
 
   const avatarBg = [
-    '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b',
-    '#10b981', '#06b6d4', '#ef4444', '#3b82f6',
+    'var(--wl-chart-indigo)', 'var(--wl-chart-purple)', 'var(--wl-chart-rose)', 'var(--wl-warning-500)',
+    'var(--wl-success-500)', 'var(--wl-chart-teal)', 'var(--wl-danger-500)', 'var(--wl-info-500)',
   ][customer.name.charCodeAt(0) % 8];
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-root,#0a0a0f)]">
+    <div className="min-h-screen bg-wl-bg-root">
       {/* ── Back nav ──────────────────────────────────────────── */}
       <div className="sticky top-0 z-10 bg-wl-bg-root/90 backdrop-blur border-b border-white/[0.06] px-6 py-3">
         <button
@@ -328,25 +328,25 @@ export default function CustomerDetailPage() {
                 label="Total Orders"
                 value={customer.totalOrders}
                 icon={ShoppingBag}
-                accent="#6366f1"
+                accent="var(--wl-chart-indigo)"
               />
               <StatTile
                 label="Total Spent"
                 value={fmt(customer.totalSpent)}
                 icon={DollarSign}
-                accent="#10b981"
+                accent="var(--wl-success-500)"
               />
               <StatTile
                 label="Avg Order Value"
                 value={fmt(avgOrderValue)}
                 icon={TrendingUp}
-                accent="#f59e0b"
+                accent="var(--wl-warning-500)"
               />
               <StatTile
                 label="Last Order"
                 value={fmtRelative(lastOrder?.createdAt)}
                 icon={Clock}
-                accent="#06b6d4"
+                accent="var(--wl-chart-teal)"
               />
             </div>
 

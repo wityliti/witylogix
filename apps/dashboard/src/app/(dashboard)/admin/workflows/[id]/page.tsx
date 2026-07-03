@@ -129,9 +129,9 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
               className="w-2 h-2 rounded-full"
               style={{
                 background:
-                  step.status === "completed" ? "#10b981" :
-                  step.status === "failed" ? "#ef4444" :
-                  step.status === "running" ? "#3b82f6" : "#f59e0b",
+                  step.status === "completed" ? "var(--wl-success-500)" :
+                  step.status === "failed" ? "var(--wl-danger-500)" :
+                  step.status === "running" ? "var(--wl-info-500)" : "var(--wl-warning-500)",
               }}
             />
           </div>
@@ -140,8 +140,8 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
             onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
             className="cursor-pointer transition-all bg-wl-bg-surface border border-wl-border-default"
             style={{
-              borderColor: expandedStep === step.id ? "#3b82f6" : undefined,
-              background: expandedStep === step.id ? "#1a1a2e" : "#12121a",
+              borderColor: expandedStep === step.id ? "var(--wl-info-500)" : undefined,
+              background: expandedStep === step.id ? "var(--wl-bg-elevated)" : "var(--wl-bg-root)",
             }}
           >
             <div className="flex items-center justify-between gap-4">

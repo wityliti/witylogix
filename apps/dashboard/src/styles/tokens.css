@@ -60,6 +60,17 @@
   --wl-info-500:       #3b82f6;
   --wl-info-bg:        rgba(59, 130, 246, 0.12);
 
+  /* ─── Color: Chart / Data-viz accents ──────── */
+  --wl-chart-violet:   #818cf8;
+  --wl-chart-purple:   #8b5cf6;
+  --wl-chart-indigo:   #6366f1;
+  --wl-chart-pink:     #f472b6;
+  --wl-chart-rose:     #ec4899;
+  --wl-chart-orange:   #fb923c;
+  --wl-chart-teal:     #2dd4bf;
+  --wl-chart-slate:    #94a3b8;
+  --wl-chart-green:    #22c55e;
+
   /* ─── Color: Text ───────────────────────────── */
   --wl-text-primary:   #f0f0f5;
   --wl-text-secondary: #9494ac;

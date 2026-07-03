@@ -63,17 +63,17 @@ const DRIVER_STATUS_MAP: Record<string, DriverStatus> = {
 };
 
 const LEGEND_ORDERS = [
-  { label: 'Pending / Confirmed', color: '#60a5fa' },
-  { label: 'Assigned', color: '#f5a623' },
-  { label: 'In Transit', color: '#10b981' },
-  { label: 'Delayed / Cancelled', color: '#ef4444' },
+  { label: 'Pending / Confirmed', color: 'var(--wl-info-400)' },
+  { label: 'Assigned', color: 'var(--wl-primary-500)' },
+  { label: 'In Transit', color: 'var(--wl-success-500)' },
+  { label: 'Delayed / Cancelled', color: 'var(--wl-danger-500)' },
 ];
 
 const LEGEND_DRIVERS = [
-  { label: 'Available', color: '#10b981' },
-  { label: 'En Route', color: '#f59e0b' },
-  { label: 'On Break', color: '#a78bfa' },
-  { label: 'Offline', color: '#6b7280' },
+  { label: 'Available', color: 'var(--wl-success-500)' },
+  { label: 'En Route', color: 'var(--wl-warning-500)' },
+  { label: 'On Break', color: 'var(--wl-chart-purple)' },
+  { label: 'Offline', color: 'var(--wl-neutral-500)' },
 ];
 
 function MapLayers({

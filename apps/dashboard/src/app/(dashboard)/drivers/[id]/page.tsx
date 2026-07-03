@@ -158,7 +158,7 @@ function ScoreArc({ score }: { score: number }) {
   const y2f = cy + r * Math.sin(toRad(fillEnd));
   const largeArcBase = sweep > 180 ? 1 : 0;
   const largeArcFill = (score / 100) * sweep > 180 ? 1 : 0;
-  const accent = score >= 90 ? '#818cf8' : score >= 75 ? 'var(--wl-success-400)' : score >= 60 ? 'var(--wl-warning-400)' : 'var(--wl-danger-400)';
+  const accent = score >= 90 ? 'var(--wl-chart-violet)' : score >= 75 ? 'var(--wl-success-400)' : score >= 60 ? 'var(--wl-warning-400)' : 'var(--wl-danger-400)';
   return (
     <svg viewBox="0 0 140 140" className="w-36 h-36">
       <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArcBase} 1 ${x2b} ${y2b}`} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" strokeLinecap="round" />
@@ -205,15 +205,15 @@ function HistoryChart({ history }: { history: HistoryEntry[] }) {
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-24">
         <defs>
           <linearGradient id="histGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#818cf8" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#818cf8" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--wl-chart-violet)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--wl-chart-violet)" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <polyline points={points} fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points={points} fill="none" stroke="var(--wl-chart-violet)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         {history.map((h, i) => {
           const x = i * w;
           const y = 100 - ((h.compositeScore - min) / range) * 80 - 10;
-          return <circle key={i} cx={x} cy={y} r="2.5" fill="#818cf8" opacity="0.8" />;
+          return <circle key={i} cx={x} cy={y} r="2.5" fill="var(--wl-chart-violet)" opacity="0.8" />;
         })}
       </svg>
       <div className="flex justify-between mt-1 text-[9px] text-white/15 px-0.5">
@@ -443,8 +443,8 @@ export default function DriverDetailPage() {
                 <BreakdownRow label="On-Time Delivery"    value={score.breakdown.onTimeScore}          icon={Clock}       accent="var(--wl-success-400)" />
                 <BreakdownRow label="Customer Rating"     value={score.breakdown.customerRatingScore}   icon={Star}        accent="var(--wl-warning-400)" />
                 <BreakdownRow label="POD Compliance"      value={score.breakdown.podComplianceScore}    icon={Camera}      accent="var(--wl-info-400)" />
-                <BreakdownRow label="Route Efficiency"    value={score.breakdown.routeEfficiencyScore}  icon={Route}       accent="#818cf8" />
-                <BreakdownRow label="Reliability"         value={score.breakdown.reliabilityScore}      icon={ShieldCheck} accent="#a78bfa" />
+                <BreakdownRow label="Route Efficiency"    value={score.breakdown.routeEfficiencyScore}  icon={Route}       accent="var(--wl-chart-violet)" />
+                <BreakdownRow label="Reliability"         value={score.breakdown.reliabilityScore}      icon={ShieldCheck} accent="var(--wl-chart-purple)" />
               </div>
             </div>
 
@@ -453,7 +453,7 @@ export default function DriverDetailPage() {
               {/* KPI row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Deliveries',    value: metrics.totalDeliveries.toLocaleString(), icon: BarChart3, accent: '#818cf8' },
+                  { label: 'Deliveries',    value: metrics.totalDeliveries.toLocaleString(), icon: BarChart3, accent: 'var(--wl-chart-violet)' },
                   { label: 'On-Time Rate',  value: `${onTimePct.toFixed(1)}%`,               icon: Clock,     accent: 'var(--wl-success-400)' },
                   { label: 'Avg Rating',    value: avgRating.toFixed(2),                     icon: Star,      accent: 'var(--wl-warning-400)', suffix: '/ 5' },
                   { label: 'POD Rate',      value: `${podPct.toFixed(1)}%`,                  icon: Camera,    accent: 'var(--wl-info-400)' },

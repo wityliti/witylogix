@@ -25,22 +25,22 @@ const getStockStatus = (
   if (current <= reorderPoint) {
     return {
       status: "critical",
-      color: "#ef4444",
+      color: "var(--wl-danger-500)",
     };
   } else if (percentage < 30) {
     return {
       status: "low",
-      color: "#f97316",
+      color: "var(--wl-chart-orange)",
     };
   } else if (percentage > 90) {
     return {
       status: "overstocked",
-      color: "#f59e0b",
+      color: "var(--wl-warning-500)",
     };
   } else {
     return {
       status: "optimal",
-      color: "#10b981",
+      color: "var(--wl-success-500)",
     };
   }
 };
@@ -112,10 +112,10 @@ const InventoryGauge = ({
           >
             <defs>
               <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ef4444" />
-                <stop offset="33%" stopColor="#f97316" />
-                <stop offset="66%" stopColor="#10b981" />
-                <stop offset="100%" stopColor="#10b981" />
+                <stop offset="0%" stopColor="var(--wl-danger-500)" />
+                <stop offset="33%" stopColor="var(--wl-chart-orange)" />
+                <stop offset="66%" stopColor="var(--wl-success-500)" />
+                <stop offset="100%" stopColor="var(--wl-success-500)" />
               </linearGradient>
             </defs>
 
@@ -124,7 +124,7 @@ const InventoryGauge = ({
               cy="100"
               r="90"
               fill="none"
-              stroke="#e5e7eb"
+              stroke="var(--wl-border-default)"
               strokeWidth="8"
             />
 
@@ -148,7 +148,7 @@ const InventoryGauge = ({
               cx="100"
               cy="100"
               r="70"
-              fill="#ffffff"
+              fill="var(--wl-bg-surface)"
               style={{
                 filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))",
               }}
@@ -160,7 +160,7 @@ const InventoryGauge = ({
               textAnchor="middle"
               fontSize="32"
               fontWeight="bold"
-              fill="#1f2937"
+              fill="var(--wl-text-primary)"
             >
               {percentage.toFixed(0)}%
             </text>
@@ -169,7 +169,7 @@ const InventoryGauge = ({
               y="105"
               textAnchor="middle"
               fontSize="12"
-              fill="#6b7280"
+              fill="var(--wl-text-secondary)"
             >
               of {max.toLocaleString()}
             </text>

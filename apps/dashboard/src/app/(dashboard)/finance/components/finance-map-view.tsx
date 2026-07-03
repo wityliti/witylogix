@@ -97,11 +97,11 @@ export function FinanceMapView({ days = 30, className }: FinanceMapViewProps) {
       <div className="absolute bottom-4 left-4 bg-wl-bg-surface/90 backdrop-blur rounded-lg p-3 border border-wl-border-default text-xs space-y-1.5 min-w-[140px]">
         <p className="font-semibold text-wl-text-primary mb-2">Revenue by Zone</p>
         {[
-          { color: '#10b981', label: 'Highest' },
-          { color: '#22c55e', label: 'High' },
-          { color: '#eab308', label: 'Medium' },
-          { color: '#f97316', label: 'Low' },
-          { color: '#6b7280', label: 'No orders' },
+          { color: 'var(--wl-success-500)', label: 'Highest' },
+          { color: 'var(--wl-chart-green)', label: 'High' },
+          { color: 'var(--wl-warning-500)', label: 'Medium' },
+          { color: 'var(--wl-chart-orange)', label: 'Low' },
+          { color: 'var(--wl-neutral-500)', label: 'No orders' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: color }} />

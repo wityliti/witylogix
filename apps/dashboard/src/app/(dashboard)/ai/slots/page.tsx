@@ -273,7 +273,7 @@ export default function SlotAIPage() {
                                 className="h-full rounded-full"
                                 style={{
                                   width: `${driverPct}%`,
-                                  background: driverPct >= 70 ? '#34d399' : driverPct >= 40 ? '#fbbf24' : '#f87171',
+                                  background: driverPct >= 70 ? 'var(--wl-success-400)' : driverPct >= 40 ? 'var(--wl-warning-400)' : 'var(--wl-danger-400)',
                                 }}
                               />
                             </div>

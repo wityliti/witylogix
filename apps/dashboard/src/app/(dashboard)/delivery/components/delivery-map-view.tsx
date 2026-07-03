@@ -53,10 +53,10 @@ function MapLayers({
 // ── Legend ────────────────────────────────────────────────────
 
 const LEGEND = [
-  { color: '#3b82f6', label: 'Pending' },
-  { color: '#f59e0b', label: 'In Transit' },
-  { color: '#10b981', label: 'Delivered' },
-  { color: '#ef4444', label: 'Failed' },
+  { color: 'var(--wl-info-500)', label: 'Pending' },
+  { color: 'var(--wl-warning-500)', label: 'In Transit' },
+  { color: 'var(--wl-success-500)', label: 'Delivered' },
+  { color: 'var(--wl-danger-500)', label: 'Failed' },
 ];
 
 // ── Main export ───────────────────────────────────────────────

@@ -95,7 +95,7 @@ const LiveMap = dynamic(() => import('./components/map-view'), {
   loading: () => (
     <div className="flex-1 bg-wl-bg-sunken flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-[var(--wl-primary-500,#f5a623)] animate-spin" />
+        <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-wl-primary-500 animate-spin" />
         <span className="text-sm text-white/40">Loading map…</span>
       </div>
     </div>
@@ -445,7 +445,7 @@ export default function MapPage() {
               count={orders.length}
               active={showOrders}
               onClick={() => setShowOrders((v) => !v)}
-              color="#60a5fa"
+              color="var(--wl-info-400)"
             />
             <LayerButton
               icon={Users}
@@ -453,7 +453,7 @@ export default function MapPage() {
               count={drivers.length}
               active={showDrivers}
               onClick={() => setShowDrivers((v) => !v)}
-              color="#10b981"
+              color="var(--wl-success-500)"
             />
             <LayerButton
               icon={Truck}
@@ -461,7 +461,7 @@ export default function MapPage() {
               count={rawRoutes.length}
               active={showRoutes}
               onClick={() => setShowRoutes((v) => !v)}
-              color="#a78bfa"
+              color="var(--wl-chart-purple)"
             />
           </div>
         </div>
@@ -511,12 +511,12 @@ export default function MapPage() {
                         style={{
                           backgroundColor:
                             o.status === 'in_transit'
-                              ? '#10b981'
+                              ? 'var(--wl-success-500)'
                               : o.status === 'assigned'
-                              ? '#f5a623'
+                              ? 'var(--wl-primary-500)'
                               : o.status === 'delayed'
-                              ? '#ef4444'
-                              : '#60a5fa',
+                              ? 'var(--wl-danger-500)'
+                              : 'var(--wl-info-400)',
                         }}
                       />
                       <div className="min-w-0 flex-1">
@@ -553,12 +553,12 @@ export default function MapPage() {
                         style={{
                           backgroundColor:
                             d.status === 'available'
-                              ? '#10b981'
+                              ? 'var(--wl-success-500)'
                               : d.status === 'busy'
-                              ? '#f59e0b'
+                              ? 'var(--wl-warning-500)'
                               : d.status === 'break'
-                              ? '#a78bfa'
-                              : '#6b7280',
+                              ? 'var(--wl-chart-purple)'
+                              : 'var(--wl-neutral-500)',
                         }}
                       />
                       <div className="min-w-0 flex-1">

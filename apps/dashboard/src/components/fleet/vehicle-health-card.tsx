@@ -67,7 +67,7 @@ interface HealthGaugeProps {
 function HealthGauge({ score, size = "md" }: HealthGaugeProps) {
   const circumference = 2 * Math.PI * 45;
   const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "#10b981" : score >= 50 ? "#f59e0b" : "#ef4444";
+  const color = score >= 80 ? "var(--wl-success-500)" : score >= 50 ? "var(--wl-warning-500)" : "var(--wl-danger-500)";
 
   const sizeMap = {
     sm: { radius: 45, textSize: "text-lg", width: 120, height: 120 },

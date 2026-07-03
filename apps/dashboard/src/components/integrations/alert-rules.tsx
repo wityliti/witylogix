@@ -74,7 +74,7 @@ export function AlertRules({ rules, onSave, onDelete, onToggle, className }: Ale
       case 'high':
         return 'var(--wl-danger-500)';
       case 'critical':
-        return '#ff0000';
+        return 'var(--wl-danger-500)';
     }
   };
 

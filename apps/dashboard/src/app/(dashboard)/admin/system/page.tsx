@@ -144,7 +144,7 @@ function UsageGauge({
         <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-4">{label}</p>
         <div className="relative w-24 h-24 mb-4">
           <svg width="100" height="100" viewBox="0 0 100 100" className="rotate-90">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#1e1e2e" strokeWidth="3" />
+            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--wl-bg-elevated)" strokeWidth="3" />
             <circle
               cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="3"
               strokeDasharray={circumference} strokeDashoffset={offset}

@@ -46,10 +46,10 @@ const TIER_LABEL: Record<DriverTier, string> = {
 };
 
 const TIER_DOT: Record<DriverTier, string> = {
-  platinum: '#10b981',
-  gold: '#f59e0b',
-  silver: '#a78bfa',
-  bronze: '#6b7280',
+  platinum: 'var(--wl-success-500)',
+  gold: 'var(--wl-warning-500)',
+  silver: 'var(--wl-chart-purple)',
+  bronze: 'var(--wl-neutral-500)',
 };
 
 interface MapLayersProps {

@@ -17,9 +17,9 @@ const STATUS_LABEL: Record<string, string> = {
   inactive: 'Inactive',
 };
 const STATUS_COLOR: Record<string, string> = {
-  active:   '#10b981',
-  pending:  '#f59e0b',
-  inactive: '#6b7280',
+  active:   'var(--wl-success-500)',
+  pending:  'var(--wl-warning-500)',
+  inactive: 'var(--wl-neutral-500)',
 };
 
 export default function PartnersMapView({ partners, onPartnerClick }: PartnersMapViewProps) {
