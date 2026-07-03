@@ -275,7 +275,7 @@ export default function AnalyticsPage() {
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <MetricTile label="On-Time Rate" value={metrics.onTimeRate} suffix="%" icon={Zap} accent="var(--wl-primary-300)" />
-              <MetricTile label="Customer Rating" value={metrics.customerSatisfaction.toFixed(1)} suffix="/5" icon={Activity} accent="var(--wl-primary-500)" />
+              <MetricTile label="Delivery Score" value={metrics.customerSatisfaction.toFixed(1)} suffix="/5" icon={Activity} accent="var(--wl-primary-500)" />
               <MetricTile label="Revenue" value={`$${(metrics.revenue / 1000).toFixed(0)}k`} icon={BarChart3} accent="var(--wl-success-500)" />
               <MetricTile label="Failed Deliveries" value={metrics.failedDeliveries} icon={RefreshCw} accent="var(--wl-danger-400)" />
             </div>
