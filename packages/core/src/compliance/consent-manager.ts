@@ -115,8 +115,9 @@ export class ConsentManager {
     }
 
     for (const [purpose, consentRecords] of byPurpose.entries()) {
-      // Sort by ID (which includes timestamp) and take most recent
-      const mostRecent = consentRecords.sort((a, b) => b.id.localeCompare(a.id))[0];
+      // Sort by version (monotonically incremented per purpose) so records created
+      // in the same millisecond still have a stable, deterministic order
+      const mostRecent = consentRecords.sort((a, b) => b.version - a.version)[0];
       if (mostRecent.revokedAt) {
         revoked[purpose] = mostRecent.revokedAt;
       } else if (mostRecent.granted) {
