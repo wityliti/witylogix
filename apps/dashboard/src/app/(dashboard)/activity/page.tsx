@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
   AlertCircle,
   Download,
@@ -12,25 +12,25 @@ import {
   GitBranch,
   Search,
   X,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { EventTimeline } from './components/event-timeline';
-import { EventFilters } from './components/event-filters';
-import { useApiList } from '@/hooks/use-api';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EventTimeline } from "./components/event-timeline";
+import { EventFilters } from "./components/event-filters";
+import { useApiList } from "@/hooks/use-api";
 
 // Types
 export interface ActivityEvent {
   id: string;
-  type: 'order' | 'shipment' | 'driver' | 'system' | 'webhook' | 'workflow';
-  severity: 'info' | 'warning' | 'error' | 'success';
+  type: "order" | "shipment" | "driver" | "system" | "webhook" | "workflow";
+  severity: "info" | "warning" | "error" | "success";
   title: string;
   description: string;
   timestamp: string;
@@ -48,8 +48,15 @@ export interface ActivityEvent {
 }
 
 export default function ActivityPage() {
-  const { items: apiEvents, loading, error, refetch, pagination, setPage } = useApiList<ActivityEvent>('/api/v4/activity-logs');
-  const [searchQuery, setSearchQuery] = useState('');
+  const {
+    items: apiEvents,
+    loading,
+    error,
+    refetch,
+    pagination,
+    setPage,
+  } = useApiList<ActivityEvent>("/api/v4/activity-logs");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isLiveMode, setIsLiveMode] = useState(true);
   const [filters, setFilters] = useState({
@@ -59,9 +66,7 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
-
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -84,9 +89,31 @@ export default function ActivityPage() {
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
-    const interval = setInterval(() => { refetch(); }, 30000);
+    const interval = setInterval(() => {
+      refetch();
+    }, 30000);
     return () => clearInterval(interval);
   }, [isLiveMode, refetch]);
+
+  const filteredEvents = (): ActivityEvent[] =>
+    apiEvents.filter((e) => {
+      if (filters.types.length > 0 && !filters.types.includes(e.type))
+        return false;
+      if (
+        filters.severities.length > 0 &&
+        !filters.severities.includes(e.severity)
+      )
+        return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (
+          !e.title.toLowerCase().includes(q) &&
+          !e.description.toLowerCase().includes(q)
+        )
+          return false;
+      }
+      return true;
+    });
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -131,20 +158,20 @@ export default function ActivityPage() {
   };
 
   // Get event icon
-  const getEventIcon = (type: ActivityEvent['type']) => {
-    const iconProps = 'w-4 h-4';
+  const getEventIcon = (type: ActivityEvent["type"]) => {
+    const iconProps = "w-4 h-4";
     switch (type) {
-      case 'order':
+      case "order":
         return <Package className={iconProps} />;
-      case 'shipment':
+      case "shipment":
         return <Truck className={iconProps} />;
-      case 'driver':
+      case "driver":
         return <Users className={iconProps} />;
-      case 'system':
+      case "system":
         return <Zap className={iconProps} />;
-      case 'webhook':
+      case "webhook":
         return <Webhook className={iconProps} />;
-      case 'workflow':
+      case "workflow":
         return <GitBranch className={iconProps} />;
       default:
         return <AlertCircle className={iconProps} />;
@@ -152,26 +179,24 @@ export default function ActivityPage() {
   };
 
   // Get severity badge variant
-  const getSeverityBadgeVariant = (severity: ActivityEvent['severity']) => {
+  const getSeverityBadgeVariant = (severity: ActivityEvent["severity"]) => {
     switch (severity) {
-      case 'error':
-        return 'danger';
-      case 'warning':
-        return 'warning';
-      case 'success':
-        return 'success';
-      case 'info':
-        return 'info';
+      case "error":
+        return "danger";
+      case "warning":
+        return "warning";
+      case "success":
+        return "success";
+      case "info":
+        return "info";
       default:
-        return 'default';
+        return "default";
     }
   };
 
-  if (loading && events.length === 0) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const displayedEvents = filteredEvents();
-  const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
+  const selectedEvent = selectedEventId
+    ? displayedEvents.find((e) => e.id === selectedEventId)
+    : null;
 
   return (
     <div
@@ -198,7 +223,7 @@ export default function ActivityPage() {
                   "transition-all duration-300",
                   isLiveMode
                     ? "bg-emerald-500/10 border-emerald-500/30"
-                    : "bg-wl-bg-elevated border-wl-border-default"
+                    : "bg-wl-bg-elevated border-wl-border-default",
                 )}
               >
                 <div
@@ -206,15 +231,13 @@ export default function ActivityPage() {
                     "w-2 h-2 rounded-full transition-all duration-500",
                     isLiveMode
                       ? "bg-emerald-500 animate-pulse"
-                      : "bg-wl-text-tertiary"
+                      : "bg-wl-text-tertiary",
                   )}
                 />
                 <span
                   className={cn(
                     "text-xs font-medium",
-                    isLiveMode
-                      ? "text-emerald-500"
-                      : "text-wl-neutral-300"
+                    isLiveMode ? "text-emerald-500" : "text-wl-neutral-300",
                   )}
                 >
                   {isLiveMode ? "Live" : "Paused"}
@@ -248,7 +271,7 @@ export default function ActivityPage() {
                   "bg-wl-bg-surface border border-wl-border-default",
                   "text-white placeholder-wl-text-tertiary",
                   "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
-                  "rounded-md transition-all duration-200"
+                  "rounded-md transition-all duration-200",
                 )}
               />
               {searchQuery && (
@@ -262,7 +285,11 @@ export default function ActivityPage() {
             </div>
 
             {/* Filters */}
-            <EventFilters filters={filters} setFilters={setFilters} users={uniqueUsers} />
+            <EventFilters
+              filters={filters}
+              setFilters={setFilters}
+              users={uniqueUsers}
+            />
 
             {/* Active filters display */}
             {(filters.types.length > 0 ||
@@ -291,13 +318,15 @@ export default function ActivityPage() {
                   <Badge
                     key={severity}
                     variant={getSeverityBadgeVariant(
-                      severity as ActivityEvent["severity"]
+                      severity as ActivityEvent["severity"],
                     )}
                     className="gap-1.5 cursor-pointer hover:opacity-80"
                     onClick={() => {
                       setFilters((prev) => ({
                         ...prev,
-                        severities: prev.severities.filter((s) => s !== severity),
+                        severities: prev.severities.filter(
+                          (s) => s !== severity,
+                        ),
                       }));
                     }}
                   >
@@ -338,12 +367,13 @@ export default function ActivityPage() {
             icon={<AlertCircle className="w-8 h-8" />}
             title="No events found"
             description={
-              searchQuery || Object.values(filters).some((v) =>
+              searchQuery ||
+              Object.values(filters).some((v) =>
                 v === null || v === undefined
                   ? false
                   : Array.isArray(v)
                     ? v.length > 0
-                    : true
+                    : true,
               )
                 ? "Try adjusting your search or filters to find events"
                 : "Activity events will appear here as they are generated"
@@ -400,7 +430,11 @@ export default function ActivityPage() {
                           {getEventIcon(selectedEvent.type)}
                         </div>
                         <div className="flex-1">
-                          <Badge variant={getSeverityBadgeVariant(selectedEvent.severity)}>
+                          <Badge
+                            variant={getSeverityBadgeVariant(
+                              selectedEvent.severity,
+                            )}
+                          >
                             {selectedEvent.severity.charAt(0).toUpperCase() +
                               selectedEvent.severity.slice(1)}
                           </Badge>
@@ -483,12 +517,11 @@ export default function ActivityPage() {
                                     {String(value)}
                                   </span>
                                 </div>
-                              )
+                              ),
                             )}
                           </div>
                         </div>
-                      )
-                    }
+                      )}
                   </CardContent>
                 </Card>
               </div>
