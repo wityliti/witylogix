@@ -1,59 +1,103 @@
 /**
- * Notification API Routes v2 — inbox + stats + log backed by real Prisma models
- *
- *   GET  /                     Notification inbox (from ActivityLog)
- *   GET  /stats                Daily counts, channel breakdown, failed templates
- *   GET  /log                  Paginated NotificationLog with filters + stats
- *   GET  /delivery-log         Same, formatted as DeliveryLogEntry for the delivery-log page
- *   POST /delivery-log/export  Stub export (returns empty URL — downstream CSV is client-side)
- *   GET  /status               Health check
+ * Notification API Routes v2 — Multi-channel notifications
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import { prisma } from '@witylogix/db';
+import { requireAuth } from '../middleware/auth.js';
+import { tenantContext } from '../middleware/tenant.js';
 
 export default async function notificationsV2Routes(app: FastifyInstance) {
-  // ── GET / — inbox ────────────────────────────────────────────────────────
-  app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const db = (request as any).tenantDb;
-      const query = request.query as { page?: string; limit?: string; category?: string };
-      const page = Math.max(1, parseInt(query.page ?? '1', 10));
-      const limit = Math.min(100, parseInt(query.limit ?? '20', 10));
-      const skip = (page - 1) * limit;
+  app.addHook('preHandler', requireAuth);
+  app.addHook('preHandler', tenantContext);
 
-      const where: Record<string, unknown> = {};
-      if (query.category) where.entityType = query.category;
+  app.get('/', async (request, reply) => {
+    const shopId = request.auth.shopId;
+    const { page = 1, limit = 20 } = request.query as { page?: number; limit?: number };
+    const skip = (Number(page) - 1) * Number(limit);
 
-      const [logs, total] = await Promise.all([
-        db.activityLog.findMany({
-          where,
-          orderBy: { timestamp: 'desc' },
-          skip,
-          take: limit,
-        }),
-        db.activityLog.count({ where }),
-      ]);
+    const [items, total] = await Promise.all([
+      prisma.notificationLog.findMany({
+        where: { shopId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: Number(limit),
+      }),
+      prisma.notificationLog.count({ where: { shopId } }),
+    ]);
 
-      const data = logs.map((l: any) => ({
-        id: l.id,
-        type: l.entityType,
-        category: l.entityType,
-        title: `${l.action.replace(/_/g, ' ')} — ${l.entityType}`,
-        message: `${l.actorType} performed ${l.action} on ${l.entityType} ${l.entityId.slice(0, 8)}`,
-        read: true,
-        timestamp: l.timestamp,
-        actionUrl: `/${l.entityType}s/${l.entityId}`,
-      }));
+    return reply.send({
+      data: items,
+      meta: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      },
+    });
+  });
 
-      return reply.send({
-        data,
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-      });
-    } catch (err) {
-      request.log.error(err, 'Failed to fetch notification inbox');
-      reply.status(500);
-      return { error: 'Failed to fetch notifications' };
+  app.get('/stats', async (request, reply) => {
+    const shopId = request.auth.shopId;
+    const { days = 7 } = request.query as { days?: number };
+    const dayCount = Math.min(Math.max(Number(days) || 7, 1), 90);
+
+    const since = new Date();
+    since.setDate(since.getDate() - dayCount);
+
+    const logs = await prisma.notificationLog.findMany({
+      where: { shopId, createdAt: { gte: since } },
+      select: { channel: true, status: true, createdAt: true, eventType: true },
+    });
+
+    // Daily stats
+    const dayMap = new Map<string, number>();
+    for (let i = 0; i < dayCount; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (dayCount - 1 - i));
+      dayMap.set(d.toISOString().slice(0, 10), 0);
     }
+    for (const log of logs) {
+      const key = log.createdAt.toISOString().slice(0, 10);
+      if (dayMap.has(key)) dayMap.set(key, (dayMap.get(key) ?? 0) + 1);
+    }
+    const dailyStats = Array.from(dayMap.entries()).map(([date, count]) => ({ date, count }));
+
+    // Channel breakdown
+    const channelTotals: Record<string, number> = { EMAIL: 0, SMS: 0, WHATSAPP: 0, PUSH: 0 };
+    for (const log of logs) channelTotals[log.channel] = (channelTotals[log.channel] ?? 0) + 1;
+    const total = logs.length;
+    const channelBreakdown: Record<string, { count: number; percentage: number }> = {};
+    for (const [ch, count] of Object.entries(channelTotals)) {
+      channelBreakdown[ch.toLowerCase()] = {
+        count,
+        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+      };
+    }
+
+    // Failed templates by eventType
+    const failedByType = new Map<string, number>();
+    const sentByType = new Map<string, number>();
+    for (const log of logs) {
+      sentByType.set(log.eventType, (sentByType.get(log.eventType) ?? 0) + 1);
+      if (log.status === 'FAILED' || log.status === 'BOUNCED') {
+        failedByType.set(log.eventType, (failedByType.get(log.eventType) ?? 0) + 1);
+      }
+    }
+    const failedTemplates = Array.from(failedByType.entries())
+      .map(([name, failureCount]) => ({
+        name,
+        failureCount,
+        failureRate: sentByType.get(name)
+          ? Number(((failureCount / (sentByType.get(name) ?? 1)) * 100).toFixed(1))
+          : 0,
+      }))
+      .sort((a, b) => b.failureCount - a.failureCount)
+      .slice(0, 5);
+
+    return reply.send({
+      data: { dailyStats, channelBreakdown, failedTemplates, total },
+    });
   });
 
   // ── GET /stats — daily counts + channel breakdown + failed templates ──────

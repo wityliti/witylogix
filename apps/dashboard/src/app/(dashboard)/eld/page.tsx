@@ -6,14 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
-import {
-  useFleetCompliance,
-  useViolations,
-  useELDEvents,
-  useELDDriverStatus,
-  DutyStatus,
-  DriverComplianceStatus,
-} from "@/hooks/use-eld";
+import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
+import { useApiList, ApiFilters } from "@/hooks/use-api";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 
@@ -52,6 +46,13 @@ const dutyStatusIcon: Record<DutyStatus, string> = {
   ON_DUTY: "📋",
 };
 
+interface ApiDriver {
+  id: string;
+  name: string;
+  status: string;
+  activeDeliveries?: number;
+}
+
 const dutyStatusColor = (duty: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {
     OFF_DUTY: "text-wl-text-secondary",
@@ -62,12 +63,20 @@ const dutyStatusColor = (duty: DutyStatus): string => {
   return colors[duty];
 };
 
-export default function ELDOverviewPage() {
-  const complianceResult  = useFleetCompliance();
-  const violationsResult  = useViolations(undefined);
-  const eventsResult      = useELDEvents(undefined);
-  const driversResult     = useELDDriverStatus();
+function deriveDriverStatus(driver: ApiDriver, violationCounts: Record<string, number>): DriverStatus {
+  const s = driver.status?.toLowerCase() ?? "";
+  if (s === "offline" || s === "inactive") return "OFFLINE";
+  const vCount = violationCounts[driver.id] ?? 0;
+  if (vCount >= 2) return "VIOLATION";
+  if (vCount === 1) return "WARNING";
+  return "COMPLIANT";
+}
 
+export default function ELDOverviewPage() {
+  const { items: apiDrivers, loading: driversLoading, error: driversError, refetch: driversRefetch } = useApiList<ApiDriver>('/api/v4/drivers');
+  const complianceResult = useFleetCompliance();
+  const violationsResult = useViolations(undefined);
+  const eventsResult = useELDEvents(undefined);
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
 
   const compliance        = complianceResult.data;
@@ -80,12 +89,28 @@ export default function ELDOverviewPage() {
   const drivers           = driversResult.items;
   const driversLoading    = driversResult.loading;
 
-  if (driversLoading && complianceLoading) {
-    return <TableSkeleton rows={10} columns={6} />;
+  if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
+  if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
+
+  // Build violation count per driverId
+  const violationCounts: Record<string, number> = {};
+  for (const v of violations) {
+    violationCounts[v.driverId] = (violationCounts[v.driverId] ?? 0) + 1;
   }
-  if (complianceError) {
-    return <ErrorState message={complianceError.message} onRetry={complianceResult.refetch} />;
-  }
+
+  const driverGrid: DriverStatusInfo[] = apiDrivers.map((d) => {
+    const status = deriveDriverStatus(d, violationCounts);
+    return {
+      driverId: d.id,
+      name: d.name,
+      status,
+      currentDuty: "ON_DUTY" as DutyStatus,
+      drivingRemaining: 0,
+      breakStatus: "TAKEN" as const,
+      violations: violationCounts[d.id] ?? 0,
+      lastUpdate: "—",
+    };
+  });
 
   const complianceScore = compliance?.compliancePercentage ?? 0;
   const scoreColor =
@@ -95,12 +120,14 @@ export default function ELDOverviewPage() {
         ? "text-wl-warning-400"
         : "text-wl-danger-400";
 
-  const statusCounts = useMemo(() => ({
-    compliant: drivers.filter((d) => d.status === "COMPLIANT").length,
-    warning:   drivers.filter((d) => d.status === "WARNING").length,
-    violation: drivers.filter((d) => d.status === "VIOLATION").length,
-    offline:   drivers.filter((d) => d.status === "OFFLINE").length,
-  }), [drivers]);
+  const statusCounts = useMemo(() => {
+    return {
+      compliant: driverGrid.filter((d) => d.status === "COMPLIANT").length,
+      warning: driverGrid.filter((d) => d.status === "WARNING").length,
+      violation: driverGrid.filter((d) => d.status === "VIOLATION").length,
+      offline: driverGrid.filter((d) => d.status === "OFFLINE").length,
+    };
+  }, [driverGrid]);
 
   return (
     <div className="min-h-screen bg-wl-bg-root space-y-6 p-6">
@@ -117,8 +144,9 @@ export default function ELDOverviewPage() {
         <StatCard
           label="Compliant Drivers"
           value={statusCounts.compliant}
-          unit={`/ ${drivers.length}`}
+          unit={`/ ${driverGrid.length}`}
           icon={<CheckCircle className="w-5 h-5 text-wl-success-400" />}
+          trend={{ direction: "neutral", value: 0 }}
           isLoading={driversLoading}
         />
         <StatCard
@@ -158,50 +186,27 @@ export default function ELDOverviewPage() {
             </CardHeader>
 
             <CardContent>
-              {driversLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
-                </div>
-              ) : drivers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
-                  <Users className="w-12 h-12 mb-3 opacity-40" />
-                  <p className="text-sm font-medium">No drivers active today</p>
-                  <p className="text-xs mt-1 text-center max-w-xs">
-                    Driver HOS records appear here once drivers start their shift
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {drivers.map((driver) => (
-                    <button
-                      key={driver.driverId}
-                      onClick={() => setSelectedDriver(driver.driverId)}
-                      className={cn(
-                        "p-3 rounded-lg border transition-all text-left",
-                        "hover:border-blue-500/30 hover:bg-wl-bg-elevated",
-                        selectedDriver === driver.driverId
-                          ? "border-blue-500/50 bg-blue-500/5"
-                          : "border-wl-border-default"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-white">
-                            {driver.name}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {driver.driverId}
-                          </p>
-                        </div>
-                        <Badge variant={statusVariant(driver.status)} className="text-xs">
-                          {driver.status === "COMPLIANT"
-                            ? "✓"
-                            : driver.status === "WARNING"
-                              ? "⚠"
-                              : driver.status === "VIOLATION"
-                                ? "⛔"
-                                : "—"}
-                        </Badge>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {driverGrid.map((driver) => (
+                  <button
+                    key={driver.driverId}
+                    onClick={() => setSelectedDriver(driver.driverId)}
+                    className={cn(
+                      "p-3 rounded-lg border transition-all text-left",
+                      "hover:border-blue-500/30 hover:bg-[#1a1a2e]",
+                      selectedDriver === driver.driverId
+                        ? "border-blue-500/50 bg-blue-500/5"
+                        : "border-[#1e1e2e]"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-white">
+                          {driver.name}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {driver.driverId}
+                        </p>
                       </div>
 
                       <div className="flex items-center gap-2 text-xs mb-2">

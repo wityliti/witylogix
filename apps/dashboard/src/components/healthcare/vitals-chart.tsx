@@ -34,75 +34,13 @@ interface VitalMetric {
   change: number;
 }
 
-function calcTrend(
-  latestVal: number,
-  prevVal: number | undefined
-): { trend: "up" | "down" | "stable"; change: number } {
-  if (prevVal === undefined) return { trend: "stable", change: 0 };
-  const diff = latestVal - prevVal;
-  const pct = prevVal !== 0 ? (diff / prevVal) * 100 : 0;
-  if (Math.abs(pct) < 0.5) return { trend: "stable", change: 0 };
-  return { trend: diff > 0 ? "up" : "down", change: Math.round(diff * 10) / 10 };
-}
-
-const getMetricsFromReadings = (
-  latest: VitalReading,
-  prev: VitalReading | undefined
-): VitalMetric[] => [
-  {
-    name: "Heart Rate",
-    unit: "bpm",
-    normalMin: 60,
-    normalMax: 100,
-    color: "wl-primary-400",
-    value: latest.heartRate,
-    ...calcTrend(latest.heartRate, prev?.heartRate),
-  },
-  {
-    name: "BP Systolic",
-    unit: "mmHg",
-    normalMin: 90,
-    normalMax: 120,
-    color: "wl-info-400",
-    value: latest.bpSystolic,
-    ...calcTrend(latest.bpSystolic, prev?.bpSystolic),
-  },
-  {
-    name: "BP Diastolic",
-    unit: "mmHg",
-    normalMin: 60,
-    normalMax: 80,
-    color: "wl-info-400",
-    value: latest.bpDiastolic,
-    ...calcTrend(latest.bpDiastolic, prev?.bpDiastolic),
-  },
-  {
-    name: "Temperature",
-    unit: "°F",
-    normalMin: 97,
-    normalMax: 99,
-    color: "wl-warning-400",
-    value: latest.temperature,
-    ...calcTrend(latest.temperature, prev?.temperature),
-  },
-  {
-    name: "SpO2",
-    unit: "%",
-    normalMin: 95,
-    normalMax: 100,
-    color: "wl-success-400",
-    value: latest.spO2,
-    ...calcTrend(latest.spO2, prev?.spO2),
-  },
-  {
-    name: "Weight",
-    unit: "lbs",
-    normalMin: 150,
-    normalMax: 180,
-    color: "wl-danger-400",
-    value: latest.weight,
-    ...calcTrend(latest.weight, prev?.weight),
-  },
+const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
+  { name: "Heart Rate", unit: "bpm", normalMin: 60, normalMax: 100, color: "wl-primary-400", value: latest.heartRate, trend: "stable", change: 0 },
+  { name: "BP Systolic", unit: "mmHg", normalMin: 90, normalMax: 120, color: "wl-info-400", value: latest.bpSystolic, trend: "stable", change: 0 },
+  { name: "BP Diastolic", unit: "mmHg", normalMin: 60, normalMax: 80, color: "wl-info-400", value: latest.bpDiastolic, trend: "stable", change: 0 },
+  { name: "Temperature", unit: "°F", normalMin: 97, normalMax: 99, color: "wl-warning-400", value: latest.temperature, trend: "stable", change: 0 },
+  { name: "SpO2", unit: "%", normalMin: 95, normalMax: 100, color: "wl-success-400", value: latest.spO2, trend: "stable", change: 0 },
+  { name: "Weight", unit: "lbs", normalMin: 150, normalMax: 180, color: "wl-danger-400", value: latest.weight, trend: "stable", change: 0 },
 ];
 
 const isNormal = (metric: VitalMetric): boolean => {
@@ -136,22 +74,8 @@ const VitalsChart = ({
   const [timeRange, setTimeRange] = useState<"7d" | "14d" | "30d">("30d");
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
 
-  if (readings.length === 0) {
-    return (
-      <Card className={cn("w-full p-6", className)}>
-        <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
-          Vital Signs Chart
-        </h3>
-        <div className="text-sm text-wl-text-secondary text-center py-8">
-          No vital signs recorded yet.
-        </div>
-      </Card>
-    );
-  }
-
-  const latestReading = readings[readings.length - 1];
-  const prevReading = readings.length >= 2 ? readings[readings.length - 2] : undefined;
-  const metrics = getMetricsFromReadings(latestReading, prevReading);
+  const latestReading = readings[readings.length - 1] ?? readings[0];
+  const metrics = latestReading ? getMetricsFromLatest(latestReading) : [];
 
   const now = Date.now();
   const rangeMs =

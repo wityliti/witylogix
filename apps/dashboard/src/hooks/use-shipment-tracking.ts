@@ -120,10 +120,8 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
     setError(null);
 
     try {
-      // Search shipments by tracking number
-      const result = await api.get<{ data: ApiShipment[] }>(
-        `/api/v4/shipments?search=${encodeURIComponent(trackingNumber)}&limit=1`,
-      );
+      const response = await fetch(`/api/tracking/${trackingNumber}`);
+      if (!response.ok) throw new Error('Failed to fetch tracking data');
 
       const shipment = result.data?.[0];
       if (!shipment) {
@@ -149,14 +147,7 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
   const subscribeToUpdates = useCallback(() => {
     if (!trackingNumber) return;
 
-    const wsUrl =
-      process.env.NEXT_PUBLIC_WS_URL ??
-      (typeof window !== 'undefined'
-        ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`
-        : '');
-
-    if (!wsUrl) return;
-
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
     try {
       wsRef.current = new WebSocket(`${wsUrl}/ws/tracking/${trackingNumber}`);
 

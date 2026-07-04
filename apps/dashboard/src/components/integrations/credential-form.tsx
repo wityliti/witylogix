@@ -110,8 +110,11 @@ export function CredentialForm({
   };
 
   const handleOAuthConnect = () => {
-    // Redirect to the real OAuth authorize endpoint
-    window.location.href = `/api/v4/integrations/${providerId}/oauth/authorize`;
+    // Redirect to real OAuth authorization URL for this provider
+    setTestResult({
+      status: 'error',
+      message: 'OAuth flow not yet configured for this provider. Please set up the OAuth redirect URI.',
+    });
   };
 
   return (

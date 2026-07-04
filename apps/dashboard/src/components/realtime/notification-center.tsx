@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { useApiList } from "@/hooks/use-api";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useApiList } from "@/hooks/use-api";
 import {
   Bell,
   Package,
@@ -14,8 +14,15 @@ import {
   CheckCheck as CheckAll,
   X,
 } from "lucide-react";
-import { useApiQuery } from "@/hooks/use-api";
-import { api } from "@/lib/api";
+
+interface ApiNotification {
+  id: string;
+  channel: string;
+  eventType: string;
+  status: string;
+  recipient: string;
+  createdAt: string;
+}
 
 interface Notification {
   id: string;
@@ -28,29 +35,41 @@ interface Notification {
   actionUrl?: string;
 }
 
-interface ApiNotification {
-  id: string;
-  category: string;
-  title: string;
-  message: string;
-  severity: string;
-  status: string;
-  timestamp: string;
-  actionUrl?: string;
-}
-
 interface NotificationCenterProps {
   className?: string;
   onNotificationClick?: (notification: Notification) => void;
 }
 
-const CATEGORY_ICON: Record<string, React.ReactNode> = {
-  ORDERS:     <Package className="w-4 h-4" />,
-  DELIVERIES: <Truck className="w-4 h-4" />,
-  ALERTS:     <AlertTriangle className="w-4 h-4" />,
-  SYSTEM:     <Settings className="w-4 h-4" />,
-  DRIVERS:    <Truck className="w-4 h-4" />,
-  PAYMENTS:   <Package className="w-4 h-4" />,
+function inferType(eventType: string): Notification["type"] {
+  const ev = eventType.toLowerCase();
+  if (ev.includes("order")) return "order";
+  if (ev.includes("delivery") || ev.includes("dispatch")) return "delivery";
+  if (ev.includes("alert") || ev.includes("violation") || ev.includes("fail")) return "alert";
+  return "system";
+}
+
+function inferTitle(eventType: string, channel: string): string {
+  const ev = eventType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return `${ev} via ${channel}`;
+}
+
+function toNotification(raw: ApiNotification): Notification {
+  return {
+    id: raw.id,
+    type: inferType(raw.eventType),
+    title: inferTitle(raw.eventType, raw.channel),
+    message: `Sent to ${raw.recipient}`,
+    severity: raw.status === "FAILED" || raw.status === "BOUNCED" ? "warning" : "info",
+    read: raw.status === "DELIVERED" || raw.status === "SENT",
+    timestamp: new Date(raw.createdAt),
+  };
+}
+
+const notificationIcons: Record<Notification["type"], React.ReactNode> = {
+  order: <Package className="w-4 h-4" />,
+  delivery: <Truck className="w-4 h-4" />,
+  alert: <AlertTriangle className="w-4 h-4" />,
+  system: <Settings className="w-4 h-4" />,
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -126,8 +145,8 @@ function NotificationItem({
         isUnread && "bg-wl-bg-surface"
       )}
     >
-      <div className={cn("mt-1 p-2 rounded-lg flex-shrink-0", colorCls)}>
-        {icon}
+      <div className={cn("mt-1 p-2 rounded-lg flex-shrink-0", notificationTypeColors[notification.type])}>
+        {notificationIcons[notification.type]}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -145,15 +164,10 @@ function NotificationItem({
           {notification.message}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-wl-text-secondary">
-            {timeAgo(notification.timestamp)}
-          </span>
-          {isUnread && (
+          <span className="text-xs text-wl-text-secondary">{timeAgo(notification.timestamp)}</span>
+          {!notification.read && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onMarkAsRead?.();
-              }}
+              onClick={(e) => { e.stopPropagation(); onMarkAsRead?.(); }}
               className="text-xs font-semibold text-wl-primary-400 hover:text-wl-primary-500 transition-colors"
             >
               Mark as read
@@ -165,65 +179,23 @@ function NotificationItem({
   );
 }
 
-const TYPE_MAP: Record<string, Notification["type"]> = {
-  order: "order", shipment: "delivery", delivery: "delivery",
-  driver: "alert", system: "system", webhook: "system", workflow: "system",
-};
-
-export function NotificationCenter({
-  className,
-  onNotificationClick,
-}: NotificationCenterProps) {
+export function NotificationCenter({ className, onNotificationClick }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { data, refetch } = useApiQuery<{ data: ApiNotification[] }>(
-    "/api/v4/notifications?limit=20&status=UNREAD,READ"
-  );
+  const { items: rawItems, refetch } = useApiList<ApiNotification>('/api/v4/notifications', { limit: 20 });
 
-  // Map API response to local shape whenever data changes
+  // Poll every 60s when open
   useEffect(() => {
-    if (data?.data) {
-      setNotifications(data.data.map(mapApiNotification));
-    }
-  }, [data]);
-
-  // Poll for new notifications every 30s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 30000);
+    if (!isOpen) return;
+    const interval = setInterval(() => { refetch(); }, 60_000);
     return () => clearInterval(interval);
-  }, [refetch]);
+  }, [isOpen, refetch]);
 
-  // Play sound when a new unread notification arrives
-  const prevUnreadCountRef = useRef(0);
-  useEffect(() => {
-    const unreadCount = notifications.filter((n) => !n.read).length;
-    if (unreadCount > prevUnreadCountRef.current && soundEnabled) {
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
-        oscillator.frequency.value = 800;
-        gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-      } catch (e) {
-        // Audio context not supported
-      }
-    }
-    prevUnreadCountRef.current = unreadCount;
-  }, [notifications, soundEnabled]);
-
-  // Close dropdown when clicking outside
+  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -235,45 +207,25 @@ export function NotificationCenter({
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
   }, [isOpen]);
+
+  const notifications: Notification[] = rawItems.map((raw) => ({
+    ...toNotification(raw),
+    read: readIds.has(raw.id) || toNotification(raw).read,
+  }));
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAsRead = async (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-    try {
-      await api.patch(`/api/v4/notifications/${id}/read`);
-    } catch {
-      // Revert on failure
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: false } : n))
-      );
-    }
-  };
-
-  const markAllAsRead = () => {
-    setReadIds(new Set(notifications.map((n) => n.id)));
-  };
-
-  const deleteNotification = async (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-    try {
-      await api.delete(`/api/v4/notifications/${id}`);
-    } catch {
-      // Silently ignore delete failures
-    }
-  };
+  const markAsRead = (id: string) => setReadIds((prev) => new Set([...prev, id]));
+  const markAllAsRead = () => setReadIds(new Set(rawItems.map((r) => r.id)));
 
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
-    if (notification.actionUrl) {
-      onNotificationClick?.(notification);
-    }
-    setIsOpen(false);
+    if (notification.actionUrl) onNotificationClick?.(notification);
   };
 
   return (
@@ -293,7 +245,7 @@ export function NotificationCenter({
         {unreadCount > 0 && (
           <Badge
             variant="danger"
-            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full text-xs p-0"
+            className={cn("absolute -top-1 -right-1 h-5 w-5", "flex items-center justify-center rounded-full", "text-xs p-0")}
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </Badge>
@@ -310,14 +262,24 @@ export function NotificationCenter({
           )}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-wl-border-subtle">
-            <h3 className="font-semibold text-sm text-wl-text-primary">
-              Notifications
-            </h3>
+            <h3 className="font-semibold text-sm text-wl-text-primary">Notifications</h3>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className={cn(
+                  "p-1.5 rounded transition-colors duration-fast",
+                  soundEnabled
+                    ? "bg-wl-primary-500/20 text-wl-primary-400 hover:bg-wl-primary-500/30"
+                    : "hover:bg-wl-bg-surface text-wl-text-secondary"
+                )}
+                aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
+              >
+                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </button>
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="p-1.5 rounded hover:bg-wl-bg-surface text-wl-text-secondary transition-colors"
+                  className="p-1.5 rounded transition-colors duration-fast hover:bg-wl-bg-surface text-wl-text-secondary"
                   aria-label="Mark all as read"
                 >
                   <CheckAll className="w-4 h-4" />
@@ -358,14 +320,8 @@ export function NotificationCenter({
 
           {notifications.length > 0 && (
             <div className="px-4 py-3 border-t border-wl-border-subtle">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-xs"
-                onClick={() => setIsOpen(false)}
-                asChild
-              >
-                <a href="/notifications">View All Notifications</a>
+              <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setIsOpen(false)}>
+                View All Notifications
               </Button>
             </div>
           )}

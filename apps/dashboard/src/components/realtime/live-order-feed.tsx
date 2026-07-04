@@ -1,19 +1,28 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useApiList } from "@/hooks/use-api";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { BadgeVariant } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useApiList } from "@/hooks/use-api";
 import {
   ChevronUp,
   Clock,
   Package,
   AlertCircle,
 } from "lucide-react";
-import { useApiQuery } from "@/hooks/use-api";
+
+interface ApiOrder {
+  id: string;
+  customerId: string;
+  customerName?: string;
+  status: string;
+  createdAt: string;
+  totalAmount?: number;
+  itemCount?: number;
+}
 
 interface Order {
   id: string;
@@ -25,39 +34,26 @@ interface Order {
   itemCount: number;
 }
 
-interface ApiOrder {
-  id: string;
-  customerName?: string;
-  customer?: {
-    id?: string;
-    firstName?: string;
-    lastName?: string;
-  };
-  status: string;
-  createdAt: string;
-  totalAmount?: number;
-  lineItems?: unknown[];
-}
-
-interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
-
 interface LiveOrderFeedProps {
   className?: string;
   onOrderClick?: (order: Order) => void;
 }
 
-const statusConfig: Record<string, { badge: BadgeVariant; label: string }> = {
-  pending:    { badge: "warning",  label: "Pending" },
-  confirmed:  { badge: "info",     label: "Confirmed" },
-  assigned:   { badge: "info",     label: "Assigned" },
-  in_transit: { badge: "primary",  label: "In Transit" },
-  delivered:  { badge: "success",  label: "Delivered" },
-  cancelled:  { badge: "danger",   label: "Cancelled" },
+const API_STATUS_MAP: Record<string, Order["status"]> = {
+  pending: "pending",
+  confirmed: "assigned",
+  dispatched: "assigned",
+  in_transit: "in-transit",
+  delivered: "delivered",
+  cancelled: "cancelled",
+};
+
+const statusColors: Record<Order["status"], { badge: BadgeVariant; bg: string }> = {
+  pending: { badge: "warning", bg: "bg-wl-warning-bg" },
+  assigned: { badge: "info", bg: "bg-wl-info-bg" },
+  "in-transit": { badge: "primary", bg: "bg-wl-primary-500/12" },
+  delivered: { badge: "success", bg: "bg-wl-success-bg" },
+  cancelled: { badge: "danger", bg: "bg-wl-danger-bg" },
 };
 
 const statusLabels: Record<Order["status"], string> = {
@@ -68,31 +64,16 @@ const statusLabels: Record<Order["status"], string> = {
   cancelled: "Cancelled",
 };
 
-function normalizeStatus(raw: string): Order["status"] {
-  const s = raw?.toUpperCase();
-  if (s === "PENDING") return "pending";
-  if (s === "ASSIGNED") return "assigned";
-  if (s === "PICKED_UP" || s === "IN_TRANSIT" || s === "OUT_FOR_DELIVERY") return "in-transit";
-  if (s === "DELIVERED") return "delivered";
-  if (s === "CANCELLED" || s === "CANCELED") return "cancelled";
-  return "pending";
-}
-
-function mapApiOrder(o: ApiOrder): Order {
-  const customerName =
-    o.customerName ||
-    (o.customer
-      ? `${o.customer.firstName ?? ""} ${o.customer.lastName ?? ""}`.trim()
-      : "Unknown Customer");
-
+function toOrder(raw: ApiOrder): Order {
+  const status = (API_STATUS_MAP[raw.status] ?? "pending") as Order["status"];
   return {
-    id: o.id,
-    customerId: o.customer?.id ?? "",
-    customerName: customerName || "Unknown Customer",
-    status: normalizeStatus(o.status),
-    createdAt: new Date(o.createdAt),
-    amount: o.totalAmount ?? 0,
-    itemCount: o.lineItems?.length ?? 0,
+    id: raw.id,
+    customerId: raw.customerId,
+    customerName: raw.customerName ?? "Unknown Customer",
+    status,
+    createdAt: new Date(raw.createdAt),
+    amount: raw.totalAmount ?? 0,
+    itemCount: raw.itemCount ?? 0,
   };
 }
 
@@ -123,8 +104,9 @@ function OrderSkeleton() {
   );
 }
 
-function OrderCard({ order, onClick }: { order: Order; onClick?: (o: Order) => void }) {
-  const cfg = statusConfig[order.status] ?? { badge: "default" as BadgeVariant, label: order.status };
+function OrderCard({ order, onClick }: { order: Order; onClick?: (order: Order) => void }) {
+  const { badge, bg: _bg } = statusColors[order.status];
+  const statusLabel = statusLabels[order.status];
 
   return (
     <div
@@ -137,12 +119,14 @@ function OrderCard({ order, onClick }: { order: Order; onClick?: (o: Order) => v
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
-          <span className="font-semibold text-wl-text-primary text-sm truncate block">
-            Order #{order.id.substring(0, 8)}
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-semibold text-wl-text-primary text-sm truncate">
+              Order #{order.id.substring(0, 8)}
+            </span>
+          </div>
           <p className="text-xs text-wl-text-secondary truncate">{order.customerName}</p>
         </div>
-        <Badge variant={cfg.badge} className="flex-shrink-0">{cfg.label}</Badge>
+        <Badge variant={badge} className="flex-shrink-0">{statusLabel}</Badge>
       </div>
 
       <div className="flex items-center justify-between gap-2 text-xs text-wl-text-secondary mb-2">
@@ -150,72 +134,56 @@ function OrderCard({ order, onClick }: { order: Order; onClick?: (o: Order) => v
           <Clock className="w-3 h-3" />
           <span>{timeAgo(order.createdAt)}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <Package className="w-3 h-3" />
-          <span>{order.items?.length ?? 0} items</span>
-        </div>
+        {order.itemCount > 0 && (
+          <div className="flex items-center gap-1">
+            <Package className="w-3 h-3" />
+            <span>{order.itemCount} items</span>
+          </div>
+        )}
       </div>
 
-      <div className="pt-2 border-t border-wl-border-subtle">
-        <p className="font-semibold text-wl-text-primary text-sm">
-          ${((order.totalAmount ?? 0) / 100).toFixed(2)}
-        </p>
-      </div>
+      {order.amount > 0 && (
+        <div className="pt-2 border-t border-wl-border-subtle">
+          <p className="font-semibold text-wl-text-primary text-sm">
+            ${order.amount.toFixed(2)}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
-const STATUS_NORMALIZE: Record<string, Order["status"]> = {
-  PENDING: "pending",
-  CONFIRMED: "assigned",
-  ASSIGNED: "assigned",
-  IN_TRANSIT: "in-transit",
-  DELIVERED: "delivered",
-  CANCELLED: "cancelled",
-};
-
-export function LiveOrderFeed({
-  className,
-  onOrderClick,
-}: LiveOrderFeedProps) {
-  const [orders, setOrders] = useState<Order[]>([]);
+export function LiveOrderFeed({ className, onOrderClick }: LiveOrderFeedProps) {
+  const { items: rawOrders, loading, refetch } = useApiList<ApiOrder>('/api/v4/orders', { limit: 10, sort: '-createdAt' });
   const [isScrolled, setIsScrolled] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const prevCountRef = useRef(0);
+  const prevCountRef = useRef(rawOrders.length);
 
-  const { data, loading, refetch } = useApiQuery<{ data: ApiOrder[]; meta: PaginationMeta }>(
-    "/api/v4/orders?limit=10&sort=createdAt:desc"
-  );
-
-  // Map API response to local Order shape whenever data changes
+  // Poll for new orders every 30s
   useEffect(() => {
-    if (data?.data) {
-      setOrders(data.data.map(mapApiOrder));
-    }
-  }, [data]);
-
-  // Poll for new orders every 30s (unless paused while user hovers)
-  useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      refetch().then(() => {
-        if (isScrolled) {
-          setNewOrderCount((prev) => prev + 1);
-        }
-      });
-    }, 30000);
+    const interval = setInterval(() => { refetch(); }, 30_000);
     return () => clearInterval(interval);
-  }, [isPaused, isScrolled, refetch]);
+  }, [refetch]);
+
+  // Track new arrivals for the "scroll up" nudge
+  useEffect(() => {
+    if (rawOrders.length > prevCountRef.current && isScrolled) {
+      setNewOrderCount((c) => c + (rawOrders.length - prevCountRef.current));
+    }
+    prevCountRef.current = rawOrders.length;
+  }, [rawOrders.length, isScrolled]);
+
+  const orders = rawOrders.map(toOrder);
 
   const handleScroll = useCallback(() => {
-    if (!scrollRef.current) return;
-    setIsScrolled(scrollRef.current.scrollTop > 0);
+    if (!scrollContainerRef.current) return;
+    setIsScrolled(scrollContainerRef.current.scrollTop > 0);
   }, []);
 
   const scrollToTop = useCallback(() => {
-    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    setNewCount(0);
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    setNewOrderCount(0);
     setIsScrolled(false);
   }, []);
 
@@ -226,7 +194,7 @@ export function LiveOrderFeed({
           <h3 className="text-sm font-semibold text-wl-text-primary tracking-wider uppercase">
             Live Order Feed
           </h3>
-          <p className="text-xs text-wl-text-secondary mt-1">Recent order updates</p>
+          <p className="text-xs text-wl-text-secondary mt-1">Real-time order updates</p>
         </div>
         <div className="text-xs text-wl-text-secondary">{orders.length} orders</div>
       </div>
@@ -253,8 +221,6 @@ export function LiveOrderFeed({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        onMouseEnter={() => {/* pause handled by real polling */}}
-        onMouseLeave={() => {}}
         className="flex-1 overflow-y-auto space-y-2 p-5"
       >
         {loading ? (
@@ -276,7 +242,7 @@ export function LiveOrderFeed({
           <div className="flex items-center justify-center h-full text-center py-12">
             <div>
               <Package className="w-8 h-8 text-wl-text-secondary mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-wl-text-secondary">No orders yet</p>
+              <p className="text-xs text-wl-text-secondary">No orders at the moment</p>
             </div>
           </div>
         ) : (
