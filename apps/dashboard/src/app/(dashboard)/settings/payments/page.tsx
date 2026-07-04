@@ -5,7 +5,6 @@ import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Header } from '@/components/layout/header';
 import {
   Card,
@@ -23,17 +22,13 @@ import { cn } from '@/lib/utils';
 import {
   CheckCircle,
   AlertCircle,
-  Copy,
   Trash2,
   Plus,
-  Eye,
-  EyeOff,
   Zap,
   DollarSign,
   Shield,
   TestTube,
   Loader,
-  CreditCard,
 } from 'lucide-react';
 
 interface GatewayConfig {
@@ -63,7 +58,7 @@ export default function PaymentSettingsPage() {
   const { data, loading, error, refetch } = useApiQuery<{ data: GatewayConfig[] }>('/api/v4/payments/gateways');
 
   const [activeTab, setActiveTab] = useState('overview');
-  const [isTestPaymentLoading, setIsTestPaymentLoading] = useState(false);
+  const [isTestPaymentLoading, setIsTestPaymentLoading] = useState<string | null>(null);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
   if (loading) return <LoadingSkeleton />;
@@ -89,38 +84,18 @@ export default function PaymentSettingsPage() {
     }
   };
 
-  const handleTestPayment = async (code: string): Promise<void> => {
-    setIsTestPaymentLoading(true);
-    try {
-      await api.post('/api/v4/payments', {
-        paymentType: 'TEST',
-        paymentMethod: code.toUpperCase(),
-        amount: 100,
-        currency: 'USD',
-        metadata: { test: true },
-      });
-    } finally {
-      setIsTestPaymentLoading(false);
-    }
-  };
-
-  const toggleSecretVisibility = (id: string): void => {
-    setShowSecrets((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleTestPayment = async (gateway: GatewayConfig) => {
+  const handleTestPayment = async (gateway: GatewayConfig): Promise<void> => {
     setIsTestPaymentLoading(gateway.id);
     try {
-      const resp = await fetch(`/api/v4/payments/gateways/${gateway.id}/test`, { method: 'POST' });
-      setTestResult({ gateway: gateway.name, ok: resp.ok });
+      await api.post(`/api/v4/payments/gateways/${gateway.id}/test`, {});
     } catch {
-      setTestResult({ gateway: gateway.name, ok: false });
+      // Error visible via UI state — no toast yet
     } finally {
       setIsTestPaymentLoading(null);
     }
   };
 
-  const toggleSecretVisibility = (id: string) => {
+  const toggleSecretVisibility = (id: string): void => {
     setShowSecrets((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
@@ -139,7 +114,7 @@ export default function PaymentSettingsPage() {
     }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
+    <div className="min-h-screen bg-wl-bg-root">
       <Header
         title="Payment Gateways"
         subtitle="Configure and manage payment processing providers"
@@ -253,10 +228,10 @@ export default function PaymentSettingsPage() {
                         variant="ghost"
                         size="sm"
                         className="flex-1"
-                        onClick={() => handleTestPayment(gateway.code)}
-                        disabled={gateway.status === 'disconnected' || isTestPaymentLoading}
+                        onClick={() => handleTestPayment(gateway)}
+                        disabled={gateway.status === 'disconnected' || isTestPaymentLoading === gateway.id}
                       >
-                        {isTestPaymentLoading ? (
+                        {isTestPaymentLoading === gateway.id ? (
                           <Loader className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <TestTube className="w-4 h-4 mr-2" />

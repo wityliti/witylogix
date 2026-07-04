@@ -70,22 +70,10 @@ export function OAuthCallbackHandler({
 
         // Exchange authorization code for access token
         setMessage("Exchanging authorization code...");
-        const response = await fetch("/api/integrations/crm/oauth/callback", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code,
-            state,
-            platformId,
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || "Failed to exchange authorization code");
-        }
-
-        const { connectionId } = await response.json();
+        const { connectionId } = await (await import("@/lib/api")).api.post<{ connectionId: string }>(
+          "/api/v4/integrations/crm/oauth/callback",
+          { code, state, platformId }
+        );
 
         // Clean up session storage
         sessionStorage.removeItem("oauth_state");
