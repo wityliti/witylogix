@@ -151,6 +151,94 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
   );
 };
 
+export default function DriversPage() {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+
+  const { items: driversData, loading: driversLoading, error: driversError, refetch: refetchDrivers } =
+    useApiList<ApiDriver>('/api/v4/drivers');
+
+  const { items: dispatchDrivers, loading: dispatchLoading } =
+    useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
+
+  const loading = driversLoading;
+  const error = driversError;
+
+function MapLegend() {
+  return (
+    <div className="absolute top-3 left-3 z-[1000] bg-black/75 backdrop-blur rounded-lg px-3 py-2 text-xs space-y-1.5 pointer-events-auto">
+      {[
+        { color: '#34d399', label: 'Available' },
+        { color: '#60a5fa', label: 'En Route' },
+        { color: '#fbbf24', label: 'On Break' },
+        { color: '#6b7280', label: 'Offline' },
+      ].map(({ color, label }) => (
+        <div key={label} className="flex items-center gap-2">
+          <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: color }} />
+          <span className="text-white/60">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Map View ─────────────────────────────────────────────────
+
+function DriverMapView({
+  selectedId,
+  onSelect,
+}: {
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const [mapId, setMapId] = useState<string | null>(null);
+  const { data, loading, error } = useApiQuery<DriverLocation[]>('/api/v4/drivers/locations');
+
+  const locations: DriverLocation[] = data ?? [];
+
+  return (
+    <div className="relative h-[520px] rounded-xl overflow-hidden border border-white/[0.06]">
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-wl-bg-root z-10">
+          <div className="flex items-center gap-2 text-sm text-white/40">
+            <div className="w-4 h-4 border-2 border-blue-500/50 border-t-blue-400 rounded-full animate-spin" />
+            Loading driver locations…
+          </div>
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-wl-bg-root z-10">
+          <p className="text-sm text-red-400/70">Could not load locations</p>
+        </div>
+      )}
+      {!loading && !error && locations.length === 0 && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-wl-bg-root z-10 gap-2">
+          <MapIcon className="w-8 h-8 text-white/10" />
+          <p className="text-sm text-white/30">No driver locations available</p>
+          <p className="text-xs text-white/20">Locations appear once drivers update their position</p>
+        </div>
+      )}
+      <WLMap
+        center={[40.7128, -74.006]}
+        zoom={11}
+        className="w-full h-full"
+        onReady={setMapId}
+      >
+        <MapLegend />
+      </WLMap>
+      {mapId && locations.length > 0 && (
+        <DriverLocationLayer
+          mapId={mapId}
+          drivers={locations}
+          selectedDriverId={selectedId}
+          onDriverClick={onSelect}
+        />
+      )}
+    </div>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────
 
 export default function DriversPage() {

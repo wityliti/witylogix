@@ -67,14 +67,6 @@ export {
   type UseIntegrationStatusReturn,
 } from "./use-integration-status";
 
-export {
-  useIntegrationLogs,
-  type IntegrationLogEntry,
-  type IntegrationLogFilter,
-  type UseIntegrationLogsConfig,
-  type UseIntegrationLogsReturn,
-} from "./use-integration-logs";
-
 // Financial data hooks
 export {
   useInvoices,
