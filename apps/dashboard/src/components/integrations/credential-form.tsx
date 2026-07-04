@@ -110,9 +110,8 @@ export function CredentialForm({
   };
 
   const handleOAuthConnect = () => {
-    // Redirect to backend OAuth initiation endpoint; backend returns the provider's authorize URL
-    const redirectUrl = `/api/v4/integrations/${encodeURIComponent(providerId)}/oauth/authorize`;
-    window.location.href = redirectUrl;
+    // Redirect to the real OAuth authorize endpoint
+    window.location.href = `/api/v4/integrations/${providerId}/oauth/authorize`;
   };
 
   return (

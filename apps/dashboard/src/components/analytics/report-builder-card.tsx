@@ -46,6 +46,7 @@ const dataSources: { value: DataSource; label: string }[] = [
 const dimensionOptions = ["Month", "Region", "Product", "Category", "Salesperson"];
 const measureOptions = ["Revenue", "Units Sold", "Gross Margin", "Cost", "Count"];
 
+
 const defaultConfig: ReportConfig = {
   id: "report-1",
   name: "Monthly Sales Report",
@@ -271,10 +272,8 @@ const ReportBuilderCard = ({
           <p className="text-xs font-semibold text-wl-text-secondary mb-2">
             Preview
           </p>
-          <div className="w-full h-28 flex items-center justify-center rounded bg-wl-bg-surface border border-dashed border-wl-border-default">
-            <p className="text-xs text-wl-text-tertiary">
-              Run report to see preview
-            </p>
+          <div className="w-full h-48 bg-wl-bg-sunken rounded flex items-center justify-center">
+            <span className="text-xs text-wl-text-secondary">Run report to see preview</span>
           </div>
         </div>
       )}
