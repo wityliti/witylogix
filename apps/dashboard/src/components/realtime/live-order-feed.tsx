@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -157,30 +157,27 @@ export function LiveOrderFeed({
   className,
   onOrderClick,
 }: LiveOrderFeedProps) {
-  const [orders, setOrders] = useState<Order[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const { items: rawOrders, loading, error, refetch } = useApiList<ApiOrder>('/api/v4/orders', { limit: 10 });
+
   const prevCountRef = useRef(rawOrders.length);
 
-  const { items: orders, loading, error, refetch } =
-    useOrders({ limit: 10 });
+  const orders = useMemo(() => rawOrders.map(toOrder), [rawOrders]);
 
-  // Poll for new orders every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => { refetch(); }, 30_000);
     return () => clearInterval(interval);
   }, [refetch]);
 
-  // Track new arrivals for the "scroll up" nudge
   useEffect(() => {
     if (rawOrders.length > prevCountRef.current && isScrolled) {
       setNewOrderCount((c) => c + (rawOrders.length - prevCountRef.current));
     }
     prevCountRef.current = rawOrders.length;
   }, [rawOrders.length, isScrolled]);
-
-  const orders = rawOrders.map(toOrder);
 
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;

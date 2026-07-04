@@ -40,13 +40,25 @@ interface ActiveDeliveryMapProps {
   className?: string;
 }
 
-const STATUS_MAP: Record<string, DriverStatus> = {
+const driverStatusColors: Record<Driver["status"], string> = {
+  available: "text-wl-success-400",
+  "on-delivery": "text-wl-primary-500",
+  offline: "text-wl-text-secondary",
+};
+
+const driverStatusLabels: Record<Driver["status"], string> = {
+  available: "Available",
+  "on-delivery": "On Delivery",
+  offline: "Offline",
+};
+
+const STATUS_MAP: Record<string, Driver["status"]> = {
   available: "available",
   AVAILABLE: "available",
-  on_route: "busy",
-  ON_ROUTE: "busy",
-  on_break: "break",
-  ON_BREAK: "break",
+  on_route: "on-delivery",
+  ON_ROUTE: "on-delivery",
+  on_break: "on-delivery",
+  ON_BREAK: "on-delivery",
   offline: "offline",
   OFFLINE: "offline",
 };
@@ -241,14 +253,11 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
 
   // Refresh every 30s
   useEffect(() => {
-    const interval = setInterval(() => {
-      refetchDrivers();
-      refetchDeliveries();
-    }, 30000);
+    const interval = setInterval(refetch, 30000);
     return () => clearInterval(interval);
-  }, [refetchDrivers, refetchDeliveries]);
+  }, [refetch]);
 
-  const drivers = rawDrivers.map(toDriver);
+  const drivers = useMemo(() => rawDrivers.map(toDriver), [rawDrivers]);
   const activeDriverCount = drivers.filter((d) => d.status !== "offline").length;
 
   const handleDriverClick = (driver: Driver, e: React.MouseEvent) => {
@@ -256,8 +265,8 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
     if (rect) {
       setPopoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
-    return result;
-  }, [rawDrivers]);
+    setSelectedDriver(driver);
+  };
 
   return (
     <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>

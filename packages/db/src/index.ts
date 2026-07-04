@@ -72,11 +72,10 @@ export function forTenant(shopId: string) {
     query: {
       $allModels: {
         async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
-          const [, result] = await prisma.$transaction([
-            prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
-            query(args),
-          ]);
-          return result;
+          return prisma.$transaction(async (tx) => {
+            await tx.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`;
+            return query(args);
+          });
         },
       },
     },
@@ -93,11 +92,10 @@ export function forOrg(orgId: string) {
     query: {
       $allModels: {
         async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
-          const [, result] = await prisma.$transaction([
-            prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
-            query(args),
-          ]);
-          return result;
+          return prisma.$transaction(async (tx) => {
+            await tx.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`;
+            return query(args);
+          });
         },
       },
     },
@@ -114,12 +112,11 @@ export function forTenantInOrg(shopId: string, orgId: string) {
     query: {
       $allModels: {
         async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
-          const [,, result] = await prisma.$transaction([
-            prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
-            prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
-            query(args),
-          ]);
-          return result;
+          return prisma.$transaction(async (tx) => {
+            await tx.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`;
+            await tx.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`;
+            return query(args);
+          });
         },
       },
     },
