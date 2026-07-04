@@ -87,7 +87,8 @@ export default function PaymentSettingsPage() {
   const handleTestPayment = async (gateway: GatewayConfig): Promise<void> => {
     setIsTestPaymentLoading(gateway.id);
     try {
-      await api.post(`/api/v4/payments/gateways/${gateway.id}/test`, {});
+      await api.post(`/api/v4/payments/gateways/${gateway.id}/test`);
+      setTestResult({ gateway: gateway.name, ok: true });
     } catch {
       // Error visible via UI state — no toast yet
     } finally {

@@ -7,7 +7,6 @@ import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MapIcon, BarChart2 } from "lucide-react";
 import { PlannedActualChart } from "./components/planned-actual-chart";
 import { DriverLeaderboard } from "./components/driver-leaderboard";
 import { EfficiencyHeatmap } from "./components/efficiency-heatmap";
@@ -193,42 +192,9 @@ export default function RoutePerformancePage() {
                   size="sm"
                   onClick={() => setPeriod(p)}
                 >
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  Charts
-                </button>
-                <button
-                  onClick={() => setView("map")}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-white/[0.08]",
-                    view === "map"
-                      ? "bg-white/10 text-white/80"
-                      : "text-white/30 hover:text-white/50"
-                  )}
-                >
-                  <Map className="w-3.5 h-3.5" />
-                  Map
-                </button>
-              </div>
-
-              {/* Period selector */}
-              {(["24h", "7d", "30d"] as Period[]).map((p) => (
-                <Button
-                  variant={viewMode === "charts" ? "primary" : "secondary"}
-                  size="sm"
-                  onClick={() => setViewMode("charts")}
-                  title="Charts view"
-                >
-                  <BarChart2 className="w-4 h-4" />
+                  {p}
                 </Button>
-                <Button
-                  variant={viewMode === "map" ? "primary" : "secondary"}
-                  size="sm"
-                  onClick={() => setViewMode("map")}
-                  title="Map view"
-                >
-                  <MapIcon className="w-4 h-4" />
-                </Button>
-              </div>
+              ))}
             </div>
           </div>
 
