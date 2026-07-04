@@ -22,6 +22,15 @@ import {
   User,
 } from "lucide-react";
 import { useApiQuery } from '@/hooks/use-api';
+
+function formatDuration(ms: number | null | undefined): string {
+  if (!ms) return '—';
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  const m = Math.floor(ms / 60000);
+  const s = Math.round((ms % 60000) / 1000);
+  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
 import { api } from '@/lib/api';
 
 interface WorkflowStep {

@@ -39,8 +39,8 @@ export default function RecordsPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const recordTypes = ['ALL', 'PROGRESS_NOTE', 'LAB_RESULT', 'IMAGING_REPORT', 'PRESCRIPTION', 'DISCHARGE_SUMMARY'];
-  const filteredRecords = recordTypeFilter === 'ALL' ? records : records.filter((r) => r.type === recordTypeFilter);
-  const selectedRecord = records.find((r) => r.id === selectedRecordId);
+  const filteredRecords = recordTypeFilter === 'ALL' ? apiRecords : apiRecords.filter((r) => r.type === recordTypeFilter);
+  const selectedRecord = apiRecords.find((r) => r.id === selectedRecordId);
 
   return (
     <div className="min-h-screen bg-wl-bg-root p-6">
@@ -70,7 +70,7 @@ export default function RecordsPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Total Records</span>
               <FileText className="text-blue-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-white">{records.length}</p>
+            <p className="text-3xl font-bold text-white">{apiRecords.length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">All documents</p>
           </CardContent>
         </Card>
@@ -81,7 +81,7 @@ export default function RecordsPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Signed Records</span>
               <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">{records.filter(r => r.isSigned).length}</p>
+            <p className="text-3xl font-bold text-white">{apiRecords.filter(r => r.isSigned).length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Completed</p>
           </CardContent>
         </Card>
@@ -92,7 +92,7 @@ export default function RecordsPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Unsigned</span>
               <div className="w-5 h-5 rounded-full bg-amber-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">{records.filter(r => !r.isSigned).length}</p>
+            <p className="text-3xl font-bold text-white">{apiRecords.filter(r => !r.isSigned).length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Pending review</p>
           </CardContent>
         </Card>

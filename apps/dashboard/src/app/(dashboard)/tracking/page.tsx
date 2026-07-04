@@ -141,6 +141,8 @@ export default function TrackingPage() {
     [deliveredCount, orders.length],
   );
 
+  const [view, setView] = useState<"list" | "map">("list");
+
   if (loading) {
     return (
       <div className="min-h-screen bg-wl-bg-primary p-6">
