@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -125,7 +126,7 @@ export default function AuditTrailPage() {
     return params.toString();
   }, [page, actionFilter, resourceFilter, dateFrom, dateTo]);
 
-  const { data, loading, refetch } = useApiQuery<AuditResponse>(`/api/v4/audit?${qs}`);
+  const { data, loading, error, refetch } = useApiQuery<AuditResponse>(`/api/v4/audit?${qs}`);
 
   const entries: AuditEntry[] = data?.data ?? [];
   const pagination = data?.pagination ?? { page: 1, limit: PAGE_SIZE, total: 0, pages: 0 };
@@ -165,6 +166,8 @@ export default function AuditTrailPage() {
     for (const e of entries) counts[e.action] = (counts[e.action] ?? 0) + 1;
     return counts;
   }, [entries]);
+
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen">

@@ -535,7 +535,7 @@ export default function IntegrationDetailPage() {
           </Card>
 
           {/* Webhook Configuration */}
-          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
+          <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardHeader>
               <CardTitle>Webhook URL</CardTitle>
             </CardHeader>
@@ -545,10 +545,10 @@ export default function IntegrationDetailPage() {
                   type="text"
                   value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v4/webhooks/${connectionId}`}
                   readOnly
-                  className="flex-1 px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-xs text-gray-400 font-mono"
+                  className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-gray-400 font-mono"
                 />
                 <button
-                  className="p-2 hover:bg-[#1a1a2e] rounded transition-colors"
+                  className="p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                   onClick={() => {
                     navigator.clipboard.writeText(
                       `${window.location.origin}/api/v4/webhooks/${connectionId}`

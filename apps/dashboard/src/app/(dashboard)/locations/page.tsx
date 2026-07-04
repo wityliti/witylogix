@@ -129,7 +129,7 @@ export default function LocationsPage() {
         subtitle={`${stats.totalLocations} total · ${stats.activeLocations} active`}
         actions={
           <div className={cn("flex gap-2 items-center")}>
-            <div className={cn("flex rounded-lg border border-[#1e1e2e] overflow-hidden")}>
+            <div className={cn("flex rounded-lg border border-wl-border-default overflow-hidden")}>
               {(["grid", "map"] as const).map((v) => (
                 <button
                   key={v}
@@ -137,7 +137,7 @@ export default function LocationsPage() {
                   aria-pressed={viewMode === v}
                   className={cn(
                     "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
-                    viewMode === v ? "bg-blue-600 text-white" : "bg-[#12121a] text-gray-400 hover:text-white"
+                    view === v ? "bg-blue-600 text-white" : "bg-wl-bg-surface text-gray-400 hover:text-white"
                   )}
                 >
                   {v}
@@ -161,7 +161,7 @@ export default function LocationsPage() {
         {/* Filters Bar */}
         <div className={cn("flex gap-4 mb-5 items-center flex-wrap")}>
           {/* View toggle */}
-          <div className="flex gap-1 border border-[#1e1e2e] rounded-lg p-1">
+          <div className="flex gap-1 border border-wl-border-default rounded-lg p-1">
             <button
               onClick={() => setViewMode("grid")}
               className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all",
@@ -274,7 +274,6 @@ export default function LocationsPage() {
                     {location.status}
                   </Badge>
 
-                  {/* Stats Grid */}
                   <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
                     <div>
                       <div className={cn("text-xs text-gray-400 mb-1")}>Active Shipments</div>
@@ -423,7 +422,7 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
           <div className={cn("text-sm text-gray-300")}>{loc.city}, {loc.province} {loc.postalCode}</div>
           <div className={cn("text-xs text-gray-400 mt-1")}>{loc.country}</div>
         </div>
-        <div className={cn("h-px bg-[#1e1e2e]")} />
+        <div className={cn("h-px bg-wl-border-default")} />
 
         {(loc.phone || loc.email) && (
           <>
@@ -432,7 +431,7 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
               {loc.phone && <div className={cn("text-sm text-gray-300 mb-1 font-mono")}>{loc.phone}</div>}
               {loc.email && <div className={cn("text-sm text-gray-300 font-mono")}>{loc.email}</div>}
             </div>
-            <div className={cn("h-px bg-[#1e1e2e]")} />
+            <div className={cn("h-px bg-wl-border-default")} />
           </>
         )}
 
@@ -453,7 +452,7 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
             </div>
           </div>
         </div>
-        <div className={cn("h-px bg-[#1e1e2e]")} />
+        <div className={cn("h-px bg-wl-border-default")} />
 
         {loc.operatingHours && (
           <>
@@ -462,7 +461,7 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
               <table className={cn("w-full border-collapse text-xs")}>
                 <tbody>
                   {Object.entries(loc.operatingHours).map(([day, hours]) => (
-                    <tr key={day} className={cn("border-b border-[#1e1e2e]")}>
+                    <tr key={day} className={cn("border-b border-wl-border-default")}>
                       <td className={cn("p-2 pr-3 text-gray-300 font-medium whitespace-nowrap")}>{day}</td>
                       <td className={cn("p-2", hours.open === "closed" ? "text-gray-400" : "text-white font-mono")}>
                         {hours.open === "closed" ? "Closed" : `${hours.open} - ${hours.close}`}
@@ -472,7 +471,7 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
                 </tbody>
               </table>
             </div>
-            <div className={cn("h-px bg-[#1e1e2e]")} />
+            <div className={cn("h-px bg-wl-border-default")} />
           </>
         )}
 
@@ -480,8 +479,9 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
         {loc.latitude !== 0 && loc.longitude !== 0 && (
           <div>
             <div className={cn("text-xs font-semibold text-gray-400 uppercase mb-3 tracking-wider")}>Map</div>
-            <div className={cn("rounded-lg overflow-hidden border border-[#1e1e2e]")} style={{ height: 160 }}>
-              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} className="w-full h-full">
+            <div className={cn("rounded-lg overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
+              <WLMap center={[loc.latitude, loc.longitude]} zoom={13} onReady={setDetailMapId} className="w-full h-full">
+                {detailMapId && (
                   <LocationMarkerLayer
                     mapId="detail-map"
                     locations={[{
@@ -510,7 +510,7 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
           </div>
         )}
 
-        <div className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-[#1e1e2e]")}>
+        <div className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-default")}>
           <Button variant="primary" size="sm">Edit</Button>
           <Button variant="secondary" size="sm">
             {loc.status === "ACTIVE" ? "Deactivate" : "Activate"}
