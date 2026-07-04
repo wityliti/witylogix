@@ -1,0 +1,59 @@
+// ─── RETURN REQUESTS (RMA) ──────────────────────────────────
+// Full lifecycle: pending → approved|rejected → received → inspected → refunded
+
+model ReturnRequest {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String  @map("shop_id") @db.Uuid
+  orderId    String  @map("order_id") @db.Uuid
+  customerId String? @map("customer_id") @db.Uuid
+
+  // Customer info snapshot at creation
+  customerName  String? @map("customer_name")
+  customerEmail String? @map("customer_email")
+
+  // Status & reason
+  status        String @default("pending")
+  reason        String
+  reasonDetails String? @map("reason_details")
+  description   String?
+
+  // Items: JSON array of { id, orderItemId, productId, productName, quantity, unitPrice, condition, refundAmount }
+  items Json @default("[]")
+
+  // Financial
+  totalRefundAmount Decimal? @map("total_refund_amount") @db.Decimal(12, 2)
+  refundAmount      Decimal? @map("refund_amount") @db.Decimal(12, 2)
+  restockingFee     Decimal? @map("restocking_fee") @db.Decimal(12, 2)
+  refundStatus      String?  @map("refund_status")
+  refundDate        DateTime? @map("refund_date")
+
+  // Shipping
+  shippingLabelUrl String?   @map("shipping_label_url")
+  trackingNumber   String?   @map("tracking_number")
+  pickupDate       DateTime? @map("pickup_date")
+
+  // Lifecycle timestamps
+  approvedAt      DateTime? @map("approved_at")
+  approvedBy      String?   @map("approved_by")
+  receivedAt      DateTime? @map("received_at")
+  inspectedAt     DateTime? @map("inspected_at")
+  refundedAt      DateTime? @map("refunded_at")
+  rejectedAt      DateTime? @map("rejected_at")
+  rejectionReason String?   @map("rejection_reason")
+
+  notes    String?
+  metadata Json    @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order    Order    @relation(fields: [orderId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([shopId, status, createdAt(sort: Desc)])
+  @@index([shopId, orderId])
+  @@index([shopId, customerId])
+  @@map("return_requests")
+}
