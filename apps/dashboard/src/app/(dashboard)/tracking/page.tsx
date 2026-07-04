@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { useApiList } from "@/hooks/use-api";
+import { useApiList, useApiQuery } from "@/hooks/use-api";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,13 @@ const TrackingMapView = dynamic(
     ),
   },
 );
+
+interface DriverLocation {
+  id: string;
+  lat: number;
+  lng: number;
+  heading?: number | null;
+}
 
 interface ApiDriver {
   id: string;
@@ -118,10 +125,6 @@ export default function TrackingPage() {
   } = useApiList<ApiOrder>("/api/v4/orders", { limit: 50 });
 
   const { data: driverLocations } = useApiQuery<DriverLocation[]>("/api/v4/drivers/locations");
-
-  const [view, setView] = useState<"list" | "map">("list");
-  const [mapId, setMapId] = useState<string | null>(null);
-  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
 
   const loading = driversLoading || ordersLoading;
   const error = driversError || ordersError;

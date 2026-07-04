@@ -18,6 +18,7 @@ const JobsMapView = dynamic(() => import('./components/jobs-map-view'), { ssr: f
 
 type WorkOrderStatus = 'created' | 'scheduled' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
 type WorkOrderPriority = 'low' | 'medium' | 'high' | 'urgent';
+type WorkOrderType = 'installation' | 'maintenance' | 'repair' | 'inspection';
 
 interface RawOrder {
   id: string;
@@ -43,6 +44,7 @@ interface WorkOrder {
   priority: WorkOrderPriority;
   serviceType: string;
   location: string;
+  description?: string;
   assignedTechName?: string;
   eta?: string;
   notes: string[];
@@ -115,6 +117,7 @@ const DEFAULT_FORM: CreateWorkOrderForm = {
 export default function JobsPage() {
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<WorkOrderPriority | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<WorkOrderType | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -127,9 +130,6 @@ export default function JobsPage() {
     '/api/v4/field-service/jobs'
   );
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const filteredOrders = useMemo(() => {
     let result = [...allOrders];
     if (statusFilter !== 'all') result = result.filter((o) => o.status === statusFilter);
@@ -141,16 +141,11 @@ export default function JobsPage() {
         (o) =>
           o.jobNumber.toLowerCase().includes(term) ||
           o.customerName.toLowerCase().includes(term) ||
-          o.description.toLowerCase().includes(term)
+          (o.description?.toLowerCase().includes(term) ?? false)
       );
     }
     return result;
   }, [allOrders, statusFilter, priorityFilter, typeFilter, searchTerm]);
-
-  const selectedJobData = selectedJob ? allOrders.find((o) => o.id === selectedJob) : null;
-  const inProgressCount = allOrders.filter((o) => o.status === 'in_progress').length;
-  const completedCount = allOrders.filter((o) => o.status === 'completed').length;
-  const urgentCount = allOrders.filter((o) => o.priority === 'urgent').length;
 
   const jobPins = useMemo<OrderPin[]>(() => {
     return allOrders
@@ -166,6 +161,11 @@ export default function JobsPage() {
         priority: toJobPinPriority(o.priority),
       }));
   }, [allOrders]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const selectedJobData = selectedJob ? allOrders.find((o) => o.id === selectedJob) : null;
 
   async function handleCreateOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -478,8 +478,8 @@ export default function JobsPage() {
               ] as const
             ).map((status) => (
               <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
+                key={status}
+                onClick={() => setStatusFilter(status)}
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   statusFilter === status
@@ -494,8 +494,8 @@ export default function JobsPage() {
           <div className="flex gap-2 flex-wrap">
             {(['all', 'low', 'medium', 'high', 'urgent'] as const).map((priority) => (
               <button
-                key={p}
-                onClick={() => setPriorityFilter(p)}
+                key={priority}
+                onClick={() => setPriorityFilter(priority)}
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   priorityFilter === priority

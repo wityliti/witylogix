@@ -44,6 +44,43 @@ interface KanbanOrder {
   value: number;
 }
 
+function toKanban(o: ApiOrder): KanbanOrder {
+  const addr = o.deliveryAddress;
+  const destination = [addr.city, addr.state].filter(Boolean).join(', ') || addr.street || '';
+  const fullAddress = [addr.street, addr.city, addr.state, addr.zipCode, addr.country]
+    .filter(Boolean)
+    .join(', ');
+  const driverName = o.driver?.name ?? undefined;
+  const driverInitials = driverName
+    ? driverName
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : undefined;
+
+  // Derive a simple priority from the order age
+  const ageMs = Date.now() - new Date(o.createdAt).getTime();
+  const ageHours = ageMs / 3_600_000;
+  const priority: KanbanOrder['priority'] =
+    ageHours > 24 ? 'high' : ageHours > 8 ? 'medium' : 'low';
+
+  return {
+    id: o.id,
+    orderNumber: o.orderNumber ?? o.id.slice(0, 8),
+    customerName: o.customerName,
+    destination,
+    fullAddress,
+    createdAt: o.createdAt,
+    priority,
+    status: o.status as OrderStatus,
+    driverName,
+    driverInitials,
+    value: o.totalAmount,
+  };
+}
+
 const COLUMN_CONFIG: { status: OrderStatus; title: string }[] = [
   { status: 'PENDING', title: 'Pending' },
   { status: 'CONFIRMED', title: 'Confirmed' },

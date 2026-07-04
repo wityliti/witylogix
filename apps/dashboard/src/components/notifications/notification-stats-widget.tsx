@@ -102,9 +102,6 @@ function DonutChart({ data }: { data: Record<string, ChannelStat> }) {
     offset += segmentLength;
     return { channel, percentage: stats.percentage, dashArray: `${segmentLength} ${circumference}`, dashOffset: dashoffset };
   });
-  const total = entries.reduce((s, [, v]) => s + v.count, 0);
-
-  const totalAvg = Math.round(channels.reduce((sum, [, s]) => sum + s.count, 0) / 7);
 
   const avgPerDay = channels.reduce((sum, [, s]) => sum + s.count, 0) / 7;
 

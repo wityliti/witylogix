@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -149,7 +150,7 @@ export default function FieldServicePage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-400 mb-2">In Field</p>
-                  <p className="text-3xl font-bold text-white">{techniciansInField}</p>
+                  <p className="text-3xl font-bold text-white">{overview.techniciansInField}</p>
                   <p className="text-xs text-gray-400 mt-2">dispatched drivers</p>
                 </div>
                 <Users className="w-8 h-8 text-cyan-500/30" />
@@ -248,8 +249,8 @@ export default function FieldServicePage() {
                 </div>
                 <div className="w-full bg-wl-bg-elevated rounded-full h-2.5 overflow-hidden">
                   <div
-                    className={cn('h-2.5 rounded-full transition-all', onTimePercentage >= 90 ? 'bg-emerald-500' : onTimePercentage >= 70 ? 'bg-amber-500' : 'bg-red-500')}
-                    style={{ width: `${onTimePercentage}%` }}
+                    className={cn('h-2.5 rounded-full transition-all', slaMetrics.onTimePercentage >= 90 ? 'bg-emerald-500' : slaMetrics.onTimePercentage >= 70 ? 'bg-amber-500' : 'bg-red-500')}
+                    style={{ width: `${slaMetrics.onTimePercentage}%` }}
                   />
                 </div>
               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -153,14 +153,20 @@ function OrderCard({ order, onClick }: { order: Order; onClick?: (order: Order) 
   );
 }
 
-export function LiveOrderFeed({ className, onOrderClick }: LiveOrderFeedProps) {
-  const { items: rawOrders, loading, refetch } = useApiList<ApiOrder>('/api/v4/orders', { limit: 10, sort: '-createdAt' });
+export function LiveOrderFeed({
+  className,
+  onOrderClick,
+}: LiveOrderFeedProps) {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(rawOrders.length);
 
-  // Poll for new orders every 30s
+  const { items: orders, loading, error, refetch } =
+    useOrders({ limit: 10 });
+
+  // Poll for new orders every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => { refetch(); }, 30_000);
     return () => clearInterval(interval);
@@ -199,7 +205,7 @@ export function LiveOrderFeed({ className, onOrderClick }: LiveOrderFeedProps) {
         <div className="text-xs text-wl-text-secondary">{orders.length} orders</div>
       </div>
 
-      {newCount > 0 && isScrolled && (
+      {newOrderCount > 0 && isScrolled && (
         <div
           onClick={scrollToTop}
           className={cn(
@@ -211,7 +217,7 @@ export function LiveOrderFeed({ className, onOrderClick }: LiveOrderFeedProps) {
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-wl-primary-400" />
             <span className="text-xs font-semibold text-wl-primary-400">
-              {newCount} new order{newCount !== 1 ? "s" : ""}
+              {newOrderCount} new order{newOrderCount !== 1 ? "s" : ""}
             </span>
           </div>
           <ChevronUp className="w-4 h-4 text-wl-primary-400" />
@@ -219,7 +225,7 @@ export function LiveOrderFeed({ className, onOrderClick }: LiveOrderFeedProps) {
       )}
 
       <div
-        ref={scrollRef}
+        ref={scrollContainerRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto space-y-2 p-5"
       >

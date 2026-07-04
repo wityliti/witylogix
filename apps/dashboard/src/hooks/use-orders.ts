@@ -20,30 +20,6 @@ export enum OrderStatus {
 }
 
 /**
- * Order type
- */
-export interface Order {
-  id: string;
-  customerId: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  status: OrderStatus;
-  createdAt: string;
-  updatedAt: string;
-  deliveryDate: string | null;
-  estimatedDelivery: string | null;
-  totalAmount: number;
-  currency: string;
-  items: OrderItem[];
-  deliveryAddress: Address;
-  driverId?: string;
-  notes?: string;
-  deliveryLat: number | null;
-  deliveryLng: number | null;
-}
-
-/**
  * Order item
  */
 export interface OrderItem {
@@ -81,6 +57,9 @@ export interface OrderTimeSlot {
   endTime: string;
 }
 
+/**
+ * Order type — the canonical shape used throughout the dashboard.
+ */
 export interface Order {
   id: string;
   orderNumber: string | null;
@@ -113,6 +92,9 @@ export interface Order {
   metadata: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+  // Geo coordinates for map pins
+  deliveryLat: number | null;
+  deliveryLng: number | null;
 }
 
 export interface OrderStats {
@@ -134,7 +116,7 @@ export interface OrderFilters extends ApiFilters {
 }
 
 /**
- * Normalize a raw API order record into the shape the dashboard components
+ * Normalize a raw API order record into the Order shape the dashboard components
  * expect. The API returns flat address fields and uppercase status strings;
  * dashboard code reads nested `deliveryAddress` and lowercase `status`.
  *
@@ -154,325 +136,72 @@ function normalizeOrder(raw: unknown): Order {
   };
 
   const rawStatus = str(r.status).toLowerCase();
-  const status =
-    (Object.values(OrderStatus) as string[]).includes(rawStatus)
-      ? (rawStatus as OrderStatus)
-      : OrderStatus.PENDING;
 
-  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : [];
-  const items: OrderItem[] = rawLineItems.map((li, idx) => {
-    const item = (li ?? {}) as Record<string, unknown>;
-    return {
-      id: str(item.id) || `item-${idx}`,
-      productId: str(item.productId),
-      productName: str(item.name ?? item.productName),
-      quantity: num(item.quantity),
-      unitPrice: num(item.price ?? item.unitPrice),
-      subtotal: num(item.subtotal ?? num(item.price) * num(item.quantity)),
-    };
-  });
+  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : (Array.isArray(r.items) ? (r.items as unknown[]) : []);
 
   const deliveryAddress: Address = {
-    street: str(r.addressLine1),
+    street: str(r.addressLine1 ?? r.street),
     city: str(r.city),
     state: str(r.province ?? r.state),
     zipCode: str(r.postalCode ?? r.zipCode),
     country: str(r.country),
   };
 
+  const driver: OrderDriver | null = r.driver && typeof r.driver === 'object'
+    ? {
+        id: str((r.driver as Record<string, unknown>).id),
+        name: str((r.driver as Record<string, unknown>).name),
+        phone: str((r.driver as Record<string, unknown>).phone),
+        vehicleType: (r.driver as Record<string, unknown>).vehicleType != null
+          ? str((r.driver as Record<string, unknown>).vehicleType)
+          : undefined,
+      }
+    : null;
+
+  const timeSlot: OrderTimeSlot | null = r.timeSlot && typeof r.timeSlot === 'object'
+    ? {
+        id: str((r.timeSlot as Record<string, unknown>).id),
+        name: str((r.timeSlot as Record<string, unknown>).name),
+        startTime: str((r.timeSlot as Record<string, unknown>).startTime),
+        endTime: str((r.timeSlot as Record<string, unknown>).endTime),
+      }
+    : null;
+
   return {
     id: str(r.id),
-    customerId: str(r.customerId),
+    orderNumber: typeof r.orderNumber === 'string' ? r.orderNumber : null,
+    externalOrderId: str(r.externalOrderId ?? r.shopifyOrderId ?? r.externalId),
+    source: str(r.source) || 'manual',
+    status: rawStatus || 'pending',
     customerName: str(r.customerName),
     customerEmail: str(r.customerEmail),
     customerPhone: str(r.customerPhone),
-    status,
-    createdAt: str(r.createdAt),
-    updatedAt: str(r.updatedAt),
-    deliveryDate: (r.deliveryDate as string | null) ?? null,
-    estimatedDelivery: (r.estimatedArrival ?? r.estimatedDelivery ?? null) as string | null,
-    totalAmount: num(r.totalPrice ?? r.totalAmount),
-    currency: str(r.currency) || 'USD',
-    items,
     deliveryAddress,
-    driverId: r.driverId ? str(r.driverId) : undefined,
-    notes: r.notes ? str(r.notes) : undefined,
-    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
-    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
-  };
-}
-
-/**
- * Normalize a raw API order record into the shape the dashboard components
- * expect. The API returns flat address fields and uppercase status strings;
- * dashboard code reads nested `deliveryAddress` and lowercase `status`.
- *
- * Defensive: every field tolerates missing/null values without throwing so a
- * partially-populated record from the DB still renders.
- */
-function normalizeOrder(raw: unknown): Order {
-  const r = (raw ?? {}) as Record<string, unknown>;
-  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
-  const num = (v: unknown): number => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') {
-      const parsed = Number(v);
-      return Number.isFinite(parsed) ? parsed : 0;
-    }
-    return 0;
-  };
-
-  const rawStatus = str(r.status).toLowerCase();
-  const status =
-    (Object.values(OrderStatus) as string[]).includes(rawStatus)
-      ? (rawStatus as OrderStatus)
-      : OrderStatus.PENDING;
-
-  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : [];
-  const items: OrderItem[] = rawLineItems.map((li, idx) => {
-    const item = (li ?? {}) as Record<string, unknown>;
-    return {
-      id: str(item.id) || `item-${idx}`,
-      productId: str(item.productId),
-      productName: str(item.name ?? item.productName),
-      quantity: num(item.quantity),
-      unitPrice: num(item.price ?? item.unitPrice),
-      subtotal: num(item.subtotal ?? num(item.price) * num(item.quantity)),
-    };
-  });
-
-  const deliveryAddress: Address = {
-    street: str(r.addressLine1),
     city: str(r.city),
-    state: str(r.province ?? r.state),
-    zipCode: str(r.postalCode ?? r.zipCode),
+    province: str(r.province ?? r.state),
     country: str(r.country),
-  };
-
-  return {
-    id: str(r.id),
-    customerId: str(r.customerId),
-    customerName: str(r.customerName),
-    customerEmail: str(r.customerEmail),
-    customerPhone: str(r.customerPhone),
-    status,
+    totalAmount: num(r.totalPrice ?? r.totalAmount),
+    totalWeight: typeof r.totalWeight === 'number' ? r.totalWeight : null,
+    currency: str(r.currency) || 'USD',
+    items: rawLineItems,
+    itemCount: typeof r.itemCount === 'number' ? r.itemCount : rawLineItems.length,
+    tags: Array.isArray(r.tags) ? (r.tags as unknown[]).map(String) : [],
+    notes: typeof r.notes === 'string' ? r.notes : null,
+    deliveryDate: typeof r.deliveryDate === 'string' ? r.deliveryDate : null,
+    estimatedDelivery: typeof (r.estimatedArrival ?? r.estimatedDelivery) === 'string'
+      ? str(r.estimatedArrival ?? r.estimatedDelivery)
+      : null,
+    actualDelivery: typeof r.actualDelivery === 'string' ? r.actualDelivery : null,
+    driverId: typeof r.driverId === 'string' ? r.driverId : null,
+    driver,
+    timeSlot,
+    trackingToken: typeof r.trackingToken === 'string' ? r.trackingToken : null,
+    requireOTPConfirmation: Boolean(r.requireOTPConfirmation),
+    metadata: r.metadata && typeof r.metadata === 'object' && !Array.isArray(r.metadata)
+      ? (r.metadata as Record<string, unknown>)
+      : {},
     createdAt: str(r.createdAt),
     updatedAt: str(r.updatedAt),
-    deliveryDate: (r.deliveryDate as string | null) ?? null,
-    estimatedDelivery: (r.estimatedArrival ?? r.estimatedDelivery ?? null) as string | null,
-    totalAmount: num(r.totalPrice ?? r.totalAmount),
-    currency: str(r.currency) || 'USD',
-    items,
-    deliveryAddress,
-    driverId: r.driverId ? str(r.driverId) : undefined,
-    notes: r.notes ? str(r.notes) : undefined,
-    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
-    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
-  };
-}
-
-/**
- * Normalize a raw API order record into the shape the dashboard components
- * expect. The API returns flat address fields and uppercase status strings;
- * dashboard code reads nested `deliveryAddress` and lowercase `status`.
- *
- * Defensive: every field tolerates missing/null values without throwing so a
- * partially-populated record from the DB still renders.
- */
-function normalizeOrder(raw: unknown): Order {
-  const r = (raw ?? {}) as Record<string, unknown>;
-  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
-  const num = (v: unknown): number => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') {
-      const parsed = Number(v);
-      return Number.isFinite(parsed) ? parsed : 0;
-    }
-    return 0;
-  };
-
-  const rawStatus = str(r.status).toLowerCase();
-  const status =
-    (Object.values(OrderStatus) as string[]).includes(rawStatus)
-      ? (rawStatus as OrderStatus)
-      : OrderStatus.PENDING;
-
-  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : [];
-  const items: OrderItem[] = rawLineItems.map((li, idx) => {
-    const item = (li ?? {}) as Record<string, unknown>;
-    return {
-      id: str(item.id) || `item-${idx}`,
-      productId: str(item.productId),
-      productName: str(item.name ?? item.productName),
-      quantity: num(item.quantity),
-      unitPrice: num(item.price ?? item.unitPrice),
-      subtotal: num(item.subtotal ?? num(item.price) * num(item.quantity)),
-    };
-  });
-
-  const deliveryAddress: Address = {
-    street: str(r.addressLine1),
-    city: str(r.city),
-    state: str(r.province ?? r.state),
-    zipCode: str(r.postalCode ?? r.zipCode),
-    country: str(r.country),
-  };
-
-  return {
-    id: str(r.id),
-    customerId: str(r.customerId),
-    customerName: str(r.customerName),
-    customerEmail: str(r.customerEmail),
-    customerPhone: str(r.customerPhone),
-    status,
-    createdAt: str(r.createdAt),
-    updatedAt: str(r.updatedAt),
-    deliveryDate: (r.deliveryDate as string | null) ?? null,
-    estimatedDelivery: (r.estimatedArrival ?? r.estimatedDelivery ?? null) as string | null,
-    totalAmount: num(r.totalPrice ?? r.totalAmount),
-    currency: str(r.currency) || 'USD',
-    items,
-    deliveryAddress,
-    driverId: r.driverId ? str(r.driverId) : undefined,
-    notes: r.notes ? str(r.notes) : undefined,
-    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
-    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
-  };
-}
-
-/**
- * Normalize a raw API order record into the shape the dashboard components
- * expect. The API returns flat address fields and uppercase status strings;
- * dashboard code reads nested `deliveryAddress` and lowercase `status`.
- *
- * Defensive: every field tolerates missing/null values without throwing so a
- * partially-populated record from the DB still renders.
- */
-function normalizeOrder(raw: unknown): Order {
-  const r = (raw ?? {}) as Record<string, unknown>;
-  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
-  const num = (v: unknown): number => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') {
-      const parsed = Number(v);
-      return Number.isFinite(parsed) ? parsed : 0;
-    }
-    return 0;
-  };
-
-  const rawStatus = str(r.status).toLowerCase();
-  const status =
-    (Object.values(OrderStatus) as string[]).includes(rawStatus)
-      ? (rawStatus as OrderStatus)
-      : OrderStatus.PENDING;
-
-  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : [];
-  const items: OrderItem[] = rawLineItems.map((li, idx) => {
-    const item = (li ?? {}) as Record<string, unknown>;
-    return {
-      id: str(item.id) || `item-${idx}`,
-      productId: str(item.productId),
-      productName: str(item.name ?? item.productName),
-      quantity: num(item.quantity),
-      unitPrice: num(item.price ?? item.unitPrice),
-      subtotal: num(item.subtotal ?? num(item.price) * num(item.quantity)),
-    };
-  });
-
-  const deliveryAddress: Address = {
-    street: str(r.addressLine1),
-    city: str(r.city),
-    state: str(r.province ?? r.state),
-    zipCode: str(r.postalCode ?? r.zipCode),
-    country: str(r.country),
-  };
-
-  return {
-    id: str(r.id),
-    customerId: str(r.customerId),
-    customerName: str(r.customerName),
-    customerEmail: str(r.customerEmail),
-    customerPhone: str(r.customerPhone),
-    status,
-    createdAt: str(r.createdAt),
-    updatedAt: str(r.updatedAt),
-    deliveryDate: (r.deliveryDate as string | null) ?? null,
-    estimatedDelivery: (r.estimatedArrival ?? r.estimatedDelivery ?? null) as string | null,
-    totalAmount: num(r.totalPrice ?? r.totalAmount),
-    currency: str(r.currency) || 'USD',
-    items,
-    deliveryAddress,
-    driverId: r.driverId ? str(r.driverId) : undefined,
-    notes: r.notes ? str(r.notes) : undefined,
-    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
-    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
-  };
-}
-
-/**
- * Normalize a raw API order record into the shape the dashboard components
- * expect. The API returns flat address fields and uppercase status strings;
- * dashboard code reads nested `deliveryAddress` and lowercase `status`.
- *
- * Defensive: every field tolerates missing/null values without throwing so a
- * partially-populated record from the DB still renders.
- */
-function normalizeOrder(raw: unknown): Order {
-  const r = (raw ?? {}) as Record<string, unknown>;
-  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
-  const num = (v: unknown): number => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') {
-      const parsed = Number(v);
-      return Number.isFinite(parsed) ? parsed : 0;
-    }
-    return 0;
-  };
-
-  const rawStatus = str(r.status).toLowerCase();
-  const status =
-    (Object.values(OrderStatus) as string[]).includes(rawStatus)
-      ? (rawStatus as OrderStatus)
-      : OrderStatus.PENDING;
-
-  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : [];
-  const items: OrderItem[] = rawLineItems.map((li, idx) => {
-    const item = (li ?? {}) as Record<string, unknown>;
-    return {
-      id: str(item.id) || `item-${idx}`,
-      productId: str(item.productId),
-      productName: str(item.name ?? item.productName),
-      quantity: num(item.quantity),
-      unitPrice: num(item.price ?? item.unitPrice),
-      subtotal: num(item.subtotal ?? num(item.price) * num(item.quantity)),
-    };
-  });
-
-  const deliveryAddress: Address = {
-    street: str(r.addressLine1),
-    city: str(r.city),
-    state: str(r.province ?? r.state),
-    zipCode: str(r.postalCode ?? r.zipCode),
-    country: str(r.country),
-  };
-
-  return {
-    id: str(r.id),
-    customerId: str(r.customerId),
-    customerName: str(r.customerName),
-    customerEmail: str(r.customerEmail),
-    customerPhone: str(r.customerPhone),
-    status,
-    createdAt: str(r.createdAt),
-    updatedAt: str(r.updatedAt),
-    deliveryDate: (r.deliveryDate as string | null) ?? null,
-    estimatedDelivery: (r.estimatedArrival ?? r.estimatedDelivery ?? null) as string | null,
-    totalAmount: num(r.totalPrice ?? r.totalAmount),
-    currency: str(r.currency) || 'USD',
-    items,
-    deliveryAddress,
-    driverId: r.driverId ? str(r.driverId) : undefined,
-    notes: r.notes ? str(r.notes) : undefined,
     deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
     deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
   };

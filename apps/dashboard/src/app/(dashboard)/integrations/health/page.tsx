@@ -16,12 +16,13 @@ import {
   CheckCircle,
   AlertTriangle,
   AlertCircle,
-  Plug,
+  Mail,
+  MapPin,
+  DollarSign,
+  TrendingUp,
 } from 'lucide-react';
 
-type HealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
-
-type HealthStatus = "healthy" | "degraded" | "down";
+type HealthStatus = 'healthy' | 'degraded' | 'down';
 
 interface IntegrationItem {
   id: string;
@@ -84,6 +85,8 @@ function healthToUptime(status: HealthStatus): number {
       return 95;
     case "down":
       return 0;
+    default:
+      return 0;
   }
 }
 
@@ -114,21 +117,9 @@ export default function IntegrationHealthPage() {
     };
   });
 
-  useEffect(() => {
-    if (data?.integrations) {
-      setItems(
-        data.integrations.map((i) => ({
-          slug: i.slug,
-          name: i.name,
-          category: i.category,
-          status: mapHealthStatus(i.healthStatus),
-          lastCheck: i.lastHealthCheckAt ? new Date(i.lastHealthCheckAt) : null,
-          isEnabled: i.isEnabled,
-          checkInProgress: false,
-        })),
-      );
-    }
-  }, [data]);
+  const healthyCount = integrations.filter((i) => i.status === 'healthy').length;
+  const degradedCount = integrations.filter((i) => i.status === 'degraded').length;
+  const downCount = integrations.filter((i) => i.status === 'down').length;
 
   const handleCheckNow = async (integrationId: string) => {
     setRefreshingId(integrationId);
@@ -230,7 +221,7 @@ export default function IntegrationHealthPage() {
               }}
               disabled={refreshingId !== null}
             >
-              <RefreshCw className={cn('w-4 h-4 mr-2', refreshingSlug && 'animate-spin')} />
+              <RefreshCw className={cn('w-4 h-4 mr-2', refreshingId !== null && 'animate-spin')} />
               Check All
             </Button>
           </div>

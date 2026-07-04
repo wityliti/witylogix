@@ -3,6 +3,12 @@
  * but not listed as explicit dependencies.
  */
 
+// CSS side-effect imports (e.g. maplibre-gl, mapbox-gl-draw)
+declare module '*.css' {
+  const content: Record<string, string>;
+  export default content;
+}
+
 // Google Maps namespace
 declare namespace google {
   namespace maps {

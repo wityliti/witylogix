@@ -73,7 +73,6 @@ const getStatusBadgeVariant = (
     case "completed": return "success";
     case "failed": return "danger";
     case "compensating": return "warning";
-    default: return "default" as any;
   }
 };
 
@@ -84,45 +83,14 @@ const formatDateTime = (isoStr: string): string => {
   });
 }
 
-const formatDuration = (ms?: number): string => {
-  if (!ms) return "—";
-  if (ms < 1000) return `${ms}ms`;
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  const rem = s % 60;
-  return `${m}m ${rem}s`;
-};
-
-const formatDuration = (ms?: number): string => {
-  if (!ms) return "—";
-  if (ms < 1000) return `${ms}ms`;
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  const rem = s % 60;
-  return `${m}m ${rem}s`;
-};
-
-const formatDuration = (ms?: number): string => {
-  if (!ms) return "—";
-  if (ms < 1000) return `${ms}ms`;
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  const rem = s % 60;
-  return `${m}m ${rem}s`;
-};
-
-const formatDuration = (ms?: number): string => {
-  if (!ms) return "—";
-  if (ms < 1000) return `${ms}ms`;
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  const rem = s % 60;
-  return `${m}m ${rem}s`;
-};
+function getStatusIcon(status: string): React.ReactNode {
+  switch (status) {
+    case "completed": return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
+    case "failed": return <AlertCircle className="w-4 h-4 text-red-500" />;
+    case "running": return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
+    default: return <AlertCircle className="w-4 h-4 text-amber-500" />;
+  }
+}
 
 function JsonViewer({ data }: { data: Record<string, any> }) {
   return (
@@ -236,8 +204,6 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 ═══════════════════════════════════════════════════════════════*/
 
 export default function WorkflowExecutionDetailPage() {
-  const params = useParams();
-  const { data: raw, loading, error, refetch } = useApiQuery<{data: any}>(`/api/v4/workflow/executions/${params.id}`);
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
@@ -291,7 +257,7 @@ export default function WorkflowExecutionDetailPage() {
             <h1 className="text-xl font-bold text-white m-0 tracking-tight">{execution.workflowName}</h1>
             <p className="text-sm text-gray-400 m-0 mt-0.5">{execution.executionId}</p>
           </div>
-          <Badge variant={getStatusBadgeVariant(execution.status)}>{status.toUpperCase()}</Badge>
+          <Badge variant={getStatusBadgeVariant(execution.status)}>{execution.status.toUpperCase()}</Badge>
         </div>
 
         <div className="flex gap-2">

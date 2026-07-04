@@ -24,7 +24,7 @@ import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { EventTimeline } from './components/event-timeline';
 import { EventFilters } from './components/event-filters';
-import { useApiList, useApiQuery } from '@/hooks/use-api';
+import { useApiList } from '@/hooks/use-api';
 
 export interface ActivityEvent {
   id: string;
@@ -46,12 +46,8 @@ export interface ActivityEvent {
   metadata?: Record<string, unknown>;
 }
 
-interface ApiUser { id: string; name: string; }
-
 export default function ActivityPage() {
   const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
-  const { data: usersData } = useApiQuery<{ data: ApiUser[] }>('/api/v4/users?limit=50');
-  const userList: ApiUser[] = (usersData as any)?.data ?? [];
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isLiveMode, setIsLiveMode] = useState(true);
@@ -62,7 +58,9 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
-  const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const uniqueUsers = useMemo(() => {
     const seen = new Set<string>();
@@ -76,18 +74,16 @@ export default function ActivityPage() {
     return users;
   }, [apiEvents]);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (apiEvents.length > 0) setEvents(apiEvents);
   }, [apiEvents]);
 
-  if (loading && events.length === 0) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  // Live mode: poll the real API every 30 seconds
+  useEffect(() => {
+    if (!isLiveMode) return;
+    const interval = setInterval(() => { refetch(); }, 30000);
+    return () => clearInterval(interval);
+  }, [isLiveMode, refetch]);
 
   // Filter and search logic
   const filteredEvents = useCallback(() => {
@@ -96,10 +92,10 @@ export default function ActivityPage() {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
-          event.title.toLowerCase().includes(query) ||
-          event.description.toLowerCase().includes(query) ||
-          event.entity?.name.toLowerCase().includes(query) ||
-          event.user?.name.toLowerCase().includes(query);
+          event.title?.toLowerCase().includes(query) ||
+          event.description?.toLowerCase().includes(query) ||
+          event.entity?.name?.toLowerCase().includes(query) ||
+          event.user?.name?.toLowerCase().includes(query);
         if (!matchesSearch) return false;
       }
 
@@ -133,42 +129,11 @@ export default function ActivityPage() {
     });
   }, [apiEvents, searchQuery, filters]);
 
-  const displayedEvents = filteredEvents();
-
-  // Live mode: poll the real API every 30 seconds
-  useEffect(() => {
-    if (!isLiveMode) return;
-    const interval = setInterval(() => { refetch(); }, 30000);
-    return () => clearInterval(interval);
-  }, [isLiveMode, refetch]);
-
-  const filteredEvents = useCallback(() => {
-    return (apiEvents || []).filter((event) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          event.title?.toLowerCase().includes(query) ||
-          event.description?.toLowerCase().includes(query) ||
-          event.entity?.name?.toLowerCase().includes(query) ||
-          event.user?.name?.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-
-      if (filters.types.length > 0 && !filters.types.includes(event.type)) return false;
-      if (filters.severities.length > 0 && !filters.severities.includes(event.severity)) return false;
-      if (filters.startDate && new Date(event.timestamp) < filters.startDate) return false;
-      if (filters.endDate && new Date(event.timestamp) > filters.endDate) return false;
-      if (filters.userId && event.user?.id !== filters.userId) return false;
-
-      return true;
-    });
-  }, [apiEvents, searchQuery, filters]);
-
   const handleExport = useCallback(() => {
-    const displayedEvents = filteredEvents();
+    const displayed = filteredEvents();
     const csvContent = [
       ['ID', 'Type', 'Severity', 'Title', 'Description', 'Timestamp', 'User'],
-      ...displayedEvents.map((event) => [
+      ...displayed.map((event) => [
         event.id,
         event.type,
         event.severity,
@@ -203,7 +168,7 @@ export default function ActivityPage() {
     }
   };
 
-  const getSeverityBadgeVariant = (severity: ActivityEvent['severity']): any => {
+  const getSeverityBadgeVariant = (severity: ActivityEvent['severity']): "danger" | "warning" | "success" | "info" | "default" => {
     switch (severity) {
       case 'error': return 'danger';
       case 'warning': return 'warning';
@@ -213,7 +178,7 @@ export default function ActivityPage() {
     }
   };
 
-  if (loading) return <LoadingSkeleton />;
+  if (loading && events.length === 0) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const displayedEvents = filteredEvents();
@@ -269,7 +234,7 @@ export default function ActivityPage() {
                 type="text"
                 placeholder="Search by title, description, entity, or user..."
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
                   "pl-10 pr-4 py-2.5 w-full",
                   "bg-wl-bg-surface border border-wl-border-default",
@@ -449,8 +414,7 @@ export default function ActivityPage() {
                             )}
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </CardContent>
                 </Card>
               </div>

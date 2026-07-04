@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, Map, List, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight, Search, Map, List, MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
@@ -15,58 +16,18 @@ import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
 
 const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
 
-function toOrderPinStatus(status: string): OrderPinStatus {
-  const s = status.toLowerCase();
-  if (s === 'assigned') return 'assigned';
-  if (s === 'in_transit') return 'in_transit';
-  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
-  return 'pending';
-}
-
-const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
-
-function toOrderPinStatus(status: string): OrderPinStatus {
-  const s = status.toLowerCase();
-  if (s === 'assigned') return 'assigned';
-  if (s === 'in_transit') return 'in_transit';
-  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
-  return 'pending';
-}
-
-const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
-
-function toOrderPinStatus(status: string): OrderPinStatus {
-  const s = status.toLowerCase();
-  if (s === 'assigned') return 'assigned';
-  if (s === 'in_transit') return 'in_transit';
-  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
-  return 'pending';
-}
-
-const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
-
-function toOrderPinStatus(status: string): OrderPinStatus {
-  const s = status.toLowerCase();
-  if (s === 'assigned') return 'assigned';
-  if (s === 'in_transit') return 'in_transit';
-  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
-  return 'pending';
-}
-
-const OrdersMapView = dynamic(() => import('./components/orders-map-view'), { ssr: false });
-
-function toOrderPinStatus(status: string): OrderPinStatus {
-  const s = status.toLowerCase();
-  if (s === 'assigned') return 'assigned';
-  if (s === 'in_transit') return 'in_transit';
-  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
-  return 'pending';
-}
-
 const OrderLayer = dynamic(
   () => import('@/components/map/order-layer').then((m) => m.OrderLayer),
   { ssr: false, loading: () => <div className="h-[480px] bg-zinc-900 rounded-lg animate-pulse" /> }
 );
+
+function toOrderPinStatus(status: string): OrderPinStatus {
+  const s = status.toLowerCase();
+  if (s === 'assigned') return 'assigned';
+  if (s === 'in_transit') return 'in_transit';
+  if (s === 'cancelled' || s === 'returned' || s === 'failed') return 'delayed';
+  return 'pending';
+}
 
 const STATUS_TABS = [
   { key: 'all', label: 'All Orders' },
@@ -115,15 +76,13 @@ function truncate(s: string, max = 40): string {
   return s.length > max ? `${s.slice(0, max)}…` : s;
 }
 
-type ViewMode = 'list' | 'map';
-
 export default function OrdersPage() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt:desc');
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
+  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
   const [view, setView] = useState<'list' | 'map'>('list');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
@@ -174,78 +133,6 @@ export default function OrdersPage() {
       })),
   [orders]);
 
-  // Map pins — only orders that have delivery coordinates
-  const orderPins = useMemo<OrderPin[]>(() =>
-    orders
-      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
-        o.deliveryLat != null && o.deliveryLng != null
-      )
-      .map((o) => ({
-        id: o.id,
-        orderNumber: `#${o.id.slice(0, 8)}`,
-        customerName: o.customerName,
-        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
-        status: toOrderPinStatus(o.status),
-        lat: o.deliveryLat,
-        lng: o.deliveryLng,
-        priority: o.status === 'in_transit' ? 'high' : 'medium',
-      })),
-  [orders]);
-
-  // Map pins — only orders that have delivery coordinates
-  const orderPins = useMemo<OrderPin[]>(() =>
-    orders
-      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
-        o.deliveryLat != null && o.deliveryLng != null
-      )
-      .map((o) => ({
-        id: o.id,
-        orderNumber: `#${o.id.slice(0, 8)}`,
-        customerName: o.customerName,
-        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
-        status: toOrderPinStatus(o.status),
-        lat: o.deliveryLat,
-        lng: o.deliveryLng,
-        priority: o.status === 'in_transit' ? 'high' : 'medium',
-      })),
-  [orders]);
-
-  // Map pins — only orders that have delivery coordinates
-  const orderPins = useMemo<OrderPin[]>(() =>
-    orders
-      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
-        o.deliveryLat != null && o.deliveryLng != null
-      )
-      .map((o) => ({
-        id: o.id,
-        orderNumber: `#${o.id.slice(0, 8)}`,
-        customerName: o.customerName,
-        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
-        status: toOrderPinStatus(o.status),
-        lat: o.deliveryLat,
-        lng: o.deliveryLng,
-        priority: o.status === 'in_transit' ? 'high' : 'medium',
-      })),
-  [orders]);
-
-  // Map pins — only orders that have delivery coordinates
-  const orderPins = useMemo<OrderPin[]>(() =>
-    orders
-      .filter((o): o is Order & { deliveryLat: number; deliveryLng: number } =>
-        o.deliveryLat != null && o.deliveryLng != null
-      )
-      .map((o) => ({
-        id: o.id,
-        orderNumber: `#${o.id.slice(0, 8)}`,
-        customerName: o.customerName,
-        address: `${o.deliveryAddress.street}, ${o.deliveryAddress.city}`,
-        status: toOrderPinStatus(o.status),
-        lat: o.deliveryLat,
-        lng: o.deliveryLng,
-        priority: o.status === 'in_transit' ? 'high' : 'medium',
-      })),
-  [orders]);
-
   // Status counts
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { all: orders.length };
@@ -256,20 +143,6 @@ export default function OrdersPage() {
     });
     return counts;
   }, [orders]);
-
-  const mapOrders = useMemo(
-    () =>
-      filtered.map((o) => ({
-        id: o.id,
-        orderNumber: o.orderNumber ?? undefined,
-        status: o.status,
-        customerName: o.customerName,
-        city: o.city,
-        country: o.country,
-        addressLine1: o.deliveryAddress.street,
-      })),
-    [filtered]
-  );
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -413,198 +286,174 @@ export default function OrdersPage() {
 
         {/* Orders Table + Pagination (list view) */}
         {view === 'list' && (
-        <>
-        <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-zinc-800 bg-zinc-900/80">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Order
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Customer
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Destination
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Items
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Total
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Created
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800">
-                {loading ? (
-                  Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
-                      <td colSpan={8}>
-                        <div className="px-6 py-4">
-                          <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
-                        </div>
-                      </td>
+          <>
+            <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-zinc-800 bg-zinc-900/80">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Order
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Customer
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Destination
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Items
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Total
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Created
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                        Actions
+                      </th>
                     </tr>
-                  ))
-                ) : paginatedOrders.length === 0 ? (
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Order</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Customer</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Destination</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Status</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">Items</th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Total</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">Created</th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800">
-                  {loading ? (
-                    Array.from({ length: 8 }).map((_, i) => (
-                      <tr key={i}>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800">
+                    {loading ? (
+                      Array.from({ length: 8 }).map((_, i) => (
+                        <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
+                          <td colSpan={8}>
+                            <div className="px-6 py-4">
+                              <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : paginatedOrders.length === 0 ? (
+                      <tr>
                         <td colSpan={8}>
-                          <div className="px-6 py-4">
-                            <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
+                          <div className="flex flex-col items-center justify-center py-16 px-6">
+                            <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+                              <Search className="w-6 h-6 text-zinc-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-zinc-200 mb-1">No orders found</h3>
+                            <p className="text-sm text-zinc-500 text-center max-w-sm">
+                              {search || dateRange.from || dateRange.to
+                                ? 'Try adjusting your filters or search terms'
+                                : 'No orders yet. Create your first order to get started.'}
+                            </p>
                           </div>
                         </td>
                       </tr>
-                    ))
-                  ) : paginatedOrders.length === 0 ? (
-                    <tr>
-                      <td colSpan={8}>
-                        <div className="flex flex-col items-center justify-center py-16 px-6">
-                          <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
-                            <Search className="w-6 h-6 text-zinc-600" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-zinc-200 mb-1">No orders found</h3>
-                          <p className="text-sm text-zinc-500 text-center max-w-sm">
-                            {search || dateRange.from || dateRange.to
-                              ? 'Try adjusting your filters or search terms'
-                              : 'No orders yet. Create your first order to get started.'}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedOrders.map((order, idx) => (
-                      <tr
-                        key={order.id}
-                        className={cn(
-                          'border-b border-zinc-800/50 last:border-b-0 hover:bg-zinc-800/30 transition-colors cursor-pointer',
-                          selectedOrderId === order.id && 'bg-violet-950/20'
-                        )}
-                        onClick={() => setSelectedOrderId((p) => (p === order.id ? null : order.id))}
-                      >
-                        <td className="px-6 py-4">
-                          <Link
-                            href={`/orders/${order.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="font-mono font-semibold text-sm text-amber-400 hover:text-amber-300 transition-colors"
-                          >
-                            #{order.orderNumber ?? order.id.slice(0, 8)}
-                          </Link>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', avatarColor(order.customerName))}>
-                              {avatarInitials(order.customerName)}
-                            </div>
-                            <span className="text-zinc-100 font-medium text-sm">{order.customerName}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-zinc-300 text-sm" title={`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`}>
-                            {truncate(`${order.deliveryAddress.street}, ${order.city || order.deliveryAddress.city}`, 38)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Badge variant={statusVariant(order.status)} className="text-xs font-semibold">
-                            {order.status.replace(/_/g, ' ')}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
-                            {order.itemCount || order.items.length}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="font-mono font-semibold text-zinc-100 text-sm">
-                            {formatCurrency(order.totalAmount)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-zinc-400 text-sm">
-                            {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
+                    ) : (
+                      paginatedOrders.map((order) => (
+                        <tr
+                          key={order.id}
+                          className={cn(
+                            'border-b border-zinc-800/50 last:border-b-0 hover:bg-zinc-800/30 transition-colors cursor-pointer',
+                            selectedOrderId === order.id && 'bg-violet-950/20'
+                          )}
+                          onClick={() => setSelectedOrderId((p) => (p === order.id ? null : order.id))}
+                        >
+                          <td className="px-6 py-4">
                             <Link
                               href={`/orders/${order.id}`}
                               onClick={(e) => e.stopPropagation()}
+                              className="font-mono font-semibold text-sm text-amber-400 hover:text-amber-300 transition-colors"
                             >
-                              <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50">
-                                View
-                              </Button>
+                              #{order.orderNumber ?? order.id.slice(0, 8)}
                             </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        )}
-
-        {/* Pagination (list view only) */}
-        {viewMode === 'list' && totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-zinc-400">
-              Showing <span className="font-semibold text-zinc-200">{startIdx + 1}</span> to{' '}
-              <span className="font-semibold text-zinc-200">{Math.min(startIdx + itemsPerPage, filtered.length)}</span> of{' '}
-              <span className="font-semibold text-zinc-200">{filtered.length}</span> orders
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-1">
-                <ChevronLeft className="w-4 h-4" /> Previous
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }).map((_, i) => {
-                  const page = i + 1;
-                  const show = page === currentPage || page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
-                  if (!show && Math.abs(page - currentPage) === 2) return <span key={`e${page}`} className="text-zinc-500">…</span>;
-                  if (!show) return null;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={cn('w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all',
-                        page === currentPage ? 'bg-white text-black font-semibold' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700')}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', avatarColor(order.customerName))}>
+                                {avatarInitials(order.customerName)}
+                              </div>
+                              <span className="text-zinc-100 font-medium text-sm">{order.customerName}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-zinc-300 text-sm" title={`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`}>
+                              {truncate(`${order.deliveryAddress.street}, ${order.city || order.deliveryAddress.city}`, 38)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge variant={statusVariant(order.status)} className="text-xs font-semibold">
+                              {order.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                              {order.itemCount || order.items.length}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="font-mono font-semibold text-zinc-100 text-sm">
+                              {formatCurrency(order.totalAmount)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-zinc-400 text-sm">
+                              {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Link
+                                href={`/orders/${order.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50">
+                                  View
+                                </Button>
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-              <Button variant="secondary" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-1">
-                Next <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-        </>
+            </Card>
+
+            {/* Pagination (list view only) */}
+            {view === 'list' && totalPages > 1 && (
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-zinc-400">
+                  Showing <span className="font-semibold text-zinc-200">{startIdx + 1}</span> to{' '}
+                  <span className="font-semibold text-zinc-200">{Math.min(startIdx + itemsPerPage, filtered.length)}</span> of{' '}
+                  <span className="font-semibold text-zinc-200">{filtered.length}</span> orders
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="secondary" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-1">
+                    <ChevronLeft className="w-4 h-4" /> Previous
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }).map((_, i) => {
+                      const page = i + 1;
+                      const show = page === currentPage || page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                      if (!show && Math.abs(page - currentPage) === 2) return <span key={`e${page}`} className="text-zinc-500">…</span>;
+                      if (!show) return null;
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={cn('w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all',
+                            page === currentPage ? 'bg-white text-black font-semibold' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700')}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-1">
+                    Next <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

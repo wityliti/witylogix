@@ -78,6 +78,13 @@ export default function DispatchPage() {
   const loading = ordersLoading || driversLoading;
   const error = ordersError || driversError;
 
+  const allTechs = drivers as (DispatchDriver & { status: TechnicianStatus })[];
+
+  const filteredTechs = useMemo(
+    () => (statusFilter === 'all' ? allTechs : allTechs.filter((t) => t.status === statusFilter)),
+    [allTechs, statusFilter]
+  );
+
   if (loading) return <LoadingSkeleton />;
   if (error)
     return (
@@ -90,38 +97,7 @@ export default function DispatchPage() {
       />
     );
 
-  const allTechs = drivers as (DispatchDriver & { status: TechnicianStatus })[];
-
-  const filteredTechs = useMemo(
-    () => (statusFilter === 'all' ? allTechs : allTechs.filter((t) => t.status === statusFilter)),
-    [allTechs, statusFilter]
-  );
-
-  const driversWithLocation = useMemo(
-    () => (locations ?? []).filter((l) => l.lat !== null && l.lng !== null),
-    [locations]
-  );
-
-  const activeJobList = useMemo(
-    () => allJobs.filter((j) => isActiveOrderStatus(j.status)).slice(0, 20),
-    [allJobs]
-  );
-
-  const pendingJobList = useMemo(
-    () => allJobs.filter((j) => j.status === 'PENDING').slice(0, 10),
-    [allJobs]
-  );
-
-  const loading = driversLoading || jobsLoading;
-  const error = driversError || jobsError;
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={() => { refetchDrivers(); refetchJobs(); }} />;
-
   const selectedTechData = selectedTech ? allTechs.find((t) => t.id === selectedTech) : null;
-  const inFieldCount = allTechs.filter((t) => t.status === 'on_job').length;
-  const activeCount = activeJobList.length;
-  const assignedCount = allJobs.filter((j) => j.driverId && isActiveOrderStatus(j.status)).length;
 
   return (
     <div className="min-h-screen bg-surface-primary p-6">

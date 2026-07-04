@@ -49,6 +49,39 @@ interface Customer {
 }
 
 
+function normalizeApiCustomer(raw: Record<string, unknown>): Customer {
+  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
+  const num = (v: unknown): number => {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string') { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+    return 0;
+  };
+  const rawStatus = str(raw.status).toLowerCase();
+  const status: Customer['status'] =
+    rawStatus === 'vip' ? 'vip' :
+    rawStatus === 'inactive' ? 'inactive' :
+    'active';
+  const rawAddresses = Array.isArray(raw.addresses) ? raw.addresses as Array<Record<string, unknown>> : [];
+  return {
+    id: str(raw.id),
+    name: str(raw.name ?? raw.customerName),
+    email: str(raw.email ?? raw.customerEmail),
+    phone: str(raw.phone ?? raw.customerPhone),
+    store: str(raw.store ?? raw.storeName),
+    ordersCount: num(raw.ordersCount ?? raw.totalOrders),
+    totalSpent: num(raw.totalSpent ?? raw.lifetimeValue),
+    lastOrder: str(raw.lastOrder ?? raw.lastOrderDate),
+    status,
+    joined: str(raw.joined ?? raw.createdAt),
+    addresses: rawAddresses.map((a) => ({
+      type: str(a.type),
+      address: str(a.address ?? a.fullAddress),
+    })),
+    notes: str(raw.notes),
+    tags: Array.isArray(raw.tags) ? (raw.tags as unknown[]).map(String) : [],
+  };
+}
+
 const getStatusBadgeVariant = (status: Customer["status"]): "success" | "warning" | "danger" | "info" | "default" => {
   switch (status) {
     case "active":

@@ -19,11 +19,14 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-interface User {
+interface UserMe {
   id: string;
-  firstName: string;
-  lastName: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
+  phone?: string;
+  timezone?: string;
   role: string;
   lastLogin?: string;
   shop?: { name: string };
@@ -34,7 +37,7 @@ export default function ProfilePage() {
 
   // All state declared before any conditional return
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', email: '' });
+  const [editForm, setEditForm] = useState({ firstName: '', lastName: '', email: '', phone: '', timezone: 'America/New_York' });
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -48,13 +51,24 @@ export default function ProfilePage() {
   const [pwSuccess, setPwSuccess] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
 
   // Sync edit form when profile loads
   useEffect(() => {
     if (userProfile) {
-      setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+      setEditForm({
+        firstName: userProfile.firstName ?? userProfile.name?.split(' ')[0] ?? '',
+        lastName: userProfile.lastName ?? userProfile.name?.split(' ').slice(1).join(' ') ?? '',
+        email: userProfile.email ?? '',
+        phone: userProfile.phone ?? '',
+        timezone: userProfile.timezone ?? 'America/New_York',
+      });
     }
   }, [userProfile]);
+
+  const handleEditChange = (field: string, value: string) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSaveProfile = useCallback(async () => {
     setSaveLoading(true);
@@ -74,7 +88,15 @@ export default function ProfilePage() {
   }, [editForm, refetch]);
 
   const handleCancelEdit = useCallback(() => {
-    if (userProfile) setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+    if (userProfile) {
+      setEditForm({
+        firstName: userProfile.firstName ?? userProfile.name?.split(' ')[0] ?? '',
+        lastName: userProfile.lastName ?? userProfile.name?.split(' ').slice(1).join(' ') ?? '',
+        email: userProfile.email ?? '',
+        phone: userProfile.phone ?? '',
+        timezone: userProfile.timezone ?? 'America/New_York',
+      });
+    }
     setIsEditing(false);
     setSaveError(null);
   }, [userProfile]);
@@ -109,41 +131,7 @@ export default function ProfilePage() {
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-  if (!user) return <ErrorState message="User profile unavailable" onRetry={refetch} />;
-
-  const profile = userProfile || {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    timezone: 'America/New_York',
-    role: 'User',
-  };
-
-  const [editForm, setEditForm] = useState({ ...profile });
-
-  const [passwordForm, setPasswordForm] = useState({
-    current: "",
-    new: "",
-    confirm: "",
-  });
-
-  const handleEditChange = (field: string, value: string) => {
-    setEditForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSaveProfile = () => {
-    void refetch();
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditForm(profile);
-    setIsEditing(false);
-  };
+  if (!userProfile) return <ErrorState message="User profile unavailable" onRetry={refetch} />;
 
   return (
     <div className="bg-wl-bg-primary min-h-screen">
@@ -189,7 +177,7 @@ export default function ProfilePage() {
                     className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{profile.name}</p>
+                  <p className="text-white">{editForm.firstName || '—'}</p>
                 )}
               </div>
 
@@ -205,7 +193,7 @@ export default function ProfilePage() {
                     className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{profile.lastName}</p>
+                  <p className="text-white">{editForm.lastName || '—'}</p>
                 )}
               </div>
 
@@ -221,7 +209,7 @@ export default function ProfilePage() {
                     className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{user.email || '—'}</p>
+                  <p className="text-white">{userProfile.email || '—'}</p>
                 )}
               </div>
 
@@ -237,7 +225,7 @@ export default function ProfilePage() {
                     className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{profile.phone}</p>
+                  <p className="text-white">{editForm.phone || '—'}</p>
                 )}
               </div>
 
@@ -257,7 +245,7 @@ export default function ProfilePage() {
                     <option>America/Los_Angeles</option>
                   </select>
                 ) : (
-                  <p className="text-white">{profile.timezone}</p>
+                  <p className="text-white">{editForm.timezone}</p>
                 )}
               </div>
 
@@ -265,7 +253,7 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Role
                 </label>
-                <p className="text-white">{profile.role}</p>
+                <p className="text-white">{userProfile.role}</p>
               </div>
             </div>
 
@@ -282,16 +270,8 @@ export default function ProfilePage() {
                   onClick={handleCancelEdit}
                   className="px-4 py-2 bg-wl-bg-elevated text-wl-text-secondary rounded text-sm font-medium cursor-pointer hover:bg-wl-bg-surface transition-colors"
                 >
-                  {profileMutation.loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  {profileMutation.loading ? 'Saving…' : 'Save Changes'}
-                </Button>
-                <Button variant="ghost" size="md" onClick={handleCancelEdit}>
                   Cancel
-                </Button>
+                </button>
               </div>
             )}
           </CardContent>
@@ -434,7 +414,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-medium text-white">Current session</p>
                     <Badge variant="success" className="text-xs">Active</Badge>
                   </div>
-                  <p className="text-xs text-wl-text-muted">Signed in as {profile.email || '—'}</p>
+                  <p className="text-xs text-wl-text-muted">Signed in as {userProfile.email || '—'}</p>
                 </div>
               </div>
             </div>
@@ -460,7 +440,7 @@ export default function ProfilePage() {
               >
                 Request Account Deletion
               </button>
-            )}
+            ) : null}
             {showDeleteConfirm && (
               <div className="p-4 bg-wl-bg-overlay rounded border border-red-500/30">
                 <p className="text-white text-sm mb-4">

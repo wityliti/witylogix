@@ -2,24 +2,19 @@
 
 import { useState } from "react";
 import { Header } from "@/components/layout/header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useApiQuery } from "@/hooks/use-api";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   TrendingUp,
-  AlertCircle,
   CheckCircle2,
-  Zap,
-  BarChart3,
   RefreshCw,
   Info,
 } from "lucide-react";
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery } from '@/hooks/use-api';
 
 interface TestStats {
   total: number;
@@ -95,147 +90,6 @@ export default function TestDashboardPage() {
   const passRate = getPassRate(stats.passed, stats.total);
   const failRate = getPassRate(stats.failed, stats.total);
   const failedFiles = testResults.filter(f => f.failed > 0);
-  const passingFiles = testResults.filter(f => f.failed === 0);
-
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-wl-bg-root">
-        <Header
-          title="Test Results Dashboard"
-          actions={
-            <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
-              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-              Refresh
-            </Button>
-          }
-        />
-        <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
-          <Info className="w-12 h-12 text-blue-500 mx-auto mb-4 opacity-60" />
-          <h2 className="text-lg font-semibold text-white mb-2">No Test Results Available</h2>
-          <p className="text-sm text-gray-400 mb-4">
-            Test results are generated during CI runs. To populate this dashboard, run:
-          </p>
-          <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-4 text-xs text-gray-400 text-left mb-4">
-            pnpm test:run --reporter=json {'>'} test-results.json
-          </pre>
-          <p className="text-xs text-gray-500">
-            The report file is read from the monorepo root. Commit it or write it as part of your CI pipeline.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const { stats, testResults, generatedAt } = testData;
-  const passRate = getPassRate(stats.passed, stats.total);
-  const failRate = getPassRate(stats.failed, stats.total);
-  const failedFiles = testResults.filter(f => f.failed > 0);
-  const passingFiles = testResults.filter(f => f.failed === 0);
-
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-wl-bg-root">
-        <Header
-          title="Test Results Dashboard"
-          actions={
-            <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
-              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-              Refresh
-            </Button>
-          }
-        />
-        <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
-          <Info className="w-12 h-12 text-blue-500 mx-auto mb-4 opacity-60" />
-          <h2 className="text-lg font-semibold text-white mb-2">No Test Results Available</h2>
-          <p className="text-sm text-gray-400 mb-4">
-            Test results are generated during CI runs. To populate this dashboard, run:
-          </p>
-          <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-4 text-xs text-gray-400 text-left mb-4">
-            pnpm test:run --reporter=json {'>'} test-results.json
-          </pre>
-          <p className="text-xs text-gray-500">
-            The report file is read from the monorepo root. Commit it or write it as part of your CI pipeline.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const { stats, testResults, generatedAt } = testData;
-  const passRate = getPassRate(stats.passed, stats.total);
-  const failRate = getPassRate(stats.failed, stats.total);
-  const failedFiles = testResults.filter(f => f.failed > 0);
-  const passingFiles = testResults.filter(f => f.failed === 0);
-
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-wl-bg-root">
-        <Header
-          title="Test Results Dashboard"
-          actions={
-            <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
-              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-              Refresh
-            </Button>
-          }
-        />
-        <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
-          <Info className="w-12 h-12 text-blue-500 mx-auto mb-4 opacity-60" />
-          <h2 className="text-lg font-semibold text-white mb-2">No Test Results Available</h2>
-          <p className="text-sm text-gray-400 mb-4">
-            Test results are generated during CI runs. To populate this dashboard, run:
-          </p>
-          <pre className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-4 text-xs text-gray-400 text-left mb-4">
-            pnpm test:run --reporter=json {'>'} test-results.json
-          </pre>
-          <p className="text-xs text-gray-500">
-            The report file is read from the monorepo root. Commit it or write it as part of your CI pipeline.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const { stats, testResults, generatedAt } = testData;
-  const passRate = getPassRate(stats.passed, stats.total);
-  const failRate = getPassRate(stats.failed, stats.total);
-  const failedFiles = testResults.filter(f => f.failed > 0);
-  const passingFiles = testResults.filter(f => f.failed === 0);
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const stats = testData?.stats ?? null;
-  const categories = testData?.categories ?? [];
-  const packages = testData?.packages ?? [];
-  const flakyTests = testData?.flakyTests ?? [];
-  const recentRuns = testData?.recentRuns ?? [];
-
-  if (!stats) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f]">
-        <Header title="Test Results Dashboard" />
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <Card>
-            <CardContent className="pt-6 py-16 text-center">
-              <BarChart3 className="w-12 h-12 mx-auto text-gray-400 mb-4 opacity-50" />
-              <p className="text-white font-semibold mb-2">No test results available</p>
-              <p className="text-gray-400 text-sm">
-                Run tests to populate this dashboard.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  const passRate = getPassRate(stats.passed, stats.total);
-  const failRate = getPassRate(stats.failed, stats.total);
-  const coveredCategories = categories.filter((c) => c.coverage > 0);
-  const avgCoverage = coveredCategories.length > 0
-    ? Math.round(coveredCategories.reduce((sum, c) => sum + c.coverage, 0) / coveredCategories.length)
-    : 0;
 
   return (
     <div className="min-h-screen bg-wl-bg-root">
@@ -260,8 +114,9 @@ export default function TestDashboardPage() {
                   <p className="text-sm text-gray-400 mb-2">Total Tests</p>
                   <p className="text-3xl font-bold text-white">{stats.total}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardContent className="pt-6">
@@ -271,8 +126,9 @@ export default function TestDashboardPage() {
                   <p className="text-3xl font-bold text-green-600">{stats.passed}</p>
                   <p className="text-xs text-gray-400 mt-1">{passRate}% pass rate</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardContent className="pt-6">
@@ -282,8 +138,9 @@ export default function TestDashboardPage() {
                   <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
                   <p className="text-xs text-gray-400 mt-1">{failRate}% fail rate</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardContent className="pt-6">
@@ -304,10 +161,10 @@ export default function TestDashboardPage() {
                   <p className="text-sm text-gray-400 mb-2">Duration</p>
                   <p className="text-3xl font-bold text-white">{stats.duration}s</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Failing Files */}
         {failedFiles.length > 0 && (
@@ -321,7 +178,7 @@ export default function TestDashboardPage() {
                   <div key={idx} className="p-3 bg-red-600/10 rounded-lg border border-red-500/20 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-white font-mono">
-                        {file.file.replace(process.env.NEXT_PUBLIC_APP_URL ?? '', '')}
+                        {file.file.split('/').slice(-2).join('/')}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {file.passed} passed / {file.failed} failed · {file.duration}s

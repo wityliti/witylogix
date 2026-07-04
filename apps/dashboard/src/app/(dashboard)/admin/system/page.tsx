@@ -14,8 +14,10 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertCircle,
+  Zap,
 } from "lucide-react";
 import { ErrorState } from '@/components/ui/error-state';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { useApiQuery } from '@/hooks/use-api';
 
 interface ServiceHealth {
@@ -106,7 +108,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
         </div>
 
         <div className="text-xs text-gray-400 pt-3 border-t border-wl-border-default">
-          Last checked: {new Date(service.lastChecked).toLocaleTimeString()}
+          Last checked: {new Date(service.checkedAt).toLocaleTimeString()}
         </div>
       </CardContent>
     </Card>

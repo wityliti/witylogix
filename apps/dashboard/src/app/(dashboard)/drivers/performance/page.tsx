@@ -42,7 +42,27 @@ interface LeaderboardEntry {
   deliveriesThisPeriod: number;
 }
 
+// ─── Mapped driver shape used by table/chart ───────────────
+interface MappedDriver extends LeaderboardEntry {
+  id: string;
+  name: string;
+  onTimePercent: number;
+  customerRating: number;
+  podCompliance: number;
+  deliveriesCount: number;
+  trendDirection: TrendDirection;
+  trendPercent: number;
+}
+
 // ─── Helper Functions ──────────────────────────────────────
+
+const formatRating = (rating: number): string => rating.toFixed(2);
+
+const getTrendIndicator = (direction: TrendDirection, percent: number): string => {
+  if (direction === "up") return `↑ ${percent.toFixed(1)}%`;
+  if (direction === "down") return `↓ ${percent.toFixed(1)}%`;
+  return "→";
+};
 
 const getTierColor = (tier: DriverTier): "primary" | "warning" | "default" | "success" => {
   const m: Record<DriverTier, "primary" | "warning" | "default" | "success"> = {
@@ -86,7 +106,26 @@ export default function DriverPerformancePage() {
   );
 
   const driverList = rawDrivers ?? [];
-  const topThree = driverList.slice(0, 3);
+
+  const drivers: MappedDriver[] = driverList.map((d) => ({
+    ...d,
+    id: d.driverId,
+    name: d.driverName,
+    onTimePercent: d.breakdown.onTimeScore,
+    customerRating: d.breakdown.customerRatingScore / 20, // 0-100 score → 0-5 rating
+    podCompliance: d.breakdown.podComplianceScore,
+    deliveriesCount: d.deliveriesThisPeriod,
+    trendDirection: d.trend,
+    trendPercent: d.previousScore != null ? Math.abs(d.compositeScore - d.previousScore) : 0,
+  }));
+
+  const setSelectedDriver = (driver: MappedDriver | null) => setSelectedId(driver?.driverId ?? null);
+  const selectedDriver = useMemo(
+    () => drivers.find((d) => d.driverId === selectedId) ?? null,
+    [drivers, selectedId],
+  );
+
+  const topThree = drivers.slice(0, 3);
 
   const avgScore = useMemo(
     () => (driverList.length > 0
@@ -110,11 +149,6 @@ export default function DriverPerformancePage() {
   const topTierCount = useMemo(
     () => driverList.filter((d) => d.tier === "platinum" || d.tier === "gold").length,
     [driverList],
-  );
-
-  const selectedDriver = useMemo(
-    () => driverList.find((d) => d.driverId === selectedId) ?? null,
-    [driverList, selectedId],
   );
 
   if (loading) return <LoadingSkeleton />;

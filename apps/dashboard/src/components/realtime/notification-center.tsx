@@ -179,16 +179,48 @@ function NotificationItem({
   );
 }
 
-export function NotificationCenter({ className, onNotificationClick }: NotificationCenterProps) {
+const CATEGORY_MAP: Record<string, Notification["category"]> = {
+  order: "ORDERS", shipment: "DELIVERIES", delivery: "DELIVERIES",
+  driver: "DRIVERS", system: "SYSTEM", webhook: "SYSTEM", workflow: "SYSTEM",
+};
+
+export function NotificationCenter({
+  className,
+  onNotificationClick,
+}: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { items: rawItems, refetch } = useApiList<ApiNotification>('/api/v4/notifications', { limit: 20 });
+  const { items: rawNotifs, loading: isLoading, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
 
-  // Poll every 60s when open
+  const apiNotifs = useMemo<Notification[]>(() =>
+    rawNotifs.map((n) => ({
+      id: n.id,
+      category: (CATEGORY_MAP[n.type ?? n.category] ?? n.category ?? "SYSTEM") as Notification["category"],
+      channel: (n.channel ?? "EMAIL") as Notification["channel"],
+      iconChannel: (n.channel ?? "EMAIL") as Notification["channel"],
+      title: n.title ?? n.action ?? "Notification",
+      message: n.message ?? n.description ?? "",
+      status: ((n.read ?? n.status === "READ") ? "READ" : "UNREAD") as Notification["status"],
+      timestamp: typeof n.timestamp === "string" ? n.timestamp : (n.createdAt ?? new Date().toISOString()),
+      actionUrl: n.actionUrl,
+    })),
+  [rawNotifs]);
+
+  // Local overlay for optimistic read/delete operations
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  const notifications = useMemo(() =>
+    apiNotifs
+      .filter((n) => !deletedIds.has(n.id))
+      .map((n) => readIds.has(n.id) ? { ...n, status: "READ" as Notification["status"] } : n),
+  [apiNotifs, readIds, deletedIds]);
+
+  // Poll for new notifications every 60 seconds
   useEffect(() => {
     if (!isOpen) return;
     const interval = setInterval(() => { refetch(); }, 60_000);
@@ -201,24 +233,17 @@ export function NotificationCenter({ className, onNotificationClick }: Notificat
       if (
         dropdownRef.current &&
         buttonRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        !buttonRef.current.contains(e.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
     }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const notifications: Notification[] = rawItems.map((raw) => ({
-    ...toNotification(raw),
-    read: readIds.has(raw.id) || toNotification(raw).read,
-  }));
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => n.status === "UNREAD").length;
 
   const markAsRead = (id: string) => setReadIds((prev) => new Set([...prev, id]));
   const markAllAsRead = () => setReadIds(new Set(rawItems.map((r) => r.id)));
@@ -311,7 +336,7 @@ export function NotificationCenter({ className, onNotificationClick }: Notificat
                 <NotificationItem
                   key={n.id}
                   notification={n}
-                  onClick={() => handleClick(n)}
+                  onClick={() => handleNotificationClick(n)}
                   onMarkAsRead={() => markAsRead(n.id)}
                 />
               ))

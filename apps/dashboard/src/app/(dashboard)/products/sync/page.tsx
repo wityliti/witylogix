@@ -146,26 +146,6 @@ const WITYLOGIX_FIELDS: SyncField[] = [
   { id: 'wl-updated', name: 'Last Updated', type: 'date', required: false, sampleValue: '2026-03-16T10:30:00Z' },
 ];
 
-function mapIntegrationToPlatform(raw: RawIntegration): ConnectedPlatform {
-  let status: ConnectedPlatform['status'] = 'pending';
-  if (raw.isEnabled) {
-    if (raw.healthStatus === 'DOWN' || raw.healthStatus === 'DEGRADED') status = 'error';
-    else if (raw.healthStatus === 'SYNCING') status = 'syncing';
-    else status = 'synced';
-  }
-  const slug = raw.slug.toLowerCase();
-  const productCount = typeof raw.config?.productCount === 'number' ? raw.config.productCount : 0;
-  return {
-    id: raw.slug,
-    name: raw.name,
-    platform: raw.name,
-    status,
-    lastSyncAt: raw.lastSyncAt,
-    productCount,
-    fields: PLATFORM_FIELDS[slug] ?? DEFAULT_FIELDS,
-  };
-}
-
 const syncStatusIcon = {
   synced: <Check className="w-4 h-4" />,
   syncing: <RefreshCw className="w-4 h-4 animate-spin" />,
@@ -243,29 +223,6 @@ export default function ProductSyncPage() {
       setShowTemplateInput(false);
     }
   };
-
-  if (loadingPlatforms) {
-    return (
-      <div className="space-y-6">
-        <Header title="Product Catalog Sync" subtitle="Configure field mappings and sync schedules for connected platforms" />
-        <Card>
-          <CardHeader><CardTitle>Connected Platforms</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (platformsError) {
-    return (
-      <div className="space-y-6">
-        <Header title="Product Catalog Sync" subtitle="Configure field mappings and sync schedules for connected platforms" />
-        <ErrorState message={platformsError} onRetry={fetchPlatforms} />
-      </div>
-    );
-  }
 
   if (connectionsLoading) return <LoadingSkeleton />;
 

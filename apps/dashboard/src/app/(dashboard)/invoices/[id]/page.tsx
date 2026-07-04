@@ -24,8 +24,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled" | "finalized" | "voided";
 
@@ -564,8 +562,8 @@ export default function InvoiceDetailPage() {
                   </div>
                 </div>
               </div>
-            </Card>
-          )}
+            </div>
+          </Card>
 
           {/* Notes & Terms */}
           {(invoice.notes || invoice.terms) && (
@@ -671,7 +669,7 @@ export default function InvoiceDetailPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-gray-400">
-                        {getActivityDescription(activity)}
+                        {activity.description}
                       </p>
                     </div>
                   </div>
