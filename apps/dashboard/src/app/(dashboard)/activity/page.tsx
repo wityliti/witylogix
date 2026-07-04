@@ -487,7 +487,8 @@ export default function ActivityPage() {
                             )}
                           </div>
                         </div>
-                      )}
+                      )
+                    }
                   </CardContent>
                 </Card>
               </div>

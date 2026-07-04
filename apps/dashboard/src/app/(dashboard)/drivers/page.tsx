@@ -12,7 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
 import { useApiList } from '@/hooks/use-api';
 import Link from 'next/link';
-import { MessageCircle, Eye, Plus, Phone, Truck, Map, LayoutGrid } from 'lucide-react';
+import { MessageCircle, Eye, Plus, Phone, Truck, Map, LayoutGrid, MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 /* ═══════════════════════════════════════════════════════════
@@ -64,10 +64,10 @@ type DriverStatus = 'available' | 'en_route' | 'delivering' | 'offline';
 type ViewMode = 'cards' | 'map';
 
 const statusConfig: Record<DriverStatus, { badge: 'success' | 'warning' | 'info' | 'primary' | 'default'; label: string }> = {
-  available: { badge: 'success', label: 'Available' },
-  en_route: { badge: 'primary', label: 'En Route' },
-  delivering: { badge: 'info', label: 'Delivering' },
-  offline: { badge: 'default', label: 'Offline' },
+  available:  { badge: 'success', label: 'Available' },
+  en_route:   { badge: 'primary', label: 'En Route' },
+  delivering: { badge: 'info',    label: 'Delivering' },
+  offline:    { badge: 'default', label: 'Offline' },
 };
 
 const normalizeStatus = (status: string): DriverStatus => {
@@ -148,10 +148,11 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
 
 export default function DriversPage() {
   const router = useRouter();
-  const { items: driversData, loading, error, refetch: refetchDrivers } = useApiList<ApiDriver>('/api/v4/drivers', { limit: 100 });
+  const { items: driversData, loading, error, refetch } = useApiList<ApiDriver>('/api/v4/drivers', { limit: 100 });
   const { items: dispatchDrivers, loading: dispatchLoading } = useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
   const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
 
   const driverTabs = useMemo(() => [
     { id: 'all',       label: 'All',       count: driversData.length },
@@ -172,7 +173,7 @@ export default function DriversPage() {
   );
 
   if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetchDrivers} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <>

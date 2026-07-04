@@ -10,15 +10,18 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
-import { WLMap } from "@/components/map/wl-map";
-import { PinLayer, type Pin } from "@/components/map/pin-layer";
 import { LayoutGrid, Map } from "lucide-react";
-import type { MapLocation } from "./components/locations-overview-map";
+import dynamic from "next/dynamic";
 
 const LocationsOverviewMap = dynamic(
   () => import('./components/locations-overview-map').then((m) => m.LocationsOverviewMap),
   { ssr: false },
 );
+const PinLayerDynamic = dynamic(
+  () => import("@/components/map/pin-layer").then((m) => ({ default: m.PinLayer })),
+  { ssr: false }
+);
+import type { Pin } from "@/components/map/pin-layer";
 
 /* ═══════════════════════════════════════════════════════════
    LOCATIONS PAGE — Warehouse & store management with filtering
@@ -124,35 +127,21 @@ export default function LocationsPage() {
         title="Locations"
         subtitle={`${stats.totalLocations} total · ${stats.activeLocations} active`}
         actions={
-          <div className="flex items-center gap-2">
-            {/* List / Map toggle */}
-            <div className="flex rounded-md border border-wl-border-default overflow-hidden">
-              <button
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                  viewMode === "list"
-                    ? "bg-wl-bg-elevated text-wl-text-primary"
-                    : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary",
-                )}
-                title="List view"
-              >
-                <LayoutGrid size={14} />
-                List
-              </button>
-              <button
-                onClick={() => setViewMode("map")}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-                  viewMode === "map"
-                    ? "bg-wl-bg-elevated text-wl-text-primary"
-                    : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary",
-                )}
-                title="Map view"
-              >
-                <Map size={14} />
-                Map
-              </button>
+          <div className={cn("flex gap-2 items-center")}>
+            <div className={cn("flex rounded-lg border border-[#1e1e2e] overflow-hidden")}>
+              {(["grid", "map"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setViewMode(v)}
+                  aria-pressed={viewMode === v}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
+                    viewMode === v ? "bg-blue-600 text-white" : "bg-[#12121a] text-gray-400 hover:text-white"
+                  )}
+                >
+                  {v}
+                </button>
+              ))}
             </div>
             <Button variant="primary" size="md">
               + Add Location
@@ -207,150 +196,8 @@ export default function LocationsPage() {
           </div>
         </div>
 
-        {/* Map view */}
-        {viewMode === "map" && (
-          <LocationsOverviewMap
-            locations={filtered as MapLocation[]}
-          />
-        )}
-
-        {/* Locations Grid + Detail */}
-        {viewMode === "list" && (
-        <div
-          className={cn("grid gap-5")}
-          style={{
-            // Intentional inline: dynamic grid layout
-            gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr"
-          }}
-        >
-
-          {/* Locations Grid */}
-          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
-            {filtered.map((location, i) => (
-              <Card
-                key={location.id}
-                hover
-                onClick={() => setSelectedLocation(selectedLocation?.id === location.id ? null : location)}
-                className={cn("cursor-pointer relative overflow-hidden flex flex-col")}
-                style={{
-                  // Intentional inline: dynamic animation, opacity, and borderColor
-                  animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
-                  opacity: 0,
-                  borderColor: selectedLocation?.id === location.id ? "var(--blue-500)" : undefined,
-                }}
-              >
-
-                {/* Status indicator line */}
-                <div
-                  className={cn(
-                    "absolute top-0 left-0 right-0 h-0.5",
-                    location.status === "ACTIVE"
-                      ? "bg-emerald-500"
-                      : location.status === "MAINTENANCE"
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                  )}
-                />
-
-
-                {/* Header */}
-                <div className={cn("flex justify-between items-start mb-3")}>
-                  <div className={cn("flex-1 min-w-0")}>
-                    <div className={cn("flex gap-2 items-center mb-1")}>
-                      <span className={cn("text-base font-bold text-white")}>
-                        {location.name}
-                      </span>
-                      {location.isDefault && (
-                        <span className={cn("text-sm opacity-80 text-blue-400")}>★</span>
-                      )}
-                    </div>
-                    <Badge variant={typeVariant(location.type)} dot>
-                      {typeLabel(location.type)}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Address */}
-                <div className={cn("mb-3 text-xs text-wl-neutral-300")}>
-                  <div>{location.addressLine1}</div>
-                  <div>
-                    {location.city}, {location.province} {location.postalCode}
-                  </div>
-                </div>
-
-                {/* Status badge */}
-                <Badge
-                  variant={statusVariant(location.status)}
-                  dot
-                  className={cn("mb-3 w-fit")}
-                >
-                  {location.status}
-                </Badge>
-
-                {/* Stats Grid */}
-                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-default mb-3")}>
-                  <div>
-                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Active Shipments</div>
-                    <div
-                      className={cn(
-                        "text-base font-bold font-mono",
-                        location.activeShipments > 0 ? "text-blue-400" : "text-wl-text-secondary"
-                      )}
-                    >
-                      {location.activeShipments}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Total Processed</div>
-                    <div className={cn("text-base font-bold font-mono text-emerald-500")}>
-                      {location.totalProcessed}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Avg Prep Time</div>
-                    <div className={cn("text-base font-bold font-mono text-wl-neutral-300")}>
-                      {location.avgPrepTime}m
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>Status</div>
-                    <div
-                      className={cn(
-                        "text-xs font-semibold",
-                        location.status === "ACTIVE"
-                          ? "text-emerald-500"
-                          : location.status === "MAINTENANCE"
-                            ? "text-amber-500"
-                            : "text-red-500"
-                      )}
-                    >
-                      {location.status}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Operating Hours Preview */}
-                {location.operatingHours && (
-                  <div className={cn("text-xs text-wl-text-secondary")}>
-                    <div className={cn("mb-1 font-semibold text-wl-neutral-300")}>Hours</div>
-                    <div>Mon: {location.operatingHours.Monday.open} - {location.operatingHours.Monday.close}</div>
-                    <div>Sat: {location.operatingHours.Saturday.open} - {location.operatingHours.Saturday.close}</div>
-                  </div>
-                )}
-              </Card>
-            ))}
-          </div>
-          {selectedLocation && (
-            <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
-          )}
-        </div>
-
-        {/* MAP VIEW - removed duplicate implementation */}
-        {view === "map" && filtered.length > 0 && false && (
+        {/* MAP VIEW */}
+        {viewMode === "map" && filtered.length > 0 && (
           <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 400px" : "1fr" }}>
             <div>
               {/* Type legend */}
@@ -418,9 +265,36 @@ export default function LocationsPage() {
           </div>
         )}
 
-                  {selectedLocation.email && (
-                    <div className={cn("text-sm text-wl-neutral-300 font-mono")}>
-                      {selectedLocation.email}
+        {/* GRID VIEW */}
+        {viewMode === "grid" && filtered.length > 0 && (
+          <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr" }}>
+            <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
+              {filtered.map((location, i) => (
+                <Card
+                  key={location.id}
+                  hover
+                  onClick={() => setSelectedLocation(selectedLocation?.id === location.id ? null : location)}
+                  className={cn("cursor-pointer relative overflow-hidden flex flex-col")}
+                  style={{
+                    animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
+                    opacity: 0,
+                    borderColor: selectedLocation?.id === location.id ? "var(--blue-500)" : undefined,
+                  }}
+                >
+                  {/* Status indicator line */}
+                  <div className={cn("absolute top-0 left-0 right-0 h-0.5",
+                    location.status === "ACTIVE" ? "bg-emerald-500"
+                      : location.status === "MAINTENANCE" ? "bg-amber-500"
+                      : "bg-red-500"
+                  )} />
+
+                  <div className={cn("flex justify-between items-start mb-3")}>
+                    <div className={cn("flex-1 min-w-0")}>
+                      <div className={cn("flex gap-2 items-center mb-1")}>
+                        <span className={cn("text-base font-bold text-white")}>{location.name}</span>
+                        {location.isDefault && <span className={cn("text-sm opacity-80 text-blue-400")}>★</span>}
+                      </div>
+                      <Badge variant={typeVariant(location.type)} dot>{typeLabel(location.type)}</Badge>
                     </div>
                   </div>
 
@@ -503,7 +377,7 @@ export default function LocationsPage() {
                       center={[selectedLocation.longitude, selectedLocation.latitude]}
                       zoom={12}
                     >
-                      <PinLayer
+                      <PinLayerDynamic
                         pins={[{
                           id: selectedLocation.id,
                           lng: selectedLocation.longitude,
@@ -535,7 +409,7 @@ export default function LocationsPage() {
                     </Button>
                   )}
                 </div>
-                </Card>
+              </Card>
               ))}
             </div>
             {selectedLocation && (
