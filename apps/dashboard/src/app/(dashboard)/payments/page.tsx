@@ -188,7 +188,30 @@ export default function PaymentsPage() {
   const [dateTo, setDateTo] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
 
-  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments');
+  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments', {
+    limit: 200,
+  });
+
+  // Derive monthly revenue from real payments — no hardcoded data
+  const monthlyRevenue = useMemo<MonthlyRevenue[]>(() => {
+    const byMonth: Record<string, { revenue: number; payments: number }> = {};
+    payments
+      .filter((p) => p.status === 'completed')
+      .forEach((p) => {
+        const d = new Date(p.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+        if (!byMonth[key]) byMonth[key] = { revenue: 0, payments: 0 };
+        byMonth[key].revenue += p.amount;
+        byMonth[key].payments += 1;
+        (byMonth[key] as any)._label = label;
+      });
+    return Object.entries(byMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([, v]) => ({ month: (v as any)._label, revenue: v.revenue, payments: v.payments }));
+  }, [payments]);
+
 
   // Filter payments
   const filtered = useMemo(() => {
@@ -234,8 +257,6 @@ export default function PaymentsPage() {
 
     return sorted;
   }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy, payments]);
-
-  const monthlyRevenue = useMemo(() => buildMonthlyRevenue(payments), [payments]);
 
   // Calculate summary stats
   const stats = useMemo(() => {

@@ -67,9 +67,6 @@ export default function BillingPage() {
   const [addressForm, setAddressForm] = useState<BillingAddress | null>(null);
   const [savingAddress, setSavingAddress] = useState(false);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const addr = addressForm ?? billing?.billingAddress ?? {};
   const invoices = billing?.invoices ?? [];
   const usageMetrics = billing?.usageMetrics ?? [];

@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import {
   TrendingUp,
   TrendingDown,
+  ArrowUpRight,
   Package,
   Truck,
   Users,
@@ -116,7 +117,7 @@ function MiniBarChart({
   return (
     <div className="flex items-end gap-[3px] h-24">
       {data.map((d, i) => {
-        const val = d[dataKey] as number;
+        const val = d[dataKey] ?? 0;
         const h = maxVal > 0 ? (val / maxVal) * 100 : 0;
         return (
           <div

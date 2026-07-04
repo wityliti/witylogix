@@ -47,34 +47,83 @@ export default function ProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
-  const [editForm, setEditForm] = useState(userProfile ?? DEFAULT_PROFILE);
-  const [passwordForm, setPasswordForm] = useState({
-    current: "",
-    new: "",
-    confirm: "",
-  });
+
+  // Sync edit form when profile loads
+  useEffect(() => {
+    if (userProfile) {
+      setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+    }
+  }, [userProfile]);
+
+  const handleSaveProfile = useCallback(async () => {
+    setSaveLoading(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+    try {
+      await api.patch('/api/v4/users/me', editForm);
+      await refetch();
+      setSaveSuccess(true);
+      setIsEditing(false);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save profile');
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [editForm, refetch]);
+
+  const handleCancelEdit = useCallback(() => {
+    if (userProfile) setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+    setIsEditing(false);
+    setSaveError(null);
+  }, [userProfile]);
+
+  const handleChangePassword = useCallback(async () => {
+    if (passwordForm.new !== passwordForm.confirm) {
+      setPwError('New passwords do not match');
+      return;
+    }
+    if (passwordForm.new.length < 8) {
+      setPwError('New password must be at least 8 characters');
+      return;
+    }
+    setPwLoading(true);
+    setPwError(null);
+    setPwSuccess(false);
+    try {
+      if (!userProfile?.id) throw new Error('User not loaded');
+      await api.patch(`/api/v4/users/${userProfile.id}/password`, {
+        password: passwordForm.new,
+        currentPassword: passwordForm.current,
+      });
+      setPwSuccess(true);
+      setPasswordForm({ current: '', new: '', confirm: '' });
+      setTimeout(() => setPwSuccess(false), 3000);
+    } catch (err) {
+      setPwError(err instanceof Error ? err.message : 'Failed to change password');
+    } finally {
+      setPwLoading(false);
+    }
+  }, [passwordForm, userProfile]);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (!userProfile) return <ErrorState message="User profile unavailable" onRetry={refetch} />;
 
-  const profile = userProfile || DEFAULT_PROFILE;
+  const profile = userProfile || {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    timezone: 'America/New_York',
+    role: 'User',
+  };
 
   const handleEditChange = (field: string, value: string) => {
     setEditForm((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
-
-  const handleSaveProfile = () => {
-    void refetch();
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditForm(profile);
-    setIsEditing(false);
   };
 
   return (

@@ -1,9 +1,12 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useApiQuery } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { cn } from "@/lib/utils";
 import {
   TrendingUp,
@@ -14,9 +17,6 @@ import {
   RefreshCw,
   Info,
 } from "lucide-react";
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery } from '@/hooks/use-api';
 
 interface TestStats {
   total: number;
@@ -92,7 +92,6 @@ export default function TestDashboardPage() {
   const passRate = getPassRate(stats.passed, stats.total);
   const failRate = getPassRate(stats.failed, stats.total);
   const failedFiles = testResults.filter(f => f.failed > 0);
-  const passingFiles = testResults.filter(f => f.failed === 0);
 
   return (
     <div className="min-h-screen bg-wl-bg-root">
@@ -130,7 +129,7 @@ export default function TestDashboardPage() {
                   <p className="text-3xl font-bold text-green-600">{stats.passed}</p>
                   <p className="text-xs text-wl-text-secondary mt-1">{passRate}% pass rate</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-green-500 opacity-60" />
+                <CheckCircle2 className="w-8 h-8 text-green-600 opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -143,7 +142,7 @@ export default function TestDashboardPage() {
                   <p className="text-3xl font-bold text-red-600">{stats.failed}</p>
                   <p className="text-xs text-wl-text-secondary mt-1">{failRate}% fail rate</p>
                 </div>
-                <AlertCircle className="w-8 h-8 text-red-500 opacity-60" />
+                <AlertCircle className="w-8 h-8 text-red-600 opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -167,7 +166,7 @@ export default function TestDashboardPage() {
                   <p className="text-sm text-wl-text-secondary mb-2">Duration</p>
                   <p className="text-3xl font-bold text-white">{stats.duration}s</p>
                 </div>
-                <Zap className="w-8 h-8 text-yellow-500 opacity-60" />
+                <Zap className="w-8 h-8 text-purple-500 opacity-60" />
               </div>
             </CardContent>
           </Card>

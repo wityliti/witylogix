@@ -18,7 +18,7 @@ import {
   Trophy,
   BarChart3,
   RefreshCw,
-  MapPin,
+  Truck,
   Phone,
   Truck,
   Package,
@@ -108,14 +108,7 @@ interface DriverProfile {
   lastLocationAt: string | null;
   heading: number | null;
   createdAt: string;
-  orders: ActiveOrderPin[];
-  routes: Array<{
-    id: string;
-    name: string | null;
-    status: string;
-    date: string;
-    stops: Array<{ id: string; sequence: number; status: string; estimatedArrival: string | null }>;
-  }>;
+  orders?: { id: string }[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -233,21 +226,19 @@ export default function DriverDetailPage() {
   const driverId = params.id as string;
   const [activeTab, setActiveTab] = useState<Tab>('score');
 
-  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreResponse>(
+  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreData>(
     `/api/v4/driver-scoring/${driverId}`,
   );
 
-  const { data: historyData } = useApiQuery<HistoryResponse>(
+  const { data: historyData } = useApiQuery<HistoryEntry[]>(
     `/api/v4/driver-scoring/${driverId}/history?period=weekly&days=56`,
   );
 
-  const { data: profileRaw } = useApiQuery<{ data: DriverProfile }>(
+  const { data: profileData } = useApiQuery<DriverProfile>(
     `/api/v4/drivers/${driverId}`,
   );
 
-  const profile = profileRaw?.data ?? null;
-
-  const history = historyData?.history ?? [];
+  const history = historyData ?? [];
 
   const currentLat = useMemo(
     () => profile?.currentLocation?.latitude ?? null,
@@ -303,19 +294,12 @@ export default function DriverDetailPage() {
     );
   }
 
-  const { score, driver, metrics } = scoreData;
-  const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
-
-  const avgRating = metrics.customerRatingCount > 0
-    ? metrics.customerRatingSum / metrics.customerRatingCount
-    : 0;
-  const onTimePct = metrics.totalDeliveries > 0
-    ? (metrics.onTimeCount / metrics.totalDeliveries) * 100
-    : 0;
-  const podPct = (metrics.podComplianceCount + metrics.podMissedCount) > 0
-    ? (metrics.podComplianceCount / (metrics.podComplianceCount + metrics.podMissedCount)) * 100
-    : 0;
-  const scoreDelta = score.previousScore != null ? score.compositeScore - score.previousScore : null;
+  const tier = TIER_STYLE[scoreData.tier] ?? TIER_STYLE.bronze;
+  const scoreDelta = scoreData.previousScore != null
+    ? scoreData.compositeScore - scoreData.previousScore
+    : null;
+  const avgRating = scoreData.metrics.avgCustomerRating ? parseFloat(scoreData.metrics.avgCustomerRating) : null;
+  const podPct = scoreData.metrics.podCompliancePercent ? parseFloat(scoreData.metrics.podCompliancePercent) : null;
 
   return (
     <div className="min-h-screen">
@@ -337,7 +321,7 @@ export default function DriverDetailPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-white/90 tracking-tight">
-                  {driver.name}
+                  {scoreData.driverName}
                 </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
@@ -419,12 +403,21 @@ export default function DriverDetailPage() {
         {activeTab === 'score' && (
           <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5">
 
-            {/* Left: score dial + breakdown */}
-            <div className="space-y-4">
-              {/* Score dial */}
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
-                <ScoreArc score={score.compositeScore} />
-                <p className="text-xs text-white/30 mt-1">Composite Score</p>
+          {/* Left: score dial + breakdown */}
+          <div className="space-y-4">
+            {/* Score dial */}
+            <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
+              <ScoreArc score={scoreData.compositeScore} />
+              <p className="text-xs text-white/30 mt-1">Composite Score</p>
+              {scoreDelta !== null && (
+                <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
+                  scoreDelta > 0 ? 'text-emerald-400' : scoreDelta < 0 ? 'text-red-400' : 'text-white/30',
+                )}>
+                  {scoreDelta > 0 ? <TrendingUp className="w-4 h-4" /> : scoreDelta < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                  {scoreDelta > 0 ? '+' : ''}{scoreDelta.toFixed(1)} vs last period
+                </div>
+              )}
+            </div>
 
                 {/* Trend */}
                 {scoreDelta !== null && (
@@ -453,23 +446,18 @@ export default function DriverDetailPage() {
               {/* KPI row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Deliveries',    value: metrics.totalDeliveries.toLocaleString(), icon: BarChart3, accent: 'var(--wl-chart-violet)' },
-                  { label: 'On-Time Rate',  value: `${onTimePct.toFixed(1)}%`,               icon: Clock,     accent: 'var(--wl-success-400)' },
-                  { label: 'Avg Rating',    value: avgRating.toFixed(2),                     icon: Star,      accent: 'var(--wl-warning-400)', suffix: '/ 5' },
-                  { label: 'POD Rate',      value: `${podPct.toFixed(1)}%`,                  icon: Camera,    accent: 'var(--wl-info-400)' },
-                ].map(({ label, value, suffix, icon: Icon, accent }) => (
-                  <div key={label} className="relative overflow-hidden rounded-xl bg-wl-bg-surface border border-white/[0.06] p-4 group hover:border-white/[0.12] transition-all">
-                    <div className="absolute top-0 left-0 right-0 h-[2px] opacity-40" style={{ background: `linear-gradient(90deg, ${accent}, transparent 60%)` }} />
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] text-white/35">{label}</span>
-                      <div className="w-6 h-6 rounded flex items-center justify-center" style={{ backgroundColor: `${accent}15`, color: accent }}>
-                        <Icon className="w-3 h-3" />
-                      </div>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold font-mono text-white/85">{value}</span>
-                      {suffix && <span className="text-xs text-white/25">{suffix}</span>}
-                    </div>
+                  { label: 'Avg Delivery Time', value: `${scoreData.metrics.avgDeliveryMinutes} min` },
+                  { label: 'Late Deliveries',   value: scoreData.metrics.lateCount.toString() },
+                  { label: 'Incidents',          value: scoreData.metrics.incidentCount.toString() },
+                  { label: 'Active Orders',      value: profileData?.orders?.length?.toString() ?? '—' },
+                  { label: 'Vehicle',            value: profileData?.vehicleType ?? '—' },
+                  { label: 'Member Since',       value: profileData?.createdAt
+                      ? new Date(profileData.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
+                      : '—' },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-white/[0.02] rounded-lg p-3">
+                    <p className="text-[10px] text-white/25 mb-1">{label}</p>
+                    <p className="text-sm font-mono text-white/60">{value}</p>
                   </div>
                 ))}
               </div>
