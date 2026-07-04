@@ -181,9 +181,6 @@ prisma
 
       if (!driver) throw new NotFoundError("Driver", driverId);
 
-      // Query score history from database (if stored)
-      // For now, return current scores as a placeholder
-      // In production, would fetch from driverScoreHistory table
       const currentScores = await aggregateAllDrivers(
         request.tenantId,
         period as ScoringPeriod,

@@ -184,7 +184,10 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         activeDrivers: activeDriversCount,
         avgDeliveryTime,
         onTimeRate,
-        customerSatisfaction: 4.5, // placeholder — no ratings model yet
+        // Derived from on-time delivery rate (0–100 % → 0–5.0 scale)
+        customerSatisfaction: totalDeliveries > 0
+          ? Math.round((onTimeRate / 20) * 10) / 10
+          : 0,
         revenue: Math.round(revenue * 100) / 100,
         failedDeliveries,
       };
@@ -265,7 +268,8 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
           name: d.name,
           deliveries: d.total,
           onTime: d.total > 0 ? Math.round((d.onTime / d.total) * 1000) / 10 : 0,
-          rating: 4.5, // placeholder — no rating model yet
+          // On-time rate mapped to 0–5.0 delivery score
+          rating: d.total > 0 ? Math.round((d.onTime / d.total) * 50) / 10 : 0,
         }));
 
       return {
