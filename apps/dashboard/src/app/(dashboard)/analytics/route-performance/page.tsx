@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { BarChart2, Map as MapIcon } from "lucide-react";
 import { PlannedActualChart } from "./components/planned-actual-chart";
 import { DriverLeaderboard } from "./components/driver-leaderboard";
 import { EfficiencyHeatmap } from "./components/efficiency-heatmap";

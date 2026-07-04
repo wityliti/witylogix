@@ -181,41 +181,31 @@ export default function HomePage() {
   const { items: recentApiOrders, loading: ordersLoading } = useOrders({ limit: 5, sort: '-createdAt' } as any);
   const { items: drivers, loading: driversLoading } = useDrivers({ limit: 4 });
 
-  const recentOrders: Order[] = recentApiOrders.map((o: any) => ({
+  const recentOrders: ApiOrder[] = recentApiOrders.map((o: any) => ({
     id: o.id,
-    customerId: o.customerId,
-    status: (o.status as Order['status']) ?? 'pending',
-    eta: o.estimatedDelivery
-      ? new Date(o.estimatedDelivery).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-      : undefined,
-    destination: o.deliveryAddress
-      ? `${o.deliveryAddress.street ?? ''}, ${o.deliveryAddress.city ?? ''}`.trim().replace(/^,\s*/, '')
-      : undefined,
-    createdAt: new Date(o.createdAt),
+    customerName: o.customerName ?? null,
+    status: o.status ?? 'PENDING',
+    addressLine1: o.deliveryAddress?.street ?? o.addressLine1 ?? null,
+    city: o.deliveryAddress?.city ?? o.city ?? null,
+    estimatedArrival: o.estimatedDelivery ?? o.estimatedArrival ?? null,
+    createdAt: o.createdAt,
   }));
 
-  const displayDrivers: Driver[] = drivers.map((d: any) => ({
+  const displayDrivers: ApiDriver[] = drivers.map((d: any) => ({
     id: d.id,
     name: d.name,
-    status: (['available', 'en-route', 'delivering', 'offline'].includes(d.status)
-      ? d.status
-      : d.status === 'on_delivery' ? 'delivering'
-      : d.status === 'online' ? 'available'
-      : 'offline') as Driver['status'],
-    activeDeliveries: d.activeDeliveries ?? 0,
-    utilization: d.completionRate ?? 0,
+    status: d.status ?? 'OFFLINE',
+    _count: d._count ?? { orders: 0 },
   }));
 
-  const totalOrders = dashStats?.totalOrdersToday ?? orderStats?.totalOrders ?? 0;
-  const activeDeliveries = dashStats?.pendingDeliveries ?? 0;
+  const totalOrders = dashStats?.totalOrders ?? orderStats?.total ?? 0;
+  const activeDeliveries = dashStats?.activeDrivers ?? 0;
   const driverUtilization = drivers.length > 0
-    ? Math.round((drivers.filter((d: any) => d.status !== 'offline').length / drivers.length) * 100)
+    ? Math.round((drivers.filter((d: any) => d.status !== 'OFFLINE' && d.status !== 'offline').length / drivers.length) * 100)
     : 0;
-  const todayRevenue = dashStats?.totalRevenueToday != null
-    ? `$${dashStats.totalRevenueToday.toFixed(2)}`
-    : orderStats?.totalRevenue != null
-      ? `$${orderStats.totalRevenue.toFixed(2)}`
-      : '—';
+  const todayRevenue = dashStats?.revenue != null
+    ? `$${dashStats.revenue.toFixed(2)}`
+    : '—';
 
   const overallLoading = statsLoading && dashLoading;
 
@@ -241,7 +231,7 @@ export default function HomePage() {
         </div>
 
         {/* Stats error */}
-        {statsError && !statsLoading && (
+        {!statsLoading && !dashLoading && !orderStats && !dashStats && (
           <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg">
             <p className="text-sm text-red-300">Failed to load dashboard statistics. Please refresh.</p>
           </div>
@@ -253,8 +243,6 @@ export default function HomePage() {
             label="Total Orders"
             value={totalOrders}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="primary"
             loading={overallLoading}
           />
@@ -262,25 +250,19 @@ export default function HomePage() {
             label="Active Deliveries"
             value={activeDeliveries}
             subtitle="In progress"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />
           <KPICard
             label="Driver Utilization"
             value={`${driverUtilization}%`}
-            subtitle={`${drivers.filter((d: any) => d.status !== 'offline').length} active drivers`}
-            trend={driverUtilization > 70 ? 'up' : 'down'}
-            trendValue={undefined}
+            subtitle={`${drivers.filter((d: any) => d.status !== 'OFFLINE' && d.status !== 'offline').length} active drivers`}
             loading={driversLoading}
           />
           <KPICard
             label="Revenue"
             value={todayRevenue}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />
@@ -290,22 +272,22 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <KPICard
             label="Pending Orders"
-            value={stats?.pendingOrders ?? '—'}
+            value={dashStats?.pendingOrders ?? orderStats?.pending ?? '—'}
             subtitle="Awaiting dispatch"
             variant="warning"
-            loading={statsLoading}
+            loading={dashLoading}
           />
           <KPICard
             label="Total Customers"
-            value={stats?.totalCustomers ?? '—'}
+            value={dashStats?.totalCustomers ?? '—'}
             subtitle="Registered customers"
-            loading={statsLoading}
+            loading={dashLoading}
           />
           <KPICard
             label="Total Drivers"
-            value={stats?.totalDrivers ?? '—'}
+            value={dashStats?.totalDrivers ?? '—'}
             subtitle="Active driver roster"
-            loading={statsLoading}
+            loading={dashLoading}
           />
         </div>
 

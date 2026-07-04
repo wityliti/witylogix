@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDashboardStats } from "@/hooks/use-dashboard-stats";
+import { useDashboardStats, DashboardStats } from "@/hooks/use-dashboard-stats";
 import {
   TrendingUp,
   TrendingDown,
@@ -21,18 +21,6 @@ interface KPIMetric {
   unit: string;
   status: "good" | "warning" | "critical";
   sparkline: number[];
-}
-
-interface DashboardStats {
-  ordersToday?: number;
-  activeDeliveries?: number;
-  availableDrivers?: number;
-  slaPerformance?: number;
-  // snake_case variants
-  orders_today?: number;
-  active_deliveries?: number;
-  available_drivers?: number;
-  sla_performance?: number;
 }
 
 interface LiveKPICountersProps {
@@ -139,13 +127,13 @@ function KPICard({ metric }: { metric: KPIMetric }) {
       </div>
 
       <div className="mb-3">
-        <Sparkline data={metric.sparkline} color={sparkColor} />
+        <Sparkline data={metric.sparkline} color={sparklineColor} />
       </div>
 
       <div className="flex items-center gap-1">
         <TrendIcon className={cn("w-3 h-3", trendColor)} />
         <span className={cn("text-xs font-semibold", trendColor)}>
-          {isUp ? "+" : ""}{trendPct}%
+          {isPositiveTrend ? "+" : ""}{trendPct}%
         </span>
         <span className="text-xs text-wl-text-secondary">vs yesterday</span>
       </div>
@@ -182,10 +170,9 @@ function getSlaStatus(value: number): "good" | "warning" | "critical" {
 }
 
 function buildMetrics(stats: DashboardStats): KPIMetric[] {
-  const ordersToday = stats.ordersToday ?? stats.orders_today ?? 0;
-  const activeDeliveries = stats.activeDeliveries ?? stats.active_deliveries ?? 0;
-  const availableDrivers = stats.availableDrivers ?? stats.available_drivers ?? 0;
-  const slaPerformance = stats.slaPerformance ?? stats.sla_performance ?? 0;
+  const ordersToday = stats.totalOrders ?? 0;
+  const activeDrivers = stats.activeDrivers ?? 0;
+  const deliveredToday = stats.deliveredToday ?? 0;
 
   return [
     {
@@ -198,30 +185,30 @@ function buildMetrics(stats: DashboardStats): KPIMetric[] {
       sparkline: [],
     },
     {
-      label: "Active Deliveries",
-      value: activeDeliveries,
+      label: "Delivered Today",
+      value: deliveredToday,
       previousValue: 0,
       icon: <Truck className="w-5 h-5" />,
-      unit: "in transit",
+      unit: "deliveries",
       status: "good",
       sparkline: [],
     },
     {
-      label: "Available Drivers",
-      value: availableDrivers,
+      label: "Active Drivers",
+      value: activeDrivers,
       previousValue: 0,
       icon: <Users className="w-5 h-5" />,
       unit: "drivers",
-      status: getDriverStatus(availableDrivers),
+      status: getDriverStatus(activeDrivers),
       sparkline: [],
     },
     {
-      label: "SLA Performance",
-      value: slaPerformance,
+      label: "Pending Orders",
+      value: stats.pendingOrders ?? 0,
       previousValue: 0,
       icon: <Gauge className="w-5 h-5" />,
-      unit: "%",
-      status: getSlaStatus(slaPerformance),
+      unit: "pending",
+      status: "good",
       sparkline: [],
     },
   ];
@@ -230,106 +217,15 @@ function buildMetrics(stats: DashboardStats): KPIMetric[] {
 export function LiveKPICounters({ className }: LiveKPICountersProps) {
   const { data: stats, loading } = useDashboardStats();
 
-  const completionRate = stats?.completionRate ?? 0;
-  const metrics: KPIMetric[] = stats
-    ? [
-        {
-          label: "Orders Today",
-          value: stats.totalOrdersToday,
-          previousValue: Math.round(stats.totalOrdersToday * 0.9),
-          icon: <Package className="w-5 h-5" />,
-          unit: "orders",
-          status: "good",
-          sparkline: [stats.totalOrdersToday],
-        },
-        {
-          label: "Active Deliveries",
-          value: stats.pendingDeliveries,
-          previousValue: Math.round(stats.pendingDeliveries * 0.95),
-          icon: <Truck className="w-5 h-5" />,
-          unit: "in transit",
-          status: "good",
-          sparkline: [stats.pendingDeliveries],
-        },
-        {
-          label: "Active Drivers",
-          value: stats.activeDrivers,
-          previousValue: Math.round(stats.activeDrivers * 1.1),
-          icon: <Users className="w-5 h-5" />,
-          unit: "drivers",
-          status: stats.activeDrivers < 5 ? "critical" : stats.activeDrivers < 10 ? "warning" : "good",
-          sparkline: [stats.activeDrivers],
-        },
-        {
-          label: "SLA Performance",
-          value: Math.round(completionRate * 10) / 10,
-          previousValue: Math.round(completionRate * 0.98 * 10) / 10,
-          icon: <Gauge className="w-5 h-5" />,
-          unit: "%",
-          status: completionRate < 90 ? "critical" : completionRate < 95 ? "warning" : "good",
-          sparkline: [completionRate],
-        },
-      ]
-    : [];
-
-  const metrics: KPIMetric[] = data ? buildMetrics(data) : [];
-
-  const metrics = useMemo<KPIMetric[]>(() => {
-    if (!data) return [];
-    const onTime = data.onTimeRate ?? 0;
-    return [
-      {
-        label: "Orders Today",
-        value: data.totalOrders,
-        previousValue: 0,
-        icon: <Package className="w-5 h-5" />,
-        unit: "orders",
-        status: "good",
-        sparkline: [data.totalOrders],
-      },
-      {
-        label: "Active Deliveries",
-        value: data.totalDeliveries,
-        previousValue: 0,
-        icon: <Truck className="w-5 h-5" />,
-        unit: "in transit",
-        status: "good",
-        sparkline: [data.totalDeliveries],
-      },
-      {
-        label: "Available Drivers",
-        value: data.activeDrivers,
-        previousValue: 0,
-        icon: <Users className="w-5 h-5" />,
-        unit: "drivers",
-        status: data.activeDrivers < 5 ? "critical" : data.activeDrivers < 10 ? "warning" : "good",
-        sparkline: [data.activeDrivers],
-      },
-      {
-        label: "SLA Performance",
-        value: Math.round(onTime * 10) / 10,
-        previousValue: 0,
-        icon: <Gauge className="w-5 h-5" />,
-        unit: "%",
-        status: onTime < 85 ? "critical" : onTime < 95 ? "warning" : "good",
-        sparkline: [onTime],
-      },
-    ];
-  }, [data]);
+  const metrics: KPIMetric[] = stats ? buildMetrics(stats) : [];
 
   return (
     <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
       {loading
         ? Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-        : error
-          ? (
-            <div className="col-span-4 text-sm text-wl-danger-400 text-center py-4">
-              Failed to load metrics. <button onClick={refetch} className="underline">Retry</button>
-            </div>
-          )
-          : metrics.map((metric, i) => (
-              <KPICard key={i} metric={metric} />
-            ))}
+        : metrics.map((metric, i) => (
+            <KPICard key={i} metric={metric} />
+          ))}
     </div>
   );
 }
