@@ -11,7 +11,7 @@ import type {
   ItemCondition,
   RefundCalculation,
   ConditionAdjustment,
-} from './types.js';
+} from "./types.js";
 
 // ─── CONDITION ADJUSTMENT RATES ──────────────────────────────────
 
@@ -40,7 +40,7 @@ const CONDITION_DEDUCTIONS: Record<ItemCondition, number> = {
  */
 export function calculateRefund(
   items: ReturnItem[],
-  policy: ReturnPolicy
+  policy: ReturnPolicy,
 ): RefundCalculation {
   // Sum up item prices
   const subtotal = items.reduce((sum, item) => {
@@ -69,9 +69,11 @@ export function calculateRefund(
  */
 export function calculateRestockingFee(
   subtotal: number,
-  policy: ReturnPolicy
+  policy: ReturnPolicy,
 ): number {
-  return Math.round((subtotal * policy.restockingFeePercent) / 100 * 100) / 100;
+  return (
+    Math.round(((subtotal * policy.restockingFeePercent) / 100) * 100) / 100
+  );
 }
 
 /**
@@ -86,25 +88,26 @@ export function calculateRestockingFee(
  */
 export function adjustForCondition(
   originalAmount: number,
-  condition: ItemCondition
+  condition: ItemCondition,
 ): ConditionAdjustment {
   const deductionPercent = CONDITION_DEDUCTIONS[condition];
-  const deductionAmount = Math.round((originalAmount * deductionPercent) * 100) / 100;
+  const deductionAmount =
+    Math.round(originalAmount * deductionPercent * 100) / 100;
   const adjustedAmount = originalAmount - deductionAmount;
 
-  let reason = '';
+  let reason = "";
   switch (condition) {
-    case 'new':
-      reason = 'Item returned in new condition';
+    case "new":
+      reason = "Item returned in new condition";
       break;
-    case 'opened':
-      reason = 'Item opened but not used';
+    case "opened":
+      reason = "Item opened but not used";
       break;
-    case 'damaged':
-      reason = 'Item damaged upon return';
+    case "damaged":
+      reason = "Item damaged upon return";
       break;
-    case 'defective':
-      reason = 'Item defective (manufacturer fault)';
+    case "defective":
+      reason = "Item defective (manufacturer fault)";
       break;
   }
 
@@ -129,7 +132,7 @@ export function adjustForCondition(
 export function calculateItemRefund(
   unitPrice: number,
   quantity: number,
-  condition: ItemCondition
+  condition: ItemCondition,
 ): number {
   const baseAmount = unitPrice * quantity;
   const adjustment = adjustForCondition(baseAmount, condition);

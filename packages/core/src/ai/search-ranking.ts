@@ -89,7 +89,7 @@ export class SearchRanker {
     contentSnippet: string,
     createdAt: Date,
     userId: string,
-    tenantId: string
+    tenantId: string,
   ): Promise<RankingFeatures> {
     const features: RankingFeatures = {
       textRelevance: this.calculateTextRelevance(query, contentSnippet),
@@ -98,7 +98,7 @@ export class SearchRanker {
       userInteractionScore: await this.getUserInteractionScore(
         userId,
         entityId,
-        tenantId
+        tenantId,
       ),
       engagementRate: await this.calculateEngagementRate(entityId, tenantId),
       entityType,
@@ -113,7 +113,7 @@ export class SearchRanker {
   scoreResult(
     features: RankingFeatures,
     userId?: string,
-    testId?: string
+    testId?: string,
   ): number {
     let weights = this.weights;
 
@@ -139,9 +139,7 @@ export class SearchRanker {
   /**
    * Track user interaction with search result
    */
-  async trackInteraction(
-    interaction: SearchInteraction
-  ): Promise<void> {
+  async trackInteraction(interaction: SearchInteraction): Promise<void> {
     // Store interaction in database for learning
     await db.searchInteraction.create({
       data: {
@@ -171,7 +169,11 @@ export class SearchRanker {
     // Update entity popularity
     const popKey = `${interaction.tenantId}:${interaction.entityId}`;
     const currentPop = this.entityPopularityCache.get(popKey) || 0;
-    const popBoost = interaction.actionTaken ? 0.02 : interaction.clicked ? 0.005 : 0;
+    const popBoost = interaction.actionTaken
+      ? 0.02
+      : interaction.clicked
+        ? 0.005
+        : 0;
     this.entityPopularityCache.set(popKey, Math.min(1, currentPop + popBoost));
   }
 
@@ -186,7 +188,7 @@ export class SearchRanker {
    * Get A/B test results
    */
   async getTestResults(
-    testId: string
+    testId: string,
   ): Promise<{ variantA: number; variantB: number }> {
     const test = this.abTests.get(testId);
     if (!test) {
@@ -207,7 +209,7 @@ export class SearchRanker {
     for (const interaction of interactions) {
       const variant = this.getUserVariant(
         interaction.userId,
-        test.splitPercentage
+        test.splitPercentage,
       );
 
       if (variant === "A") {
@@ -220,8 +222,10 @@ export class SearchRanker {
     }
 
     return {
-      variantA: variantAImpressions > 0 ? variantAClicks / variantAImpressions : 0,
-      variantB: variantBImpressions > 0 ? variantBClicks / variantBImpressions : 0,
+      variantA:
+        variantAImpressions > 0 ? variantAClicks / variantAImpressions : 0,
+      variantB:
+        variantBImpressions > 0 ? variantBClicks / variantBImpressions : 0,
     };
   }
 
@@ -238,7 +242,10 @@ export class SearchRanker {
   // ─── PRIVATE HELPERS ────────────────────────────────────────────────
 
   private calculateTextRelevance(query: string, snippet: string): number {
-    const queryTerms = query.toLowerCase().split(/\W+/).filter((t) => t);
+    const queryTerms = query
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((t) => t);
     const snippetLower = snippet.toLowerCase();
 
     if (queryTerms.length === 0) return 0;
@@ -267,7 +274,7 @@ export class SearchRanker {
 
   private async calculatePopularity(
     entityId: string,
-    tenantId: string
+    tenantId: string,
   ): Promise<number> {
     // Check cache first
     const cacheKey = `${tenantId}:${entityId}`;
@@ -288,7 +295,10 @@ export class SearchRanker {
 
     // Cache for 1 hour
     this.entityPopularityCache.set(cacheKey, popularity);
-    setTimeout(() => this.entityPopularityCache.delete(cacheKey), 60 * 60 * 1000);
+    setTimeout(
+      () => this.entityPopularityCache.delete(cacheKey),
+      60 * 60 * 1000,
+    );
 
     return popularity;
   }
@@ -296,7 +306,7 @@ export class SearchRanker {
   private async getUserInteractionScore(
     userId: string,
     entityId: string,
-    tenantId: string
+    tenantId: string,
   ): Promise<number> {
     const cacheKey = `${tenantId}:${userId}`;
     const userHistory = this.userHistoryCache.get(cacheKey);
@@ -327,7 +337,7 @@ export class SearchRanker {
 
   private async calculateEngagementRate(
     entityId: string,
-    tenantId: string
+    tenantId: string,
   ): Promise<number> {
     const interactions = await db.searchInteraction.findMany({
       where: { entityId, tenantId },
@@ -343,7 +353,7 @@ export class SearchRanker {
     // Deterministic assignment based on user ID
     const hash = Array.from(userId).reduce(
       (h, c) => (h * 31 + c.charCodeAt(0)) | 0,
-      0
+      0,
     );
     return Math.abs(hash % 100) < splitPercentage ? "B" : "A";
   }
@@ -352,7 +362,7 @@ export class SearchRanker {
 // ─── FACTORY ────────────────────────────────────────────────────────────
 
 export function createSearchRanker(
-  customWeights?: Partial<RankingWeights>
+  customWeights?: Partial<RankingWeights>,
 ): SearchRanker {
   return new SearchRanker(customWeights);
 }

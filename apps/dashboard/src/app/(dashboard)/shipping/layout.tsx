@@ -19,7 +19,8 @@ export default function ShippingLayout({ children }: ShippingLayoutProps) {
     { name: "Settings", href: "/shipping/settings", id: "settings" },
   ];
 
-  const activeTab = tabs.find((tab) => pathname.includes(tab.id))?.id || "labels";
+  const activeTab =
+    tabs.find((tab) => pathname.includes(tab.id))?.id || "labels";
 
   return (
     <div className={cn("w-full h-full flex flex-col", "bg-wl-bg-root")}>
@@ -28,7 +29,7 @@ export default function ShippingLayout({ children }: ShippingLayoutProps) {
         className={cn(
           "border-b border-wl-border-default",
           "bg-wl-bg-elevated",
-          "px-6 py-0"
+          "px-6 py-0",
         )}
       >
         <div className="flex gap-8">
@@ -41,7 +42,7 @@ export default function ShippingLayout({ children }: ShippingLayoutProps) {
                 "border-b-2 transition-colors duration-fast ease-default",
                 activeTab === tab.id
                   ? "border-wl-primary-500 text-wl-text-primary"
-                  : "border-transparent text-wl-text-secondary hover:text-wl-text-primary"
+                  : "border-transparent text-wl-text-secondary hover:text-wl-text-primary",
               )}
             >
               {tab.name}

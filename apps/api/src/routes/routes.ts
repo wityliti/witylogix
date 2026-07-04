@@ -21,14 +21,27 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { NotFoundError, ValidationError } from "../lib/errors.js";
 import { getOptimizationQueue } from "../lib/queue.js";
-import { emitToShop, emitToDriver, type RouteUpdatedEvent } from "../lib/socket.js";
+import {
+  emitToShop,
+  emitToDriver,
+  type RouteUpdatedEvent,
+} from "../lib/socket.js";
 
 // ─── Schemas ────────────────────────────────────────────────
 
 const listRoutesQuery = paginationSchema.extend({
   date: z.string().optional(),
   driverId: z.string().uuid().optional(),
-  status: z.enum(["DRAFT", "OPTIMIZED", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
+  status: z
+    .enum([
+      "DRAFT",
+      "OPTIMIZED",
+      "ASSIGNED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "CANCELLED",
+    ])
+    .optional(),
 });
 
 const createRouteSchema = z.object({
@@ -40,20 +53,37 @@ const createRouteSchema = z.object({
 });
 
 const addStopsSchema = z.object({
-  stops: z.array(z.object({
-    orderId: z.string().uuid().optional(),
-    sequence: z.number().int().nonnegative(),
-    stopType: z.enum(["PICKUP", "DELIVERY", "RETURN", "DEPOT"]).default("DELIVERY"),
-    timeWindowStart: z.string().datetime().optional(),
-    timeWindowEnd: z.string().datetime().optional(),
-  }).refine(
-    (s) => !(s.timeWindowStart && s.timeWindowEnd) || new Date(s.timeWindowStart) < new Date(s.timeWindowEnd),
-    { message: "timeWindowStart must be before timeWindowEnd" }
-  )).min(1),
+  stops: z
+    .array(
+      z
+        .object({
+          orderId: z.string().uuid().optional(),
+          sequence: z.number().int().nonnegative(),
+          stopType: z
+            .enum(["PICKUP", "DELIVERY", "RETURN", "DEPOT"])
+            .default("DELIVERY"),
+          timeWindowStart: z.string().datetime().optional(),
+          timeWindowEnd: z.string().datetime().optional(),
+        })
+        .refine(
+          (s) =>
+            !(s.timeWindowStart && s.timeWindowEnd) ||
+            new Date(s.timeWindowStart) < new Date(s.timeWindowEnd),
+          { message: "timeWindowStart must be before timeWindowEnd" },
+        ),
+    )
+    .min(1),
 });
 
 const updateStopSchema = z.object({
-  status: z.enum(["PENDING", "EN_ROUTE", "ARRIVED", "COMPLETED", "SKIPPED", "FAILED"]),
+  status: z.enum([
+    "PENDING",
+    "EN_ROUTE",
+    "ARRIVED",
+    "COMPLETED",
+    "SKIPPED",
+    "FAILED",
+  ]),
   notes: z.string().optional(),
 });
 
@@ -99,15 +129,27 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
         assignedDriver: r.driver?.name ?? null,
         driverId: r.driverId ?? null,
         // Map DB RouteStatus to the dashboard display statuses
-        status: ((): "draft" | "scheduled" | "active" | "completed" | "cancelled" => {
+        status: (():
+          | "draft"
+          | "scheduled"
+          | "active"
+          | "completed"
+          | "cancelled" => {
           switch (r.status) {
-            case "DRAFT": return "draft";
-            case "OPTIMIZED": return "draft";
-            case "ASSIGNED": return "scheduled";
-            case "IN_PROGRESS": return "active";
-            case "COMPLETED": return "completed";
-            case "CANCELLED": return "cancelled";
-            default: return "draft";
+            case "DRAFT":
+              return "draft";
+            case "OPTIMIZED":
+              return "draft";
+            case "ASSIGNED":
+              return "scheduled";
+            case "IN_PROGRESS":
+              return "active";
+            case "COMPLETED":
+              return "completed";
+            case "CANCELLED":
+              return "cancelled";
+            default:
+              return "draft";
           }
         })(),
         rawStatus: r.status,
@@ -119,13 +161,22 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
 
       return {
         data: mapped,
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       };
     } catch (err) {
       if (err instanceof ZodError) {
         return reply.status(422).send({
           success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid query parameters",
+            details: err.errors,
+          },
         });
       }
       throw err;
@@ -190,7 +241,12 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
       const enrichedStops = route.stops.map((stop) => {
         const order = stop.orderId ? orderById.get(stop.orderId) : undefined;
         const loc = order?.deliveryLocation as
-          | { lat?: number; latitude?: number; lng?: number; longitude?: number }
+          | {
+              lat?: number;
+              latitude?: number;
+              lng?: number;
+              longitude?: number;
+            }
           | null
           | undefined;
 
@@ -261,7 +317,11 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
       if (err instanceof ZodError) {
         return reply.status(422).send({
           success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid request body",
+            details: err.errors,
+          },
         });
       }
       throw err;
@@ -276,32 +336,41 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
     startAddress: z.string().optional(),
   });
 
-  fastify.patch("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+  fastify.patch(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-      const { id } = request.params as { id: string };
-      const body = updateRouteSchema.parse(request.body);
+        const { id } = request.params as { id: string };
+        const body = updateRouteSchema.parse(request.body);
 
-      const route = await request.tenantDb.route.findUnique({ where: { id } });
-      if (!route) throw new NotFoundError("Route", id);
-
-      const updated = await request.tenantDb.route.update({
-        where: { id },
-        data: body,
-      });
-
-      return { data: updated };
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return reply.status(422).send({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        const route = await request.tenantDb.route.findUnique({
+          where: { id },
         });
+        if (!route) throw new NotFoundError("Route", id);
+
+        const updated = await request.tenantDb.route.update({
+          where: { id },
+          data: body,
+        });
+
+        return { data: updated };
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
+          });
+        }
+        throw err;
       }
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── ASSIGN DRIVER ─────────────────────────────────────────
   //  POST /:id/assign — assign or re-assign a driver to a route, update all
@@ -312,222 +381,289 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
     driverId: z.string().uuid(),
   });
 
-  fastify.post("/:id/assign", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+  fastify.post(
+    "/:id/assign",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-      const { id } = request.params as { id: string };
-      const { driverId } = assignDriverSchema.parse(request.body);
+        const { id } = request.params as { id: string };
+        const { driverId } = assignDriverSchema.parse(request.body);
 
-      const route = await request.tenantDb.route.findUnique({
-        where: { id },
-        include: { driver: { select: { id: true, name: true } } },
-      });
-      if (!route) throw new NotFoundError("Route", id);
-
-      // Verify driver exists in this tenant
-      const driver = await request.tenantDb.driver.findFirst({
-        where: {
-          id: driverId,
-          OR: [{ shopId: request.shopId }, { orgId: request.shopId }],
-        },
-        select: { id: true, name: true, vehicleType: true },
-      });
-      if (!driver) throw new NotFoundError("Driver", driverId);
-
-      const [updated] = await request.tenantDb.$transaction([
-        request.tenantDb.route.update({
+        const route = await request.tenantDb.route.findUnique({
           where: { id },
-          data: {
-            driverId,
-            status: route.status === "DRAFT" || route.status === "OPTIMIZED" ? "ASSIGNED" : route.status,
-          },
-          include: {
-            driver: { select: { id: true, name: true, vehicleType: true } },
-            _count: { select: { stops: true } },
-          },
-        }),
-        request.tenantDb.routeStop.updateMany({
-          where: { routeId: id, status: { in: ["PENDING", "EN_ROUTE"] } },
-          data: { driverId },
-        }),
-      ]);
-
-      return { data: updated };
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return reply.status(422).send({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+          include: { driver: { select: { id: true, name: true } } },
         });
+        if (!route) throw new NotFoundError("Route", id);
+
+        // Verify driver exists in this tenant
+        const driver = await request.tenantDb.driver.findFirst({
+          where: {
+            id: driverId,
+            OR: [{ shopId: request.shopId }, { orgId: request.shopId }],
+          },
+          select: { id: true, name: true, vehicleType: true },
+        });
+        if (!driver) throw new NotFoundError("Driver", driverId);
+
+        const [updated] = await request.tenantDb.$transaction([
+          request.tenantDb.route.update({
+            where: { id },
+            data: {
+              driverId,
+              status:
+                route.status === "DRAFT" || route.status === "OPTIMIZED"
+                  ? "ASSIGNED"
+                  : route.status,
+            },
+            include: {
+              driver: { select: { id: true, name: true, vehicleType: true } },
+              _count: { select: { stops: true } },
+            },
+          }),
+          request.tenantDb.routeStop.updateMany({
+            where: { routeId: id, status: { in: ["PENDING", "EN_ROUTE"] } },
+            data: { driverId },
+          }),
+        ]);
+
+        return { data: updated };
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
+          });
+        }
+        throw err;
       }
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── UPDATE ROUTE STATUS ───────────────────────────────────
 
   const routeStatusSchema = z.object({
-    status: z.enum(["DRAFT", "OPTIMIZED", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
+    status: z.enum([
+      "DRAFT",
+      "OPTIMIZED",
+      "ASSIGNED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "CANCELLED",
+    ]),
   });
 
-  fastify.patch("/:id/status", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
+  fastify.patch(
+    "/:id/status",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole(
+          "SUPER_ADMIN",
+          "ADMIN",
+          "DISPATCHER",
+          "DRIVER",
+        )(request, reply);
 
-      const { id } = request.params as { id: string };
-      const { status } = routeStatusSchema.parse(request.body);
+        const { id } = request.params as { id: string };
+        const { status } = routeStatusSchema.parse(request.body);
 
-      const route = await request.tenantDb.route.findUnique({ where: { id } });
-      if (!route) throw new NotFoundError("Route", id);
-
-      const updatePayload: any = { status };
-      if (status === "IN_PROGRESS" && !route.startedAt) {
-        updatePayload.startedAt = new Date();
-      }
-      if (status === "COMPLETED") {
-        updatePayload.completedAt = new Date();
-      }
-
-      const updated = await request.tenantDb.route.update({
-        where: { id },
-        data: updatePayload,
-      });
-
-      return { data: updated };
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return reply.status(422).send({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        const route = await request.tenantDb.route.findUnique({
+          where: { id },
         });
+        if (!route) throw new NotFoundError("Route", id);
+
+        const updatePayload: any = { status };
+        if (status === "IN_PROGRESS" && !route.startedAt) {
+          updatePayload.startedAt = new Date();
+        }
+        if (status === "COMPLETED") {
+          updatePayload.completedAt = new Date();
+        }
+
+        const updated = await request.tenantDb.route.update({
+          where: { id },
+          data: updatePayload,
+        });
+
+        return { data: updated };
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
+          });
+        }
+        throw err;
       }
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── ADD STOPS ─────────────────────────────────────────────
 
-  fastify.post("/:id/stops", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+  fastify.post(
+    "/:id/stops",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-      const { id } = request.params as { id: string };
-      const { stops } = addStopsSchema.parse(request.body);
+        const { id } = request.params as { id: string };
+        const { stops } = addStopsSchema.parse(request.body);
 
-      const route = await request.tenantDb.route.findUnique({ where: { id } });
-      if (!route) throw new NotFoundError("Route", id);
-
-      const created = await request.tenantDb.routeStop.createMany({
-        data: stops.map((stop) => ({
-          routeId: id,
-          orderId: stop.orderId,
-          sequence: stop.sequence,
-          stopType: stop.stopType,
-          driverId: route.driverId,
-          timeWindowStart: stop.timeWindowStart ? new Date(stop.timeWindowStart) : undefined,
-          timeWindowEnd: stop.timeWindowEnd ? new Date(stop.timeWindowEnd) : undefined,
-        })),
-      });
-
-      reply.status(201);
-      return { data: { count: created.count } };
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return reply.status(422).send({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        const route = await request.tenantDb.route.findUnique({
+          where: { id },
         });
+        if (!route) throw new NotFoundError("Route", id);
+
+        const created = await request.tenantDb.routeStop.createMany({
+          data: stops.map((stop) => ({
+            routeId: id,
+            orderId: stop.orderId,
+            sequence: stop.sequence,
+            stopType: stop.stopType,
+            driverId: route.driverId,
+            timeWindowStart: stop.timeWindowStart
+              ? new Date(stop.timeWindowStart)
+              : undefined,
+            timeWindowEnd: stop.timeWindowEnd
+              ? new Date(stop.timeWindowEnd)
+              : undefined,
+          })),
+        });
+
+        reply.status(201);
+        return { data: { count: created.count } };
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
+          });
+        }
+        throw err;
       }
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── UPDATE STOP STATUS ────────────────────────────────────
 
-  fastify.patch("/:id/stops/:stopId", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
+  fastify.patch(
+    "/:id/stops/:stopId",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole(
+          "SUPER_ADMIN",
+          "ADMIN",
+          "DISPATCHER",
+          "DRIVER",
+        )(request, reply);
 
-      const { id, stopId } = request.params as { id: string; stopId: string };
-      const body = updateStopSchema.parse(request.body);
+        const { id, stopId } = request.params as { id: string; stopId: string };
+        const body = updateStopSchema.parse(request.body);
 
-      const stop = await request.tenantDb.routeStop.findFirst({
-        where: { id: stopId, routeId: id },
-      });
-      if (!stop) throw new NotFoundError("RouteStop", stopId);
-
-      const updatePayload: any = { status: body.status, notes: body.notes };
-      if (body.status === "ARRIVED") {
-        updatePayload.actualArrival = new Date();
-      }
-      if (body.status === "COMPLETED" || body.status === "SKIPPED" || body.status === "FAILED") {
-        updatePayload.departedAt = new Date();
-      }
-
-      const updated = await request.tenantDb.routeStop.update({
-        where: { id: stopId },
-        data: updatePayload,
-      });
-
-      return { data: updated };
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return reply.status(422).send({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        const stop = await request.tenantDb.routeStop.findFirst({
+          where: { id: stopId, routeId: id },
         });
+        if (!stop) throw new NotFoundError("RouteStop", stopId);
+
+        const updatePayload: any = { status: body.status, notes: body.notes };
+        if (body.status === "ARRIVED") {
+          updatePayload.actualArrival = new Date();
+        }
+        if (
+          body.status === "COMPLETED" ||
+          body.status === "SKIPPED" ||
+          body.status === "FAILED"
+        ) {
+          updatePayload.departedAt = new Date();
+        }
+
+        const updated = await request.tenantDb.routeStop.update({
+          where: { id: stopId },
+          data: updatePayload,
+        });
+
+        return { data: updated };
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
+          });
+        }
+        throw err;
       }
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── OPTIMIZE ROUTE (stub — dispatches to solver) ──────────
 
-  fastify.post("/:id/optimize", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+  fastify.post(
+    "/:id/optimize",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-      const { id } = request.params as { id: string };
+        const { id } = request.params as { id: string };
 
-      const route = await request.tenantDb.route.findUnique({
-        where: { id },
-        include: { stops: true },
-      });
-      if (!route) throw new NotFoundError("Route", id);
+        const route = await request.tenantDb.route.findUnique({
+          where: { id },
+          include: { stops: true },
+        });
+        if (!route) throw new NotFoundError("Route", id);
 
-      if (route.stops.length < 2) {
-        throw new ValidationError("Route must have at least 2 stops to optimize");
+        if (route.stops.length < 2) {
+          throw new ValidationError(
+            "Route must have at least 2 stops to optimize",
+          );
+        }
+
+        // Dispatch to BullMQ optimization queue
+        const queue = getOptimizationQueue();
+        await queue.add(
+          "optimize",
+          {
+            shopId: request.shopId,
+            routeId: id,
+            depot: { lat: 0, lng: 0 }, // Default depot — should come from shop settings
+            orderIds: route.stops
+              .map((s) => s.orderId)
+              .filter(Boolean) as string[],
+            vehicleIds: route.driverId ? [route.driverId] : [],
+          },
+          {
+            attempts: 3,
+            backoff: { type: "exponential", delay: 2000 },
+          },
+        );
+
+        // Mark as optimized (the worker will update with actual results)
+        await request.tenantDb.route.update({
+          where: { id },
+          data: { status: "OPTIMIZED" },
+        });
+
+        return { data: { message: "Route optimization queued", routeId: id } };
+      } catch (err) {
+        throw err;
       }
-
-      // Dispatch to BullMQ optimization queue
-      const queue = getOptimizationQueue();
-      await queue.add(
-        "optimize",
-        {
-          shopId: request.shopId,
-          routeId: id,
-          depot: { lat: 0, lng: 0 }, // Default depot — should come from shop settings
-          orderIds: route.stops.map((s) => s.orderId).filter(Boolean) as string[],
-          vehicleIds: route.driverId ? [route.driverId] : [],
-        },
-        {
-          attempts: 3,
-          backoff: { type: "exponential", delay: 2000 },
-        },
-      );
-
-      // Mark as optimized (the worker will update with actual results)
-      await request.tenantDb.route.update({
-        where: { id },
-        data: { status: "OPTIMIZED" },
-      });
-
-      return { data: { message: "Route optimization queued", routeId: id } };
-    } catch (err) {
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── HOT-ADD STOP (mid-route re-optimisation) ──────────────
 
@@ -551,7 +687,9 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
     longitude: z.number().min(-180).max(180),
     address: z.string().optional(),
     orderId: z.string().uuid().optional(),
-    stopType: z.enum(["PICKUP", "DELIVERY", "RETURN", "DEPOT"]).default("DELIVERY"),
+    stopType: z
+      .enum(["PICKUP", "DELIVERY", "RETURN", "DEPOT"])
+      .default("DELIVERY"),
     serviceDuration: z.number().int().nonnegative().default(5), // minutes
     priority: z.number().int().min(1).max(10).default(5),
     notes: z.string().optional(),
@@ -566,269 +704,290 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
     currentLongitude: z.number().min(-180).max(180).optional(),
   });
 
-  fastify.post("/:id/stops/hot-add", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+  fastify.post(
+    "/:id/stops/hot-add",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-      const { id } = request.params as { id: string };
-      const body = hotAddStopSchema.parse(request.body);
+        const { id } = request.params as { id: string };
+        const body = hotAddStopSchema.parse(request.body);
 
-      // ── 1. Load route + stops ──────────────────────────────
-      const route = await request.tenantDb.route.findUnique({
-        where: { id },
-        include: { stops: { orderBy: { sequence: "asc" } } },
-      });
-      if (!route) throw new NotFoundError("Route", id);
-
-      if (route.status !== "IN_PROGRESS") {
-        return reply.status(422).send({
-          success: false,
-          error: {
-            code: "INVALID_STATE",
-            message: `Route must be IN_PROGRESS to hot-add stops (current: ${route.status})`,
-          },
+        // ── 1. Load route + stops ──────────────────────────────
+        const route = await request.tenantDb.route.findUnique({
+          where: { id },
+          include: { stops: { orderBy: { sequence: "asc" } } },
         });
-      }
+        if (!route) throw new NotFoundError("Route", id);
 
-      // ── 2. Separate terminal stops from remaining ─────────
-      const TERMINAL = new Set(["COMPLETED", "SKIPPED", "FAILED"]);
-      const completedStops = route.stops.filter((s) => TERMINAL.has(s.status));
-      const remainingStops = route.stops.filter((s) => !TERMINAL.has(s.status));
-
-      // ── 3. Build lat/lng map from optimizedOrder JSON ─────
-      type OptimizedEntry = {
-        sequence: number;
-        orderId: string;
-        lat: number;
-        lng: number;
-        eta: string;
-        type: string;
-      };
-      const optimizedOrder = (route.optimizedOrder ?? []) as OptimizedEntry[];
-      const locByOrderId = new Map(optimizedOrder.map((o) => [o.orderId, { lat: o.lat, lng: o.lng }]));
-
-      // Keep only remaining stops that have known coordinates
-      const remainingWithLoc = remainingStops
-        .filter((s) => s.orderId !== null && locByOrderId.has(s.orderId!))
-        .map((s) => ({
-          stopId: s.id,
-          orderId: s.orderId!,
-          lat: locByOrderId.get(s.orderId!)!.lat,
-          lng: locByOrderId.get(s.orderId!)!.lng,
-        }));
-
-      // ── 4. Determine re-optimisation starting point ───────
-      // Use caller-supplied driver position, falling back to the last
-      // completed stop's position so the nearest-neighbour starts from
-      // where the driver actually is.
-      let depotLat: number;
-      let depotLng: number;
-
-      if (body.currentLatitude !== undefined && body.currentLongitude !== undefined) {
-        depotLat = body.currentLatitude;
-        depotLng = body.currentLongitude;
-      } else {
-        const lastCompleted = optimizedOrder
-          .filter((o) => completedStops.some((s) => s.orderId === o.orderId))
-          .sort((a, b) => b.sequence - a.sequence)[0];
-        depotLat = lastCompleted?.lat ?? body.latitude;
-        depotLng = lastCompleted?.lng ?? body.longitude;
-      }
-
-      // ── 5. Build points array for matrix computation ──────
-      // Index 0 = current driver position (depot)
-      // Index 1..remaining = remaining stop locations
-      // Index remaining+1 = new stop
-      type Point = { lat: number; lng: number };
-      const points: Point[] = [
-        { lat: depotLat, lng: depotLng },
-        ...remainingWithLoc.map((s) => ({ lat: s.lat, lng: s.lng })),
-        { lat: body.latitude, lng: body.longitude },
-      ];
-
-      // ── 6. Haversine distance matrix with traffic factor ──
-      const matrix = buildHaversineMatrix(points, body.trafficFactor);
-
-      // ── 7. Nearest-neighbour from depot ───────────────────
-      const optimizedIndices = nearestNeighborTSP(matrix, 0);
-
-      // Strip the depot (index 0); map back to allStops indices (0-based)
-      const stopSequence = optimizedIndices
-        .filter((i) => i > 0)
-        .map((i) => i - 1);
-
-      // allStops: remaining stops followed by the new stop
-      const allStops: Array<{
-        existing: boolean;
-        stopId: string | null; // null for the new stop before creation
-        orderId: string | null;
-        lat: number;
-        lng: number;
-      }> = [
-        ...remainingWithLoc.map((s) => ({
-          existing: true,
-          stopId: s.stopId,
-          orderId: s.orderId,
-          lat: s.lat,
-          lng: s.lng,
-        })),
-        {
-          existing: false,
-          stopId: null,
-          orderId: body.orderId ?? null,
-          lat: body.latitude,
-          lng: body.longitude,
-        },
-      ];
-
-      // ── 8. Persist changes in a transaction ───────────────
-      const serviceTimeSeconds = body.serviceDuration * 60;
-      const baseSequence = completedStops.length;
-      const now = new Date();
-
-      const updatedSequence: RouteUpdatedEvent["updatedSequence"] = [];
-
-      const newStop = await request.tenantDb.$transaction(async (tx) => {
-        // Create the new RouteStop with a placeholder sequence
-        const created = await tx.routeStop.create({
-          data: {
-            routeId: id,
-            orderId: body.orderId ?? null,
-            driverId: route.driverId,
-            sequence: 9999,
-            stopType: body.stopType,
-            status: "PENDING",
-            notes: body.notes ?? null,
-          },
-        });
-
-        // Assign real stop id to the new entry in allStops
-        allStops[allStops.length - 1].stopId = created.id;
-
-        // Re-sequence all stops in optimised order
-        let cumulative = 0;
-        for (let i = 0; i < stopSequence.length; i++) {
-          const stopIdx = stopSequence[i];
-          const stopInfo = allStops[stopIdx];
-
-          const prevIdx = i === 0 ? 0 : stopSequence[i - 1] + 1;
-          const currentIdx = stopIdx + 1;
-          cumulative += matrix[prevIdx][currentIdx] + serviceTimeSeconds;
-
-          const eta = new Date(now.getTime() + cumulative * 1000);
-          const newSeq = baseSequence + i;
-
-          await tx.routeStop.update({
-            where: { id: stopInfo.stopId! },
-            data: { sequence: newSeq, estimatedArrival: eta },
-          });
-
-          updatedSequence.push({
-            stopId: stopInfo.stopId!,
-            orderId: stopInfo.orderId,
-            sequence: newSeq,
-            estimatedArrival: eta.toISOString(),
+        if (route.status !== "IN_PROGRESS") {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "INVALID_STATE",
+              message: `Route must be IN_PROGRESS to hot-add stops (current: ${route.status})`,
+            },
           });
         }
 
-        // Rebuild optimizedOrder: keep completed entries, append re-optimised
-        const completedEntries = optimizedOrder.filter((o) =>
-          completedStops.some((s) => s.orderId === o.orderId),
+        // ── 2. Separate terminal stops from remaining ─────────
+        const TERMINAL = new Set(["COMPLETED", "SKIPPED", "FAILED"]);
+        const completedStops = route.stops.filter((s) =>
+          TERMINAL.has(s.status),
         );
-        const newEntries = updatedSequence
-          .filter((s) => s.orderId !== null)
-          .map((s) => {
-            const pt = allStops.find((a) => a.stopId === s.stopId)!;
-            return {
-              sequence: s.sequence,
-              orderId: s.orderId!,
-              lat: pt.lat,
-              lng: pt.lng,
-              eta: s.estimatedArrival,
-              type: body.stopType,
-            };
+        const remainingStops = route.stops.filter(
+          (s) => !TERMINAL.has(s.status),
+        );
+
+        // ── 3. Build lat/lng map from optimizedOrder JSON ─────
+        type OptimizedEntry = {
+          sequence: number;
+          orderId: string;
+          lat: number;
+          lng: number;
+          eta: string;
+          type: string;
+        };
+        const optimizedOrder = (route.optimizedOrder ?? []) as OptimizedEntry[];
+        const locByOrderId = new Map(
+          optimizedOrder.map((o) => [o.orderId, { lat: o.lat, lng: o.lng }]),
+        );
+
+        // Keep only remaining stops that have known coordinates
+        const remainingWithLoc = remainingStops
+          .filter((s) => s.orderId !== null && locByOrderId.has(s.orderId!))
+          .map((s) => ({
+            stopId: s.id,
+            orderId: s.orderId!,
+            lat: locByOrderId.get(s.orderId!)!.lat,
+            lng: locByOrderId.get(s.orderId!)!.lng,
+          }));
+
+        // ── 4. Determine re-optimisation starting point ───────
+        // Use caller-supplied driver position, falling back to the last
+        // completed stop's position so the nearest-neighbour starts from
+        // where the driver actually is.
+        let depotLat: number;
+        let depotLng: number;
+
+        if (
+          body.currentLatitude !== undefined &&
+          body.currentLongitude !== undefined
+        ) {
+          depotLat = body.currentLatitude;
+          depotLng = body.currentLongitude;
+        } else {
+          const lastCompleted = optimizedOrder
+            .filter((o) => completedStops.some((s) => s.orderId === o.orderId))
+            .sort((a, b) => b.sequence - a.sequence)[0];
+          depotLat = lastCompleted?.lat ?? body.latitude;
+          depotLng = lastCompleted?.lng ?? body.longitude;
+        }
+
+        // ── 5. Build points array for matrix computation ──────
+        // Index 0 = current driver position (depot)
+        // Index 1..remaining = remaining stop locations
+        // Index remaining+1 = new stop
+        type Point = { lat: number; lng: number };
+        const points: Point[] = [
+          { lat: depotLat, lng: depotLng },
+          ...remainingWithLoc.map((s) => ({ lat: s.lat, lng: s.lng })),
+          { lat: body.latitude, lng: body.longitude },
+        ];
+
+        // ── 6. Haversine distance matrix with traffic factor ──
+        const matrix = buildHaversineMatrix(points, body.trafficFactor);
+
+        // ── 7. Nearest-neighbour from depot ───────────────────
+        const optimizedIndices = nearestNeighborTSP(matrix, 0);
+
+        // Strip the depot (index 0); map back to allStops indices (0-based)
+        const stopSequence = optimizedIndices
+          .filter((i) => i > 0)
+          .map((i) => i - 1);
+
+        // allStops: remaining stops followed by the new stop
+        const allStops: Array<{
+          existing: boolean;
+          stopId: string | null; // null for the new stop before creation
+          orderId: string | null;
+          lat: number;
+          lng: number;
+        }> = [
+          ...remainingWithLoc.map((s) => ({
+            existing: true,
+            stopId: s.stopId,
+            orderId: s.orderId,
+            lat: s.lat,
+            lng: s.lng,
+          })),
+          {
+            existing: false,
+            stopId: null,
+            orderId: body.orderId ?? null,
+            lat: body.latitude,
+            lng: body.longitude,
+          },
+        ];
+
+        // ── 8. Persist changes in a transaction ───────────────
+        const serviceTimeSeconds = body.serviceDuration * 60;
+        const baseSequence = completedStops.length;
+        const now = new Date();
+
+        const updatedSequence: RouteUpdatedEvent["updatedSequence"] = [];
+
+        const newStop = await request.tenantDb.$transaction(async (tx) => {
+          // Create the new RouteStop with a placeholder sequence
+          const created = await tx.routeStop.create({
+            data: {
+              routeId: id,
+              orderId: body.orderId ?? null,
+              driverId: route.driverId,
+              sequence: 9999,
+              stopType: body.stopType,
+              status: "PENDING",
+              notes: body.notes ?? null,
+            },
           });
 
-        await tx.route.update({
-          where: { id },
-          data: { optimizedOrder: [...completedEntries, ...newEntries] },
+          // Assign real stop id to the new entry in allStops
+          allStops[allStops.length - 1].stopId = created.id;
+
+          // Re-sequence all stops in optimised order
+          let cumulative = 0;
+          for (let i = 0; i < stopSequence.length; i++) {
+            const stopIdx = stopSequence[i];
+            const stopInfo = allStops[stopIdx];
+
+            const prevIdx = i === 0 ? 0 : stopSequence[i - 1] + 1;
+            const currentIdx = stopIdx + 1;
+            cumulative += matrix[prevIdx][currentIdx] + serviceTimeSeconds;
+
+            const eta = new Date(now.getTime() + cumulative * 1000);
+            const newSeq = baseSequence + i;
+
+            await tx.routeStop.update({
+              where: { id: stopInfo.stopId! },
+              data: { sequence: newSeq, estimatedArrival: eta },
+            });
+
+            updatedSequence.push({
+              stopId: stopInfo.stopId!,
+              orderId: stopInfo.orderId,
+              sequence: newSeq,
+              estimatedArrival: eta.toISOString(),
+            });
+          }
+
+          // Rebuild optimizedOrder: keep completed entries, append re-optimised
+          const completedEntries = optimizedOrder.filter((o) =>
+            completedStops.some((s) => s.orderId === o.orderId),
+          );
+          const newEntries = updatedSequence
+            .filter((s) => s.orderId !== null)
+            .map((s) => {
+              const pt = allStops.find((a) => a.stopId === s.stopId)!;
+              return {
+                sequence: s.sequence,
+                orderId: s.orderId!,
+                lat: pt.lat,
+                lng: pt.lng,
+                eta: s.estimatedArrival,
+                type: body.stopType,
+              };
+            });
+
+          await tx.route.update({
+            where: { id },
+            data: { optimizedOrder: [...completedEntries, ...newEntries] },
+          });
+
+          return created;
         });
 
-        return created;
-      });
-
-      // ── 9. Push real-time notifications ───────────────────
-      const wsPayload: RouteUpdatedEvent = {
-        routeId: id,
-        shopId: route.shopId,
-        driverId: route.driverId ?? null,
-        addedStopId: newStop.id,
-        updatedSequence,
-        trafficFactor: body.trafficFactor,
-        updatedAt: new Date().toISOString(),
-      };
-
-      // Notify the shop dashboard
-      emitToShop(route.shopId, "route:updated", wsPayload);
-
-      // Notify the driver app (if a driver is assigned)
-      if (route.driverId) {
-        emitToDriver(route.driverId, "route:updated", wsPayload);
-      }
-
-      // ── 10. Return updated route ───────────────────────────
-      const updatedRoute = await request.tenantDb.route.findUnique({
-        where: { id },
-        include: {
-          driver: { select: { id: true, name: true, phone: true } },
-          stops: { orderBy: { sequence: "asc" } },
-        },
-      });
-
-      reply.status(201);
-      return {
-        data: {
-          route: updatedRoute,
+        // ── 9. Push real-time notifications ───────────────────
+        const wsPayload: RouteUpdatedEvent = {
+          routeId: id,
+          shopId: route.shopId,
+          driverId: route.driverId ?? null,
           addedStopId: newStop.id,
           updatedSequence,
-        },
-      };
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return reply.status(422).send({
-          success: false,
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+          trafficFactor: body.trafficFactor,
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Notify the shop dashboard
+        emitToShop(route.shopId, "route:updated", wsPayload);
+
+        // Notify the driver app (if a driver is assigned)
+        if (route.driverId) {
+          emitToDriver(route.driverId, "route:updated", wsPayload);
+        }
+
+        // ── 10. Return updated route ───────────────────────────
+        const updatedRoute = await request.tenantDb.route.findUnique({
+          where: { id },
+          include: {
+            driver: { select: { id: true, name: true, phone: true } },
+            stops: { orderBy: { sequence: "asc" } },
+          },
         });
+
+        reply.status(201);
+        return {
+          data: {
+            route: updatedRoute,
+            addedStopId: newStop.id,
+            updatedSequence,
+          },
+        };
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.status(422).send({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid request body",
+              details: err.errors,
+            },
+          });
+        }
+        throw err;
       }
-      throw err;
-    }
-  });
+    },
+  );
 
   // ── CANCEL ROUTE ──────────────────────────────────────────
 
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-      const { id } = request.params as { id: string };
+        const { id } = request.params as { id: string };
 
-      const route = await request.tenantDb.route.findUnique({ where: { id } });
-      if (!route) throw new NotFoundError("Route", id);
+        const route = await request.tenantDb.route.findUnique({
+          where: { id },
+        });
+        if (!route) throw new NotFoundError("Route", id);
 
-      if (route.status === "COMPLETED") {
-        throw new ValidationError("Cannot cancel a completed route");
+        if (route.status === "COMPLETED") {
+          throw new ValidationError("Cannot cancel a completed route");
+        }
+
+        const cancelled = await request.tenantDb.route.update({
+          where: { id },
+          data: { status: "CANCELLED" },
+        });
+
+        return { data: cancelled };
+      } catch (err) {
+        throw err;
       }
-
-      const cancelled = await request.tenantDb.route.update({
-        where: { id },
-        data: { status: "CANCELLED" },
-      });
-
-      return { data: cancelled };
-    } catch (err) {
-      throw err;
-    }
-  });
+    },
+  );
 }
 
 export default routesRoutes;

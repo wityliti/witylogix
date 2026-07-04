@@ -8,7 +8,7 @@ import {
   PermissionContext,
   ROLE_HIERARCHY,
   PermissionDeniedError,
-} from './types';
+} from "./types";
 
 /**
  * Cached permission entry
@@ -123,9 +123,12 @@ export class PolicyEngine {
    * Supports wildcards: '*' matches all, 'orders:*' matches all orders actions
    * @private
    */
-  private resourceMatches(permissionResource: string, requestedResource: string): boolean {
+  private resourceMatches(
+    permissionResource: string,
+    requestedResource: string,
+  ): boolean {
     // Wildcard match all resources
-    if (permissionResource === '*') {
+    if (permissionResource === "*") {
       return true;
     }
 
@@ -135,7 +138,7 @@ export class PolicyEngine {
     }
 
     // Wildcard resource like 'orders:*'
-    if (permissionResource.endsWith(':*')) {
+    if (permissionResource.endsWith(":*")) {
       const resourcePrefix = permissionResource.slice(0, -2); // Remove ':*'
       return requestedResource.startsWith(resourcePrefix);
     }
@@ -149,9 +152,12 @@ export class PolicyEngine {
    * MANAGE action grants all permissions (create, read, update, delete, export, import)
    * @private
    */
-  private actionMatches(permissionAction: string, requestedAction: string): boolean {
+  private actionMatches(
+    permissionAction: string,
+    requestedAction: string,
+  ): boolean {
     // Wildcard match all actions
-    if (permissionAction === '*') {
+    if (permissionAction === "*") {
       return true;
     }
 
@@ -161,7 +167,7 @@ export class PolicyEngine {
     }
 
     // MANAGE grants all actions
-    if (permissionAction === 'manage') {
+    if (permissionAction === "manage") {
       return true;
     }
 
@@ -172,7 +178,10 @@ export class PolicyEngine {
    * Evaluate permission conditions against context
    * @private
    */
-  private conditionsMatch(conditions: Record<string, any>, context: PermissionContext): boolean {
+  private conditionsMatch(
+    conditions: Record<string, any>,
+    context: PermissionContext,
+  ): boolean {
     for (const [key, expectedValue] of Object.entries(conditions)) {
       const contextValue = context[key];
 
@@ -202,7 +211,11 @@ export class PolicyEngine {
    * Cache permissions for a user
    * @internal - Used by RoleManager
    */
-  cachePermissions(userId: string, tenantId: string, permissions: Permission[]): void {
+  cachePermissions(
+    userId: string,
+    tenantId: string,
+    permissions: Permission[],
+  ): void {
     const key = this.getCacheKey(userId, tenantId);
     this.permissionCache.set(key, {
       permissions,

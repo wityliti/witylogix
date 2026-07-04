@@ -337,13 +337,17 @@ export class FleetioClient extends TelematicsAdapter {
    * Get vehicle diagnostics from service history
    * GET /vehicles/{id}/service_entries
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const cacheKey = `fleetio:diagnostics:${vehicleId}`;
     const cached = this.cache.get(cacheKey) as NormalizedDiagnostic | undefined;
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {
-      const url = new URL(`${this.baseUrl}/vehicles/${vehicleId}/service_entries`);
+      const url = new URL(
+        `${this.baseUrl}/vehicles/${vehicleId}/service_entries`,
+      );
       url.searchParams.append("limit", "1");
 
       const response = await this.fetchWithTimeout(url.toString(), {
@@ -393,7 +397,9 @@ export class FleetioClient extends TelematicsAdapter {
    */
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
     const cacheKey = `fleetio:fuel:${vehicleId}`;
-    const cached = this.cache.get(cacheKey) as NormalizedFuelReading | undefined;
+    const cached = this.cache.get(cacheKey) as
+      | NormalizedFuelReading
+      | undefined;
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {
@@ -747,7 +753,9 @@ export class FleetioClient extends TelematicsAdapter {
    */
   async getMeterEntries(vehicleId: string): Promise<FleetioMeterEntry[]> {
     return this.retryWithBackoff(async () => {
-      const url = new URL(`${this.baseUrl}/vehicles/${vehicleId}/meter_entries`);
+      const url = new URL(
+        `${this.baseUrl}/vehicles/${vehicleId}/meter_entries`,
+      );
       url.searchParams.append("limit", "50");
 
       const response = await this.fetchWithTimeout(url.toString(), {
@@ -794,7 +802,9 @@ export class FleetioClient extends TelematicsAdapter {
         );
       }
 
-      const data = (await response.json()) as { data: FleetioVehicleAssignment[] };
+      const data = (await response.json()) as {
+        data: FleetioVehicleAssignment[];
+      };
       return data.data || [];
     });
   }
@@ -856,11 +866,7 @@ export class FleetioClient extends TelematicsAdapter {
         errors?: Array<{ detail: string }>;
       };
       return {
-        code:
-          body.code ||
-          body.error ||
-          body.errors?.[0]?.detail ||
-          "UNKNOWN",
+        code: body.code || body.error || body.errors?.[0]?.detail || "UNKNOWN",
         message: body.message || body.error || response.statusText,
       };
     } catch {

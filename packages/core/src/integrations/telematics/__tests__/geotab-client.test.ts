@@ -526,7 +526,11 @@ describe("GeotabClient", () => {
   describe("healthCheck", () => {
     it("should return true when authenticated", async () => {
       const client = createTestClient({
-        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+        credentials: {
+          database: "test-db",
+          userName: "test-user",
+          password: "test-password",
+        },
       });
       global.fetch = mockFetch({
         sessionId: "test-session",
@@ -538,7 +542,11 @@ describe("GeotabClient", () => {
 
     it("should return false when authentication fails", async () => {
       const client = createTestClient({
-        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+        credentials: {
+          database: "test-db",
+          userName: "test-user",
+          password: "test-password",
+        },
       });
       global.fetch = mockFetch(null, {
         code: 401,
@@ -558,9 +566,7 @@ describe("GeotabClient", () => {
         message: "Invalid session",
       });
 
-      await expect(client.getVehicles()).rejects.toThrow(
-        "Invalid session",
-      );
+      await expect(client.getVehicles()).rejects.toThrow("Invalid session");
     });
 
     it("should handle HTTP errors", async () => {
@@ -578,7 +584,11 @@ describe("GeotabClient", () => {
   describe("Session Management", () => {
     it("should include session ID in credentials", async () => {
       const client = createTestClient({
-        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+        credentials: {
+          database: "test-db",
+          userName: "test-user",
+          password: "test-password",
+        },
       });
       const fetchSpy = vi.fn().mockResolvedValue({
         ok: true,
@@ -643,7 +653,11 @@ describe("GeotabClient", () => {
 
     it("should include URL session ID parameter", async () => {
       const client = createTestClient({
-        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+        credentials: {
+          database: "test-db",
+          userName: "test-user",
+          password: "test-password",
+        },
       });
       const fetchSpy = vi.fn().mockResolvedValue({
         ok: true,

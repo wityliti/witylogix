@@ -10,10 +10,14 @@
  *   - Webhook handling from payment providers
  */
 
-import type { FastifyInstance, FastifyReply } from 'fastify';
-import { requireAuth } from '../middleware/auth.js';
-import { tenantContext } from '../middleware/tenant.js';
-import { NotFoundError, ValidationError, ConflictError } from '../lib/errors.js';
+import type { FastifyInstance, FastifyReply } from "fastify";
+import { requireAuth } from "../middleware/auth.js";
+import { tenantContext } from "../middleware/tenant.js";
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} from "../lib/errors.js";
 
 interface PaymentMethodQueryParams {
   page?: number;
@@ -40,7 +44,12 @@ interface ProcessPaymentBody {
 
 interface InitiateRefundBody {
   amount?: number; // Partial refund in cents
-  reason: 'customer_request' | 'duplicate_charge' | 'order_cancelled' | 'merchant_error' | 'other';
+  reason:
+    | "customer_request"
+    | "duplicate_charge"
+    | "order_cancelled"
+    | "merchant_error"
+    | "other";
   description?: string;
   idempotencyKey: string;
 }
@@ -65,15 +74,17 @@ interface WebhookBody {
   signature?: string;
 }
 
-export default async function paymentMethodRoutes(fastify: FastifyInstance): Promise<void> {
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+export default async function paymentMethodRoutes(
+  fastify: FastifyInstance,
+): Promise<void> {
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // ─── PAYMENT METHODS ─────────────────────────────────────────────────
 
   // GET /payment-methods — List payment methods for shop
   fastify.get<{ Querystring: PaymentMethodQueryParams }>(
-    '/payment-methods',
+    "/payment-methods",
     async (request: any, reply: FastifyReply) => {
       try {
         const { page = 1, limit = 25 } = request.query;
@@ -84,7 +95,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
             where: { shopId: request.shopId },
             skip,
             take: limit,
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
           }),
           request.tenantDb.paymentMethod.count({
             where: { shopId: request.shopId },
@@ -110,7 +121,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // GET /payment-methods/:id — Get specific payment method
   fastify.get<{ Params: { id: string } }>(
-    '/payment-methods/:id',
+    "/payment-methods/:id",
     async (request: any, reply: FastifyReply) => {
       try {
         const { id } = request.params;
@@ -144,13 +155,22 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // POST /payment-methods — Add new payment method
   fastify.post<{ Body: PaymentMethodBody }>(
-    '/payment-methods',
+    "/payment-methods",
     async (request: any, reply: FastifyReply) => {
       try {
-        const { type, displayName, lastDigits, expiryDate, isDefault } = request.body;
+        const { type, displayName, lastDigits, expiryDate, isDefault } =
+          request.body;
 
         // Validate type
-        const validTypes = ['credit_card', 'debit_card', 'cod', 'bank_transfer', 'wallet', 'shopify_payment', 'other'];
+        const validTypes = [
+          "credit_card",
+          "debit_card",
+          "cod",
+          "bank_transfer",
+          "wallet",
+          "shopify_payment",
+          "other",
+        ];
         if (!validTypes.includes(type)) {
           throw new ValidationError(`Invalid payment method type: ${type}`);
         }
@@ -194,7 +214,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // PATCH /payment-methods/:id/default — Set as default
   fastify.patch<{ Params: { id: string } }>(
-    '/payment-methods/:id/default',
+    "/payment-methods/:id/default",
     async (request: any, reply: FastifyReply) => {
       try {
         const { id } = request.params;
@@ -238,7 +258,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // DELETE /payment-methods/:id — Delete payment method
   fastify.delete<{ Params: { id: string } }>(
-    '/payment-methods/:id',
+    "/payment-methods/:id",
     async (request: any, reply: FastifyReply) => {
       try {
         const { id } = request.params;
@@ -270,18 +290,28 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // POST /payments/process — Process a payment (create intent + capture)
   fastify.post<{ Body: ProcessPaymentBody }>(
-    '/payments/process',
+    "/payments/process",
     async (request: any, reply: FastifyReply) => {
       try {
-        const { amount, currency = 'USD', paymentMethodId, shipmentId, orderId, metadata, idempotencyKey } = request.body;
+        const {
+          amount,
+          currency = "USD",
+          paymentMethodId,
+          shipmentId,
+          orderId,
+          metadata,
+          idempotencyKey,
+        } = request.body;
 
         // Validate required fields
         if (!amount || amount <= 0) {
-          throw new ValidationError('Amount must be greater than 0');
+          throw new ValidationError("Amount must be greater than 0");
         }
 
         if (!idempotencyKey) {
-          throw new ValidationError('idempotencyKey is required for idempotency');
+          throw new ValidationError(
+            "idempotencyKey is required for idempotency",
+          );
         }
 
         // Check if shipment/order exists
@@ -314,8 +344,8 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
             paymentMethodId: paymentMethodId || null,
             amount: BigInt(amount),
             currency,
-            type: 'charge',
-            status: 'pending',
+            type: "charge",
+            status: "pending",
             metadata: metadata || {},
             idempotencyKey,
           },
@@ -335,7 +365,10 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
           },
         });
       } catch (error) {
-        if (error instanceof ValidationError || error instanceof NotFoundError) {
+        if (
+          error instanceof ValidationError ||
+          error instanceof NotFoundError
+        ) {
           return reply.code(error instanceof ValidationError ? 400 : 404).send({
             success: false,
             error: error.message,
@@ -348,14 +381,14 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // POST /payments/:id/refund — Initiate refund
   fastify.post<{ Params: { id: string }; Body: InitiateRefundBody }>(
-    '/payments/:id/refund',
+    "/payments/:id/refund",
     async (request: any, reply: FastifyReply) => {
       try {
         const { id } = request.params;
         const { amount, reason, description, idempotencyKey } = request.body;
 
         if (!idempotencyKey) {
-          throw new ValidationError('idempotencyKey is required');
+          throw new ValidationError("idempotencyKey is required");
         }
 
         // Get original transaction
@@ -367,7 +400,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
           throw new NotFoundError(`Payment ${id} not found`);
         }
 
-        if (original.status !== 'completed') {
+        if (original.status !== "completed") {
           throw new ConflictError(`Cannot refund a ${original.status} payment`);
         }
 
@@ -380,7 +413,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
             currency: original.currency,
             reason,
             description,
-            status: 'processing',
+            status: "processing",
             metadata: {},
           },
         });
@@ -393,8 +426,8 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
             shipmentId: original.shipmentId,
             amount: amount ? BigInt(amount) : original.amount,
             currency: original.currency,
-            type: 'refund',
-            status: 'processing',
+            type: "refund",
+            status: "processing",
             refundOf: original.id,
             paymentMethodId: original.paymentMethodId,
             metadata: { refundId: refund.id, reason },
@@ -431,13 +464,20 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // POST /cod-collection — Record COD collection from driver
   fastify.post<{ Body: RecordCODBody }>(
-    '/cod-collection',
+    "/cod-collection",
     async (request: any, reply: FastifyReply) => {
       try {
-        const { shipmentId, driverId, amount, currency = 'USD', metadata, idempotencyKey } = request.body;
+        const {
+          shipmentId,
+          driverId,
+          amount,
+          currency = "USD",
+          metadata,
+          idempotencyKey,
+        } = request.body;
 
         if (!idempotencyKey) {
-          throw new ValidationError('idempotencyKey is required');
+          throw new ValidationError("idempotencyKey is required");
         }
 
         // Verify shipment exists
@@ -466,7 +506,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
             driverId,
             amount: BigInt(amount),
             currency,
-            status: 'collected',
+            status: "collected",
             collectedAt: new Date(),
             metadata: metadata || {},
           },
@@ -479,9 +519,9 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
             shipmentId,
             amount: BigInt(amount),
             currency,
-            type: 'cod_collection',
-            status: 'completed',
-            providerName: 'cod',
+            type: "cod_collection",
+            status: "completed",
+            providerName: "cod",
             metadata: { codCollectionId: codCollection.id },
             idempotencyKey,
             completedAt: new Date(),
@@ -494,7 +534,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
             id: codCollection.id,
             transactionId: transaction.id,
             amount: amount.toString(),
-            status: 'collected',
+            status: "collected",
             collectedAt: codCollection.collectedAt,
           },
         });
@@ -512,7 +552,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // PATCH /cod-collection/:id/verify — Verify COD collection
   fastify.patch<{ Params: { id: string }; Body: VerifyCODBody }>(
-    '/cod-collection/:id/verify',
+    "/cod-collection/:id/verify",
     async (request: any, reply: FastifyReply) => {
       try {
         const { id } = request.params;
@@ -525,14 +565,16 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
           throw new NotFoundError(`COD collection ${id} not found`);
         }
 
-        if (codCollection.status !== 'collected') {
-          throw new ConflictError(`Cannot verify ${codCollection.status} collection`);
+        if (codCollection.status !== "collected") {
+          throw new ConflictError(
+            `Cannot verify ${codCollection.status} collection`,
+          );
         }
 
         const verified = await request.tenantDb.cODCollection.update({
           where: { id },
           data: {
-            status: 'verified',
+            status: "verified",
             verifiedAt: new Date(),
           },
         });
@@ -557,7 +599,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
   // POST /webhooks/payments — Handle payment provider webhooks
   fastify.post<{ Body: WebhookBody }>(
-    '/webhooks/payments',
+    "/webhooks/payments",
     async (request: any, reply: FastifyReply) => {
       try {
         const { type, provider, data, signature } = request.body;
@@ -572,18 +614,18 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
 
         // Handle based on provider
         switch (provider.toLowerCase()) {
-          case 'cod':
+          case "cod":
             // COD doesn't have webhooks
-            throw new ValidationError('COD does not support webhooks');
+            throw new ValidationError("COD does not support webhooks");
 
-          case 'stripe':
+          case "stripe":
             // Future: Handle Stripe webhooks
             // - payment_intent.succeeded
             // - payment_intent.payment_failed
             // - charge.refunded
             break;
 
-          case 'paypal':
+          case "paypal":
             // Future: Handle PayPal webhooks
             break;
 
@@ -596,7 +638,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
           received: true,
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Webhook processing error');
+        fastify.log.error({ err: error }, "Webhook processing error");
 
         if (error instanceof ValidationError) {
           return reply.code(400).send({
@@ -608,7 +650,7 @@ export default async function paymentMethodRoutes(fastify: FastifyInstance): Pro
         // Log webhook error but return 200 to prevent retries
         return reply.code(200).send({
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     },

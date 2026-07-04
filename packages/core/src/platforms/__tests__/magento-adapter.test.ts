@@ -17,8 +17,8 @@
  * ~900 lines total
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import crypto from 'crypto';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import crypto from "crypto";
 
 // ───────────────────────────────────────────────────────────────────────────
 // MAGENTO ADAPTER INTERFACE AND TYPES
@@ -373,28 +373,29 @@ interface MagentoCredentials {
  * Mock Magento Adapter for testing
  */
 class MagentoAdapter {
-  public readonly source = 'MAGENTO' as const;
+  public readonly source = "MAGENTO" as const;
 
   validateWebhook(
     payload: Buffer | string,
     signature: string,
-    secret: string
+    secret: string,
   ): boolean {
     if (!signature || !secret) {
       return false;
     }
 
     try {
-      const payloadString = typeof payload === 'string' ? payload : payload.toString('utf-8');
+      const payloadString =
+        typeof payload === "string" ? payload : payload.toString("utf-8");
 
       // Magento uses HMAC-SHA256 with base64 encoding
       const computed = crypto
-        .createHmac('sha256', secret)
-        .update(payloadString, 'utf-8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(payloadString, "utf-8")
+        .digest("base64");
 
-      const expectedBuffer = Buffer.from(computed, 'utf-8');
-      const actualBuffer = Buffer.from(signature, 'utf-8');
+      const expectedBuffer = Buffer.from(computed, "utf-8");
+      const actualBuffer = Buffer.from(signature, "utf-8");
 
       if (expectedBuffer.length !== actualBuffer.length) {
         return false;
@@ -415,7 +416,7 @@ class MagentoAdapter {
     }));
 
     return {
-      shopId: 'placeholder',
+      shopId: "placeholder",
       source: this.source,
       externalOrderId: String(magentoOrder.entity_id),
       externalOrderNumber: magentoOrder.increment_id,
@@ -424,26 +425,30 @@ class MagentoAdapter {
       currency: magentoOrder.currency_code,
       customerEmail: magentoOrder.customer_email,
       customerName: `${magentoOrder.customer_firstname} ${magentoOrder.customer_lastname}`,
-      shippingAddress: magentoOrder.shipping_address ? {
-        firstName: magentoOrder.shipping_address.firstname,
-        lastName: magentoOrder.shipping_address.lastname,
-        line1: magentoOrder.shipping_address.street?.[0] || '',
-        line2: magentoOrder.shipping_address.street?.[1],
-        city: magentoOrder.shipping_address.city,
-        state: magentoOrder.shipping_address.region?.region_code,
-        postalCode: magentoOrder.shipping_address.postcode,
-        country: magentoOrder.shipping_address.country_id,
-      } : undefined,
-      billingAddress: magentoOrder.billing_address ? {
-        firstName: magentoOrder.billing_address.firstname,
-        lastName: magentoOrder.billing_address.lastname,
-        line1: magentoOrder.billing_address.street?.[0] || '',
-        line2: magentoOrder.billing_address.street?.[1],
-        city: magentoOrder.billing_address.city,
-        state: magentoOrder.billing_address.region?.region_code,
-        postalCode: magentoOrder.billing_address.postcode,
-        country: magentoOrder.billing_address.country_id,
-      } : undefined,
+      shippingAddress: magentoOrder.shipping_address
+        ? {
+            firstName: magentoOrder.shipping_address.firstname,
+            lastName: magentoOrder.shipping_address.lastname,
+            line1: magentoOrder.shipping_address.street?.[0] || "",
+            line2: magentoOrder.shipping_address.street?.[1],
+            city: magentoOrder.shipping_address.city,
+            state: magentoOrder.shipping_address.region?.region_code,
+            postalCode: magentoOrder.shipping_address.postcode,
+            country: magentoOrder.shipping_address.country_id,
+          }
+        : undefined,
+      billingAddress: magentoOrder.billing_address
+        ? {
+            firstName: magentoOrder.billing_address.firstname,
+            lastName: magentoOrder.billing_address.lastname,
+            line1: magentoOrder.billing_address.street?.[0] || "",
+            line2: magentoOrder.billing_address.street?.[1],
+            city: magentoOrder.billing_address.city,
+            state: magentoOrder.billing_address.region?.region_code,
+            postalCode: magentoOrder.billing_address.postcode,
+            country: magentoOrder.billing_address.country_id,
+          }
+        : undefined,
       lineItems,
       notes: magentoOrder.customer_note,
       createdAt: new Date(magentoOrder.created_at),
@@ -459,13 +464,17 @@ class MagentoAdapter {
 
   mapProduct(magentoProduct: MagentoProduct): any {
     const imageUrl = magentoProduct.extension_attributes?.images?.[0]?.file
-      ? `${magentoProduct.extension_attributes.website_ids?.[0] || ''}/media/catalog/product${magentoProduct.extension_attributes.images[0].file}`
+      ? `${magentoProduct.extension_attributes.website_ids?.[0] || ""}/media/catalog/product${magentoProduct.extension_attributes.images[0].file}`
       : undefined;
 
     const variants = [];
-    if (magentoProduct.type_id === 'configurable' && magentoProduct.extension_attributes?.configurable_product_links) {
+    if (
+      magentoProduct.type_id === "configurable" &&
+      magentoProduct.extension_attributes?.configurable_product_links
+    ) {
       // For configurable products, variants are separate products
-      for (const linkedId of magentoProduct.extension_attributes.configurable_product_links) {
+      for (const linkedId of magentoProduct.extension_attributes
+        .configurable_product_links) {
         variants.push({
           externalId: String(linkedId),
           sku: `${magentoProduct.sku}-${linkedId}`,
@@ -482,15 +491,15 @@ class MagentoAdapter {
     }
 
     return {
-      shopId: 'placeholder',
+      shopId: "placeholder",
       source: this.source,
       externalProductId: String(magentoProduct.id),
       title: magentoProduct.name,
       description: undefined,
       sku: magentoProduct.sku,
       price: String(magentoProduct.price),
-      currency: 'USD',
-      status: magentoProduct.status === 1 ? 'ACTIVE' : 'INACTIVE',
+      currency: "USD",
+      status: magentoProduct.status === 1 ? "ACTIVE" : "INACTIVE",
       imageUrl,
       variants,
       metadata: {
@@ -502,28 +511,31 @@ class MagentoAdapter {
   }
 
   mapCustomer(magentoCustomer: MagentoCustomer): any {
-    const defaultAddress = magentoCustomer.addresses?.find(
-      (addr: MagentoCustomerAddress) => addr.default_billing
-    ) || magentoCustomer.addresses?.[0];
+    const defaultAddress =
+      magentoCustomer.addresses?.find(
+        (addr: MagentoCustomerAddress) => addr.default_billing,
+      ) || magentoCustomer.addresses?.[0];
 
     return {
-      shopId: 'placeholder',
+      shopId: "placeholder",
       source: this.source,
       externalCustomerId: String(magentoCustomer.id),
       email: magentoCustomer.email,
       firstName: magentoCustomer.firstname,
       lastName: magentoCustomer.lastname,
       phone: defaultAddress?.telephone,
-      defaultAddress: defaultAddress ? {
-        firstName: defaultAddress.firstname,
-        lastName: defaultAddress.lastname,
-        line1: defaultAddress.street?.[0] || '',
-        line2: defaultAddress.street?.[1],
-        city: defaultAddress.city,
-        state: defaultAddress.region?.region_code,
-        postalCode: defaultAddress.postcode,
-        country: defaultAddress.country_id,
-      } : undefined,
+      defaultAddress: defaultAddress
+        ? {
+            firstName: defaultAddress.firstname,
+            lastName: defaultAddress.lastname,
+            line1: defaultAddress.street?.[0] || "",
+            line2: defaultAddress.street?.[1],
+            city: defaultAddress.city,
+            state: defaultAddress.region?.region_code,
+            postalCode: defaultAddress.postcode,
+            country: defaultAddress.country_id,
+          }
+        : undefined,
       metadata: {
         groupId: magentoCustomer.group_id,
         websiteId: magentoCustomer.website_id,
@@ -534,19 +546,19 @@ class MagentoAdapter {
 
   async fetchOrder(
     orderId: string | number,
-    credentials: MagentoCredentials
+    credentials: MagentoCredentials,
   ): Promise<MagentoOrder> {
     const url = new URL(
       `/rest/V1/orders/${orderId}`,
-      credentials.storeUrl
+      credentials.storeUrl,
     ).toString();
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${credentials.accessToken}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${credentials.accessToken}`,
+          "Content-Type": "application/json",
         },
       });
 
@@ -562,21 +574,21 @@ class MagentoAdapter {
 
   async fetchProducts(
     credentials: MagentoCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ products: MagentoProduct[]; nextCursor?: string }> {
     const currentPage = cursor ? parseInt(cursor, 10) : 1;
     const pageSize = 20;
 
     const url = new URL(`/rest/V1/products`, credentials.storeUrl);
-    url.searchParams.set('searchCriteria[pageSize]', String(pageSize));
-    url.searchParams.set('searchCriteria[currentPage]', String(currentPage));
+    url.searchParams.set("searchCriteria[pageSize]", String(pageSize));
+    url.searchParams.set("searchCriteria[currentPage]", String(currentPage));
 
     try {
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${credentials.accessToken}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${credentials.accessToken}`,
+          "Content-Type": "application/json",
         },
       });
 
@@ -590,7 +602,8 @@ class MagentoAdapter {
       };
 
       const totalPages = Math.ceil(data.total_count / pageSize);
-      const nextCursor = currentPage < totalPages ? String(currentPage + 1) : undefined;
+      const nextCursor =
+        currentPage < totalPages ? String(currentPage + 1) : undefined;
 
       return { products: data.items, nextCursor };
     } catch (error) {
@@ -605,11 +618,11 @@ class MagentoAdapter {
 
 const MOCK_MAGENTO_ORDER: MagentoOrder = {
   entity_id: 100001,
-  increment_id: '100000001',
-  state: 'processing',
-  status: 'processing',
+  increment_id: "100000001",
+  state: "processing",
+  status: "processing",
   coupon_code: null,
-  shipping_description: 'Standard Shipping - Standard',
+  shipping_description: "Standard Shipping - Standard",
   is_virtual: false,
   store_id: 1,
   customer_id: 5001,
@@ -624,17 +637,17 @@ const MOCK_MAGENTO_ORDER: MagentoOrder = {
   base_total_paid: 100,
   base_total_refunded: 0,
   billing_address_id: 5001,
-  currency_code: 'USD',
-  customer_email: 'customer@magento.example.com',
-  customer_firstname: 'Carol',
-  customer_lastname: 'Martinez',
-  customer_note: 'Special handling required',
+  currency_code: "USD",
+  customer_email: "customer@magento.example.com",
+  customer_firstname: "Carol",
+  customer_lastname: "Martinez",
+  customer_note: "Special handling required",
   customer_is_guest: false,
   discount_amount: 10,
   discount_invoiced: 10,
   email_sent: true,
   grand_total: 100,
-  increment_id_created_at: '2024-01-15 10:30:00',
+  increment_id_created_at: "2024-01-15 10:30:00",
   invoice_count: 1,
   items_count: 2,
   items: [
@@ -644,19 +657,19 @@ const MOCK_MAGENTO_ORDER: MagentoOrder = {
       parent_item_id: null,
       quote_item_id: 1,
       store_id: 1,
-      created_at: '2024-01-15 10:30:00',
-      updated_at: '2024-01-15 10:30:00',
+      created_at: "2024-01-15 10:30:00",
+      updated_at: "2024-01-15 10:30:00",
       product_id: 10001,
-      product_type: 'configurable',
+      product_type: "configurable",
       product_options: {
         info_buyRequest: {
-          options: [{ '1': 'Red' }],
+          options: [{ "1": "Red" }],
         },
       },
       weight: 2,
       is_virtual: false,
-      sku: 'PRODUCT-CONFIGURABLE-RED',
-      name: 'Configurable Product - Red',
+      sku: "PRODUCT-CONFIGURABLE-RED",
+      name: "Configurable Product - Red",
       description: null,
       qty_ordered: 2,
       qty_canceled: 0,
@@ -694,20 +707,20 @@ const MOCK_MAGENTO_ORDER: MagentoOrder = {
     entity_id: 5001,
     parent_id: 100001,
     customer_address_id: 0,
-    region: { region_code: 'CA', region: 'California', region_id: 12 },
+    region: { region_code: "CA", region: "California", region_id: 12 },
     region_id: 12,
-    country_id: 'US',
-    street: ['789 Commerce St', 'Suite 500'],
-    telephone: '+1-323-555-0124',
-    postcode: '90001',
-    city: 'Los Angeles',
-    firstname: 'Carol',
-    lastname: 'Martinez',
-    company: 'Commerce Inc',
+    country_id: "US",
+    street: ["789 Commerce St", "Suite 500"],
+    telephone: "+1-323-555-0124",
+    postcode: "90001",
+    city: "Los Angeles",
+    firstname: "Carol",
+    lastname: "Martinez",
+    company: "Commerce Inc",
     prefix: null,
     suffix: null,
     vat_id: null,
-    email: 'carol@commerce.com',
+    email: "carol@commerce.com",
     same_as_billing: 0,
     customer_id: 5001,
     fax: null,
@@ -717,20 +730,20 @@ const MOCK_MAGENTO_ORDER: MagentoOrder = {
     entity_id: 5002,
     parent_id: 100001,
     customer_address_id: 5002,
-    region: { region_code: 'CA', region: 'California', region_id: 12 },
+    region: { region_code: "CA", region: "California", region_id: 12 },
     region_id: 12,
-    country_id: 'US',
-    street: ['500 Shipping Blvd', 'Warehouse B'],
-    telephone: '+1-323-555-0125',
-    postcode: '90002',
-    city: 'Los Angeles',
-    firstname: 'Carol',
-    lastname: 'Martinez',
-    company: 'Commerce Inc',
+    country_id: "US",
+    street: ["500 Shipping Blvd", "Warehouse B"],
+    telephone: "+1-323-555-0125",
+    postcode: "90002",
+    city: "Los Angeles",
+    firstname: "Carol",
+    lastname: "Martinez",
+    company: "Commerce Inc",
     prefix: null,
     suffix: null,
     vat_id: null,
-    email: 'carol@commerce.com',
+    email: "carol@commerce.com",
     same_as_billing: 0,
     customer_id: 5001,
     fax: null,
@@ -757,51 +770,51 @@ const MOCK_MAGENTO_ORDER: MagentoOrder = {
     cc_exp_year: null,
     cc_ss_start_month: null,
     echeck_bank_name: null,
-    method: 'stripe_payments',
+    method: "stripe_payments",
     cc_debug_request_body: null,
     cc_secure_verify: null,
     protection_eligibility: null,
     cc_approval: null,
-    cc_last4: '4242',
-    cc_status_description: 'Stripe payment approved',
+    cc_last4: "4242",
+    cc_status_description: "Stripe payment approved",
     echeck_type: null,
     cc_debug_response_serialized: null,
     cc_ss_start_year: null,
     echeck_account_type: null,
-    last_trans_id: 'ch_stripe123abc',
+    last_trans_id: "ch_stripe123abc",
     cc_cid_status: null,
     cc_owner: null,
-    cc_type: 'VI',
+    cc_type: "VI",
     po_number: null,
     cc_exp_month: null,
     cc_number_enc: null,
-    cc_trans_id: 'ch_stripe123abc',
+    cc_trans_id: "ch_stripe123abc",
     paybox_request_num: null,
-    additional_information: ['Stripe'],
+    additional_information: ["Stripe"],
     extension_attributes: {},
   },
   extension_attributes: {},
-  created_at: '2024-01-15T10:30:00+00:00',
-  updated_at: '2024-01-15T10:35:00+00:00',
+  created_at: "2024-01-15T10:30:00+00:00",
+  updated_at: "2024-01-15T10:35:00+00:00",
 };
 
 const MOCK_MAGENTO_PRODUCT: MagentoProduct = {
   id: 10001,
-  sku: 'PRODUCT-CONFIGURABLE',
-  name: 'Configurable Product',
+  sku: "PRODUCT-CONFIGURABLE",
+  name: "Configurable Product",
   attribute_set_id: 11,
   price: 50,
   status: 1,
   visibility: 4,
-  type_id: 'configurable',
-  created_at: '2023-10-01T12:00:00+00:00',
-  updated_at: '2024-01-10T15:30:00+00:00',
+  type_id: "configurable",
+  created_at: "2023-10-01T12:00:00+00:00",
+  updated_at: "2024-01-10T15:30:00+00:00",
   weight: 2.5,
   extension_attributes: {
     website_ids: [1],
     category_links: [
-      { position: 1, category_id: '5' },
-      { position: 2, category_id: '10' },
+      { position: 1, category_id: "5" },
+      { position: 2, category_id: "10" },
     ],
     stock_item: {
       item_id: 1,
@@ -836,13 +849,13 @@ const MOCK_MAGENTO_PRODUCT: MagentoProduct = {
     configurable_product_options: [
       {
         id: 1,
-        attribute_id: '92',
-        label: 'Color',
+        attribute_id: "92",
+        label: "Color",
         position: 1,
         values: [
-          { value_index: 1, label: 'Red' },
-          { value_index: 2, label: 'Blue' },
-          { value_index: 3, label: 'Green' },
+          { value_index: 1, label: "Red" },
+          { value_index: 2, label: "Blue" },
+          { value_index: 3, label: "Green" },
         ],
       },
     ],
@@ -852,11 +865,11 @@ const MOCK_MAGENTO_PRODUCT: MagentoProduct = {
         id: 1,
         parent_id: 10001,
         position: 1,
-        label: 'Product Image',
+        label: "Product Image",
         disabled: false,
-        types: ['image', 'small_image', 'thumbnail'],
-        file: '/c/o/configurable_product.jpg',
-        media_type: 'image',
+        types: ["image", "small_image", "thumbnail"],
+        file: "/c/o/configurable_product.jpg",
+        media_type: "image",
       },
     ],
   },
@@ -865,16 +878,16 @@ const MOCK_MAGENTO_PRODUCT: MagentoProduct = {
 const MOCK_MAGENTO_CUSTOMER: MagentoCustomer = {
   id: 5001,
   group_id: 1,
-  default_billing: '5001',
-  default_shipping: '5002',
+  default_billing: "5001",
+  default_shipping: "5002",
   confirmation: null,
-  created_at: '2023-12-01T08:00:00+00:00',
-  updated_at: '2024-01-15T10:30:00+00:00',
-  created_in: 'Default Store View',
-  dob: '1985-06-15',
-  email: 'customer@magento.example.com',
-  firstname: 'Diana',
-  lastname: 'Chen',
+  created_at: "2023-12-01T08:00:00+00:00",
+  updated_at: "2024-01-15T10:30:00+00:00",
+  created_in: "Default Store View",
+  dob: "1985-06-15",
+  email: "customer@magento.example.com",
+  firstname: "Diana",
+  lastname: "Chen",
   gender: 2,
   middlename: null,
   prefix: null,
@@ -886,16 +899,16 @@ const MOCK_MAGENTO_CUSTOMER: MagentoCustomer = {
     {
       id: 5001,
       customer_id: 5001,
-      region: { region_code: 'WA', region: 'Washington', region_id: 61 },
+      region: { region_code: "WA", region: "Washington", region_id: 61 },
       region_id: 61,
-      country_id: 'US',
-      street: ['1000 Main Street', 'Suite 300'],
-      telephone: '+1-206-555-0126',
-      postcode: '98101',
-      city: 'Seattle',
-      firstname: 'Diana',
-      lastname: 'Chen',
-      company: 'Tech Enterprises',
+      country_id: "US",
+      street: ["1000 Main Street", "Suite 300"],
+      telephone: "+1-206-555-0126",
+      postcode: "98101",
+      city: "Seattle",
+      firstname: "Diana",
+      lastname: "Chen",
+      company: "Tech Enterprises",
       prefix: null,
       suffix: null,
       vat_id: null,
@@ -906,16 +919,16 @@ const MOCK_MAGENTO_CUSTOMER: MagentoCustomer = {
     {
       id: 5002,
       customer_id: 5001,
-      region: { region_code: 'OR', region: 'Oregon', region_id: 38 },
+      region: { region_code: "OR", region: "Oregon", region_id: 38 },
       region_id: 38,
-      country_id: 'US',
-      street: ['2000 Ship Lane'],
-      telephone: '+1-503-555-0127',
-      postcode: '97201',
-      city: 'Portland',
-      firstname: 'Diana',
-      lastname: 'Chen',
-      company: 'Tech Enterprises',
+      country_id: "US",
+      street: ["2000 Ship Lane"],
+      telephone: "+1-503-555-0127",
+      postcode: "97201",
+      city: "Portland",
+      firstname: "Diana",
+      lastname: "Chen",
+      company: "Tech Enterprises",
       prefix: null,
       suffix: null,
       vat_id: null,
@@ -932,9 +945,9 @@ const MOCK_MAGENTO_CUSTOMER: MagentoCustomer = {
 // TEST SUITE
 // ───────────────────────────────────────────────────────────────────────────
 
-describe('MagentoAdapter', () => {
+describe("MagentoAdapter", () => {
   let adapter: MagentoAdapter;
-  const secret = 'magento-webhook-secret';
+  const secret = "magento-webhook-secret";
 
   beforeEach(() => {
     adapter = new MagentoAdapter();
@@ -949,77 +962,93 @@ describe('MagentoAdapter', () => {
   // WEBHOOK VALIDATION TESTS
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('validateWebhook', () => {
-    it('should validate webhook with correct HMAC-SHA256 signature', () => {
-      const payload = JSON.stringify({ entity_id: 100001, status: 'processing' });
+  describe("validateWebhook", () => {
+    it("should validate webhook with correct HMAC-SHA256 signature", () => {
+      const payload = JSON.stringify({
+        entity_id: 100001,
+        status: "processing",
+      });
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf-8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(payload, "utf-8")
+        .digest("base64");
 
       const result = adapter.validateWebhook(payload, signature, secret);
       expect(result).toBe(true);
     });
 
-    it('should validate webhook with buffer payload', () => {
-      const payloadString = JSON.stringify({ entity_id: 100002, increment_id: '100000002' });
+    it("should validate webhook with buffer payload", () => {
+      const payloadString = JSON.stringify({
+        entity_id: 100002,
+        increment_id: "100000002",
+      });
       const payload = Buffer.from(payloadString);
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(payloadString, 'utf-8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(payloadString, "utf-8")
+        .digest("base64");
 
       const result = adapter.validateWebhook(payload, signature, secret);
       expect(result).toBe(true);
     });
 
-    it('should reject webhook with invalid signature', () => {
+    it("should reject webhook with invalid signature", () => {
       const payload = JSON.stringify({ entity_id: 100001 });
-      const invalidSignature = 'invalid-signature';
+      const invalidSignature = "invalid-signature";
 
       const result = adapter.validateWebhook(payload, invalidSignature, secret);
       expect(result).toBe(false);
     });
 
-    it('should detect altered payload', () => {
-      const originalPayload = JSON.stringify({ entity_id: 999, status: 'pending' });
+    it("should detect altered payload", () => {
+      const originalPayload = JSON.stringify({
+        entity_id: 999,
+        status: "pending",
+      });
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(originalPayload, 'utf-8')
-        .digest('base64');
-      const alteredPayload = JSON.stringify({ entity_id: 999, status: 'completed' });
+        .createHmac("sha256", secret)
+        .update(originalPayload, "utf-8")
+        .digest("base64");
+      const alteredPayload = JSON.stringify({
+        entity_id: 999,
+        status: "completed",
+      });
 
       const result = adapter.validateWebhook(alteredPayload, signature, secret);
       expect(result).toBe(false);
     });
 
-    it('should use timing-safe comparison', () => {
-      const payload = JSON.stringify({ test: 'data' });
+    it("should use timing-safe comparison", () => {
+      const payload = JSON.stringify({ test: "data" });
       const validSignature = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf-8')
-        .digest('base64');
-      const invalidSignature = 'invalid';
+        .createHmac("sha256", secret)
+        .update(payload, "utf-8")
+        .digest("base64");
+      const invalidSignature = "invalid";
 
       const result1 = adapter.validateWebhook(payload, validSignature, secret);
-      const result2 = adapter.validateWebhook(payload, invalidSignature, secret);
+      const result2 = adapter.validateWebhook(
+        payload,
+        invalidSignature,
+        secret,
+      );
 
       expect(result1).toBe(true);
       expect(result2).toBe(false);
     });
 
-    it('should return false for empty signature', () => {
-      const payload = JSON.stringify({ test: 'data' });
-      const result = adapter.validateWebhook(payload, '', secret);
+    it("should return false for empty signature", () => {
+      const payload = JSON.stringify({ test: "data" });
+      const result = adapter.validateWebhook(payload, "", secret);
       expect(result).toBe(false);
     });
 
-    it('should handle real-world Magento webhook', () => {
+    it("should handle real-world Magento webhook", () => {
       const orderPayload = JSON.stringify(MOCK_MAGENTO_ORDER);
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(orderPayload, 'utf-8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(orderPayload, "utf-8")
+        .digest("base64");
 
       const result = adapter.validateWebhook(orderPayload, signature, secret);
       expect(result).toBe(true);
@@ -1030,27 +1059,27 @@ describe('MagentoAdapter', () => {
   // ORDER MAPPING TESTS
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('mapOrder', () => {
-    it('should map full Magento order with nested items and addresses', () => {
+  describe("mapOrder", () => {
+    it("should map full Magento order with nested items and addresses", () => {
       const result = adapter.mapOrder(MOCK_MAGENTO_ORDER);
 
-      expect(result.externalOrderId).toBe('100001');
-      expect(result.source).toBe('MAGENTO');
-      expect(result.externalOrderNumber).toBe('100000001');
-      expect(result.status).toBe('processing');
-      expect(result.total).toBe('100');
-      expect(result.currency).toBe('USD');
-      expect(result.customerEmail).toBe('customer@magento.example.com');
-      expect(result.customerName).toBe('Carol Martinez');
+      expect(result.externalOrderId).toBe("100001");
+      expect(result.source).toBe("MAGENTO");
+      expect(result.externalOrderNumber).toBe("100000001");
+      expect(result.status).toBe("processing");
+      expect(result.total).toBe("100");
+      expect(result.currency).toBe("USD");
+      expect(result.customerEmail).toBe("customer@magento.example.com");
+      expect(result.customerName).toBe("Carol Martinez");
       expect(result.lineItems).toHaveLength(1);
       expect(result.shippingAddress).toBeDefined();
-      expect(result.shippingAddress.firstName).toBe('Carol');
-      expect(result.shippingAddress.line1).toBe('500 Shipping Blvd');
+      expect(result.shippingAddress.firstName).toBe("Carol");
+      expect(result.shippingAddress.line1).toBe("500 Shipping Blvd");
       expect(result.billingAddress).toBeDefined();
-      expect(result.billingAddress.line1).toBe('789 Commerce St');
+      expect(result.billingAddress.line1).toBe("789 Commerce St");
     });
 
-    it('should handle order with multiple line items', () => {
+    it("should handle order with multiple line items", () => {
       const multiItemOrder = {
         ...MOCK_MAGENTO_ORDER,
         items: [
@@ -1059,9 +1088,9 @@ describe('MagentoAdapter', () => {
             ...MOCK_MAGENTO_ORDER.items[0],
             item_id: 2,
             product_id: 10002,
-            sku: 'SIMPLE-PRODUCT',
-            name: 'Simple Product',
-            product_type: 'simple',
+            sku: "SIMPLE-PRODUCT",
+            name: "Simple Product",
+            product_type: "simple",
             qty_ordered: 1,
             price: 75,
           },
@@ -1071,44 +1100,44 @@ describe('MagentoAdapter', () => {
       const result = adapter.mapOrder(multiItemOrder);
 
       expect(result.lineItems).toHaveLength(2);
-      expect(result.lineItems[1].externalProductId).toBe('10002');
+      expect(result.lineItems[1].externalProductId).toBe("10002");
       expect(result.lineItems[1].quantity).toBe(1);
     });
 
-    it('should extract nested address information', () => {
+    it("should extract nested address information", () => {
       const result = adapter.mapOrder(MOCK_MAGENTO_ORDER);
 
-      expect(result.shippingAddress.line2).toBe('Warehouse B');
-      expect(result.shippingAddress.city).toBe('Los Angeles');
-      expect(result.shippingAddress.state).toBe('CA');
-      expect(result.shippingAddress.postalCode).toBe('90002');
-      expect(result.shippingAddress.country).toBe('US');
+      expect(result.shippingAddress.line2).toBe("Warehouse B");
+      expect(result.shippingAddress.city).toBe("Los Angeles");
+      expect(result.shippingAddress.state).toBe("CA");
+      expect(result.shippingAddress.postalCode).toBe("90002");
+      expect(result.shippingAddress.country).toBe("US");
     });
 
-    it('should include payment and discount information in metadata', () => {
+    it("should include payment and discount information in metadata", () => {
       const result = adapter.mapOrder(MOCK_MAGENTO_ORDER);
 
       expect(result.metadata.discountAmount).toBe(10);
       expect(result.metadata.shippingAmount).toBe(10);
-      expect(result.metadata.state).toBe('processing');
+      expect(result.metadata.state).toBe("processing");
     });
 
-    it('should parse order created_at to Date', () => {
+    it("should parse order created_at to Date", () => {
       const result = adapter.mapOrder(MOCK_MAGENTO_ORDER);
 
       expect(result.createdAt).toBeInstanceOf(Date);
     });
 
-    it('should include customer notes', () => {
+    it("should include customer notes", () => {
       const result = adapter.mapOrder(MOCK_MAGENTO_ORDER);
 
-      expect(result.notes).toBe('Special handling required');
+      expect(result.notes).toBe("Special handling required");
     });
 
-    it('should handle configurable product in line items', () => {
+    it("should handle configurable product in line items", () => {
       const result = adapter.mapOrder(MOCK_MAGENTO_ORDER);
 
-      expect(result.lineItems[0].sku).toBe('PRODUCT-CONFIGURABLE-RED');
+      expect(result.lineItems[0].sku).toBe("PRODUCT-CONFIGURABLE-RED");
       expect(result.lineItems[0].quantity).toBe(2);
     });
   });
@@ -1117,37 +1146,37 @@ describe('MagentoAdapter', () => {
   // PRODUCT MAPPING TESTS
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('mapProduct', () => {
-    it('should map configurable product with variants', () => {
+  describe("mapProduct", () => {
+    it("should map configurable product with variants", () => {
       const result = adapter.mapProduct(MOCK_MAGENTO_PRODUCT);
 
-      expect(result.externalProductId).toBe('10001');
-      expect(result.source).toBe('MAGENTO');
-      expect(result.title).toBe('Configurable Product');
-      expect(result.sku).toBe('PRODUCT-CONFIGURABLE');
-      expect(result.price).toBe('50');
+      expect(result.externalProductId).toBe("10001");
+      expect(result.source).toBe("MAGENTO");
+      expect(result.title).toBe("Configurable Product");
+      expect(result.sku).toBe("PRODUCT-CONFIGURABLE");
+      expect(result.price).toBe("50");
       expect(result.variants).toHaveLength(3);
-      expect(result.status).toBe('ACTIVE');
+      expect(result.status).toBe("ACTIVE");
     });
 
-    it('should extract image URLs from extension_attributes', () => {
+    it("should extract image URLs from extension_attributes", () => {
       const result = adapter.mapProduct(MOCK_MAGENTO_PRODUCT);
 
-      expect(result.imageUrl).toContain('configurable_product.jpg');
+      expect(result.imageUrl).toContain("configurable_product.jpg");
     });
 
-    it('should include product metadata', () => {
+    it("should include product metadata", () => {
       const result = adapter.mapProduct(MOCK_MAGENTO_PRODUCT);
 
-      expect(result.metadata.type).toBe('configurable');
+      expect(result.metadata.type).toBe("configurable");
       expect(result.metadata.weight).toBe(2.5);
       expect(result.metadata.attributeSetId).toBe(11);
     });
 
-    it('should handle simple product', () => {
+    it("should handle simple product", () => {
       const simpleProduct: MagentoProduct = {
         ...MOCK_MAGENTO_PRODUCT,
-        type_id: 'simple',
+        type_id: "simple",
         extension_attributes: {
           ...MOCK_MAGENTO_PRODUCT.extension_attributes,
           configurable_product_links: undefined,
@@ -1157,11 +1186,11 @@ describe('MagentoAdapter', () => {
       const result = adapter.mapProduct(simpleProduct);
 
       expect(result.variants).toHaveLength(1);
-      expect(result.variants[0].externalId).toBe('10001');
-      expect(result.variants[0].sku).toBe('PRODUCT-CONFIGURABLE');
+      expect(result.variants[0].externalId).toBe("10001");
+      expect(result.variants[0].sku).toBe("PRODUCT-CONFIGURABLE");
     });
 
-    it('should handle product with no images', () => {
+    it("should handle product with no images", () => {
       const productNoImages: MagentoProduct = {
         ...MOCK_MAGENTO_PRODUCT,
         extension_attributes: {
@@ -1175,7 +1204,7 @@ describe('MagentoAdapter', () => {
       expect(result.imageUrl).toBeUndefined();
     });
 
-    it('should map status correctly', () => {
+    it("should map status correctly", () => {
       const inactiveProduct: MagentoProduct = {
         ...MOCK_MAGENTO_PRODUCT,
         status: 2,
@@ -1183,7 +1212,7 @@ describe('MagentoAdapter', () => {
 
       const result = adapter.mapProduct(inactiveProduct);
 
-      expect(result.status).toBe('INACTIVE');
+      expect(result.status).toBe("INACTIVE");
     });
   });
 
@@ -1191,45 +1220,45 @@ describe('MagentoAdapter', () => {
   // CUSTOMER MAPPING TESTS
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('mapCustomer', () => {
-    it('should map full Magento customer with addresses', () => {
+  describe("mapCustomer", () => {
+    it("should map full Magento customer with addresses", () => {
       const result = adapter.mapCustomer(MOCK_MAGENTO_CUSTOMER);
 
-      expect(result.externalCustomerId).toBe('5001');
-      expect(result.source).toBe('MAGENTO');
-      expect(result.email).toBe('customer@magento.example.com');
-      expect(result.firstName).toBe('Diana');
-      expect(result.lastName).toBe('Chen');
-      expect(result.phone).toBe('+1-206-555-0126');
+      expect(result.externalCustomerId).toBe("5001");
+      expect(result.source).toBe("MAGENTO");
+      expect(result.email).toBe("customer@magento.example.com");
+      expect(result.firstName).toBe("Diana");
+      expect(result.lastName).toBe("Chen");
+      expect(result.phone).toBe("+1-206-555-0126");
       expect(result.defaultAddress).toBeDefined();
-      expect(result.defaultAddress.line1).toBe('1000 Main Street');
+      expect(result.defaultAddress.line1).toBe("1000 Main Street");
     });
 
-    it('should use default billing address', () => {
+    it("should use default billing address", () => {
       const result = adapter.mapCustomer(MOCK_MAGENTO_CUSTOMER);
 
-      expect(result.defaultAddress.city).toBe('Seattle');
-      expect(result.defaultAddress.state).toBe('WA');
+      expect(result.defaultAddress.city).toBe("Seattle");
+      expect(result.defaultAddress.state).toBe("WA");
     });
 
-    it('should include customer metadata', () => {
+    it("should include customer metadata", () => {
       const result = adapter.mapCustomer(MOCK_MAGENTO_CUSTOMER);
 
       expect(result.metadata.groupId).toBe(1);
       expect(result.metadata.websiteId).toBe(1);
     });
 
-    it('should handle customer with multiple addresses', () => {
+    it("should handle customer with multiple addresses", () => {
       const result = adapter.mapCustomer(MOCK_MAGENTO_CUSTOMER);
 
       expect(result.defaultAddress).toBeDefined();
-      expect(result.defaultAddress.line1).toBe('1000 Main Street');
+      expect(result.defaultAddress.line1).toBe("1000 Main Street");
     });
 
-    it('should extract first address as default if no default_billing', () => {
+    it("should extract first address as default if no default_billing", () => {
       const customerNoBillingDefault: MagentoCustomer = {
         ...MOCK_MAGENTO_CUSTOMER,
-        default_billing: '',
+        default_billing: "",
       };
 
       const result = adapter.mapCustomer(customerNoBillingDefault);
@@ -1242,12 +1271,12 @@ describe('MagentoAdapter', () => {
   // FETCH ORDER TESTS (MOCKED HTTP)
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('fetchOrder', () => {
+  describe("fetchOrder", () => {
     beforeEach(() => {
       global.fetch = vi.fn();
     });
 
-    it('should fetch order from Magento REST API v1', async () => {
+    it("should fetch order from Magento REST API v1", async () => {
       const mockFetch = global.fetch as any;
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1255,26 +1284,26 @@ describe('MagentoAdapter', () => {
       });
 
       const credentials = {
-        storeUrl: 'https://magento.example.com',
-        accessToken: 'token123abc',
+        storeUrl: "https://magento.example.com",
+        accessToken: "token123abc",
       };
 
-      const order = await adapter.fetchOrder('100001', credentials);
+      const order = await adapter.fetchOrder("100001", credentials);
 
       expect(order.entity_id).toBe(100001);
-      expect(order.increment_id).toBe('100000001');
+      expect(order.increment_id).toBe("100000001");
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('rest/V1/orders/100001'),
+        expect.stringContaining("rest/V1/orders/100001"),
         expect.objectContaining({
-          method: 'GET',
+          method: "GET",
           headers: expect.objectContaining({
-            'Authorization': 'Bearer token123abc',
+            Authorization: "Bearer token123abc",
           }),
-        })
+        }),
       );
     });
 
-    it('should handle API error responses', async () => {
+    it("should handle API error responses", async () => {
       const mockFetch = global.fetch as any;
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -1282,11 +1311,11 @@ describe('MagentoAdapter', () => {
       });
 
       const credentials = {
-        storeUrl: 'https://magento.example.com',
-        accessToken: 'token123abc',
+        storeUrl: "https://magento.example.com",
+        accessToken: "token123abc",
       };
 
-      await expect(adapter.fetchOrder('999999', credentials)).rejects.toThrow();
+      await expect(adapter.fetchOrder("999999", credentials)).rejects.toThrow();
     });
   });
 
@@ -1294,12 +1323,12 @@ describe('MagentoAdapter', () => {
   // FETCH PRODUCTS TESTS (SEARCHCRITERIA PAGINATION)
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('fetchProducts', () => {
+  describe("fetchProducts", () => {
     beforeEach(() => {
       global.fetch = vi.fn();
     });
 
-    it('should fetch products with searchCriteria pagination', async () => {
+    it("should fetch products with searchCriteria pagination", async () => {
       const mockFetch = global.fetch as any;
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1310,17 +1339,17 @@ describe('MagentoAdapter', () => {
       });
 
       const credentials = {
-        storeUrl: 'https://magento.example.com',
-        accessToken: 'token123abc',
+        storeUrl: "https://magento.example.com",
+        accessToken: "token123abc",
       };
 
       const result = await adapter.fetchProducts(credentials);
 
       expect(result.products).toHaveLength(1);
-      expect(result.nextCursor).toBe('2');
+      expect(result.nextCursor).toBe("2");
     });
 
-    it('should not provide next cursor on last page', async () => {
+    it("should not provide next cursor on last page", async () => {
       const mockFetch = global.fetch as any;
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1331,8 +1360,8 @@ describe('MagentoAdapter', () => {
       });
 
       const credentials = {
-        storeUrl: 'https://magento.example.com',
-        accessToken: 'token123abc',
+        storeUrl: "https://magento.example.com",
+        accessToken: "token123abc",
       };
 
       const result = await adapter.fetchProducts(credentials);
@@ -1340,7 +1369,7 @@ describe('MagentoAdapter', () => {
       expect(result.nextCursor).toBeUndefined();
     });
 
-    it('should use cursor as currentPage parameter', async () => {
+    it("should use cursor as currentPage parameter", async () => {
       const mockFetch = global.fetch as any;
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1351,19 +1380,19 @@ describe('MagentoAdapter', () => {
       });
 
       const credentials = {
-        storeUrl: 'https://magento.example.com',
-        accessToken: 'token123abc',
+        storeUrl: "https://magento.example.com",
+        accessToken: "token123abc",
       };
 
-      await adapter.fetchProducts(credentials, '5');
+      await adapter.fetchProducts(credentials, "5");
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('searchCriteria%5BcurrentPage%5D=5'),
-        expect.any(Object)
+        expect.stringContaining("searchCriteria%5BcurrentPage%5D=5"),
+        expect.any(Object),
       );
     });
 
-    it('should include pageSize in searchCriteria', async () => {
+    it("should include pageSize in searchCriteria", async () => {
       const mockFetch = global.fetch as any;
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -1374,15 +1403,15 @@ describe('MagentoAdapter', () => {
       });
 
       const credentials = {
-        storeUrl: 'https://magento.example.com',
-        accessToken: 'token123abc',
+        storeUrl: "https://magento.example.com",
+        accessToken: "token123abc",
       };
 
       await adapter.fetchProducts(credentials);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('searchCriteria%5BpageSize%5D=20'),
-        expect.any(Object)
+        expect.stringContaining("searchCriteria%5BpageSize%5D=20"),
+        expect.any(Object),
       );
     });
   });
@@ -1391,12 +1420,12 @@ describe('MagentoAdapter', () => {
   // EDGE CASES AND SPECIAL SCENARIOS
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('Edge Cases', () => {
-    it('should validate adapter source', () => {
-      expect(adapter.source).toBe('MAGENTO');
+  describe("Edge Cases", () => {
+    it("should validate adapter source", () => {
+      expect(adapter.source).toBe("MAGENTO");
     });
 
-    it('should handle order with null customer_note', () => {
+    it("should handle order with null customer_note", () => {
       const orderNoNote = {
         ...MOCK_MAGENTO_ORDER,
         customer_note: null,
@@ -1407,10 +1436,10 @@ describe('MagentoAdapter', () => {
       expect(result.notes).toBeNull();
     });
 
-    it('should handle street array with single element', () => {
+    it("should handle street array with single element", () => {
       const addressSingleStreet = {
         ...MOCK_MAGENTO_ORDER.billing_address,
-        street: ['123 Main St'],
+        street: ["123 Main St"],
       };
 
       const orderWithModifiedAddress = {
@@ -1420,11 +1449,11 @@ describe('MagentoAdapter', () => {
 
       const result = adapter.mapOrder(orderWithModifiedAddress);
 
-      expect(result.billingAddress.line1).toBe('123 Main St');
+      expect(result.billingAddress.line1).toBe("123 Main St");
       expect(result.billingAddress.line2).toBeUndefined();
     });
 
-    it('should handle product with zero weight', () => {
+    it("should handle product with zero weight", () => {
       const productZeroWeight: MagentoProduct = {
         ...MOCK_MAGENTO_PRODUCT,
         weight: 0,
@@ -1435,7 +1464,7 @@ describe('MagentoAdapter', () => {
       expect(result.metadata.weight).toBe(0);
     });
 
-    it('should handle configurable product with no variants linked', () => {
+    it("should handle configurable product with no variants linked", () => {
       const configurableNoVariants: MagentoProduct = {
         ...MOCK_MAGENTO_PRODUCT,
         extension_attributes: {
@@ -1449,10 +1478,10 @@ describe('MagentoAdapter', () => {
       expect(result.variants).toHaveLength(0);
     });
 
-    it('should handle product status of 1 as ACTIVE', () => {
+    it("should handle product status of 1 as ACTIVE", () => {
       const result = adapter.mapProduct(MOCK_MAGENTO_PRODUCT);
 
-      expect(result.status).toBe('ACTIVE');
+      expect(result.status).toBe("ACTIVE");
     });
   });
 });

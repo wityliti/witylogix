@@ -80,13 +80,15 @@ function NotificationItem({
         "transition-colors duration-fast",
         !notification.read && "bg-wl-bg-surface",
         "hover:bg-wl-bg-overlay cursor-pointer",
-        "flex items-start gap-3"
+        "flex items-start gap-3",
       )}
     >
-      <div className={cn(
-        "mt-1 p-2 rounded-lg flex-shrink-0",
-        notificationTypeColors[notification.type]
-      )}>
+      <div
+        className={cn(
+          "mt-1 p-2 rounded-lg flex-shrink-0",
+          notificationTypeColors[notification.type],
+        )}
+      >
         {notificationIcons[notification.type]}
       </div>
 
@@ -127,8 +129,13 @@ function NotificationItem({
 }
 
 const TYPE_MAP: Record<string, Notification["type"]> = {
-  order: "order", shipment: "delivery", delivery: "delivery",
-  driver: "alert", system: "system", webhook: "system", workflow: "system",
+  order: "order",
+  shipment: "delivery",
+  delivery: "delivery",
+  driver: "alert",
+  system: "system",
+  webhook: "system",
+  workflow: "system",
 };
 
 export function NotificationCenter({
@@ -142,34 +149,43 @@ export function NotificationCenter({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { items: rawNotifs, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
+  const { items: rawNotifs, refetch } = useApiList<any>(
+    "/api/v4/notifications",
+    { limit: 20 },
+  );
 
-  const apiNotifs = useMemo<Notification[]>(() =>
-    rawNotifs.map((n) => ({
-      id: n.id,
-      type: TYPE_MAP[n.type ?? n.category] ?? "system",
-      title: n.title ?? n.action ?? "Notification",
-      message: n.message ?? n.description ?? "",
-      severity: (n.severity as Notification["severity"]) ?? "info",
-      read: n.read ?? true,
-      timestamp: new Date(n.timestamp ?? n.createdAt ?? Date.now()),
-      actionUrl: n.actionUrl,
-    })),
-  [rawNotifs]);
+  const apiNotifs = useMemo<Notification[]>(
+    () =>
+      rawNotifs.map((n) => ({
+        id: n.id,
+        type: TYPE_MAP[n.type ?? n.category] ?? "system",
+        title: n.title ?? n.action ?? "Notification",
+        message: n.message ?? n.description ?? "",
+        severity: (n.severity as Notification["severity"]) ?? "info",
+        read: n.read ?? true,
+        timestamp: new Date(n.timestamp ?? n.createdAt ?? Date.now()),
+        actionUrl: n.actionUrl,
+      })),
+    [rawNotifs],
+  );
 
   // Local overlay for optimistic read/delete operations
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
-  const notifications = useMemo(() =>
-    apiNotifs
-      .filter((n) => !deletedIds.has(n.id))
-      .map((n) => readIds.has(n.id) ? { ...n, read: true } : n),
-  [apiNotifs, readIds, deletedIds]);
+  const notifications = useMemo(
+    () =>
+      apiNotifs
+        .filter((n) => !deletedIds.has(n.id))
+        .map((n) => (readIds.has(n.id) ? { ...n, read: true } : n)),
+    [apiNotifs, readIds, deletedIds],
+  );
 
   // Poll for new notifications every 60 seconds
   useEffect(() => {
-    const interval = setInterval(() => { refetch(); }, 60_000);
+    const interval = setInterval(() => {
+      refetch();
+    }, 60_000);
     return () => clearInterval(interval);
   }, [refetch]);
 
@@ -188,7 +204,8 @@ export function NotificationCenter({
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen]);
 
@@ -222,7 +239,7 @@ export function NotificationCenter({
         className={cn(
           "relative p-2 rounded-lg transition-colors duration-fast",
           "hover:bg-wl-bg-overlay active:bg-wl-bg-surface",
-          isOpen && "bg-wl-bg-overlay"
+          isOpen && "bg-wl-bg-overlay",
         )}
         aria-label="Notifications"
         aria-expanded={isOpen}
@@ -234,7 +251,7 @@ export function NotificationCenter({
             className={cn(
               "absolute -top-1 -right-1 h-5 w-5",
               "flex items-center justify-center rounded-full",
-              "text-xs p-0"
+              "text-xs p-0",
             )}
           >
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -249,7 +266,7 @@ export function NotificationCenter({
           className={cn(
             "absolute right-0 top-12 w-96 max-w-[calc(100vw-1rem)]",
             "bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-xl",
-            "z-50 flex flex-col max-h-96 overflow-hidden"
+            "z-50 flex flex-col max-h-96 overflow-hidden",
           )}
         >
           {/* Header */}
@@ -264,7 +281,7 @@ export function NotificationCenter({
                   "p-1.5 rounded transition-colors duration-fast",
                   soundEnabled
                     ? "bg-wl-primary-500/20 text-wl-primary-400 hover:bg-wl-primary-500/30"
-                    : "hover:bg-wl-bg-surface text-wl-text-secondary"
+                    : "hover:bg-wl-bg-surface text-wl-text-secondary",
                 )}
                 aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
               >
@@ -279,7 +296,7 @@ export function NotificationCenter({
                   onClick={markAllAsRead}
                   className={cn(
                     "p-1.5 rounded transition-colors duration-fast",
-                    "hover:bg-wl-bg-surface text-wl-text-secondary"
+                    "hover:bg-wl-bg-surface text-wl-text-secondary",
                   )}
                   aria-label="Mark all as read"
                 >
@@ -307,14 +324,16 @@ export function NotificationCenter({
                 </div>
               </div>
             ) : (
-              notifications.slice(0, 20).map((notification) => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  onClick={() => handleNotificationClick(notification)}
-                  onMarkAsRead={() => markAsRead(notification.id)}
-                />
-              ))
+              notifications
+                .slice(0, 20)
+                .map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onClick={() => handleNotificationClick(notification)}
+                    onMarkAsRead={() => markAsRead(notification.id)}
+                  />
+                ))
             )}
           </div>
 
@@ -342,7 +361,7 @@ export function NotificationCenter({
             "bg-wl-danger-bg border border-wl-danger-500/30 rounded-lg",
             "px-4 py-3 flex items-center gap-2",
             "text-wl-danger-400 text-sm font-medium",
-            "animate-slide-up shadow-lg z-50"
+            "animate-slide-up shadow-lg z-50",
           )}
         >
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />

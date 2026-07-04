@@ -23,28 +23,18 @@ class WebhookSecurityValidator {
   validateHMACSHA256(
     payload: string,
     signature: string,
-    secret: string
+    secret: string,
   ): boolean {
-    const expectedSignature = createHMACSHA256Signature(
-      payload,
-      secret
-    );
+    const expectedSignature = createHMACSHA256Signature(payload, secret);
     return this.timingSafeEqual(signature, expectedSignature);
   }
 
-  validateRSA(
-    payload: string,
-    signature: string,
-    publicKey: string
-  ): boolean {
+  validateRSA(payload: string, signature: string, publicKey: string): boolean {
     try {
       const crypto = require("crypto");
       const verify = crypto.createVerify("sha256");
       verify.update(payload);
-      const isValid = verify.verify(
-        publicKey,
-        Buffer.from(signature, "hex")
-      );
+      const isValid = verify.verify(publicKey, Buffer.from(signature, "hex"));
       return isValid;
     } catch {
       return false;
@@ -74,10 +64,7 @@ class WebhookSecurityValidator {
     }
   }
 
-  private timingSafeEqual(
-    a: string,
-    b: string
-  ): boolean {
+  private timingSafeEqual(a: string, b: string): boolean {
     if (a.length !== b.length) return false;
 
     let result = 0;
@@ -90,7 +77,7 @@ class WebhookSecurityValidator {
   validateReplayProtection(
     nonce: string,
     timestamp: number,
-    maxAgeSeconds: number = 300
+    maxAgeSeconds: number = 300,
   ): boolean {
     const now = Date.now() / 1000;
 
@@ -140,16 +127,9 @@ describe("Webhook Security", () => {
       const secret = "sk_live_" + "webhook_secret_123";
       const payload = JSON.stringify({ id: "evt-123" });
 
-      const signature = createHMACSHA256Signature(
-        payload,
-        secret
-      );
+      const signature = createHMACSHA256Signature(payload, secret);
 
-      const isValid = validator.validateHMACSHA256(
-        payload,
-        signature,
-        secret
-      );
+      const isValid = validator.validateHMACSHA256(payload, signature, secret);
 
       expect(isValid).toBe(true);
     });
@@ -162,7 +142,7 @@ describe("Webhook Security", () => {
       const isValid = validator.validateHMACSHA256(
         payload,
         invalidSignature,
-        secret
+        secret,
       );
 
       expect(isValid).toBe(false);
@@ -173,16 +153,9 @@ describe("Webhook Security", () => {
       const secret2 = "sk_live_" + "secret_2";
       const payload = JSON.stringify({ id: "evt-123" });
 
-      const signature = createHMACSHA256Signature(
-        payload,
-        secret1
-      );
+      const signature = createHMACSHA256Signature(payload, secret1);
 
-      const isValid = validator.validateHMACSHA256(
-        payload,
-        signature,
-        secret2
-      );
+      const isValid = validator.validateHMACSHA256(payload, signature, secret2);
 
       expect(isValid).toBe(false);
     });
@@ -194,15 +167,12 @@ describe("Webhook Security", () => {
         id: "evt-456",
       });
 
-      const signature = createHMACSHA256Signature(
-        originalPayload,
-        secret
-      );
+      const signature = createHMACSHA256Signature(originalPayload, secret);
 
       const isValid = validator.validateHMACSHA256(
         tamperedPayload,
         signature,
-        secret
+        secret,
       );
 
       expect(isValid).toBe(false);
@@ -227,11 +197,7 @@ describe("Webhook Security", () => {
       const payload = JSON.stringify({ id: "evt-123" });
       const signature = "invalid_signature";
 
-      const isValid = validator.validateRSA(
-        payload,
-        signature,
-        publicKey
-      );
+      const isValid = validator.validateRSA(payload, signature, publicKey);
 
       expect(isValid).toBe(false);
     });
@@ -256,10 +222,7 @@ describe("Webhook Security", () => {
       const token = createJWTToken(payload, secret);
       const tampered = token.slice(0, -10) + "invalid123";
 
-      const isValid = validator.validateJWT(
-        tampered,
-        secret
-      );
+      const isValid = validator.validateJWT(tampered, secret);
 
       expect(isValid).toBe(false);
     });
@@ -267,10 +230,7 @@ describe("Webhook Security", () => {
     it("should reject malformed JWT", () => {
       const malformedToken = "not.a.valid.jwt";
 
-      const isValid = validator.validateJWT(
-        malformedToken,
-        "secret"
-      );
+      const isValid = validator.validateJWT(malformedToken, "secret");
 
       expect(isValid).toBe(false);
     });
@@ -293,45 +253,30 @@ describe("Webhook Security", () => {
       const secret = "sk_live_" + "webhook_secret_123";
       const payload = JSON.stringify({ id: "evt-123" });
 
-      const signature1 = createHMACSHA256Signature(
-        payload,
-        secret
-      );
-      const signature2 = createHMACSHA256Signature(
-        payload,
-        secret
-      );
+      const signature1 = createHMACSHA256Signature(payload, secret);
+      const signature2 = createHMACSHA256Signature(payload, secret);
 
       // Both should be valid
-      expect(
-        validator.validateHMACSHA256(payload, signature1, secret)
-      ).toBe(true);
-      expect(
-        validator.validateHMACSHA256(payload, signature2, secret)
-      ).toBe(true);
+      expect(validator.validateHMACSHA256(payload, signature1, secret)).toBe(
+        true,
+      );
+      expect(validator.validateHMACSHA256(payload, signature2, secret)).toBe(
+        true,
+      );
     });
 
     it("should reject similar but different signatures", () => {
       const secret = "sk_live_" + "webhook_secret_123";
       const payload = JSON.stringify({ id: "evt-123" });
 
-      const signature = createHMACSHA256Signature(
-        payload,
-        secret
-      );
+      const signature = createHMACSHA256Signature(payload, secret);
 
       // Flip one character
       const modified =
         signature.slice(0, -1) +
-        (signature[signature.length - 1] === "a"
-          ? "b"
-          : "a");
+        (signature[signature.length - 1] === "a" ? "b" : "a");
 
-      const isValid = validator.validateHMACSHA256(
-        payload,
-        modified,
-        secret
-      );
+      const isValid = validator.validateHMACSHA256(payload, modified, secret);
 
       expect(isValid).toBe(false);
     });
@@ -339,29 +284,24 @@ describe("Webhook Security", () => {
 
   describe("Replay Protection (Timestamp + Nonce)", () => {
     it("should accept valid timestamp and nonce", () => {
-      const { timestamp, nonce } =
-        createReplayProtectionNonce();
+      const { timestamp, nonce } = createReplayProtectionNonce();
 
       const isValid = validator.validateReplayProtection(
         nonce,
-        timestamp / 1000
+        timestamp / 1000,
       );
 
       expect(isValid).toBe(true);
     });
 
     it("should reject duplicate nonce", () => {
-      const { timestamp, nonce } =
-        createReplayProtectionNonce();
+      const { timestamp, nonce } = createReplayProtectionNonce();
 
-      validator.validateReplayProtection(
-        nonce,
-        timestamp / 1000
-      );
+      validator.validateReplayProtection(nonce, timestamp / 1000);
 
       const secondAttempt = validator.validateReplayProtection(
         nonce,
-        timestamp / 1000
+        timestamp / 1000,
       );
 
       expect(secondAttempt).toBe(false);
@@ -370,8 +310,7 @@ describe("Webhook Security", () => {
     it("should reject expired timestamp", () => {
       vi.useFakeTimers();
 
-      const { timestamp, nonce } =
-        createReplayProtectionNonce();
+      const { timestamp, nonce } = createReplayProtectionNonce();
 
       // Advance time beyond max age
       vi.advanceTimersByTime(310000); // 310 seconds
@@ -379,7 +318,7 @@ describe("Webhook Security", () => {
       const isValid = validator.validateReplayProtection(
         nonce,
         timestamp / 1000,
-        300 // 300 second max age
+        300, // 300 second max age
       );
 
       expect(isValid).toBe(false);
@@ -388,18 +327,17 @@ describe("Webhook Security", () => {
     });
 
     it("should detect nonce reuse within time window", () => {
-      const { timestamp, nonce } =
-        createReplayProtectionNonce();
+      const { timestamp, nonce } = createReplayProtectionNonce();
 
       const first = validator.validateReplayProtection(
         nonce,
         timestamp / 1000,
-        600
+        600,
       );
       const second = validator.validateReplayProtection(
         nonce,
         timestamp / 1000,
-        600
+        600,
       );
 
       expect(first).toBe(true);
@@ -407,14 +345,9 @@ describe("Webhook Security", () => {
     });
 
     it("should cleanup expired nonces", () => {
-      const { timestamp: t1, nonce: n1 } =
-        createReplayProtectionNonce();
+      const { timestamp: t1, nonce: n1 } = createReplayProtectionNonce();
 
-      validator.validateReplayProtection(
-        n1,
-        t1 / 1000,
-        600
-      );
+      validator.validateReplayProtection(n1, t1 / 1000, 600);
 
       expect(validator.hasNonce(n1)).toBe(true);
 
@@ -429,11 +362,7 @@ describe("Webhook Security", () => {
       const secret = "sk_live_" + "webhook_secret_123";
       const payload = JSON.stringify({ id: "evt-123" });
 
-      const isValid = validator.validateHMACSHA256(
-        payload,
-        "",
-        secret
-      );
+      const isValid = validator.validateHMACSHA256(payload, "", secret);
 
       expect(isValid).toBe(false);
     });
@@ -446,7 +375,7 @@ describe("Webhook Security", () => {
       const isValid = validator.validateHMACSHA256(
         payload,
         wrongLengthSig,
-        secret
+        secret,
       );
 
       expect(isValid).toBe(false);

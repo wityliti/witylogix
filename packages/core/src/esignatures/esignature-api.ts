@@ -3,7 +3,7 @@
  * 15+ REST endpoints with Zod validation for complete signing workflow
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 import {
   Envelope,
   Template,
@@ -13,7 +13,7 @@ import {
   FieldType,
   AuthenticationMethod,
   SignerRole,
-} from './esignature-types';
+} from "./esignature-types";
 
 /**
  * Zod Validation Schemas
@@ -175,7 +175,7 @@ export const publishTemplateSchema = z.object({
 
 export const shareTemplateSchema = z.object({
   userIds: z.array(z.string().uuid()),
-  permission: z.enum(['view', 'edit', 'admin']),
+  permission: z.enum(["view", "edit", "admin"]),
 });
 
 /**
@@ -183,7 +183,7 @@ export const shareTemplateSchema = z.object({
  */
 
 export const createSigningSessionSchema = z.object({
-  signingType: z.enum(['remote', 'embedded', 'in_person']),
+  signingType: z.enum(["remote", "embedded", "in_person"]),
 });
 
 export const signFieldSchema = z.object({
@@ -227,11 +227,11 @@ export const queryAuditTrailSchema = z.object({
 });
 
 export const downloadCertificateSchema = z.object({
-  format: z.enum(['pem', 'json', 'pdf']),
+  format: z.enum(["pem", "json", "pdf"]),
 });
 
 export const getComplianceReportSchema = z.object({
-  format: z.enum(['json', 'html', 'pdf']),
+  format: z.enum(["json", "html", "pdf"]),
 });
 
 /**
@@ -345,7 +345,7 @@ export const complianceReportResponseSchema = z.object({
   findings: z.array(
     z.object({
       category: z.string(),
-      severity: z.enum(['info', 'warning', 'error']),
+      severity: z.enum(["info", "warning", "error"]),
       message: z.string(),
     }),
   ),
@@ -411,7 +411,10 @@ export class ESignatureApiHandler {
    * PATCH /envelopes/:id
    * Update envelope
    */
-  async updateEnvelope(envelopeId: string, data: UpdateEnvelope): Promise<Envelope> {
+  async updateEnvelope(
+    envelopeId: string,
+    data: UpdateEnvelope,
+  ): Promise<Envelope> {
     const validated = updateEnvelopeSchema.parse(data);
 
     // TODO: Update via EnvelopeManager
@@ -422,7 +425,10 @@ export class ESignatureApiHandler {
    * POST /envelopes/:id/send
    * Send envelope to signers
    */
-  async sendEnvelope(envelopeId: string, data: SendEnvelope): Promise<Envelope> {
+  async sendEnvelope(
+    envelopeId: string,
+    data: SendEnvelope,
+  ): Promise<Envelope> {
     const validated = sendEnvelopeSchema.parse(data);
 
     // TODO: Validate envelope, transition status, send invites
@@ -433,7 +439,10 @@ export class ESignatureApiHandler {
    * POST /envelopes/:id/void
    * Void envelope
    */
-  async voidEnvelope(envelopeId: string, data: VoidEnvelope): Promise<Envelope> {
+  async voidEnvelope(
+    envelopeId: string,
+    data: VoidEnvelope,
+  ): Promise<Envelope> {
     const validated = voidEnvelopeSchema.parse(data);
 
     // TODO: Void envelope, update status
@@ -455,7 +464,11 @@ export class ESignatureApiHandler {
    * PATCH /envelopes/:id/signers/:signerId
    * Update signer
    */
-  async updateSigner(envelopeId: string, signerId: string, data: UpdateSigner): Promise<any> {
+  async updateSigner(
+    envelopeId: string,
+    signerId: string,
+    data: UpdateSigner,
+  ): Promise<any> {
     const validated = updateSignerSchema.parse(data);
 
     // TODO: Update signer
@@ -511,7 +524,10 @@ export class ESignatureApiHandler {
    * PATCH /templates/:id
    * Update template
    */
-  async updateTemplate(templateId: string, data: UpdateTemplate): Promise<Template> {
+  async updateTemplate(
+    templateId: string,
+    data: UpdateTemplate,
+  ): Promise<Template> {
     const validated = updateTemplateSchema.parse(data);
 
     // TODO: Update template
@@ -531,7 +547,10 @@ export class ESignatureApiHandler {
    * POST /templates/:id/share
    * Share template with users
    */
-  async shareTemplate(templateId: string, data: ShareTemplate): Promise<Template> {
+  async shareTemplate(
+    templateId: string,
+    data: ShareTemplate,
+  ): Promise<Template> {
     const validated = shareTemplateSchema.parse(data);
 
     // TODO: Share template
@@ -568,7 +587,10 @@ export class ESignatureApiHandler {
    * POST /signing-sessions/:sessionId/complete
    * Complete signing session
    */
-  async completeSigningSession(sessionId: string, data?: CompleteSigningSession): Promise<any> {
+  async completeSigningSession(
+    sessionId: string,
+    data?: CompleteSigningSession,
+  ): Promise<any> {
     if (data) {
       const validated = completeSigningSchema.parse(data);
     }
@@ -592,7 +614,10 @@ export class ESignatureApiHandler {
    * POST /bulk-send/:id/schedule
    * Schedule bulk send
    */
-  async scheduleBulkSend(bulkSendId: string, data: ScheduleBulkSend): Promise<any> {
+  async scheduleBulkSend(
+    bulkSendId: string,
+    data: ScheduleBulkSend,
+  ): Promise<any> {
     const validated = scheduleBulkSendSchema.parse(data);
 
     // TODO: Schedule bulk send job
@@ -624,7 +649,7 @@ export class ESignatureApiHandler {
     const validated = downloadCertificateSchema.parse(query);
 
     // TODO: Generate and return certificate
-    return '';
+    return "";
   }
 
   /**
@@ -638,7 +663,7 @@ export class ESignatureApiHandler {
     const validated = getComplianceReportSchema.parse(query);
 
     // TODO: Generate compliance report
-    return '';
+    return "";
   }
 
   /**
@@ -650,7 +675,7 @@ export class ESignatureApiHandler {
     newName: string,
   ): Promise<any> {
     if (!Array.isArray(sourceEnvelopeIds) || sourceEnvelopeIds.length < 2) {
-      throw new Error('At least 2 envelopes required for merge');
+      throw new Error("At least 2 envelopes required for merge");
     }
 
     // TODO: Merge envelopes
@@ -663,7 +688,7 @@ export class ESignatureApiHandler {
    */
   async cloneEnvelope(envelopeId: string, newName: string): Promise<Envelope> {
     if (!newName || newName.trim().length === 0) {
-      throw new Error('New name required for clone');
+      throw new Error("New name required for clone");
     }
 
     // TODO: Clone envelope
@@ -678,43 +703,79 @@ export class ESignatureApiHandler {
 
 export const apiRoutes = [
   // Envelope routes
-  { method: 'POST', path: '/envelopes', handler: 'createEnvelope' },
-  { method: 'GET', path: '/envelopes', handler: 'listEnvelopes' },
-  { method: 'GET', path: '/envelopes/:id', handler: 'getEnvelope' },
-  { method: 'PATCH', path: '/envelopes/:id', handler: 'updateEnvelope' },
-  { method: 'POST', path: '/envelopes/:id/send', handler: 'sendEnvelope' },
-  { method: 'POST', path: '/envelopes/:id/void', handler: 'voidEnvelope' },
-  { method: 'POST', path: '/envelopes/:id/clone', handler: 'cloneEnvelope' },
+  { method: "POST", path: "/envelopes", handler: "createEnvelope" },
+  { method: "GET", path: "/envelopes", handler: "listEnvelopes" },
+  { method: "GET", path: "/envelopes/:id", handler: "getEnvelope" },
+  { method: "PATCH", path: "/envelopes/:id", handler: "updateEnvelope" },
+  { method: "POST", path: "/envelopes/:id/send", handler: "sendEnvelope" },
+  { method: "POST", path: "/envelopes/:id/void", handler: "voidEnvelope" },
+  { method: "POST", path: "/envelopes/:id/clone", handler: "cloneEnvelope" },
 
   // Signer routes
-  { method: 'POST', path: '/envelopes/:id/signers', handler: 'addSigner' },
-  { method: 'PATCH', path: '/envelopes/:id/signers/:signerId', handler: 'updateSigner' },
+  { method: "POST", path: "/envelopes/:id/signers", handler: "addSigner" },
+  {
+    method: "PATCH",
+    path: "/envelopes/:id/signers/:signerId",
+    handler: "updateSigner",
+  },
 
   // Field routes
-  { method: 'POST', path: '/envelopes/:id/fields', handler: 'addField' },
+  { method: "POST", path: "/envelopes/:id/fields", handler: "addField" },
 
   // Template routes
-  { method: 'POST', path: '/templates', handler: 'createTemplate' },
-  { method: 'GET', path: '/templates', handler: 'listTemplates' },
-  { method: 'GET', path: '/templates/:id', handler: 'getTemplate' },
-  { method: 'PATCH', path: '/templates/:id', handler: 'updateTemplate' },
-  { method: 'POST', path: '/templates/:id/publish', handler: 'publishTemplate' },
-  { method: 'POST', path: '/templates/:id/share', handler: 'shareTemplate' },
+  { method: "POST", path: "/templates", handler: "createTemplate" },
+  { method: "GET", path: "/templates", handler: "listTemplates" },
+  { method: "GET", path: "/templates/:id", handler: "getTemplate" },
+  { method: "PATCH", path: "/templates/:id", handler: "updateTemplate" },
+  {
+    method: "POST",
+    path: "/templates/:id/publish",
+    handler: "publishTemplate",
+  },
+  { method: "POST", path: "/templates/:id/share", handler: "shareTemplate" },
 
   // Signing session routes
-  { method: 'POST', path: '/envelopes/:id/signing-session', handler: 'createSigningSession' },
-  { method: 'POST', path: '/signing-sessions/:id/sign-field', handler: 'signField' },
-  { method: 'POST', path: '/signing-sessions/:id/complete', handler: 'completeSigningSession' },
+  {
+    method: "POST",
+    path: "/envelopes/:id/signing-session",
+    handler: "createSigningSession",
+  },
+  {
+    method: "POST",
+    path: "/signing-sessions/:id/sign-field",
+    handler: "signField",
+  },
+  {
+    method: "POST",
+    path: "/signing-sessions/:id/complete",
+    handler: "completeSigningSession",
+  },
 
   // Bulk operations
-  { method: 'POST', path: '/bulk-send', handler: 'createBulkSend' },
-  { method: 'POST', path: '/bulk-send/:id/schedule', handler: 'scheduleBulkSend' },
+  { method: "POST", path: "/bulk-send", handler: "createBulkSend" },
+  {
+    method: "POST",
+    path: "/bulk-send/:id/schedule",
+    handler: "scheduleBulkSend",
+  },
 
   // Audit & compliance
-  { method: 'GET', path: '/envelopes/:id/audit-trail', handler: 'getAuditTrail' },
-  { method: 'GET', path: '/envelopes/:id/certificate', handler: 'downloadCertificate' },
-  { method: 'GET', path: '/envelopes/:id/compliance-report', handler: 'getComplianceReport' },
+  {
+    method: "GET",
+    path: "/envelopes/:id/audit-trail",
+    handler: "getAuditTrail",
+  },
+  {
+    method: "GET",
+    path: "/envelopes/:id/certificate",
+    handler: "downloadCertificate",
+  },
+  {
+    method: "GET",
+    path: "/envelopes/:id/compliance-report",
+    handler: "getComplianceReport",
+  },
 
   // Merge operations
-  { method: 'POST', path: '/envelopes/merge', handler: 'mergeEnvelopes' },
+  { method: "POST", path: "/envelopes/merge", handler: "mergeEnvelopes" },
 ];

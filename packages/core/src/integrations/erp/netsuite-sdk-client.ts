@@ -4,7 +4,7 @@
  * Comprehensive support for Records, SuiteQL, Saved Searches, File Cabinet, RESTlets
  */
 
-import { createHmac } from 'crypto';
+import { createHmac } from "crypto";
 
 // ─── TYPE DEFINITIONS ──────────────────────────────────────────────────────
 
@@ -17,7 +17,7 @@ export interface NetSuiteSdkConfig {
   consumerSecret: string;
   tokenKey: string;
   tokenSecret: string;
-  environment?: 'sandbox' | 'production';
+  environment?: "sandbox" | "production";
   timeout?: number; // Default: 30000ms
   maxRetries?: number; // Default: 3
   concurrency?: {
@@ -65,7 +65,7 @@ export interface SuiteQLResult<T = Record<string, any>> {
 export interface RecordOperationResult {
   id: string;
   recordType: string;
-  status: 'success' | 'failed';
+  status: "success" | "failed";
   error?: string;
 }
 
@@ -83,7 +83,7 @@ export interface NetSuiteCustomer {
   phone?: string;
   fax?: string;
   website?: string;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
   tier?: string;
   taxId?: string;
   creditLimit?: number;
@@ -110,7 +110,7 @@ export interface NetSuiteVendor {
   phone?: string;
   fax?: string;
   website?: string;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
   taxId?: string;
   currency?: string;
   paymentTerms?: string;
@@ -127,7 +127,7 @@ export interface NetSuiteVendor {
 export interface NetSuiteSalesOrder {
   id?: string;
   internalId?: string;
-  recordType: 'salesorder';
+  recordType: "salesorder";
   tranId: string;
   entity: string; // Customer internal ID
   entityName?: string;
@@ -156,7 +156,7 @@ export interface NetSuiteSalesOrder {
 export interface NetSuitePurchaseOrder {
   id?: string;
   internalId?: string;
-  recordType: 'purchaseorder';
+  recordType: "purchaseorder";
   tranId: string;
   entity: string; // Vendor internal ID
   entityName?: string;
@@ -184,7 +184,7 @@ export interface NetSuitePurchaseOrder {
 export interface NetSuiteInvoice {
   id?: string;
   internalId?: string;
-  recordType: 'invoice';
+  recordType: "invoice";
   tranId: string;
   entity: string; // Customer internal ID
   entityName?: string;
@@ -194,7 +194,13 @@ export interface NetSuiteInvoice {
   currency?: string;
   exchangeRate?: number;
   subsidiary?: string;
-  status?: 'Draft' | 'Open' | 'Fully Billed' | 'Paid in Full' | 'Overdue' | 'Closed';
+  status?:
+    | "Draft"
+    | "Open"
+    | "Fully Billed"
+    | "Paid in Full"
+    | "Overdue"
+    | "Closed";
   billingAddress?: NetSuiteAddress;
   shippingAddress?: NetSuiteAddress;
   memo?: string;
@@ -216,7 +222,7 @@ export interface NetSuiteInvoice {
 export interface NetSuiteVendorBill {
   id?: string;
   internalId?: string;
-  recordType: 'vendorbill';
+  recordType: "vendorbill";
   tranId: string;
   entity: string; // Vendor internal ID
   entityName?: string;
@@ -226,7 +232,7 @@ export interface NetSuiteVendorBill {
   currency?: string;
   exchangeRate?: number;
   subsidiary?: string;
-  status?: 'Open' | 'Fully Paid' | 'Partially Paid' | 'Overdue' | 'Closed';
+  status?: "Open" | "Fully Paid" | "Partially Paid" | "Overdue" | "Closed";
   memo?: string;
   subtotal?: number;
   discountTotal?: number;
@@ -385,19 +391,30 @@ export class OAuth1SignatureBuilder {
     const baseString = this.generateBaseString(method, url, params);
     const signingKey = `${consumerSecret}&${tokenSecret}`;
 
-    return createHmac('sha256', signingKey).update(baseString).digest('base64');
+    return createHmac("sha256", signingKey).update(baseString).digest("base64");
   }
 
   /**
    * Generate base string for signature
    */
-  private static generateBaseString(method: string, url: string, params: Record<string, string>): string {
+  private static generateBaseString(
+    method: string,
+    url: string,
+    params: Record<string, string>,
+  ): string {
     const sortedParams = Object.entries(params)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&');
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+      )
+      .join("&");
 
-    const baseString = [method.toUpperCase(), encodeURIComponent(url), encodeURIComponent(sortedParams)].join('&');
+    const baseString = [
+      method.toUpperCase(),
+      encodeURIComponent(url),
+      encodeURIComponent(sortedParams),
+    ].join("&");
 
     return baseString;
   }
@@ -410,7 +427,7 @@ export class OAuth1SignatureBuilder {
       `OAuth ` +
       Object.entries(signature)
         .map(([key, value]) => `${key}="${encodeURIComponent(value)}"`)
-        .join(',')
+        .join(",")
     );
   }
 
@@ -418,7 +435,10 @@ export class OAuth1SignatureBuilder {
    * Generate nonce
    */
   static generateNonce(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return (
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15)
+    );
   }
 
   /**
@@ -448,19 +468,23 @@ export class NetSuiteSdkClient {
     this.config = {
       timeout: this.defaultTimeout,
       maxRetries: this.defaultMaxRetries,
-      environment: 'production',
+      environment: "production",
       ...config,
     };
 
     if (!config.accountId || !config.consumerKey || !config.consumerSecret) {
-      throw new Error('NetSuite client requires accountId, consumerKey, and consumerSecret');
+      throw new Error(
+        "NetSuite client requires accountId, consumerKey, and consumerSecret",
+      );
     }
 
     if (!config.tokenKey || !config.tokenSecret) {
-      throw new Error('NetSuite client requires tokenKey and tokenSecret for TBA');
+      throw new Error(
+        "NetSuite client requires tokenKey and tokenSecret for TBA",
+      );
     }
 
-    const env = this.config.environment === 'sandbox' ? '_sb' : '';
+    const env = this.config.environment === "sandbox" ? "_sb" : "";
     this.restBaseUrl = `https://${this.config.accountId}${env}.suiteapis.com/services/rest`;
 
     this.concurrency = {
@@ -476,7 +500,7 @@ export class NetSuiteSdkClient {
    */
   async checkHealth(): Promise<boolean> {
     try {
-      const response = await this.request('GET', '/record/v1/customer', {
+      const response = await this.request("GET", "/record/v1/customer", {
         limit: 1,
       });
 
@@ -490,7 +514,10 @@ export class NetSuiteSdkClient {
    * Get customer record
    */
   async getCustomer(customerId: string): Promise<NetSuiteCustomer> {
-    const response = await this.request('GET', `/record/v1/customer/${customerId}`);
+    const response = await this.request(
+      "GET",
+      `/record/v1/customer/${customerId}`,
+    );
 
     return this.transformCustomerResponse(response as Record<string, any>);
   }
@@ -499,16 +526,31 @@ export class NetSuiteSdkClient {
    * Create customer record
    */
   async createCustomer(customer: NetSuiteCustomer): Promise<NetSuiteCustomer> {
-    const response = await this.request('POST', '/record/v1/customer', customer);
+    const response = await this.request(
+      "POST",
+      "/record/v1/customer",
+      customer,
+    );
 
-    return { ...customer, id: (response as any).id, internalId: (response as any).internalId };
+    return {
+      ...customer,
+      id: (response as any).id,
+      internalId: (response as any).internalId,
+    };
   }
 
   /**
    * Update customer record
    */
-  async updateCustomer(customerId: string, updates: Partial<NetSuiteCustomer>): Promise<NetSuiteCustomer> {
-    const response = await this.request('PATCH', `/record/v1/customer/${customerId}`, updates);
+  async updateCustomer(
+    customerId: string,
+    updates: Partial<NetSuiteCustomer>,
+  ): Promise<NetSuiteCustomer> {
+    const response = await this.request(
+      "PATCH",
+      `/record/v1/customer/${customerId}`,
+      updates,
+    );
 
     return this.transformCustomerResponse(response as Record<string, any>);
   }
@@ -517,25 +559,29 @@ export class NetSuiteSdkClient {
    * Delete customer record
    */
   async deleteCustomer(customerId: string): Promise<void> {
-    await this.request('DELETE', `/record/v1/customer/${customerId}`);
+    await this.request("DELETE", `/record/v1/customer/${customerId}`);
   }
 
   /**
    * Search customers
    */
-  async searchCustomers(filters: NetSuiteSearchFilter[] = []): Promise<SuiteQLResult<NetSuiteCustomer>> {
-    let q = 'SELECT * FROM customer';
+  async searchCustomers(
+    filters: NetSuiteSearchFilter[] = [],
+  ): Promise<SuiteQLResult<NetSuiteCustomer>> {
+    let q = "SELECT * FROM customer";
 
     if (filters.length > 0) {
       const whereClauses = filters
         .map((f) => {
           if (f.values && f.values.length > 0) {
-            const values = f.values.map((v) => `'${v.replace(/'/g, "''")}'`).join(',');
-            return `${f.name} ${f.operator || 'IN'} (${values})`;
+            const values = f.values
+              .map((v) => `'${v.replace(/'/g, "''")}'`)
+              .join(",");
+            return `${f.name} ${f.operator || "IN"} (${values})`;
           }
-          return `${f.name} ${f.operator || '='} '${(f.values?.[0] || '').replace(/'/g, "''")}'`;
+          return `${f.name} ${f.operator || "="} '${(f.values?.[0] || "").replace(/'/g, "''")}'`;
         })
-        .join(' AND ');
+        .join(" AND ");
 
       q += ` WHERE ${whereClauses}`;
     }
@@ -547,7 +593,7 @@ export class NetSuiteSdkClient {
    * Get vendor record
    */
   async getVendor(vendorId: string): Promise<NetSuiteVendor> {
-    const response = await this.request('GET', `/record/v1/vendor/${vendorId}`);
+    const response = await this.request("GET", `/record/v1/vendor/${vendorId}`);
 
     return response as NetSuiteVendor;
   }
@@ -556,16 +602,27 @@ export class NetSuiteSdkClient {
    * Create vendor record
    */
   async createVendor(vendor: NetSuiteVendor): Promise<NetSuiteVendor> {
-    const response = await this.request('POST', '/record/v1/vendor', vendor);
+    const response = await this.request("POST", "/record/v1/vendor", vendor);
 
-    return { ...vendor, id: (response as any).id, internalId: (response as any).internalId };
+    return {
+      ...vendor,
+      id: (response as any).id,
+      internalId: (response as any).internalId,
+    };
   }
 
   /**
    * Update vendor record
    */
-  async updateVendor(vendorId: string, updates: Partial<NetSuiteVendor>): Promise<NetSuiteVendor> {
-    const response = await this.request('PATCH', `/record/v1/vendor/${vendorId}`, updates);
+  async updateVendor(
+    vendorId: string,
+    updates: Partial<NetSuiteVendor>,
+  ): Promise<NetSuiteVendor> {
+    const response = await this.request(
+      "PATCH",
+      `/record/v1/vendor/${vendorId}`,
+      updates,
+    );
 
     return response as NetSuiteVendor;
   }
@@ -574,7 +631,10 @@ export class NetSuiteSdkClient {
    * Get sales order
    */
   async getSalesOrder(orderId: string): Promise<NetSuiteSalesOrder> {
-    const response = await this.request('GET', `/record/v1/salesorder/${orderId}`);
+    const response = await this.request(
+      "GET",
+      `/record/v1/salesorder/${orderId}`,
+    );
 
     return response as NetSuiteSalesOrder;
   }
@@ -582,17 +642,30 @@ export class NetSuiteSdkClient {
   /**
    * Create sales order
    */
-  async createSalesOrder(order: NetSuiteSalesOrder): Promise<NetSuiteSalesOrder> {
-    const response = await this.request('POST', '/record/v1/salesorder', order);
+  async createSalesOrder(
+    order: NetSuiteSalesOrder,
+  ): Promise<NetSuiteSalesOrder> {
+    const response = await this.request("POST", "/record/v1/salesorder", order);
 
-    return { ...order, id: (response as any).id, internalId: (response as any).internalId };
+    return {
+      ...order,
+      id: (response as any).id,
+      internalId: (response as any).internalId,
+    };
   }
 
   /**
    * Update sales order
    */
-  async updateSalesOrder(orderId: string, updates: Partial<NetSuiteSalesOrder>): Promise<NetSuiteSalesOrder> {
-    const response = await this.request('PATCH', `/record/v1/salesorder/${orderId}`, updates);
+  async updateSalesOrder(
+    orderId: string,
+    updates: Partial<NetSuiteSalesOrder>,
+  ): Promise<NetSuiteSalesOrder> {
+    const response = await this.request(
+      "PATCH",
+      `/record/v1/salesorder/${orderId}`,
+      updates,
+    );
 
     return response as NetSuiteSalesOrder;
   }
@@ -600,8 +673,11 @@ export class NetSuiteSdkClient {
   /**
    * Update line items on sales order
    */
-  async updateSalesOrderItems(orderId: string, items: NetSuiteLineItem[]): Promise<void> {
-    await this.request('PATCH', `/record/v1/salesorder/${orderId}`, {
+  async updateSalesOrderItems(
+    orderId: string,
+    items: NetSuiteLineItem[],
+  ): Promise<void> {
+    await this.request("PATCH", `/record/v1/salesorder/${orderId}`, {
       items: items,
     });
   }
@@ -610,7 +686,10 @@ export class NetSuiteSdkClient {
    * Get purchase order
    */
   async getPurchaseOrder(orderId: string): Promise<NetSuitePurchaseOrder> {
-    const response = await this.request('GET', `/record/v1/purchaseorder/${orderId}`);
+    const response = await this.request(
+      "GET",
+      `/record/v1/purchaseorder/${orderId}`,
+    );
 
     return response as NetSuitePurchaseOrder;
   }
@@ -618,17 +697,34 @@ export class NetSuiteSdkClient {
   /**
    * Create purchase order
    */
-  async createPurchaseOrder(order: NetSuitePurchaseOrder): Promise<NetSuitePurchaseOrder> {
-    const response = await this.request('POST', '/record/v1/purchaseorder', order);
+  async createPurchaseOrder(
+    order: NetSuitePurchaseOrder,
+  ): Promise<NetSuitePurchaseOrder> {
+    const response = await this.request(
+      "POST",
+      "/record/v1/purchaseorder",
+      order,
+    );
 
-    return { ...order, id: (response as any).id, internalId: (response as any).internalId };
+    return {
+      ...order,
+      id: (response as any).id,
+      internalId: (response as any).internalId,
+    };
   }
 
   /**
    * Update purchase order
    */
-  async updatePurchaseOrder(orderId: string, updates: Partial<NetSuitePurchaseOrder>): Promise<NetSuitePurchaseOrder> {
-    const response = await this.request('PATCH', `/record/v1/purchaseorder/${orderId}`, updates);
+  async updatePurchaseOrder(
+    orderId: string,
+    updates: Partial<NetSuitePurchaseOrder>,
+  ): Promise<NetSuitePurchaseOrder> {
+    const response = await this.request(
+      "PATCH",
+      `/record/v1/purchaseorder/${orderId}`,
+      updates,
+    );
 
     return response as NetSuitePurchaseOrder;
   }
@@ -637,7 +733,10 @@ export class NetSuiteSdkClient {
    * Get invoice
    */
   async getInvoice(invoiceId: string): Promise<NetSuiteInvoice> {
-    const response = await this.request('GET', `/record/v1/invoice/${invoiceId}`);
+    const response = await this.request(
+      "GET",
+      `/record/v1/invoice/${invoiceId}`,
+    );
 
     return response as NetSuiteInvoice;
   }
@@ -646,16 +745,23 @@ export class NetSuiteSdkClient {
    * Create invoice
    */
   async createInvoice(invoice: NetSuiteInvoice): Promise<NetSuiteInvoice> {
-    const response = await this.request('POST', '/record/v1/invoice', invoice);
+    const response = await this.request("POST", "/record/v1/invoice", invoice);
 
-    return { ...invoice, id: (response as any).id, internalId: (response as any).internalId };
+    return {
+      ...invoice,
+      id: (response as any).id,
+      internalId: (response as any).internalId,
+    };
   }
 
   /**
    * Get vendor bill
    */
   async getVendorBill(billId: string): Promise<NetSuiteVendorBill> {
-    const response = await this.request('GET', `/record/v1/vendorbill/${billId}`);
+    const response = await this.request(
+      "GET",
+      `/record/v1/vendorbill/${billId}`,
+    );
 
     return response as NetSuiteVendorBill;
   }
@@ -663,17 +769,23 @@ export class NetSuiteSdkClient {
   /**
    * Create vendor bill
    */
-  async createVendorBill(bill: NetSuiteVendorBill): Promise<NetSuiteVendorBill> {
-    const response = await this.request('POST', '/record/v1/vendorbill', bill);
+  async createVendorBill(
+    bill: NetSuiteVendorBill,
+  ): Promise<NetSuiteVendorBill> {
+    const response = await this.request("POST", "/record/v1/vendorbill", bill);
 
-    return { ...bill, id: (response as any).id, internalId: (response as any).internalId };
+    return {
+      ...bill,
+      id: (response as any).id,
+      internalId: (response as any).internalId,
+    };
   }
 
   /**
    * Get item/product
    */
   async getItem(itemId: string): Promise<NetSuiteItem> {
-    const response = await this.request('GET', `/record/v1/item/${itemId}`);
+    const response = await this.request("GET", `/record/v1/item/${itemId}`);
 
     return response as NetSuiteItem;
   }
@@ -681,19 +793,23 @@ export class NetSuiteSdkClient {
   /**
    * Search items
    */
-  async searchItems(filters: NetSuiteSearchFilter[] = []): Promise<SuiteQLResult<NetSuiteItem>> {
-    let q = 'SELECT * FROM item';
+  async searchItems(
+    filters: NetSuiteSearchFilter[] = [],
+  ): Promise<SuiteQLResult<NetSuiteItem>> {
+    let q = "SELECT * FROM item";
 
     if (filters.length > 0) {
       const whereClauses = filters
         .map((f) => {
           if (f.values && f.values.length > 0) {
-            const values = f.values.map((v) => `'${v.replace(/'/g, "''")}'`).join(',');
-            return `${f.name} ${f.operator || 'IN'} (${values})`;
+            const values = f.values
+              .map((v) => `'${v.replace(/'/g, "''")}'`)
+              .join(",");
+            return `${f.name} ${f.operator || "IN"} (${values})`;
           }
-          return `${f.name} ${f.operator || '='} '${(f.values?.[0] || '').replace(/'/g, "''")}'`;
+          return `${f.name} ${f.operator || "="} '${(f.values?.[0] || "").replace(/'/g, "''")}'`;
         })
-        .join(' AND ');
+        .join(" AND ");
 
       q += ` WHERE ${whereClauses}`;
     }
@@ -708,7 +824,7 @@ export class NetSuiteSdkClient {
     query: string,
     options: { offset?: number; limit?: number } = {},
   ): Promise<SuiteQLResult<T>> {
-    const response = await this.request('POST', '/query/v1/suiteql', {
+    const response = await this.request("POST", "/query/v1/suiteql", {
       q: query,
       offset: options.offset || 0,
       limit: options.limit || 100,
@@ -733,11 +849,15 @@ export class NetSuiteSdkClient {
     filters?: NetSuiteSearchFilter[],
     options: { offset?: number; limit?: number } = {},
   ): Promise<NetSuiteSavedSearchResult<T>> {
-    const response = await this.request('GET', `/record/v1/savedsearch/${searchId}`, {
-      filters: filters || [],
-      offset: options.offset || 0,
-      limit: options.limit || 100,
-    });
+    const response = await this.request(
+      "GET",
+      `/record/v1/savedsearch/${searchId}`,
+      {
+        filters: filters || [],
+        offset: options.offset || 0,
+        limit: options.limit || 100,
+      },
+    );
 
     const result = response as any;
 
@@ -759,20 +879,26 @@ export class NetSuiteSdkClient {
 
     if (file.content) {
       const blob =
-        file.content instanceof Buffer ? new Blob([file.content], { type: file.mimeType }) : new Blob([file.content]);
+        file.content instanceof Buffer
+          ? new Blob([file.content], { type: file.mimeType })
+          : new Blob([file.content]);
 
-      formData.append('file', blob, file.name);
+      formData.append("file", blob, file.name);
     }
 
     if (file.description) {
-      formData.append('description', file.description);
+      formData.append("description", file.description);
     }
 
     if (file.folder) {
-      formData.append('folder', file.folder);
+      formData.append("folder", file.folder);
     }
 
-    const response = await this.request('POST', '/file/v1/file', formData as any);
+    const response = await this.request(
+      "POST",
+      "/file/v1/file",
+      formData as any,
+    );
 
     return response as NetSuiteFile;
   }
@@ -781,7 +907,10 @@ export class NetSuiteSdkClient {
    * Download file from File Cabinet
    */
   async downloadFile(fileId: string): Promise<Buffer> {
-    const response = await this.makeRawRequest('GET', `/file/v1/file/${fileId}`);
+    const response = await this.makeRawRequest(
+      "GET",
+      `/file/v1/file/${fileId}`,
+    );
 
     return await response.arrayBuffer().then((buffer) => Buffer.from(buffer));
   }
@@ -794,7 +923,11 @@ export class NetSuiteSdkClient {
     deploymentId: string,
     params: Record<string, any> = {},
   ): Promise<Record<string, any>> {
-    const response = await this.request('POST', `/restlets/v1/custom/script/${scriptId}/deployment/${deploymentId}`, params);
+    const response = await this.request(
+      "POST",
+      `/restlets/v1/custom/script/${scriptId}/deployment/${deploymentId}`,
+      params,
+    );
 
     return response as Record<string, any>;
   }
@@ -812,14 +945,19 @@ export class NetSuiteSdkClient {
 
     // Wait for available slot
     while (
-      this.concurrency.activeRequests >= (this.config.concurrency?.maxConcurrentRequests || this.maxConcurrentRequests)
+      this.concurrency.activeRequests >=
+      (this.config.concurrency?.maxConcurrentRequests ||
+        this.maxConcurrentRequests)
     ) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     // Check daily points limit
-    if (this.concurrency.pointsUsedToday >= (this.config.concurrency?.maxPointsPerDay || this.maxPointsPerDay)) {
-      throw new Error('NetSuite daily API points limit exceeded');
+    if (
+      this.concurrency.pointsUsedToday >=
+      (this.config.concurrency?.maxPointsPerDay || this.maxPointsPerDay)
+    ) {
+      throw new Error("NetSuite daily API points limit exceeded");
     }
 
     this.concurrency.activeRequests += 1;
@@ -836,13 +974,21 @@ export class NetSuiteSdkClient {
   /**
    * Make OAuth1-signed HTTP request
    */
-  private async request(method: string, path: string, body?: any): Promise<unknown> {
+  private async request(
+    method: string,
+    path: string,
+    body?: any,
+  ): Promise<unknown> {
     await this.applyRequestLimit();
 
     let lastError: Error | undefined;
     let pointsUsed = 1;
 
-    for (let attempt = 0; attempt < (this.config.maxRetries || this.defaultMaxRetries); attempt++) {
+    for (
+      let attempt = 0;
+      attempt < (this.config.maxRetries || this.defaultMaxRetries);
+      attempt++
+    ) {
       try {
         const url = `${this.restBaseUrl}${path}`;
 
@@ -853,15 +999,15 @@ export class NetSuiteSdkClient {
         const oauthParams: Record<string, string> = {
           oauth_consumer_key: this.config.consumerKey,
           oauth_token: this.config.tokenKey,
-          oauth_signature_method: 'HMAC-SHA256',
+          oauth_signature_method: "HMAC-SHA256",
           oauth_timestamp: timestamp,
           oauth_nonce: nonce,
-          oauth_version: '1.0',
+          oauth_version: "1.0",
         };
 
         // Add request params to signature
         const allParams = { ...oauthParams };
-        if (method === 'GET' && body) {
+        if (method === "GET" && body) {
           Object.assign(allParams, body as Record<string, string>);
         }
 
@@ -880,18 +1026,18 @@ export class NetSuiteSdkClient {
 
         const headers: Record<string, string> = {
           Authorization: authHeader,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         };
 
         let fetchUrl = url;
         let fetchBody: string | undefined;
 
-        if (method === 'GET' && body) {
+        if (method === "GET" && body) {
           const params = new URLSearchParams(body);
           fetchUrl = `${url}?${params.toString()}`;
-        } else if (body && typeof body !== 'string') {
+        } else if (body && typeof body !== "string") {
           fetchBody = JSON.stringify(body);
-        } else if (body && typeof body === 'string') {
+        } else if (body && typeof body === "string") {
           fetchBody = body;
         }
 
@@ -899,14 +1045,18 @@ export class NetSuiteSdkClient {
           method,
           headers,
           body: fetchBody,
-          signal: AbortSignal.timeout(this.config.timeout || this.defaultTimeout),
+          signal: AbortSignal.timeout(
+            this.config.timeout || this.defaultTimeout,
+          ),
         });
 
         if (!response.ok) {
-          throw new Error(`NetSuite API error [${response.status}]: ${response.statusText}`);
+          throw new Error(
+            `NetSuite API error [${response.status}]: ${response.statusText}`,
+          );
         }
 
-        if (response.status === 204 || method === 'DELETE') {
+        if (response.status === 204 || method === "DELETE") {
           this.releaseRequestSlot(pointsUsed);
           return undefined;
         }
@@ -925,13 +1075,16 @@ export class NetSuiteSdkClient {
     }
 
     this.releaseRequestSlot(pointsUsed);
-    throw lastError || new Error('Unknown error in NetSuite API request');
+    throw lastError || new Error("Unknown error in NetSuite API request");
   }
 
   /**
    * Make raw HTTP request (for file downloads)
    */
-  private async makeRawRequest(method: string, path: string): Promise<Response> {
+  private async makeRawRequest(
+    method: string,
+    path: string,
+  ): Promise<Response> {
     const url = `${this.restBaseUrl}${path}`;
 
     const timestamp = OAuth1SignatureBuilder.generateTimestamp();
@@ -940,10 +1093,10 @@ export class NetSuiteSdkClient {
     const oauthParams: Record<string, string> = {
       oauth_consumer_key: this.config.consumerKey,
       oauth_token: this.config.tokenKey,
-      oauth_signature_method: 'HMAC-SHA256',
+      oauth_signature_method: "HMAC-SHA256",
       oauth_timestamp: timestamp,
       oauth_nonce: nonce,
-      oauth_version: '1.0',
+      oauth_version: "1.0",
     };
 
     const signature = OAuth1SignatureBuilder.generateSignature(
@@ -970,7 +1123,9 @@ export class NetSuiteSdkClient {
   /**
    * Transform customer response to standard format
    */
-  private transformCustomerResponse(response: Record<string, any>): NetSuiteCustomer {
+  private transformCustomerResponse(
+    response: Record<string, any>,
+  ): NetSuiteCustomer {
     return {
       id: response.id || response.internalId,
       internalId: response.internalId,
@@ -980,10 +1135,14 @@ export class NetSuiteSdkClient {
       lastName: response.lastName,
       email: response.email,
       phone: response.phone,
-      status: response.isInactive === false ? 'active' : 'inactive',
+      status: response.isInactive === false ? "active" : "inactive",
       customFields: response.customFields,
-      createdDate: response.createdDate ? new Date(response.createdDate) : undefined,
-      lastModifiedDate: response.lastModifiedDate ? new Date(response.lastModifiedDate) : undefined,
+      createdDate: response.createdDate
+        ? new Date(response.createdDate)
+        : undefined,
+      lastModifiedDate: response.lastModifiedDate
+        ? new Date(response.lastModifiedDate)
+        : undefined,
     };
   }
 }

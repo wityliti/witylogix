@@ -11,6 +11,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 ### 1. Backend Infrastructure (packages/core/src/realtime/)
 
 #### types.ts (328 lines)
+
 - **Discriminated union**: `DashboardEvent` with 11 event types
 - **Event types**: Order (created, updated, cancelled), Delivery (assigned, status_changed, completed), Driver (location_updated, status_changed), Alert (sla_breach, system), Metrics (updated)
 - **Room types**: org, shop, driver, delivery, admin
@@ -28,6 +29,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
   - METRICS_DEBOUNCE_INTERVAL: 1 second
 
 #### connection-manager.ts (326 lines)
+
 - **ConnectionManager class**: Tracks active connections per tenant
 - **Methods**:
   - `registerConnection()`: Register new connection, enforce plan limits
@@ -48,6 +50,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
   - Singleton accessor: `getConnectionManager()`
 
 #### event-broadcaster.ts (344 lines)
+
 - **EventBroadcaster class**: Bridges event bus to WebSocket rooms
 - **Subscriptions to event bus**:
   - order.created, order.updated, order.cancelled → shop + org rooms
@@ -63,6 +66,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
   - Graceful error handling
 
 #### dashboard-hub.ts (454 lines)
+
 - **DashboardHub class**: Socket.io WebSocket server
 - **Configuration**:
   - httpServer: Attach Socket.io to HTTP server
@@ -88,7 +92,8 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
   - Event replay with filters on reconnection
   - Singleton accessor: `getDashboardHub(config?)`
 
-#### __tests__/dashboard-hub.test.ts (291 lines)
+#### **tests**/dashboard-hub.test.ts (291 lines)
+
 - **Test coverage**:
   - Room management (join/leave)
   - Authentication (valid/invalid tokens, missing auth)
@@ -102,6 +107,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 ### 2. Frontend Hooks (apps/dashboard/src/hooks/)
 
 #### use-realtime.ts (338 lines)
+
 - **Hook**: `useRealtime(roomId, filter?, config?)`
 - **Configuration**:
   - url: WebSocket URL (default: `${origin}/realtime`)
@@ -129,6 +135,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
   - Automatic cleanup on unmount
 
 #### use-realtime-metrics.ts (226 lines)
+
 - **Hook**: `useRealtimeMetrics(shopId?, config?)`
 - **Returns** RealtimeMetrics:
   - ordersToday: number
@@ -149,12 +156,14 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
   - Change detection
 
 #### hooks/index.ts (updated)
+
 - Export useRealtime, UseRealtimeConfig, UseRealtimeReturn
 - Export useRealtimeMetrics, useAnimatedMetric, useFormattedSLA, RealtimeMetrics
 
 ### 3. Core Module Updates
 
 #### realtime/index.ts (updated)
+
 - Added exports for all new types:
   - CONNECTION_LIMITS, RATE_LIMIT_PER_CONNECTION, EVENT_BUFFER_SIZE
   - HEARTBEAT_INTERVAL, HEARTBEAT_TIMEOUT, METRICS_DEBOUNCE_INTERVAL
@@ -170,6 +179,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 ### 4. Documentation
 
 #### DASHBOARD_INFRA.md
+
 - Architecture diagram
 - File-by-file breakdown
 - Event types reference
@@ -183,6 +193,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 - Testing instructions
 
 #### IMPLEMENTATION_GUIDE.md
+
 - Quick start (server + client setup)
 - Common patterns:
   - Real-time order feed
@@ -198,6 +209,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 ## Technical Specifications
 
 ### Architecture
+
 - **WebSocket**: Socket.io with optional Redis pub/sub adapter
 - **Event bus**: TypedEventBus for domain events
 - **Authentication**: JWT tokens (JwtService)
@@ -205,6 +217,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 - **Scaling**: Horizontal scaling via Redis adapter
 
 ### Event Flow
+
 1. Domain events emitted to TypedEventBus (Redis Streams)
 2. EventBroadcaster subscribes with wildcard handlers
 3. Events fan out to appropriate WebSocket rooms
@@ -214,6 +227,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 7. Components render based on event payload
 
 ### Security
+
 - JWT authentication required for connection
 - Token verified on connect
 - Room isolation by org/shop/driver
@@ -222,6 +236,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 - All events scoped to org (tenantId)
 
 ### Performance
+
 - Location updates debounced 1 second
 - Event buffer limited to 100 per room
 - Stale connections cleaned every 30 seconds
@@ -230,6 +245,7 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 - Redis adapter for multi-instance deployment
 
 ### Type Safety
+
 - 100% TypeScript coverage
 - Discriminated union for events
 - No 'any' type abuse
@@ -239,9 +255,11 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 ## Integration Checklist
 
 ### Prerequisites
+
 - npm install socket.io @socket.io/redis-adapter redis socket.io-client
 
 ### Server Setup
+
 1. Import getDashboardHub from @witylogix/core/realtime
 2. Create HTTP server
 3. Initialize hub: `getDashboardHub({ httpServer, jwtService, eventBus, redisUrl })`
@@ -249,12 +267,14 @@ Production-grade WebSocket infrastructure for real-time dashboard updates. Imple
 5. Set REDIS_URL for multi-instance deployment
 
 ### Client Setup
+
 1. Import useRealtime, useRealtimeMetrics from @witylogix/dashboard/hooks
 2. Get JWT token from auth context
 3. Call useRealtime(roomId, filter, { token })
 4. Subscribe to events with onEvent()
 
 ### Deployment
+
 1. Configure REDIS_URL environment variable
 2. Ensure JWT_SECRET is set
 3. Open WebSocket port (default /realtime namespace)
@@ -295,12 +315,14 @@ apps/dashboard/src/hooks/
 ## Quality Metrics
 
 ✅ **Code Quality**
+
 - TypeScript strict mode
 - Comprehensive error handling
 - Memory management (cleanup loops, buffer limits)
 - Proper lifecycle management
 
 ✅ **Test Coverage**
+
 - Authentication tests
 - Room management tests
 - Rate limiting tests
@@ -308,6 +330,7 @@ apps/dashboard/src/hooks/
 - Connection limit tests
 
 ✅ **Documentation**
+
 - Architecture diagrams
 - Integration examples
 - API reference
@@ -315,6 +338,7 @@ apps/dashboard/src/hooks/
 - Troubleshooting guide
 
 ✅ **Security**
+
 - JWT authentication
 - Room isolation
 - Plan-based limits
@@ -324,6 +348,7 @@ apps/dashboard/src/hooks/
 ## Validation
 
 All files created and verified:
+
 - ✅ types.ts - Type definitions
 - ✅ connection-manager.ts - Connection lifecycle
 - ✅ event-broadcaster.ts - Event fan-out

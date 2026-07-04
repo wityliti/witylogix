@@ -27,53 +27,188 @@ interface DVIRChecklistProps {
 
 const defaultItems: ChecklistItem[] = [
   // Exterior
-  { id: "ext-1", label: "Windshield & wipers", category: "Exterior", required: true },
-  { id: "ext-2", label: "Mirrors & glass", category: "Exterior", required: true },
-  { id: "ext-3", label: "Lights & reflectors", category: "Exterior", required: true },
-  { id: "ext-4", label: "Body & paint condition", category: "Exterior", required: false },
-  { id: "ext-5", label: "Doors & hinges", category: "Exterior", required: true },
+  {
+    id: "ext-1",
+    label: "Windshield & wipers",
+    category: "Exterior",
+    required: true,
+  },
+  {
+    id: "ext-2",
+    label: "Mirrors & glass",
+    category: "Exterior",
+    required: true,
+  },
+  {
+    id: "ext-3",
+    label: "Lights & reflectors",
+    category: "Exterior",
+    required: true,
+  },
+  {
+    id: "ext-4",
+    label: "Body & paint condition",
+    category: "Exterior",
+    required: false,
+  },
+  {
+    id: "ext-5",
+    label: "Doors & hinges",
+    category: "Exterior",
+    required: true,
+  },
 
   // Interior
-  { id: "int-1", label: "Seats & restraints", category: "Interior", required: true },
-  { id: "int-2", label: "Steering wheel", category: "Interior", required: true },
-  { id: "int-3", label: "Pedals & controls", category: "Interior", required: true },
-  { id: "int-4", label: "Gauges & instruments", category: "Interior", required: true },
+  {
+    id: "int-1",
+    label: "Seats & restraints",
+    category: "Interior",
+    required: true,
+  },
+  {
+    id: "int-2",
+    label: "Steering wheel",
+    category: "Interior",
+    required: true,
+  },
+  {
+    id: "int-3",
+    label: "Pedals & controls",
+    category: "Interior",
+    required: true,
+  },
+  {
+    id: "int-4",
+    label: "Gauges & instruments",
+    category: "Interior",
+    required: true,
+  },
   { id: "int-5", label: "Horn & wipers", category: "Interior", required: true },
 
   // Engine
-  { id: "eng-1", label: "Engine noise/leaks", category: "Engine", required: true },
+  {
+    id: "eng-1",
+    label: "Engine noise/leaks",
+    category: "Engine",
+    required: true,
+  },
   { id: "eng-2", label: "Coolant level", category: "Engine", required: true },
-  { id: "eng-3", label: "Oil level & condition", category: "Engine", required: true },
-  { id: "eng-4", label: "Brake fluid level", category: "Engine", required: true },
-  { id: "eng-5", label: "Power steering fluid", category: "Engine", required: false },
+  {
+    id: "eng-3",
+    label: "Oil level & condition",
+    category: "Engine",
+    required: true,
+  },
+  {
+    id: "eng-4",
+    label: "Brake fluid level",
+    category: "Engine",
+    required: true,
+  },
+  {
+    id: "eng-5",
+    label: "Power steering fluid",
+    category: "Engine",
+    required: false,
+  },
 
   // Tires & Wheels
-  { id: "tire-1", label: "Tire tread depth", category: "Tires/Wheels", required: true },
-  { id: "tire-2", label: "Tire pressure & condition", category: "Tires/Wheels", required: true },
-  { id: "tire-3", label: "Wheels & lug nuts", category: "Tires/Wheels", required: true },
-  { id: "tire-4", label: "Spare tire & mount", category: "Tires/Wheels", required: true },
+  {
+    id: "tire-1",
+    label: "Tire tread depth",
+    category: "Tires/Wheels",
+    required: true,
+  },
+  {
+    id: "tire-2",
+    label: "Tire pressure & condition",
+    category: "Tires/Wheels",
+    required: true,
+  },
+  {
+    id: "tire-3",
+    label: "Wheels & lug nuts",
+    category: "Tires/Wheels",
+    required: true,
+  },
+  {
+    id: "tire-4",
+    label: "Spare tire & mount",
+    category: "Tires/Wheels",
+    required: true,
+  },
 
   // Brakes
-  { id: "brake-1", label: "Brake pedal condition", category: "Brakes", required: true },
-  { id: "brake-2", label: "Parking brake function", category: "Brakes", required: true },
-  { id: "brake-3", label: "Brake hoses & lines", category: "Brakes", required: true },
-  { id: "brake-4", label: "Trailer brake function", category: "Brakes", required: false },
+  {
+    id: "brake-1",
+    label: "Brake pedal condition",
+    category: "Brakes",
+    required: true,
+  },
+  {
+    id: "brake-2",
+    label: "Parking brake function",
+    category: "Brakes",
+    required: true,
+  },
+  {
+    id: "brake-3",
+    label: "Brake hoses & lines",
+    category: "Brakes",
+    required: true,
+  },
+  {
+    id: "brake-4",
+    label: "Trailer brake function",
+    category: "Brakes",
+    required: false,
+  },
 
   // Lights
   { id: "light-1", label: "Headlights", category: "Lights", required: true },
-  { id: "light-2", label: "Tail lights & reflectors", category: "Lights", required: true },
+  {
+    id: "light-2",
+    label: "Tail lights & reflectors",
+    category: "Lights",
+    required: true,
+  },
   { id: "light-3", label: "Brake lights", category: "Lights", required: true },
   { id: "light-4", label: "Turn signals", category: "Lights", required: true },
 
   // Coupling (if applicable)
-  { id: "coup-1", label: "Fifth wheel condition", category: "Coupling", required: false },
-  { id: "coup-2", label: "Coupling integrity", category: "Coupling", required: false },
-  { id: "coup-3", label: "Air/electric connections", category: "Coupling", required: false },
+  {
+    id: "coup-1",
+    label: "Fifth wheel condition",
+    category: "Coupling",
+    required: false,
+  },
+  {
+    id: "coup-2",
+    label: "Coupling integrity",
+    category: "Coupling",
+    required: false,
+  },
+  {
+    id: "coup-3",
+    label: "Air/electric connections",
+    category: "Coupling",
+    required: false,
+  },
 
   // Other
-  { id: "other-1", label: "Fire extinguisher", category: "Other", required: false },
+  {
+    id: "other-1",
+    label: "Fire extinguisher",
+    category: "Other",
+    required: false,
+  },
   { id: "other-2", label: "First aid kit", category: "Other", required: false },
-  { id: "other-3", label: "Emergency equipment", category: "Other", required: false },
+  {
+    id: "other-3",
+    label: "Emergency equipment",
+    category: "Other",
+    required: false,
+  },
 ];
 
 /**
@@ -91,7 +226,9 @@ export function DVIRChecklist({
   className,
 }: DVIRChecklistProps) {
   const [checklist, setChecklist] = useState<ChecklistItem[]>(items);
-  const [expandedDefects, setExpandedDefects] = useState<Set<string>>(new Set());
+  const [expandedDefects, setExpandedDefects] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Group items by category
   const groupedItems = checklist.reduce(
@@ -102,32 +239,36 @@ export function DVIRChecklist({
       acc[item.category].push(item);
       return acc;
     },
-    {} as Record<string, ChecklistItem[]>
+    {} as Record<string, ChecklistItem[]>,
   );
 
   // Calculate completion
   const requiredItems = checklist.filter((item) => item.required);
   const completedRequired = requiredItems.filter((item) => item.status);
   const completionPercentage = Math.round(
-    (completedRequired.length / requiredItems.length) * 100
+    (completedRequired.length / requiredItems.length) * 100,
   );
 
   const canSubmit = completedRequired.length === requiredItems.length;
 
   // Handle status change
-  const handleStatusChange = (itemId: string, newStatus: ItemStatus | undefined) => {
+  const handleStatusChange = (
+    itemId: string,
+    newStatus: ItemStatus | undefined,
+  ) => {
     setChecklist((prev) =>
       prev.map((item) =>
         item.id === itemId
           ? {
               ...item,
               status: newStatus,
-              defectNote: newStatus === "fail" ? item.defectNote || "" : undefined,
+              defectNote:
+                newStatus === "fail" ? item.defectNote || "" : undefined,
               attachedPhoto:
                 newStatus === "fail" ? item.attachedPhoto : undefined,
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -135,8 +276,8 @@ export function DVIRChecklist({
   const handleDefectNoteChange = (itemId: string, note: string) => {
     setChecklist((prev) =>
       prev.map((item) =>
-        item.id === itemId ? { ...item, defectNote: note } : item
-      )
+        item.id === itemId ? { ...item, defectNote: note } : item,
+      ),
     );
   };
 
@@ -159,7 +300,7 @@ export function DVIRChecklist({
     <div
       className={cn(
         "rounded-lg border border-wl-border-default bg-wl-bg-primary p-6 space-y-6",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -190,7 +331,7 @@ export function DVIRChecklist({
                 "h-full transition-all duration-300",
                 completionPercentage === 100
                   ? "bg-wl-success-500"
-                  : "bg-wl-primary-500"
+                  : "bg-wl-primary-500",
               )}
               style={{ width: `${completionPercentage}%` }}
             />
@@ -205,8 +346,12 @@ export function DVIRChecklist({
       <div className="space-y-4">
         {categories.map((category) => {
           const categoryItems = groupedItems[category];
-          const categoryCompleted = categoryItems.filter((item) => item.status).length;
-          const categoryRequired = categoryItems.filter((item) => item.required).length;
+          const categoryCompleted = categoryItems.filter(
+            (item) => item.status,
+          ).length;
+          const categoryRequired = categoryItems.filter(
+            (item) => item.required,
+          ).length;
 
           return (
             <div
@@ -255,14 +400,14 @@ export function DVIRChecklist({
                               onClick={() =>
                                 handleStatusChange(
                                   item.id,
-                                  item.status === "pass" ? undefined : "pass"
+                                  item.status === "pass" ? undefined : "pass",
                                 )
                               }
                               className={cn(
                                 "text-xs px-2 py-1.5 rounded font-medium transition-colors",
                                 item.status === "pass"
                                   ? "bg-wl-success-500/20 text-wl-success-400"
-                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-success-400"
+                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-success-400",
                               )}
                             >
                               ✓ Pass
@@ -271,14 +416,14 @@ export function DVIRChecklist({
                               onClick={() =>
                                 handleStatusChange(
                                   item.id,
-                                  item.status === "fail" ? undefined : "fail"
+                                  item.status === "fail" ? undefined : "fail",
                                 )
                               }
                               className={cn(
                                 "text-xs px-2 py-1.5 rounded font-medium transition-colors",
                                 item.status === "fail"
                                   ? "bg-wl-danger-500/20 text-wl-danger-400"
-                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-danger-400"
+                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-danger-400",
                               )}
                             >
                               ✕ Fail
@@ -287,14 +432,14 @@ export function DVIRChecklist({
                               onClick={() =>
                                 handleStatusChange(
                                   item.id,
-                                  item.status === "na" ? undefined : "na"
+                                  item.status === "na" ? undefined : "na",
                                 )
                               }
                               className={cn(
                                 "text-xs px-2 py-1.5 rounded font-medium transition-colors",
                                 item.status === "na"
                                   ? "bg-wl-text-secondary/20 text-wl-text-secondary"
-                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-text-secondary"
+                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-text-secondary",
                               )}
                             >
                               N/A
@@ -306,13 +451,17 @@ export function DVIRChecklist({
                         {readonly && (
                           <div className="text-xs font-medium flex-shrink-0">
                             {item.status === "pass" && (
-                              <span className="text-wl-success-400">✓ Pass</span>
+                              <span className="text-wl-success-400">
+                                ✓ Pass
+                              </span>
                             )}
                             {item.status === "fail" && (
                               <span className="text-wl-danger-400">✕ Fail</span>
                             )}
                             {item.status === "na" && (
-                              <span className="text-wl-text-secondary">N/A</span>
+                              <span className="text-wl-text-secondary">
+                                N/A
+                              </span>
                             )}
                             {!item.status && (
                               <span className="text-wl-text-secondary">—</span>
@@ -343,7 +492,10 @@ export function DVIRChecklist({
                                 <textarea
                                   value={item.defectNote || ""}
                                   onChange={(e) =>
-                                    handleDefectNoteChange(item.id, e.target.value)
+                                    handleDefectNoteChange(
+                                      item.id,
+                                      e.target.value,
+                                    )
                                   }
                                   placeholder="Describe the defect and severity..."
                                   className="w-full text-xs px-2 py-1.5 rounded bg-wl-bg-secondary border border-wl-border-default text-wl-text-primary placeholder:text-wl-text-secondary focus:outline-none focus:ring-1 focus:ring-wl-primary-500"
@@ -371,11 +523,11 @@ export function DVIRChecklist({
                                               i.id === item.id
                                                 ? {
                                                     ...i,
-                                                    attachedPhoto:
-                                                      event.target?.result as string,
+                                                    attachedPhoto: event.target
+                                                      ?.result as string,
                                                   }
-                                                : i
-                                            )
+                                                : i,
+                                            ),
                                           );
                                         };
                                         reader.readAsDataURL(e.target.files[0]);
@@ -443,7 +595,7 @@ export function DVIRChecklist({
               "text-sm px-4 py-2 rounded font-medium transition-colors",
               canSubmit
                 ? "bg-wl-success-500/20 text-wl-success-400 hover:bg-wl-success-500/30"
-                : "bg-wl-bg-secondary text-wl-text-secondary cursor-not-allowed opacity-50"
+                : "bg-wl-bg-secondary text-wl-text-secondary cursor-not-allowed opacity-50",
             )}
           >
             Submit DVIR

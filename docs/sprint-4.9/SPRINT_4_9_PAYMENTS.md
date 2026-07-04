@@ -9,7 +9,9 @@ This sprint implements multi-gateway payment processing for Witylogix, adding Pa
 ### Core Components
 
 #### 1. **payment-gateway.ts** - Abstract Base Class
+
 Provides common functionality for all payment gateway implementations:
+
 - Amount validation (min/max limits, decimal handling)
 - Currency validation
 - Idempotency key generation
@@ -30,7 +32,9 @@ export abstract class PaymentGatewayBase {
 ```
 
 #### 2. **paypal-adapter.ts** - PayPal Orders API v2
+
 Implements PayPal payment processing:
+
 - OAuth2 client credentials flow for token management
 - Order creation with `POST /v2/checkout/orders`
 - Payment capture with `POST /v2/checkout/orders/{id}/capture`
@@ -39,13 +43,16 @@ Implements PayPal payment processing:
 - Webhook signature verification and parsing
 
 **Key Features:**
+
 - Automatic token refresh (3 hours expiration)
 - Supports 6+ currencies (USD, EUR, GBP, CAD, AUD, JPY, etc.)
 - Min amount: $0.50, Max amount: $9,999,999.99
 - Transaction fee: 2.9% + $0.30
 
 #### 3. **square-adapter.ts** - Square Payments API
+
 Implements Square payment processing:
+
 - OAuth2 access token management
 - Payment creation with `POST /v2/payments`
 - Refunds with `POST /v2/refunds`
@@ -54,13 +61,16 @@ Implements Square payment processing:
 - Webhook signature verification and parsing
 
 **Key Features:**
+
 - Supports card, Apple Pay, Google Pay
 - Works with 4 major currencies (USD, CAD, GBP, AUD)
 - Min amount: $0.01, Max amount: $9,999,999.99
 - Transaction fee: 2.6% (no fixed fee)
 
 #### 4. **multi-gateway-router.ts** - Intelligent Routing
+
 Routes payments to optimal gateway based on:
+
 - Payment method type (card, PayPal, bank transfer, etc.)
 - Currency support
 - Amount limits (min/max)
@@ -69,6 +79,7 @@ Routes payments to optimal gateway based on:
 - Transaction fee comparison
 
 **Features:**
+
 - Primary → Secondary → Tertiary fallback chain
 - Health score tracking (0-100)
 - Monthly volume and transaction counting
@@ -78,10 +89,10 @@ Routes payments to optimal gateway based on:
 
 ```typescript
 const routing = router.routePayment({
-  method: 'paypal',
-  currency: 'USD',
+  method: "paypal",
+  currency: "USD",
   amount: 5000, // in cents
-  region: 'US',
+  region: "US",
 });
 
 // Returns:
@@ -95,6 +106,7 @@ const routing = router.routePayment({
 ```
 
 #### 5. **payments-v2.ts** - API Routes
+
 REST endpoints for payment processing:
 
 ```
@@ -251,13 +263,13 @@ import {
   MultiGatewayRouter,
   PayPalGateway,
   SquareGateway,
-} from '@witylogix/core/payments';
+} from "@witylogix/core/payments";
 
 const router = new MultiGatewayRouter();
 
 // Register PayPal
 const paypalGateway = new PayPalGateway({
-  name: 'PayPal',
+  name: "PayPal",
   isEnabled: true,
   isProduction: true,
   secretKey: process.env.PAYPAL_CLIENT_SECRET,
@@ -265,23 +277,23 @@ const paypalGateway = new PayPalGateway({
     clientId: process.env.PAYPAL_CLIENT_ID,
     webhookId: process.env.PAYPAL_WEBHOOK_ID,
   },
-  supportedMethods: ['paypal', 'card'],
+  supportedMethods: ["paypal", "card"],
   createdAt: new Date(),
   updatedAt: new Date(),
 });
 
 const paypalMetadata: GatewayMetadata = {
-  gatewayCode: 'paypal',
-  name: 'PayPal',
+  gatewayCode: "paypal",
+  name: "PayPal",
   isEnabled: true,
   priority: 2,
-  supportedMethods: ['paypal', 'card'],
-  supportedCurrencies: ['USD', 'EUR', 'GBP', 'CAD'],
+  supportedMethods: ["paypal", "card"],
+  supportedCurrencies: ["USD", "EUR", "GBP", "CAD"],
   minAmount: 50,
   maxAmount: 999999999,
   transactionFeePercent: 2.9,
   fixedFeeInCents: 30,
-  regions: ['US', 'EU', 'GB'],
+  regions: ["US", "EU", "GB"],
   healthScore: 100,
   lastHealthCheckAt: new Date(),
   monthlyVolume: 0,
@@ -292,30 +304,30 @@ router.registerGateway(paypalGateway, paypalMetadata);
 
 // Register Square
 const squareGateway = new SquareGateway({
-  name: 'Square',
+  name: "Square",
   isEnabled: true,
   isProduction: true,
   secretKey: process.env.SQUARE_ACCESS_TOKEN,
   metadata: {
     locationId: process.env.SQUARE_LOCATION_ID,
   },
-  supportedMethods: ['card', 'apple_pay', 'google_pay'],
+  supportedMethods: ["card", "apple_pay", "google_pay"],
   createdAt: new Date(),
   updatedAt: new Date(),
 });
 
 const squareMetadata: GatewayMetadata = {
-  gatewayCode: 'square',
-  name: 'Square',
+  gatewayCode: "square",
+  name: "Square",
   isEnabled: true,
   priority: 1, // Default
-  supportedMethods: ['card', 'apple_pay', 'google_pay'],
-  supportedCurrencies: ['USD', 'CAD', 'GBP', 'AUD'],
+  supportedMethods: ["card", "apple_pay", "google_pay"],
+  supportedCurrencies: ["USD", "CAD", "GBP", "AUD"],
   minAmount: 1,
   maxAmount: 999999999,
   transactionFeePercent: 2.6,
   fixedFeeInCents: 0,
-  regions: ['US', 'CA', 'GB', 'AU'],
+  regions: ["US", "CA", "GB", "AU"],
   healthScore: 100,
   lastHealthCheckAt: new Date(),
   monthlyVolume: 0,
@@ -330,17 +342,20 @@ router.registerGateway(squareGateway, squareMetadata);
 Each gateway sends webhooks for payment events. The system verifies signatures and processes:
 
 ### PayPal Webhooks
+
 - `PAYMENT.CAPTURE.COMPLETED` → `payment.captured`
 - `PAYMENT.CAPTURE.DENIED` → `payment.failed`
 - `PAYMENT.CAPTURE.REFUNDED` → `refund.completed`
 
 ### Square Webhooks
+
 - `payment.created` → `payment.authorized`
 - `payment.updated` → `payment.captured`
 - `refund.created` → `refund.completed`
 - `payment.failed` → `payment.failed`
 
 **Webhook Receiver:**
+
 ```typescript
 // POST /payments/webhooks/paypal
 // POST /payments/webhooks/square
@@ -352,7 +367,7 @@ Each gateway sends webhooks for payment events. The system verifies signatures a
 ## Fee Comparison
 
 | Gateway | Card Rate | Fixed Fee | Total on $100 | Total on $1,000 |
-|---------|-----------|-----------|---------------|-----------------|
+| ------- | --------- | --------- | ------------- | --------------- |
 | Stripe  | 2.9%      | $0.30     | $3.19         | $29.30          |
 | PayPal  | 2.9%      | $0.30     | $3.19         | $29.30          |
 | Square  | 2.6%      | $0.00     | $2.60         | $26.00          |
@@ -364,9 +379,11 @@ Each gateway sends webhooks for payment events. The system verifies signatures a
 All adapters have comprehensive test suites (20+ tests each):
 
 ### PayPal Tests
+
 ```bash
 npm test -- paypal-adapter.test.ts
 ```
+
 - OAuth2 token refresh
 - Order creation validation
 - Payment capture
@@ -377,9 +394,11 @@ npm test -- paypal-adapter.test.ts
 - Idempotency key generation
 
 ### Square Tests
+
 ```bash
 npm test -- square-adapter.test.ts
 ```
+
 - Payment intent creation
 - Payment capture with source ID
 - Refunds
@@ -389,9 +408,11 @@ npm test -- square-adapter.test.ts
 - Payment method normalization
 
 ### Router Tests
+
 ```bash
 npm test -- multi-gateway-router.test.ts
 ```
+
 - Gateway registration
 - Payment routing (primary/secondary/tertiary)
 - Fee calculation and comparison
@@ -405,6 +426,7 @@ npm test -- multi-gateway-router.test.ts
 **Payment Settings Page:** `/settings/payments`
 
 **Features:**
+
 - Overview tab: Connected gateways, status, health score, volume
 - Configuration tab: API keys (masked), location IDs
 - Fee Comparison tab: Side-by-side fee analysis
@@ -428,6 +450,7 @@ All payment gateways implement consistent error handling:
 ```
 
 **Error Codes:**
+
 - `GATEWAY_UNAVAILABLE` - Temporary gateway downtime (retryable)
 - `GATEWAY_ERROR` - Server-side error (retryable)
 - `RATE_LIMITED` - Too many requests (retryable)
@@ -450,13 +473,13 @@ The multi-gateway router provides built-in monitoring:
 
 ```typescript
 // Track gateway health
-router.updateGatewayHealth('paypal', 85);
+router.updateGatewayHealth("paypal", 85);
 
 // Record successful payment
-router.recordTransaction('paypal', 5000); // Updates volume & count
+router.recordTransaction("paypal", 5000); // Updates volume & count
 
 // Record failed payment
-router.recordFailure('paypal', 'Network timeout'); // Degrades health
+router.recordFailure("paypal", "Network timeout"); // Degrades health
 
 // Compare current fees
 const fees = router.compareTransactionFees(10000);
@@ -470,6 +493,7 @@ const fees = router.compareTransactionFees(10000);
 ## Files Created
 
 ### Core Payment System
+
 - `packages/core/src/payments/payment-gateway.ts` (200 lines)
 - `packages/core/src/payments/paypal-adapter.ts` (450 lines)
 - `packages/core/src/payments/square-adapter.ts` (450 lines)
@@ -477,12 +501,15 @@ const fees = router.compareTransactionFees(10000);
 - `packages/core/src/payments/index.ts` (45 lines)
 
 ### API & Routes
+
 - `apps/api/src/routes/payments-v2.ts` (400 lines)
 
 ### Dashboard
+
 - `apps/dashboard/src/app/(dashboard)/settings/payments/page.tsx` (400 lines)
 
 ### Tests
+
 - `packages/core/src/payments/__tests__/paypal-adapter.test.ts` (350 lines, 20+ tests)
 - `packages/core/src/payments/__tests__/square-adapter.test.ts` (350 lines, 20+ tests)
 - `packages/core/src/payments/__tests__/multi-gateway-router.test.ts` (300 lines, 15+ tests)

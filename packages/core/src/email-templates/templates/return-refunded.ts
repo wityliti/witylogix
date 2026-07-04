@@ -2,9 +2,9 @@
  * Return Refunded Email Template
  */
 
-import { ReturnEmailData } from '../types';
-import { baseLayout } from './base-layout';
-import { formatCurrency } from '../template-engine';
+import { ReturnEmailData } from "../types";
+import { baseLayout } from "./base-layout";
+import { formatCurrency } from "../template-engine";
 
 export function returnRefundedTemplate(data: ReturnEmailData): string {
   const content = `
@@ -106,7 +106,7 @@ export function returnRefundedTemplate(data: ReturnEmailData): string {
 
   return baseLayout({
     storeName: data.storeName,
-    storeUrl: '',
+    storeUrl: "",
     supportEmail: data.supportEmail,
     content,
   });

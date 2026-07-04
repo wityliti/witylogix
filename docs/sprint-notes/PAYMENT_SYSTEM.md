@@ -18,6 +18,7 @@ The Witylogix payment processing system provides a complete lifecycle management
 ### Core Modules
 
 #### 1. **Types** (`packages/core/src/payments/types.ts`)
+
 Defines all payment system data structures and interfaces:
 
 - `PaymentMethod`: Stored payment methods (cards, bank accounts, etc.)
@@ -30,6 +31,7 @@ Defines all payment system data structures and interfaces:
 - Custom error classes: `PaymentError`, `IdempotencyError`
 
 #### 2. **Gateway** (`packages/core/src/payments/gateway.ts`)
+
 Provider abstraction layer:
 
 ```
@@ -41,6 +43,7 @@ PaymentGateway (abstract base class)
 ```
 
 **Key Methods:**
+
 - `createPaymentIntent()` — Create authorization request
 - `capturePayment()` — Settle authorized payment
 - `refundPayment()` — Full/partial refunds
@@ -48,6 +51,7 @@ PaymentGateway (abstract base class)
 - `parseWebhookPayload()` — Parse webhook events
 
 #### 3. **Processor** (`packages/core/src/payments/processor.ts`)
+
 Main orchestrator handling payment lifecycle:
 
 - **Idempotency checking** — Cache + DB lookup to prevent duplicates
@@ -61,6 +65,7 @@ Main orchestrator handling payment lifecycle:
 - **Transaction logging** — Audit trail persistence
 
 #### 4. **API Routes** (`apps/api/src/routes/payment-methods.ts`)
+
 RESTful endpoints:
 
 ```
@@ -90,6 +95,7 @@ Webhooks:
 ### Models (`packages/db/prisma/schema/30-payments.prisma`)
 
 #### PaymentMethod
+
 ```prisma
 - id: UUID (PK)
 - shopId: UUID (FK, RLS boundary)
@@ -109,6 +115,7 @@ Indexes:
 ```
 
 #### PaymentTransaction
+
 ```prisma
 - id: UUID (PK)
 - shopId: UUID (FK, RLS boundary)
@@ -138,6 +145,7 @@ Indexes:
 ```
 
 #### Refund
+
 ```prisma
 - id: UUID (PK)
 - shopId: UUID (FK, RLS boundary)
@@ -159,6 +167,7 @@ Indexes:
 ```
 
 #### CODCollection
+
 ```prisma
 - id: UUID (PK)
 - shopId: UUID (FK, RLS boundary)
@@ -186,6 +195,7 @@ Indexes:
 ```
 
 #### IdempotencyKey
+
 ```prisma
 - key: String (PK, request identifier)
 - shopId: UUID (FK → Shop)
@@ -300,14 +310,14 @@ POST /payments/process
 
 ### PaymentError Codes
 
-| Code | Meaning | Retryable | HTTP |
-|------|---------|-----------|------|
-| `GATEWAY_NOT_FOUND` | Provider not registered | No | 404 |
-| `INTENT_NOT_FOUND` | Payment intent missing | No | 404 |
-| `INVALID_STATE` | Wrong payment state | No | 400 |
-| `CAPTURE_FAILED` | Capture attempt failed | Yes | 500 |
-| `TRANSACTION_NOT_FOUND` | Transaction missing | No | 404 |
-| `INVALID_SIGNATURE` | Webhook signature invalid | No | 401 |
+| Code                    | Meaning                   | Retryable | HTTP |
+| ----------------------- | ------------------------- | --------- | ---- |
+| `GATEWAY_NOT_FOUND`     | Provider not registered   | No        | 404  |
+| `INTENT_NOT_FOUND`      | Payment intent missing    | No        | 404  |
+| `INVALID_STATE`         | Wrong payment state       | No        | 400  |
+| `CAPTURE_FAILED`        | Capture attempt failed    | Yes       | 500  |
+| `TRANSACTION_NOT_FOUND` | Transaction missing       | No        | 404  |
+| `INVALID_SIGNATURE`     | Webhook signature invalid | No        | 401  |
 
 ### Retry Logic
 
@@ -429,26 +439,31 @@ Response:
 ## Security Considerations
 
 ### 1. **Row-Level Security (RLS)**
+
 - All payment records scoped to `shopId`
 - Tenant isolation via `request.tenantDb`
 - Middleware enforces `requireAuth` + `tenantContext`
 
 ### 2. **Idempotency Keys**
+
 - Client-provided unique identifier
 - Prevents duplicate charges on network retries
 - 24-hour expiration prevents key reuse
 
 ### 3. **Webhook Verification**
+
 - HMAC signature verification (provider-specific)
 - Prevents spoofed payment notifications
 - Logged for audit trail
 
 ### 4. **Sensitive Data**
+
 - Payment method tokens stored encrypted (provider responsibility)
 - Avoid storing full credit card numbers
 - Use tokenized references instead
 
 ### 5. **Monetary Values**
+
 - Always use `BigInt` for amounts (prevents float precision loss)
 - Store in smallest currency unit (cents for USD)
 - Validate amount > 0
@@ -476,12 +491,14 @@ Response:
 ## Future Enhancements
 
 ### Phase 2: Online Payment Providers
+
 - [ ] Stripe gateway implementation
 - [ ] PayPal gateway implementation
 - [ ] Square gateway implementation
 - [ ] Webhook auto-routing by provider
 
 ### Phase 3: Advanced Features
+
 - [ ] Partial refunds with reconciliation
 - [ ] Subscription payments
 - [ ] 3D Secure / PCI compliance
@@ -490,6 +507,7 @@ Response:
 - [ ] Fraud detection integration
 
 ### Phase 4: Analytics
+
 - [ ] Payment settlement reports
 - [ ] Revenue reconciliation
 - [ ] COD collection metrics
@@ -501,6 +519,7 @@ Response:
 ## Files Created
 
 ### Core Module
+
 1. `/packages/core/src/payments/types.ts` (190 lines)
    - Payment method types
    - Payment intent interface
@@ -528,6 +547,7 @@ Response:
    - Public API exports
 
 ### API Routes
+
 5. `/apps/api/src/routes/payment-methods.ts` (450 lines)
    - Payment method CRUD endpoints
    - Payment processing endpoints
@@ -535,6 +555,7 @@ Response:
    - Webhook handler
 
 ### Database
+
 6. `/packages/db/prisma/schema/30-payments.prisma` (150 lines)
    - PaymentMethod model
    - PaymentTransaction model
@@ -544,6 +565,7 @@ Response:
    - Relationships to Order, Shipment, Driver, Shop
 
 ### Updates
+
 7. `/packages/core/package.json` — Added `./payments` export
 8. `/packages/db/prisma/schema/02-shops.prisma` — Added payment relations
 9. `/packages/db/prisma/schema/05-drivers.prisma` — Added CODCollection relation

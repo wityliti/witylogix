@@ -32,7 +32,10 @@ import {
   Divider,
   Box,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type SingleResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -94,31 +97,110 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     name: "Downtown Core",
     status: "ACTIVE",
     type: "Urban",
-    coverageArea: "Manhattan CBD, bounded by 5th Ave to 8th Ave, Canal St to Central Park South",
+    coverageArea:
+      "Manhattan CBD, bounded by 5th Ave to 8th Ave, Canal St to Central Park South",
     boundaryNorth: 40.7764,
     boundarySouth: 40.7128,
     boundaryEast: -73.9776,
-    boundaryWest: -74.0060,
+    boundaryWest: -74.006,
     maxDeliveriesPerDay: 150,
     currentUtilization: 68,
   };
 
   const mockDrivers: ZoneDriver[] = [
-    { id: "d1", name: "Marcus Johnson", phone: "+1 (555) 123-4567", status: "ACTIVE" },
-    { id: "d2", name: "Sarah Chen", phone: "+1 (555) 234-5678", status: "ON_DELIVERY" },
-    { id: "d3", name: "James Williams", phone: "+1 (555) 345-6789", status: "ACTIVE" },
+    {
+      id: "d1",
+      name: "Marcus Johnson",
+      phone: "+1 (555) 123-4567",
+      status: "ACTIVE",
+    },
+    {
+      id: "d2",
+      name: "Sarah Chen",
+      phone: "+1 (555) 234-5678",
+      status: "ON_DELIVERY",
+    },
+    {
+      id: "d3",
+      name: "James Williams",
+      phone: "+1 (555) 345-6789",
+      status: "ACTIVE",
+    },
   ];
 
   const mockTimeSlots: TimeSlot[] = [
-    { id: "t1", day: "Monday", startTime: "09:00", endTime: "12:00", capacity: 50, utilization: 44 },
-    { id: "t2", day: "Monday", startTime: "12:00", endTime: "15:00", capacity: 50, utilization: 38 },
-    { id: "t3", day: "Monday", startTime: "15:00", endTime: "18:00", capacity: 50, utilization: 32 },
-    { id: "t4", day: "Tuesday", startTime: "09:00", endTime: "12:00", capacity: 50, utilization: 48 },
-    { id: "t5", day: "Tuesday", startTime: "12:00", endTime: "15:00", capacity: 50, utilization: 42 },
-    { id: "t6", day: "Tuesday", startTime: "15:00", endTime: "18:00", capacity: 50, utilization: 35 },
-    { id: "t7", day: "Wednesday", startTime: "09:00", endTime: "12:00", capacity: 50, utilization: 46 },
-    { id: "t8", day: "Wednesday", startTime: "12:00", endTime: "15:00", capacity: 50, utilization: 40 },
-    { id: "t9", day: "Wednesday", startTime: "15:00", endTime: "18:00", capacity: 50, utilization: 28 },
+    {
+      id: "t1",
+      day: "Monday",
+      startTime: "09:00",
+      endTime: "12:00",
+      capacity: 50,
+      utilization: 44,
+    },
+    {
+      id: "t2",
+      day: "Monday",
+      startTime: "12:00",
+      endTime: "15:00",
+      capacity: 50,
+      utilization: 38,
+    },
+    {
+      id: "t3",
+      day: "Monday",
+      startTime: "15:00",
+      endTime: "18:00",
+      capacity: 50,
+      utilization: 32,
+    },
+    {
+      id: "t4",
+      day: "Tuesday",
+      startTime: "09:00",
+      endTime: "12:00",
+      capacity: 50,
+      utilization: 48,
+    },
+    {
+      id: "t5",
+      day: "Tuesday",
+      startTime: "12:00",
+      endTime: "15:00",
+      capacity: 50,
+      utilization: 42,
+    },
+    {
+      id: "t6",
+      day: "Tuesday",
+      startTime: "15:00",
+      endTime: "18:00",
+      capacity: 50,
+      utilization: 35,
+    },
+    {
+      id: "t7",
+      day: "Wednesday",
+      startTime: "09:00",
+      endTime: "12:00",
+      capacity: 50,
+      utilization: 46,
+    },
+    {
+      id: "t8",
+      day: "Wednesday",
+      startTime: "12:00",
+      endTime: "15:00",
+      capacity: 50,
+      utilization: 40,
+    },
+    {
+      id: "t9",
+      day: "Wednesday",
+      startTime: "15:00",
+      endTime: "18:00",
+      capacity: 50,
+      utilization: 28,
+    },
   ];
 
   const mockActiveShipments: ActiveShipment[] = [
@@ -162,7 +244,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 // ─── Helpers ───────────────────────────────────────────────
 
-function getStatusBadgeTone(status: string): "success" | "critical" | undefined {
+function getStatusBadgeTone(
+  status: string,
+): "success" | "critical" | undefined {
   if (status === "ACTIVE") return "success";
   if (status === "CLOSED") return "critical";
   return undefined;
@@ -179,7 +263,9 @@ function getShipmentBadgeTone(status: string): "info" | undefined {
   return undefined;
 }
 
-function getUtilizationTone(percent: number): "critical" | "highlight" | "success" {
+function getUtilizationTone(
+  percent: number,
+): "critical" | "highlight" | "success" {
   if (percent > 80) return "critical";
   if (percent > 60) return "highlight";
   return "success";
@@ -188,9 +274,18 @@ function getUtilizationTone(percent: number): "critical" | "highlight" | "succes
 // ─── Component ─────────────────────────────────────────────
 
 export default function ZoneDetailPage() {
-  const { zone, drivers, timeSlots, activeShipments } = useLoaderData<ZonePageData>();
+  const { zone, drivers, timeSlots, activeShipments } =
+    useLoaderData<ZonePageData>();
 
-  const dayGroups = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const dayGroups = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
 
   return (
     <Page
@@ -198,9 +293,7 @@ export default function ZoneDetailPage() {
       title={zone.name}
       titleMetadata={
         <InlineStack gap="200">
-          <Badge tone={getStatusBadgeTone(zone.status)}>
-            {zone.status}
-          </Badge>
+          <Badge tone={getStatusBadgeTone(zone.status)}>{zone.status}</Badge>
           <Text as="span" variant="bodySm" tone="subdued">
             {zone.type}
           </Text>
@@ -221,7 +314,12 @@ export default function ZoneDetailPage() {
                   {zone.coverageArea}
                 </Text>
                 <Divider />
-                <Text as="p" variant="bodySm" tone="subdued" fontWeight="medium">
+                <Text
+                  as="p"
+                  variant="bodySm"
+                  tone="subdued"
+                  fontWeight="medium"
+                >
                   BOUNDARIES
                 </Text>
                 <DescriptionList
@@ -282,7 +380,10 @@ export default function ZoneDetailPage() {
                       Current
                     </Text>
                     <Text as="span" variant="bodyMd" fontWeight="medium">
-                      {Math.round((zone.currentUtilization / 100) * zone.maxDeliveriesPerDay)}
+                      {Math.round(
+                        (zone.currentUtilization / 100) *
+                          zone.maxDeliveriesPerDay,
+                      )}
                     </Text>
                   </InlineStack>
                 </BlockStack>
@@ -317,7 +418,11 @@ export default function ZoneDetailPage() {
                       >
                         <InlineStack align="space-between" blockAlign="center">
                           <BlockStack gap="050">
-                            <Text as="span" variant="bodyMd" fontWeight="medium">
+                            <Text
+                              as="span"
+                              variant="bodyMd"
+                              fontWeight="medium"
+                            >
                               {driver.name}
                             </Text>
                             <Text as="span" variant="bodySm" tone="subdued">
@@ -349,12 +454,8 @@ export default function ZoneDetailPage() {
                 <Button variant="primary" fullWidth>
                   Edit Zone
                 </Button>
-                <Button fullWidth>
-                  Manage Drivers
-                </Button>
-                <Button fullWidth>
-                  Adjust Capacity
-                </Button>
+                <Button fullWidth>Manage Drivers</Button>
+                <Button fullWidth>Adjust Capacity</Button>
               </BlockStack>
             </Card>
 
@@ -366,7 +467,9 @@ export default function ZoneDetailPage() {
                     Time Slots
                   </Text>
                   {dayGroups.slice(0, 3).map((day) => {
-                    const daySlots = timeSlots.filter((slot) => slot.day === day);
+                    const daySlots = timeSlots.filter(
+                      (slot) => slot.day === day,
+                    );
                     if (daySlots.length === 0) return null;
                     return (
                       <BlockStack key={day} gap="200">
@@ -385,7 +488,11 @@ export default function ZoneDetailPage() {
                               borderRadius="100"
                             >
                               <BlockStack gap="100">
-                                <Text as="span" variant="bodySm" fontWeight="medium">
+                                <Text
+                                  as="span"
+                                  variant="bodySm"
+                                  fontWeight="medium"
+                                >
                                   {slot.startTime} – {slot.endTime}
                                 </Text>
                                 <Text as="span" variant="bodySm" tone="subdued">
@@ -423,9 +530,19 @@ export default function ZoneDetailPage() {
                         url={`/shipments/${shipment.shipmentId}`}
                         accessibilityLabel={`View shipment ${shipment.shipmentId}`}
                       >
-                        <InlineStack align="space-between" blockAlign="start" wrap={false} gap="200">
+                        <InlineStack
+                          align="space-between"
+                          blockAlign="start"
+                          wrap={false}
+                          gap="200"
+                        >
                           <BlockStack gap="050">
-                            <Text as="span" variant="bodyMd" fontWeight="medium" tone="magic">
+                            <Text
+                              as="span"
+                              variant="bodyMd"
+                              fontWeight="medium"
+                              tone="magic"
+                            >
                               {shipment.shipmentId}
                             </Text>
                             <Text as="span" variant="bodySm">

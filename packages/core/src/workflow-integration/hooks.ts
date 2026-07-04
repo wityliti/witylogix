@@ -13,7 +13,10 @@
  */
 
 import type { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
-import { getWorkflowIntegrationService, getIntegrationConfig } from "./index.js";
+import {
+  getWorkflowIntegrationService,
+  getIntegrationConfig,
+} from "./index.js";
 import type {
   OrderOperationData,
   DriverAssignmentData,
@@ -238,17 +241,26 @@ export function registerWorkflowHooks(fastify: FastifyInstance): void {
   // Register hooks on order routes
   fastify.addHook("onResponse", async (request, reply) => {
     // POST /api/v4/orders (create)
-    if (request.method === "POST" && request.url.match(/^\/api\/[^/]+\/orders\/?$/)) {
+    if (
+      request.method === "POST" &&
+      request.url.match(/^\/api\/[^/]+\/orders\/?$/)
+    ) {
       await workflowAfterOrderCreate(request, reply);
     }
 
     // PATCH /api/v4/orders/:id/assign (driver assignment)
-    if (request.method === "PATCH" && request.url.match(/\/orders\/[^/]+\/assign\/?$/)) {
+    if (
+      request.method === "PATCH" &&
+      request.url.match(/\/orders\/[^/]+\/assign\/?$/)
+    ) {
       await workflowAfterDriverAssign(request, reply);
     }
 
     // PATCH /api/v4/orders/:id/status (status update including delivery)
-    if (request.method === "PATCH" && request.url.match(/\/orders\/[^/]+\/status\/?$/)) {
+    if (
+      request.method === "PATCH" &&
+      request.url.match(/\/orders\/[^/]+\/status\/?$/)
+    ) {
       await workflowAfterDeliveryComplete(request, reply);
     }
   });

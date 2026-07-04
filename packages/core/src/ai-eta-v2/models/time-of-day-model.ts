@@ -11,7 +11,7 @@ import type {
   HistoricalDelivery,
   ModelPrediction,
   TimeOfDayModelState,
-} from '../types.js';
+} from "../types.js";
 
 interface HourlyProfile {
   baseline_minutes: number;
@@ -70,20 +70,20 @@ export class TimeOfDayModel {
     }
 
     // Seasonal factors (winter slower due to weather)
-    this.seasonFactors.set('winter', 1.15);
-    this.seasonFactors.set('spring', 1.0);
-    this.seasonFactors.set('summer', 0.95);
-    this.seasonFactors.set('fall', 1.05);
+    this.seasonFactors.set("winter", 1.15);
+    this.seasonFactors.set("spring", 1.0);
+    this.seasonFactors.set("summer", 0.95);
+    this.seasonFactors.set("fall", 1.05);
   }
 
   /**
    * Get season from month
    */
   private getSeason(month: number): string {
-    if (month >= 11 || month <= 1) return 'winter';
-    if (month >= 2 && month <= 4) return 'spring';
-    if (month >= 5 && month <= 7) return 'summer';
-    return 'fall';
+    if (month >= 11 || month <= 1) return "winter";
+    if (month >= 2 && month <= 4) return "spring";
+    if (month >= 5 && month <= 7) return "summer";
+    return "fall";
   }
 
   /**
@@ -99,7 +99,9 @@ export class TimeOfDayModel {
 
       // Gaussian kernel: exp(-(h - hour)^2 / (2 * bandwidth^2))
       const distance = Math.abs(h - hour);
-      const weight = Math.exp(-(distance * distance) / (2 * bandwidth * bandwidth));
+      const weight = Math.exp(
+        -(distance * distance) / (2 * bandwidth * bandwidth),
+      );
 
       weightedSum += weight * profile.baseline_minutes;
       weightSum += weight;
@@ -151,7 +153,9 @@ export class TimeOfDayModel {
 
       if (durations.length > 0) {
         const mean = durations.reduce((a, b) => a + b, 0) / durations.length;
-        const variance = durations.reduce((sum, val) => sum + (val - mean) ** 2, 0) / durations.length;
+        const variance =
+          durations.reduce((sum, val) => sum + (val - mean) ** 2, 0) /
+          durations.length;
         const stdDev = Math.sqrt(variance);
 
         profile.baseline_minutes = mean;
@@ -165,15 +169,21 @@ export class TimeOfDayModel {
       const holidayHours = holidayData.get(hour) || [];
 
       if (weekdayHours.length > 0 && weekendHours.length > 0) {
-        const weekdayMean = weekdayHours.reduce((a, b) => a + b, 0) / weekdayHours.length;
-        const weekendMean = weekendHours.reduce((a, b) => a + b, 0) / weekendHours.length;
-        profile.weekday_multiplier = weekdayMean / (profile.baseline_minutes || 1);
-        profile.weekend_multiplier = weekendMean / (profile.baseline_minutes || 1);
+        const weekdayMean =
+          weekdayHours.reduce((a, b) => a + b, 0) / weekdayHours.length;
+        const weekendMean =
+          weekendHours.reduce((a, b) => a + b, 0) / weekendHours.length;
+        profile.weekday_multiplier =
+          weekdayMean / (profile.baseline_minutes || 1);
+        profile.weekend_multiplier =
+          weekendMean / (profile.baseline_minutes || 1);
       }
 
       if (holidayHours.length > 0) {
-        const holidayMean = holidayHours.reduce((a, b) => a + b, 0) / holidayHours.length;
-        profile.holiday_multiplier = holidayMean / (profile.baseline_minutes || 1);
+        const holidayMean =
+          holidayHours.reduce((a, b) => a + b, 0) / holidayHours.length;
+        profile.holiday_multiplier =
+          holidayMean / (profile.baseline_minutes || 1);
       }
     }
   }
@@ -190,7 +200,7 @@ export class TimeOfDayModel {
     const profile = this.hourlyProfiles.get(hour);
     if (!profile) {
       return {
-        modelName: 'time-of-day',
+        modelName: "time-of-day",
         predicted_duration_minutes: 30,
         confidence: 0.3,
         lower_bound_minutes: 20,
@@ -213,24 +223,29 @@ export class TimeOfDayModel {
 
     // Get season factor (approximate from current date)
     const now = new Date();
-    const seasonFactor = this.seasonFactors.get(this.getSeason(now.getMonth())) || 1.0;
+    const seasonFactor =
+      this.seasonFactors.get(this.getSeason(now.getMonth())) || 1.0;
 
     // Compute prediction
     const predictedDuration = smoothedBaseline * multiplier * seasonFactor;
     const stdDev = profile.std_dev * Math.sqrt(multiplier * seasonFactor);
 
     // Confidence based on sample count (more data = higher confidence)
-    const confidence = Math.min(0.95, 0.4 + (Math.log(profile.sample_count + 1) / 10));
+    const confidence = Math.min(
+      0.95,
+      0.4 + Math.log(profile.sample_count + 1) / 10,
+    );
 
     return {
-      modelName: 'time-of-day',
+      modelName: "time-of-day",
       predicted_duration_minutes: Math.round(predictedDuration * 10) / 10,
       confidence,
       lower_bound_minutes: Math.max(
         5,
         Math.round((predictedDuration - 1.96 * stdDev) * 10) / 10,
       ),
-      upper_bound_minutes: Math.round((predictedDuration + 1.96 * stdDev) * 10) / 10,
+      upper_bound_minutes:
+        Math.round((predictedDuration + 1.96 * stdDev) * 10) / 10,
     };
   }
 

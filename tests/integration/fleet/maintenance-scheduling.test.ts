@@ -10,13 +10,17 @@
  * - Recall matching: match recall to affected vehicles by VIN/make/model/year
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createMockVehicle,
   createMockMaintenanceRecord,
   createMockMaintenanceSchedule,
-} from '../fixtures/fleet-fixtures.js';
-import type { MaintenanceRecord, MaintenanceSchedule, Vehicle } from '../../../packages/core/src/fleet/fleet-types.js';
+} from "../fixtures/fleet-fixtures.js";
+import type {
+  MaintenanceRecord,
+  MaintenanceSchedule,
+  Vehicle,
+} from "../../../packages/core/src/fleet/fleet-types.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // SETUP & HELPERS
@@ -38,7 +42,7 @@ interface RecallRecord {
   affectedYears: number[];
   affectedVins?: string[];
   category: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
   description: string;
 }
 
@@ -55,30 +59,30 @@ class MaintenanceScheduler {
   }
 
   private initializeTemplates(): void {
-    this.templates.set('OIL_CHANGE', {
-      category: 'OIL_CHANGE',
+    this.templates.set("OIL_CHANGE", {
+      category: "OIL_CHANGE",
       intervalMiles: 10000,
       intervalMonths: 12,
       estimatedCost: 350,
-      parts: ['Synthetic Oil 15W40', 'Oil Filter'],
+      parts: ["Synthetic Oil 15W40", "Oil Filter"],
       laborHours: 1,
     });
 
-    this.templates.set('TIRE_ROTATION', {
-      category: 'TIRE',
+    this.templates.set("TIRE_ROTATION", {
+      category: "TIRE",
       intervalMiles: 7500,
       intervalMonths: 6,
       estimatedCost: 150,
-      parts: ['Tire Rotation'],
+      parts: ["Tire Rotation"],
       laborHours: 1.5,
     });
 
-    this.templates.set('BRAKE_INSPECTION', {
-      category: 'BRAKE',
+    this.templates.set("BRAKE_INSPECTION", {
+      category: "BRAKE",
       intervalMiles: 15000,
       intervalMonths: 12,
       estimatedCost: 280,
-      parts: ['Brake Fluid', 'Brake Pads'],
+      parts: ["Brake Fluid", "Brake Pads"],
       laborHours: 2,
     });
   }
@@ -93,25 +97,31 @@ class MaintenanceScheduler {
 
   autoSchedulePreventive(vehicleId: string): MaintenanceSchedule[] {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
     const scheduledItems: MaintenanceSchedule[] = [];
 
     for (const [, template] of this.templates) {
       const lastRecord = this.records
-        .filter((r) => r.vehicleId === vehicleId && r.category === template.category)
-        .sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime())[0];
+        .filter(
+          (r) => r.vehicleId === vehicleId && r.category === template.category,
+        )
+        .sort(
+          (a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime(),
+        )[0];
 
-      const lastServiceDate = lastRecord?.completedDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+      const lastServiceDate =
+        lastRecord?.completedDate ||
+        new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
       const nextServiceDate = this.calculateNextServiceDate(
         lastServiceDate,
         vehicle.mileage,
-        template
+        template,
       );
 
       const schedule = createMockMaintenanceSchedule({
         vehicleId,
-        maintenanceType: 'PREVENTIVE',
+        maintenanceType: "PREVENTIVE",
         lastServiceDate,
         nextServiceDate,
       });
@@ -126,13 +136,16 @@ class MaintenanceScheduler {
   private calculateNextServiceDate(
     lastServiceDate: Date,
     currentMileage: number,
-    template: MaintenanceTemplate
+    template: MaintenanceTemplate,
   ): Date {
     const dates: Date[] = [];
 
     if (template.intervalMonths) {
       dates.push(
-        new Date(lastServiceDate.getTime() + template.intervalMonths * 30 * 24 * 60 * 60 * 1000)
+        new Date(
+          lastServiceDate.getTime() +
+            template.intervalMonths * 30 * 24 * 60 * 60 * 1000,
+        ),
       );
     }
 
@@ -140,14 +153,22 @@ class MaintenanceScheduler {
     if (template.intervalMiles) {
       const yearsForMileage = template.intervalMiles / 12000;
       dates.push(
-        new Date(lastServiceDate.getTime() + yearsForMileage * 365 * 24 * 60 * 60 * 1000)
+        new Date(
+          lastServiceDate.getTime() +
+            yearsForMileage * 365 * 24 * 60 * 60 * 1000,
+        ),
       );
     }
 
     // Return whichever comes first; if overdue, project from now
-    const result = dates.length > 0 ? new Date(Math.min(...dates.map((d) => d.getTime()))) : new Date();
+    const result =
+      dates.length > 0
+        ? new Date(Math.min(...dates.map((d) => d.getTime())))
+        : new Date();
     if (result <= new Date() && template.intervalMonths) {
-      return new Date(Date.now() + template.intervalMonths * 30 * 24 * 60 * 60 * 1000);
+      return new Date(
+        Date.now() + template.intervalMonths * 30 * 24 * 60 * 60 * 1000,
+      );
     }
     return result;
   }
@@ -159,28 +180,30 @@ class MaintenanceScheduler {
   createReactiveRequest(
     vehicleId: string,
     category: string,
-    priority: 'low' | 'medium' | 'high' | 'critical',
-    daysUrgent: number = 1
+    priority: "low" | "medium" | "high" | "critical",
+    daysUrgent: number = 1,
   ): MaintenanceRecord {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
-    const scheduledDate = new Date(Date.now() + daysUrgent * 24 * 60 * 60 * 1000);
+    const scheduledDate = new Date(
+      Date.now() + daysUrgent * 24 * 60 * 60 * 1000,
+    );
     const template = this.templates.get(category);
     const cost = template?.estimatedCost || 200;
 
     const record = createMockMaintenanceRecord({
       vehicleId,
-      type: 'REACTIVE',
+      type: "REACTIVE",
       category,
-      status: 'SCHEDULED',
+      status: "SCHEDULED",
       cost,
     });
 
     record.scheduledDate = scheduledDate;
 
     // Critical gets immediate slot (tomorrow)
-    if (priority === 'critical') {
+    if (priority === "critical") {
       record.scheduledDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
     }
 
@@ -190,10 +213,10 @@ class MaintenanceScheduler {
 
   triageByPriority(): MaintenanceRecord[] {
     return this.records
-      .filter((r) => r.type === 'REACTIVE' && r.status === 'SCHEDULED')
+      .filter((r) => r.type === "REACTIVE" && r.status === "SCHEDULED")
       .sort((a, b) => {
         const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-        return priorityOrder['high'] - priorityOrder['high']; // Default to high for now
+        return priorityOrder["high"] - priorityOrder["high"]; // Default to high for now
       });
   }
 
@@ -203,10 +226,14 @@ class MaintenanceScheduler {
 
   calculateFailureProbability(vehicleId: string, component: string): number {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
-    const vehicleRecords = this.records.filter((r) => r.vehicleId === vehicleId);
-    const componentRecords = vehicleRecords.filter((r) => r.category === component);
+    const vehicleRecords = this.records.filter(
+      (r) => r.vehicleId === vehicleId,
+    );
+    const componentRecords = vehicleRecords.filter(
+      (r) => r.category === component,
+    );
 
     // Age factor: newer vehicles have lower failure probability
     const yearsSinceAcquisition = new Date().getFullYear() - vehicle.year;
@@ -216,9 +243,13 @@ class MaintenanceScheduler {
     const mileageFactor = Math.min(0.4, (vehicle.mileage / 100000) * 0.2);
 
     // Service history factor: lack of service = higher probability
-    const serviceGapMonths = componentRecords.length > 0
-      ? Math.floor((Date.now() - componentRecords[0].completedDate!.getTime()) / (30 * 24 * 60 * 60 * 1000))
-      : 12;
+    const serviceGapMonths =
+      componentRecords.length > 0
+        ? Math.floor(
+            (Date.now() - componentRecords[0].completedDate!.getTime()) /
+              (30 * 24 * 60 * 60 * 1000),
+          )
+        : 12;
     const serviceFactor = Math.min(0.3, (serviceGapMonths / 24) * 0.15);
 
     const probability = ageFactor + mileageFactor + serviceFactor;
@@ -226,12 +257,15 @@ class MaintenanceScheduler {
   }
 
   createPredictiveMaintenance(vehicleId: string): MaintenanceRecord | null {
-    const components = ['ENGINE', 'TRANSMISSION', 'BRAKE', 'ELECTRICAL'];
-    let highestRiskComponent = '';
+    const components = ["ENGINE", "TRANSMISSION", "BRAKE", "ELECTRICAL"];
+    let highestRiskComponent = "";
     let highestProbability = 0;
 
     for (const component of components) {
-      const probability = this.calculateFailureProbability(vehicleId, component);
+      const probability = this.calculateFailureProbability(
+        vehicleId,
+        component,
+      );
       if (probability > highestProbability) {
         highestProbability = probability;
         highestRiskComponent = component;
@@ -242,13 +276,14 @@ class MaintenanceScheduler {
     if (highestProbability > 40) {
       const record = createMockMaintenanceRecord({
         vehicleId,
-        type: 'PREDICTIVE',
+        type: "PREDICTIVE",
         category: highestRiskComponent,
-        status: 'SCHEDULED',
+        status: "SCHEDULED",
         daysIntoSchedule: 7,
       });
 
-      record.notes = 'Predictive: ' + highestProbability + '% failure probability';
+      record.notes =
+        "Predictive: " + highestProbability + "% failure probability";
       this.records.push(record);
       return record;
     }
@@ -260,8 +295,13 @@ class MaintenanceScheduler {
   // BATCH OPTIMIZATION
   // ─────────────────────────────────────────────────────────────────
 
-  optimizeBatch(vendor: string = 'Premier Fleet Service Center'): { totalCost: number; savedCost: number } {
-    const vendorRecords = this.records.filter((r) => r.vendor === vendor && r.status === 'SCHEDULED');
+  optimizeBatch(vendor: string = "Premier Fleet Service Center"): {
+    totalCost: number;
+    savedCost: number;
+  } {
+    const vendorRecords = this.records.filter(
+      (r) => r.vendor === vendor && r.status === "SCHEDULED",
+    );
 
     let originalCost = 0;
     let batchCost = 0;
@@ -296,15 +336,15 @@ class MaintenanceScheduler {
   detectOverdue(): MaintenanceRecord[] {
     const now = new Date();
     return this.records.filter(
-      (r) => r.status === 'SCHEDULED' && r.scheduledDate < now
+      (r) => r.status === "SCHEDULED" && r.scheduledDate < now,
     );
   }
 
   escalateOverdue(recordId: string): MaintenanceRecord {
     const record = this.records.find((r) => r.id === recordId);
-    if (!record) throw new Error('Record not found');
+    if (!record) throw new Error("Record not found");
 
-    record.status = 'OVERDUE';
+    record.status = "OVERDUE";
     record.updatedAt = new Date();
     return record;
   }
@@ -319,7 +359,7 @@ class MaintenanceScheduler {
 
   matchRecalls(vehicleId: string): RecallRecord[] {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
     return this.recalls.filter((recall) => {
       // Match by VIN if specified
@@ -343,13 +383,13 @@ class MaintenanceScheduler {
     for (const recall of matchedRecalls) {
       const record = createMockMaintenanceRecord({
         vehicleId,
-        type: 'RECALL',
+        type: "RECALL",
         category: recall.category,
-        status: 'SCHEDULED',
-        daysIntoSchedule: recall.priority === 'critical' ? 1 : 7,
+        status: "SCHEDULED",
+        daysIntoSchedule: recall.priority === "critical" ? 1 : 7,
       });
 
-      record.notes = 'Recall: ' + recall.description;
+      record.notes = "Recall: " + recall.description;
       this.records.push(record);
       createdRecords.push(record);
     }
@@ -369,13 +409,13 @@ class MaintenanceScheduler {
 // TESTS
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('Maintenance Scheduling', () => {
+describe("Maintenance Scheduling", () => {
   let scheduler: MaintenanceScheduler;
   let vehicle: Vehicle;
 
   beforeEach(() => {
     scheduler = new MaintenanceScheduler();
-    vehicle = createMockVehicle({ id: 'vehicle_0', mileage: 45000 });
+    vehicle = createMockVehicle({ id: "vehicle_0", mileage: 45000 });
     scheduler.registerVehicle(vehicle);
   });
 
@@ -383,34 +423,40 @@ describe('Maintenance Scheduling', () => {
   // PREVENTIVE MAINTENANCE
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Preventive Maintenance', () => {
-    it('should auto-schedule based on mileage intervals', () => {
+  describe("Preventive Maintenance", () => {
+    it("should auto-schedule based on mileage intervals", () => {
       const schedules = scheduler.autoSchedulePreventive(vehicle.id);
 
       expect(schedules.length).toBeGreaterThan(0);
-      expect(schedules.every((s) => s.maintenanceType === 'PREVENTIVE')).toBe(true);
+      expect(schedules.every((s) => s.maintenanceType === "PREVENTIVE")).toBe(
+        true,
+      );
     });
 
-    it('should auto-schedule based on time intervals', () => {
+    it("should auto-schedule based on time intervals", () => {
       const schedules = scheduler.autoSchedulePreventive(vehicle.id);
       const hasTimeBasedSchedules = schedules.some((s) => s.intervalMonths);
 
       expect(hasTimeBasedSchedules).toBe(true);
     });
 
-    it('should create template-based schedules', () => {
+    it("should create template-based schedules", () => {
       const schedules = scheduler.autoSchedulePreventive(vehicle.id);
 
-      expect(schedules.some((s) => s.maintenanceType === 'PREVENTIVE')).toBe(true);
+      expect(schedules.some((s) => s.maintenanceType === "PREVENTIVE")).toBe(
+        true,
+      );
       expect(schedules.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('should calculate next service date correctly', () => {
+    it("should calculate next service date correctly", () => {
       const schedules = scheduler.autoSchedulePreventive(vehicle.id);
       const oilChangeSchedule = schedules[0];
 
       expect(oilChangeSchedule.nextServiceDate).toBeInstanceOf(Date);
-      expect(oilChangeSchedule.nextServiceDate.getTime()).toBeGreaterThan(Date.now());
+      expect(oilChangeSchedule.nextServiceDate.getTime()).toBeGreaterThan(
+        Date.now(),
+      );
     });
   });
 
@@ -418,34 +464,36 @@ describe('Maintenance Scheduling', () => {
   // REACTIVE MAINTENANCE
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Reactive Maintenance', () => {
-    it('should create reactive maintenance request', () => {
+  describe("Reactive Maintenance", () => {
+    it("should create reactive maintenance request", () => {
       const record = scheduler.createReactiveRequest(
         vehicle.id,
-        'BRAKE',
-        'high'
+        "BRAKE",
+        "high",
       );
 
-      expect(record.type).toBe('REACTIVE');
-      expect(record.status).toBe('SCHEDULED');
+      expect(record.type).toBe("REACTIVE");
+      expect(record.status).toBe("SCHEDULED");
     });
 
-    it('should schedule critical repairs immediately', () => {
+    it("should schedule critical repairs immediately", () => {
       const record = scheduler.createReactiveRequest(
         vehicle.id,
-        'ENGINE',
-        'critical'
+        "ENGINE",
+        "critical",
       );
 
       // Critical should be within 1 day
       const oneDayFromNow = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
-      expect(record.scheduledDate.getTime()).toBeLessThanOrEqual(oneDayFromNow.getTime());
+      expect(record.scheduledDate.getTime()).toBeLessThanOrEqual(
+        oneDayFromNow.getTime(),
+      );
     });
 
-    it('should triage by priority', () => {
-      scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'low');
-      scheduler.createReactiveRequest(vehicle.id, 'ENGINE', 'high');
-      scheduler.createReactiveRequest(vehicle.id, 'TRANSMISSION', 'critical');
+    it("should triage by priority", () => {
+      scheduler.createReactiveRequest(vehicle.id, "BRAKE", "low");
+      scheduler.createReactiveRequest(vehicle.id, "ENGINE", "high");
+      scheduler.createReactiveRequest(vehicle.id, "TRANSMISSION", "critical");
 
       const triaged = scheduler.triageByPriority();
       expect(triaged.length).toBeGreaterThan(0);
@@ -456,42 +504,54 @@ describe('Maintenance Scheduling', () => {
   // PREDICTIVE MAINTENANCE
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Predictive Maintenance', () => {
-    it('should calculate failure probability for component', () => {
-      const probability = scheduler.calculateFailureProbability(vehicle.id, 'ENGINE');
+  describe("Predictive Maintenance", () => {
+    it("should calculate failure probability for component", () => {
+      const probability = scheduler.calculateFailureProbability(
+        vehicle.id,
+        "ENGINE",
+      );
 
       expect(probability).toBeGreaterThanOrEqual(0);
       expect(probability).toBeLessThanOrEqual(100);
     });
 
-    it('should consider vehicle age in probability', () => {
+    it("should consider vehicle age in probability", () => {
       const oldVehicle = createMockVehicle({ year: 2010 });
       scheduler.registerVehicle(oldVehicle);
 
-      const probability = scheduler.calculateFailureProbability(oldVehicle.id, 'ENGINE');
+      const probability = scheduler.calculateFailureProbability(
+        oldVehicle.id,
+        "ENGINE",
+      );
       expect(probability).toBeGreaterThan(0);
     });
 
-    it('should consider mileage in probability', () => {
+    it("should consider mileage in probability", () => {
       const lowMileageVehicle = createMockVehicle({ mileage: 10000 });
       const highMileageVehicle = createMockVehicle({ mileage: 150000 });
 
       scheduler.registerVehicle(lowMileageVehicle);
       scheduler.registerVehicle(highMileageVehicle);
 
-      const lowProb = scheduler.calculateFailureProbability(lowMileageVehicle.id, 'ENGINE');
-      const highProb = scheduler.calculateFailureProbability(highMileageVehicle.id, 'ENGINE');
+      const lowProb = scheduler.calculateFailureProbability(
+        lowMileageVehicle.id,
+        "ENGINE",
+      );
+      const highProb = scheduler.calculateFailureProbability(
+        highMileageVehicle.id,
+        "ENGINE",
+      );
 
       expect(highProb).toBeGreaterThanOrEqual(lowProb);
     });
 
-    it('should create predictive maintenance when probability > 40%', () => {
+    it("should create predictive maintenance when probability > 40%", () => {
       const record = scheduler.createPredictiveMaintenance(vehicle.id);
 
       // Result depends on calculated probability
       if (record) {
-        expect(record.type).toBe('PREDICTIVE');
-        expect(record.status).toBe('SCHEDULED');
+        expect(record.type).toBe("PREDICTIVE");
+        expect(record.status).toBe("SCHEDULED");
       }
     });
   });
@@ -500,13 +560,13 @@ describe('Maintenance Scheduling', () => {
   // BATCH OPTIMIZATION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Batch Optimization', () => {
-    it('should combine multiple items per visit', () => {
-      scheduler.createReactiveRequest(vehicle.id, 'OIL_CHANGE', 'medium');
-      scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'medium');
-      scheduler.createReactiveRequest(vehicle.id, 'TIRE', 'medium');
+  describe("Batch Optimization", () => {
+    it("should combine multiple items per visit", () => {
+      scheduler.createReactiveRequest(vehicle.id, "OIL_CHANGE", "medium");
+      scheduler.createReactiveRequest(vehicle.id, "BRAKE", "medium");
+      scheduler.createReactiveRequest(vehicle.id, "TIRE", "medium");
 
-      const vendor = 'Premier Fleet Service Center';
+      const vendor = "Premier Fleet Service Center";
       const allRecords = scheduler.getRecords(vehicle.id);
       allRecords.forEach((r) => {
         r.vendor = vendor;
@@ -516,12 +576,16 @@ describe('Maintenance Scheduling', () => {
       expect(result.savedCost).toBeGreaterThan(0);
     });
 
-    it('should apply batch discount for multiple items', () => {
-      const vendor = 'Premier Fleet Service Center';
+    it("should apply batch discount for multiple items", () => {
+      const vendor = "Premier Fleet Service Center";
 
       // Create multiple records for same vendor
       for (let i = 0; i < 3; i++) {
-        const record = scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'medium');
+        const record = scheduler.createReactiveRequest(
+          vehicle.id,
+          "BRAKE",
+          "medium",
+        );
         record.vendor = vendor;
       }
 
@@ -529,9 +593,13 @@ describe('Maintenance Scheduling', () => {
       expect(result.savedCost).toBeGreaterThan(0);
     });
 
-    it('should retrieve batch orders', () => {
-      const vendor = 'Premier Fleet Service Center';
-      const record = scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'medium');
+    it("should retrieve batch orders", () => {
+      const vendor = "Premier Fleet Service Center";
+      const record = scheduler.createReactiveRequest(
+        vehicle.id,
+        "BRAKE",
+        "medium",
+      );
       record.vendor = vendor;
 
       scheduler.optimizeBatch(vendor);
@@ -545,10 +613,14 @@ describe('Maintenance Scheduling', () => {
   // OVERDUE DETECTION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Overdue Detection', () => {
-    it('should detect overdue maintenance', () => {
+  describe("Overdue Detection", () => {
+    it("should detect overdue maintenance", () => {
       const pastDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000); // 5 days ago
-      const record = scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'medium');
+      const record = scheduler.createReactiveRequest(
+        vehicle.id,
+        "BRAKE",
+        "medium",
+      );
       record.scheduledDate = pastDate;
 
       const overdue = scheduler.detectOverdue();
@@ -556,22 +628,26 @@ describe('Maintenance Scheduling', () => {
       expect(overdue).toContainEqual(record);
     });
 
-    it('should not flag upcoming maintenance as overdue', () => {
-      scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'medium');
+    it("should not flag upcoming maintenance as overdue", () => {
+      scheduler.createReactiveRequest(vehicle.id, "BRAKE", "medium");
 
       const overdue = scheduler.detectOverdue();
       expect(overdue.length).toBe(0);
     });
 
-    it('should escalate overdue records', () => {
+    it("should escalate overdue records", () => {
       const pastDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
-      const record = scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'medium');
+      const record = scheduler.createReactiveRequest(
+        vehicle.id,
+        "BRAKE",
+        "medium",
+      );
       record.scheduledDate = pastDate;
 
       const overdue = scheduler.detectOverdue();
       const escalated = scheduler.escalateOverdue(overdue[0].id);
 
-      expect(escalated.status).toBe('OVERDUE');
+      expect(escalated.status).toBe("OVERDUE");
     });
   });
 
@@ -579,35 +655,35 @@ describe('Maintenance Scheduling', () => {
   // RECALL MATCHING
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Recall Matching', () => {
-    it('should match recall by make, model, year', () => {
+  describe("Recall Matching", () => {
+    it("should match recall by make, model, year", () => {
       const recall: RecallRecord = {
-        id: 'recall_1',
-        affectedMakes: ['Volvo'],
-        affectedModels: ['VNL'],
+        id: "recall_1",
+        affectedMakes: ["Volvo"],
+        affectedModels: ["VNL"],
         affectedYears: [2023],
-        category: 'ENGINE',
-        priority: 'high',
-        description: 'Engine defect',
+        category: "ENGINE",
+        priority: "high",
+        description: "Engine defect",
       };
 
       scheduler.addRecall(recall);
       const matched = scheduler.matchRecalls(vehicle.id);
 
       expect(matched.length).toBe(1);
-      expect(matched[0].id).toBe('recall_1');
+      expect(matched[0].id).toBe("recall_1");
     });
 
-    it('should match recall by VIN', () => {
+    it("should match recall by VIN", () => {
       const recall: RecallRecord = {
-        id: 'recall_2',
+        id: "recall_2",
         affectedMakes: [],
         affectedModels: [],
         affectedYears: [],
         affectedVins: [vehicle.vin],
-        category: 'BRAKE',
-        priority: 'critical',
-        description: 'Brake system defect',
+        category: "BRAKE",
+        priority: "critical",
+        description: "Brake system defect",
       };
 
       scheduler.addRecall(recall);
@@ -617,15 +693,15 @@ describe('Maintenance Scheduling', () => {
       expect(matched[0].affectedVins).toContain(vehicle.vin);
     });
 
-    it('should not match non-applicable recalls', () => {
+    it("should not match non-applicable recalls", () => {
       const recall: RecallRecord = {
-        id: 'recall_3',
-        affectedMakes: ['Toyota'],
-        affectedModels: ['Corolla'],
+        id: "recall_3",
+        affectedMakes: ["Toyota"],
+        affectedModels: ["Corolla"],
         affectedYears: [2020],
-        category: 'TRANSMISSION',
-        priority: 'low',
-        description: 'Transmission issue',
+        category: "TRANSMISSION",
+        priority: "low",
+        description: "Transmission issue",
       };
 
       scheduler.addRecall(recall);
@@ -634,33 +710,33 @@ describe('Maintenance Scheduling', () => {
       expect(matched.length).toBe(0);
     });
 
-    it('should create recall maintenance records', () => {
+    it("should create recall maintenance records", () => {
       const recall: RecallRecord = {
-        id: 'recall_4',
-        affectedMakes: ['Volvo'],
-        affectedModels: ['VNL'],
+        id: "recall_4",
+        affectedMakes: ["Volvo"],
+        affectedModels: ["VNL"],
         affectedYears: [2023],
-        category: 'TRANSMISSION',
-        priority: 'high',
-        description: 'Transmission calibration needed',
+        category: "TRANSMISSION",
+        priority: "high",
+        description: "Transmission calibration needed",
       };
 
       scheduler.addRecall(recall);
       const records = scheduler.createRecallMaintenance(vehicle.id);
 
       expect(records.length).toBeGreaterThan(0);
-      expect(records[0].type).toBe('RECALL');
+      expect(records[0].type).toBe("RECALL");
     });
 
-    it('should schedule critical recalls immediately', () => {
+    it("should schedule critical recalls immediately", () => {
       const recall: RecallRecord = {
-        id: 'recall_5',
-        affectedMakes: ['Volvo'],
-        affectedModels: ['VNL'],
+        id: "recall_5",
+        affectedMakes: ["Volvo"],
+        affectedModels: ["VNL"],
         affectedYears: [2023],
-        category: 'BRAKE',
-        priority: 'critical',
-        description: 'Critical brake defect',
+        category: "BRAKE",
+        priority: "critical",
+        description: "Critical brake defect",
       };
 
       scheduler.addRecall(recall);
@@ -674,19 +750,19 @@ describe('Maintenance Scheduling', () => {
   // COMPLEX SCENARIOS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Complex Maintenance Scenarios', () => {
-    it('should handle preventive + reactive + recall simultaneously', () => {
+  describe("Complex Maintenance Scenarios", () => {
+    it("should handle preventive + reactive + recall simultaneously", () => {
       scheduler.autoSchedulePreventive(vehicle.id);
-      scheduler.createReactiveRequest(vehicle.id, 'BRAKE', 'high');
+      scheduler.createReactiveRequest(vehicle.id, "BRAKE", "high");
 
       const recall: RecallRecord = {
-        id: 'recall_6',
-        affectedMakes: ['Volvo'],
-        affectedModels: ['VNL'],
+        id: "recall_6",
+        affectedMakes: ["Volvo"],
+        affectedModels: ["VNL"],
         affectedYears: [2023],
-        category: 'ENGINE',
-        priority: 'high',
-        description: 'Engine issue',
+        category: "ENGINE",
+        priority: "high",
+        description: "Engine issue",
       };
 
       scheduler.addRecall(recall);

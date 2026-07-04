@@ -18,8 +18,11 @@ interface InventoryGaugeProps {
 const getStockStatus = (
   current: number,
   max: number,
-  reorderPoint: number
-): { status: "critical" | "low" | "optimal" | "overstocked"; color: string } => {
+  reorderPoint: number,
+): {
+  status: "critical" | "low" | "optimal" | "overstocked";
+  color: string;
+} => {
   const percentage = (current / max) * 100;
 
   if (current <= reorderPoint) {
@@ -111,7 +114,13 @@ const InventoryGauge = ({
             }}
           >
             <defs>
-              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient
+                id="gaugeGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
                 <stop offset="0%" stopColor="var(--wl-danger-500)" />
                 <stop offset="33%" stopColor="var(--wl-chart-orange)" />
                 <stop offset="66%" stopColor="var(--wl-success-500)" />
@@ -176,9 +185,7 @@ const InventoryGauge = ({
           </svg>
         </div>
 
-        <Badge variant={getStatusVariant()}>
-          {getStatusLabel()}
-        </Badge>
+        <Badge variant={getStatusVariant()}>{getStatusLabel()}</Badge>
       </div>
 
       <div className="space-y-3 mb-6">
@@ -243,8 +250,8 @@ const InventoryGauge = ({
               Reorder Recommended
             </p>
             <p className="text-xs text-wl-danger-400/80 mt-0.5">
-              Current stock is below reorder point. Initiate purchase order to maintain
-              inventory levels.
+              Current stock is below reorder point. Initiate purchase order to
+              maintain inventory levels.
             </p>
           </div>
         </div>

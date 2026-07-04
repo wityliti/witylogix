@@ -56,7 +56,7 @@ describe("Semantic Search", () => {
       const embedding = await search["embedder"].generate("test content");
 
       const norm = Math.sqrt(
-        embedding.reduce((sum: number, v: number) => sum + v * v, 0)
+        embedding.reduce((sum: number, v: number) => sum + v * v, 0),
       );
       expect(norm).toBeCloseTo(1, 4);
     });
@@ -94,33 +94,29 @@ describe("Semantic Search", () => {
 
   describe("BM25 Text Scoring", () => {
     it("should score exact term matches higher", () => {
-      const score1 = search["calculateBM25Score"](
-        "delivery driver order",
-        ["delivery", "order"]
-      );
-      const score2 = search["calculateBM25Score"](
-        "customer invoice",
-        ["delivery", "order"]
-      );
+      const score1 = search["calculateBM25Score"]("delivery driver order", [
+        "delivery",
+        "order",
+      ]);
+      const score2 = search["calculateBM25Score"]("customer invoice", [
+        "delivery",
+        "order",
+      ]);
 
       expect(score1).toBeGreaterThan(score2);
     });
 
     it("should normalize scores to 0-1", () => {
-      const score = search["calculateBM25Score"](
-        "test content",
-        ["test"]
-      );
+      const score = search["calculateBM25Score"]("test content", ["test"]);
 
       expect(score).toBeGreaterThanOrEqual(0);
       expect(score).toBeLessThanOrEqual(1);
     });
 
     it("should cap match count contribution", () => {
-      const score = search["calculateBM25Score"](
-        "test test test test",
-        ["test"]
-      );
+      const score = search["calculateBM25Score"]("test test test test", [
+        "test",
+      ]);
 
       expect(score).toBeLessThanOrEqual(1);
     });
@@ -135,16 +131,21 @@ describe("Semantic Search", () => {
           "order_123",
           "order",
           "Urgent delivery to downtown",
-          "tenant_1"
-        )
+          "tenant_1",
+        ),
       ).resolves.not.toThrow();
     });
 
     it("should update existing entity", async () => {
       const entityId = "order_123";
-      await search.indexEntity(entityId, "order", "Original content", "tenant_1");
+      await search.indexEntity(
+        entityId,
+        "order",
+        "Original content",
+        "tenant_1",
+      );
       await expect(
-        search.indexEntity(entityId, "order", "Updated content", "tenant_1")
+        search.indexEntity(entityId, "order", "Updated content", "tenant_1"),
       ).resolves.not.toThrow();
     });
 
@@ -160,8 +161,8 @@ describe("Semantic Search", () => {
           "order",
           "Test content",
           "tenant_1",
-          metadata
-        )
+          metadata,
+        ),
       ).resolves.not.toThrow();
     });
 
@@ -170,11 +171,11 @@ describe("Semantic Search", () => {
         "order_125",
         "order",
         "Test content",
-        "tenant_1"
+        "tenant_1",
       );
 
       await expect(
-        search.removeEntity("order_125", "tenant_1")
+        search.removeEntity("order_125", "tenant_1"),
       ).resolves.not.toThrow();
     });
   });
@@ -197,7 +198,7 @@ describe("Semantic Search", () => {
       ];
 
       await expect(
-        search.batchIndexEntities(entities, "tenant_1")
+        search.batchIndexEntities(entities, "tenant_1"),
       ).resolves.not.toThrow();
     });
 
@@ -212,13 +213,13 @@ describe("Semantic Search", () => {
       ];
 
       await expect(
-        search.batchIndexEntities(entities, "tenant_1")
+        search.batchIndexEntities(entities, "tenant_1"),
       ).resolves.not.toThrow();
     });
 
     it("should handle empty batch gracefully", async () => {
       await expect(
-        search.batchIndexEntities([], "tenant_1")
+        search.batchIndexEntities([], "tenant_1"),
       ).resolves.not.toThrow();
     });
   });
@@ -231,12 +232,12 @@ describe("Semantic Search", () => {
         "order_1",
         "order",
         "urgent delivery downtown",
-        "tenant_1"
+        "tenant_1",
       );
 
       const results = await search.vectorSearch(
         "delivery downtown",
-        "tenant_1"
+        "tenant_1",
       );
 
       expect(Array.isArray(results)).toBe(true);
@@ -265,18 +266,23 @@ describe("Semantic Search", () => {
         "query",
         "tenant_1",
         undefined,
-        limit
+        limit,
       );
 
       expect(results.length).toBeLessThanOrEqual(limit);
     });
 
     it("should filter out low similarity results", async () => {
-      await search.indexEntity("order_1", "order", "very specific content xyz", "tenant_1");
+      await search.indexEntity(
+        "order_1",
+        "order",
+        "very specific content xyz",
+        "tenant_1",
+      );
 
       const results = await search.vectorSearch(
         "completely different",
-        "tenant_1"
+        "tenant_1",
       );
 
       results.forEach((r) => {
@@ -293,7 +299,7 @@ describe("Semantic Search", () => {
         "order_1",
         "order",
         "urgent delivery to downtown",
-        "tenant_1"
+        "tenant_1",
       );
 
       const results = await search.hybridSearch({
@@ -377,22 +383,20 @@ describe("Semantic Search", () => {
 
   describe("Edge Cases", () => {
     it("should handle empty query", async () => {
-      await expect(
-        search.vectorSearch("", "tenant_1")
-      ).resolves.not.toThrow();
+      await expect(search.vectorSearch("", "tenant_1")).resolves.not.toThrow();
     });
 
     it("should handle very long content", async () => {
       const longContent = "word ".repeat(10000);
       await expect(
-        search.indexEntity("order_1", "order", longContent, "tenant_1")
+        search.indexEntity("order_1", "order", longContent, "tenant_1"),
       ).resolves.not.toThrow();
     });
 
     it("should handle special characters", async () => {
       const specialContent = "Order #123 @ $50.00 - 50% off!";
       await expect(
-        search.indexEntity("order_1", "order", specialContent, "tenant_1")
+        search.indexEntity("order_1", "order", specialContent, "tenant_1"),
       ).resolves.not.toThrow();
     });
   });

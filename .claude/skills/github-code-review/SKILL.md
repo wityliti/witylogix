@@ -25,6 +25,7 @@ capabilities:
 ## 🎯 Quick Start
 
 ### Simple Review
+
 ```bash
 # Initialize review swarm for PR
 gh pr view 123 --json files,diff | npx ruv-swarm github review-init --pr 123
@@ -34,6 +35,7 @@ gh pr comment 123 --body "🔍 Multi-agent code review initiated"
 ```
 
 ### Complete Review Workflow
+
 ```bash
 # Get PR context with gh CLI
 PR_DATA=$(gh pr view 123 --json files,additions,deletions,title,body)
@@ -120,6 +122,7 @@ gh pr comment 123 --body "🔍 Multi-agent code review initiated"
 ```
 
 **Benefits:**
+
 - ✅ Parallel review by specialized agents
 - ✅ Comprehensive coverage across multiple domains
 - ✅ Faster review cycles with coordinated analysis
@@ -184,7 +187,7 @@ fi
 <details>
 <summary><strong>Comment Template: Security Issue</strong></summary>
 
-```markdown
+````markdown
 🔒 **Security Issue: [Type]**
 
 **Severity**: 🔴 Critical / 🟡 High / 🟢 Low
@@ -196,14 +199,18 @@ fi
 [Potential consequences if not addressed]
 
 **Suggested Fix**:
+
 ```language
 [Code example of the fix]
 ```
+````
 
 **References**:
+
 - [OWASP Guide](link)
 - [Security Best Practices](link)
-```
+
+````
 
 </details>
 
@@ -220,7 +227,7 @@ npx ruv-swarm github review-performance \
   --profile "cpu,memory,io" \
   --benchmark-against main \
   --suggest-optimizations
-```
+````
 
 <details>
 <summary><strong>Performance Metrics Analyzed</strong></summary>
@@ -379,6 +386,7 @@ Execute swarm commands directly from PR comments:
 
 ```markdown
 <!-- In PR comment -->
+
 /swarm init mesh 6
 /swarm spawn coder "Implement authentication"
 /swarm spawn tester "Write unit tests"
@@ -391,24 +399,26 @@ Execute swarm commands directly from PR comments:
 
 ```javascript
 // webhook-handler.js
-const { createServer } = require('http');
-const { execSync } = require('child_process');
+const { createServer } = require("http");
+const { execSync } = require("child_process");
 
 createServer((req, res) => {
-  if (req.url === '/github-webhook') {
+  if (req.url === "/github-webhook") {
     const event = JSON.parse(body);
 
-    if (event.action === 'opened' && event.pull_request) {
+    if (event.action === "opened" && event.pull_request) {
       execSync(`npx ruv-swarm github pr-init ${event.pull_request.number}`);
     }
 
-    if (event.comment && event.comment.body.startsWith('/swarm')) {
+    if (event.comment && event.comment.body.startsWith("/swarm")) {
       const command = event.comment.body;
-      execSync(`npx ruv-swarm github handle-comment --pr ${event.issue.number} --command "${command}"`);
+      execSync(
+        `npx ruv-swarm github handle-comment --pr ${event.issue.number} --command "${command}"`,
+      );
     }
 
     res.writeHead(200);
-    res.end('OK');
+    res.end("OK");
   }
 }).listen(3000);
 ```
@@ -436,9 +446,9 @@ review:
     - i18n
 
   thresholds:
-    security: block      # Block merge on security issues
-    performance: warn    # Warn on performance issues
-    style: suggest       # Suggest style improvements
+    security: block # Block merge on security issues
+    performance: warn # Warn on performance issues
+    style: suggest # Suggest style improvements
 
   rules:
     security:
@@ -718,22 +728,22 @@ class CustomReviewAgent {
     // Custom logic: Check for TODO comments in production code
     if (await this.checkTodoComments(pr)) {
       issues.push({
-        severity: 'warning',
+        severity: "warning",
         file: pr.file,
         line: pr.line,
-        message: 'TODO comment found in production code',
-        suggestion: 'Resolve TODO or create issue to track it'
+        message: "TODO comment found in production code",
+        suggestion: "Resolve TODO or create issue to track it",
       });
     }
 
     // Custom logic: Verify API versioning
     if (await this.checkApiVersioning(pr)) {
       issues.push({
-        severity: 'error',
+        severity: "error",
         file: pr.file,
         line: pr.line,
-        message: 'API endpoint missing versioning',
-        suggestion: 'Add /v1/, /v2/ prefix to API routes'
+        message: "API endpoint missing versioning",
+        suggestion: "Add /v1/, /v2/ prefix to API routes",
       });
     }
 
@@ -954,18 +964,21 @@ npx ruv-swarm github export-metrics \
 ## 📚 Best Practices
 
 ### 1. Review Configuration
+
 - ✅ Define clear review criteria upfront
 - ✅ Set appropriate severity thresholds
 - ✅ Configure agent specializations for your stack
 - ✅ Establish override procedures for emergencies
 
 ### 2. Comment Quality
+
 - ✅ Provide actionable, specific feedback
 - ✅ Include code examples with suggestions
 - ✅ Reference documentation and best practices
 - ✅ Maintain respectful, constructive tone
 
 ### 3. Performance Optimization
+
 - ✅ Cache analysis results to avoid redundant work
 - ✅ Use incremental reviews for large PRs
 - ✅ Enable parallel agent execution
@@ -975,18 +988,22 @@ npx ruv-swarm github export-metrics \
 
 ```markdown
 <!-- .github/pull_request_template.md -->
+
 ## Swarm Configuration
+
 - Topology: [mesh/hierarchical/ring/star]
 - Max Agents: [number]
 - Auto-spawn: [yes/no]
 - Priority: [high/medium/low]
 
 ## Tasks for Swarm
+
 - [ ] Task 1 description
 - [ ] Task 2 description
 - [ ] Task 3 description
 
 ## Review Focus Areas
+
 - [ ] Security review
 - [ ] Performance analysis
 - [ ] Architecture validation
@@ -1061,6 +1078,7 @@ fi
 <summary><strong>Issue: Review agents not spawning</strong></summary>
 
 **Solution:**
+
 ```bash
 # Check swarm status
 npx ruv-swarm swarm-status
@@ -1078,6 +1096,7 @@ npx ruv-swarm github review-init --pr 123 --force
 <summary><strong>Issue: Comments not posting to PR</strong></summary>
 
 **Solution:**
+
 ```bash
 # Verify GitHub token permissions
 gh auth status
@@ -1095,6 +1114,7 @@ npx ruv-swarm github review-comments --pr 123 --batch
 <summary><strong>Issue: Review taking too long</strong></summary>
 
 **Solution:**
+
 ```bash
 # Use incremental review for large PRs
 npx ruv-swarm github review-init --pr 123 --incremental
@@ -1113,16 +1133,19 @@ npx ruv-swarm github review-init --pr 123 --parallel --cache-results
 ## 📖 Additional Resources
 
 ### Related Skills
+
 - `github-pr-manager` - Comprehensive PR lifecycle management
 - `github-workflow-automation` - Automate GitHub workflows
 - `swarm-coordination` - Advanced swarm orchestration
 
 ### Documentation
+
 - [GitHub CLI Documentation](https://cli.github.com/manual/)
 - [RUV Swarm Guide](https://github.com/ruvnet/ruv-swarm)
 - [Claude Flow Integration](https://github.com/ruvnet/claude-flow)
 
 ### Support
+
 - GitHub Issues: Report bugs and request features
 - Community: Join discussions and share experiences
 - Examples: Browse example configurations and workflows

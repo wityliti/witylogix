@@ -52,7 +52,9 @@ function StatCard({
 
   return (
     <Card className={cn("p-4 border-wl-border-default", colorMap[color])}>
-      <p className="text-xs uppercase tracking-wide font-semibold opacity-75">{label}</p>
+      <p className="text-xs uppercase tracking-wide font-semibold opacity-75">
+        {label}
+      </p>
       <p className="text-2xl font-bold mt-2">{value}</p>
     </Card>
   );
@@ -73,16 +75,21 @@ export default function EventsPage() {
     return qs ? `/api/v4/activity-logs?${qs}` : "/api/v4/activity-logs";
   }, [filters.eventType, filters.entityType, filters.dateFrom, filters.dateTo]);
 
-  const { items: data, loading, error, refetch } = useApiList<ActivityLog>(apiPath);
+  const {
+    items: data,
+    loading,
+    error,
+    refetch,
+  } = useApiList<ActivityLog>(apiPath);
 
   // Dynamic options derived from the current result set
   const eventTypeOptions = useMemo(
     () => [...new Set(data.map((e) => e.action))].sort(),
-    [data]
+    [data],
   );
   const entityTypeOptions = useMemo(
     () => [...new Set(data.map((e) => e.entityType))].sort(),
-    [data]
+    [data],
   );
 
   // Client-side filter for source (actorType) and free-text search
@@ -105,18 +112,19 @@ export default function EventsPage() {
 
   const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
   const last24hCount = useMemo(
-    () => data.filter((e) => new Date(e.timestamp).getTime() >= cutoff24h).length,
+    () =>
+      data.filter((e) => new Date(e.timestamp).getTime() >= cutoff24h).length,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data]
+    [data],
   );
   const errorCount = useMemo(
     () =>
       data.filter(
         (e) =>
           e.action?.toLowerCase().includes("fail") ||
-          e.action?.toLowerCase().includes("error")
+          e.action?.toLowerCase().includes("error"),
       ).length,
-    [data]
+    [data],
   );
 
   const toggleEventSelection = useCallback((eventId: string) => {
@@ -132,7 +140,7 @@ export default function EventsPage() {
     setSelectedEvents((prev) =>
       prev.size === displayedData.length
         ? new Set()
-        : new Set(displayedData.map((e) => e.id))
+        : new Set(displayedData.map((e) => e.id)),
     );
   }, [displayedData]);
 
@@ -145,7 +153,7 @@ export default function EventsPage() {
         return next;
       });
     },
-    []
+    [],
   );
 
   const clearFilters = useCallback(() => setFilters({}), []);
@@ -174,7 +182,8 @@ export default function EventsPage() {
     URL.revokeObjectURL(url);
   }, [displayedData]);
 
-  if (loading && data.length === 0) return <TableSkeleton rows={10} columns={6} />;
+  if (loading && data.length === 0)
+    return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
@@ -198,9 +207,17 @@ export default function EventsPage() {
       <div className="w-full max-w-7xl mx-auto px-6 py-8 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))] space-y-6">
         {/* Stats Bar */}
         <div className="grid grid-cols-4 gap-4">
-          <StatCard label="Total Events" value={displayedData.length} color="primary" />
+          <StatCard
+            label="Total Events"
+            value={displayedData.length}
+            color="primary"
+          />
           <StatCard label="Last 24h" value={last24hCount} color="info" />
-          <StatCard label="Event Types" value={eventTypeOptions.length} color="success" />
+          <StatCard
+            label="Event Types"
+            value={eventTypeOptions.length}
+            color="success"
+          />
           <StatCard
             label="Errors"
             value={errorCount}
@@ -242,7 +259,7 @@ export default function EventsPage() {
                   "text-white text-sm",
                   "placeholder:text-wl-text-tertiary",
                   "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30",
-                  "transition-colors duration-200"
+                  "transition-colors duration-200",
                 )}
               />
             </div>
@@ -261,7 +278,7 @@ export default function EventsPage() {
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
                     "focus:outline-none focus:border-blue-500",
-                    "transition-colors duration-200"
+                    "transition-colors duration-200",
                   )}
                 >
                   <option value="">All Types</option>
@@ -285,7 +302,7 @@ export default function EventsPage() {
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
                     "focus:outline-none focus:border-blue-500",
-                    "transition-colors duration-200"
+                    "transition-colors duration-200",
                   )}
                 >
                   <option value="">All Sources</option>
@@ -308,7 +325,7 @@ export default function EventsPage() {
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
                     "focus:outline-none focus:border-blue-500",
-                    "transition-colors duration-200"
+                    "transition-colors duration-200",
                   )}
                 >
                   <option value="">All Entities</option>
@@ -333,7 +350,7 @@ export default function EventsPage() {
                     "bg-wl-bg-elevated border border-wl-border-default",
                     "text-white text-sm",
                     "focus:outline-none focus:border-blue-500",
-                    "transition-colors duration-200"
+                    "transition-colors duration-200",
                   )}
                 />
               </div>

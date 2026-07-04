@@ -7,7 +7,13 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { EpicClient } from "../epic-client.js";
-import type { HealthcareConfig, Patient, Encounter, MedicationRequest, DiagnosticReport } from "../types.js";
+import type {
+  HealthcareConfig,
+  Patient,
+  Encounter,
+  MedicationRequest,
+  DiagnosticReport,
+} from "../types.js";
 
 describe("EpicClient", () => {
   let client: EpicClient;
@@ -39,7 +45,9 @@ describe("EpicClient", () => {
         baseUrl: "",
       });
 
-      await expect(invalidClient.validateConfig()).rejects.toThrow("Epic base URL is required");
+      await expect(invalidClient.validateConfig()).rejects.toThrow(
+        "Epic base URL is required",
+      );
     });
 
     it("should throw error if client ID is missing", async () => {
@@ -48,7 +56,9 @@ describe("EpicClient", () => {
         clientId: "",
       });
 
-      await expect(invalidClient.validateConfig()).rejects.toThrow("Epic client ID is required");
+      await expect(invalidClient.validateConfig()).rejects.toThrow(
+        "Epic client ID is required",
+      );
     });
 
     it("should validate with valid configuration", async () => {
@@ -94,7 +104,9 @@ describe("EpicClient", () => {
           name: [{ family: "Doe" }],
         };
 
-        await expect(client.create<Patient>("Patient", newPatient)).rejects.toThrow();
+        await expect(
+          client.create<Patient>("Patient", newPatient),
+        ).rejects.toThrow();
       });
 
       it("should apply rate limiting", async () => {
@@ -110,7 +122,7 @@ describe("EpicClient", () => {
 
         // Make multiple requests to test rate limiting
         const promises = Array.from({ length: 5 }, () =>
-          client.create<Patient>("Patient", newPatient)
+          client.create<Patient>("Patient", newPatient),
         );
 
         const results = await Promise.all(promises);
@@ -144,7 +156,9 @@ describe("EpicClient", () => {
           text: () => Promise.resolve("Patient not found"),
         });
 
-        await expect(client.read<Patient>("Patient", "nonexistent")).rejects.toThrow();
+        await expect(
+          client.read<Patient>("Patient", "nonexistent"),
+        ).rejects.toThrow();
       });
     });
 
@@ -156,14 +170,19 @@ describe("EpicClient", () => {
 
         (global.fetch as any).mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            resourceType: "Patient",
-            id: "patient-123",
-            ...updatedPatient,
-          }),
+          json: () =>
+            Promise.resolve({
+              resourceType: "Patient",
+              id: "patient-123",
+              ...updatedPatient,
+            }),
         });
 
-        const result = await client.update<Patient>("Patient", "patient-123", updatedPatient);
+        const result = await client.update<Patient>(
+          "Patient",
+          "patient-123",
+          updatedPatient,
+        );
 
         expect(result.name?.[0].family).toBe("Johnson");
       });
@@ -176,7 +195,9 @@ describe("EpicClient", () => {
           status: 204,
         });
 
-        await expect(client.delete("Patient", "patient-123")).resolves.not.toThrow();
+        await expect(
+          client.delete("Patient", "patient-123"),
+        ).resolves.not.toThrow();
       });
     });
 
@@ -284,7 +305,7 @@ describe("EpicClient", () => {
       const result = await client.sendMyChartMessage(
         "patient-123",
         "I have a question",
-        "doctor-456"
+        "doctor-456",
       );
 
       expect(result.id).toBe("msg-new");
@@ -321,17 +342,18 @@ describe("EpicClient", () => {
     it("should create a care plan", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          resourceType: "CarePlan",
-          id: "plan-new",
-          title: "New Care Plan",
-        }),
+        json: () =>
+          Promise.resolve({
+            resourceType: "CarePlan",
+            id: "plan-new",
+            title: "New Care Plan",
+          }),
       });
 
       const result = await client.createCarePlan(
         "patient-123",
         "Hypertension Management",
-        ["Monitor blood pressure", "Reduce sodium intake"]
+        ["Monitor blood pressure", "Reduce sodium intake"],
       );
 
       expect(result.id).toBe("plan-new");
@@ -361,7 +383,7 @@ describe("EpicClient", () => {
       const result = await client.getAppointmentSlots(
         "provider-1",
         "2025-04-01",
-        "2025-04-30"
+        "2025-04-30",
       );
 
       expect(result).toHaveLength(1);
@@ -371,18 +393,19 @@ describe("EpicClient", () => {
     it("should create an appointment", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          resourceType: "Appointment",
-          id: "apt-1",
-          status: "booked",
-        }),
+        json: () =>
+          Promise.resolve({
+            resourceType: "Appointment",
+            id: "apt-1",
+            status: "booked",
+          }),
       });
 
       const result = await client.createAppointment(
         "patient-123",
         "provider-1",
         "slot-1",
-        "Annual checkup"
+        "Annual checkup",
       );
 
       expect(result.status).toBe("booked");
@@ -419,10 +442,11 @@ describe("EpicClient", () => {
     it("should create a consent", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          resourceType: "Consent",
-          id: "consent-new",
-        }),
+        json: () =>
+          Promise.resolve({
+            resourceType: "Consent",
+            id: "consent-new",
+          }),
       });
 
       const result = await client.createConsent({
@@ -438,13 +462,14 @@ describe("EpicClient", () => {
     it("should revoke a consent", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          resourceType: "Consent",
-          id: "consent-1",
-          status: "inactive",
-          patient: { reference: "Patient/patient-123" },
-          dateTime: new Date().toISOString(),
-        }),
+        json: () =>
+          Promise.resolve({
+            resourceType: "Consent",
+            id: "consent-1",
+            status: "inactive",
+            patient: { reference: "Patient/patient-123" },
+            dateTime: new Date().toISOString(),
+          }),
       });
 
       const result = await client.revokeConsent("consent-1");
@@ -474,7 +499,7 @@ describe("EpicClient", () => {
       const result = await client.getAuditLogs(
         "patient-123",
         "2025-01-01",
-        "2025-12-31"
+        "2025-12-31",
       );
 
       expect(Array.isArray(result)).toBe(true);
@@ -486,7 +511,7 @@ describe("EpicClient", () => {
       const mapping = await client.getTerminologyMapping(
         "ICD-10",
         "I10",
-        "SNOMED-CT"
+        "SNOMED-CT",
       );
 
       // Would call actual terminology service
@@ -510,10 +535,11 @@ describe("EpicClient", () => {
     it("should initiate bulk export", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          url: "https://epic.com/export/123",
-          output: [],
-        }),
+        json: () =>
+          Promise.resolve({
+            url: "https://epic.com/export/123",
+            output: [],
+          }),
       });
 
       const result = await client.bulkExport({
@@ -528,10 +554,11 @@ describe("EpicClient", () => {
     it("should get bulk export status", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          transactionTime: new Date().toISOString(),
-          output: [],
-        }),
+        json: () =>
+          Promise.resolve({
+            transactionTime: new Date().toISOString(),
+            output: [],
+          }),
       });
 
       const result = await client.getBulkExportStatus("export-123");
@@ -545,7 +572,9 @@ describe("EpicClient", () => {
         status: 202,
       });
 
-      await expect(client.cancelBulkExport("export-123")).resolves.not.toThrow();
+      await expect(
+        client.cancelBulkExport("export-123"),
+      ).resolves.not.toThrow();
     });
   });
 
@@ -577,10 +606,11 @@ describe("EpicClient", () => {
     it("should retrieve SMART context", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          resourceType: "Patient",
-          id: "patient-123",
-        }),
+        json: () =>
+          Promise.resolve({
+            resourceType: "Patient",
+            id: "patient-123",
+          }),
       });
 
       const context = await client.getSMARTContext("test-token");
@@ -667,13 +697,14 @@ describe("EpicClient", () => {
     it("should retrieve a specific document", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          resourceType: "DocumentReference",
-          id: "doc-1",
-          description: "CCD",
-          date: new Date().toISOString(),
-          subject: { reference: "Patient/patient-123" },
-        }),
+        json: () =>
+          Promise.resolve({
+            resourceType: "DocumentReference",
+            id: "doc-1",
+            description: "CCD",
+            date: new Date().toISOString(),
+            subject: { reference: "Patient/patient-123" },
+          }),
       });
 
       const result = await client.getDocument("doc-1", "pdf");

@@ -1,16 +1,16 @@
-import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, stat } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { pipeline } from 'node:stream/promises';
-import type { Readable } from 'node:stream';
-import { Readable as NodeReadable } from 'node:stream';
-import type { StorageClient, StorageObject } from './storage.js';
+import { createReadStream, createWriteStream } from "node:fs";
+import { mkdir, stat } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { pipeline } from "node:stream/promises";
+import type { Readable } from "node:stream";
+import { Readable as NodeReadable } from "node:stream";
+import type { StorageClient, StorageObject } from "./storage.js";
 
 export class LocalStorageClient implements StorageClient {
   constructor(private readonly rootPath: string) {}
 
   private absolutePath(key: string): string {
-    const sanitized = key.replace(/^\/+/, '').replace(/\.\.\//g, '');
+    const sanitized = key.replace(/^\/+/, "").replace(/\.\.\//g, "");
     return resolve(this.rootPath, sanitized);
   }
 

@@ -29,6 +29,7 @@ witylogix-platform/
 **Location:** `/sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform/packages/core/src/compliance/__tests__/anonymizer.test.ts`
 
 **Test Suites (11 total):**
+
 1. `hashPII` - SHA-256 hashing operations
 2. `redactField` - Field redaction with visible chars
 3. `generalizeLocation` - Location generalization
@@ -40,6 +41,7 @@ witylogix-platform/
 9. `Statistics Management` - Stat reset and tracking
 
 **Key Test Cases:**
+
 - `hashPII with known inputs/outputs consistency`
 - `redactField with various visible char counts (0-N)`
 - `generalizeLocation reduces precision to city/region/country`
@@ -56,6 +58,7 @@ witylogix-platform/
 **Location:** `/sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform/packages/core/src/compliance/__tests__/consent-manager.test.ts`
 
 **Test Suites (11 total):**
+
 1. `recordConsent` - Create consent records
 2. `revokeConsent` - Revoke active consent
 3. `getConsentStatus` - Get active/revoked consents
@@ -69,6 +72,7 @@ witylogix-platform/
 11. `Cleanup` - Clear consents for testing
 
 **Key Test Cases:**
+
 - `recordConsent creates new record with version`
 - `revokeConsent updates timestamp`
 - `getConsentStatus returns all consents`
@@ -85,6 +89,7 @@ witylogix-platform/
 **Location:** `/sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform/packages/core/src/compliance/__tests__/retention.test.ts`
 
 **Test Suites (12 total):**
+
 1. `setRetentionPolicy` - Policy creation
 2. `applyRetentionPolicy` - Flag expired records
 3. `exemptFromRetention` - Legal holds
@@ -99,6 +104,7 @@ witylogix-platform/
 12. `Multi-Entity Tests` - Multiple entity types
 
 **Key Test Cases:**
+
 - `applyRetentionPolicy flags expired records`
 - `exemptFromRetention creates legal hold`
 - `scheduleAnonymization queues correctly`
@@ -117,6 +123,7 @@ witylogix-platform/
 **Location:** `/sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform/packages/core/src/cache/__tests__/client.test.ts`
 
 **Test Suites (12 total):**
+
 1. `get/set` - Serialization and retrieval
 2. `TTL expiration` - Expiry handling
 3. `deleteByPattern` - Glob pattern matching
@@ -131,6 +138,7 @@ witylogix-platform/
 12. `flush and invalidation events`
 
 **Key Test Cases:**
+
 - `get/set with serialization`
 - `TTL expiration after timeout`
 - `deleteByPattern matches glob patterns`
@@ -142,6 +150,7 @@ witylogix-platform/
 - `Stats tracking hits/misses`
 
 **Mock Implementation:**
+
 - Full `MockRedis` class implementing RedisLike interface
 - Supports all cache operations for testing
 - TTL and expiration simulation
@@ -153,6 +162,7 @@ witylogix-platform/
 **Location:** `/sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform/packages/core/src/cache/__tests__/strategies.test.ts`
 
 **Test Suites (6 total + 1 cross-strategy):**
+
 1. `TenantCacheStrategy` - Tenant namespacing
 2. `EntityCacheStrategy` - Entity relationships
 3. `QueryCacheStrategy` - Query parameter keys
@@ -161,6 +171,7 @@ witylogix-platform/
 6. `Cross-Strategy Combinations` - Combined patterns
 
 **Key Test Cases:**
+
 - `TenantCacheStrategy namespaces by shopId`
 - `EntityCacheStrategy relationship invalidation`
 - `QueryCacheStrategy parameter-based keys`
@@ -169,6 +180,7 @@ witylogix-platform/
 - `Tenant/Entity/Query combined patterns`
 
 **Strategy Implementations:**
+
 - Key generation per strategy
 - Pattern-based invalidation
 - Tag creation for bulk operations
@@ -183,6 +195,7 @@ witylogix-platform/
 **Location:** `/sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform/apps/api/src/routes/__tests__/settings.test.ts`
 
 **Test Suites (12 total):**
+
 1. `GET /` - Return all settings
 2. `PUT /general` - Update general settings
 3. `PUT /branding` - Update branding
@@ -197,6 +210,7 @@ witylogix-platform/
 12. `API Key Security` - Key management
 
 **Key Test Cases:**
+
 - `GET / returns all settings for tenant`
 - `PUT /general updates timezone, currency`
 - `PUT /branding validates colors and URLs`
@@ -209,6 +223,7 @@ witylogix-platform/
 - `Tenant isolation enforced`
 
 **Validation Coverage:**
+
 - Email format validation
 - Hex color validation (`#RRGGBB`)
 - URL format validation
@@ -223,6 +238,7 @@ witylogix-platform/
 **Location:** `/sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform/apps/api/src/routes/__tests__/shopify-webhooks.test.ts`
 
 **Test Suites (12 total):**
+
 1. `HMAC Verification` - Signature validation
 2. `POST /app/installed` - Shop installation
 3. `POST /app/uninstalled` - Shop uninstall
@@ -237,6 +253,7 @@ witylogix-platform/
 12. `Webhook Format Validation` - Schema validation
 
 **Key Test Cases:**
+
 - `HMAC verification accepts valid signature`
 - `HMAC verification rejects invalid signature`
 - `POST /app/installed creates shop record`
@@ -249,12 +266,14 @@ witylogix-platform/
 - `Webhook idempotency via duplicate detection`
 
 **HMAC Testing:**
+
 - Valid signature acceptance
 - Invalid signature rejection
 - Modified payload detection
 - Case-sensitivity validation
 
 **GDPR Compliance:**
+
 - Data subject access requests (DSAR)
 - Right to be forgotten (redaction)
 - Order-level redaction
@@ -265,6 +284,7 @@ witylogix-platform/
 ## Test Execution
 
 ### Run all tests:
+
 ```bash
 cd /sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform
 npm test
@@ -273,22 +293,26 @@ vitest
 ```
 
 ### Run specific test file:
+
 ```bash
 vitest packages/core/src/compliance/__tests__/anonymizer.test.ts
 vitest apps/api/src/routes/__tests__/settings.test.ts
 ```
 
 ### Run tests with coverage:
+
 ```bash
 vitest --coverage
 ```
 
 ### Watch mode:
+
 ```bash
 vitest --watch
 ```
 
 ### Specific test suite:
+
 ```bash
 vitest -t "hashPII"
 vitest -t "HMAC Verification"
@@ -298,15 +322,15 @@ vitest -t "HMAC Verification"
 
 ## Summary Statistics
 
-| Category | Count |
-|----------|-------|
-| Total Test Files | 7 |
-| Total Lines of Code | 4,439 |
-| Total Test Suites | 76 |
-| Total Test Cases | 370+ |
-| Compliance Tests | 3 files, 1,613 lines |
-| Cache Tests | 2 files, 1,352 lines |
-| API Tests | 2 files, 1,474 lines |
+| Category            | Count                |
+| ------------------- | -------------------- |
+| Total Test Files    | 7                    |
+| Total Lines of Code | 4,439                |
+| Total Test Suites   | 76                   |
+| Total Test Cases    | 370+                 |
+| Compliance Tests    | 3 files, 1,613 lines |
+| Cache Tests         | 2 files, 1,352 lines |
+| API Tests           | 2 files, 1,474 lines |
 
 ---
 

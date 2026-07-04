@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { forwardRef, type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+import { forwardRef, type HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 import {
   CheckCircle,
   Circle,
@@ -11,14 +11,14 @@ import {
   MapPin,
   Home,
   Clock,
-} from 'lucide-react';
+} from "lucide-react";
 
 type ShipmentStatus =
-  | 'label_created'
-  | 'picked_up'
-  | 'in_transit'
-  | 'out_for_delivery'
-  | 'delivered';
+  | "label_created"
+  | "picked_up"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered";
 
 interface StatusStepperProps extends HTMLAttributes<HTMLDivElement> {
   /** Current shipment status */
@@ -40,34 +40,34 @@ const statusSteps: Array<{
   description: string;
 }> = [
   {
-    id: 'label_created',
-    label: 'Label Created',
+    id: "label_created",
+    label: "Label Created",
     icon: <Package size={20} />,
-    description: 'Label generated',
+    description: "Label generated",
   },
   {
-    id: 'picked_up',
-    label: 'Picked Up',
+    id: "picked_up",
+    label: "Picked Up",
     icon: <Truck size={20} />,
-    description: 'In carrier possession',
+    description: "In carrier possession",
   },
   {
-    id: 'in_transit',
-    label: 'In Transit',
+    id: "in_transit",
+    label: "In Transit",
     icon: <Truck size={20} />,
-    description: 'On the way',
+    description: "On the way",
   },
   {
-    id: 'out_for_delivery',
-    label: 'Out for Delivery',
+    id: "out_for_delivery",
+    label: "Out for Delivery",
     icon: <MapPin size={20} />,
-    description: 'On delivery vehicle',
+    description: "On delivery vehicle",
   },
   {
-    id: 'delivered',
-    label: 'Delivered',
+    id: "delivered",
+    label: "Delivered",
     icon: <Home size={20} />,
-    description: 'Delivered',
+    description: "Delivered",
   },
 ];
 
@@ -105,24 +105,20 @@ const StatusStepper = forwardRef<HTMLDivElement, StatusStepperProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const currentIndex = statusOrder[currentStatus];
 
     const formatDate = (date: Date): string => {
-      return new Intl.DateTimeFormat('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
+      return new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
       }).format(date);
     };
 
     return (
-      <div
-        ref={ref}
-        className={cn('space-y-6', className)}
-        {...props}
-      >
+      <div ref={ref} className={cn("space-y-6", className)} {...props}>
         {/* Exception alert */}
         {hasException && (
           <div className="p-4 rounded-lg bg-wl-danger-bg border border-wl-danger-400/30">
@@ -155,19 +151,22 @@ const StatusStepper = forwardRef<HTMLDivElement, StatusStepperProps>(
                 const isCurrent = index === currentIndex;
 
                 return (
-                  <div key={step.id} className="flex flex-col items-center flex-1">
+                  <div
+                    key={step.id}
+                    className="flex flex-col items-center flex-1"
+                  >
                     {/* Step circle */}
                     <div
                       className={cn(
-                        'relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full',
-                        'transition-all duration-300 ease-default',
+                        "relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full",
+                        "transition-all duration-300 ease-default",
                         hasException && isCurrent
-                          ? 'bg-wl-danger-500 text-white ring-2 ring-wl-danger-500/30'
+                          ? "bg-wl-danger-500 text-white ring-2 ring-wl-danger-500/30"
                           : isCompleted
-                            ? 'bg-wl-success-500 text-white'
+                            ? "bg-wl-success-500 text-white"
                             : isCurrent
-                              ? 'bg-wl-primary-500 text-white ring-2 ring-wl-primary-500/30'
-                              : 'bg-wl-bg-overlay border-2 border-wl-border-subtle text-wl-text-secondary'
+                              ? "bg-wl-primary-500 text-white ring-2 ring-wl-primary-500/30"
+                              : "bg-wl-bg-overlay border-2 border-wl-border-subtle text-wl-text-secondary",
                       )}
                     >
                       {isCompleted ? (
@@ -183,12 +182,12 @@ const StatusStepper = forwardRef<HTMLDivElement, StatusStepperProps>(
                     {index < statusSteps.length - 1 && (
                       <div
                         className={cn(
-                          'w-0.5 h-6 sm:h-8 my-1',
+                          "w-0.5 h-6 sm:h-8 my-1",
                           isCompleted
-                            ? 'bg-wl-success-500'
+                            ? "bg-wl-success-500"
                             : isCurrent
-                              ? 'bg-wl-primary-500'
-                              : 'bg-wl-border-subtle'
+                              ? "bg-wl-primary-500"
+                              : "bg-wl-border-subtle",
                         )}
                       />
                     )}
@@ -196,12 +195,12 @@ const StatusStepper = forwardRef<HTMLDivElement, StatusStepperProps>(
                     {/* Step label */}
                     <p
                       className={cn(
-                        'text-xs font-semibold mt-2 text-center',
+                        "text-xs font-semibold mt-2 text-center",
                         isCompleted
-                          ? 'text-wl-success-400'
+                          ? "text-wl-success-400"
                           : isCurrent
-                            ? 'text-wl-primary-400'
-                            : 'text-wl-text-secondary'
+                            ? "text-wl-primary-400"
+                            : "text-wl-text-secondary",
                       )}
                     >
                       {step.label}
@@ -250,15 +249,15 @@ const StatusStepper = forwardRef<HTMLDivElement, StatusStepperProps>(
                 {/* Step circle */}
                 <div
                   className={cn(
-                    'flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0',
-                    'transition-all duration-300 ease-default',
+                    "flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0",
+                    "transition-all duration-300 ease-default",
                     hasException && isCurrent
-                      ? 'bg-wl-danger-500 text-white ring-2 ring-wl-danger-500/30'
+                      ? "bg-wl-danger-500 text-white ring-2 ring-wl-danger-500/30"
                       : isCompleted
-                        ? 'bg-wl-success-500 text-white'
+                        ? "bg-wl-success-500 text-white"
                         : isCurrent
-                          ? 'bg-wl-primary-500 text-white ring-2 ring-wl-primary-500/30'
-                          : 'bg-wl-bg-overlay border-2 border-wl-border-subtle text-wl-text-secondary'
+                          ? "bg-wl-primary-500 text-white ring-2 ring-wl-primary-500/30"
+                          : "bg-wl-bg-overlay border-2 border-wl-border-subtle text-wl-text-secondary",
                   )}
                 >
                   {isCompleted ? (
@@ -274,12 +273,12 @@ const StatusStepper = forwardRef<HTMLDivElement, StatusStepperProps>(
                 <div className="flex-1">
                   <p
                     className={cn(
-                      'text-sm font-semibold',
+                      "text-sm font-semibold",
                       isCompleted
-                        ? 'text-wl-success-400'
+                        ? "text-wl-success-400"
                         : isCurrent
-                          ? 'text-wl-primary-400'
-                          : 'text-wl-text-secondary'
+                          ? "text-wl-primary-400"
+                          : "text-wl-text-secondary",
                     )}
                   >
                     {step.label}
@@ -328,10 +327,10 @@ const StatusStepper = forwardRef<HTMLDivElement, StatusStepperProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
-StatusStepper.displayName = 'StatusStepper';
+StatusStepper.displayName = "StatusStepper";
 
 export { StatusStepper };
 export type { ShipmentStatus };

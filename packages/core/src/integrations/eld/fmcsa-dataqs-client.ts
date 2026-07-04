@@ -76,7 +76,7 @@ export class FMCSADataQsClient {
 
     const response = await this.makeRequest<any>(
       "GET",
-      `/Carrier/${dotNumber}/DOT`
+      `/Carrier/${dotNumber}/DOT`,
     );
 
     const carrier = this.normalizeCarrierProfile(response);
@@ -98,7 +98,7 @@ export class FMCSADataQsClient {
 
     const response = await this.makeRequest<any>(
       "GET",
-      `/Carrier/${mcNumber}/MC`
+      `/Carrier/${mcNumber}/MC`,
     );
 
     const carrier = this.normalizeCarrierProfile(response);
@@ -112,17 +112,17 @@ export class FMCSADataQsClient {
    */
   async searchCarriers(
     legalName: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<FMCSACarrierSearchResponse> {
     const response = await this.makeRequest<any>(
       "GET",
       `/Carrier/Search/${encodeURIComponent(legalName)}`,
-      { limit }
+      { limit },
     );
 
     return {
       carriers: (response.SearchResults || []).map((c: any) =>
-        this.normalizeCarrierProfile(c)
+        this.normalizeCarrierProfile(c),
       ),
       totalResults: response.totalRecordCount || 0,
     };
@@ -141,7 +141,7 @@ export class FMCSADataQsClient {
 
     const response = await this.makeRequest<any>(
       "GET",
-      `/Carrier/${dotNumber}/SMS`
+      `/Carrier/${dotNumber}/SMS`,
     );
 
     const rating = this.normalizeSafetyRating(response, dotNumber);
@@ -155,16 +155,16 @@ export class FMCSADataQsClient {
    */
   async getRoadsideInspections(
     dotNumber: string,
-    limit: number = 100
+    limit: number = 100,
   ): Promise<FMCSAInspection[]> {
     const response = await this.makeRequest<any>(
       "GET",
       `/Carrier/${dotNumber}/Inspections`,
-      { limit }
+      { limit },
     );
 
     return (response.inspections || []).map((i: any) =>
-      this.normalizeInspection(i, dotNumber)
+      this.normalizeInspection(i, dotNumber),
     );
   }
 
@@ -173,16 +173,16 @@ export class FMCSADataQsClient {
    */
   async getCrashes(
     dotNumber: string,
-    limit: number = 100
+    limit: number = 100,
   ): Promise<FMCSACrash[]> {
     const response = await this.makeRequest<any>(
       "GET",
       `/Carrier/${dotNumber}/Crashes`,
-      { limit }
+      { limit },
     );
 
     return (response.crashes || []).map((c: any) =>
-      this.normalizeCrash(c, dotNumber)
+      this.normalizeCrash(c, dotNumber),
     );
   }
 
@@ -192,7 +192,7 @@ export class FMCSADataQsClient {
   async getInsuranceStatus(dotNumber: string): Promise<FMCSAInsurance> {
     const response = await this.makeRequest<any>(
       "GET",
-      `/Carrier/${dotNumber}/Insurance`
+      `/Carrier/${dotNumber}/Insurance`,
     );
 
     return {
@@ -218,10 +218,12 @@ export class FMCSADataQsClient {
   /**
    * Get operating authority status
    */
-  async getOperatingAuthority(dotNumber: string): Promise<FMCSAOperatingAuthority> {
+  async getOperatingAuthority(
+    dotNumber: string,
+  ): Promise<FMCSAOperatingAuthority> {
     const response = await this.makeRequest<any>(
       "GET",
-      `/Carrier/${dotNumber}/Authority`
+      `/Carrier/${dotNumber}/Authority`,
     );
 
     return {
@@ -243,7 +245,7 @@ export class FMCSADataQsClient {
     dotNumber: string,
     dataElement: string,
     reason: string,
-    supportingDocUrl?: string
+    supportingDocUrl?: string,
   ): Promise<FMCSADataQsChallengeRequest> {
     const payload = {
       dotNumber,
@@ -256,7 +258,7 @@ export class FMCSADataQsClient {
     const response = await this.makeRequest<any>(
       "POST",
       `/Carrier/${dotNumber}/Challenge`,
-      payload
+      payload,
     );
 
     return {
@@ -273,7 +275,9 @@ export class FMCSADataQsClient {
   /**
    * Get census data (company info, fleet size, etc.)
    */
-  async getCensusData(dotNumber: string): Promise<Partial<FMCSACarrierProfile>> {
+  async getCensusData(
+    dotNumber: string,
+  ): Promise<Partial<FMCSACarrierProfile>> {
     const cacheKey = `census-${dotNumber}`;
     const cached = this.getFromCache(cacheKey);
 
@@ -283,7 +287,7 @@ export class FMCSADataQsClient {
 
     const response = await this.makeRequest<any>(
       "GET",
-      `/Carrier/${dotNumber}/Census`
+      `/Carrier/${dotNumber}/Census`,
     );
 
     const censusData = {
@@ -315,7 +319,7 @@ export class FMCSADataQsClient {
   }> {
     const response = await this.makeRequest<any>(
       "GET",
-      `/Carrier/${dotNumber}/OOS`
+      `/Carrier/${dotNumber}/OOS`,
     );
 
     return {
@@ -349,9 +353,7 @@ export class FMCSADataQsClient {
   /**
    * Get comprehensive carrier profile
    */
-  async getComprehensiveProfile(
-    dotNumber: string
-  ): Promise<{
+  async getComprehensiveProfile(dotNumber: string): Promise<{
     carrier: FMCSACarrierProfile;
     safetyRating: FMCSASafetyRating;
     inspections: FMCSAInspection[];
@@ -384,7 +386,7 @@ export class FMCSADataQsClient {
   private async makeRequest<T>(
     method: string,
     path: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
 
@@ -401,7 +403,7 @@ export class FMCSADataQsClient {
     const options: RequestInit = {
       method,
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
       },
     };
 
@@ -442,7 +444,12 @@ export class FMCSADataQsClient {
     // If we've made requests, calculate delay
     if (this.rateLimitInfo.requestsThisMinute > 0) {
       const avgDelay = 60000 / 50; // ~1200ms per request
-      const delay = Math.max(0, avgDelay - (Date.now() - this.rateLimitInfo.resetTime) / this.rateLimitInfo.requestsThisMinute);
+      const delay = Math.max(
+        0,
+        avgDelay -
+          (Date.now() - this.rateLimitInfo.resetTime) /
+            this.rateLimitInfo.requestsThisMinute,
+      );
 
       if (delay > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -497,7 +504,10 @@ export class FMCSADataQsClient {
     };
   }
 
-  private normalizeSafetyRating(data: any, dotNumber: string): FMCSASafetyRating {
+  private normalizeSafetyRating(
+    data: any,
+    dotNumber: string,
+  ): FMCSASafetyRating {
     const basicsArray = (data.BASICs || data.basics || []).map(
       (b: any): FMCSABasicScore => ({
         basicNumber: b.basicNumber || b.BasicNumber || 0,
@@ -505,7 +515,7 @@ export class FMCSADataQsClient {
         weight: b.weight || 1,
         score: b.score || b.Score || 0,
         percentile: b.percentile,
-      })
+      }),
     );
 
     return {
@@ -569,7 +579,7 @@ export class FMCSADataQsClient {
 export class FMCSADataQsError extends Error {
   constructor(
     public statusCode: number,
-    public body: string
+    public body: string,
   ) {
     super(`FMCSA DataQs Error ${statusCode}: ${body}`);
   }

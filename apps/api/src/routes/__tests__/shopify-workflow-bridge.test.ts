@@ -94,7 +94,7 @@ function createMockShopifyFulfillment(overrides: any = {}) {
 
 function createSignedRequest(
   order: any,
-  secret: string = "test-secret-123"
+  secret: string = "test-secret-123",
 ): { signature: string; rawBody: string } {
   const rawBody = JSON.stringify(order);
   const signature = createHmac("sha256", secret)
@@ -213,7 +213,8 @@ describe("Shopify Workflow Bridge", () => {
           country: "US",
         },
         deliveryAddress: {
-          street: `${order.shipping_address.address1} ${order.shipping_address.address2}`.trim(),
+          street:
+            `${order.shipping_address.address1} ${order.shipping_address.address2}`.trim(),
           city: order.shipping_address.city,
           state: order.shipping_address.province_code,
           zip: order.shipping_address.zip,
@@ -316,8 +317,12 @@ describe("Shopify Workflow Bridge", () => {
 
   describe("Idempotency", () => {
     it("should prevent duplicate order processing with same Shopify order ID", () => {
-      const order1 = createMockShopifyOrder({ id: "gid://shopify/Order/12345" });
-      const order2 = createMockShopifyOrder({ id: "gid://shopify/Order/12345" });
+      const order1 = createMockShopifyOrder({
+        id: "gid://shopify/Order/12345",
+      });
+      const order2 = createMockShopifyOrder({
+        id: "gid://shopify/Order/12345",
+      });
 
       // Both have same Shopify ID
       expect(order1.id).toBe(order2.id);
@@ -328,8 +333,12 @@ describe("Shopify Workflow Bridge", () => {
     });
 
     it("should allow different Shopify order IDs to be processed", () => {
-      const order1 = createMockShopifyOrder({ id: "gid://shopify/Order/12345" });
-      const order2 = createMockShopifyOrder({ id: "gid://shopify/Order/67890" });
+      const order1 = createMockShopifyOrder({
+        id: "gid://shopify/Order/12345",
+      });
+      const order2 = createMockShopifyOrder({
+        id: "gid://shopify/Order/67890",
+      });
 
       expect(order1.id).not.toBe(order2.id);
     });
@@ -411,7 +420,7 @@ describe("Shopify Workflow Bridge", () => {
       }
 
       const requestsInWindow = requestLog.filter(
-        (r) => Date.now() - r.timestamp < 60000
+        (r) => Date.now() - r.timestamp < 60000,
       ).length;
 
       expect(requestsInWindow).toBe(5);
@@ -426,7 +435,7 @@ describe("Shopify Workflow Bridge", () => {
       }));
 
       const inWindow = requests.filter(
-        (r) => Date.now() - r.timestamp < 60000
+        (r) => Date.now() - r.timestamp < 60000,
       ).length;
 
       expect(inWindow).toBeLessThanOrEqual(limit);
@@ -441,7 +450,7 @@ describe("Shopify Workflow Bridge", () => {
       }));
 
       const inWindow = requests.filter(
-        (r) => Date.now() - r.timestamp < 60000
+        (r) => Date.now() - r.timestamp < 60000,
       ).length;
 
       const shouldReject = inWindow > limit;

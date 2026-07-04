@@ -16,7 +16,10 @@
 
 import { db } from "@witylogix/db";
 // Encryption helper - uses core encryption module
-const getEncryption = (): any => ({ decrypt: (v: string) => v, encrypt: (v: string) => v });
+const getEncryption = (): any => ({
+  decrypt: (v: string) => v,
+  encrypt: (v: string) => v,
+});
 import type {
   AuthProviderType,
   BaseAuthProvider,
@@ -82,7 +85,8 @@ export class AuthProviderRegistry {
   constructor() {
     // Read BYOK and default provider from environment
     this.byokEnabled = process.env.AUTH_BYOK === "true";
-    this.deployerProvider = (process.env.AUTH_PROVIDER || "local") as AuthProviderType;
+    this.deployerProvider = (process.env.AUTH_PROVIDER ||
+      "local") as AuthProviderType;
   }
 
   /**
@@ -149,10 +153,15 @@ export class AuthProviderRegistry {
 
       // Decrypt config
       const encryption = getEncryption();
-      const decryptedConfig = encryption.decrypt(provider.config as Record<string, unknown>);
+      const decryptedConfig = encryption.decrypt(
+        provider.config as Record<string, unknown>,
+      );
 
       // Instantiate provider
-      const instance = createProvider(provider.provider as AuthProviderType, decryptedConfig);
+      const instance = createProvider(
+        provider.provider as AuthProviderType,
+        decryptedConfig,
+      );
       this.cache.set(cacheKey, instance);
       return instance;
     } catch (error) {
@@ -193,7 +202,9 @@ export class AuthProviderRegistry {
 
       // Decrypt config
       const encryption = getEncryption();
-      const decryptedConfig = encryption.decrypt(provider.config as Record<string, unknown>);
+      const decryptedConfig = encryption.decrypt(
+        provider.config as Record<string, unknown>,
+      );
 
       // Instantiate provider
       const instance = createProvider(this.deployerProvider, decryptedConfig);
@@ -232,11 +243,19 @@ export class AuthProviderRegistry {
       for (const provider of shopProviders) {
         try {
           const encryption = getEncryption();
-          const decryptedConfig = encryption.decrypt(provider.config as Record<string, unknown>);
-          const instance = createProvider(provider.provider as AuthProviderType, decryptedConfig);
+          const decryptedConfig = encryption.decrypt(
+            provider.config as Record<string, unknown>,
+          );
+          const instance = createProvider(
+            provider.provider as AuthProviderType,
+            decryptedConfig,
+          );
           providers.push(instance);
         } catch (error) {
-          console.error(`Failed to instantiate shop provider ${provider.id}:`, error);
+          console.error(
+            `Failed to instantiate shop provider ${provider.id}:`,
+            error,
+          );
         }
       }
     } catch (error) {
@@ -286,8 +305,13 @@ export class AuthProviderRegistry {
 
     try {
       const encryption = getEncryption();
-      const decryptedConfig = encryption.decrypt(provider.config as Record<string, unknown>);
-      const instance = createProvider(provider.provider as AuthProviderType, decryptedConfig);
+      const decryptedConfig = encryption.decrypt(
+        provider.config as Record<string, unknown>,
+      );
+      const instance = createProvider(
+        provider.provider as AuthProviderType,
+        decryptedConfig,
+      );
 
       // Validate configuration
       await instance.validateConfiguration();
@@ -301,7 +325,8 @@ export class AuthProviderRegistry {
         },
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
       // Record validation error
       await db.authProvider.update({
@@ -319,7 +344,9 @@ export class AuthProviderRegistry {
   /**
    * Get health status of all providers for a shop (for monitoring dashboard).
    */
-  async getProvidersHealth(shopId: string): Promise<Record<string, ProviderHealthStatus>> {
+  async getProvidersHealth(
+    shopId: string,
+  ): Promise<Record<string, ProviderHealthStatus>> {
     const providers = await this.listProvidersForShop(shopId);
     const health: Record<string, ProviderHealthStatus> = {};
 

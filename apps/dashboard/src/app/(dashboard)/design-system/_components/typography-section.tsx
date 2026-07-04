@@ -1,12 +1,10 @@
-'use client';
+"use client";
 
 export function TypographySection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Typography
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Typography</h2>
         <p className="text-wl-neutral-300 mb-8">
           Font family: DM Sans (sans), JetBrains Mono (mono). Text sizes from xs
           (11px) to 3xl (30px).

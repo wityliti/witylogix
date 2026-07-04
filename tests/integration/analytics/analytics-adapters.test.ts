@@ -75,7 +75,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.token).toBe("token_123abc");
@@ -86,7 +86,7 @@ describe("Tableau Adapter Integration", () => {
     it("should refresh expired PAT token", async () => {
       const newToken = "token_refreshed_456def";
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ token: newToken }), { status: 200 })
+        new Response(JSON.stringify({ token: newToken }), { status: 200 }),
       );
 
       expect(newToken).toBe("token_refreshed_456def");
@@ -95,7 +95,7 @@ describe("Tableau Adapter Integration", () => {
     it("should reject invalid PAT credentials", async () => {
       const errorResponse = { error: "Invalid credentials" };
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(errorResponse), { status: 401 })
+        new Response(JSON.stringify(errorResponse), { status: 401 }),
       );
 
       const response = await mockFetch();
@@ -106,8 +106,8 @@ describe("Tableau Adapter Integration", () => {
       mockFetch.mockImplementationOnce(
         () =>
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout")), 100)
-          )
+            setTimeout(() => reject(new Error("Timeout")), 100),
+          ),
       );
 
       await expect(mockFetch()).rejects.toThrow("Timeout");
@@ -136,7 +136,7 @@ describe("Tableau Adapter Integration", () => {
 
     it("should create workbook with metadata", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockWorkbook), { status: 201 })
+        new Response(JSON.stringify(mockWorkbook), { status: 201 }),
       );
 
       expect(mockWorkbook.name).toBe("Sales Dashboard");
@@ -145,7 +145,7 @@ describe("Tableau Adapter Integration", () => {
 
     it("should retrieve workbook by ID", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockWorkbook), { status: 200 })
+        new Response(JSON.stringify(mockWorkbook), { status: 200 }),
       );
 
       expect(mockWorkbook.id).toBe("wb_123");
@@ -158,7 +158,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(workbooksResponse), { status: 200 })
+        new Response(JSON.stringify(workbooksResponse), { status: 200 }),
       );
 
       expect(workbooksResponse.workbooks).toHaveLength(1);
@@ -172,7 +172,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedWorkbook), { status: 200 })
+        new Response(JSON.stringify(updatedWorkbook), { status: 200 }),
       );
 
       expect(updatedWorkbook.description).toContain("Updated");
@@ -186,7 +186,7 @@ describe("Tableau Adapter Integration", () => {
 
     it("should handle workbook not found", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: "Not found" }), { status: 404 })
+        new Response(JSON.stringify({ error: "Not found" }), { status: 404 }),
       );
 
       const response = await mockFetch();
@@ -206,7 +206,7 @@ describe("Tableau Adapter Integration", () => {
 
     it("should query view data with filters", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockViewData), { status: 200 })
+        new Response(JSON.stringify(mockViewData), { status: 200 }),
       );
 
       expect(mockViewData.data).toHaveLength(2);
@@ -220,7 +220,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(filteredData), { status: 200 })
+        new Response(JSON.stringify(filteredData), { status: 200 }),
       );
 
       expect(filteredData.filters.startDate).toBe("2024-01-01");
@@ -228,7 +228,7 @@ describe("Tableau Adapter Integration", () => {
 
     it("should export view as CSV", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response("region,revenue\nNorth America,1000000", { status: 200 })
+        new Response("region,revenue\nNorth America,1000000", { status: 200 }),
       );
 
       const response = await mockFetch();
@@ -245,7 +245,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(largeDataset), { status: 200 })
+        new Response(JSON.stringify(largeDataset), { status: 200 }),
       );
 
       expect(largeDataset.data).toHaveLength(10000);
@@ -255,8 +255,8 @@ describe("Tableau Adapter Integration", () => {
       mockFetch.mockImplementationOnce(
         () =>
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Query timeout")), 100)
-          )
+            setTimeout(() => reject(new Error("Query timeout")), 100),
+          ),
       );
 
       await expect(mockFetch()).rejects.toThrow("Query timeout");
@@ -271,7 +271,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(embedToken), { status: 200 })
+        new Response(JSON.stringify(embedToken), { status: 200 }),
       );
 
       expect(embedToken.token).toMatch(/^embed_token_/);
@@ -285,7 +285,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(scopedEmbed), { status: 200 })
+        new Response(JSON.stringify(scopedEmbed), { status: 200 }),
       );
 
       expect(scopedEmbed.permissions).toContain("view");
@@ -298,7 +298,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(customExpireToken), { status: 200 })
+        new Response(JSON.stringify(customExpireToken), { status: 200 }),
       );
 
       expect(customExpireToken.expiresAt).toBeGreaterThan(Date.now());
@@ -321,7 +321,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshJob), { status: 202 })
+        new Response(JSON.stringify(refreshJob), { status: 202 }),
       );
 
       expect(refreshJob.status).toBe("running");
@@ -338,12 +338,12 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(progressUpdate), { status: 200 })
+        new Response(JSON.stringify(progressUpdate), { status: 200 }),
       );
 
       expect(progressUpdate.progress).toBe(75);
       expect(progressUpdate.recordsProcessed).toBeLessThanOrEqual(
-        progressUpdate.totalRecords
+        progressUpdate.totalRecords,
       );
     });
 
@@ -356,7 +356,7 @@ describe("Tableau Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completedRefresh), { status: 200 })
+        new Response(JSON.stringify(completedRefresh), { status: 200 }),
       );
 
       expect(completedRefresh.status).toBe("completed");
@@ -364,11 +364,11 @@ describe("Tableau Adapter Integration", () => {
 
     it("should handle extract refresh failure with retry", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ status: "failed" }), { status: 200 })
+        new Response(JSON.stringify({ status: "failed" }), { status: 200 }),
       );
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ status: "running" }), { status: 202 })
+        new Response(JSON.stringify({ status: "running" }), { status: 202 }),
       );
 
       expect(mockFetch).toBeDefined();
@@ -384,7 +384,7 @@ describe("Tableau Adapter Integration", () => {
             "x-ratelimit-remaining": "99",
             "x-ratelimit-reset": String(Date.now() + 60000),
           },
-        })
+        }),
       );
 
       const response = await mockFetch();
@@ -396,7 +396,7 @@ describe("Tableau Adapter Integration", () => {
         new Response(null, {
           status: 200,
           headers: { "x-ratelimit-remaining": "5" },
-        })
+        }),
       );
 
       expect(mockFetch).toBeDefined();
@@ -407,7 +407,7 @@ describe("Tableau Adapter Integration", () => {
         new Response(JSON.stringify({ error: "Rate limited" }), {
           status: 429,
           headers: { "retry-after": "60" },
-        })
+        }),
       );
 
       const response = await mockFetch();
@@ -438,7 +438,7 @@ describe("Power BI Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tokenResponse), { status: 200 })
+        new Response(JSON.stringify(tokenResponse), { status: 200 }),
       );
 
       expect(tokenResponse.access_token).toMatch(/^aad_token_/);
@@ -451,7 +451,7 @@ describe("Power BI Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toMatch(/^aad_token_/);
@@ -459,10 +459,9 @@ describe("Power BI Adapter Integration", () => {
 
     it("should handle Azure AD auth errors gracefully", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ error: "invalid_grant" }),
-          { status: 400 }
-        )
+        new Response(JSON.stringify({ error: "invalid_grant" }), {
+          status: 400,
+        }),
       );
 
       const response = await mockFetch();
@@ -479,7 +478,7 @@ describe("Power BI Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshJob), { status: 202 })
+        new Response(JSON.stringify(refreshJob), { status: 202 }),
       );
 
       expect(refreshJob.requestId).toBe("req_123");
@@ -493,7 +492,7 @@ describe("Power BI Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusCheck), { status: 200 })
+        new Response(JSON.stringify(statusCheck), { status: 200 }),
       );
 
       expect(statusCheck.status).toBe("Completed");
@@ -503,8 +502,8 @@ describe("Power BI Adapter Integration", () => {
       mockFetch.mockImplementationOnce(
         () =>
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Refresh timeout")), 100)
-          )
+            setTimeout(() => reject(new Error("Refresh timeout")), 100),
+          ),
       );
 
       await expect(mockFetch()).rejects.toThrow("Refresh timeout");
@@ -523,7 +522,7 @@ describe("Power BI Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(daxResults), { status: 200 })
+        new Response(JSON.stringify(daxResults), { status: 200 }),
       );
 
       expect(daxResults.tables).toHaveLength(1);
@@ -533,8 +532,8 @@ describe("Power BI Adapter Integration", () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
           JSON.stringify({ error: "Syntax error in DAX expression" }),
-          { status: 400 }
-        )
+          { status: 400 },
+        ),
       );
 
       const response = await mockFetch();
@@ -550,7 +549,7 @@ describe("Power BI Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rlsToken), { status: 200 })
+        new Response(JSON.stringify(rlsToken), { status: 200 }),
       );
 
       expect(rlsToken.token).toMatch(/^embed_rls_/);
@@ -565,7 +564,7 @@ describe("Power BI Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rlsEmbed), { status: 200 })
+        new Response(JSON.stringify(rlsEmbed), { status: 200 }),
       );
 
       expect(rlsEmbed.rlsRules).toHaveLength(1);
@@ -595,7 +594,7 @@ describe("Looker Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^looker_oauth_/);
@@ -608,7 +607,7 @@ describe("Looker Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true }), { status: 200 })
+        new Response(JSON.stringify({ success: true }), { status: 200 }),
       );
 
       expect(callbackData.code).toBeDefined();
@@ -626,7 +625,7 @@ describe("Looker Adapter Integration", () => {
 
     it("should create new look", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLook), { status: 201 })
+        new Response(JSON.stringify(mockLook), { status: 201 }),
       );
 
       expect(mockLook.title).toBe("Sales Performance");
@@ -634,7 +633,7 @@ describe("Looker Adapter Integration", () => {
 
     it("should retrieve look by ID", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLook), { status: 200 })
+        new Response(JSON.stringify(mockLook), { status: 200 }),
       );
 
       expect(mockLook.id).toBe("look_789");
@@ -647,7 +646,7 @@ describe("Looker Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedLook), { status: 200 })
+        new Response(JSON.stringify(updatedLook), { status: 200 }),
       );
 
       expect(updatedLook.title).toContain("Updated");
@@ -669,7 +668,7 @@ describe("Looker Adapter Integration", () => {
 
     it("should create dashboard", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDashboard), { status: 201 })
+        new Response(JSON.stringify(mockDashboard), { status: 201 }),
       );
 
       expect(mockDashboard.title).toBe("Executive Dashboard");
@@ -678,13 +677,11 @@ describe("Looker Adapter Integration", () => {
     it("should update dashboard layout", async () => {
       const updatedDashboard = {
         ...mockDashboard,
-        elements: [
-          { id: "tile_1", x: 0, y: 0, width: 12, height: 8 },
-        ],
+        elements: [{ id: "tile_1", x: 0, y: 0, width: 12, height: 8 }],
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedDashboard), { status: 200 })
+        new Response(JSON.stringify(updatedDashboard), { status: 200 }),
       );
 
       expect(updatedDashboard.elements).toHaveLength(1);
@@ -702,7 +699,7 @@ describe("Looker Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(schedule), { status: 201 })
+        new Response(JSON.stringify(schedule), { status: 201 }),
       );
 
       expect(schedule.cron).toBe("0 9 * * 1");
@@ -717,7 +714,7 @@ describe("Looker Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedSchedule), { status: 200 })
+        new Response(JSON.stringify(updatedSchedule), { status: 200 }),
       );
 
       expect(updatedSchedule.recipients).toHaveLength(2);
@@ -725,7 +722,7 @@ describe("Looker Adapter Integration", () => {
 
     it("should pause scheduled plan", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ status: "paused" }), { status: 200 })
+        new Response(JSON.stringify({ status: "paused" }), { status: 200 }),
       );
 
       const response = await mockFetch();
@@ -743,7 +740,7 @@ describe("Looker Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(queryResult), { status: 200 })
+        new Response(JSON.stringify(queryResult), { status: 200 }),
       );
 
       expect(queryResult.rowCount).toBe(1);
@@ -754,7 +751,7 @@ describe("Looker Adapter Integration", () => {
         new Response(null, {
           status: 200,
           headers: { "x-looker-cache": "hit" },
-        })
+        }),
       );
 
       const response = await mockFetch();
@@ -784,7 +781,7 @@ describe("Qlik Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionId).toBeDefined();
@@ -806,7 +803,7 @@ describe("Qlik Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reloadJob), { status: 202 })
+        new Response(JSON.stringify(reloadJob), { status: 202 }),
       );
 
       expect(reloadJob.status).toBe("started");
@@ -820,7 +817,7 @@ describe("Qlik Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(progressUpdate), { status: 200 })
+        new Response(JSON.stringify(progressUpdate), { status: 200 }),
       );
 
       expect(progressUpdate.progress).toBe(50);
@@ -834,7 +831,7 @@ describe("Qlik Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completedReload), { status: 200 })
+        new Response(JSON.stringify(completedReload), { status: 200 }),
       );
 
       expect(completedReload.status).toBe("completed");
@@ -853,7 +850,7 @@ describe("Qlik Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(bookmark), { status: 201 })
+        new Response(JSON.stringify(bookmark), { status: 201 }),
       );
 
       expect(bookmark.selections.Region).toContain("North America");
@@ -861,7 +858,7 @@ describe("Qlik Adapter Integration", () => {
 
     it("should apply selection to session", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true }), { status: 200 })
+        new Response(JSON.stringify({ success: true }), { status: 200 }),
       );
 
       expect(mockFetch).toBeDefined();
@@ -869,7 +866,7 @@ describe("Qlik Adapter Integration", () => {
 
     it("should clear selections", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ selections: {} }), { status: 200 })
+        new Response(JSON.stringify({ selections: {} }), { status: 200 }),
       );
 
       const response = await mockFetch();
@@ -887,7 +884,7 @@ describe("Qlik Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(embedToken), { status: 200 })
+        new Response(JSON.stringify(embedToken), { status: 200 }),
       );
 
       expect(embedToken.token).toMatch(/^embed_qlik_/);
@@ -903,7 +900,7 @@ describe("Qlik Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(contextEmbed), { status: 200 })
+        new Response(JSON.stringify(contextEmbed), { status: 200 }),
       );
 
       expect(contextEmbed.userAttributes.department).toBe("Sales");
@@ -933,7 +930,7 @@ describe("Google Analytics Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tokenResponse), { status: 200 })
+        new Response(JSON.stringify(tokenResponse), { status: 200 }),
       );
 
       expect(tokenResponse.access_token).toMatch(/^ga_service_token_/);
@@ -958,15 +955,13 @@ describe("Google Analytics Adapter Integration", () => {
       const reportResponse: GoogleAnalyticsReport = {
         propertyId: "properties/123456789",
         data: {
-          rows: [
-            { dimensionValues: ["value1"], metricValues: ["100"] },
-          ],
+          rows: [{ dimensionValues: ["value1"], metricValues: ["100"] }],
         },
         rowCount: 1,
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reportResponse), { status: 200 })
+        new Response(JSON.stringify(reportResponse), { status: 200 }),
       );
 
       expect(reportResponse.rowCount).toBe(1);
@@ -980,7 +975,7 @@ describe("Google Analytics Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true }), { status: 200 })
+        new Response(JSON.stringify({ success: true }), { status: 200 }),
       );
 
       expect(filteredQuery.dimensions).toContain("country");
@@ -995,7 +990,7 @@ describe("Google Analytics Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(paginatedReport), { status: 200 })
+        new Response(JSON.stringify(paginatedReport), { status: 200 }),
       );
 
       expect(paginatedReport.rowCount).toBeGreaterThan(paginatedReport.limit);
@@ -1011,7 +1006,7 @@ describe("Google Analytics Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(realtimeData), { status: 200 })
+        new Response(JSON.stringify(realtimeData), { status: 200 }),
       );
 
       expect(parseInt(realtimeData.totals[0].value)).toBeGreaterThan(0);
@@ -1026,7 +1021,7 @@ describe("Google Analytics Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(minuteData), { status: 200 })
+        new Response(JSON.stringify(minuteData), { status: 200 }),
       );
 
       expect(minuteData.data).toHaveLength(60);
@@ -1046,7 +1041,7 @@ describe("Google Analytics Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(audiences), { status: 200 })
+        new Response(JSON.stringify(audiences), { status: 200 }),
       );
 
       expect(audiences.audiences).toHaveLength(1);
@@ -1060,7 +1055,7 @@ describe("Google Analytics Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(audienceSize), { status: 200 })
+        new Response(JSON.stringify(audienceSize), { status: 200 }),
       );
 
       expect(audienceSize.membershipCount).toBeGreaterThan(0);
@@ -1096,7 +1091,7 @@ describe("Analytics Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(unifiedResults), { status: 200 })
+        new Response(JSON.stringify(unifiedResults), { status: 200 }),
       );
 
       expect(unifiedResults.tableau).toBeDefined();
@@ -1112,7 +1107,7 @@ describe("Analytics Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(normalizedMetrics), { status: 200 })
+        new Response(JSON.stringify(normalizedMetrics), { status: 200 }),
       );
 
       expect(normalizedMetrics.activeUsers).toBeGreaterThan(0);
@@ -1143,7 +1138,7 @@ describe("Analytics Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(federatedDashboards), { status: 200 })
+        new Response(JSON.stringify(federatedDashboards), { status: 200 }),
       );
 
       expect(federatedDashboards.dashboards).toHaveLength(3);
@@ -1157,7 +1152,7 @@ describe("Analytics Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(dashboardConfig), { status: 200 })
+        new Response(JSON.stringify(dashboardConfig), { status: 200 }),
       );
 
       expect(dashboardConfig.refreshInterval).toBe(300);
@@ -1173,7 +1168,7 @@ describe("Analytics Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(normalizedData), { status: 200 })
+        new Response(JSON.stringify(normalizedData), { status: 200 }),
       );
 
       expect(normalizedData.revenue.currency).toBe("USD");
@@ -1191,12 +1186,12 @@ describe("Analytics Aggregator Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(aggregatedMetrics), { status: 200 })
+        new Response(JSON.stringify(aggregatedMetrics), { status: 200 }),
       );
 
       const sum = Object.values(aggregatedMetrics.sourceBreakdown).reduce(
         (a: number, b: number) => a + b,
-        0
+        0,
       );
       expect(sum).toBe(aggregatedMetrics.totalRevenue);
     });
@@ -1205,13 +1200,13 @@ describe("Analytics Aggregator Integration", () => {
   describe("Error Handling & Failover", () => {
     it("should fallback when primary provider fails", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: "Failed" }), { status: 500 })
+        new Response(JSON.stringify({ error: "Failed" }), { status: 500 }),
       );
 
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ data: [{ value: 100 }] }), {
           status: 200,
-        })
+        }),
       );
 
       expect(mockFetch).toBeDefined();
@@ -1221,8 +1216,8 @@ describe("Analytics Aggregator Integration", () => {
       mockFetch.mockImplementationOnce(
         () =>
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout")), 100)
-          )
+            setTimeout(() => reject(new Error("Timeout")), 100),
+          ),
       );
 
       await expect(mockFetch()).rejects.toThrow("Timeout");
@@ -1232,13 +1227,13 @@ describe("Analytics Aggregator Integration", () => {
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ error: "Temporary error" }), {
           status: 503,
-        })
+        }),
       );
 
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ data: [{ value: 100 }] }), {
           status: 200,
-        })
+        }),
       );
 
       expect(mockFetch).toBeDefined();

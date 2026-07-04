@@ -25,31 +25,35 @@ A lightweight, zero-dependency internationalization utility for the Witylogix da
 ### Initialization
 
 ```typescript
-import { initializeI18n, loadLocaleData, setLocale } from '@witylogix/core/i18n';
-import enTranslations from './i18n/locales/en.json';
-import esTranslations from './i18n/locales/es.json';
+import {
+  initializeI18n,
+  loadLocaleData,
+  setLocale,
+} from "@witylogix/core/i18n";
+import enTranslations from "./i18n/locales/en.json";
+import esTranslations from "./i18n/locales/es.json";
 
 // Initialize i18n with configuration
 initializeI18n({
-  defaultLocale: 'en',
-  fallbackLocale: 'en',
-  supportedLocales: ['en', 'es', 'fr', 'ar'],
+  defaultLocale: "en",
+  fallbackLocale: "en",
+  supportedLocales: ["en", "es", "fr", "ar"],
 });
 
 // Load translations
-loadLocaleData('en', enTranslations);
-loadLocaleData('es', esTranslations);
+loadLocaleData("en", enTranslations);
+loadLocaleData("es", esTranslations);
 // ... load other locales
 ```
 
 ### Simple Translations
 
 ```typescript
-import { t } from '@witylogix/core/i18n';
+import { t } from "@witylogix/core/i18n";
 
 // Get a simple translation
-const saveButtonText = t('common.save'); // "Save"
-const cancelButtonText = t('common.cancel'); // "Cancel"
+const saveButtonText = t("common.save"); // "Save"
+const cancelButtonText = t("common.cancel"); // "Cancel"
 ```
 
 ### Nested Keys
@@ -58,8 +62,8 @@ The system supports nested translation objects using dot notation:
 
 ```typescript
 // Translates to "Pending", "Confirmed", "Assigned", etc.
-const orderStatus = t('orders.status.pending');
-const driverStatus = t('drivers.status.online');
+const orderStatus = t("orders.status.pending");
+const driverStatus = t("drivers.status.online");
 ```
 
 ### Parameter Interpolation
@@ -69,24 +73,29 @@ Translations can include parameters using `{{paramName}}` syntax:
 ```typescript
 // English: "Order assigned to {{driver}}"
 // Spanish: "Pedido asignado a {{driver}}"
-const message = t('orders.assigned', { driver: 'John' }); // "Order assigned to John"
+const message = t("orders.assigned", { driver: "John" }); // "Order assigned to John"
 
 // Multiple parameters
-const notification = t('notifications.order_created', { order_id: '12345' });
+const notification = t("notifications.order_created", { order_id: "12345" });
 // "Order 12345 has been created"
 
 // Numeric parameters are converted to strings
-const msg = t('notifications.order_created', { order_id: 12345 });
+const msg = t("notifications.order_created", { order_id: 12345 });
 // "Order 12345 has been created"
 ```
 
 ### Locale Management
 
 ```typescript
-import { setLocale, getLocale, isRTL, getDirection } from '@witylogix/core/i18n';
+import {
+  setLocale,
+  getLocale,
+  isRTL,
+  getDirection,
+} from "@witylogix/core/i18n";
 
 // Change the active locale
-setLocale('es'); // Spanish
+setLocale("es"); // Spanish
 
 // Get current locale
 const current = getLocale(); // 'es'
@@ -106,9 +115,9 @@ document.documentElement.dir = dir;
 ### Check if Key Exists
 
 ```typescript
-import { hasKey } from '@witylogix/core/i18n';
+import { hasKey } from "@witylogix/core/i18n";
 
-if (hasKey('orders.status.pending')) {
+if (hasKey("orders.status.pending")) {
   // Key exists
 }
 ```
@@ -116,7 +125,7 @@ if (hasKey('orders.status.pending')) {
 ### Get All Translations
 
 ```typescript
-import { getAllTranslations } from '@witylogix/core/i18n';
+import { getAllTranslations } from "@witylogix/core/i18n";
 
 const currentTranslations = getAllTranslations();
 ```
@@ -126,14 +135,14 @@ const currentTranslations = getAllTranslations();
 For code splitting, you can load locales dynamically:
 
 ```typescript
-import { dynamicLoadLocale } from '@witylogix/core/i18n';
+import { dynamicLoadLocale } from "@witylogix/core/i18n";
 
 // Load locale on demand
-await dynamicLoadLocale('es', () => import('./locales/es.json'));
+await dynamicLoadLocale("es", () => import("./locales/es.json"));
 
 // Now use the loaded locale
-setLocale('es');
-const text = t('common.save'); // Spanish translation
+setLocale("es");
+const text = t("common.save"); // Spanish translation
 ```
 
 ## React Integration Example
@@ -141,8 +150,8 @@ const text = t('common.save'); // Spanish translation
 ### Hook for Translations
 
 ```typescript
-import { useState, useCallback } from 'react';
-import { t, setLocale, getLocale, isRTL } from '@witylogix/core/i18n';
+import { useState, useCallback } from "react";
+import { t, setLocale, getLocale, isRTL } from "@witylogix/core/i18n";
 
 export function useTranslation() {
   const [locale, setCurrentLocale] = useState(getLocale());
@@ -150,7 +159,7 @@ export function useTranslation() {
   const changeLocale = useCallback((newLocale: Locale) => {
     setLocale(newLocale);
     setCurrentLocale(newLocale);
-    document.documentElement.dir = isRTL() ? 'rtl' : 'ltr';
+    document.documentElement.dir = isRTL() ? "rtl" : "ltr";
   }, []);
 
   return {
@@ -240,13 +249,13 @@ Translations are organized hierarchically by feature:
 3. Load the locale in your app initialization:
 
 ```typescript
-import arTranslations from './i18n/locales/ar.json';
+import arTranslations from "./i18n/locales/ar.json";
 
-loadLocaleData('ar', arTranslations);
+loadLocaleData("ar", arTranslations);
 
 // If locale is RTL, add metadata
 if (arTranslations._meta?.rtl) {
-  document.documentElement.dir = 'rtl';
+  document.documentElement.dir = "rtl";
 }
 ```
 
@@ -279,6 +288,7 @@ npm test packages/core/src/i18n/__tests__/i18n.test.ts
 ```
 
 The test suite covers:
+
 - Basic translation lookup
 - Nested key resolution
 - Parameter interpolation
@@ -292,7 +302,7 @@ The test suite covers:
 
 ```typescript
 // Available exported types
-export type Locale = 'en' | 'es' | 'fr' | 'ar';
+export type Locale = "en" | "es" | "fr" | "ar";
 
 export interface I18nConfig {
   defaultLocale: Locale;

@@ -74,7 +74,7 @@ export class Span {
     spanId: string,
     name: string,
     parentSpanId?: string,
-    operation?: string
+    operation?: string,
   ) {
     this.data = {
       traceId,
@@ -193,11 +193,7 @@ export class RequestTracer {
   /**
    * Start a child span within an existing trace.
    */
-  startSpan(
-    name: string,
-    parentSpan: Span,
-    operation?: string
-  ): Span {
+  startSpan(name: string, parentSpan: Span, operation?: string): Span {
     const parentData = parentSpan.getData();
     const spanId = this.generateSpanId();
 
@@ -206,7 +202,7 @@ export class RequestTracer {
       spanId,
       name,
       parentData.spanId,
-      operation
+      operation,
     );
 
     // Check depth
@@ -241,8 +237,7 @@ export class RequestTracer {
 
     // Parse tracestate if present
     const tracestate: Record<string, string> = {};
-    const tracestateHeader =
-      headers["tracestate"] || headers["Tracestate"];
+    const tracestateHeader = headers["tracestate"] || headers["Tracestate"];
     if (tracestateHeader) {
       const pairs = tracestateHeader.split(",");
       for (const pair of pairs) {
@@ -265,17 +260,13 @@ export class RequestTracer {
   /**
    * Continue a trace from extracted context.
    */
-  continueTrace(
-    context: TraceContext,
-    name: string,
-    operation?: string
-  ): Span {
+  continueTrace(context: TraceContext, name: string, operation?: string): Span {
     const span = new Span(
       context.traceId,
       context.spanId,
       name,
       context.parentSpanId,
-      operation
+      operation,
     );
 
     this.activeSpans.push(span);
@@ -287,14 +278,14 @@ export class RequestTracer {
    */
   finishSpan(
     span: Span,
-    options?: { status?: "ok" | "error"; message?: string }
+    options?: { status?: "ok" | "error"; message?: string },
   ): SpanData {
     const data = span.finish(options);
     this.spans.set(span.getData().spanId, data);
 
     // Remove from active spans
     this.activeSpans = this.activeSpans.filter(
-      (s) => s.getData().spanId !== span.getData().spanId
+      (s) => s.getData().spanId !== span.getData().spanId,
     );
 
     return data;
@@ -354,7 +345,7 @@ export class RequestTracer {
  * Express/Fastify middleware for request tracing.
  */
 export function tracingMiddleware(
-  tracer: RequestTracer
+  tracer: RequestTracer,
 ): (req: any, res: any, next: any) => void {
   return (req: any, res: any, next: any) => {
     let span: Span | null = null;
@@ -367,7 +358,7 @@ export function tracingMiddleware(
         span = tracer.continueTrace(
           context,
           `${req.method} ${req.path}`,
-          "http"
+          "http",
         );
       } else if (tracer.shouldSample()) {
         span = tracer.startTrace(`${req.method} ${req.path}`, "http");

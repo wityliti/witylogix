@@ -3,37 +3,47 @@
  * Test multi-criteria scoring algorithm, carrier matching, bundling, and deadhead optimization
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { FreightMatcher, type MatchCriteria, type CarrierMatch } from '../../../packages/core/src/ai/freight-matcher.js';
-import type { FreightLoad, Lane, EquipmentType } from '../../../packages/core/src/freight/freight-types.js';
-import type { Carrier } from '../../../packages/core/src/ai/freight-matcher.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import {
+  FreightMatcher,
+  type MatchCriteria,
+  type CarrierMatch,
+} from "../../../packages/core/src/ai/freight-matcher.js";
+import type {
+  FreightLoad,
+  Lane,
+  EquipmentType,
+} from "../../../packages/core/src/freight/freight-types.js";
+import type { Carrier } from "../../../packages/core/src/ai/freight-matcher.js";
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────
 
-const createMockFreightLoad = (overrides?: Partial<FreightLoad>): FreightLoad => ({
-  id: 'load-001',
-  tenantId: 'tenant-1',
-  laneId: 'lane-1',
-  loadNumber: 'LF-2024-001',
+const createMockFreightLoad = (
+  overrides?: Partial<FreightLoad>,
+): FreightLoad => ({
+  id: "load-001",
+  tenantId: "tenant-1",
+  laneId: "lane-1",
+  loadNumber: "LF-2024-001",
   origin: {
-    address: '123 Main St',
-    city: 'Los Angeles',
-    state: 'CA',
-    zip: '90001',
-    country: 'USA',
+    address: "123 Main St",
+    city: "Los Angeles",
+    state: "CA",
+    zip: "90001",
+    country: "USA",
   },
   destination: {
-    address: '456 Oak Ave',
-    city: 'Chicago',
-    state: 'IL',
-    zip: '60601',
-    country: 'USA',
+    address: "456 Oak Ave",
+    city: "Chicago",
+    state: "IL",
+    zip: "60601",
+    country: "USA",
   },
   weight: 45000,
-  weightUnit: 'lbs',
-  commodity: 'General merchandise',
+  weightUnit: "lbs",
+  commodity: "General merchandise",
   hazmat: false,
-  equipment: 'DRY_VAN' as EquipmentType,
+  equipment: "DRY_VAN" as EquipmentType,
   pickupDate: new Date(Date.now() + 86400000),
   deliveryDate: new Date(Date.now() + 3 * 86400000),
   createdAt: new Date(),
@@ -42,25 +52,25 @@ const createMockFreightLoad = (overrides?: Partial<FreightLoad>): FreightLoad =>
 });
 
 const createMockLane = (overrides?: Partial<Lane>): Lane => ({
-  id: 'lane-1',
-  tenantId: 'tenant-1',
-  name: 'LA to Chicago',
+  id: "lane-1",
+  tenantId: "tenant-1",
+  name: "LA to Chicago",
   origin: {
-    address: '123 Main St',
-    city: 'Los Angeles',
-    state: 'CA',
-    zip: '90001',
-    country: 'USA',
+    address: "123 Main St",
+    city: "Los Angeles",
+    state: "CA",
+    zip: "90001",
+    country: "USA",
   },
   destination: {
-    address: '456 Oak Ave',
-    city: 'Chicago',
-    state: 'IL',
-    zip: '60601',
-    country: 'USA',
+    address: "456 Oak Ave",
+    city: "Chicago",
+    state: "IL",
+    zip: "60601",
+    country: "USA",
   },
   miles: 2000,
-  equipment: 'DRY_VAN' as EquipmentType,
+  equipment: "DRY_VAN" as EquipmentType,
   avgWeeklyVolume: 50,
   avgWeight: 45000,
   hazmatCapable: false,
@@ -73,25 +83,25 @@ const createMockLane = (overrides?: Partial<Lane>): Lane => ({
     noticeperiodDays: 30,
     paymentTermsDays: 30,
   },
-  status: 'active',
+  status: "active",
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
 });
 
 const createMockCarrier = (overrides?: Partial<Carrier>): Carrier => ({
-  id: 'carrier-001',
-  name: 'TruckCo Express',
-  dotNumber: '1234567',
-  safetyRating: 'satisfactory',
-  insuranceStatus: 'active',
-  operatingAuthority: 'active',
+  id: "carrier-001",
+  name: "TruckCo Express",
+  dotNumber: "1234567",
+  safetyRating: "satisfactory",
+  insuranceStatus: "active",
+  operatingAuthority: "active",
   metrics: {
     onTimePercentage: 92,
     claimsRatio: 0.05,
     tenderAcceptanceRate: 88,
     costPerMile: 1.85,
-    safetyRating: 'satisfactory',
+    safetyRating: "satisfactory",
     inspectionDeficitPercentage: 15,
     outOfServiceRate: 2,
     cargoClaimsCount: 1,
@@ -100,7 +110,7 @@ const createMockCarrier = (overrides?: Partial<Carrier>): Carrier => ({
   },
   availableTrucks: 45,
   totalFleetSize: 100,
-  specializations: ['DRY_VAN', 'GENERAL_CARGO'],
+  specializations: ["DRY_VAN", "GENERAL_CARGO"],
   averageRatePerMile: 2.15,
   preferredCarrier: false,
   lastUsedDate: new Date(),
@@ -109,21 +119,33 @@ const createMockCarrier = (overrides?: Partial<Carrier>): Carrier => ({
 
 // ─── TEST SUITE ──────────────────────────────────────────────────────────
 
-describe('FreightMatcher', () => {
+describe("FreightMatcher", () => {
   let matcher: FreightMatcher;
 
   beforeEach(() => {
     matcher = new FreightMatcher();
   });
 
-  describe('matchLoad', () => {
-    it('should match load to carriers and return ranked results', async () => {
+  describe("matchLoad", () => {
+    it("should match load to carriers and return ranked results", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const carriers = [
-        createMockCarrier({ id: 'c1', name: 'Carrier 1', averageRatePerMile: 2.15 }),
-        createMockCarrier({ id: 'c2', name: 'Carrier 2', averageRatePerMile: 2.35 }),
-        createMockCarrier({ id: 'c3', name: 'Carrier 3', averageRatePerMile: 1.95 }),
+        createMockCarrier({
+          id: "c1",
+          name: "Carrier 1",
+          averageRatePerMile: 2.15,
+        }),
+        createMockCarrier({
+          id: "c2",
+          name: "Carrier 2",
+          averageRatePerMile: 2.35,
+        }),
+        createMockCarrier({
+          id: "c3",
+          name: "Carrier 3",
+          averageRatePerMile: 1.95,
+        }),
       ];
 
       const criteria: MatchCriteria = {
@@ -147,19 +169,19 @@ describe('FreightMatcher', () => {
       expect(result.matchQuality).toBeDefined();
     });
 
-    it('should exclude non-compliant carriers', async () => {
+    it("should exclude non-compliant carriers", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const carriers = [
         createMockCarrier({
-          id: 'good-carrier',
-          safetyRating: 'satisfactory',
-          insuranceStatus: 'active',
+          id: "good-carrier",
+          safetyRating: "satisfactory",
+          insuranceStatus: "active",
         }),
         createMockCarrier({
-          id: 'bad-carrier',
-          safetyRating: 'unsatisfactory',
-          insuranceStatus: 'expired',
+          id: "bad-carrier",
+          safetyRating: "unsatisfactory",
+          insuranceStatus: "expired",
         }),
       ];
 
@@ -174,23 +196,25 @@ describe('FreightMatcher', () => {
 
       const result = await matcher.matchLoad(criteria);
 
-      const badCarrier = result.recommendations.find((r) => r.carrierId === 'bad-carrier');
+      const badCarrier = result.recommendations.find(
+        (r) => r.carrierId === "bad-carrier",
+      );
       expect(badCarrier).toBeUndefined();
     });
 
-    it('should rank carriers by weighted score', async () => {
+    it("should rank carriers by weighted score", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const carriers = [
         createMockCarrier({
-          id: 'c1',
-          name: 'Excellent Carrier',
+          id: "c1",
+          name: "Excellent Carrier",
           metrics: {
             onTimePercentage: 95,
             claimsRatio: 0.02,
             tenderAcceptanceRate: 92,
             costPerMile: 1.85,
-            safetyRating: 'satisfactory',
+            safetyRating: "satisfactory",
             inspectionDeficitPercentage: 10,
             outOfServiceRate: 1,
             cargoClaimsCount: 0,
@@ -200,14 +224,14 @@ describe('FreightMatcher', () => {
           averageRatePerMile: 2.25,
         }),
         createMockCarrier({
-          id: 'c2',
-          name: 'Fair Carrier',
+          id: "c2",
+          name: "Fair Carrier",
           metrics: {
             onTimePercentage: 75,
             claimsRatio: 0.1,
             tenderAcceptanceRate: 70,
             costPerMile: 1.75,
-            safetyRating: 'conditional',
+            safetyRating: "conditional",
             inspectionDeficitPercentage: 35,
             outOfServiceRate: 5,
             cargoClaimsCount: 5,
@@ -230,13 +254,13 @@ describe('FreightMatcher', () => {
       const result = await matcher.matchLoad(criteria);
 
       // Better carrier should rank first
-      expect(result.recommendations[0]?.carrierId).toBe('c1');
+      expect(result.recommendations[0]?.carrierId).toBe("c1");
       expect(result.recommendations[0]?.totalScore).toBeGreaterThan(
-        result.recommendations[1]?.totalScore ?? 0
+        result.recommendations[1]?.totalScore ?? 0,
       );
     });
 
-    it('should identify risk flags for low-scoring carriers', async () => {
+    it("should identify risk flags for low-scoring carriers", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const riskyCarrier = createMockCarrier({
@@ -247,7 +271,7 @@ describe('FreightMatcher', () => {
           claimsRatio: 0.2,
           tenderAcceptanceRate: 50,
           costPerMile: 1.5,
-          safetyRating: 'conditional',
+          safetyRating: "conditional",
           inspectionDeficitPercentage: 50,
           outOfServiceRate: 10,
           cargoClaimsCount: 10,
@@ -271,17 +295,17 @@ describe('FreightMatcher', () => {
       expect(result.recommendations[0]?.riskFlags.length).toBeGreaterThan(0);
     });
 
-    it('should respect preferred carrier rules', async () => {
+    it("should respect preferred carrier rules", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const preferredCarrier = createMockCarrier({
-        id: 'preferred',
-        name: 'Preferred Partner',
+        id: "preferred",
+        name: "Preferred Partner",
         averageRatePerMile: 2.5, // Higher rate
       });
       const betterCarrier = createMockCarrier({
-        id: 'better',
-        name: 'Better Rate Carrier',
+        id: "better",
+        name: "Better Rate Carrier",
         averageRatePerMile: 1.95,
       });
 
@@ -292,17 +316,19 @@ describe('FreightMatcher', () => {
         lane,
         marketBenchmark: 2.25,
         carrierPool: [preferredCarrier, betterCarrier],
-        preferredCarrierId: 'preferred',
+        preferredCarrierId: "preferred",
       };
 
       const result = await matcher.matchLoad(criteria);
 
       // Preferred carrier should be in primary tier
-      const preferred = result.recommendations.find((r) => r.carrierId === 'preferred');
-      expect(preferred?.fallbackTier).toBe('primary');
+      const preferred = result.recommendations.find(
+        (r) => r.carrierId === "preferred",
+      );
+      expect(preferred?.fallbackTier).toBe("primary");
     });
 
-    it('should generate detailed rationale for recommendations', async () => {
+    it("should generate detailed rationale for recommendations", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const carrier = createMockCarrier();
@@ -323,8 +349,8 @@ describe('FreightMatcher', () => {
     });
   });
 
-  describe('Lane fit scoring', () => {
-    it('should score carriers based on lane history', async () => {
+  describe("Lane fit scoring", () => {
+    it("should score carriers based on lane history", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const carrier = createMockCarrier();
@@ -348,8 +374,8 @@ describe('FreightMatcher', () => {
     });
   });
 
-  describe('Rate competitiveness scoring', () => {
-    it('should score carriers at benchmark as excellent', async () => {
+  describe("Rate competitiveness scoring", () => {
+    it("should score carriers at benchmark as excellent", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const benchmark = 2.25;
@@ -372,7 +398,7 @@ describe('FreightMatcher', () => {
       expect(scores?.rateCompetitiveness.score).toBeGreaterThanOrEqual(95);
     });
 
-    it('should penalize carriers far from benchmark', async () => {
+    it("should penalize carriers far from benchmark", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const benchmark = 2.25;
@@ -396,8 +422,8 @@ describe('FreightMatcher', () => {
     });
   });
 
-  describe('Capacity availability scoring', () => {
-    it('should score carriers with moderate utilization highly', async () => {
+  describe("Capacity availability scoring", () => {
+    it("should score carriers with moderate utilization highly", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const carrier = createMockCarrier({
@@ -420,7 +446,7 @@ describe('FreightMatcher', () => {
       expect(scores?.capacityAvailability.score).toBeGreaterThan(80);
     });
 
-    it('should penalize carriers with very tight capacity', async () => {
+    it("should penalize carriers with very tight capacity", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const tightCarrier = createMockCarrier({
@@ -444,8 +470,8 @@ describe('FreightMatcher', () => {
     });
   });
 
-  describe('Reliability scoring', () => {
-    it('should score reliable carriers highly', async () => {
+  describe("Reliability scoring", () => {
+    it("should score reliable carriers highly", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const reliableCarrier = createMockCarrier({
@@ -454,7 +480,7 @@ describe('FreightMatcher', () => {
           claimsRatio: 0.01,
           tenderAcceptanceRate: 95,
           costPerMile: 1.85,
-          safetyRating: 'satisfactory',
+          safetyRating: "satisfactory",
           inspectionDeficitPercentage: 5,
           outOfServiceRate: 1,
           cargoClaimsCount: 0,
@@ -479,12 +505,12 @@ describe('FreightMatcher', () => {
     });
   });
 
-  describe('Compliance scoring', () => {
-    it('should heavily penalize unsatisfactory safety rating', async () => {
+  describe("Compliance scoring", () => {
+    it("should heavily penalize unsatisfactory safety rating", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const unsafeCarrier = createMockCarrier({
-        safetyRating: 'unsatisfactory',
+        safetyRating: "unsatisfactory",
       });
 
       const criteria: MatchCriteria = {
@@ -502,11 +528,11 @@ describe('FreightMatcher', () => {
       expect(scores?.compliance.score).toBeLessThan(50);
     });
 
-    it('should exclude carriers with expired insurance', async () => {
+    it("should exclude carriers with expired insurance", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const noInsurance = createMockCarrier({
-        insuranceStatus: 'expired',
+        insuranceStatus: "expired",
       });
 
       const criteria: MatchCriteria = {
@@ -524,8 +550,8 @@ describe('FreightMatcher', () => {
     });
   });
 
-  describe('Match quality determination', () => {
-    it('should mark excellent matches', async () => {
+  describe("Match quality determination", () => {
+    it("should mark excellent matches", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const excellentCarrier = createMockCarrier({
@@ -534,7 +560,7 @@ describe('FreightMatcher', () => {
           claimsRatio: 0.01,
           tenderAcceptanceRate: 92,
           costPerMile: 1.85,
-          safetyRating: 'satisfactory',
+          safetyRating: "satisfactory",
           inspectionDeficitPercentage: 10,
           outOfServiceRate: 1,
           cargoClaimsCount: 0,
@@ -555,20 +581,20 @@ describe('FreightMatcher', () => {
 
       const result = await matcher.matchLoad(criteria);
 
-      expect(result.matchQuality).toBe('excellent');
+      expect(result.matchQuality).toBe("excellent");
     });
 
-    it('should mark poor matches when no good carriers available', async () => {
+    it("should mark poor matches when no good carriers available", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const poorCarrier = createMockCarrier({
-        safetyRating: 'conditional',
+        safetyRating: "conditional",
         metrics: {
           onTimePercentage: 65,
           claimsRatio: 0.15,
           tenderAcceptanceRate: 55,
           costPerMile: 1.5,
-          safetyRating: 'conditional',
+          safetyRating: "conditional",
           inspectionDeficitPercentage: 45,
           outOfServiceRate: 8,
           cargoClaimsCount: 8,
@@ -588,12 +614,12 @@ describe('FreightMatcher', () => {
 
       const result = await matcher.matchLoad(criteria);
 
-      expect(result.matchQuality).toBe('poor');
+      expect(result.matchQuality).toBe("poor");
     });
   });
 
-  describe('Edge cases', () => {
-    it('should handle empty carrier pool', async () => {
+  describe("Edge cases", () => {
+    it("should handle empty carrier pool", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
 
@@ -609,13 +635,13 @@ describe('FreightMatcher', () => {
       const result = await matcher.matchLoad(criteria);
 
       expect(result.recommendations.length).toBe(0);
-      expect(result.matchQuality).toBe('poor');
+      expect(result.matchQuality).toBe("poor");
     });
 
-    it('should handle invalid load or lane', async () => {
+    it("should handle invalid load or lane", async () => {
       const criteria: MatchCriteria = {
-        laneId: 'invalid',
-        loadId: 'invalid',
+        laneId: "invalid",
+        loadId: "invalid",
         load: null as any,
         lane: null as any,
         marketBenchmark: 2.25,
@@ -625,11 +651,11 @@ describe('FreightMatcher', () => {
       await expect(matcher.matchLoad(criteria)).rejects.toThrow();
     });
 
-    it('should limit results to maxResults parameter', async () => {
+    it("should limit results to maxResults parameter", async () => {
       const load = createMockFreightLoad();
       const lane = createMockLane();
       const carriers = Array.from({ length: 20 }, (_, i) =>
-        createMockCarrier({ id: `carrier-${i}` })
+        createMockCarrier({ id: `carrier-${i}` }),
       );
 
       const criteria: MatchCriteria = {

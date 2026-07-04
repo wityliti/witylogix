@@ -1,27 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-import {
-  defaultLocale,
-  getLocaleFromRequest,
-} from './i18n/config';
+import { NextRequest, NextResponse } from "next/server";
+import { defaultLocale, getLocaleFromRequest } from "./i18n/config";
 
 /**
  * Public routes that don't require authentication
  */
-const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password', '/magic-link'];
+const publicRoutes = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/magic-link",
+];
 
 /**
  * Helper to decode JWT payload (without verification - validation happens on backend)
  */
 function decodeJWT(token: string): { exp?: number } | null {
   try {
-    const parts = token.split('.');
+    const parts = token.split(".");
     if (parts.length !== 3) return null;
 
     const payload = parts[1];
-    const decoded = JSON.parse(Buffer.from(payload, 'base64').toString('utf-8'));
+    const decoded = JSON.parse(
+      Buffer.from(payload, "base64").toString("utf-8"),
+    );
     return decoded;
   } catch (error) {
-    console.error('Failed to decode JWT:', error);
+    console.error("Failed to decode JWT:", error);
     return null;
   }
 }
@@ -38,58 +43,65 @@ function isTokenExpired(token: string): boolean {
   const now = Date.now();
 
   // Consider token expired if expiry is within 30 seconds
-  return expiryTime < (now + 30 * 1000);
+  return expiryTime < now + 30 * 1000;
 }
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
-  const acceptLanguage = request.headers.get('accept-language');
+  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
+  const acceptLanguage = request.headers.get("accept-language");
 
   // Determine locale
-  const locale = getLocaleFromRequest(cookieLocale, acceptLanguage || undefined) || defaultLocale;
+  const locale =
+    getLocaleFromRequest(cookieLocale, acceptLanguage || undefined) ||
+    defaultLocale;
 
   const response = NextResponse.next();
 
   // Set locale cookie for client-side access
-  response.cookies.set('NEXT_LOCALE', locale, {
+  response.cookies.set("NEXT_LOCALE", locale, {
     maxAge: 60 * 60 * 24 * 365, // 1 year
-    path: '/',
-    sameSite: 'lax',
+    path: "/",
+    sameSite: "lax",
   });
 
   // Get auth token from cookies
-  const authToken = request.cookies.get('auth-token')?.value;
+  const authToken = request.cookies.get("auth-token")?.value;
 
   // Check if route is public
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  const isPublicRoute = publicRoutes.some((route) =>
+    pathname.startsWith(route),
+  );
 
   // Check if route is under dashboard (protected)
   // Also protect root '/' and '/home' which are dashboard entry points
-  const isDashboardRoute = pathname === '/' ||
-                           pathname.startsWith('/(dashboard)') ||
-                           pathname.match(/^\/(home|dashboard|orders|drivers|deliveries|settings|integrations|admin|profile|analytics|support|customers|onboarding|routes|zones|reports|billing|inventory|dispatch|fleet|freight|returns|pos|supply-chain)/);
+  const isDashboardRoute =
+    pathname === "/" ||
+    pathname.startsWith("/(dashboard)") ||
+    pathname.match(
+      /^\/(home|dashboard|orders|drivers|deliveries|settings|integrations|admin|profile|analytics|support|customers|onboarding|routes|zones|reports|billing|inventory|dispatch|fleet|freight|returns|pos|supply-chain)/,
+    );
 
   // For dashboard routes, require valid auth token
   if (isDashboardRoute) {
     if (!authToken) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
     // Check if token is expired
     if (isTokenExpired(authToken)) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      loginUrl.searchParams.set('reason', 'expired');
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      loginUrl.searchParams.set("reason", "expired");
       return NextResponse.redirect(loginUrl);
     }
   }
 
   // Redirect to dashboard if accessing public auth routes while authenticated
   if (isPublicRoute && authToken && !isTokenExpired(authToken)) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return response;
@@ -104,6 +116,6 @@ export const config = {
     // - favicon.ico (favicon file)
     // - robots.txt (robots file)
     // - sitemap.xml (sitemap file)
-    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
   ],
 };

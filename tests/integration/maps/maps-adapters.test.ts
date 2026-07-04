@@ -187,8 +187,14 @@ describe("HERE Maps Client", () => {
     it("should handle multiple results", () => {
       const multiResults = {
         items: [
-          { title: "123 Main Street", position: { lat: 42.3601, lng: -71.0589 } },
-          { title: "123 Main Street Extension", position: { lat: 42.3602, lng: -71.0590 } },
+          {
+            title: "123 Main Street",
+            position: { lat: 42.3601, lng: -71.0589 },
+          },
+          {
+            title: "123 Main Street Extension",
+            position: { lat: 42.3602, lng: -71.059 },
+          },
         ],
       };
 
@@ -585,7 +591,7 @@ describe("Route4Me Client", () => {
         polygon: [
           [42.3601, -71.0589],
           [42.3705, -71.0636],
-          [42.3710, -71.0580],
+          [42.371, -71.058],
         ],
       };
 
@@ -596,10 +602,7 @@ describe("Route4Me Client", () => {
   describe("Geocoding", () => {
     it("should geocode addresses in bulk", () => {
       const bulkGeocodeRequest = {
-        addresses: [
-          "123 Main St, Boston, MA",
-          "456 Oak Ave, Boston, MA",
-        ],
+        addresses: ["123 Main St, Boston, MA", "456 Oak Ave, Boston, MA"],
       };
 
       expect(bulkGeocodeRequest.addresses).toHaveLength(2);

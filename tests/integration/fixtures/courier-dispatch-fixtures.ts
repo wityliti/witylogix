@@ -44,7 +44,9 @@ export interface DeliveryRequest {
   metadata?: Record<string, unknown>;
 }
 
-export const createDeliveryRequest = (overrides?: Partial<DeliveryRequest>): DeliveryRequest => ({
+export const createDeliveryRequest = (
+  overrides?: Partial<DeliveryRequest>,
+): DeliveryRequest => ({
   id: `delivery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   pickupLocation: {
     address: "123 Main St, San Francisco, CA 94102",
@@ -107,7 +109,10 @@ export interface CourierProfile {
   metadata?: Record<string, unknown>;
 }
 
-export const createCourierProfile = (provider: "onfleet" | "stuart" | "uber_direct" = "onfleet", overrides?: Partial<CourierProfile>): CourierProfile => ({
+export const createCourierProfile = (
+  provider: "onfleet" | "stuart" | "uber_direct" = "onfleet",
+  overrides?: Partial<CourierProfile>,
+): CourierProfile => ({
   id: `courier_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   provider,
   externalId: `ext_${Math.random().toString(36).substr(2, 9)}`,
@@ -144,7 +149,9 @@ export interface WebhookEvent {
 }
 
 // Onfleet webhook fixtures
-export const createOnfleetTaskCompletedEvent = (overrides?: Partial<WebhookEvent>): WebhookEvent => ({
+export const createOnfleetTaskCompletedEvent = (
+  overrides?: Partial<WebhookEvent>,
+): WebhookEvent => ({
   id: `evt_onfleet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   type: "task.completed",
   timestamp: Math.floor(Date.now() / 1000),
@@ -170,7 +177,9 @@ export const createOnfleetTaskCompletedEvent = (overrides?: Partial<WebhookEvent
 });
 
 // Stuart webhook fixtures
-export const createStuartDeliveryCompletedEvent = (overrides?: Partial<WebhookEvent>): WebhookEvent => ({
+export const createStuartDeliveryCompletedEvent = (
+  overrides?: Partial<WebhookEvent>,
+): WebhookEvent => ({
   id: `evt_stuart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   type: "delivery.completed",
   timestamp: Math.floor(Date.now() / 1000),
@@ -192,7 +201,9 @@ export const createStuartDeliveryCompletedEvent = (overrides?: Partial<WebhookEv
 });
 
 // Uber Direct webhook fixtures
-export const createUberDirectDeliveryCompletedEvent = (overrides?: Partial<WebhookEvent>): WebhookEvent => ({
+export const createUberDirectDeliveryCompletedEvent = (
+  overrides?: Partial<WebhookEvent>,
+): WebhookEvent => ({
   id: `evt_uber_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   type: "delivery.completed",
   timestamp: Math.floor(Date.now() / 1000),
@@ -233,7 +244,9 @@ export interface SLADefinition {
   metadata?: Record<string, unknown>;
 }
 
-export const createSLADefinition = (overrides?: Partial<SLADefinition>): SLADefinition => ({
+export const createSLADefinition = (
+  overrides?: Partial<SLADefinition>,
+): SLADefinition => ({
   id: `sla_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   courierId: `courier_${Math.random().toString(36).substr(2, 9)}`,
   name: "Standard Same-Day Delivery SLA",
@@ -265,10 +278,13 @@ export interface RoutingRequest {
 
 export const createRoutingRequest = (
   availableCourierIds: string[] = [],
-  overrides?: Partial<RoutingRequest>
+  overrides?: Partial<RoutingRequest>,
 ): RoutingRequest => ({
   deliveryRequest: createDeliveryRequest(),
-  eligibleCouriers: availableCourierIds.length > 0 ? availableCourierIds : [`courier_1`, `courier_2`, `courier_3`],
+  eligibleCouriers:
+    availableCourierIds.length > 0
+      ? availableCourierIds
+      : [`courier_1`, `courier_2`, `courier_3`],
   costComparison: {
     courier_1: 12.5,
     courier_2: 15.0,
@@ -288,7 +304,11 @@ export const createNoCouriersAvailableScenario = () => {
   return {
     deliveryRequest: createDeliveryRequest(),
     availableCouriers: [],
-    fallbackChain: ["local_courier_pool", "regional_partner", "national_carrier"],
+    fallbackChain: [
+      "local_courier_pool",
+      "regional_partner",
+      "national_carrier",
+    ],
     expectedBehavior: "attempt each fallback in sequence",
   };
 };

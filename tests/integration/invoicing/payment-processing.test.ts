@@ -35,7 +35,10 @@ interface PaymentTransaction {
 class PaymentService {
   private paymentLinks = new Map<string, PaymentLink>();
   private transactions = new Map<string, PaymentTransaction>();
-  private webhookProcessingLog = new Map<string, { processed: boolean; timestamp: Date }>();
+  private webhookProcessingLog = new Map<
+    string,
+    { processed: boolean; timestamp: Date }
+  >();
 
   // ─ Stripe Payment Link Creation ──────────────────────────────────────────
 
@@ -60,15 +63,27 @@ class PaymentService {
 
   // ─ Manual Payment Recording ──────────────────────────────────────────────
 
-  recordBankTransfer(invoiceId: string, amount: number, reference: string): PaymentTransaction {
+  recordBankTransfer(
+    invoiceId: string,
+    amount: number,
+    reference: string,
+  ): PaymentTransaction {
     return this.recordManualPayment(invoiceId, amount, "bank", reference);
   }
 
-  recordCashPayment(invoiceId: string, amount: number, reference?: string): PaymentTransaction {
+  recordCashPayment(
+    invoiceId: string,
+    amount: number,
+    reference?: string,
+  ): PaymentTransaction {
     return this.recordManualPayment(invoiceId, amount, "cash", reference);
   }
 
-  recordCheckPayment(invoiceId: string, amount: number, checkNumber: string): PaymentTransaction {
+  recordCheckPayment(
+    invoiceId: string,
+    amount: number,
+    checkNumber: string,
+  ): PaymentTransaction {
     return this.recordManualPayment(invoiceId, amount, "check", checkNumber);
   }
 
@@ -76,7 +91,7 @@ class PaymentService {
     invoiceId: string,
     amount: number,
     method: "bank" | "cash" | "check",
-    reference?: string
+    reference?: string,
   ): PaymentTransaction {
     const transaction: PaymentTransaction = {
       id: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -110,7 +125,11 @@ class PaymentService {
 
   // ─ Overpayment Handling ──────────────────────────────────────────────────
 
-  recordOverpayment(invoiceId: string, amount: number, invoiceTotal: number): {
+  recordOverpayment(
+    invoiceId: string,
+    amount: number,
+    invoiceTotal: number,
+  ): {
     transaction: PaymentTransaction;
     creditApplied: number;
   } {
@@ -138,7 +157,7 @@ class PaymentService {
   processRefund(
     invoiceId: string,
     amount: number,
-    reason: "duplicate" | "customer_request" | "overpayment"
+    reason: "duplicate" | "customer_request" | "overpayment",
   ): PaymentTransaction {
     const refund: PaymentTransaction = {
       id: `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -155,7 +174,10 @@ class PaymentService {
 
   // ─ Payment Reconciliation ───────────────────────────────────────────────
 
-  reconcileInvoicePayments(invoiceId: string, invoiceTotal: number): {
+  reconcileInvoicePayments(
+    invoiceId: string,
+    invoiceTotal: number,
+  ): {
     invoiceAmount: number;
     recordedPayments: number;
     actualPayments: number;
@@ -163,10 +185,13 @@ class PaymentService {
     status: "reconciled" | "pending" | "disputed";
   } {
     const invoiceTransactions = Array.from(this.transactions.values()).filter(
-      (t) => t.invoiceId === invoiceId && t.status === "completed"
+      (t) => t.invoiceId === invoiceId && t.status === "completed",
     );
 
-    const recordedPayments = invoiceTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const recordedPayments = invoiceTransactions.reduce(
+      (sum, t) => sum + t.amount,
+      0,
+    );
     const actualPayments = recordedPayments;
     const discrepancy = Math.abs(invoiceTotal - actualPayments);
 
@@ -175,13 +200,21 @@ class PaymentService {
       recordedPayments,
       actualPayments,
       discrepancy,
-      status: discrepancy < 0.01 ? "reconciled" : discrepancy < 1 ? "pending" : "disputed",
+      status:
+        discrepancy < 0.01
+          ? "reconciled"
+          : discrepancy < 1
+            ? "pending"
+            : "disputed",
     };
   }
 
   // ─ Webhook Processing ──────────────────────────────────────────────────
 
-  processWebhook(webhookId: string, payload: Record<string, unknown>): {
+  processWebhook(
+    webhookId: string,
+    payload: Record<string, unknown>,
+  ): {
     success: boolean;
     isIdempotent: boolean;
     processed: boolean;
@@ -214,7 +247,7 @@ class PaymentService {
 
   concurrentPaymentAttempts(
     invoiceId: string,
-    paymentAttempts: Array<{ amount: number; timestamp: number }>
+    paymentAttempts: Array<{ amount: number; timestamp: number }>,
   ): {
     totalRecorded: number;
     successCount: number;
@@ -250,7 +283,9 @@ class PaymentService {
   }
 
   getTransactions(invoiceId: string): PaymentTransaction[] {
-    return Array.from(this.transactions.values()).filter((t) => t.invoiceId === invoiceId);
+    return Array.from(this.transactions.values()).filter(
+      (t) => t.invoiceId === invoiceId,
+    );
   }
 }
 
@@ -315,7 +350,11 @@ describe("Payment Processing Integration Tests", () => {
 
   describe("Manual Payment Recording - Bank Transfer", () => {
     it("should record bank transfer payment", () => {
-      const txn = service.recordBankTransfer(mockInvoice.id, 1000, "WIRE-123456");
+      const txn = service.recordBankTransfer(
+        mockInvoice.id,
+        1000,
+        "WIRE-123456",
+      );
 
       expect(txn.method).toBe("bank");
       expect(txn.amount).toBe(1000);
@@ -325,12 +364,20 @@ describe("Payment Processing Integration Tests", () => {
 
     it("should set processed timestamp", () => {
       const beforeTime = new Date();
-      const txn = service.recordBankTransfer(mockInvoice.id, 1000, "WIRE-123456");
+      const txn = service.recordBankTransfer(
+        mockInvoice.id,
+        1000,
+        "WIRE-123456",
+      );
       const afterTime = new Date();
 
       expect(txn.processedAt).toBeDefined();
-      expect(txn.processedAt!.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
-      expect(txn.processedAt!.getTime()).toBeLessThanOrEqual(afterTime.getTime());
+      expect(txn.processedAt!.getTime()).toBeGreaterThanOrEqual(
+        beforeTime.getTime(),
+      );
+      expect(txn.processedAt!.getTime()).toBeLessThanOrEqual(
+        afterTime.getTime(),
+      );
     });
   });
 
@@ -434,7 +481,11 @@ describe("Payment Processing Integration Tests", () => {
     });
 
     it("should process refund for customer request", () => {
-      const refund = service.processRefund(mockInvoice.id, 1000, "customer_request");
+      const refund = service.processRefund(
+        mockInvoice.id,
+        1000,
+        "customer_request",
+      );
 
       expect(refund.amount).toBe(-1000);
     });
@@ -473,7 +524,10 @@ describe("Payment Processing Integration Tests", () => {
       const invoice = fixtures.createInvoice({ total: 1000 });
       service.recordPartialPayment(invoice.id, 1000);
 
-      const reconciliation = service.reconcileInvoicePayments(invoice.id, invoice.total);
+      const reconciliation = service.reconcileInvoicePayments(
+        invoice.id,
+        invoice.total,
+      );
 
       expect(reconciliation.status).toBe("reconciled");
       expect(reconciliation.discrepancy).toBeLessThan(0.01);
@@ -483,7 +537,10 @@ describe("Payment Processing Integration Tests", () => {
       const invoice = fixtures.createInvoice({ total: 1000 });
       service.recordPartialPayment(invoice.id, 800);
 
-      const reconciliation = service.reconcileInvoicePayments(invoice.id, invoice.total);
+      const reconciliation = service.reconcileInvoicePayments(
+        invoice.id,
+        invoice.total,
+      );
 
       expect(reconciliation.status).toBe("disputed");
       expect(reconciliation.discrepancy).toBe(200);
@@ -493,7 +550,10 @@ describe("Payment Processing Integration Tests", () => {
       const invoice = fixtures.createInvoice({ total: 1000 });
       service.recordPartialPayment(invoice.id, 1100);
 
-      const reconciliation = service.reconcileInvoicePayments(invoice.id, invoice.total);
+      const reconciliation = service.reconcileInvoicePayments(
+        invoice.id,
+        invoice.total,
+      );
 
       expect(reconciliation.status).toBe("disputed");
       expect(reconciliation.discrepancy).toBe(100);
@@ -505,7 +565,10 @@ describe("Payment Processing Integration Tests", () => {
       service.recordPartialPayment(invoice.id, 400);
       service.recordPartialPayment(invoice.id, 300);
 
-      const reconciliation = service.reconcileInvoicePayments(invoice.id, invoice.total);
+      const reconciliation = service.reconcileInvoicePayments(
+        invoice.id,
+        invoice.total,
+      );
 
       expect(reconciliation.recordedPayments).toBe(1000);
       expect(reconciliation.status).toBe("reconciled");

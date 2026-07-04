@@ -102,7 +102,7 @@ export const DriverInfoCard = ({
       className={cn(
         "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg",
         "overflow-hidden transition-all duration-300",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -118,13 +118,21 @@ export const DriverInfoCard = ({
               <h3 className="text-sm font-semibold text-wl-text-primary truncate">
                 {driverName}
               </h3>
-              <p className="text-xs text-wl-text-tertiary mt-0.5">ID: {driverId}</p>
+              <p className="text-xs text-wl-text-tertiary mt-0.5">
+                ID: {driverId}
+              </p>
             </div>
           </div>
 
           {/* Status Badge */}
           <Badge
-            variant={status === "available" ? "success" : status === "offline" ? "default" : "warning"}
+            variant={
+              status === "available"
+                ? "success"
+                : status === "offline"
+                  ? "default"
+                  : "warning"
+            }
             className="flex-shrink-0"
           >
             {statusConfig_.icon}
@@ -193,14 +201,16 @@ export const DriverInfoCard = ({
               "w-full px-4 py-2",
               "flex items-center justify-between",
               "text-xs text-wl-text-secondary hover:bg-wl-bg-overlay transition-colors",
-              "border-b border-wl-border-subtle"
+              "border-b border-wl-border-subtle",
             )}
           >
-            <span className="font-medium uppercase tracking-wider">Vehicle Info</span>
+            <span className="font-medium uppercase tracking-wider">
+              Vehicle Info
+            </span>
             <svg
               className={cn(
                 "w-3 h-3 transition-transform",
-                isExpanded && "rotate-180"
+                isExpanded && "rotate-180",
               )}
               fill="none"
               stroke="currentColor"
@@ -218,13 +228,17 @@ export const DriverInfoCard = ({
           {isExpanded && (
             <div className="px-4 py-3 bg-wl-bg-overlay/30 border-b border-wl-border-subtle space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-wl-text-tertiary">Make / Model:</span>
+                <span className="text-xs text-wl-text-tertiary">
+                  Make / Model:
+                </span>
                 <span className="text-sm text-wl-text-primary font-medium">
                   {vehicle.make} {vehicle.model}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-wl-text-tertiary">License Plate:</span>
+                <span className="text-xs text-wl-text-tertiary">
+                  License Plate:
+                </span>
                 <span className="text-sm text-wl-text-primary font-mono font-semibold">
                   {vehicle.licensePlate}
                 </span>
@@ -257,7 +271,12 @@ export const DriverInfoCard = ({
           disabled={!onMessage}
           className="flex-1 min-w-max"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -275,7 +294,12 @@ export const DriverInfoCard = ({
           disabled={!onCall}
           className="flex-1 min-w-max"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -293,7 +317,12 @@ export const DriverInfoCard = ({
           disabled={!onReassign}
           className="flex-1 min-w-max"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -311,7 +340,12 @@ export const DriverInfoCard = ({
           disabled={!onViewProfile}
           className="flex-1 min-w-max"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

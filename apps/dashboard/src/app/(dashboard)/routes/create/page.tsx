@@ -5,11 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useApiList, useApiMutation } from '@/hooks/use-api';
-import { WLMap } from '@/components/map/wl-map';
-import { RoutePolylineLayer } from '@/components/map/route-polyline-layer';
-import { RouteStopMarkersLayer, type StopMarker } from '@/components/map/route-stop-markers-layer';
-import { MapPin } from 'lucide-react';
+import { useApiList, useApiMutation } from "@/hooks/use-api";
+import { WLMap } from "@/components/map/wl-map";
+import { RoutePolylineLayer } from "@/components/map/route-polyline-layer";
+import {
+  RouteStopMarkersLayer,
+  type StopMarker,
+} from "@/components/map/route-stop-markers-layer";
+import { MapPin } from "lucide-react";
 
 interface Stop {
   id: string;
@@ -68,26 +71,33 @@ export default function CreateRoutePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [draggedStop, setDraggedStop] = useState<number | null>(null);
 
-  const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
-  const { items: vehicles } = useApiList<ApiVehicle>('/api/v4/fleet/vehicles');
-  const { items: orders } = useApiList<ApiOrder>('/api/v4/orders', { limit: 50 });
-  const createRoute = useApiMutation<{ id: string }>('POST', '/api/v4/routes');
+  const { items: drivers } = useApiList<ApiDriver>("/api/v4/drivers");
+  const { items: vehicles } = useApiList<ApiVehicle>("/api/v4/fleet/vehicles");
+  const { items: orders } = useApiList<ApiOrder>("/api/v4/orders", {
+    limit: 50,
+  });
+  const createRoute = useApiMutation<{ id: string }>("POST", "/api/v4/routes");
 
   const getOrderAddress = (order: ApiOrder): string => {
     if (order.deliveryAddress) return order.deliveryAddress;
     if (order.shippingAddress) {
-      return [order.shippingAddress.line1, order.shippingAddress.city].filter(Boolean).join(', ');
+      return [order.shippingAddress.line1, order.shippingAddress.city]
+        .filter(Boolean)
+        .join(", ");
     }
     return order.id;
   };
 
-  const getOrderLabel = (order: ApiOrder): string => order.orderNumber ?? order.id;
+  const getOrderLabel = (order: ApiOrder): string =>
+    order.orderNumber ?? order.id;
 
   const filteredOrders = orders.filter(
     (order) =>
       !formData.stops.some((stop) => stop.orderId === order.id) &&
       (getOrderLabel(order).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getOrderAddress(order).toLowerCase().includes(searchTerm.toLowerCase()))
+        getOrderAddress(order)
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())),
   );
 
   const handleAddStop = (order: ApiOrder) => {
@@ -133,7 +143,9 @@ export default function CreateRoutePage() {
     setDraggedStop(null);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -165,7 +177,10 @@ export default function CreateRoutePage() {
 
   const canProceed =
     step === 1
-      ? formData.name && formData.date && formData.driverId && formData.vehicleId
+      ? formData.name &&
+        formData.date &&
+        formData.driverId &&
+        formData.vehicleId
       : step === 2
         ? formData.stops.length > 0
         : true;
@@ -186,26 +201,30 @@ export default function CreateRoutePage() {
     <div className="min-h-screen bg-wl-bg-root p-6 text-white">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">Create New Route</h1>
-        <p className="text-sm text-wl-text-secondary">Set up a new delivery route with multiple stops</p>
+        <p className="text-sm text-wl-text-secondary">
+          Set up a new delivery route with multiple stops
+        </p>
       </div>
 
       <div className="flex gap-3 mb-8 max-w-4xl">
-        {["Route Basics", "Add Stops", "Map Preview", "Optimization"].map((name, idx) => (
-          <div
-            key={idx}
-            className={cn(
-              "flex-1 p-3 rounded-lg border text-center text-sm font-semibold cursor-pointer transition-all",
-              step === idx + 1
-                ? "bg-blue-500 text-white border-blue-500"
-                : step > idx + 1
-                  ? "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default"
-                  : "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default"
-            )}
-            onClick={() => step > idx + 1 && setStep(idx + 1)}
-          >
-            {name}
-          </div>
-        ))}
+        {["Route Basics", "Add Stops", "Map Preview", "Optimization"].map(
+          (name, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                "flex-1 p-3 rounded-lg border text-center text-sm font-semibold cursor-pointer transition-all",
+                step === idx + 1
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : step > idx + 1
+                    ? "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default"
+                    : "bg-wl-bg-surface text-wl-text-secondary border-wl-border-default",
+              )}
+              onClick={() => step > idx + 1 && setStep(idx + 1)}
+            >
+              {name}
+            </div>
+          ),
+        )}
       </div>
 
       <Card className="max-w-4xl mb-6 bg-wl-bg-surface border border-wl-border-default">
@@ -226,7 +245,9 @@ export default function CreateRoutePage() {
             <div className="max-w-4xl">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-white text-sm font-semibold mb-2">Route Name</label>
+                  <label className="block text-white text-sm font-semibold mb-2">
+                    Route Name
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -237,7 +258,9 @@ export default function CreateRoutePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-white text-sm font-semibold mb-2">Delivery Date</label>
+                  <label className="block text-white text-sm font-semibold mb-2">
+                    Delivery Date
+                  </label>
                   <input
                     type="date"
                     name="date"
@@ -249,7 +272,9 @@ export default function CreateRoutePage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-white text-sm font-semibold mb-2">Assign Driver</label>
+                  <label className="block text-white text-sm font-semibold mb-2">
+                    Assign Driver
+                  </label>
                   <select
                     name="driverId"
                     value={formData.driverId}
@@ -265,7 +290,9 @@ export default function CreateRoutePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-white text-sm font-semibold mb-2">Vehicle</label>
+                  <label className="block text-white text-sm font-semibold mb-2">
+                    Vehicle
+                  </label>
                   <select
                     name="vehicleId"
                     value={formData.vehicleId}
@@ -275,7 +302,8 @@ export default function CreateRoutePage() {
                     <option value="">Select a vehicle</option>
                     {vehicles.map((vehicle) => (
                       <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.year} {vehicle.make} {vehicle.model} ({vehicle.licensePlate})
+                        {vehicle.year} {vehicle.make} {vehicle.model} (
+                        {vehicle.licensePlate})
                       </option>
                     ))}
                   </select>
@@ -287,7 +315,9 @@ export default function CreateRoutePage() {
           {step === 2 && (
             <div className="max-w-4xl">
               <div className="mb-6">
-                <label className="block text-white text-sm font-semibold mb-2">Search & Add Orders</label>
+                <label className="block text-white text-sm font-semibold mb-2">
+                  Search & Add Orders
+                </label>
                 <input
                   type="text"
                   placeholder="Search by order ID or address..."
@@ -312,7 +342,9 @@ export default function CreateRoutePage() {
                           <span className="text-white font-semibold text-sm">
                             {getOrderLabel(order)}
                           </span>
-                          {order.priority && <Badge>{order.priority.toUpperCase()}</Badge>}
+                          {order.priority && (
+                            <Badge>{order.priority.toUpperCase()}</Badge>
+                          )}
                         </div>
                         <p className="text-wl-text-secondary text-xs mb-2">
                           {getOrderAddress(order)}
@@ -342,8 +374,14 @@ export default function CreateRoutePage() {
                         key={stop.id}
                         className="p-3 rounded-md bg-wl-bg-surface border border-wl-border-default flex items-center gap-3 cursor-grab transition-all"
                         style={{
-                          backgroundColor: draggedStop === idx ? "var(--wl-info-500)" : "var(--wl-bg-elevated)",
-                          borderColor: draggedStop === idx ? "var(--wl-info-500)" : "var(--wl-border-default)",
+                          backgroundColor:
+                            draggedStop === idx
+                              ? "var(--wl-info-500)"
+                              : "var(--wl-bg-elevated)",
+                          borderColor:
+                            draggedStop === idx
+                              ? "var(--wl-info-500)"
+                              : "var(--wl-border-default)",
                           opacity: draggedStop === idx ? 0.7 : 1,
                         }}
                         draggable
@@ -358,7 +396,9 @@ export default function CreateRoutePage() {
                           <div className="text-white text-sm font-semibold">
                             {stop.orderId}
                           </div>
-                          <div className="text-wl-text-secondary text-xs">{stop.address}</div>
+                          <div className="text-wl-text-secondary text-xs">
+                            {stop.address}
+                          </div>
                           <div className="text-wl-text-secondary text-xs mt-1">
                             {stop.timeWindow.start} - {stop.timeWindow.end}
                           </div>
@@ -377,20 +417,36 @@ export default function CreateRoutePage() {
 
                   <div className="grid grid-cols-4 gap-4 my-6">
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">{formData.stops.length}</div>
-                      <div className="text-xs text-wl-text-secondary">Total Stops</div>
+                      <div className="text-lg font-bold text-blue-500 mb-1">
+                        {formData.stops.length}
+                      </div>
+                      <div className="text-xs text-wl-text-secondary">
+                        Total Stops
+                      </div>
                     </div>
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDistance.toFixed(1)}km</div>
-                      <div className="text-xs text-wl-text-secondary">Est. Distance</div>
+                      <div className="text-lg font-bold text-blue-500 mb-1">
+                        {estimatedDistance.toFixed(1)}km
+                      </div>
+                      <div className="text-xs text-wl-text-secondary">
+                        Est. Distance
+                      </div>
                     </div>
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDuration}min</div>
-                      <div className="text-xs text-wl-text-secondary">Est. Duration</div>
+                      <div className="text-lg font-bold text-blue-500 mb-1">
+                        {estimatedDuration}min
+                      </div>
+                      <div className="text-xs text-wl-text-secondary">
+                        Est. Duration
+                      </div>
                     </div>
                     <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default text-center">
-                      <div className="text-lg font-bold text-blue-500 mb-1">850kg</div>
-                      <div className="text-xs text-wl-text-secondary">Est. Capacity</div>
+                      <div className="text-lg font-bold text-blue-500 mb-1">
+                        850kg
+                      </div>
+                      <div className="text-xs text-wl-text-secondary">
+                        Est. Capacity
+                      </div>
                     </div>
                   </div>
                 </>
@@ -428,8 +484,8 @@ export default function CreateRoutePage() {
                     <div className="text-sm font-medium">Map Preview</div>
                     <div className="text-xs text-wl-text-tertiary text-center max-w-xs">
                       {formData.stops.length === 0
-                        ? 'Add stops in step 2 to see them on the map.'
-                        : `${formData.stops.length} stop${formData.stops.length > 1 ? 's' : ''} added. The map will show coordinates once orders have delivery location data.`}
+                        ? "Add stops in step 2 to see them on the map."
+                        : `${formData.stops.length} stop${formData.stops.length > 1 ? "s" : ""} added. The map will show coordinates once orders have delivery location data.`}
                     </div>
                     {/* Fallback: numbered stop list as visual indicator */}
                     {formData.stops.length > 0 && (
@@ -438,7 +494,9 @@ export default function CreateRoutePage() {
                           <div
                             key={stop.id}
                             className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                            style={{ backgroundColor: getPriorityColor(stop.priority) }}
+                            style={{
+                              backgroundColor: getPriorityColor(stop.priority),
+                            }}
                           >
                             {idx + 1}
                           </div>
@@ -448,12 +506,15 @@ export default function CreateRoutePage() {
                   </div>
                 )}
                 <div className="absolute bottom-3 right-3 bg-wl-bg-root/80 backdrop-blur-sm text-xs text-wl-text-secondary px-2 py-1 rounded border border-wl-border-default">
-                  {formData.stops.length} stop{formData.stops.length !== 1 ? 's' : ''}
+                  {formData.stops.length} stop
+                  {formData.stops.length !== 1 ? "s" : ""}
                 </div>
               </div>
 
               <div>
-                <h3 className="text-white text-sm font-semibold mb-3">Stop Details</h3>
+                <h3 className="text-white text-sm font-semibold mb-3">
+                  Stop Details
+                </h3>
                 <div className="flex flex-col gap-2">
                   {formData.stops.map((stop, idx) => (
                     <div
@@ -466,7 +527,7 @@ export default function CreateRoutePage() {
                       <div
                         className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
                         style={{
-                          backgroundColor: getPriorityColor(stop.priority)
+                          backgroundColor: getPriorityColor(stop.priority),
                         }}
                       >
                         {idx + 1}
@@ -491,7 +552,9 @@ export default function CreateRoutePage() {
 
           {step === 4 && (
             <div className="max-w-4xl">
-              <h3 className="text-white text-sm font-semibold mb-4">Route Optimization Strategy</h3>
+              <h3 className="text-white text-sm font-semibold mb-4">
+                Route Optimization Strategy
+              </h3>
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
                   {
@@ -514,14 +577,16 @@ export default function CreateRoutePage() {
                     key={option.id}
                     className={cn(
                       "p-4 rounded-lg border text-center cursor-pointer transition-all",
-                      formData.optimizationMode === (option.id as RouteFormData['optimizationMode'])
+                      formData.optimizationMode ===
+                        (option.id as RouteFormData["optimizationMode"])
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-wl-bg-surface text-white border-wl-border-default"
+                        : "bg-wl-bg-surface text-white border-wl-border-default",
                     )}
                     onClick={() =>
                       setFormData((prev) => ({
                         ...prev,
-                        optimizationMode: option.id as RouteFormData['optimizationMode'],
+                        optimizationMode:
+                          option.id as RouteFormData["optimizationMode"],
                       }))
                     }
                   >
@@ -532,16 +597,22 @@ export default function CreateRoutePage() {
               </div>
 
               <div className="mt-6 p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default">
-                <h4 className="text-white text-sm font-semibold mb-2">Summary</h4>
+                <h4 className="text-white text-sm font-semibold mb-2">
+                  Summary
+                </h4>
                 <div className="text-wl-text-secondary text-sm leading-relaxed">
                   <p>
                     <strong>Route:</strong> {formData.name}
                   </p>
                   <p>
-                    <strong>Driver:</strong> {selectedDriver?.name ?? "Not assigned"}
+                    <strong>Driver:</strong>{" "}
+                    {selectedDriver?.name ?? "Not assigned"}
                   </p>
                   <p>
-                    <strong>Vehicle:</strong> {selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : "Not assigned"}
+                    <strong>Vehicle:</strong>{" "}
+                    {selectedVehicle
+                      ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}`
+                      : "Not assigned"}
                   </p>
                   <p>
                     <strong>Date:</strong> {formData.date || "Not set"}
@@ -550,14 +621,19 @@ export default function CreateRoutePage() {
                     <strong>Stops:</strong> {formData.stops.length}
                   </p>
                   <p>
-                    <strong>Est. Distance:</strong> {estimatedDistance.toFixed(1)}km
+                    <strong>Est. Distance:</strong>{" "}
+                    {estimatedDistance.toFixed(1)}km
                   </p>
                 </div>
                 {createRoute.error && (
-                  <p className="text-red-400 text-sm mt-2">{createRoute.error.message}</p>
+                  <p className="text-red-400 text-sm mt-2">
+                    {createRoute.error.message}
+                  </p>
                 )}
                 {createRoute.success && (
-                  <p className="text-green-400 text-sm mt-2">Route created successfully!</p>
+                  <p className="text-green-400 text-sm mt-2">
+                    Route created successfully!
+                  </p>
                 )}
               </div>
             </div>
@@ -577,16 +653,17 @@ export default function CreateRoutePage() {
           {step === 4 ? (
             <>
               <Button variant="secondary">Save as Draft</Button>
-              <Button variant="primary" onClick={handleDispatch} disabled={createRoute.loading}>
-                {createRoute.loading ? 'Dispatching...' : 'Dispatch Route'}
+              <Button
+                variant="primary"
+                onClick={handleDispatch}
+                disabled={createRoute.loading}
+              >
+                {createRoute.loading ? "Dispatching..." : "Dispatch Route"}
               </Button>
             </>
           ) : (
             <>
-              <Button
-                variant="secondary"
-                onClick={() => setStep(4)}
-              >
+              <Button variant="secondary" onClick={() => setStep(4)}>
                 Skip to Optimization
               </Button>
               <Button

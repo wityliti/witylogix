@@ -3,8 +3,20 @@
  * Provides idempotency, rate limiting, circuit breaker, and PCI compliance helpers
  */
 
-import { type PaymentTransaction, type PaymentWebhookEvent, type PaymentAdapterInterface, type PaymentOptions, type PaymentMethod, type PaymentMethodDetails, type CustomerData, type PaymentRefund, type PaymentDispute, type RefundReason, type DisputeFilters } from './types';
-import { createHash, createHmac } from 'crypto';
+import {
+  type PaymentTransaction,
+  type PaymentWebhookEvent,
+  type PaymentAdapterInterface,
+  type PaymentOptions,
+  type PaymentMethod,
+  type PaymentMethodDetails,
+  type CustomerData,
+  type PaymentRefund,
+  type PaymentDispute,
+  type RefundReason,
+  type DisputeFilters,
+} from "./types";
+import { createHash, createHmac } from "crypto";
 
 /**
  * Idempotency key cache entry
@@ -26,7 +38,7 @@ interface RateLimiterState {
  * Circuit breaker state
  */
 interface CircuitBreakerState {
-  state: 'closed' | 'open' | 'half-open';
+  state: "closed" | "open" | "half-open";
   failureCount: number;
   lastFailureTime: number;
   successCount: number;
@@ -55,7 +67,7 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
 
   // Circuit breaker
   private circuitBreaker: CircuitBreakerState = {
-    state: 'closed',
+    state: "closed",
     failureCount: 0,
     lastFailureTime: 0,
     successCount: 0,
@@ -72,7 +84,7 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
    */
   protected generateIdempotencyKey(data: Record<string, any>): string {
     const normalized = JSON.stringify(data, Object.keys(data).sort());
-    return createHash('sha256').update(normalized).digest('hex');
+    return createHash("sha256").update(normalized).digest("hex");
   }
 
   /**
@@ -80,7 +92,7 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
    */
   protected async executeWithIdempotency<T>(
     key: string,
-    executor: () => Promise<T>
+    executor: () => Promise<T>,
   ): Promise<T> {
     // Check cache first
     const cached = this.idempotencyCache.get(key);
@@ -118,19 +130,22 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
   /**
    * Execute with exponential backoff retries
    */
-  protected async executeWithRetries<T>(executor: () => Promise<T>): Promise<T> {
+  protected async executeWithRetries<T>(
+    executor: () => Promise<T>,
+  ): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
         // Check circuit breaker
-        if (this.circuitBreaker.state === 'open') {
-          const timeSinceLastFailure = Date.now() - this.circuitBreaker.lastFailureTime;
+        if (this.circuitBreaker.state === "open") {
+          const timeSinceLastFailure =
+            Date.now() - this.circuitBreaker.lastFailureTime;
           if (timeSinceLastFailure >= this.circuitBreakerTimeout) {
-            this.circuitBreaker.state = 'half-open';
+            this.circuitBreaker.state = "half-open";
           } else {
             throw new Error(
-              `Circuit breaker is open. Retry after ${this.circuitBreakerTimeout - timeSinceLastFailure}ms`
+              `Circuit breaker is open. Retry after ${this.circuitBreakerTimeout - timeSinceLastFailure}ms`,
             );
           }
         }
@@ -142,10 +157,10 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
         const result = await executor();
 
         // Reset circuit breaker on success
-        if (this.circuitBreaker.state === 'half-open') {
+        if (this.circuitBreaker.state === "half-open") {
           this.circuitBreaker.successCount++;
           if (this.circuitBreaker.successCount >= 2) {
-            this.circuitBreaker.state = 'closed';
+            this.circuitBreaker.state = "closed";
             this.circuitBreaker.failureCount = 0;
             this.circuitBreaker.successCount = 0;
           }
@@ -160,23 +175,24 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
         this.circuitBreaker.lastFailureTime = Date.now();
 
         if (this.circuitBreaker.failureCount >= this.circuitBreakerThreshold) {
-          this.circuitBreaker.state = 'open';
+          this.circuitBreaker.state = "open";
         }
 
         // Don't retry on client errors (4xx)
-        if (error instanceof Error && error.message.includes('4xx')) {
+        if (error instanceof Error && error.message.includes("4xx")) {
           throw error;
         }
 
         // Retry with exponential backoff
         if (attempt < this.maxRetries) {
-          const delayMs = this.retryDelayMs * Math.pow(this.retryBackoffMultiplier, attempt);
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          const delayMs =
+            this.retryDelayMs * Math.pow(this.retryBackoffMultiplier, attempt);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
         }
       }
     }
 
-    throw lastError || new Error('Max retries exceeded');
+    throw lastError || new Error("Max retries exceeded");
   }
 
   /**
@@ -190,14 +206,15 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
     const tokensToAdd = timeSinceLastRefill * this.rateLimitPerSecond;
     this.rateLimiterState.tokens = Math.min(
       this.rateLimitBurst,
-      this.rateLimiterState.tokens + tokensToAdd
+      this.rateLimiterState.tokens + tokensToAdd,
     );
     this.rateLimiterState.lastRefill = now;
 
     // Check if we have tokens
     if (this.rateLimiterState.tokens < 1) {
-      const waitTime = (1 - this.rateLimiterState.tokens) / this.rateLimitPerSecond * 1000;
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      const waitTime =
+        ((1 - this.rateLimiterState.tokens) / this.rateLimitPerSecond) * 1000;
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
       this.rateLimiterState.tokens--;
     } else {
       this.rateLimiterState.tokens--;
@@ -208,13 +225,18 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
    * Format amount from cents to dollars (or provider-specific format)
    */
   protected formatAmount(amountInCents: number, decimals: number = 2): number {
-    return parseFloat((amountInCents / Math.pow(10, decimals)).toFixed(decimals));
+    return parseFloat(
+      (amountInCents / Math.pow(10, decimals)).toFixed(decimals),
+    );
   }
 
   /**
    * Format amount from dollars to cents
    */
-  protected formatAmountToCents(amountInDollars: number, decimals: number = 2): number {
+  protected formatAmountToCents(
+    amountInDollars: number,
+    decimals: number = 2,
+  ): number {
     return Math.round(amountInDollars * Math.pow(10, decimals));
   }
 
@@ -224,16 +246,16 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
   protected isValidCurrency(currency: string): boolean {
     // ISO 4217 currency codes
     const validCurrencies = new Set([
-      'USD',
-      'EUR',
-      'GBP',
-      'JPY',
-      'CAD',
-      'AUD',
-      'CHF',
-      'CNY',
-      'SEK',
-      'NZD',
+      "USD",
+      "EUR",
+      "GBP",
+      "JPY",
+      "CAD",
+      "AUD",
+      "CHF",
+      "CNY",
+      "SEK",
+      "NZD",
     ]);
     return validCurrencies.has(currency.toUpperCase());
   }
@@ -242,14 +264,14 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
    * Hash payment method for tokenization (PCI compliance)
    */
   protected hashPaymentMethod(cardNumber: string, secret: string): string {
-    return createHmac('sha256', secret).update(cardNumber).digest('hex');
+    return createHmac("sha256", secret).update(cardNumber).digest("hex");
   }
 
   /**
    * Mask credit card number for display
    */
   protected maskCardNumber(cardNumber: string): string {
-    if (cardNumber.length < 4) return 'XXXX';
+    if (cardNumber.length < 4) return "XXXX";
     const lastFour = cardNumber.slice(-4);
     return `XXXX-XXXX-XXXX-${lastFour}`;
   }
@@ -257,7 +279,10 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
   /**
    * Validate card expiry date
    */
-  protected isValidExpiryDate(expiryMonth: number, expiryYear: number): boolean {
+  protected isValidExpiryDate(
+    expiryMonth: number,
+    expiryYear: number,
+  ): boolean {
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
@@ -279,7 +304,7 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
    * Validate card number (Luhn algorithm)
    */
   protected isValidCardNumber(cardNumber: string): boolean {
-    const digits = cardNumber.replace(/\D/g, '');
+    const digits = cardNumber.replace(/\D/g, "");
     if (digits.length < 13 || digits.length > 19) return false;
 
     let sum = 0;
@@ -307,24 +332,30 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
     amount: number,
     currency: string,
     cardLastFour: string,
-    timestamp: number
+    timestamp: number,
   ): string {
     const data = `${amount}-${currency}-${cardLastFour}-${timestamp}`;
-    return createHash('sha256').update(data).digest('hex').slice(0, 16);
+    return createHash("sha256").update(data).digest("hex").slice(0, 16);
   }
 
   /**
    * Sign request for HMAC verification
    */
   protected signRequest(payload: string, secret: string): string {
-    return createHmac('sha256', secret).update(payload).digest('hex');
+    return createHmac("sha256", secret).update(payload).digest("hex");
   }
 
   /**
    * Verify webhook HMAC signature
    */
-  protected verifyHmacSignature(payload: string, signature: string, secret: string): boolean {
-    const expectedSignature = createHmac('sha256', secret).update(payload).digest('hex');
+  protected verifyHmacSignature(
+    payload: string,
+    signature: string,
+    secret: string,
+  ): boolean {
+    const expectedSignature = createHmac("sha256", secret)
+      .update(payload)
+      .digest("hex");
     return signature === expectedSignature;
   }
 
@@ -334,7 +365,7 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
   protected async logTransaction(
     transactionId: string,
     action: string,
-    details: Record<string, any>
+    details: Record<string, any>,
   ): Promise<void> {
     // Log without sensitive data
     const safeDetails = { ...details };
@@ -345,7 +376,10 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
       delete safeDetails.cvv; // Never log CVV
     }
 
-    console.log(`[${this.providerId}] ${action} - Transaction: ${transactionId}`, safeDetails);
+    console.log(
+      `[${this.providerId}] ${action} - Transaction: ${transactionId}`,
+      safeDetails,
+    );
   }
 
   /**
@@ -355,29 +389,32 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction>;
 
   abstract authorize(
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction>;
 
-  abstract capture(transactionId: string, amount?: number): Promise<PaymentTransaction>;
+  abstract capture(
+    transactionId: string,
+    amount?: number,
+  ): Promise<PaymentTransaction>;
 
   abstract void(transactionId: string): Promise<PaymentTransaction>;
 
   abstract refund(
     transactionId: string,
     amount?: number,
-    reason?: RefundReason
+    reason?: RefundReason,
   ): Promise<PaymentRefund>;
 
   abstract createPaymentMethod(
     details: PaymentMethodDetails,
-    customerId?: string
+    customerId?: string,
   ): Promise<PaymentMethod>;
 
   abstract deletePaymentMethod(paymentMethodId: string): Promise<void>;
@@ -388,17 +425,24 @@ export abstract class PaymentAdapter implements PaymentAdapterInterface {
 
   abstract getTransaction(transactionId: string): Promise<PaymentTransaction>;
 
-  abstract createCustomer(customerData: CustomerData): Promise<{ id: string; externalId: string }>;
+  abstract createCustomer(
+    customerData: CustomerData,
+  ): Promise<{ id: string; externalId: string }>;
 
-  abstract updateCustomer(customerId: string, data: Partial<CustomerData>): Promise<void>;
+  abstract updateCustomer(
+    customerId: string,
+    data: Partial<CustomerData>,
+  ): Promise<void>;
 
   abstract verifyWebhookSignature(payload: string, signature: string): boolean;
 
-  abstract parseWebhookPayload(payload: Record<string, any>): PaymentWebhookEvent | null;
+  abstract parseWebhookPayload(
+    payload: Record<string, any>,
+  ): PaymentWebhookEvent | null;
 
   abstract submitDisputeEvidence(
     disputeId: string,
-    evidence: any[]
+    evidence: any[],
   ): Promise<void>;
 
   abstract getDispute(disputeId: string): Promise<PaymentDispute>;

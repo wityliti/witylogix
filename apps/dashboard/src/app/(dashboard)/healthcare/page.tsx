@@ -1,14 +1,25 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList, useApiQuery } from '@/hooks/use-api';
-import { AlertCircle, Users, Clock, FileText, CheckCircle2, Shield, Server } from 'lucide-react';
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  LoadingSkeleton,
+  TableSkeleton,
+} from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList, useApiQuery } from "@/hooks/use-api";
+import {
+  AlertCircle,
+  Users,
+  Clock,
+  FileText,
+  CheckCircle2,
+  Shield,
+  Server,
+} from "lucide-react";
 
 interface KPICard {
   label: string;
@@ -30,11 +41,17 @@ function KPICardComponent({ card }: { card: KPICard }) {
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-wl-text-secondary mb-2">{card.label}</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">
+              {card.label}
+            </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-white">{card.value}</span>
+              <span className="text-3xl font-bold text-white">
+                {card.value}
+              </span>
               {card.unit && (
-                <span className="text-sm text-wl-text-secondary">{card.unit}</span>
+                <span className="text-sm text-wl-text-secondary">
+                  {card.unit}
+                </span>
               )}
             </div>
           </div>
@@ -53,7 +70,13 @@ interface Compliance {
   outstandingIssues: number;
 }
 
-function ComplianceStatusCard({ compliance, loading }: { compliance: Compliance | null; loading: boolean }) {
+function ComplianceStatusCard({
+  compliance,
+  loading,
+}: {
+  compliance: Compliance | null;
+  loading: boolean;
+}) {
   if (loading) return <TableSkeleton rows={4} />;
   const c: Compliance = compliance ?? {
     hipaaCompliant: false,
@@ -73,32 +96,35 @@ function ComplianceStatusCard({ compliance, loading }: { compliance: Compliance 
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-wl-text-secondary">HIPAA Mode</span>
-          <Badge variant={c.hipaaCompliant ? 'success' : 'danger'}>
-            {c.hipaaCompliant ? 'Enabled' : 'Disabled'}
+          <Badge variant={c.hipaaCompliant ? "success" : "danger"}>
+            {c.hipaaCompliant ? "Enabled" : "Disabled"}
           </Badge>
         </div>
         <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-wl-text-secondary">Encryption</span>
-          <Badge variant={c.encryptionEnabled ? 'success' : 'warning'}>
-            {c.encryptionEnabled ? 'Platform-level' : 'Disabled'}
+          <Badge variant={c.encryptionEnabled ? "success" : "warning"}>
+            {c.encryptionEnabled ? "Platform-level" : "Disabled"}
           </Badge>
         </div>
         <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-wl-text-secondary">Audit Logging</span>
-          <Badge variant={c.auditLoggingEnabled ? 'success' : 'warning'}>
-            {c.auditLoggingEnabled ? 'Active' : 'Inactive'}
+          <Badge variant={c.auditLoggingEnabled ? "success" : "warning"}>
+            {c.auditLoggingEnabled ? "Active" : "Inactive"}
           </Badge>
         </div>
         <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
-          <span className="text-sm text-wl-text-secondary">Access Controls</span>
-          <Badge variant={c.accessControlsConfigured ? 'success' : 'warning'}>
-            {c.accessControlsConfigured ? 'Configured' : 'Pending'}
+          <span className="text-sm text-wl-text-secondary">
+            Access Controls
+          </span>
+          <Badge variant={c.accessControlsConfigured ? "success" : "warning"}>
+            {c.accessControlsConfigured ? "Configured" : "Pending"}
           </Badge>
         </div>
         {c.outstandingIssues > 0 && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
             <p className="text-xs text-amber-400 font-medium">
-              ⚠ {c.outstandingIssues} outstanding compliance issue{c.outstandingIssues !== 1 ? 's' : ''}
+              ⚠ {c.outstandingIssues} outstanding compliance issue
+              {c.outstandingIssues !== 1 ? "s" : ""}
             </p>
           </div>
         )}
@@ -142,18 +168,25 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
                     <p className="text-sm font-medium text-white">
                       {patient.firstName} {patient.lastName}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary mt-1">MRN: {patient.mrn || '—'}</p>
+                    <p className="text-xs text-wl-text-tertiary mt-1">
+                      MRN: {patient.mrn || "—"}
+                    </p>
                   </div>
-                  <Badge variant={patient.status === 'ACTIVE' ? 'success' : 'default'}>
+                  <Badge
+                    variant={
+                      patient.status === "ACTIVE" ? "success" : "default"
+                    }
+                  >
                     {patient.status}
                   </Badge>
                 </div>
                 <div className="flex gap-3 text-xs text-wl-text-secondary">
                   <span>
-                    Age:{' '}
+                    Age:{" "}
                     {patient.dateOfBirth
-                      ? new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()
-                      : '—'}
+                      ? new Date().getFullYear() -
+                        new Date(patient.dateOfBirth).getFullYear()
+                      : "—"}
                   </span>
                   <span>•</span>
                   <span>Conditions: {patient.activeConditionsCount ?? 0}</span>
@@ -184,7 +217,7 @@ interface ShopResponse {
 
 interface PlatformService {
   name: string;
-  status: 'healthy' | 'degraded' | 'down';
+  status: "healthy" | "degraded" | "down";
   latency?: number;
 }
 
@@ -195,20 +228,28 @@ interface PlatformStatus {
 }
 
 export default function HealthcarePage() {
-  const { items: patients, loading: patientsLoading, error: patientsError, refetch } =
-    useApiList<LocalPatient>('/api/v4/customers?type=patient');
+  const {
+    items: patients,
+    loading: patientsLoading,
+    error: patientsError,
+    refetch,
+  } = useApiList<LocalPatient>("/api/v4/customers?type=patient");
 
-  const { data: shopData, loading: shopLoading } = useApiQuery<ShopResponse>('/api/v4/shops/me');
+  const { data: shopData, loading: shopLoading } =
+    useApiQuery<ShopResponse>("/api/v4/shops/me");
 
   const { data: platformStatus, loading: platformLoading } =
-    useApiQuery<PlatformStatus>('/api/v4/platform/status');
+    useApiQuery<PlatformStatus>("/api/v4/platform/status");
 
   const compliance = useMemo<Compliance | null>(() => {
     if (shopLoading) return null;
-    const settings = (shopData as any)?.data?.settings ?? (shopData as any)?.settings ?? {};
+    const settings =
+      (shopData as any)?.data?.settings ?? (shopData as any)?.settings ?? {};
     const hipaaEnabled = settings?.hipaaMode === true;
     const hasMfa = settings?.mfaRequired === true;
-    const hasAuthProviders = Array.isArray(settings?.authProviders) && settings.authProviders.length > 0;
+    const hasAuthProviders =
+      Array.isArray(settings?.authProviders) &&
+      settings.authProviders.length > 0;
     const accessConfigured = hasMfa || hasAuthProviders;
     const issues = [!hipaaEnabled].filter(Boolean).length;
     return {
@@ -221,31 +262,37 @@ export default function HealthcarePage() {
   }, [shopData, shopLoading]);
 
   const systemStatus = useMemo<{ label: string; color: string }>(() => {
-    if (platformLoading || !platformStatus) return { label: '—', color: 'text-wl-text-secondary' };
+    if (platformLoading || !platformStatus)
+      return { label: "—", color: "text-wl-text-secondary" };
     const s = (platformStatus as any)?.data ?? platformStatus;
     const score = s?.score ?? 0;
-    if (score >= 90) return { label: 'Operational', color: 'text-emerald-400' };
-    if (score >= 50) return { label: 'Degraded', color: 'text-amber-400' };
-    return { label: 'Disrupted', color: 'text-red-400' };
+    if (score >= 90) return { label: "Operational", color: "text-emerald-400" };
+    if (score >= 50) return { label: "Degraded", color: "text-amber-400" };
+    return { label: "Disrupted", color: "text-red-400" };
   }, [platformStatus, platformLoading]);
 
-  const activePatients = patients.filter((p) => p.status === 'ACTIVE').length;
+  const activePatients = patients.filter((p) => p.status === "ACTIVE").length;
 
   const kpiCards: KPICard[] = [
-    { label: 'Total Patients', value: patients.length, icon: 'patients' },
-    { label: 'Active Patients', value: activePatients, icon: 'encounters' },
+    { label: "Total Patients", value: patients.length, icon: "patients" },
+    { label: "Active Patients", value: activePatients, icon: "encounters" },
   ];
 
   if (patientsLoading) return <LoadingSkeleton />;
-  if (patientsError) return <ErrorState message={patientsError.message} onRetry={refetch} />;
+  if (patientsError)
+    return <ErrorState message={patientsError.message} onRetry={refetch} />;
 
   return (
     <div className="p-6 space-y-6 bg-wl-bg-root min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Healthcare Dashboard</h1>
-          <p className="text-sm text-wl-text-secondary mt-1">Patient management and clinical oversight</p>
+          <h1 className="text-3xl font-bold text-white">
+            Healthcare Dashboard
+          </h1>
+          <p className="text-sm text-wl-text-secondary mt-1">
+            Patient management and clinical oversight
+          </p>
         </div>
         <Button variant="primary">+ Add Patient</Button>
       </div>
@@ -271,55 +318,67 @@ export default function HealthcarePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-wl-text-secondary mb-2">Avg. Patient Age</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">
+              Avg. Patient Age
+            </p>
             <p className="text-3xl font-bold text-white">
               {patients.length === 0
-                ? '—'
+                ? "—"
                 : Math.round(
                     patients.reduce(
                       (sum, p) =>
-                        sum + (p.dateOfBirth
-                          ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()
+                        sum +
+                        (p.dateOfBirth
+                          ? new Date().getFullYear() -
+                            new Date(p.dateOfBirth).getFullYear()
                           : 0),
                       0,
                     ) / patients.length,
                   )}
             </p>
-            <p className="text-xs text-wl-text-tertiary mt-2">Across all patients</p>
+            <p className="text-xs text-wl-text-tertiary mt-2">
+              Across all patients
+            </p>
           </CardContent>
         </Card>
 
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-wl-text-secondary">System Status</p>
+              <p className="text-sm font-medium text-wl-text-secondary">
+                System Status
+              </p>
               <Server className="w-4 h-4 text-wl-text-tertiary" />
             </div>
             {platformLoading ? (
               <div className="h-8 bg-wl-bg-elevated rounded animate-pulse" />
             ) : (
-              <p className={cn('text-3xl font-bold', systemStatus.color)}>{systemStatus.label}</p>
+              <p className={cn("text-3xl font-bold", systemStatus.color)}>
+                {systemStatus.label}
+              </p>
             )}
             <p className="text-xs text-wl-text-tertiary mt-2">
               {platformLoading
-                ? 'Checking services…'
+                ? "Checking services…"
                 : platformStatus
-                ? `${((platformStatus as any)?.data ?? platformStatus)?.summary?.healthy ?? 0}/${((platformStatus as any)?.data ?? platformStatus)?.summary?.total ?? 0} services healthy`
-                : 'Status unavailable'}
+                  ? `${((platformStatus as any)?.data ?? platformStatus)?.summary?.healthy ?? 0}/${((platformStatus as any)?.data ?? platformStatus)?.summary?.total ?? 0} services healthy`
+                  : "Status unavailable"}
             </p>
           </CardContent>
         </Card>
 
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-wl-text-secondary mb-2">Inactive Patients</p>
+            <p className="text-sm font-medium text-wl-text-secondary mb-2">
+              Inactive Patients
+            </p>
             <p className="text-3xl font-bold text-white">
               {patients.length - activePatients}
             </p>
             <p className="text-xs text-wl-text-tertiary mt-2">
               {patients.length > 0
                 ? `${Math.round(((patients.length - activePatients) / patients.length) * 100)}% of total`
-                : 'No data'}
+                : "No data"}
             </p>
           </CardContent>
         </Card>
@@ -331,12 +390,16 @@ export default function HealthcarePage() {
           <div className="flex gap-3">
             <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-blue-400 mb-1">HIPAA Compliance Notice</p>
+              <p className="text-sm font-medium text-blue-400 mb-1">
+                HIPAA Compliance Notice
+              </p>
               <p className="text-sm text-wl-text-secondary">
-                All patient information is encrypted at rest and access is logged for audit purposes.
+                All patient information is encrypted at rest and access is
+                logged for audit purposes.
                 {!compliance?.hipaaCompliant && (
                   <span className="block mt-1 text-amber-400">
-                    Enable HIPAA Mode in Settings → Organization to activate full compliance controls.
+                    Enable HIPAA Mode in Settings → Organization to activate
+                    full compliance controls.
                   </span>
                 )}
               </p>

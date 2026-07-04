@@ -4,7 +4,12 @@
  * OAuth2 authentication
  */
 
-import type { ERPInvoice, ERPCustomer, ERPProduct, ERPConnection } from './types.js';
+import type {
+  ERPInvoice,
+  ERPCustomer,
+  ERPProduct,
+  ERPConnection,
+} from "./types.js";
 
 /**
  * Wave GraphQL API Client
@@ -12,7 +17,7 @@ import type { ERPInvoice, ERPCustomer, ERPProduct, ERPConnection } from './types
 export class WaveClient {
   private accessToken?: string;
   private businessId?: string;
-  private apiUrl: string = 'https://gql.waveapps.com/graphql/public';
+  private apiUrl: string = "https://gql.waveapps.com/graphql/public";
   private connection: ERPConnection;
 
   /**
@@ -24,7 +29,7 @@ export class WaveClient {
     this.businessId = connection.credentials.organizationId;
 
     if (!this.accessToken || !this.businessId) {
-      throw new Error('Missing Wave credentials: accessToken, organizationId');
+      throw new Error("Missing Wave credentials: accessToken, organizationId");
     }
   }
 
@@ -50,12 +55,15 @@ export class WaveClient {
   /**
    * GraphQL request helper
    */
-  private async graphqlRequest(query: string, variables?: Record<string, unknown>): Promise<any> {
+  private async graphqlRequest(
+    query: string,
+    variables?: Record<string, unknown>,
+  ): Promise<any> {
     const response = await fetch(this.apiUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.accessToken}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.accessToken}`,
       },
       body: JSON.stringify({ query, variables }),
       signal: AbortSignal.timeout(30000),
@@ -98,8 +106,8 @@ export class WaveClient {
       input: {
         customerId: invoice.customerId,
         invoiceNumber: invoice.invoiceNumber,
-        invoiceDate: invoice.invoiceDate.toISOString().split('T')[0],
-        dueDate: invoice.dueDate.toISOString().split('T')[0],
+        invoiceDate: invoice.invoiceDate.toISOString().split("T")[0],
+        dueDate: invoice.dueDate.toISOString().split("T")[0],
         items: invoice.lineItems.map((item) => ({
           description: item.description,
           quantity: item.quantity,
@@ -183,7 +191,9 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphqlRequest(query, { businessId: this.businessId });
+    const result = await this.graphqlRequest(query, {
+      businessId: this.businessId,
+    });
     return result.invoices.edges.map((edge: any) => {
       const inv = edge.node;
       return {
@@ -235,7 +245,7 @@ export class WaveClient {
       name: cust.name,
       email: cust.email,
       phone: cust.phone,
-      status: 'active',
+      status: "active",
     };
   }
 
@@ -263,7 +273,7 @@ export class WaveClient {
       name: cust.name,
       email: cust.email,
       phone: cust.phone,
-      status: 'active',
+      status: "active",
     };
   }
 
@@ -286,7 +296,9 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphqlRequest(query, { businessId: this.businessId });
+    const result = await this.graphqlRequest(query, {
+      businessId: this.businessId,
+    });
     return result.customers.edges.map((edge: any) => {
       const cust = edge.node;
       return {
@@ -295,7 +307,7 @@ export class WaveClient {
         name: cust.name,
         email: cust.email,
         phone: cust.phone,
-        status: 'active',
+        status: "active",
       };
     });
   }
@@ -320,7 +332,7 @@ export class WaveClient {
       input: {
         invoiceId,
         amount,
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toISOString().split("T")[0],
       },
     };
 
@@ -363,7 +375,7 @@ export class WaveClient {
       name: prod.name,
       description: prod.description,
       unitPrice: prod.unitPrice,
-      status: 'active',
+      status: "active",
     };
   }
 
@@ -386,7 +398,9 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphqlRequest(query, { businessId: this.businessId });
+    const result = await this.graphqlRequest(query, {
+      businessId: this.businessId,
+    });
     return result.products.edges.map((edge: any) => {
       const prod = edge.node;
       return {
@@ -395,7 +409,7 @@ export class WaveClient {
         name: prod.name,
         description: prod.description,
         unitPrice: prod.unitPrice,
-        status: 'active',
+        status: "active",
       };
     });
   }
@@ -419,7 +433,9 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphqlRequest(query, { businessId: this.businessId });
+    const result = await this.graphqlRequest(query, {
+      businessId: this.businessId,
+    });
     return result.accounts.edges.map((edge: any) => edge.node);
   }
 
@@ -471,7 +487,9 @@ export class WaveClient {
       }
     `;
 
-    const result = await this.graphqlRequest(query, { businessId: this.businessId });
+    const result = await this.graphqlRequest(query, {
+      businessId: this.businessId,
+    });
     return result.transactions.edges.map((edge: any) => edge.node);
   }
 }

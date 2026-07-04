@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { CardSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CardSkeleton, TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   useWebhookMonitor,
   type WebhookEndpoint,
-} from '@/hooks/use-integration-health';
+} from "@/hooks/use-integration-health";
 import {
   RefreshCw,
   Plus,
@@ -20,7 +20,7 @@ import {
   Copy,
   Lock,
   ChevronDown,
-} from 'lucide-react';
+} from "lucide-react";
 
 /**
  * Webhook Monitor
@@ -110,9 +110,8 @@ function EndpointCard({
 export default function WebhooksPage() {
   const { webhooks, isLoading, error, revalidate, retryDelivery, purgeDLQ } =
     useWebhookMonitor();
-  const [expandedDeliveries, setExpandedDeliveries] = useState<ExpandedDelivery>(
-    {}
-  );
+  const [expandedDeliveries, setExpandedDeliveries] =
+    useState<ExpandedDelivery>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingEndpoint, setEditingEndpoint] =
     useState<WebhookEndpoint | null>(null);
@@ -169,7 +168,9 @@ export default function WebhooksPage() {
           <div className="h-9 w-32 rounded-lg bg-wl-bg-elevated animate-pulse" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
         <TableSkeleton rows={5} columns={5} />
       </div>
@@ -213,7 +214,9 @@ export default function WebhooksPage() {
         <Card className="bg-wl-bg-surface border-neutral-700">
           <CardHeader>
             <CardTitle>
-              {editingEndpoint ? "Edit Webhook Endpoint" : "Create Webhook Endpoint"}
+              {editingEndpoint
+                ? "Edit Webhook Endpoint"
+                : "Create Webhook Endpoint"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -258,7 +261,9 @@ export default function WebhooksPage() {
                           } else {
                             setFormData({
                               ...formData,
-                              events: formData.events.filter((ev) => ev !== event),
+                              events: formData.events.filter(
+                                (ev) => ev !== event,
+                              ),
                             });
                           }
                         }}
@@ -390,13 +395,17 @@ export default function WebhooksPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Successful Deliveries</p>
+                <p className="text-sm text-wl-text-secondary">
+                  Successful Deliveries
+                </p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {successfulDeliveries.length}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Failed Deliveries</p>
+                <p className="text-sm text-wl-text-secondary">
+                  Failed Deliveries
+                </p>
                 <p className="text-3xl font-bold text-red-500 mt-2">
                   {failedDeliveries.length}
                 </p>
@@ -405,18 +414,26 @@ export default function WebhooksPage() {
 
             {/* Stacked Bar Chart (hourly) — bucketed from real deliveries */}
             {(() => {
-              const hourly = Array.from({ length: 24 }, (_, h) => ({ success: 0, failed: 0 }));
+              const hourly = Array.from({ length: 24 }, (_, h) => ({
+                success: 0,
+                failed: 0,
+              }));
               for (const d of webhooks?.deliveries ?? []) {
                 const h = new Date(d.timestamp).getHours();
                 if (h >= 0 && h < 24) {
-                  if (d.status === 'success') hourly[h].success++;
+                  if (d.status === "success") hourly[h].success++;
                   else hourly[h].failed++;
                 }
               }
-              const maxTotal = Math.max(1, ...hourly.map((h) => h.success + h.failed));
+              const maxTotal = Math.max(
+                1,
+                ...hourly.map((h) => h.success + h.failed),
+              );
               return (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
+                  <p className="text-sm font-medium text-white">
+                    Hourly Delivery Status
+                  </p>
                   <div className="flex items-end gap-1 h-32 px-2 py-4 bg-wl-bg-root rounded-lg border border-neutral-700">
                     {hourly.map((bucket, i) => {
                       const total = bucket.success + bucket.failed;
@@ -427,10 +444,18 @@ export default function WebhooksPage() {
                           className="flex-1 flex flex-col-reverse gap-0 group relative"
                           title={`${i}:00 — Success: ${bucket.success}, Failed: ${bucket.failed}`}
                         >
-                          <div className="w-full bg-red-500 rounded-t transition-all group-hover:opacity-80"
-                            style={{ height: `${total > 0 ? (bucket.failed / total) * heightPercent : 0}%` }} />
-                          <div className="w-full bg-emerald-500 rounded-t transition-all group-hover:opacity-80"
-                            style={{ height: `${total > 0 ? (bucket.success / total) * heightPercent : 0}%` }} />
+                          <div
+                            className="w-full bg-red-500 rounded-t transition-all group-hover:opacity-80"
+                            style={{
+                              height: `${total > 0 ? (bucket.failed / total) * heightPercent : 0}%`,
+                            }}
+                          />
+                          <div
+                            className="w-full bg-emerald-500 rounded-t transition-all group-hover:opacity-80"
+                            style={{
+                              height: `${total > 0 ? (bucket.success / total) * heightPercent : 0}%`,
+                            }}
+                          />
                         </div>
                       );
                     })}
@@ -482,7 +507,8 @@ export default function WebhooksPage() {
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <span className="text-xs text-wl-text-secondary">
-                        {delivery.attempts} attempt{delivery.attempts !== 1 ? "s" : ""}
+                        {delivery.attempts} attempt
+                        {delivery.attempts !== 1 ? "s" : ""}
                       </span>
                       <span className="text-xs text-wl-text-secondary">
                         {delivery.latency}ms
@@ -490,7 +516,7 @@ export default function WebhooksPage() {
                       <ChevronDown
                         className={cn(
                           "w-4 h-4 text-wl-text-secondary transition-transform",
-                          expandedDeliveries[delivery.id] && "rotate-180"
+                          expandedDeliveries[delivery.id] && "rotate-180",
                         )}
                       />
                     </div>

@@ -35,7 +35,10 @@ afterEach(() => {
   createTenantMock.mockReset();
 });
 
-const AUTH = { authorization: "Bearer tok", "content-type": "application/json" };
+const AUTH = {
+  authorization: "Bearer tok",
+  "content-type": "application/json",
+};
 
 async function postTenant(app: any, body: unknown) {
   return app.inject({
@@ -71,7 +74,9 @@ describe("POST /internal/bench/tenants", () => {
   });
 
   it("returns 409 when slug taken", async () => {
-    createTenantMock.mockRejectedValueOnce(new TenantAlreadyExistsError("slug"));
+    createTenantMock.mockRejectedValueOnce(
+      new TenantAlreadyExistsError("slug"),
+    );
     const app = await buildApp();
     const r = await postTenant(app, {
       slug: "acme",
@@ -111,7 +116,10 @@ describe("POST /internal/bench/tenants", () => {
 
   it("passes plan + features + limits through to provisioner", async () => {
     createTenantMock.mockResolvedValueOnce({
-      tenantId: "t", orgId: "o", subdomain: "acme", ownerEmail: "a@b.co",
+      tenantId: "t",
+      orgId: "o",
+      subdomain: "acme",
+      ownerEmail: "a@b.co",
     });
     const app = await buildApp();
     await postTenant(app, {

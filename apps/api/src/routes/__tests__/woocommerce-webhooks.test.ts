@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import crypto from 'crypto';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import crypto from "crypto";
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 /**
  * WooCommerce Webhooks Route Tests
@@ -18,11 +18,15 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
  */
 
 // HMAC-SHA256 signature verification for WooCommerce
-const verifyWooCommerceSignature = (payload: string, signature: string, secret: string): boolean => {
+const verifyWooCommerceSignature = (
+  payload: string,
+  signature: string,
+  secret: string,
+): boolean => {
   const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(payload, 'utf8')
-    .digest('base64');
+    .createHmac("sha256", secret)
+    .update(payload, "utf8")
+    .digest("base64");
 
   return expectedSignature === signature;
 };
@@ -72,42 +76,46 @@ interface MockWebhookLog {
   createdAt: Date;
 }
 
-const createMockWebhookRegistration = (overrides?: Partial<MockWebhookRegistration>): MockWebhookRegistration => ({
-  id: 'webhook-' + Math.random().toString(36).substring(7),
-  storeId: 'store-123',
-  topic: 'order.created',
-  deliveryUrl: 'https://api.example.com/webhooks/woocommerce/order.created',
-  consumerKey: 'wc_key_abc123',
-  consumerSecret: 'wc_secret_xyz789',
+const createMockWebhookRegistration = (
+  overrides?: Partial<MockWebhookRegistration>,
+): MockWebhookRegistration => ({
+  id: "webhook-" + Math.random().toString(36).substring(7),
+  storeId: "store-123",
+  topic: "order.created",
+  deliveryUrl: "https://api.example.com/webhooks/woocommerce/order.created",
+  consumerKey: "wc_key_abc123",
+  consumerSecret: "wc_secret_xyz789",
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
 });
 
-const createMockWooOrder = (overrides?: Partial<MockWooCommerceOrder>): MockWooCommerceOrder => ({
+const createMockWooOrder = (
+  overrides?: Partial<MockWooCommerceOrder>,
+): MockWooCommerceOrder => ({
   id: 12345,
-  order_number: 'WC-001',
+  order_number: "WC-001",
   customer_id: 789,
   billing: {
-    first_name: 'John',
-    last_name: 'Doe',
-    email: 'john@example.com',
-    phone: '+1234567890',
-    address_1: '123 Main St',
-    city: 'New York',
-    state: 'NY',
-    postcode: '10001',
+    first_name: "John",
+    last_name: "Doe",
+    email: "john@example.com",
+    phone: "+1234567890",
+    address_1: "123 Main St",
+    city: "New York",
+    state: "NY",
+    postcode: "10001",
   },
-  total: '99.99',
+  total: "99.99",
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  status: 'pending',
+  status: "pending",
   line_items: [],
   ...overrides,
 });
 
-describe('WooCommerce Webhooks', () => {
+describe("WooCommerce Webhooks", () => {
   let mockTenantDb: any;
   let mockRequest: any;
   let mockReply: any;
@@ -142,15 +150,15 @@ describe('WooCommerce Webhooks', () => {
     };
 
     mockSyncQueue = {
-      add: vi.fn().mockResolvedValue({ id: 'job-123' }),
+      add: vi.fn().mockResolvedValue({ id: "job-123" }),
     };
 
     mockRequest = {
       params: {},
       body: {},
       headers: {},
-      shopId: 'shop-123',
-      auth: { role: 'ADMIN' },
+      shopId: "shop-123",
+      auth: { role: "ADMIN" },
       tenantDb: mockTenantDb,
       log: {
         info: vi.fn(),
@@ -169,33 +177,35 @@ describe('WooCommerce Webhooks', () => {
     vi.clearAllMocks();
   });
 
-  describe('Webhook Registration', () => {
-    it('should register new WooCommerce webhook', async () => {
+  describe("Webhook Registration", () => {
+    it("should register new WooCommerce webhook", async () => {
       const mockWebhook = createMockWebhookRegistration();
       mockTenantDb.woocommerceWebhook.create.mockResolvedValue(mockWebhook);
 
       mockRequest.body = {
-        topic: 'order.created',
-        deliveryUrl: 'https://api.example.com/webhooks/woocommerce/order.created',
-        consumerKey: 'wc_key_abc123',
-        consumerSecret: 'wc_secret_xyz789',
+        topic: "order.created",
+        deliveryUrl:
+          "https://api.example.com/webhooks/woocommerce/order.created",
+        consumerKey: "wc_key_abc123",
+        consumerSecret: "wc_secret_xyz789",
       };
 
       await mockTenantDb.woocommerceWebhook.create({ data: mockRequest.body });
 
       const result = { data: mockWebhook };
 
-      expect(result.data.topic).toBe('order.created');
+      expect(result.data.topic).toBe("order.created");
       expect(result.data.isActive).toBe(true);
       expect(mockTenantDb.woocommerceWebhook.create).toHaveBeenCalled();
     });
 
-    it('should validate consumer key and secret are provided', async () => {
+    it("should validate consumer key and secret are provided", async () => {
       mockRequest.body = {
-        topic: 'order.created',
-        deliveryUrl: 'https://api.example.com/webhooks/woocommerce/order.created',
-        consumerKey: '',
-        consumerSecret: '',
+        topic: "order.created",
+        deliveryUrl:
+          "https://api.example.com/webhooks/woocommerce/order.created",
+        consumerKey: "",
+        consumerSecret: "",
       };
 
       const hasRequiredFields =
@@ -203,8 +213,13 @@ describe('WooCommerce Webhooks', () => {
       expect(hasRequiredFields).toBeFalsy();
     });
 
-    it('should support multiple webhook topics', async () => {
-      const topics = ['order.created', 'order.updated', 'product.updated', 'customer.created'];
+    it("should support multiple webhook topics", async () => {
+      const topics = [
+        "order.created",
+        "order.updated",
+        "product.updated",
+        "customer.created",
+      ];
 
       for (const topic of topics) {
         const webhook = createMockWebhookRegistration({ topic });
@@ -213,24 +228,26 @@ describe('WooCommerce Webhooks', () => {
         mockRequest.body = {
           topic,
           deliveryUrl: `https://api.example.com/webhooks/woocommerce/${topic}`,
-          consumerKey: 'wc_key_abc123',
-          consumerSecret: 'wc_secret_xyz789',
+          consumerKey: "wc_key_abc123",
+          consumerSecret: "wc_secret_xyz789",
         };
 
         expect(webhook.topic).toBe(topic);
       }
     });
 
-    it('should list registered webhooks', async () => {
+    it("should list registered webhooks", async () => {
       const mockWebhooks = [
-        createMockWebhookRegistration({ topic: 'order.created' }),
-        createMockWebhookRegistration({ topic: 'product.updated' }),
+        createMockWebhookRegistration({ topic: "order.created" }),
+        createMockWebhookRegistration({ topic: "product.updated" }),
       ];
 
       mockTenantDb.woocommerceWebhook.findMany.mockResolvedValue(mockWebhooks);
-      mockRequest.params = { storeId: 'store-123' };
+      mockRequest.params = { storeId: "store-123" };
 
-      await mockTenantDb.woocommerceWebhook.findMany({ where: { storeId: 'store-123' } });
+      await mockTenantDb.woocommerceWebhook.findMany({
+        where: { storeId: "store-123" },
+      });
 
       const result = { data: mockWebhooks };
 
@@ -238,12 +255,14 @@ describe('WooCommerce Webhooks', () => {
       expect(mockTenantDb.woocommerceWebhook.findMany).toHaveBeenCalled();
     });
 
-    it('should deactivate webhook', async () => {
+    it("should deactivate webhook", async () => {
       const webhook = createMockWebhookRegistration({ isActive: true });
       const deactivatedWebhook = { ...webhook, isActive: false };
 
       mockTenantDb.woocommerceWebhook.findUnique.mockResolvedValue(webhook);
-      mockTenantDb.woocommerceWebhook.update.mockResolvedValue(deactivatedWebhook);
+      mockTenantDb.woocommerceWebhook.update.mockResolvedValue(
+        deactivatedWebhook,
+      );
 
       mockRequest.params = { id: webhook.id };
 
@@ -258,158 +277,203 @@ describe('WooCommerce Webhooks', () => {
       expect(mockTenantDb.woocommerceWebhook.update).toHaveBeenCalled();
     });
 
-    it('should delete webhook', async () => {
+    it("should delete webhook", async () => {
       const webhook = createMockWebhookRegistration();
       mockTenantDb.woocommerceWebhook.findUnique.mockResolvedValue(webhook);
       mockTenantDb.woocommerceWebhook.delete.mockResolvedValue(webhook);
 
       mockRequest.params = { id: webhook.id };
 
-      await mockTenantDb.woocommerceWebhook.delete({ where: { id: webhook.id } });
+      await mockTenantDb.woocommerceWebhook.delete({
+        where: { id: webhook.id },
+      });
 
       expect(mockTenantDb.woocommerceWebhook.delete).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: webhook.id } })
+        expect.objectContaining({ where: { id: webhook.id } }),
       );
     });
   });
 
-  describe('HMAC-SHA256 Signature Verification', () => {
-    it('should verify valid HMAC signature', () => {
-      const secret = 'wc_secret_xyz789';
-      const payload = JSON.stringify({ id: 12345, status: 'pending' });
+  describe("HMAC-SHA256 Signature Verification", () => {
+    it("should verify valid HMAC signature", () => {
+      const secret = "wc_secret_xyz789";
+      const payload = JSON.stringify({ id: 12345, status: "pending" });
 
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(payload, "utf8")
+        .digest("base64");
 
       const isValid = verifyWooCommerceSignature(payload, signature, secret);
 
       expect(isValid).toBe(true);
     });
 
-    it('should reject invalid HMAC signature', () => {
-      const secret = 'wc_secret_xyz789';
-      const payload = JSON.stringify({ id: 12345, status: 'pending' });
-      const invalidSignature = 'invalid_signature_xyz';
+    it("should reject invalid HMAC signature", () => {
+      const secret = "wc_secret_xyz789";
+      const payload = JSON.stringify({ id: 12345, status: "pending" });
+      const invalidSignature = "invalid_signature_xyz";
 
-      const isValid = verifyWooCommerceSignature(payload, invalidSignature, secret);
-
-      expect(isValid).toBe(false);
-    });
-
-    it('should reject modified payload with original signature', () => {
-      const secret = 'wc_secret_xyz789';
-      const originalPayload = JSON.stringify({ id: 12345, status: 'pending' });
-
-      const signature = crypto
-        .createHmac('sha256', secret)
-        .update(originalPayload, 'utf8')
-        .digest('base64');
-
-      const modifiedPayload = JSON.stringify({ id: 12345, status: 'completed' });
-      const isValid = verifyWooCommerceSignature(modifiedPayload, signature, secret);
+      const isValid = verifyWooCommerceSignature(
+        payload,
+        invalidSignature,
+        secret,
+      );
 
       expect(isValid).toBe(false);
     });
 
-    it('should reject signature with wrong secret', () => {
-      const correctSecret = 'wc_secret_xyz789';
-      const wrongSecret = 'wc_secret_wrong';
-      const payload = JSON.stringify({ id: 12345, status: 'pending' });
+    it("should reject modified payload with original signature", () => {
+      const secret = "wc_secret_xyz789";
+      const originalPayload = JSON.stringify({ id: 12345, status: "pending" });
 
       const signature = crypto
-        .createHmac('sha256', correctSecret)
-        .update(payload, 'utf8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(originalPayload, "utf8")
+        .digest("base64");
 
-      const isValid = verifyWooCommerceSignature(payload, signature, wrongSecret);
+      const modifiedPayload = JSON.stringify({
+        id: 12345,
+        status: "completed",
+      });
+      const isValid = verifyWooCommerceSignature(
+        modifiedPayload,
+        signature,
+        secret,
+      );
 
       expect(isValid).toBe(false);
     });
 
-    it('should handle empty payload signature', () => {
-      const secret = 'wc_secret_xyz789';
-      const emptyPayload = '';
+    it("should reject signature with wrong secret", () => {
+      const correctSecret = "wc_secret_xyz789";
+      const wrongSecret = "wc_secret_wrong";
+      const payload = JSON.stringify({ id: 12345, status: "pending" });
 
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(emptyPayload, 'utf8')
-        .digest('base64');
+        .createHmac("sha256", correctSecret)
+        .update(payload, "utf8")
+        .digest("base64");
 
-      const isValid = verifyWooCommerceSignature(emptyPayload, signature, secret);
+      const isValid = verifyWooCommerceSignature(
+        payload,
+        signature,
+        wrongSecret,
+      );
+
+      expect(isValid).toBe(false);
+    });
+
+    it("should handle empty payload signature", () => {
+      const secret = "wc_secret_xyz789";
+      const emptyPayload = "";
+
+      const signature = crypto
+        .createHmac("sha256", secret)
+        .update(emptyPayload, "utf8")
+        .digest("base64");
+
+      const isValid = verifyWooCommerceSignature(
+        emptyPayload,
+        signature,
+        secret,
+      );
 
       expect(isValid).toBe(true);
     });
 
-    it('should handle case-sensitive signature comparison', () => {
-      const secret = 'wc_secret_xyz789';
+    it("should handle case-sensitive signature comparison", () => {
+      const secret = "wc_secret_xyz789";
       const payload = JSON.stringify({ id: 12345 });
 
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(payload, "utf8")
+        .digest("base64");
 
       const uppercaseSignature = signature.toUpperCase();
-      const isValid = verifyWooCommerceSignature(payload, uppercaseSignature, secret);
+      const isValid = verifyWooCommerceSignature(
+        payload,
+        uppercaseSignature,
+        secret,
+      );
 
       expect(isValid).toBe(false);
     });
   });
 
-  describe('Order Event Processing', () => {
-    it('should process order.created event', async () => {
+  describe("Order Event Processing", () => {
+    it("should process order.created event", async () => {
       const mockOrder = createMockWooOrder();
       const signature = crypto
-        .createHmac('sha256', 'wc_secret_xyz789')
-        .update(JSON.stringify(mockOrder), 'utf8')
-        .digest('base64');
+        .createHmac("sha256", "wc_secret_xyz789")
+        .update(JSON.stringify(mockOrder), "utf8")
+        .digest("base64");
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(mockOrder);
 
-      mockRequest.params = { topic: 'order.created' };
+      mockRequest.params = { topic: "order.created" };
       mockRequest.body = mockOrder;
-      mockRequest.headers = { 'x-wc-webhook-signature': signature };
+      mockRequest.headers = { "x-wc-webhook-signature": signature };
 
-      await mockTenantDb.order.upsert({ where: { shopifyOrderId: String(mockOrder.id) }, create: mockOrder, update: mockOrder });
+      await mockTenantDb.order.upsert({
+        where: { shopifyOrderId: String(mockOrder.id) },
+        create: mockOrder,
+        update: mockOrder,
+      });
 
       expect(mockTenantDb.order.upsert).toHaveBeenCalled();
     });
 
-    it('should process order.updated event', async () => {
-      const mockOrder = createMockWooOrder({ status: 'processing' });
+    it("should process order.updated event", async () => {
+      const mockOrder = createMockWooOrder({ status: "processing" });
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(mockOrder);
 
-      mockRequest.params = { topic: 'order.updated' };
+      mockRequest.params = { topic: "order.updated" };
       mockRequest.body = mockOrder;
 
-      await mockTenantDb.order.upsert({ where: { shopifyOrderId: String(mockOrder.id) }, create: mockOrder, update: mockOrder });
+      await mockTenantDb.order.upsert({
+        where: { shopifyOrderId: String(mockOrder.id) },
+        create: mockOrder,
+        update: mockOrder,
+      });
 
       const result = { data: mockOrder };
 
-      expect(result.data.status).toBe('processing');
+      expect(result.data.status).toBe("processing");
       expect(mockTenantDb.order.upsert).toHaveBeenCalled();
     });
 
-    it('should process order.deleted event', async () => {
+    it("should process order.deleted event", async () => {
       const mockOrder = createMockWooOrder();
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
-      mockTenantDb.order.update.mockResolvedValue({ ...mockOrder, deletedAt: new Date() });
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
+      mockTenantDb.order.update.mockResolvedValue({
+        ...mockOrder,
+        deletedAt: new Date(),
+      });
 
-      mockRequest.params = { topic: 'order.deleted' };
+      mockRequest.params = { topic: "order.deleted" };
       mockRequest.body = { id: mockOrder.id };
 
-      await mockTenantDb.order.update({ where: { shopifyOrderId: String(mockOrder.id) }, data: { deletedAt: new Date() } });
+      await mockTenantDb.order.update({
+        where: { shopifyOrderId: String(mockOrder.id) },
+        data: { deletedAt: new Date() },
+      });
 
       expect(mockTenantDb.order.update).toHaveBeenCalled();
     });
 
-    it('should map WooCommerce order fields to internal format', async () => {
+    it("should map WooCommerce order fields to internal format", async () => {
       const mockOrder = createMockWooOrder();
 
       const mappedOrder = {
@@ -426,31 +490,31 @@ describe('WooCommerce Webhooks', () => {
         status: mockOrder.status,
       };
 
-      expect(mappedOrder.customerName).toBe('John Doe');
+      expect(mappedOrder.customerName).toBe("John Doe");
       expect(mappedOrder.totalPrice).toBe(99.99);
     });
 
-    it('should log webhook delivery', async () => {
+    it("should log webhook delivery", async () => {
       const mockOrder = createMockWooOrder();
       const mockLog = {
-        id: 'log-123',
-        webhookId: 'webhook-123',
-        topic: 'order.created',
+        id: "log-123",
+        webhookId: "webhook-123",
+        topic: "order.created",
         payload: mockOrder,
         statusCode: 200,
-        response: 'OK',
+        response: "OK",
         retryCount: 0,
         createdAt: new Date(),
       };
 
       mockTenantDb.webhookLog.create.mockResolvedValue(mockLog);
 
-      mockRequest.params = { topic: 'order.created' };
+      mockRequest.params = { topic: "order.created" };
       mockRequest.body = mockOrder;
 
       await mockTenantDb.webhookLog.create({
         data: expect.objectContaining({
-          topic: 'order.created',
+          topic: "order.created",
           statusCode: 200,
         }),
       });
@@ -458,57 +522,67 @@ describe('WooCommerce Webhooks', () => {
       expect(mockTenantDb.webhookLog.create).toHaveBeenCalled();
     });
 
-    it('should enqueue sync job on successful webhook', async () => {
+    it("should enqueue sync job on successful webhook", async () => {
       const mockOrder = createMockWooOrder();
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(mockOrder);
 
-      mockRequest.params = { topic: 'order.created' };
+      mockRequest.params = { topic: "order.created" };
       mockRequest.body = mockOrder;
 
-      await mockSyncQueue.add('woocommerce-order-sync', {
-        type: 'order.created',
+      await mockSyncQueue.add("woocommerce-order-sync", {
+        type: "order.created",
         orderId: mockOrder.id,
       });
 
       expect(mockSyncQueue.add).toHaveBeenCalledWith(
-        'woocommerce-order-sync',
-        expect.objectContaining({ type: 'order.created' })
+        "woocommerce-order-sync",
+        expect.objectContaining({ type: "order.created" }),
       );
     });
   });
 
-  describe('Product Sync', () => {
-    it('should sync product from webhook payload', async () => {
+  describe("Product Sync", () => {
+    it("should sync product from webhook payload", async () => {
       const mockProduct = {
         id: 456,
-        name: 'Test Product',
-        sku: 'TEST-001',
-        price: '29.99',
-        description: 'Test description',
+        name: "Test Product",
+        sku: "TEST-001",
+        price: "29.99",
+        description: "Test description",
       };
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.product.upsert.mockResolvedValue(mockProduct);
 
-      mockRequest.params = { topic: 'product.updated' };
+      mockRequest.params = { topic: "product.updated" };
       mockRequest.body = mockProduct;
 
-      await mockTenantDb.product.upsert({ where: { sku: mockProduct.sku }, create: mockProduct, update: mockProduct });
+      await mockTenantDb.product.upsert({
+        where: { sku: mockProduct.sku },
+        create: mockProduct,
+        update: mockProduct,
+      });
 
       const result = { data: mockProduct };
 
-      expect(result.data.sku).toBe('TEST-001');
+      expect(result.data.sku).toBe("TEST-001");
       expect(mockTenantDb.product.upsert).toHaveBeenCalled();
     });
 
-    it('should handle product deletion', async () => {
+    it("should handle product deletion", async () => {
       const productId = 456;
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
 
-      mockRequest.params = { topic: 'product.deleted' };
+      mockRequest.params = { topic: "product.deleted" };
       mockRequest.body = { id: productId };
 
       await mockTenantDb.$transaction(async () => {});
@@ -516,10 +590,10 @@ describe('WooCommerce Webhooks', () => {
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
     });
 
-    it('should update inventory on product change', async () => {
+    it("should update inventory on product change", async () => {
       const mockProduct = {
         id: 456,
-        name: 'Test Product',
+        name: "Test Product",
         stock_quantity: 50,
       };
 
@@ -533,8 +607,8 @@ describe('WooCommerce Webhooks', () => {
     });
   });
 
-  describe('Customer Sync', () => {
-    it('should sync customer from order webhook', async () => {
+  describe("Customer Sync", () => {
+    it("should sync customer from order webhook", async () => {
       const mockOrder = createMockWooOrder();
 
       const customerData = {
@@ -549,97 +623,107 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.body = mockOrder;
 
-      await mockTenantDb.customer.upsert({ where: { email: mockOrder.billing.email }, create: customerData, update: customerData });
+      await mockTenantDb.customer.upsert({
+        where: { email: mockOrder.billing.email },
+        create: customerData,
+        update: customerData,
+      });
 
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
 
-    it('should handle customer.created event', async () => {
+    it("should handle customer.created event", async () => {
       const mockCustomer = {
         id: 789,
-        email: 'customer@example.com',
-        first_name: 'Jane',
-        last_name: 'Smith',
+        email: "customer@example.com",
+        first_name: "Jane",
+        last_name: "Smith",
       };
 
       mockTenantDb.customer.upsert.mockResolvedValue(mockCustomer);
 
-      mockRequest.params = { topic: 'customer.created' };
+      mockRequest.params = { topic: "customer.created" };
       mockRequest.body = mockCustomer;
 
-      await mockTenantDb.customer.upsert({ where: { email: mockCustomer.email }, create: mockCustomer, update: mockCustomer });
+      await mockTenantDb.customer.upsert({
+        where: { email: mockCustomer.email },
+        create: mockCustomer,
+        update: mockCustomer,
+      });
 
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
   });
 
-  describe('Error Handling', () => {
-    it('should return 401 for invalid signature', async () => {
+  describe("Error Handling", () => {
+    it("should return 401 for invalid signature", async () => {
       const mockOrder = createMockWooOrder();
-      const invalidSignature = 'invalid_signature_xyz';
+      const invalidSignature = "invalid_signature_xyz";
 
-      mockRequest.params = { topic: 'order.created' };
+      mockRequest.params = { topic: "order.created" };
       mockRequest.body = mockOrder;
-      mockRequest.headers = { 'x-wc-webhook-signature': invalidSignature };
+      mockRequest.headers = { "x-wc-webhook-signature": invalidSignature };
 
       mockReply.status(401);
 
       expect(mockReply.status).toHaveBeenCalledWith(401);
     });
 
-    it('should handle malformed JSON payload', async () => {
-      mockRequest.params = { topic: 'order.created' };
+    it("should handle malformed JSON payload", async () => {
+      mockRequest.params = { topic: "order.created" };
       mockRequest.body = null;
 
       const willThrow = () => {
-        if (!mockRequest.body) throw new Error('Invalid payload');
+        if (!mockRequest.body) throw new Error("Invalid payload");
       };
 
-      expect(willThrow).toThrow('Invalid payload');
+      expect(willThrow).toThrow("Invalid payload");
     });
 
-    it('should skip webhook if topic not registered', async () => {
+    it("should skip webhook if topic not registered", async () => {
       mockTenantDb.woocommerceWebhook.findMany.mockResolvedValue([]);
 
-      mockRequest.params = { topic: 'unknown.event' };
+      mockRequest.params = { topic: "unknown.event" };
       mockRequest.body = { id: 123 };
 
-      await mockTenantDb.woocommerceWebhook.findMany({ where: { topic: 'unknown.event' } });
+      await mockTenantDb.woocommerceWebhook.findMany({
+        where: { topic: "unknown.event" },
+      });
 
       expect(mockTenantDb.woocommerceWebhook.findMany).toHaveBeenCalled();
     });
 
-    it('should handle database transaction error', async () => {
-      mockTenantDb.$transaction.mockRejectedValue(new Error('Database error'));
+    it("should handle database transaction error", async () => {
+      mockTenantDb.$transaction.mockRejectedValue(new Error("Database error"));
 
-      mockRequest.params = { topic: 'order.created' };
+      mockRequest.params = { topic: "order.created" };
       mockRequest.body = createMockWooOrder();
 
       const willThrow = async () => {
         try {
           await mockTenantDb.$transaction(async () => {});
         } catch (e) {
-          throw new Error('Webhook processing failed');
+          throw new Error("Webhook processing failed");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Webhook processing failed');
+      await expect(willThrow()).rejects.toThrow("Webhook processing failed");
     });
 
-    it('should log webhook delivery failure', async () => {
+    it("should log webhook delivery failure", async () => {
       const mockLog = {
-        id: 'log-123',
-        webhookId: 'webhook-123',
-        topic: 'order.created',
+        id: "log-123",
+        webhookId: "webhook-123",
+        topic: "order.created",
         statusCode: 500,
-        response: 'Internal Server Error',
+        response: "Internal Server Error",
         retryCount: 0,
         createdAt: new Date(),
       };
 
       mockTenantDb.webhookLog.create.mockResolvedValue(mockLog);
 
-      mockRequest.params = { topic: 'order.created' };
+      mockRequest.params = { topic: "order.created" };
 
       await mockTenantDb.webhookLog.create({
         data: expect.objectContaining({
@@ -650,7 +734,7 @@ describe('WooCommerce Webhooks', () => {
       expect(mockTenantDb.webhookLog.create).toHaveBeenCalled();
     });
 
-    it('should handle missing required fields in order', async () => {
+    it("should handle missing required fields in order", async () => {
       const incompleteOrder = {
         id: 123,
         // Missing billing information
@@ -658,12 +742,13 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.body = incompleteOrder;
 
-      const hasRequiredFields = incompleteOrder && typeof incompleteOrder === 'object';
+      const hasRequiredFields =
+        incompleteOrder && typeof incompleteOrder === "object";
       expect(hasRequiredFields).toBe(true);
     });
 
-    it('should validate topic parameter format', async () => {
-      const invalidTopic = 'invalid..topic';
+    it("should validate topic parameter format", async () => {
+      const invalidTopic = "invalid..topic";
 
       mockRequest.params = { topic: invalidTopic };
 
@@ -671,7 +756,7 @@ describe('WooCommerce Webhooks', () => {
       expect(isValidTopic).toBe(true); // Matches format, but could still be unregistered
     });
 
-    it('should enforce rate limiting on webhook delivery', async () => {
+    it("should enforce rate limiting on webhook delivery", async () => {
       // Simulate rate limiting headers
       const rateLimitRemaining = 100;
       const isRateLimited = rateLimitRemaining <= 0;
@@ -679,12 +764,14 @@ describe('WooCommerce Webhooks', () => {
       expect(isRateLimited).toBe(false);
     });
 
-    it('should return 200 OK for accepted webhook', async () => {
+    it("should return 200 OK for accepted webhook", async () => {
       const mockOrder = createMockWooOrder();
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(mockOrder);
 
-      mockRequest.params = { topic: 'order.created' };
+      mockRequest.params = { topic: "order.created" };
       mockRequest.body = mockOrder;
 
       mockReply.status(200);
@@ -693,14 +780,14 @@ describe('WooCommerce Webhooks', () => {
     });
   });
 
-  describe('Webhook Retry Logic', () => {
-    it('should increment retry count on failed delivery', async () => {
+  describe("Webhook Retry Logic", () => {
+    it("should increment retry count on failed delivery", async () => {
       const mockLog = {
-        id: 'log-123',
-        webhookId: 'webhook-123',
-        topic: 'order.created',
+        id: "log-123",
+        webhookId: "webhook-123",
+        topic: "order.created",
         statusCode: 500,
-        response: 'Error',
+        response: "Error",
         retryCount: 0,
         createdAt: new Date(),
       };
@@ -715,7 +802,7 @@ describe('WooCommerce Webhooks', () => {
       expect(result.data.retryCount).toBe(1);
     });
 
-    it('should schedule next retry with exponential backoff', async () => {
+    it("should schedule next retry with exponential backoff", async () => {
       const now = new Date();
       const retryCount = 2;
       const backoffMs = Math.pow(2, retryCount) * 60000; // Exponential backoff
@@ -725,7 +812,7 @@ describe('WooCommerce Webhooks', () => {
       expect(nextRetryAt.getTime()).toBeGreaterThan(now.getTime());
     });
 
-    it('should stop retrying after max attempts', async () => {
+    it("should stop retrying after max attempts", async () => {
       const maxRetries = 5;
       const currentRetry = 5;
 
@@ -735,15 +822,17 @@ describe('WooCommerce Webhooks', () => {
     });
   });
 
-  describe('Concurrent Webhook Processing', () => {
-    it('should handle multiple webhooks simultaneously', async () => {
+  describe("Concurrent Webhook Processing", () => {
+    it("should handle multiple webhooks simultaneously", async () => {
       const orders = [
         createMockWooOrder({ id: 1 }),
         createMockWooOrder({ id: 2 }),
         createMockWooOrder({ id: 3 }),
       ];
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(null);
 
       const promises = orders.map((order) =>
@@ -751,7 +840,7 @@ describe('WooCommerce Webhooks', () => {
           where: { externalId: order.id.toString() },
           update: {},
           create: order,
-        })
+        }),
       );
 
       await Promise.all(promises);
@@ -759,28 +848,30 @@ describe('WooCommerce Webhooks', () => {
       expect(mockTenantDb.order.upsert).toHaveBeenCalledTimes(3);
     });
 
-    it('should maintain order of event processing', async () => {
-      const order1 = createMockWooOrder({ id: 1, status: 'pending' });
-      const order2 = createMockWooOrder({ id: 1, status: 'processing' });
+    it("should maintain order of event processing", async () => {
+      const order1 = createMockWooOrder({ id: 1, status: "pending" });
+      const order2 = createMockWooOrder({ id: 1, status: "processing" });
 
       const processingOrder = [order1, order2];
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
 
-      expect(processingOrder[0].status).toBe('pending');
-      expect(processingOrder[1].status).toBe('processing');
+      expect(processingOrder[0].status).toBe("pending");
+      expect(processingOrder[1].status).toBe("processing");
     });
   });
 
-  describe('Webhook Security', () => {
-    it('should store secret securely', async () => {
+  describe("Webhook Security", () => {
+    it("should store secret securely", async () => {
       const webhook = createMockWebhookRegistration();
 
       expect(webhook.consumerSecret).toBeTruthy();
       expect(webhook.consumerSecret.length).toBeGreaterThan(0);
     });
 
-    it('should not expose secret in responses', async () => {
+    it("should not expose secret in responses", async () => {
       const webhook = createMockWebhookRegistration();
       const response = { ...webhook };
 
@@ -789,33 +880,33 @@ describe('WooCommerce Webhooks', () => {
       expect(exposedSecret).toBeDefined(); // In real implementation, this should be masked
     });
 
-    it('should validate webhook ownership', async () => {
-      const webhook = createMockWebhookRegistration({ storeId: 'store-123' });
+    it("should validate webhook ownership", async () => {
+      const webhook = createMockWebhookRegistration({ storeId: "store-123" });
 
-      mockRequest.shopId = 'store-456';
+      mockRequest.shopId = "store-456";
 
       const hasAccess = mockRequest.shopId === webhook.storeId;
       expect(hasAccess).toBe(false);
     });
 
-    it('should enforce HTTPS for delivery URLs', async () => {
-      const httpUrl = 'http://webhook.example.com/hook';
+    it("should enforce HTTPS for delivery URLs", async () => {
+      const httpUrl = "http://webhook.example.com/hook";
 
       const isHttps = /^https:\/\//.test(httpUrl);
       expect(isHttps).toBe(false);
     });
 
-    it('should validate certificate for HTTPS', async () => {
+    it("should validate certificate for HTTPS", async () => {
       const webhook = createMockWebhookRegistration({
-        deliveryUrl: 'https://self-signed.example.com/hook',
+        deliveryUrl: "https://self-signed.example.com/hook",
       });
 
       expect(webhook.deliveryUrl).toMatch(/^https:\/\//);
     });
   });
 
-  describe('Webhook Delivery Metrics', () => {
-    it('should track successful deliveries', async () => {
+  describe("Webhook Delivery Metrics", () => {
+    it("should track successful deliveries", async () => {
       const metrics = {
         total: 100,
         successful: 95,
@@ -827,7 +918,7 @@ describe('WooCommerce Webhooks', () => {
       expect(successRate).toBe(95);
     });
 
-    it('should calculate average response time', async () => {
+    it("should calculate average response time", async () => {
       const deliveries = [
         { responseTime: 100 },
         { responseTime: 150 },
@@ -835,12 +926,13 @@ describe('WooCommerce Webhooks', () => {
       ];
 
       const avgResponseTime =
-        deliveries.reduce((sum, d) => sum + d.responseTime, 0) / deliveries.length;
+        deliveries.reduce((sum, d) => sum + d.responseTime, 0) /
+        deliveries.length;
 
       expect(avgResponseTime).toBe(150);
     });
 
-    it('should track retry statistics', async () => {
+    it("should track retry statistics", async () => {
       const logs = [
         { retryCount: 0, statusCode: 200 },
         { retryCount: 1, statusCode: 200 },
@@ -853,32 +945,32 @@ describe('WooCommerce Webhooks', () => {
     });
   });
 
-  describe('Webhook Configuration', () => {
-    it('should support custom HTTP headers', async () => {
+  describe("Webhook Configuration", () => {
+    it("should support custom HTTP headers", async () => {
       const webhook = createMockWebhookRegistration({
-        headers: { 'X-Custom-Header': 'value' },
+        headers: { "X-Custom-Header": "value" },
       });
 
       mockTenantDb.woocommerceWebhook.create.mockResolvedValue(webhook);
 
       mockRequest.body = {
-        topic: 'order.created',
-        deliveryUrl: 'https://api.example.com/webhooks',
-        headers: { 'X-Custom-Header': 'value' },
+        topic: "order.created",
+        deliveryUrl: "https://api.example.com/webhooks",
+        headers: { "X-Custom-Header": "value" },
       };
 
       expect(webhook.headers).toBeDefined();
     });
 
-    it('should support basic auth in webhook', async () => {
+    it("should support basic auth in webhook", async () => {
       const webhook = createMockWebhookRegistration({
-        headers: { 'Authorization': 'Basic dXNlcjpwYXNz' },
+        headers: { Authorization: "Basic dXNlcjpwYXNz" },
       });
 
-      expect(webhook.headers?.['Authorization']).toBeTruthy();
+      expect(webhook.headers?.["Authorization"]).toBeTruthy();
     });
 
-    it('should support custom timeout configuration', async () => {
+    it("should support custom timeout configuration", async () => {
       const webhook = {
         ...createMockWebhookRegistration(),
         timeout: 60000,

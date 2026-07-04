@@ -35,7 +35,7 @@ const SWIPE_THRESHOLD = 50; // minimum distance for swipe detection
  */
 export function useSwipe(
   ref: React.RefObject<HTMLElement>,
-  callbacks: SwipeCallbacks
+  callbacks: SwipeCallbacks,
 ): void {
   const swipeState = useRef<SwipeState>({
     startX: 0,
@@ -111,7 +111,7 @@ interface LongPressOptions {
 export function useLongPress(
   ref: React.RefObject<HTMLElement>,
   callback: () => void,
-  options: LongPressOptions = {}
+  options: LongPressOptions = {},
 ): void {
   const { delay = 500 } = options;
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -253,7 +253,8 @@ export function useTouchDetect(): boolean {
       typeof window !== "undefined" &&
       ("ontouchstart" in window ||
         navigator.maxTouchPoints > 0 ||
-        ((navigator as Navigator & { msMaxTouchPoints?: number }).msMaxTouchPoints ?? 0) > 0);
+        ((navigator as Navigator & { msMaxTouchPoints?: number })
+          .msMaxTouchPoints ?? 0) > 0);
 
     return () => {
       window.removeEventListener("touchstart", handleTouchStart);

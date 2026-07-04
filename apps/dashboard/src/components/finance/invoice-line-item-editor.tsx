@@ -31,7 +31,11 @@ function generateId(): string {
   return `item_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function calculateAmount(quantity: number, unitPrice: number, taxRate: number): number {
+function calculateAmount(
+  quantity: number,
+  unitPrice: number,
+  taxRate: number,
+): number {
   const subtotal = quantity * unitPrice;
   const tax = subtotal * (taxRate / 100);
   return subtotal + tax;
@@ -76,7 +80,7 @@ const InvoiceLineItemInput = memo(
               "w-full px-2 py-1 rounded text-sm bg-wl-bg-elevated border border-wl-border-subtle",
               "text-wl-text-primary placeholder:text-wl-text-tertiary",
               "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
-              readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70"
+              readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70",
             )}
           />
         </td>
@@ -94,7 +98,7 @@ const InvoiceLineItemInput = memo(
               "w-full px-2 py-1 rounded text-sm bg-wl-bg-elevated border border-wl-border-subtle",
               "text-wl-text-primary placeholder:text-wl-text-tertiary",
               "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
-              readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70"
+              readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70",
             )}
           />
         </td>
@@ -106,14 +110,16 @@ const InvoiceLineItemInput = memo(
             min="0"
             step="0.01"
             value={item.quantity}
-            onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 0 })}
+            onChange={(e) =>
+              onUpdate({ quantity: parseFloat(e.target.value) || 0 })
+            }
             onKeyDown={(e) => onKeyDown?.("quantity", e)}
             readOnly={readOnly}
             className={cn(
               "w-full px-2 py-1 rounded text-sm text-right bg-wl-bg-elevated border border-wl-border-subtle",
               "text-wl-text-primary placeholder:text-wl-text-tertiary",
               "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
-              readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70"
+              readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70",
             )}
           />
         </td>
@@ -121,20 +127,24 @@ const InvoiceLineItemInput = memo(
         {/* Unit Price */}
         <td className="p-2 w-28">
           <div className="flex items-center">
-            <span className="text-xs text-wl-text-tertiary mr-1">{currency}</span>
+            <span className="text-xs text-wl-text-tertiary mr-1">
+              {currency}
+            </span>
             <input
               type="number"
               min="0"
               step="0.01"
               value={item.unitPrice}
-              onChange={(e) => onUpdate({ unitPrice: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                onUpdate({ unitPrice: parseFloat(e.target.value) || 0 })
+              }
               onKeyDown={(e) => onKeyDown?.("unitPrice", e)}
               readOnly={readOnly}
               className={cn(
                 "w-full px-2 py-1 rounded text-sm text-right bg-wl-bg-elevated border border-wl-border-subtle",
                 "text-wl-text-primary placeholder:text-wl-text-tertiary",
                 "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
-                readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70"
+                readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70",
               )}
             />
           </div>
@@ -149,14 +159,16 @@ const InvoiceLineItemInput = memo(
               max="100"
               step="0.1"
               value={item.taxRate}
-              onChange={(e) => onUpdate({ taxRate: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                onUpdate({ taxRate: parseFloat(e.target.value) || 0 })
+              }
               onKeyDown={(e) => onKeyDown?.("taxRate", e)}
               readOnly={readOnly}
               className={cn(
                 "w-full px-2 py-1 rounded text-sm text-right bg-wl-bg-elevated border border-wl-border-subtle",
                 "text-wl-text-primary placeholder:text-wl-text-tertiary",
                 "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
-                readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70"
+                readOnly && "bg-wl-bg-overlay cursor-not-allowed opacity-70",
               )}
             />
             <span className="text-xs text-wl-text-tertiary ml-1">%</span>
@@ -184,7 +196,7 @@ const InvoiceLineItemInput = memo(
         </td>
       </tr>
     );
-  }
+  },
 );
 
 InvoiceLineItemInput.displayName = "InvoiceLineItemInput";
@@ -202,7 +214,10 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
   readOnly = false,
 }: InvoiceLineItemEditorProps) {
   const [items, setItems] = useState<LineItem[]>(initialItems);
-  const [discount, setDiscount] = useState({ type: discountType, value: discountValue });
+  const [discount, setDiscount] = useState({
+    type: discountType,
+    value: discountValue,
+  });
 
   const updateItem = useCallback(
     (index: number, updates: Partial<LineItem>) => {
@@ -213,7 +228,11 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
 
       // Auto-calculate amount
       const item = updatedItems[index];
-      item.amount = calculateAmount(item.quantity, item.unitPrice, item.taxRate);
+      item.amount = calculateAmount(
+        item.quantity,
+        item.unitPrice,
+        item.taxRate,
+      );
 
       setItems(updatedItems);
       onItemsChange?.(updatedItems);
@@ -221,15 +240,18 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
       // Recalculate totals
       calculateTotals(updatedItems);
     },
-    [items, readOnly, onItemsChange]
+    [items, readOnly, onItemsChange],
   );
 
   const calculateTotals = useCallback(
     (itemsToCalc: LineItem[]) => {
-      const subtotal = itemsToCalc.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+      const subtotal = itemsToCalc.reduce(
+        (sum, i) => sum + i.quantity * i.unitPrice,
+        0,
+      );
       const taxTotal = itemsToCalc.reduce(
         (sum, i) => sum + i.quantity * i.unitPrice * (i.taxRate / 100),
-        0
+        0,
       );
 
       let discountAmount = 0;
@@ -247,7 +269,7 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
       onTaxChange?.(taxTotal);
       onTotalChange?.(Math.max(0, total));
     },
-    [discount, onSubtotalChange, onTaxChange, onTotalChange]
+    [discount, onSubtotalChange, onTaxChange, onTotalChange],
   );
 
   const removeItem = useCallback(
@@ -258,7 +280,7 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
       onItemsChange?.(updatedItems);
       calculateTotals(updatedItems);
     },
-    [items, readOnly, onItemsChange, calculateTotals]
+    [items, readOnly, onItemsChange, calculateTotals],
   );
 
   const addItem = useCallback(() => {
@@ -281,7 +303,13 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
     (rowIndex: number, field: string, e: React.KeyboardEvent) => {
       // Tab key navigation
       if (e.key === "Tab") {
-        const fields = ["item", "description", "quantity", "unitPrice", "taxRate"];
+        const fields = [
+          "item",
+          "description",
+          "quantity",
+          "unitPrice",
+          "taxRate",
+        ];
         const currentFieldIdx = fields.indexOf(field);
 
         if (e.shiftKey) {
@@ -291,21 +319,27 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
           }
         } else {
           // Tab: move to next field or next row
-          if (currentFieldIdx === fields.length - 1 && rowIndex === items.length - 1) {
+          if (
+            currentFieldIdx === fields.length - 1 &&
+            rowIndex === items.length - 1
+          ) {
             e.preventDefault();
             addItem();
           }
         }
       }
     },
-    [items.length, addItem]
+    [items.length, addItem],
   );
 
   const totals = useMemo(() => {
-    const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+    const subtotal = items.reduce(
+      (sum, i) => sum + i.quantity * i.unitPrice,
+      0,
+    );
     const taxTotal = items.reduce(
       (sum, i) => sum + i.quantity * i.unitPrice * (i.taxRate / 100),
-      0
+      0,
     );
 
     let discountAmount = 0;
@@ -332,7 +366,7 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
       setDiscount({ type: newType, value: newValue });
       onDiscountChange?.(newType, newValue);
     },
-    [onDiscountChange]
+    [onDiscountChange],
   );
 
   return (
@@ -342,14 +376,24 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
         <table className="w-full text-sm">
           <thead className="border-b border-wl-border-default bg-wl-bg-overlay">
             <tr>
-              <th className="p-3 text-left font-semibold text-wl-text-primary">Item</th>
-              <th className="p-3 text-left font-semibold text-wl-text-primary">Description</th>
-              <th className="p-3 text-right font-semibold text-wl-text-primary w-20">Qty</th>
+              <th className="p-3 text-left font-semibold text-wl-text-primary">
+                Item
+              </th>
+              <th className="p-3 text-left font-semibold text-wl-text-primary">
+                Description
+              </th>
+              <th className="p-3 text-right font-semibold text-wl-text-primary w-20">
+                Qty
+              </th>
               <th className="p-3 text-right font-semibold text-wl-text-primary w-28">
                 Unit Price
               </th>
-              <th className="p-3 text-right font-semibold text-wl-text-primary w-20">Tax %</th>
-              <th className="p-3 text-right font-semibold text-wl-text-primary w-28">Amount</th>
+              <th className="p-3 text-right font-semibold text-wl-text-primary w-20">
+                Tax %
+              </th>
+              <th className="p-3 text-right font-semibold text-wl-text-primary w-28">
+                Amount
+              </th>
               <th className="p-3 w-12"></th>
             </tr>
           </thead>
@@ -380,7 +424,7 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
             className={cn(
               "px-3 py-2 rounded text-sm bg-wl-bg-elevated border border-wl-border-subtle",
               "text-wl-text-primary",
-              "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50"
+              "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
             )}
             aria-label="Currency selector"
           >
@@ -402,14 +446,17 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
             <select
               value={discount.type}
               onChange={(e) =>
-                handleDiscountChange(e.target.value as "percentage" | "fixed", discount.value)
+                handleDiscountChange(
+                  e.target.value as "percentage" | "fixed",
+                  discount.value,
+                )
               }
               disabled={readOnly}
               className={cn(
                 "w-full px-3 py-2 rounded text-sm bg-wl-bg-elevated border border-wl-border-subtle",
                 "text-wl-text-primary",
                 "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
-                readOnly && "opacity-70 cursor-not-allowed"
+                readOnly && "opacity-70 cursor-not-allowed",
               )}
             >
               <option value="percentage">Percentage</option>
@@ -428,14 +475,17 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
                 step={discount.type === "percentage" ? "0.1" : "0.01"}
                 value={discount.value}
                 onChange={(e) =>
-                  handleDiscountChange(discount.type, parseFloat(e.target.value) || 0)
+                  handleDiscountChange(
+                    discount.type,
+                    parseFloat(e.target.value) || 0,
+                  )
                 }
                 readOnly={readOnly}
                 className={cn(
                   "flex-1 px-3 py-2 rounded text-sm text-right bg-wl-bg-elevated border border-wl-border-subtle",
                   "text-wl-text-primary",
                   "focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/50",
-                  readOnly && "opacity-70 cursor-not-allowed"
+                  readOnly && "opacity-70 cursor-not-allowed",
                 )}
               />
               <span className="text-sm text-wl-text-secondary w-8">
@@ -445,7 +495,9 @@ export const InvoiceLineItemEditor = memo(function InvoiceLineItemEditor({
           </div>
 
           <div>
-            <p className="text-xs text-wl-text-secondary mb-1">Discount Amount</p>
+            <p className="text-xs text-wl-text-secondary mb-1">
+              Discount Amount
+            </p>
             <p className="text-lg font-semibold text-wl-danger-400">
               -{formatCurrency(totals.discountAmount, currency)}
             </p>

@@ -11,6 +11,7 @@ Sprint 4.6 introduces a comprehensive real-time delivery tracking system with li
 Full-featured tracking experience for active deliveries:
 
 **Desktop Layout:**
+
 - Full-width interactive map with driver and destination markers
 - Right sidebar with stacked information panels
 - ETA countdown timer with progress bar
@@ -20,11 +21,13 @@ Full-featured tracking experience for active deliveries:
 - Share tracking link button
 
 **Mobile Layout:**
+
 - Full-screen map
 - Bottom sheet for details (peek/half/full snap points)
 - Swipe-to-dismiss functionality
 
 **Features:**
+
 - Real-time driver position updates with bearing/direction arrow
 - Route visualization (completed in solid blue, remaining in dashed gray)
 - Destination marker with pulse animation
@@ -39,19 +42,21 @@ Client-side WebSocket management for real-time updates:
 ```typescript
 const { driverPosition, deliveryStatus, eta, isConnected, error, retryCount } =
   useDeliveryTracking({
-    orderId: 'ORD-2024-001',
-    token: 'tracking-token',
+    orderId: "ORD-2024-001",
+    token: "tracking-token",
     autoReconnect: true,
     reconnectMaxAttempts: 5,
   });
 ```
 
 **Events Handled:**
+
 - `driver:location` - Driver position updates (lat/lng/bearing/speed)
 - `delivery:status-update` - Status change (ordered → confirmed → dispatched → etc)
 - `delivery:eta-update` - ETA recalculation
 
 **Features:**
+
 - Exponential backoff reconnection
 - Heartbeat ping/pong at 30s intervals
 - Auto-cleanup on unmount
@@ -63,6 +68,7 @@ const { driverPosition, deliveryStatus, eta, isConnected, error, retryCount } =
 Canvas-based map implementation (production: integrate with Leaflet/Mapbox):
 
 **Visual Elements:**
+
 - Driver marker: Amber circle with heading arrow (rotates based on bearing)
 - Destination marker: Green circle with pulse animation
 - Route polyline: Blue for completed, dashed gray for remaining
@@ -72,6 +78,7 @@ Canvas-based map implementation (production: integrate with Leaflet/Mapbox):
 - Pan support: Drag to move, recenter button
 
 **Interactions:**
+
 - Mouse drag to pan
 - Scroll wheel zoom
 - Touch drag on mobile
@@ -83,6 +90,7 @@ Canvas-based map implementation (production: integrate with Leaflet/Mapbox):
 Live ETA timer with status tracking:
 
 **Display Elements:**
+
 - Large countdown: "Arriving in X min"
 - Route progress bar (0-100%)
 - Status indicator: "On time" / "Delayed" / "Arriving soon"
@@ -90,6 +98,7 @@ Live ETA timer with status tracking:
 - Updates every 1 second
 
 **Status Logic:**
+
 - On time: Default state
 - Delayed: When > 15 min remaining
 - Early: When < 3 min remaining
@@ -99,6 +108,7 @@ Live ETA timer with status tracking:
 6-step delivery journey with expandable details:
 
 **Steps:**
+
 1. **Ordered** - Order placed
 2. **Confirmed** - Confirmed by store/restaurant
 3. **Dispatched** - Driver assigned and route started
@@ -107,6 +117,7 @@ Live ETA timer with status tracking:
 6. **Delivered** - Order completed
 
 **Features:**
+
 - Circle indicators: Gray (pending), Blue (current), Green (completed)
 - Vertical connector lines
 - Expandable details per step
@@ -115,6 +126,7 @@ Live ETA timer with status tracking:
 - Smooth animations and transitions
 
 **Expandable Information:**
+
 - Driver name at Dispatched step
 - Estimated arrival time
 - Proof of delivery (photo + signature)
@@ -125,12 +137,14 @@ Live ETA timer with status tracking:
 Driver profile and contact interface:
 
 **Information Displayed:**
+
 - Driver name and photo
 - Star rating (1-5)
 - Vehicle type, color, and license plate
 - Connection status indicator
 
 **Actions:**
+
 - Call button (tel: link)
 - Text button (sms: link)
 - Disabled when offline
@@ -140,6 +154,7 @@ Driver profile and contact interface:
 Touch-friendly bottom sheet component:
 
 **Features:**
+
 - Configurable snap points (default: peek 120px, half, full)
 - Draggable handle with visual feedback
 - Smooth spring animations
@@ -148,6 +163,7 @@ Touch-friendly bottom sheet component:
 - Optional title with close button
 
 **Usage:**
+
 ```typescript
 <BottomSheet
   isOpen={isOpen}
@@ -164,6 +180,7 @@ Touch-friendly bottom sheet component:
 Past deliveries with filtering and details:
 
 **Features:**
+
 - List view with delivery cards
 - Quick info: Date, order number, status badge
 - Items summary with "N more" indicator
@@ -175,6 +192,7 @@ Past deliveries with filtering and details:
 - Empty state with illustration
 
 **Card Information:**
+
 - Order date and number
 - Status badge (green for delivered, red for cancelled)
 - Item preview (first 2 items)
@@ -187,6 +205,7 @@ Past deliveries with filtering and details:
 Multi-step rating experience with category ratings:
 
 **Steps:**
+
 1. **Initial Ratings** (2 questions)
    - Driver rating (1-5 stars)
    - Overall experience rating (1-5 stars)
@@ -207,6 +226,7 @@ Multi-step rating experience with category ratings:
    - Links to orders/dashboard
 
 **Features:**
+
 - Progress bar showing all 4 steps
 - Visual feedback for all selections
 - Photo upload with thumbnail preview
@@ -217,6 +237,7 @@ Multi-step rating experience with category ratings:
 ## Technical Stack
 
 ### Dependencies Added (Consider Adding)
+
 - `socket.io-client@^4.6.0` - For WebSocket connection
 - `leaflet@^1.9.4` - For map rendering (optional, canvas fallback included)
 - `date-fns@^4.1.0` - Already included
@@ -224,23 +245,27 @@ Multi-step rating experience with category ratings:
 ### Key Design Patterns
 
 **Component Architecture:**
+
 - Functional components with React Hooks
 - Client-side rendering ('use client')
 - Controlled components for form state
 - Custom hooks for business logic separation
 
 **Styling:**
-- Tailwind CSS v3.4 with --wl-* CSS variables
+
+- Tailwind CSS v3.4 with --wl-\* CSS variables
 - Dark theme by default
 - Responsive design (mobile-first)
 - cn() utility for conditional classes
 
 **Type Safety:**
+
 - TypeScript throughout
 - Exported interfaces in types/index.ts
 - NAMED imports only (per project rules)
 
 **State Management:**
+
 - React hooks (useState, useEffect, useRef, useCallback)
 - No external state library (kept simple for single portal)
 - WebSocket hook handles connection state
@@ -248,6 +273,7 @@ Multi-step rating experience with category ratings:
 ## Mock Data
 
 All pages include realistic mock data:
+
 - Delivery tracking with animated driver positions
 - Multiple delivery history entries
 - Driver profiles with photos and ratings
@@ -255,6 +281,7 @@ All pages include realistic mock data:
 - Timeline with realistic timestamps
 
 To integrate with real backend:
+
 1. Replace mock data with API calls
 2. Update `/tracking` WebSocket endpoint
 3. Implement actual image uploads
@@ -263,6 +290,7 @@ To integrate with real backend:
 ## Component Usage Examples
 
 ### Basic Tracking Page
+
 ```typescript
 import { useDeliveryTracking } from '@/hooks/use-delivery-tracking';
 import { LiveMap } from '@/components/live-map';
@@ -288,6 +316,7 @@ export default function TrackingPage() {
 ```
 
 ### Bottom Sheet for Mobile
+
 ```typescript
 const [isOpen, setIsOpen] = useState(false);
 
@@ -309,6 +338,7 @@ return (
 ## Responsive Design
 
 ### Mobile (< 768px)
+
 - Full-screen map
 - Bottom sheet for details
 - Single column layouts
@@ -316,12 +346,14 @@ return (
 - Snap points for sheet
 
 ### Tablet (768px - 1024px)
+
 - Map on left (50%)
 - Details on right (50%)
 - Stacked cards
 - Medium spacing
 
 ### Desktop (> 1024px)
+
 - Full map on left (66%)
 - Right sidebar (33%)
 - All details visible
@@ -424,6 +456,7 @@ apps/customer-portal/
 ## Support & Questions
 
 For implementation details or to integrate real APIs, refer to:
+
 - Component prop types in TypeScript interfaces
 - Mock data structure in each page component
 - Tailwind CSS variable definitions in tailwind.config.ts

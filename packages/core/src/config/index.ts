@@ -64,10 +64,7 @@ export {
   VaultSecretsProvider,
   AWSSecretsProvider,
 } from "./secrets-manager.js";
-export type {
-  SecretsProvider,
-  SecretValue,
-} from "./secrets-manager.js";
+export type { SecretsProvider, SecretValue } from "./secrets-manager.js";
 
 // Deployment checklist
 export {

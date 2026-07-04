@@ -1,22 +1,30 @@
-'use client';
+"use client";
 
 /**
  * Order-specific API hooks for the dashboard
  */
 
-import { useMemo } from 'react';
-import { useApiMutation, useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiMutationResult, UseApiListResult } from './use-api';
+import { useMemo } from "react";
+import {
+  useApiMutation,
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiQueryResult,
+  UseApiMutationResult,
+  UseApiListResult,
+} from "./use-api";
 
 /**
  * Order status enum
  */
 export enum OrderStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  ASSIGNED = 'assigned',
-  IN_TRANSIT = 'in_transit',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  CONFIRMED = "confirmed",
+  ASSIGNED = "assigned",
+  IN_TRANSIT = "in_transit",
+  DELIVERED = "delivered",
+  CANCELLED = "cancelled",
 }
 
 /**
@@ -86,7 +94,7 @@ export interface OrderFilters extends ApiFilters {
   driverId?: string;
   deliveryDate?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 /**
@@ -99,10 +107,10 @@ export interface OrderFilters extends ApiFilters {
  */
 function normalizeOrder(raw: unknown): Order {
   const r = (raw ?? {}) as Record<string, unknown>;
-  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
+  const str = (v: unknown): string => (typeof v === "string" ? v : "");
   const num = (v: unknown): number => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') {
+    if (typeof v === "number") return v;
+    if (typeof v === "string") {
       const parsed = Number(v);
       return Number.isFinite(parsed) ? parsed : 0;
     }
@@ -110,12 +118,13 @@ function normalizeOrder(raw: unknown): Order {
   };
 
   const rawStatus = str(r.status).toLowerCase();
-  const status =
-    (Object.values(OrderStatus) as string[]).includes(rawStatus)
-      ? (rawStatus as OrderStatus)
-      : OrderStatus.PENDING;
+  const status = (Object.values(OrderStatus) as string[]).includes(rawStatus)
+    ? (rawStatus as OrderStatus)
+    : OrderStatus.PENDING;
 
-  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : [];
+  const rawLineItems = Array.isArray(r.lineItems)
+    ? (r.lineItems as unknown[])
+    : [];
   const items: OrderItem[] = rawLineItems.map((li, idx) => {
     const item = (li ?? {}) as Record<string, unknown>;
     return {
@@ -146,15 +155,17 @@ function normalizeOrder(raw: unknown): Order {
     createdAt: str(r.createdAt),
     updatedAt: str(r.updatedAt),
     deliveryDate: (r.deliveryDate as string | null) ?? null,
-    estimatedDelivery: (r.estimatedArrival ?? r.estimatedDelivery ?? null) as string | null,
+    estimatedDelivery: (r.estimatedArrival ?? r.estimatedDelivery ?? null) as
+      | string
+      | null,
     totalAmount: num(r.totalPrice ?? r.totalAmount),
-    currency: str(r.currency) || 'USD',
+    currency: str(r.currency) || "USD",
     items,
     deliveryAddress,
     driverId: r.driverId ? str(r.driverId) : undefined,
     notes: r.notes ? str(r.notes) : undefined,
-    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
-    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
+    deliveryLat: typeof r.deliveryLat === "number" ? r.deliveryLat : null,
+    deliveryLng: typeof r.deliveryLng === "number" ? r.deliveryLng : null,
   };
 }
 
@@ -163,10 +174,8 @@ function normalizeOrder(raw: unknown): Order {
  * @param filters - Order filter options
  * @returns List of orders with pagination
  */
-export function useOrders(
-  filters?: OrderFilters,
-): UseApiListResult<Order> {
-  const result = useApiList<unknown>('/api/v4/orders', filters);
+export function useOrders(filters?: OrderFilters): UseApiListResult<Order> {
+  const result = useApiList<unknown>("/api/v4/orders", filters);
   const items = useMemo<Order[]>(
     () => (result.items ?? []).map(normalizeOrder),
     [result.items],
@@ -179,9 +188,7 @@ export function useOrders(
  * @param id - Order ID
  * @returns Single order
  */
-export function useOrder(
-  id: string | null,
-): UseApiQueryResult<Order> {
+export function useOrder(id: string | null): UseApiQueryResult<Order> {
   return useApiQuery<Order>(id ? `/api/v4/orders/${id}` : null);
 }
 
@@ -190,7 +197,7 @@ export function useOrder(
  * @returns Mutation to create order
  */
 export function useCreateOrder(): UseApiMutationResult<Order> {
-  return useApiMutation<Order>('POST', '/api/v4/orders');
+  return useApiMutation<Order>("POST", "/api/v4/orders");
 }
 
 /**
@@ -198,10 +205,8 @@ export function useCreateOrder(): UseApiMutationResult<Order> {
  * @param id - Order ID
  * @returns Mutation to update order status
  */
-export function useUpdateOrderStatus(
-  id: string,
-): UseApiMutationResult<Order> {
-  return useApiMutation<Order>('PATCH', `/api/v4/orders/${id}/status`);
+export function useUpdateOrderStatus(id: string): UseApiMutationResult<Order> {
+  return useApiMutation<Order>("PATCH", `/api/v4/orders/${id}/status`);
 }
 
 /**
@@ -209,5 +214,5 @@ export function useUpdateOrderStatus(
  * @returns Order stats (totals, rates, metrics)
  */
 export function useOrderStats(): UseApiQueryResult<OrderStats> {
-  return useApiQuery<OrderStats>('/api/v4/orders/stats');
+  return useApiQuery<OrderStats>("/api/v4/orders/stats");
 }

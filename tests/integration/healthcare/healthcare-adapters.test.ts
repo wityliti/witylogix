@@ -56,7 +56,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authInitiation), { status: 200 })
+        new Response(JSON.stringify(authInitiation), { status: 200 }),
       );
 
       expect(authInitiation.authorizationUrl).toContain("oauth2/authorize");
@@ -72,7 +72,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tokenResponse), { status: 200 })
+        new Response(JSON.stringify(tokenResponse), { status: 200 }),
       );
 
       expect(tokenResponse.access_token).toMatch(/^cerner_access_token_/);
@@ -85,7 +85,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toBeDefined();
@@ -100,7 +100,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(smartConfig), { status: 200 })
+        new Response(JSON.stringify(smartConfig), { status: 200 }),
       );
 
       expect(smartConfig.issuer).toBeDefined();
@@ -125,7 +125,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(patientResponse), { status: 200 })
+        new Response(JSON.stringify(patientResponse), { status: 200 }),
       );
 
       expect(patientResponse.resourceType).toBe("Patient");
@@ -149,7 +149,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(searchResults), { status: 200 })
+        new Response(JSON.stringify(searchResults), { status: 200 }),
       );
 
       expect(searchResults.total).toBe(1);
@@ -169,8 +169,8 @@ describe("Cerner Adapter Integration", () => {
             ...newPatient,
             id: "cerner_patient_new_123",
           }),
-          { status: 201 }
-        )
+          { status: 201 },
+        ),
       );
 
       expect(mockFetch).toBeDefined();
@@ -183,7 +183,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedPatient), { status: 200 })
+        new Response(JSON.stringify(updatedPatient), { status: 200 }),
       );
 
       expect(updatedPatient.name).toContain("Michael");
@@ -196,8 +196,8 @@ describe("Cerner Adapter Integration", () => {
             resourceType: "OperationOutcome",
             issue: [{ severity: "error", code: "not-found" }],
           }),
-          { status: 404 }
-        )
+          { status: 404 },
+        ),
       );
 
       const response = await mockFetch();
@@ -216,7 +216,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(ccdResponse), { status: 200 })
+        new Response(JSON.stringify(ccdResponse), { status: 200 }),
       );
 
       expect(ccdResponse.type).toBe("CCD");
@@ -237,7 +237,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(notesResponse), { status: 200 })
+        new Response(JSON.stringify(notesResponse), { status: 200 }),
       );
 
       expect(notesResponse.notes).toHaveLength(1);
@@ -256,7 +256,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(searchResults), { status: 200 })
+        new Response(JSON.stringify(searchResults), { status: 200 }),
       );
 
       expect(searchResults.total).toBe(1);
@@ -274,7 +274,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(exportJob), { status: 202 })
+        new Response(JSON.stringify(exportJob), { status: 202 }),
       );
 
       expect(exportJob.status).toBe("started");
@@ -290,7 +290,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(exportStatus), { status: 200 })
+        new Response(JSON.stringify(exportStatus), { status: 200 }),
       );
 
       expect(exportStatus.progressPercent).toBe(50);
@@ -313,7 +313,7 @@ describe("Cerner Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completedExport), { status: 200 })
+        new Response(JSON.stringify(completedExport), { status: 200 }),
       );
 
       expect(completedExport.output).toHaveLength(2);
@@ -343,7 +343,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(ssoToken), { status: 200 })
+        new Response(JSON.stringify(ssoToken), { status: 200 }),
       );
 
       expect(ssoToken.sessionToken).toMatch(/^allscripts_sso_token_/);
@@ -351,7 +351,7 @@ describe("Allscripts Adapter Integration", () => {
 
     it("should validate SSO session", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ valid: true }), { status: 200 })
+        new Response(JSON.stringify({ valid: true }), { status: 200 }),
       );
 
       const response = await mockFetch();
@@ -375,7 +375,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(medications), { status: 200 })
+        new Response(JSON.stringify(medications), { status: 200 }),
       );
 
       expect(medications.medications).toHaveLength(1);
@@ -395,7 +395,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(allergies), { status: 200 })
+        new Response(JSON.stringify(allergies), { status: 200 }),
       );
 
       expect(allergies.allergies).toHaveLength(1);
@@ -415,7 +415,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(problems), { status: 200 })
+        new Response(JSON.stringify(problems), { status: 200 }),
       );
 
       expect(problems.problems).toHaveLength(1);
@@ -438,7 +438,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(prescriptions), { status: 200 })
+        new Response(JSON.stringify(prescriptions), { status: 200 }),
       );
 
       expect(prescriptions.prescriptions).toHaveLength(1);
@@ -455,7 +455,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(newPrescription), { status: 201 })
+        new Response(JSON.stringify(newPrescription), { status: 201 }),
       );
 
       expect(newPrescription.medication).toBe("Metformin");
@@ -470,7 +470,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refill), { status: 200 })
+        new Response(JSON.stringify(refill), { status: 200 }),
       );
 
       expect(refill.status).toBe("approved");
@@ -494,7 +494,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(labResults), { status: 200 })
+        new Response(JSON.stringify(labResults), { status: 200 }),
       );
 
       expect(labResults.results).toHaveLength(1);
@@ -509,7 +509,7 @@ describe("Allscripts Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusUpdate), { status: 200 })
+        new Response(JSON.stringify(statusUpdate), { status: 200 }),
       );
 
       expect(statusUpdate.status).toBe("reviewed");
@@ -540,7 +540,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(smartToken), { status: 200 })
+        new Response(JSON.stringify(smartToken), { status: 200 }),
       );
 
       expect(smartToken.access_token).toMatch(/^epic_smart_token_/);
@@ -555,7 +555,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(launchResponse), { status: 200 })
+        new Response(JSON.stringify(launchResponse), { status: 200 }),
       );
 
       expect(launchResponse.launch).toBeDefined();
@@ -580,7 +580,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(patientResource), { status: 200 })
+        new Response(JSON.stringify(patientResource), { status: 200 }),
       );
 
       expect(patientResource.resourceType).toBe("Patient");
@@ -612,7 +612,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(observations), { status: 200 })
+        new Response(JSON.stringify(observations), { status: 200 }),
       );
 
       expect(observations.total).toBe(2);
@@ -636,7 +636,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(medications), { status: 200 })
+        new Response(JSON.stringify(medications), { status: 200 }),
       );
 
       expect(medications.total).toBe(1);
@@ -660,7 +660,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(conditions), { status: 200 })
+        new Response(JSON.stringify(conditions), { status: 200 }),
       );
 
       expect(conditions.total).toBe(1);
@@ -679,7 +679,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(myChartData), { status: 200 })
+        new Response(JSON.stringify(myChartData), { status: 200 }),
       );
 
       expect(myChartData.accessibleRecords).toHaveLength(3);
@@ -700,7 +700,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(availableSlots), { status: 200 })
+        new Response(JSON.stringify(availableSlots), { status: 200 }),
       );
 
       expect(availableSlots.availableSlots).toHaveLength(1);
@@ -717,7 +717,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(newAppointment), { status: 201 })
+        new Response(JSON.stringify(newAppointment), { status: 201 }),
       );
 
       expect(newAppointment.status).toBe("confirmed");
@@ -733,7 +733,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(bulkExport), { status: 202 })
+        new Response(JSON.stringify(bulkExport), { status: 202 }),
       );
 
       expect(bulkExport.status).toBe("started");
@@ -755,7 +755,7 @@ describe("Epic Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(exportOutput), { status: 200 })
+        new Response(JSON.stringify(exportOutput), { status: 200 }),
       );
 
       expect(exportOutput.output).toHaveLength(2);
@@ -795,7 +795,7 @@ describe("HL7 FHIR Generic Client Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(capabilityStatement), { status: 200 })
+        new Response(JSON.stringify(capabilityStatement), { status: 200 }),
       );
 
       expect(capabilityStatement.resourceType).toBe("CapabilityStatement");
@@ -809,7 +809,7 @@ describe("HL7 FHIR Generic Client Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(versionInfo), { status: 200 })
+        new Response(JSON.stringify(versionInfo), { status: 200 }),
       );
 
       expect(versionInfo.supportedVersions).toContain("4.0.1");
@@ -830,7 +830,7 @@ describe("HL7 FHIR Generic Client Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(subscription), { status: 201 })
+        new Response(JSON.stringify(subscription), { status: 201 }),
       );
 
       expect(subscription.status).toBe("requested");
@@ -852,7 +852,7 @@ describe("HL7 FHIR Generic Client Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(notification), { status: 200 })
+        new Response(JSON.stringify(notification), { status: 200 }),
       );
 
       expect(notification.resourceType).toBe("Bundle");
@@ -870,7 +870,7 @@ describe("HL7 FHIR Generic Client Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(lookupResponse), { status: 200 })
+        new Response(JSON.stringify(lookupResponse), { status: 200 }),
       );
 
       expect(lookupResponse.system).toBe("http://loinc.org");
@@ -892,7 +892,7 @@ describe("HL7 FHIR Generic Client Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(expansion), { status: 200 })
+        new Response(JSON.stringify(expansion), { status: 200 }),
       );
 
       expect(expansion.expansion.total).toBeGreaterThan(0);
@@ -906,7 +906,7 @@ describe("HL7 FHIR Generic Client Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(validation), { status: 200 })
+        new Response(JSON.stringify(validation), { status: 200 }),
       );
 
       expect(validation.result).toBe(true);
@@ -941,7 +941,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(matchResults), { status: 200 })
+        new Response(JSON.stringify(matchResults), { status: 200 }),
       );
 
       expect(matchResults.candidates).toHaveLength(1);
@@ -961,7 +961,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fuzzyMatch), { status: 200 })
+        new Response(JSON.stringify(fuzzyMatch), { status: 200 }),
       );
 
       expect(fuzzyMatch.candidates[0].similarityScore).toBeGreaterThan(0.85);
@@ -976,7 +976,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mergeResult), { status: 200 })
+        new Response(JSON.stringify(mergeResult), { status: 200 }),
       );
 
       expect(mergeResult.sourcePatients).toHaveLength(2);
@@ -995,7 +995,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mappingResult), { status: 200 })
+        new Response(JSON.stringify(mappingResult), { status: 200 }),
       );
 
       expect(mappingResult.targetCodeSystem).toBe("ICD-10");
@@ -1010,7 +1010,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(snomeMapping), { status: 200 })
+        new Response(JSON.stringify(snomeMapping), { status: 200 }),
       );
 
       expect(snomeMapping.sourceCodeSystem).toBe("SNOMED");
@@ -1028,7 +1028,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(conversion), { status: 200 })
+        new Response(JSON.stringify(conversion), { status: 200 }),
       );
 
       expect(conversion.convertedValue).toBeCloseTo(5.55, 1);
@@ -1043,7 +1043,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(validation), { status: 200 })
+        new Response(JSON.stringify(validation), { status: 200 }),
       );
 
       expect(validation.compatible).toBe(true);
@@ -1060,7 +1060,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(deidentifiedData), { status: 200 })
+        new Response(JSON.stringify(deidentifiedData), { status: 200 }),
       );
 
       expect(deidentifiedData.deidentified_patient_id).not.toContain("123");
@@ -1076,7 +1076,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mapping), { status: 201 })
+        new Response(JSON.stringify(mapping), { status: 201 }),
       );
 
       expect(mapping.encrypted).toBe(true);
@@ -1091,7 +1091,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(compliance), { status: 200 })
+        new Response(JSON.stringify(compliance), { status: 200 }),
       );
 
       expect(compliance.compliant).toBe(true);
@@ -1113,7 +1113,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(auditLog), { status: 201 })
+        new Response(JSON.stringify(auditLog), { status: 201 }),
       );
 
       expect(auditLog.action).toBe("VIEW");
@@ -1134,7 +1134,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(auditResults), { status: 200 })
+        new Response(JSON.stringify(auditResults), { status: 200 }),
       );
 
       expect(auditResults.entries).toHaveLength(1);
@@ -1151,7 +1151,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(anomaly), { status: 200 })
+        new Response(JSON.stringify(anomaly), { status: 200 }),
       );
 
       expect(anomaly.severity).toBe("high");
@@ -1168,7 +1168,7 @@ describe("Healthcare Data Normalizer Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(report), { status: 200 })
+        new Response(JSON.stringify(report), { status: 200 }),
       );
 
       expect(report.complianceScore).toBeGreaterThan(99);

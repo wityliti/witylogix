@@ -8,18 +8,21 @@
 const mockNotificationTemplate = { findFirst: vi.fn() };
 const mockNotificationLog = { create: vi.fn() };
 
-vi.mock('@witylogix/db', () => ({
+vi.mock("@witylogix/db", () => ({
   prisma: {
     notificationTemplate: mockNotificationTemplate,
     notificationLog: mockNotificationLog,
   },
 }));
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { NotificationOrchestrator } from '../orchestrator';
-import type { NotificationResult, NotificationMessage } from '../providers/types';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { NotificationOrchestrator } from "../orchestrator";
+import type {
+  NotificationResult,
+  NotificationMessage,
+} from "../providers/types";
 
-describe('NotificationWorker Integration', () => {
+describe("NotificationWorker Integration", () => {
   let orchestrator: NotificationOrchestrator;
   let mockFetch: ReturnType<typeof vi.fn>;
 
@@ -33,29 +36,29 @@ describe('NotificationWorker Integration', () => {
     vi.clearAllMocks();
   });
 
-  describe('Job Processing Flow', () => {
-    it('should process notification job and return success', async () => {
+  describe("Job Processing Flow", () => {
+    it("should process notification job and return success", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'customer@example.com',
-        'template-456',
-        { name: 'John', orderId: '789' }
+        "shop-123",
+        "EMAIL",
+        "customer@example.com",
+        "template-456",
+        { name: "John", orderId: "789" },
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe('boolean');
+      expect(typeof result.success).toBe("boolean");
     });
 
-    it('should receive job from worker with required parameters', async () => {
+    it("should receive job from worker with required parameters", async () => {
       const jobPayload = {
-        shopId: 'shop-123',
-        channel: 'EMAIL' as const,
-        to: 'user@example.com',
-        templateId: 'welcome-email',
+        shopId: "shop-123",
+        channel: "EMAIL" as const,
+        to: "user@example.com",
+        templateId: "welcome-email",
         variables: {
-          firstName: 'John',
-          activationLink: 'https://example.com/activate/abc123',
+          firstName: "John",
+          activationLink: "https://example.com/activate/abc123",
         },
       };
 
@@ -64,81 +67,81 @@ describe('NotificationWorker Integration', () => {
         jobPayload.channel,
         jobPayload.to,
         jobPayload.templateId,
-        jobPayload.variables
+        jobPayload.variables,
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle job with minimal parameters', async () => {
+    it("should handle job with minimal parameters", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'SMS',
-        '+1234567890',
-        'alert-123'
+        "shop-123",
+        "SMS",
+        "+1234567890",
+        "alert-123",
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Channel Routing', () => {
-    it('should route EMAIL channel to correct provider', async () => {
+  describe("Channel Routing", () => {
+    it("should route EMAIL channel to correct provider", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'email-template',
-        { message: 'Hello' }
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "email-template",
+        { message: "Hello" },
       );
 
-      expect(typeof result.success).toBe('boolean');
+      expect(typeof result.success).toBe("boolean");
     });
 
-    it('should route SMS channel to correct provider', async () => {
+    it("should route SMS channel to correct provider", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'SMS',
-        '+1234567890',
-        'sms-template',
-        { code: '123456' }
+        "shop-123",
+        "SMS",
+        "+1234567890",
+        "sms-template",
+        { code: "123456" },
       );
 
-      expect(typeof result.success).toBe('boolean');
+      expect(typeof result.success).toBe("boolean");
     });
 
-    it('should route WHATSAPP channel to correct provider', async () => {
+    it("should route WHATSAPP channel to correct provider", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'WHATSAPP',
-        '+1234567890',
-        'whatsapp-template',
-        { orderId: 'ORD123' }
+        "shop-123",
+        "WHATSAPP",
+        "+1234567890",
+        "whatsapp-template",
+        { orderId: "ORD123" },
       );
 
-      expect(typeof result.success).toBe('boolean');
+      expect(typeof result.success).toBe("boolean");
     });
 
-    it('should route PUSH channel to correct provider', async () => {
+    it("should route PUSH channel to correct provider", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'PUSH',
-        'device-token-abc123',
-        'push-template',
-        { notification: 'Order shipped' }
+        "shop-123",
+        "PUSH",
+        "device-token-abc123",
+        "push-template",
+        { notification: "Order shipped" },
       );
 
-      expect(typeof result.success).toBe('boolean');
+      expect(typeof result.success).toBe("boolean");
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle orchestrator error and return failure result', async () => {
+  describe("Error Handling", () => {
+    it("should handle orchestrator error and return failure result", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-456',
-        'EMAIL',
-        'invalid-email',
-        'template-789'
+        "shop-456",
+        "EMAIL",
+        "invalid-email",
+        "template-789",
       );
 
       expect(result.success).toBeDefined();
@@ -147,202 +150,193 @@ describe('NotificationWorker Integration', () => {
       }
     });
 
-    it('should handle missing template gracefully', async () => {
+    it("should handle missing template gracefully", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'nonexistent-template-xyz'
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "nonexistent-template-xyz",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle provider timeout error', async () => {
+    it("should handle provider timeout error", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-timeout'
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-timeout",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle network error from provider', async () => {
+    it("should handle network error from provider", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'SMS',
-        '+1234567890',
-        'template-network-error'
+        "shop-123",
+        "SMS",
+        "+1234567890",
+        "template-network-error",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle provider authentication error', async () => {
+    it("should handle provider authentication error", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-auth-error'
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-auth-error",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle provider rate limit error', async () => {
+    it("should handle provider rate limit error", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'SMS',
-        '+1234567890',
-        'template-rate-limit'
+        "shop-123",
+        "SMS",
+        "+1234567890",
+        "template-rate-limit",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle malformed response from provider', async () => {
+    it("should handle malformed response from provider", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'PUSH',
-        'token-123',
-        'template-malformed'
+        "shop-123",
+        "PUSH",
+        "token-123",
+        "template-malformed",
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Retry Logic', () => {
-    it('should retry on transient failure', async () => {
+  describe("Retry Logic", () => {
+    it("should retry on transient failure", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-retry-1'
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-retry-1",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should respect max retry attempts', async () => {
+    it("should respect max retry attempts", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-max-retries'
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-max-retries",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should apply exponential backoff between retries', async () => {
+    it("should apply exponential backoff between retries", async () => {
       const startTime = Date.now();
 
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'SMS',
-        '+1234567890',
-        'template-backoff'
+        "shop-123",
+        "SMS",
+        "+1234567890",
+        "template-backoff",
       );
 
       const elapsed = Date.now() - startTime;
 
       expect(result).toBeDefined();
       // Note: Actual timing may vary, but we can verify the structure
-      expect(typeof result.success).toBe('boolean');
+      expect(typeof result.success).toBe("boolean");
     });
 
-    it('should not retry on permanent failure (4xx)', async () => {
+    it("should not retry on permanent failure (4xx)", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'invalid@example',
-        'template-permanent-fail'
+        "shop-123",
+        "EMAIL",
+        "invalid@example",
+        "template-permanent-fail",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should retry on temporary failure (5xx)', async () => {
+    it("should retry on temporary failure (5xx)", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-temporary-fail'
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-temporary-fail",
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Batch Notification Sending', () => {
-    it('should send notifications to multiple recipients', async () => {
+  describe("Batch Notification Sending", () => {
+    it("should send notifications to multiple recipients", async () => {
       const results = await orchestrator.sendBatch(
-        'shop-123',
-        'EMAIL',
+        "shop-123",
+        "EMAIL",
         [
-          'customer1@example.com',
-          'customer2@example.com',
-          'customer3@example.com',
+          "customer1@example.com",
+          "customer2@example.com",
+          "customer3@example.com",
         ],
-        'newsletter-template',
-        { issue: 'Q1 2026' }
+        "newsletter-template",
+        { issue: "Q1 2026" },
       );
 
       expect(results).toHaveLength(3);
-      expect(results[0]).toHaveProperty('recipient');
-      expect(results[0]).toHaveProperty('result');
+      expect(results[0]).toHaveProperty("recipient");
+      expect(results[0]).toHaveProperty("result");
     });
 
-    it('should handle partial batch failure', async () => {
+    it("should handle partial batch failure", async () => {
       const results = await orchestrator.sendBatch(
-        'shop-123',
-        'SMS',
-        [
-          '+11111111111',
-          '+invalid',
-          '+33333333333',
-        ],
-        'sms-template',
-        { code: 'ABC123' }
+        "shop-123",
+        "SMS",
+        ["+11111111111", "+invalid", "+33333333333"],
+        "sms-template",
+        { code: "ABC123" },
       );
 
       expect(results).toHaveLength(3);
       // At least some should have results
-      expect(results.some(r => typeof r.result === 'object')).toBe(true);
+      expect(results.some((r) => typeof r.result === "object")).toBe(true);
     });
 
-    it('should continue sending if one recipient fails', async () => {
+    it("should continue sending if one recipient fails", async () => {
       const results = await orchestrator.sendBatch(
-        'shop-123',
-        'PUSH',
-        [
-          'token-1',
-          'token-2',
-          'token-3',
-          'token-4',
-        ],
-        'push-template',
-        { alert: 'Special offer' }
+        "shop-123",
+        "PUSH",
+        ["token-1", "token-2", "token-3", "token-4"],
+        "push-template",
+        { alert: "Special offer" },
       );
 
       expect(results).toHaveLength(4);
     });
 
-    it('should preserve recipient order in batch results', async () => {
+    it("should preserve recipient order in batch results", async () => {
       const recipients = [
-        'user1@example.com',
-        'user2@example.com',
-        'user3@example.com',
+        "user1@example.com",
+        "user2@example.com",
+        "user3@example.com",
       ];
 
       const results = await orchestrator.sendBatch(
-        'shop-123',
-        'EMAIL',
+        "shop-123",
+        "EMAIL",
         recipients,
-        'batch-template'
+        "batch-template",
       );
 
       expect(results[0].recipient).toBe(recipients[0]);
@@ -351,181 +345,211 @@ describe('NotificationWorker Integration', () => {
     });
   });
 
-  describe('Template Variable Interpolation', () => {
-    it('should interpolate single variable in template', async () => {
+  describe("Template Variable Interpolation", () => {
+    it("should interpolate single variable in template", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-name',
-        { name: 'Alice' }
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-name",
+        { name: "Alice" },
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should interpolate multiple variables', async () => {
+    it("should interpolate multiple variables", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-complex',
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-complex",
         {
-          customerName: 'Bob',
-          orderId: 'ORD-12345',
-          totalAmount: '$99.99',
-          deliveryDate: '2026-03-15',
-        }
+          customerName: "Bob",
+          orderId: "ORD-12345",
+          totalAmount: "$99.99",
+          deliveryDate: "2026-03-15",
+        },
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle missing variable gracefully', async () => {
+    it("should handle missing variable gracefully", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'SMS',
-        '+1234567890',
-        'template-missing-var',
-        { name: 'Charlie' }
+        "shop-123",
+        "SMS",
+        "+1234567890",
+        "template-missing-var",
+        { name: "Charlie" },
         // missing 'code' variable
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle special characters in variables', async () => {
+    it("should handle special characters in variables", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-special-chars',
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-special-chars",
         {
-          name: 'John O\'Brien & Sons',
+          name: "John O'Brien & Sons",
           message: 'Special <chars> & "quotes"',
-        }
+        },
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should interpolate nested object variables', async () => {
+    it("should interpolate nested object variables", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'WHATSAPP',
-        '+1234567890',
-        'template-nested',
+        "shop-123",
+        "WHATSAPP",
+        "+1234567890",
+        "template-nested",
         {
           user: {
-            name: 'David',
-            tier: 'premium',
+            name: "David",
+            tier: "premium",
           },
           offer: {
-            discount: '20%',
-            code: 'SAVE20',
+            discount: "20%",
+            code: "SAVE20",
           },
-        }
+        },
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Provider Fallback Chain', () => {
-    it('should try next provider if first fails', async () => {
+  describe("Provider Fallback Chain", () => {
+    it("should try next provider if first fails", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-fallback-email',
-        { name: 'Eve' }
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-fallback-email",
+        { name: "Eve" },
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should return error if all providers fail', async () => {
+    it("should return error if all providers fail", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-no-providers',
-        'EMAIL',
-        'test@example.com',
-        'template-no-providers'
+        "shop-no-providers",
+        "EMAIL",
+        "test@example.com",
+        "template-no-providers",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should succeed on first provider if available', async () => {
+    it("should succeed on first provider if available", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-primary-provider',
-        'SMS',
-        '+1234567890',
-        'template-primary'
+        "shop-primary-provider",
+        "SMS",
+        "+1234567890",
+        "template-primary",
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Message Metadata and Logging', () => {
-    it('should include messageId in successful result', async () => {
+  describe("Message Metadata and Logging", () => {
+    it("should include messageId in successful result", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-with-id',
-        { name: 'Frank' }
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-with-id",
+        { name: "Frank" },
       );
 
       if (result.success) {
-        expect(result).toHaveProperty('messageId');
+        expect(result).toHaveProperty("messageId");
       }
     });
 
-    it('should include error message in failed result', async () => {
+    it("should include error message in failed result", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'invalid-email',
-        'template-fail'
+        "shop-123",
+        "EMAIL",
+        "invalid-email",
+        "template-fail",
       );
 
       if (!result.success) {
-        expect(result).toHaveProperty('error');
-        expect(typeof result.error).toBe('string');
+        expect(result).toHaveProperty("error");
+        expect(typeof result.error).toBe("string");
       }
     });
 
-    it('should populate metadata in notification message', async () => {
+    it("should populate metadata in notification message", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-metadata-test',
-        'PUSH',
-        'device-token',
-        'template-meta',
-        { alert: 'Test' }
+        "shop-metadata-test",
+        "PUSH",
+        "device-token",
+        "template-meta",
+        { alert: "Test" },
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Concurrent Processing', () => {
-    it('should handle multiple jobs sequentially', async () => {
+  describe("Concurrent Processing", () => {
+    it("should handle multiple jobs sequentially", async () => {
       // Run jobs sequentially to avoid concurrent dynamic-import collisions
       // in vitest's mock resolver (known issue with Promise.all + vi.mock)
-      const r1 = await orchestrator.sendNotification('shop-123', 'EMAIL', 'user1@example.com', 'template-1');
-      const r2 = await orchestrator.sendNotification('shop-123', 'SMS', '+1111111111', 'template-2');
-      const r3 = await orchestrator.sendNotification('shop-123', 'PUSH', 'token-1', 'template-3');
+      const r1 = await orchestrator.sendNotification(
+        "shop-123",
+        "EMAIL",
+        "user1@example.com",
+        "template-1",
+      );
+      const r2 = await orchestrator.sendNotification(
+        "shop-123",
+        "SMS",
+        "+1111111111",
+        "template-2",
+      );
+      const r3 = await orchestrator.sendNotification(
+        "shop-123",
+        "PUSH",
+        "token-1",
+        "template-3",
+      );
 
       const results = [r1, r2, r3];
       expect(results).toHaveLength(3);
-      expect(results.every(r => typeof r.success === 'boolean')).toBe(true);
+      expect(results.every((r) => typeof r.success === "boolean")).toBe(true);
     });
 
-    it('should isolate jobs from each other', async () => {
-      const r1 = await orchestrator.sendNotification('shop-a', 'EMAIL', 'a@example.com', 'tpl-a');
-      const r2 = await orchestrator.sendNotification('shop-b', 'SMS', '+2222222222', 'tpl-b');
-      const r3 = await orchestrator.sendNotification('shop-c', 'EMAIL', 'c@example.com', 'tpl-c');
+    it("should isolate jobs from each other", async () => {
+      const r1 = await orchestrator.sendNotification(
+        "shop-a",
+        "EMAIL",
+        "a@example.com",
+        "tpl-a",
+      );
+      const r2 = await orchestrator.sendNotification(
+        "shop-b",
+        "SMS",
+        "+2222222222",
+        "tpl-b",
+      );
+      const r3 = await orchestrator.sendNotification(
+        "shop-c",
+        "EMAIL",
+        "c@example.com",
+        "tpl-c",
+      );
 
       expect(r1.success).toBeDefined();
       expect(r2.success).toBeDefined();
@@ -533,106 +557,103 @@ describe('NotificationWorker Integration', () => {
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle empty recipient string', async () => {
+  describe("Edge Cases", () => {
+    it("should handle empty recipient string", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        '',
-        'template-empty-recipient'
+        "shop-123",
+        "EMAIL",
+        "",
+        "template-empty-recipient",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle very long recipient addresses', async () => {
-      const longEmail = 'a'.repeat(100) + '@example.com';
+    it("should handle very long recipient addresses", async () => {
+      const longEmail = "a".repeat(100) + "@example.com";
 
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
+        "shop-123",
+        "EMAIL",
         longEmail,
-        'template-long'
+        "template-long",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle empty variables object', async () => {
+    it("should handle empty variables object", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-no-vars',
-        {}
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-no-vars",
+        {},
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle undefined variables (defaults)', async () => {
+    it("should handle undefined variables (defaults)", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'SMS',
-        '+1234567890',
-        'template-undefined-vars'
+        "shop-123",
+        "SMS",
+        "+1234567890",
+        "template-undefined-vars",
         // No variables parameter
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle very large variables object', async () => {
+    it("should handle very large variables object", async () => {
       const largeVars = Object.fromEntries(
-        Array.from({ length: 100 }, (_, i) => [
-          `key${i}`,
-          `value${i}`,
-        ])
+        Array.from({ length: 100 }, (_, i) => [`key${i}`, `value${i}`]),
       );
 
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-large-vars',
-        largeVars
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-large-vars",
+        largeVars,
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle special characters in shop ID', async () => {
+    it("should handle special characters in shop ID", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123-abc_def',
-        'EMAIL',
-        'test@example.com',
-        'template-special-shop'
+        "shop-123-abc_def",
+        "EMAIL",
+        "test@example.com",
+        "template-special-shop",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('should handle unicode characters in recipient', async () => {
+    it("should handle unicode characters in recipient", async () => {
       const result = await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'ユーザー@example.com',
-        'template-unicode'
+        "shop-123",
+        "EMAIL",
+        "ユーザー@example.com",
+        "template-unicode",
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('Performance', () => {
-    it('should process notification within reasonable time', async () => {
+  describe("Performance", () => {
+    it("should process notification within reasonable time", async () => {
       const start = Date.now();
 
       await orchestrator.sendNotification(
-        'shop-123',
-        'EMAIL',
-        'test@example.com',
-        'template-perf'
+        "shop-123",
+        "EMAIL",
+        "test@example.com",
+        "template-perf",
       );
 
       const elapsed = Date.now() - start;
@@ -642,14 +663,14 @@ describe('NotificationWorker Integration', () => {
       expect(elapsed).toBeLessThan(5000);
     });
 
-    it('should handle batch sending efficiently', async () => {
+    it("should handle batch sending efficiently", async () => {
       const start = Date.now();
 
       await orchestrator.sendBatch(
-        'shop-123',
-        'EMAIL',
+        "shop-123",
+        "EMAIL",
         Array.from({ length: 50 }, (_, i) => `user${i}@example.com`),
-        'template-batch-perf'
+        "template-batch-perf",
       );
 
       const elapsed = Date.now() - start;

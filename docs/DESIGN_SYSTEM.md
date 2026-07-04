@@ -31,6 +31,7 @@ All components are optimized for the dark theme (`#0a0a0c` background). The colo
 ### Accessible by Default
 
 Every component includes:
+
 - Keyboard navigation support
 - ARIA attributes for screen readers
 - High contrast text (WCAG AA 4.5:1 minimum)
@@ -40,6 +41,7 @@ Every component includes:
 ### Density & Precision
 
 Industrial interfaces require information density without visual clutter. The design system uses:
+
 - Compact spacing (Tailwind spacing scale from 0 to 12)
 - Precise typography hierarchy
 - Clear visual separation through borders and backgrounds
@@ -58,9 +60,8 @@ All design tokens are defined as CSS custom properties (variables) and exposed t
 The primary amber color represents the brand and is used for interactive elements, primary actions, and highlights.
 
 ```css
---wl-primary-50:   #fff9eb  /* Lightest */
---wl-primary-500:  #f5a623  /* Brand primary */
---wl-primary-900:  #6b4203  /* Darkest */
+--wl-primary-50: #fff9eb /* Lightest */ --wl-primary-500: #f5a623
+  /* Brand primary */ --wl-primary-900: #6b4203 /* Darkest */;
 ```
 
 **Usage**: Buttons, links, active states, highlights, focus rings
@@ -70,10 +71,10 @@ The primary amber color represents the brand and is used for interactive element
 Used consistently across the platform for status and feedback:
 
 ```css
---wl-success-400:  #34d399  /* Positive states, confirmations */
---wl-warning-400:  #fbbf24  /* Cautionary states, pending actions */
---wl-danger-400:   #f87171  /* Errors, destructive actions */
---wl-info-400:     #60a5fa  /* Information, notifications */
+--wl-success-400: #34d399 /* Positive states, confirmations */
+  --wl-warning-400: #fbbf24 /* Cautionary states, pending actions */
+  --wl-danger-400: #f87171 /* Errors, destructive actions */
+  --wl-info-400: #60a5fa /* Information, notifications */;
 ```
 
 #### Background Colors
@@ -81,12 +82,12 @@ Used consistently across the platform for status and feedback:
 Layered backgrounds create visual hierarchy and functional separation:
 
 ```css
---wl-bg-root:      #0a0a0c  /* Page background */
---wl-bg-surface:   #111114  /* Card/container background */
---wl-bg-elevated:  #19191e  /* Modals, overlays, dropdowns */
---wl-bg-overlay:   #1f1f26  /* Hover states, temporary overlays */
---wl-bg-sidebar:   #0c0c10  /* Sidebar specific background */
---wl-bg-sunken:    #07070a  /* Inset/recessed areas */
+--wl-bg-root: #0a0a0c /* Page background */ --wl-bg-surface: #111114
+  /* Card/container background */ --wl-bg-elevated: #19191e
+  /* Modals, overlays, dropdowns */ --wl-bg-overlay: #1f1f26
+  /* Hover states, temporary overlays */ --wl-bg-sidebar: #0c0c10
+  /* Sidebar specific background */ --wl-bg-sunken: #07070a
+  /* Inset/recessed areas */;
 ```
 
 #### Neutral Colors
@@ -94,9 +95,8 @@ Layered backgrounds create visual hierarchy and functional separation:
 Grayscale colors for text, borders, and secondary elements:
 
 ```css
---wl-neutral-50:   #f8f8fa  /* Lightest (almost white) */
---wl-neutral-500:  #62627e  /* Mid gray */
---wl-neutral-900:  #17172a  /* Darkest */
+--wl-neutral-50: #f8f8fa /* Lightest (almost white) */ --wl-neutral-500: #62627e
+  /* Mid gray */ --wl-neutral-900: #17172a /* Darkest */;
 ```
 
 #### Text Colors
@@ -104,10 +104,10 @@ Grayscale colors for text, borders, and secondary elements:
 Organized by hierarchy and context:
 
 ```css
---wl-text-primary:    #f0f0f5  /* Main body text */
---wl-text-secondary:  #9494ac  /* Secondary text, labels */
---wl-text-tertiary:   #5e5e78  /* Subtle text, hints */
---wl-text-inverse:    #0a0a0c  /* Text on bright backgrounds */
+--wl-text-primary: #f0f0f5 /* Main body text */ --wl-text-secondary: #9494ac
+  /* Secondary text, labels */ --wl-text-tertiary: #5e5e78
+  /* Subtle text, hints */ --wl-text-inverse: #0a0a0c
+  /* Text on bright backgrounds */;
 ```
 
 #### Border Colors
@@ -115,10 +115,10 @@ Organized by hierarchy and context:
 For visual separation and definition:
 
 ```css
---wl-border-subtle:   rgba(255, 255, 255, 0.06)   /* Faint borders */
---wl-border-default:  rgba(255, 255, 255, 0.10)   /* Standard borders */
---wl-border-strong:   rgba(255, 255, 255, 0.16)   /* Emphasis borders */
---wl-border-focus:    var(--wl-primary-500)       /* Focus states */
+--wl-border-subtle: rgba(255, 255, 255, 0.06) /* Faint borders */
+  --wl-border-default: rgba(255, 255, 255, 0.1) /* Standard borders */
+  --wl-border-strong: rgba(255, 255, 255, 0.16) /* Emphasis borders */
+  --wl-border-focus: var(--wl-primary-500) /* Focus states */;
 ```
 
 ### Typography Tokens
@@ -126,8 +126,9 @@ For visual separation and definition:
 #### Font Families
 
 ```css
---wl-font-sans:  'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
---wl-font-mono:  'JetBrains Mono', 'SF Mono', 'Fira Code', monospace
+--wl-font-sans:
+  "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  sans-serif --wl-font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
 ```
 
 #### Font Sizes
@@ -160,16 +161,11 @@ font-weight: 700  /* Bold - headings, important text */
 Consistent spacing based on 4px base unit:
 
 ```css
---wl-space-0:   0      /* No spacing */
---wl-space-1:   4px    /* Extra tight */
---wl-space-2:   8px    /* Tight */
---wl-space-3:   12px   /* Small */
---wl-space-4:   16px   /* Base unit (default) */
---wl-space-5:   20px   /* Medium */
---wl-space-6:   24px   /* Large */
---wl-space-8:   32px   /* Extra large */
---wl-space-10:  40px   /* 2.5x */
---wl-space-12:  48px   /* 3x */
+--wl-space-0: 0 /* No spacing */ --wl-space-1: 4px /* Extra tight */
+  --wl-space-2: 8px /* Tight */ --wl-space-3: 12px /* Small */
+  --wl-space-4: 16px /* Base unit (default) */ --wl-space-5: 20px /* Medium */
+  --wl-space-6: 24px /* Large */ --wl-space-8: 32px /* Extra large */
+  --wl-space-10: 40px /* 2.5x */ --wl-space-12: 48px /* 3x */;
 ```
 
 ### Border Radius
@@ -177,11 +173,10 @@ Consistent spacing based on 4px base unit:
 Subtle rounding for industrial aesthetic:
 
 ```css
---wl-radius-sm:    4px      /* Minimal, subtle */
---wl-radius-md:    6px      /* Default, balanced */
---wl-radius-lg:    10px     /* Pronounced, friendly */
---wl-radius-xl:    14px     /* Extra rounded */
---wl-radius-full:  9999px   /* Fully rounded (pills) */
+--wl-radius-sm: 4px /* Minimal, subtle */ --wl-radius-md: 6px
+  /* Default, balanced */ --wl-radius-lg: 10px /* Pronounced, friendly */
+  --wl-radius-xl: 14px /* Extra rounded */ --wl-radius-full: 9999px
+  /* Fully rounded (pills) */;
 ```
 
 ### Shadows
@@ -189,10 +184,9 @@ Subtle rounding for industrial aesthetic:
 Layered shadows for depth perception:
 
 ```css
---wl-shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.3)
---wl-shadow-md:   0 2px 8px rgba(0, 0, 0, 0.4)
---wl-shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.5)
---wl-shadow-glow: 0 0 20px rgba(245, 166, 35, 0.15)  /* Amber glow */
+--wl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3) --wl-shadow-md: 0 2px 8px
+  rgba(0, 0, 0, 0.4) --wl-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5)
+  --wl-shadow-glow: 0 0 20px rgba(245, 166, 35, 0.15) /* Amber glow */;
 ```
 
 ### Transitions
@@ -200,12 +194,9 @@ Layered shadows for depth perception:
 Timing and easing for animations:
 
 ```css
---wl-duration-fast:  120ms
---wl-duration-base:  200ms
---wl-duration-slow:  400ms
-
---wl-ease-default:  cubic-bezier(0.4, 0, 0.2, 1)     /* Standard */
---wl-ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1) /* Bouncy */
+--wl-duration-fast: 120ms --wl-duration-base: 200ms --wl-duration-slow: 400ms
+  --wl-ease-default: cubic-bezier(0.4, 0, 0.2, 1) /* Standard */
+  --wl-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1) /* Bouncy */;
 ```
 
 ---
@@ -217,6 +208,7 @@ Timing and easing for animations:
 Primary interactive element for actions and navigation.
 
 **Variants**:
+
 - `primary` — Main actions, calls-to-action
 - `secondary` — Alternative actions, less emphasis
 - `ghost` — Minimal, often for secondary actions
@@ -225,6 +217,7 @@ Primary interactive element for actions and navigation.
 **Sizes**: `sm` (small), `md` (medium, default), `lg` (large)
 
 **States**:
+
 - Default
 - Hover (enhanced shadow, color shift)
 - Active (pressed state)
@@ -232,6 +225,7 @@ Primary interactive element for actions and navigation.
 - Focus (outline ring with --wl-primary-500)
 
 **Usage**:
+
 ```tsx
 <Button variant="primary" size="md">
   Submit Form
@@ -247,6 +241,7 @@ Primary interactive element for actions and navigation.
 ```
 
 **When to Use**:
+
 - **Primary**: Main form submissions, confirmations, next step actions
 - **Secondary**: Cancellations, alternatives, less critical actions
 - **Ghost**: Navigation, quick actions, condensed layouts
@@ -257,6 +252,7 @@ Primary interactive element for actions and navigation.
 Small visual indicators for status, tags, or metadata.
 
 **Variants**:
+
 - `default` — Neutral, no specific meaning
 - `success` — Positive, completed, active
 - `warning` — Cautionary, pending, in-progress
@@ -265,12 +261,14 @@ Small visual indicators for status, tags, or metadata.
 - `primary` — Brand/featured, premium, special
 
 **Features**:
+
 - Optional dot indicator (`dot` prop)
 - All caps, uppercase tracking
 - Rounded pill shape
 - Inline display
 
 **Usage**:
+
 ```tsx
 <Badge variant="success">Delivered</Badge>
 <Badge variant="warning" dot>In Progress</Badge>
@@ -278,6 +276,7 @@ Small visual indicators for status, tags, or metadata.
 ```
 
 **When to Use**:
+
 - Status indication (shipped, pending, failed)
 - Category tags
 - Feature flags (new, updated, beta)
@@ -288,6 +287,7 @@ Small visual indicators for status, tags, or metadata.
 Text input field with comprehensive validation support.
 
 **Features**:
+
 - Label support (use always for accessibility)
 - Error message display
 - Helper/hint text
@@ -296,6 +296,7 @@ Text input field with comprehensive validation support.
 - All standard HTML input types
 
 **Properties**:
+
 ```tsx
 <Input
   label="Email Address"
@@ -308,6 +309,7 @@ Text input field with comprehensive validation support.
 ```
 
 **When to Use**:
+
 - Text entry: names, emails, searches
 - Password input with `type="password"`
 - Number input with `type="number"`
@@ -318,12 +320,14 @@ Text input field with comprehensive validation support.
 Multi-line text input for longer content.
 
 **Features**:
+
 - Auto-resizable (minimum 80px height)
 - Label support
 - Error validation states
 - Vertical resize only
 
 **Usage**:
+
 ```tsx
 <Textarea
   label="Message"
@@ -337,6 +341,7 @@ Multi-line text input for longer content.
 Dropdown selection component.
 
 **Features**:
+
 - Label support
 - Placeholder text
 - Error states
@@ -344,6 +349,7 @@ Dropdown selection component.
 - Options array with value/label pairs
 
 **Usage**:
+
 ```tsx
 <Select
   label="Country"
@@ -361,6 +367,7 @@ Dropdown selection component.
 Container component for grouping content.
 
 **Composition**:
+
 - `Card` — Main container
 - `CardHeader` — Top section for title/metadata
 - `CardTitle` — Section heading (uppercase, semibold)
@@ -369,11 +376,13 @@ Container component for grouping content.
 - `CardFooter` — Bottom section for actions
 
 **Features**:
+
 - Hover effect (`hover` prop)
 - Glow effect (`glow` prop)
 - Subtle borders and elevation
 
 **Usage**:
+
 ```tsx
 <Card hover>
   <CardHeader>
@@ -395,6 +404,7 @@ Dialog component for focused interactions.
 **Sizes**: `sm`, `md`, `lg`, `full`
 
 **Features**:
+
 - Backdrop blur for focus
 - Close button (X icon)
 - Title support
@@ -403,6 +413,7 @@ Dialog component for focused interactions.
 - Click outside to close
 
 **Usage**:
+
 ```tsx
 <Modal
   isOpen={isOpen}
@@ -420,12 +431,14 @@ Dialog component for focused interactions.
 Data display component for structured information.
 
 **Features**:
+
 - Header row styling
 - Hover states on rows
 - Badge integration for status
 - Responsive scrolling
 
 **Usage**:
+
 ```tsx
 <Table>
   <thead>
@@ -470,25 +483,36 @@ Checkbox and Switch for boolean input.
 Create visual hierarchy with font sizing and weights:
 
 ```tsx
-{/* Page/Section Title */}
-<h1 className="text-3xl font-bold">Main Title</h1>
+{
+  /* Page/Section Title */
+}
+<h1 className="text-3xl font-bold">Main Title</h1>;
 
-{/* Subsection */}
-<h2 className="text-2xl font-semibold">Subsection</h2>
+{
+  /* Subsection */
+}
+<h2 className="text-2xl font-semibold">Subsection</h2>;
 
-{/* Body text */}
-<p className="text-base font-normal">Regular paragraph text</p>
+{
+  /* Body text */
+}
+<p className="text-base font-normal">Regular paragraph text</p>;
 
-{/* Secondary text, labels */}
-<p className="text-sm font-medium text-wl-text-secondary">Label</p>
+{
+  /* Secondary text, labels */
+}
+<p className="text-sm font-medium text-wl-text-secondary">Label</p>;
 
-{/* Subtle, hint text */}
-<p className="text-xs text-wl-text-tertiary">Helper text</p>
+{
+  /* Subtle, hint text */
+}
+<p className="text-xs text-wl-text-tertiary">Helper text</p>;
 ```
 
 ### Color Usage
 
 **Semantic Color Rules**:
+
 1. **Green (success)**: Positive actions, completed states, confirmations
 2. **Yellow (warning)**: Pending actions, in-progress states, cautions
 3. **Red (danger)**: Errors, failures, destructive actions requiring caution
@@ -500,46 +524,61 @@ Create visual hierarchy with font sizing and weights:
 ### Spacing Patterns
 
 ```tsx
-{/* Tight spacing for related items */}
-<div className="gap-2">Item 1 Item 2</div>
+{
+  /* Tight spacing for related items */
+}
+<div className="gap-2">Item 1 Item 2</div>;
 
-{/* Standard spacing within sections */}
+{
+  /* Standard spacing within sections */
+}
 <div className="space-y-4">
   <div>Section 1</div>
   <div>Section 2</div>
-</div>
+</div>;
 
-{/* Large spacing between major sections */}
+{
+  /* Large spacing between major sections */
+}
 <div className="space-y-12">
   <section>Section A</section>
   <section>Section B</section>
-</div>
+</div>;
 ```
 
 ### Button Patterns
 
 ```tsx
-{/* Primary action */}
-<Button variant="primary">Save Changes</Button>
+{
+  /* Primary action */
+}
+<Button variant="primary">Save Changes</Button>;
 
-{/* Action pair */}
+{
+  /* Action pair */
+}
 <div className="flex gap-2">
   <Button variant="secondary">Cancel</Button>
   <Button variant="primary">Submit</Button>
-</div>
+</div>;
 
-{/* Destructive action with confirmation */}
-<Button variant="danger">Delete</Button>
+{
+  /* Destructive action with confirmation */
+}
+<Button variant="danger">Delete</Button>;
 
-{/* Icon + text */}
+{
+  /* Icon + text */
+}
 <Button>
   <IconComponent /> Label
-</Button>
+</Button>;
 ```
 
 ### Form Patterns
 
 Always include:
+
 1. Descriptive labels
 2. Placeholder text for guidance
 3. Error messages for validation
@@ -572,6 +611,7 @@ Always include:
 ### Responsive Design
 
 Use Tailwind's responsive prefixes:
+
 ```tsx
 {/* Mobile-first approach */}
 <div className="flex flex-col md:flex-row gap-4">
@@ -610,13 +650,14 @@ Arrow Keys          → Navigate within dropdowns, select options
 ### ARIA Attributes
 
 Used throughout components:
+
 ```tsx
-aria-label         // Label for icon-only buttons
-aria-hidden        // Hide decorative elements from screen readers
-aria-expanded      // Indicate expanded/collapsed state
-aria-disabled      // Communicate disabled state
-aria-invalid       // Mark form fields with errors
-aria-describedby   // Link error messages to inputs
+aria - label; // Label for icon-only buttons
+aria - hidden; // Hide decorative elements from screen readers
+aria - expanded; // Indicate expanded/collapsed state
+aria - disabled; // Communicate disabled state
+aria - invalid; // Mark form fields with errors
+aria - describedby; // Link error messages to inputs
 ```
 
 ### Focus Management
@@ -635,7 +676,7 @@ aria-describedby   // Link error messages to inputs
 1. **Create component file** in `/src/components/ui/`
 2. **Follow naming convention**: PascalCase for component names
 3. **Use named exports**: `export { ComponentName }`
-4. **Support theming**: Use CSS variables (--wl-*) not hardcoded colors
+4. **Support theming**: Use CSS variables (--wl-\*) not hardcoded colors
 5. **Include types**: TypeScript interfaces for all props
 6. **Forward refs**: Use `forwardRef` for compound components
 7. **Accessibility first**: Include ARIA attributes, semantic HTML
@@ -660,12 +701,12 @@ const Component = forwardRef<HTMLDivElement, ComponentProps>(
           "base-classes",
           variantClasses[variant],
           sizeClasses[size],
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 
 Component.displayName = "Component";
@@ -690,6 +731,7 @@ export { Component };
 ### Versioning
 
 Use semantic versioning for design system releases:
+
 - **Major**: Breaking changes to component APIs
 - **Minor**: New components or non-breaking additions
 - **Patch**: Bug fixes, documentation updates
@@ -697,6 +739,7 @@ Use semantic versioning for design system releases:
 ### Design Tokens Changes
 
 When updating design tokens:
+
 1. Update CSS variables in `/src/styles/tokens.css`
 2. Update Tailwind config in `tailwind.config.ts`
 3. Update documentation in this file
@@ -711,17 +754,17 @@ Witylogix maps are rendered with **MapLibre GL JS** and styled from the same `--
 
 ### Tokens used on the map
 
-| Use | Token |
-| --- | --- |
-| Zone fill (good SLA) | `--wl-success-500` @ 25% opacity |
-| Zone fill (watch)    | `--wl-warning-500` @ 25% opacity |
-| Zone fill (slipping) | `--wl-danger-500`  @ 25% opacity |
-| Zone stroke (default)| `--wl-neutral-700` |
-| Zone stroke (selected)| `--wl-primary-500` |
-| Pin fills            | status-driven (see `pin-layer.tsx`) |
-| Hub fill             | `--wl-primary-500` |
-| Label text           | `--wl-neutral-200` |
-| Label halo           | `--wl-bg-root` |
+| Use                    | Token                               |
+| ---------------------- | ----------------------------------- |
+| Zone fill (good SLA)   | `--wl-success-500` @ 25% opacity    |
+| Zone fill (watch)      | `--wl-warning-500` @ 25% opacity    |
+| Zone fill (slipping)   | `--wl-danger-500` @ 25% opacity     |
+| Zone stroke (default)  | `--wl-neutral-700`                  |
+| Zone stroke (selected) | `--wl-primary-500`                  |
+| Pin fills              | status-driven (see `pin-layer.tsx`) |
+| Hub fill               | `--wl-primary-500`                  |
+| Label text             | `--wl-neutral-200`                  |
+| Label halo             | `--wl-bg-root`                      |
 
 ### Rules
 

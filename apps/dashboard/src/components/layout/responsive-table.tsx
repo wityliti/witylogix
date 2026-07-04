@@ -137,11 +137,13 @@ function DesktopTableView({
     <div className={cn("overflow-x-auto", className)}>
       <table className="w-full">
         <thead>
-          <tr className={cn(
-            "border-b border-wl-border-default",
-            "bg-wl-bg-elevated/50",
-            "sticky top-0 z-10"
-          )}>
+          <tr
+            className={cn(
+              "border-b border-wl-border-default",
+              "bg-wl-bg-elevated/50",
+              "sticky top-0 z-10",
+            )}
+          >
             {columns.map((col) => (
               <th
                 key={col.id}
@@ -153,7 +155,7 @@ function DesktopTableView({
                   "whitespace-nowrap",
                   col.align === "center" && "text-center",
                   col.align === "right" && "text-right",
-                  col.sortable && "cursor-pointer hover:text-wl-text-primary"
+                  col.sortable && "cursor-pointer hover:text-wl-text-primary",
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -163,7 +165,7 @@ function DesktopTableView({
                       className={cn(
                         "w-4 h-4",
                         "transition-transform",
-                        sortOrder === "desc" && "rotate-180"
+                        sortOrder === "desc" && "rotate-180",
                       )}
                       fill="currentColor"
                       viewBox="0 0 24 24"
@@ -186,7 +188,7 @@ function DesktopTableView({
                 "hover:bg-wl-bg-elevated/50",
                 "transition-colors duration-150",
                 onRowClick && "cursor-pointer",
-                rowClassName
+                rowClassName,
               )}
             >
               {columns.map((col) => (
@@ -196,7 +198,7 @@ function DesktopTableView({
                     "px-4 py-3",
                     "text-sm text-wl-text-primary",
                     col.align === "center" && "text-center",
-                    col.align === "right" && "text-right"
+                    col.align === "right" && "text-right",
                   )}
                 >
                   {col.render?.(row[col.id], row) ?? row[col.id]}
@@ -219,11 +221,13 @@ function TabletTableView(props: ResponsiveTableProps) {
       <div className="inline-block min-w-full">
         <table className="w-full">
           <thead>
-            <tr className={cn(
-              "border-b border-wl-border-default",
-              "bg-wl-bg-elevated/50",
-              "sticky top-0 z-10"
-            )}>
+            <tr
+              className={cn(
+                "border-b border-wl-border-default",
+                "bg-wl-bg-elevated/50",
+                "sticky top-0 z-10",
+              )}
+            >
               {props.columns.map((col) => (
                 <th
                   key={col.id}
@@ -231,7 +235,7 @@ function TabletTableView(props: ResponsiveTableProps) {
                     "px-3 py-2.5",
                     "text-left text-xs font-semibold uppercase",
                     "text-wl-text-secondary",
-                    "whitespace-nowrap"
+                    "whitespace-nowrap",
                   )}
                 >
                   {col.label}
@@ -249,7 +253,7 @@ function TabletTableView(props: ResponsiveTableProps) {
                   "hover:bg-wl-bg-elevated/50",
                   "transition-colors",
                   props.onRowClick && "cursor-pointer",
-                  props.rowClassName
+                  props.rowClassName,
                 )}
               >
                 {props.columns.map((col) => (
@@ -258,7 +262,7 @@ function TabletTableView(props: ResponsiveTableProps) {
                     className={cn(
                       "px-3 py-2.5",
                       "text-sm text-wl-text-primary",
-                      "whitespace-nowrap"
+                      "whitespace-nowrap",
                     )}
                   >
                     {col.render?.(row[col.id], row) ?? row[col.id]}
@@ -304,7 +308,7 @@ function MobileTableView({
             "rounded-lg",
             "transition-all duration-200",
             onRowClick && "cursor-pointer",
-            "active:bg-wl-bg-overlay"
+            "active:bg-wl-bg-overlay",
           )}
         >
           {/* Primary column (always visible) */}
@@ -323,10 +327,14 @@ function MobileTableView({
                   "flex-shrink-0",
                   "text-wl-text-secondary hover:text-wl-text-primary",
                   "transition-transform duration-200",
-                  expandedId === idx && "rotate-180"
+                  expandedId === idx && "rotate-180",
                 )}
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M7 10l5 5 5-5z" />
                 </svg>
               </button>

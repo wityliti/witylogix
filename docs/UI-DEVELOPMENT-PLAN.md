@@ -75,12 +75,12 @@ Screenshot shows the Shopify Admin orders page with v3 app data: orders table wi
 
 ### 2.1 App-by-App Technology Stack
 
-| App | Framework | Component Library | Routing | State | Bundle Target |
-|-----|-----------|-------------------|---------|-------|---------------|
-| Shopify Admin | React Router v7 | Polaris Web Components (`s-*`) | File-based (RR v7) | React context + SWR | N/A (embedded) |
-| Driver App | React Native (Expo) | Custom + React Navigation | Stack + Tab nav | Zustand + React Query | N/A (native) |
-| Tracking Page | Vite + React | Tailwind CSS + Headless UI | Single-page | React context | < 200KB gzip |
-| Checkout Extension | Preact | Shopify UI Extensions API | N/A | Local state | < 64KB total |
+| App                | Framework           | Component Library              | Routing            | State                 | Bundle Target  |
+| ------------------ | ------------------- | ------------------------------ | ------------------ | --------------------- | -------------- |
+| Shopify Admin      | React Router v7     | Polaris Web Components (`s-*`) | File-based (RR v7) | React context + SWR   | N/A (embedded) |
+| Driver App         | React Native (Expo) | Custom + React Navigation      | Stack + Tab nav    | Zustand + React Query | N/A (native)   |
+| Tracking Page      | Vite + React        | Tailwind CSS + Headless UI     | Single-page        | React context         | < 200KB gzip   |
+| Checkout Extension | Preact              | Shopify UI Extensions API      | N/A                | Local state           | < 64KB total   |
 
 ### 2.2 Design System Decisions
 
@@ -140,6 +140,7 @@ Shopify Admin Sidebar (App Navigation)
 **Layout:** Full-width page with KPI summary cards at top, activity timeline below.
 
 **KPI Cards (responsive 4-column grid):**
+
 - Orders Today (count + delta vs yesterday)
 - Active Deliveries (in-progress count)
 - Drivers Online (available count / total)
@@ -156,6 +157,7 @@ Shopify Admin Sidebar (App Navigation)
 **Layout:** Full-width ResourceList (Polaris `s-resource-list`) with filters and bulk actions.
 
 **Filters (persistent URL params):**
+
 - Status: Multi-select (PENDING, CONFIRMED, ASSIGNED, PICKED_UP, OUT_FOR_DELIVERY, DELIVERED, FAILED, CANCELLED)
 - Driver: Select dropdown
 - Date range: Date picker
@@ -175,12 +177,14 @@ Shopify Admin Sidebar (App Navigation)
 **Layout:** Two-column layout. Left: order info + timeline. Right: map + delivery details.
 
 **Left column:**
+
 - Order header: Order # (from Shopify), status badge, created date
 - Customer card: Name, email, phone, delivery address (editable)
 - Line items table: Product, variant, quantity, price (from Shopify data)
 - Notes section: Internal notes (editable), customer notes (from Shopify)
 
 **Right column:**
+
 - Map: Leaflet map showing delivery pin + driver location (if assigned and active)
 - Delivery details card: Assigned driver (with reassign action), zone match, time slot, route assignment
 - Status timeline: Vertical timeline of all status changes with timestamps and actors
@@ -205,6 +209,7 @@ Shopify Admin Sidebar (App Navigation)
 **Layout:** Profile header + tabbed content.
 
 **Tabs:**
+
 - Overview: Stats (deliveries today, this week, this month), current route, current location on map
 - Orders: Order history for this driver with status filters
 - Performance: Delivery success rate, average delivery time, customer ratings
@@ -219,6 +224,7 @@ Shopify Admin Sidebar (App Navigation)
 **Map:** Leaflet with draggable stop markers. Shows optimized route polyline when optimization completes.
 
 **Side panel:**
+
 - Route metadata: Name, date, assigned driver
 - Stops list: Draggable reorder, with order #, address, status
 - Add stops: Search unassigned orders, add to route
@@ -233,11 +239,13 @@ Shopify Admin Sidebar (App Navigation)
 **Layout:** Full-width Leaflet map with side panel.
 
 **Map interactions:**
+
 - Draw polygon: Click to add vertices, double-click to close
 - Edit polygon: Drag vertices to reshape
 - Delete polygon: Select zone, confirm delete
 
 **Side panel:**
+
 - Zone list: Name, color, rate summary
 - Zone form (on selection): Name, color, base rate, per-km rate, min order value, free delivery threshold, active/inactive toggle, time slot associations
 
@@ -359,10 +367,12 @@ Based on v3 screenshot analysis:
 Single-page app at `/d/{trackingToken}`. No authentication required.
 
 **Above the fold:**
+
 - Full-width Leaflet map showing: driver marker (with heading arrow), delivery destination pin, route polyline (remaining segment), ETA countdown
 - Map auto-centers to show both driver and destination
 
 **Below the fold:**
+
 - Status timeline: Horizontal progress bar with step icons (Confirmed → Picked Up → Out for Delivery → Delivered)
 - Delivery details card: Estimated arrival time, driver name + vehicle type (no PII), order summary (item count, delivery address)
 - Merchant branding: Logo, company name, support contact (from shop settings)
@@ -371,12 +381,12 @@ Single-page app at `/d/{trackingToken}`. No authentication required.
 
 ### 5.2 Performance Budget
 
-| Metric | Target | Strategy |
-|--------|--------|----------|
-| First Contentful Paint | < 1.5s | SSR shell with loading skeleton |
-| Largest Contentful Paint | < 2.5s | Lazy-load map tiles, preconnect to tile server |
-| Total bundle size | < 200KB gzip | Leaflet (40KB) + Socket.io client (20KB) + app code |
-| Time to Interactive | < 3s on 3G | Code-split map from status display |
+| Metric                   | Target       | Strategy                                            |
+| ------------------------ | ------------ | --------------------------------------------------- |
+| First Contentful Paint   | < 1.5s       | SSR shell with loading skeleton                     |
+| Largest Contentful Paint | < 2.5s       | Lazy-load map tiles, preconnect to tile server      |
+| Total bundle size        | < 200KB gzip | Leaflet (40KB) + Socket.io client (20KB) + app code |
+| Time to Interactive      | < 3s on 3G   | Code-split map from status display                  |
 
 ---
 
@@ -385,6 +395,7 @@ Single-page app at `/d/{trackingToken}`. No authentication required.
 ### 6.1 Extension Points
 
 **Delivery Date/Time Picker (checkout block):**
+
 - Rendered in the shipping method section of checkout
 - Fetches available time slots from `GET /api/v4/time-slots/available`
 - Displays date picker (next 7 days) and time slot dropdown
@@ -392,6 +403,7 @@ Single-page app at `/d/{trackingToken}`. No authentication required.
 - Writes selected slot to checkout metafield for order processing
 
 **Delivery Instructions (checkout block):**
+
 - Text field for special delivery instructions
 - Character limit: 200
 - Writes to checkout note attribute
@@ -407,6 +419,7 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 ### Phase 1 — Core Screens (Weeks 1-4)
 
 **Shopify App:**
+
 - [ ] App scaffold (React Router v7 + Polaris WC + App Bridge)
 - [ ] Auth flow (Shopify OAuth token exchange)
 - [ ] Dashboard home with KPI cards
@@ -417,6 +430,7 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 - [ ] Basic settings page (general + delivery)
 
 **Driver App:**
+
 - [ ] App scaffold (Expo + React Navigation)
 - [ ] Login screen (phone + password)
 - [ ] Routes list
@@ -426,6 +440,7 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 - [ ] Background GPS integration
 
 **Tracking Page:**
+
 - [ ] Vite scaffold
 - [ ] Map with driver marker + destination pin
 - [ ] Status timeline
@@ -435,6 +450,7 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 ### Phase 2 — Advanced Features (Weeks 5-8)
 
 **Shopify App:**
+
 - [ ] Route builder with map and drag-reorder
 - [ ] Zone editor with polygon draw/edit on Leaflet
 - [ ] Time slot management (calendar view)
@@ -443,6 +459,7 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 - [ ] Organization management screens (multi-shop)
 
 **Driver App:**
+
 - [ ] Home tab with today's summary
 - [ ] Proof of delivery (photo + signature capture)
 - [ ] Offline mode with local queue
@@ -450,6 +467,7 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 - [ ] Organization selector
 
 **Checkout Extension:**
+
 - [ ] Delivery date/time picker
 - [ ] Delivery instructions field
 - [ ] Metafield writes
@@ -457,6 +475,7 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 ### Phase 3 — Polish & Certification (Weeks 9-12)
 
 **Shopify App:**
+
 - [ ] Labels & Receipts template system
 - [ ] Carrier service configuration UI
 - [ ] Analytics / reporting views
@@ -464,12 +483,14 @@ Shopify enforces a hard 64KB limit on checkout extensions (API 2025-10+). The ex
 - [ ] BFS certification requirements (web vitals, accessibility, error handling)
 
 **Driver App:**
+
 - [ ] Dark mode support
 - [ ] Performance optimization (list virtualization, image caching)
 - [ ] Accessibility audit
 - [ ] App Store / Play Store submission
 
 **Tracking Page:**
+
 - [ ] Performance optimization (lighthouse 90+ target)
 - [ ] Accessibility (WCAG 2.1 AA)
 - [ ] Multi-language support (i18next)
@@ -611,14 +632,14 @@ Single API call on load (`GET /api/v4/tracking/:token`), then Socket.io for real
 
 ## 10. Shopify BFS Certification Checklist (UI-Relevant)
 
-| Requirement | Target | Implementation |
-|-------------|--------|----------------|
-| Admin LCP (p75) | ≤ 2.5s | Polaris skeleton screens, route-based code splitting |
-| Admin CLS (p75) | ≤ 0.1 | Fixed-dimension cards, no layout shifts from async data |
-| Admin INP (p75) | ≤ 200ms | Optimistic UI updates, debounced filters |
-| Checkout extension bundle | < 64KB | Preact, tree-shaking, no external deps |
-| Storefront Lighthouse impact | < 10 pts | Tracking page loads independently, no storefront JS |
-| Error handling | Polaris Banner | Error boundaries with user-friendly messages |
-| Loading states | Polaris SkeletonPage | Every async route has a skeleton fallback |
-| Empty states | Polaris EmptyState | Every list has an empty state with CTA |
-| Accessibility | WCAG 2.1 AA | Polaris handles most; custom components need aria-labels |
+| Requirement                  | Target               | Implementation                                           |
+| ---------------------------- | -------------------- | -------------------------------------------------------- |
+| Admin LCP (p75)              | ≤ 2.5s               | Polaris skeleton screens, route-based code splitting     |
+| Admin CLS (p75)              | ≤ 0.1                | Fixed-dimension cards, no layout shifts from async data  |
+| Admin INP (p75)              | ≤ 200ms              | Optimistic UI updates, debounced filters                 |
+| Checkout extension bundle    | < 64KB               | Preact, tree-shaking, no external deps                   |
+| Storefront Lighthouse impact | < 10 pts             | Tracking page loads independently, no storefront JS      |
+| Error handling               | Polaris Banner       | Error boundaries with user-friendly messages             |
+| Loading states               | Polaris SkeletonPage | Every async route has a skeleton fallback                |
+| Empty states                 | Polaris EmptyState   | Every list has an empty state with CTA                   |
+| Accessibility                | WCAG 2.1 AA          | Polaris handles most; custom components need aria-labels |

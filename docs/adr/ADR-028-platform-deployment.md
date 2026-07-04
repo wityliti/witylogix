@@ -12,6 +12,7 @@ Production Deployment Architecture with Service Mesh, Health Checks, and OpenAPI
 ## Context
 
 Witylogix platform needs a standardized, production-grade deployment architecture that:
+
 1. **Scales horizontally** — multiple API instances, load balancing
 2. **Provides observability** — Prometheus metrics, structured logging, health checks
 3. **Ensures reliability** — graceful shutdown, zero-downtime deploys, circuit breakers
@@ -20,6 +21,7 @@ Witylogix platform needs a standardized, production-grade deployment architectur
 6. **Monitors service health** — proactive alerting, dependency checks
 
 Current deployment is ad-hoc and lacks:
+
 - Standardized health check strategy
 - Metrics collection and correlation
 - Graceful shutdown procedures
@@ -30,6 +32,7 @@ Current deployment is ad-hoc and lacks:
 ## Problem Statement
 
 **Current Pain Points:**
+
 - No standardized health check endpoint (load balancers rely on HTTP 200 response)
 - Missing Prometheus metrics for alerting and dashboards
 - Deployment strategy unclear: how to handle DB migrations, worker startup, zero-downtime deploys?
@@ -39,6 +42,7 @@ Current deployment is ad-hoc and lacks:
 - Secrets handling not standardized (hardcoded, missing VAULT integration)
 
 **Target Goals:**
+
 1. **Health Check Strategy**: simple `/health` for LB, `/health/detailed` for monitoring
 2. **Graceful Shutdown**: 30s grace period for in-flight requests
 3. **Zero-Downtime Deploys**: rolling restart via orchestrator
@@ -51,6 +55,7 @@ Current deployment is ad-hoc and lacks:
 We will implement a **production-ready deployment architecture** with:
 
 ### 1. Docker Compose Service Mesh
+
 - **API** (port 3000): Express/Fastify app + health checks
 - **Dashboard** (port 3001): Next.js frontend
 - **Worker** (port none): BullMQ background jobs
@@ -59,24 +64,28 @@ We will implement a **production-ready deployment architecture** with:
 - **Nginx** (port 80/443): Reverse proxy, rate limiting, SSL termination
 
 ### 2. Health Check Architecture
+
 - **Simple** (`GET /health`): 200 OK for load balancers (basic ping)
 - **Detailed** (`GET /health/detailed`): Full report with dependency checks
 - **Metrics** (`GET /metrics`): Prometheus-compatible output
 - **Checks**: PostgreSQL latency, Redis connectivity, external service availability
 
 ### 3. Graceful Shutdown
+
 - 30-second grace period for inflight requests
 - Drain job queues before shutdown
 - Close database/Redis connections cleanly
 - Notify orchestrator via SIGTERM
 
 ### 4. Zero-Downtime Deploys
+
 - Health checks verify service readiness
 - Rolling restart: stop one instance, start new, repeat
 - Database migrations run before app startup
 - Feature flags enable/disable new code paths
 
 ### 5. OpenAPI 3.1 Specification
+
 - Introspect Fastify routes at startup
 - Convert Zod schemas to JSON Schema
 - Group routes by prefix (tags)
@@ -84,12 +93,14 @@ We will implement a **production-ready deployment architecture** with:
 - Serve Swagger UI at `/api/docs`
 
 ### 6. Environment Management
+
 - `.env.example` → documentation of all variables
 - `.env.production` → sensitive production values (Vault/Secrets Manager)
 - Validation at startup: missing required variables = fail fast
 - Precedence: ENV variables > .env file > defaults
 
 ### 7. Logging Strategy
+
 - Structured JSON output (pino + pino-pretty in dev)
 - Fields: timestamp, level, message, requestId, tenantId, duration, error
 - Request tracing via X-Request-ID header
@@ -100,7 +111,7 @@ We will implement a **production-ready deployment architecture** with:
 ### Docker Compose Production Architecture
 
 ```yaml
-version: '3.9'
+version: "3.9"
 services:
   nginx:
     image: nginx:1.25-alpine
@@ -207,7 +218,7 @@ volumes:
 
 ```typescript
 interface HealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   checks: {
     database: { status: string; latency: number; error?: string };
     redis: { status: string; memory: number; error?: string };
@@ -239,17 +250,20 @@ interface HealthStatus {
 ### Environment Variables
 
 **Required (fail on missing):**
+
 - `DATABASE_URL` — PostgreSQL connection string
 - `REDIS_URL` — Redis connection string
 - `JWT_SECRET` — JWT signing key (32+ chars)
 
 **Optional (with defaults):**
+
 - `NODE_ENV` — development | staging | production (default: development)
 - `LOG_LEVEL` — debug | info | warn | error (default: info)
 - `PORT` — server port (default: 3000)
 - `CORS_ORIGIN` — comma-separated allowed origins
 
 **Secrets (Vault/Secrets Manager):**
+
 - `API_KEY_*` — external API keys
 - `WEBHOOK_SECRET_*` — Shopify/third-party secrets
 - `SENDGRID_API_KEY` — email service
@@ -257,6 +271,7 @@ interface HealthStatus {
 ### Monitoring Strategy
 
 **Prometheus Metrics:**
+
 - `http_requests_total` — total requests by method, path, status
 - `http_request_duration_ms` — request latency histogram
 - `database_query_duration_ms` — query latency
@@ -264,11 +279,13 @@ interface HealthStatus {
 - `job_queue_size` — pending jobs
 
 **Log Aggregation:**
+
 - Structured JSON output to stdout
 - Splunk/Datadog ingest via file/pipe
 - Request ID for request → log correlation
 
 **Alerting Rules:**
+
 - Health check fails 3x → page on-call
 - Error rate > 5% for 5 min → warning
 - Response time > 500ms (p99) → performance alert
@@ -276,33 +293,37 @@ interface HealthStatus {
 ## Rationale
 
 ### Why Docker Compose + Kubernetes?
+
 - **Dev Experience**: Docker Compose is easy to understand and modify
 - **Production**: Kubernetes manifests generated from Compose spec
 - **Local Testing**: Full service mesh on laptop with `docker-compose up`
 
 ### Why OpenAPI Auto-Generation?
+
 - **Single Source of Truth**: routes define schema, no manual updates
 - **API Consumer Ready**: Swagger UI, client SDKs, interactive testing
 - **Consistency**: all endpoints follow spec, validation rules enforced
 
 ### Why Structured Logging?
+
 - **Searchability**: filter by requestId, tenantId, error type
 - **Performance Analysis**: measure latency across service boundaries
 - **Debugging**: correlate logs with metrics/traces
 
 ### Why Graceful Shutdown?
+
 - **Data Integrity**: finish in-flight requests before stopping
 - **Zero Data Loss**: drain job queue, no orphaned tasks
 - **Orchestrator Friendly**: respects SIGTERM, fails fast on timeout
 
 ## Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
+| Risk                                     | Mitigation                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------ |
 | Health check false positives (Redis lag) | Configurable timeout; separate "critical" vs "non-critical" checks |
-| Secrets exposed in logs | Filter sensitive keys (passwords, tokens) before logging |
-| OpenAPI spec drift from code | Auto-gen on startup; validation in CI |
-| Deployment coordination (DB migrations) | Run migrations before API startup; rollback on failure |
+| Secrets exposed in logs                  | Filter sensitive keys (passwords, tokens) before logging           |
+| OpenAPI spec drift from code             | Auto-gen on startup; validation in CI                              |
+| Deployment coordination (DB migrations)  | Run migrations before API startup; rollback on failure             |
 
 ## Future Enhancements
 

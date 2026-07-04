@@ -3,8 +3,8 @@
  * Grid-based time slot selection for WooCommerce checkout
  */
 
-import { useMemo } from '@wordpress/element';
-import type { SlotAvailability } from '../api/witylogix-api';
+import { useMemo } from "@wordpress/element";
+import type { SlotAvailability } from "../api/witylogix-api";
 
 interface TimeSlotsProps {
   date: string;
@@ -17,14 +17,19 @@ interface TimeSlotsProps {
 /**
  * Group slots by time period
  */
-function groupSlotsByTimeGroup(slots: SlotAvailability[]): Record<string, SlotAvailability[]> {
-  return slots.reduce((acc, slot) => {
-    if (!acc[slot.timeGroup]) {
-      acc[slot.timeGroup] = [];
-    }
-    acc[slot.timeGroup].push(slot);
-    return acc;
-  }, {} as Record<string, SlotAvailability[]>);
+function groupSlotsByTimeGroup(
+  slots: SlotAvailability[],
+): Record<string, SlotAvailability[]> {
+  return slots.reduce(
+    (acc, slot) => {
+      if (!acc[slot.timeGroup]) {
+        acc[slot.timeGroup] = [];
+      }
+      acc[slot.timeGroup].push(slot);
+      return acc;
+    },
+    {} as Record<string, SlotAvailability[]>,
+  );
 }
 
 /**
@@ -44,9 +49,9 @@ function getTimeGroupOrder(group: string): number {
  */
 function getTimeGroupLabel(group: string): string {
   const labels: Record<string, string> = {
-    morning: 'Morning',
-    afternoon: 'Afternoon',
-    evening: 'Evening',
+    morning: "Morning",
+    afternoon: "Afternoon",
+    evening: "Evening",
   };
   return labels[group] || group;
 }
@@ -63,14 +68,15 @@ export function TimeSlots({
 }: TimeSlotsProps) {
   // Filter slots for selected date
   const dateSlots = useMemo(() => {
-    return slots.filter(slot => slot.date === date);
+    return slots.filter((slot) => slot.date === date);
   }, [date, slots]);
 
   // Group and sort slots
   const groupedSlots = useMemo(() => {
     const grouped = groupSlotsByTimeGroup(dateSlots);
     const sorted = Object.entries(grouped).sort(
-      ([groupA], [groupB]) => getTimeGroupOrder(groupA) - getTimeGroupOrder(groupB)
+      ([groupA], [groupB]) =>
+        getTimeGroupOrder(groupA) - getTimeGroupOrder(groupB),
     );
     return Object.fromEntries(sorted);
   }, [dateSlots]);
@@ -78,7 +84,9 @@ export function TimeSlots({
   if (dateSlots.length === 0) {
     return (
       <div className="witylogix-time-slots witylogix-time-slots--empty">
-        <p className="time-slots-empty-message">No available slots for this date</p>
+        <p className="time-slots-empty-message">
+          No available slots for this date
+        </p>
       </div>
     );
   }
@@ -92,14 +100,14 @@ export function TimeSlots({
           </h4>
 
           <div className="time-slots-grid">
-            {groupSlots.map(slot => (
+            {groupSlots.map((slot) => (
               <button
                 key={slot.id}
                 onClick={() => onSlotSelect(slot)}
                 className={`
                   time-slot-card
-                  ${!slot.available ? 'time-slot-card--disabled' : ''}
-                  ${selectedSlotId === slot.id ? 'time-slot-card--selected' : ''}
+                  ${!slot.available ? "time-slot-card--disabled" : ""}
+                  ${selectedSlotId === slot.id ? "time-slot-card--selected" : ""}
                 `}
                 disabled={!slot.available || isLoading}
                 aria-label={`${slot.label}, ${slot.capacity - slot.reserved} spots available`}

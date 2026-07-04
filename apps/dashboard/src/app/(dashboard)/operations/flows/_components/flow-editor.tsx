@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from '@/components/ui/card';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Plus, Trash2, ArrowLeft, Flag, CheckCircle2 } from 'lucide-react';
+} from "@/components/ui/card";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Plus, Trash2, ArrowLeft, Flag, CheckCircle2 } from "lucide-react";
 
 export interface FlowStage {
   key: string;
@@ -31,12 +31,12 @@ export interface FlowStage {
 
 export interface ActivityFlow {
   id: string;
-  entityType: 'SHIPMENT' | 'ORDER';
+  entityType: "SHIPMENT" | "ORDER";
   key: string;
   name: string;
   description: string | null;
   isDefault: boolean;
-  status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+  status: "DRAFT" | "ACTIVE" | "ARCHIVED";
   graph: { stages: FlowStage[] };
   version: number;
 }
@@ -46,18 +46,18 @@ interface FlowEditorProps {
 }
 
 const DEFAULT_STAGE: FlowStage = {
-  key: '',
-  label: '',
+  key: "",
+  label: "",
   transitions: [],
 };
 
-const DEFAULT_FLOW: Omit<ActivityFlow, 'id' | 'version'> = {
-  entityType: 'SHIPMENT',
-  key: '',
-  name: '',
-  description: '',
+const DEFAULT_FLOW: Omit<ActivityFlow, "id" | "version"> = {
+  entityType: "SHIPMENT",
+  key: "",
+  name: "",
+  description: "",
   isDefault: false,
-  status: 'DRAFT',
+  status: "DRAFT",
   graph: { stages: [] },
 };
 
@@ -68,7 +68,8 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [flow, setFlow] = useState<Omit<ActivityFlow, 'id' | 'version'>>(DEFAULT_FLOW);
+  const [flow, setFlow] =
+    useState<Omit<ActivityFlow, "id" | "version">>(DEFAULT_FLOW);
 
   useEffect(() => {
     if (!flowId) return;
@@ -80,7 +81,7 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
           entityType: res.data.entityType,
           key: res.data.key,
           name: res.data.name,
-          description: res.data.description ?? '',
+          description: res.data.description ?? "",
           isDefault: res.data.isDefault,
           status: res.data.status,
           graph: res.data.graph ?? { stages: [] },
@@ -97,7 +98,9 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
       ...f,
       graph: {
         ...f.graph,
-        stages: f.graph.stages.map((s, i) => (i === index ? { ...s, ...patch } : s)),
+        stages: f.graph.stages.map((s, i) =>
+          i === index ? { ...s, ...patch } : s,
+        ),
       },
     }));
   };
@@ -168,9 +171,9 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
       } else {
         await api.post(`/api/v4/operations/flows`, payload);
       }
-      router.push('/operations/flows');
+      router.push("/operations/flows");
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save flow');
+      setSaveError(err instanceof Error ? err.message : "Failed to save flow");
     } finally {
       setSaving(false);
     }
@@ -183,8 +186,8 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
         message={loadError}
         onRetry={() => router.refresh()}
         onAction={{
-          label: 'Back to flows',
-          onClick: () => router.push('/operations/flows'),
+          label: "Back to flows",
+          onClick: () => router.push("/operations/flows"),
         }}
       />
     );
@@ -193,11 +196,16 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
   return (
     <div>
       <Header
-        title={isEdit ? `Edit: ${flow.name || 'Activity flow'}` : 'New activity flow'}
+        title={
+          isEdit ? `Edit: ${flow.name || "Activity flow"}` : "New activity flow"
+        }
         subtitle="Stages define the states your shipments or orders can be in. Transitions are the allowed moves between them."
         actions={
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => router.push('/operations/flows')}>
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/operations/flows")}
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
@@ -205,7 +213,7 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
               onClick={handleSave}
               disabled={saving || validationErrors.length > 0}
             >
-              {saving ? 'Saving…' : 'Save flow'}
+              {saving ? "Saving…" : "Save flow"}
             </Button>
           </div>
         }
@@ -239,7 +247,9 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
                     onChange={(e) =>
                       setFlow({
                         ...flow,
-                        key: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '-'),
+                        key: e.target.value
+                          .toLowerCase()
+                          .replace(/[^a-z0-9_-]/g, "-"),
                       })
                     }
                     placeholder="standard"
@@ -251,8 +261,10 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
                 <Label htmlFor="description">Description</Label>
                 <textarea
                   id="description"
-                  value={flow.description ?? ''}
-                  onChange={(e) => setFlow({ ...flow, description: e.target.value })}
+                  value={flow.description ?? ""}
+                  onChange={(e) =>
+                    setFlow({ ...flow, description: e.target.value })
+                  }
                   placeholder="When to use this flow"
                   className="w-full rounded-md border border-wl-border-default bg-wl-bg-elevated px-3 py-2 text-sm min-h-20 resize-y"
                 />
@@ -266,7 +278,7 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
                     onChange={(e) =>
                       setFlow({
                         ...flow,
-                        entityType: e.target.value as 'SHIPMENT' | 'ORDER',
+                        entityType: e.target.value as "SHIPMENT" | "ORDER",
                       })
                     }
                     disabled={isEdit}
@@ -284,7 +296,7 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
                     onChange={(e) =>
                       setFlow({
                         ...flow,
-                        status: e.target.value as ActivityFlow['status'],
+                        status: e.target.value as ActivityFlow["status"],
                       })
                     }
                     className="w-full rounded-md border border-wl-border-default bg-wl-bg-elevated px-3 py-2 text-sm"
@@ -315,7 +327,8 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
               <div>
                 <CardTitle>Stages</CardTitle>
                 <CardDescription>
-                  One stage must be marked as initial. Terminal stages end the flow.
+                  One stage must be marked as initial. Terminal stages end the
+                  flow.
                 </CardDescription>
               </div>
               <Button onClick={addStage} variant="secondary">
@@ -336,7 +349,9 @@ export function FlowEditor({ flowId }: FlowEditorProps) {
                   allStages={flow.graph.stages}
                   onChange={(patch) => updateStage(idx, patch)}
                   onRemove={() => removeStage(idx)}
-                  onToggleTransition={(targetKey) => toggleTransition(idx, targetKey)}
+                  onToggleTransition={(targetKey) =>
+                    toggleTransition(idx, targetKey)
+                  }
                   onMakeInitial={() => {
                     setFlow((f) => ({
                       ...f,
@@ -437,7 +452,7 @@ function StageEditor({
             value={stage.key}
             onChange={(e) =>
               onChange({
-                key: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '_'),
+                key: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "_"),
               })
             }
             placeholder="stage_key"
@@ -489,7 +504,9 @@ function StageEditor({
 
       {!stage.isTerminal && otherStages.length > 0 && (
         <div>
-          <div className="text-xs text-wl-text-tertiary mb-1.5">Allowed next:</div>
+          <div className="text-xs text-wl-text-tertiary mb-1.5">
+            Allowed next:
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {otherStages.map((target) => (
               <button
@@ -497,8 +514,8 @@ function StageEditor({
                 onClick={() => onToggleTransition(target.key)}
                 className={
                   transitionSet.has(target.key)
-                    ? 'px-2 py-1 rounded-md text-xs bg-wl-accent-500/20 text-wl-accent-400 border border-wl-accent-500/40'
-                    : 'px-2 py-1 rounded-md text-xs bg-wl-bg-surface text-wl-text-tertiary border border-wl-border-default hover:border-wl-border-strong'
+                    ? "px-2 py-1 rounded-md text-xs bg-wl-accent-500/20 text-wl-accent-400 border border-wl-accent-500/40"
+                    : "px-2 py-1 rounded-md text-xs bg-wl-bg-surface text-wl-text-tertiary border border-wl-border-default hover:border-wl-border-strong"
                 }
               >
                 → {target.label || target.key}
@@ -534,7 +551,7 @@ function GraphPreview({ stages }: { stages: FlowStage[] }) {
           </div>
           {stage.transitions.length > 0 && (
             <div className="pl-5 text-xs text-wl-text-tertiary">
-              → {stage.transitions.map((t) => t.to).join(', ')}
+              → {stage.transitions.map((t) => t.to).join(", ")}
             </div>
           )}
         </div>
@@ -543,18 +560,21 @@ function GraphPreview({ stages }: { stages: FlowStage[] }) {
   );
 }
 
-function validateFlow(flow: Omit<ActivityFlow, 'id' | 'version'>): string[] {
+function validateFlow(flow: Omit<ActivityFlow, "id" | "version">): string[] {
   const errors: string[] = [];
-  if (!flow.name.trim()) errors.push('Name is required');
-  if (!flow.key.trim()) errors.push('Key is required');
+  if (!flow.name.trim()) errors.push("Name is required");
+  if (!flow.key.trim()) errors.push("Key is required");
   if (!/^[a-z0-9_-]+$/.test(flow.key)) {
-    errors.push('Key may only contain lowercase letters, digits, dashes, and underscores');
+    errors.push(
+      "Key may only contain lowercase letters, digits, dashes, and underscores",
+    );
   }
   const stageKeys = new Set<string>();
   let initialCount = 0;
   for (const stage of flow.graph.stages) {
-    if (!stage.key) errors.push('Every stage needs a key');
-    if (stageKeys.has(stage.key)) errors.push(`Duplicate stage key: ${stage.key}`);
+    if (!stage.key) errors.push("Every stage needs a key");
+    if (stageKeys.has(stage.key))
+      errors.push(`Duplicate stage key: ${stage.key}`);
     stageKeys.add(stage.key);
     if (stage.isInitial) initialCount++;
     if (stage.isTerminal && stage.transitions.length > 0) {
@@ -562,12 +582,16 @@ function validateFlow(flow: Omit<ActivityFlow, 'id' | 'version'>): string[] {
     }
   }
   if (flow.graph.stages.length > 0 && initialCount !== 1) {
-    errors.push(`Flow must have exactly one initial stage (found ${initialCount})`);
+    errors.push(
+      `Flow must have exactly one initial stage (found ${initialCount})`,
+    );
   }
   for (const stage of flow.graph.stages) {
     for (const t of stage.transitions) {
       if (!stageKeys.has(t.to)) {
-        errors.push(`Stage "${stage.key}" transitions to unknown stage "${t.to}"`);
+        errors.push(
+          `Stage "${stage.key}" transitions to unknown stage "${t.to}"`,
+        );
       }
     }
   }

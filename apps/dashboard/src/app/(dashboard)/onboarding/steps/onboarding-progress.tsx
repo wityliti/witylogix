@@ -14,14 +14,17 @@ const STEP_LABELS: Record<OnboardingStep, string> = {
   "configure-workspace": "Configure",
 };
 
-const SUB_STEP_LABELS: Record<OnboardingSubStep, { label: string; order: number }> = {
+const SUB_STEP_LABELS: Record<
+  OnboardingSubStep,
+  { label: string; order: number }
+> = {
   "company-info": { label: "Company", order: 1 },
-  "industry": { label: "Industry", order: 2 },
-  "goals": { label: "Goals", order: 3 },
-  "integrations": { label: "Integrations", order: 4 },
+  industry: { label: "Industry", order: 2 },
+  goals: { label: "Goals", order: 3 },
+  integrations: { label: "Integrations", order: 4 },
   "dashboard-layout": { label: "Dashboard", order: 5 },
   "data-import": { label: "Data", order: 6 },
-  "review": { label: "Review", order: 7 },
+  review: { label: "Review", order: 7 },
 };
 
 const MAIN_STEPS: OnboardingStep[] = [
@@ -62,7 +65,9 @@ export function OnboardingProgress({
   const getNextSubStep = (): OnboardingSubStep | null => {
     if (!isConfigureStep) return null;
     const nextIndex = currentSubStepIndex + 1;
-    return nextIndex < CONFIGURE_SUB_STEPS.length ? CONFIGURE_SUB_STEPS[nextIndex] : null;
+    return nextIndex < CONFIGURE_SUB_STEPS.length
+      ? CONFIGURE_SUB_STEPS[nextIndex]
+      : null;
   };
 
   const nextSubStep = getNextSubStep();
@@ -91,8 +96,7 @@ export function OnboardingProgress({
       {!isConfigureStep && (
         <div className="flex items-center gap-2 justify-between">
           {MAIN_STEPS.map((step, index) => {
-            const isCompleted =
-              MAIN_STEPS.indexOf(currentStep) > index;
+            const isCompleted = MAIN_STEPS.indexOf(currentStep) > index;
             const isActive = currentStep === step;
 
             return (
@@ -101,9 +105,7 @@ export function OnboardingProgress({
                   <div
                     className={cn(
                       "h-0.5 flex-1 mx-1",
-                      isCompleted
-                        ? "bg-wl-primary-500"
-                        : "bg-wl-border-subtle"
+                      isCompleted ? "bg-wl-primary-500" : "bg-wl-border-subtle",
                     )}
                   />
                 )}
@@ -112,7 +114,7 @@ export function OnboardingProgress({
                     "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0",
                     isCompleted || isActive
                       ? "bg-wl-primary-500 text-wl-text-inverse"
-                      : "bg-wl-bg-surface border border-wl-border-default text-wl-text-tertiary"
+                      : "bg-wl-bg-surface border border-wl-border-default text-wl-text-tertiary",
                   )}
                 >
                   {index + 1}
@@ -142,7 +144,7 @@ export function OnboardingProgress({
                     "px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-300",
                     isCompleted || isActive
                       ? "bg-wl-primary-500 text-wl-text-inverse"
-                      : "bg-wl-bg-surface text-wl-text-tertiary hover:text-wl-text-secondary"
+                      : "bg-wl-bg-surface text-wl-text-tertiary hover:text-wl-text-secondary",
                   )}
                 >
                   {label}

@@ -3,7 +3,7 @@
  * @witylogix/api — Webhook Routes Test Suite (~300 lines)
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 interface WebhookRequest {
   id: string;
@@ -19,7 +19,7 @@ interface WebhookRequest {
 interface DeliveryHistory {
   id: string;
   webhookId: string;
-  status: 'success' | 'failure';
+  status: "success" | "failure";
   statusCode?: number;
   error?: string;
   deliveredAt: string;
@@ -29,15 +29,18 @@ class WebhookRoutes {
   private webhooks: Map<string, WebhookRequest> = new Map();
   private deliveryHistory: DeliveryHistory[] = [];
   private authenticated = false;
-  private currentTenant = '';
+  private currentTenant = "";
 
   setAuth(authenticated: boolean, tenantId: string): void {
     this.authenticated = authenticated;
     this.currentTenant = tenantId;
   }
 
-  createWebhook(url: string, eventTypes: string[]): { id: string; webhook: WebhookRequest } | { error: string } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+  createWebhook(
+    url: string,
+    eventTypes: string[],
+  ): { id: string; webhook: WebhookRequest } | { error: string } {
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const id = `wh_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
@@ -57,75 +60,87 @@ class WebhookRoutes {
   }
 
   listWebhooks(): { error?: string; webhooks?: WebhookRequest[] } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const webhooks = Array.from(this.webhooks.values()).filter(
-      w => w.tenantId === this.currentTenant
+      (w) => w.tenantId === this.currentTenant,
     );
 
     return { webhooks };
   }
 
   getWebhook(id: string): { error?: string; webhook?: WebhookRequest } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const webhook = this.webhooks.get(id);
-    if (!webhook) return { error: 'Not found' };
-    if (webhook.tenantId !== this.currentTenant) return { error: 'Forbidden' };
+    if (!webhook) return { error: "Not found" };
+    if (webhook.tenantId !== this.currentTenant) return { error: "Forbidden" };
 
     return { webhook };
   }
 
-  updateWebhook(id: string, updates: Partial<WebhookRequest>): { error?: string; webhook?: WebhookRequest } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+  updateWebhook(
+    id: string,
+    updates: Partial<WebhookRequest>,
+  ): { error?: string; webhook?: WebhookRequest } {
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const webhook = this.webhooks.get(id);
-    if (!webhook) return { error: 'Not found' };
-    if (webhook.tenantId !== this.currentTenant) return { error: 'Forbidden' };
+    if (!webhook) return { error: "Not found" };
+    if (webhook.tenantId !== this.currentTenant) return { error: "Forbidden" };
 
     Object.assign(webhook, { ...updates, updatedAt: new Date().toISOString() });
     return { webhook };
   }
 
   deleteWebhook(id: string): { error?: string; success?: boolean } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const webhook = this.webhooks.get(id);
-    if (!webhook) return { error: 'Not found' };
-    if (webhook.tenantId !== this.currentTenant) return { error: 'Forbidden' };
+    if (!webhook) return { error: "Not found" };
+    if (webhook.tenantId !== this.currentTenant) return { error: "Forbidden" };
 
     this.webhooks.delete(id);
     return { success: true };
   }
 
-  testWebhook(id: string): { error?: string; statusCode?: number; success?: boolean } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+  testWebhook(id: string): {
+    error?: string;
+    statusCode?: number;
+    success?: boolean;
+  } {
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const webhook = this.webhooks.get(id);
-    if (!webhook) return { error: 'Not found' };
-    if (webhook.tenantId !== this.currentTenant) return { error: 'Forbidden' };
+    if (!webhook) return { error: "Not found" };
+    if (webhook.tenantId !== this.currentTenant) return { error: "Forbidden" };
 
     // Simulate test delivery
     return { statusCode: 200, success: true };
   }
 
-  getDeliveryHistory(webhookId: string): { error?: string; history?: DeliveryHistory[] } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+  getDeliveryHistory(webhookId: string): {
+    error?: string;
+    history?: DeliveryHistory[];
+  } {
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const webhook = this.webhooks.get(webhookId);
-    if (!webhook) return { error: 'Not found' };
-    if (webhook.tenantId !== this.currentTenant) return { error: 'Forbidden' };
+    if (!webhook) return { error: "Not found" };
+    if (webhook.tenantId !== this.currentTenant) return { error: "Forbidden" };
 
-    const history = this.deliveryHistory.filter(d => d.webhookId === webhookId);
+    const history = this.deliveryHistory.filter(
+      (d) => d.webhookId === webhookId,
+    );
     return { history };
   }
 
   rotateSecret(id: string): { error?: string; secret?: string } {
-    if (!this.authenticated) return { error: 'Unauthorized' };
+    if (!this.authenticated) return { error: "Unauthorized" };
 
     const webhook = this.webhooks.get(id);
-    if (!webhook) return { error: 'Not found' };
-    if (webhook.tenantId !== this.currentTenant) return { error: 'Forbidden' };
+    if (!webhook) return { error: "Not found" };
+    if (webhook.tenantId !== this.currentTenant) return { error: "Forbidden" };
 
     const newSecret = `secret_${Math.random().toString(36).substr(2, 16)}`;
     webhook.secret = newSecret;
@@ -134,7 +149,12 @@ class WebhookRoutes {
     return { secret: newSecret };
   }
 
-  recordDelivery(webhookId: string, status: 'success' | 'failure', statusCode?: number, error?: string): void {
+  recordDelivery(
+    webhookId: string,
+    status: "success" | "failure",
+    statusCode?: number,
+    error?: string,
+  ): void {
     this.deliveryHistory.push({
       id: `dlv_${Date.now()}`,
       webhookId,
@@ -155,120 +175,142 @@ class WebhookRoutes {
   }
 
   validateEventTypes(eventTypes: string[]): boolean {
-    const validTypes = ['order.*', 'delivery.*', 'workflow.*', '*'];
-    return eventTypes.every(type => validTypes.includes(type) || validTypes.some(v => v === '*'));
+    const validTypes = ["order.*", "delivery.*", "workflow.*", "*"];
+    return eventTypes.every(
+      (type) => validTypes.includes(type) || validTypes.some((v) => v === "*"),
+    );
   }
 }
 
-describe('Webhook Routes', () => {
+describe("Webhook Routes", () => {
   let routes: WebhookRoutes;
 
   beforeEach(() => {
     routes = new WebhookRoutes();
   });
 
-  describe('authentication', () => {
-    it('should require authentication', () => {
-      routes.setAuth(false, '');
-      const result = routes.createWebhook('https://example.com/webhook', ['order.*']);
-      expect(result.error).toBe('Unauthorized');
+  describe("authentication", () => {
+    it("should require authentication", () => {
+      routes.setAuth(false, "");
+      const result = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
+      expect(result.error).toBe("Unauthorized");
     });
 
-    it('should allow authenticated requests', () => {
-      routes.setAuth(true, 'tenant_1');
-      const result = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should allow authenticated requests", () => {
+      routes.setAuth(true, "tenant_1");
+      const result = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
       expect(result.id).toBeDefined();
     });
   });
 
-  describe('CRUD operations', () => {
+  describe("CRUD operations", () => {
     beforeEach(() => {
-      routes.setAuth(true, 'tenant_1');
+      routes.setAuth(true, "tenant_1");
     });
 
-    it('should create webhook', () => {
-      const result = routes.createWebhook('https://example.com/webhook', ['order.created']);
+    it("should create webhook", () => {
+      const result = routes.createWebhook("https://example.com/webhook", [
+        "order.created",
+      ]);
       expect(result.id).toBeDefined();
-      expect(result.webhook?.url).toBe('https://example.com/webhook');
+      expect(result.webhook?.url).toBe("https://example.com/webhook");
     });
 
-    it('should list webhooks', () => {
-      routes.createWebhook('https://example.com/wh1', ['order.*']);
-      routes.createWebhook('https://example.com/wh2', ['delivery.*']);
+    it("should list webhooks", () => {
+      routes.createWebhook("https://example.com/wh1", ["order.*"]);
+      routes.createWebhook("https://example.com/wh2", ["delivery.*"]);
 
       const result = routes.listWebhooks();
       expect(result.webhooks).toHaveLength(2);
     });
 
-    it('should get webhook by ID', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should get webhook by ID", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
       const result = routes.getWebhook(created.id!);
       expect(result.webhook?.id).toBe(created.id);
     });
 
-    it('should update webhook', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
-      const result = routes.updateWebhook(created.id!, { eventTypes: ['order.*', 'delivery.*'] });
-      expect(result.webhook?.eventTypes).toEqual(['order.*', 'delivery.*']);
+    it("should update webhook", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
+      const result = routes.updateWebhook(created.id!, {
+        eventTypes: ["order.*", "delivery.*"],
+      });
+      expect(result.webhook?.eventTypes).toEqual(["order.*", "delivery.*"]);
     });
 
-    it('should delete webhook', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should delete webhook", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
       const deleteResult = routes.deleteWebhook(created.id!);
       expect(deleteResult.success).toBe(true);
 
       const getResult = routes.getWebhook(created.id!);
-      expect(getResult.error).toBe('Not found');
+      expect(getResult.error).toBe("Not found");
     });
   });
 
-  describe('webhook test endpoint', () => {
+  describe("webhook test endpoint", () => {
     beforeEach(() => {
-      routes.setAuth(true, 'tenant_1');
+      routes.setAuth(true, "tenant_1");
     });
 
-    it('should test webhook endpoint', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should test webhook endpoint", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
       const result = routes.testWebhook(created.id!);
       expect(result.success).toBe(true);
       expect(result.statusCode).toBe(200);
     });
 
-    it('should require auth for test', () => {
-      routes.setAuth(false, '');
-      const result = routes.testWebhook('wh_123');
-      expect(result.error).toBe('Unauthorized');
+    it("should require auth for test", () => {
+      routes.setAuth(false, "");
+      const result = routes.testWebhook("wh_123");
+      expect(result.error).toBe("Unauthorized");
     });
   });
 
-  describe('delivery history endpoint', () => {
+  describe("delivery history endpoint", () => {
     beforeEach(() => {
-      routes.setAuth(true, 'tenant_1');
+      routes.setAuth(true, "tenant_1");
     });
 
-    it('should get delivery history', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
-      routes.recordDelivery(created.id!, 'success', 200);
-      routes.recordDelivery(created.id!, 'failure', 500, 'Server error');
+    it("should get delivery history", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
+      routes.recordDelivery(created.id!, "success", 200);
+      routes.recordDelivery(created.id!, "failure", 500, "Server error");
 
       const result = routes.getDeliveryHistory(created.id!);
       expect(result.history).toHaveLength(2);
     });
 
-    it('should require auth for history', () => {
-      routes.setAuth(false, '');
-      const result = routes.getDeliveryHistory('wh_123');
-      expect(result.error).toBe('Unauthorized');
+    it("should require auth for history", () => {
+      routes.setAuth(false, "");
+      const result = routes.getDeliveryHistory("wh_123");
+      expect(result.error).toBe("Unauthorized");
     });
   });
 
-  describe('secret rotation', () => {
+  describe("secret rotation", () => {
     beforeEach(() => {
-      routes.setAuth(true, 'tenant_1');
+      routes.setAuth(true, "tenant_1");
     });
 
-    it('should rotate webhook secret', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should rotate webhook secret", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
       const oldSecret = created.webhook?.secret;
 
       const result = routes.rotateSecret(created.id!);
@@ -277,72 +319,82 @@ describe('Webhook Routes', () => {
     });
   });
 
-  describe('tenant isolation', () => {
-    it('should isolate tenants', () => {
-      routes.setAuth(true, 'tenant_1');
-      const created1 = routes.createWebhook('https://example.com/wh1', ['order.*']);
+  describe("tenant isolation", () => {
+    it("should isolate tenants", () => {
+      routes.setAuth(true, "tenant_1");
+      const created1 = routes.createWebhook("https://example.com/wh1", [
+        "order.*",
+      ]);
 
-      routes.setAuth(true, 'tenant_2');
+      routes.setAuth(true, "tenant_2");
       const list2 = routes.listWebhooks();
       expect(list2.webhooks).toHaveLength(0);
     });
 
-    it('should prevent cross-tenant access', () => {
-      routes.setAuth(true, 'tenant_1');
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should prevent cross-tenant access", () => {
+      routes.setAuth(true, "tenant_1");
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
 
-      routes.setAuth(true, 'tenant_2');
+      routes.setAuth(true, "tenant_2");
       const result = routes.getWebhook(created.id!);
-      expect(result.error).toBe('Forbidden');
+      expect(result.error).toBe("Forbidden");
     });
   });
 
-  describe('validation', () => {
+  describe("validation", () => {
     beforeEach(() => {
-      routes.setAuth(true, 'tenant_1');
+      routes.setAuth(true, "tenant_1");
     });
 
-    it('should validate URL format', () => {
-      expect(routes.validateUrl('https://example.com/webhook')).toBe(true);
-      expect(routes.validateUrl('http://example.com')).toBe(true);
-      expect(routes.validateUrl('invalid-url')).toBe(false);
+    it("should validate URL format", () => {
+      expect(routes.validateUrl("https://example.com/webhook")).toBe(true);
+      expect(routes.validateUrl("http://example.com")).toBe(true);
+      expect(routes.validateUrl("invalid-url")).toBe(false);
     });
 
-    it('should validate event types', () => {
-      expect(routes.validateEventTypes(['order.*'])).toBe(true);
-      expect(routes.validateEventTypes(['order.*', 'delivery.*'])).toBe(true);
-      expect(routes.validateEventTypes(['*'])).toBe(true);
+    it("should validate event types", () => {
+      expect(routes.validateEventTypes(["order.*"])).toBe(true);
+      expect(routes.validateEventTypes(["order.*", "delivery.*"])).toBe(true);
+      expect(routes.validateEventTypes(["*"])).toBe(true);
     });
 
-    it('should reject invalid URLs on creation', () => {
+    it("should reject invalid URLs on creation", () => {
       // URL validation is checked via validateUrl; createWebhook does not enforce it
-      const isValid = routes.validateUrl('not-a-url');
+      const isValid = routes.validateUrl("not-a-url");
       expect(isValid).toBe(false);
     });
   });
 
-  describe('webhook lifecycle', () => {
+  describe("webhook lifecycle", () => {
     beforeEach(() => {
-      routes.setAuth(true, 'tenant_1');
+      routes.setAuth(true, "tenant_1");
     });
 
-    it('should track creation and update timestamps', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should track creation and update timestamps", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
       const createdAt = created.webhook?.createdAt;
       const updatedAt = created.webhook?.updatedAt;
 
       expect(createdAt).toBe(updatedAt);
 
-      routes.updateWebhook(created.id!, { eventTypes: ['delivery.*'] });
+      routes.updateWebhook(created.id!, { eventTypes: ["delivery.*"] });
       const updated = routes.getWebhook(created.id!);
 
       // updatedAt should be defined and be a valid ISO timestamp after any update
       expect(updated.webhook?.updatedAt).toBeDefined();
-      expect(new Date(updated.webhook!.updatedAt).getTime()).toBeGreaterThanOrEqual(new Date(createdAt!).getTime());
+      expect(
+        new Date(updated.webhook!.updatedAt).getTime(),
+      ).toBeGreaterThanOrEqual(new Date(createdAt!).getTime());
     });
 
-    it('should track activation status', () => {
-      const created = routes.createWebhook('https://example.com/webhook', ['order.*']);
+    it("should track activation status", () => {
+      const created = routes.createWebhook("https://example.com/webhook", [
+        "order.*",
+      ]);
       expect(created.webhook?.isActive).toBe(true);
     });
   });

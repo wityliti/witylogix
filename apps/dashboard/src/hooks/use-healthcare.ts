@@ -1,15 +1,43 @@
-'use client';
+"use client";
 
-import { useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiListResult } from './use-api';
+import {
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiQueryResult,
+  UseApiListResult,
+} from "./use-api";
 
 // ─── TYPES ──────────────────────────────────────────────────────────
 
-export type PatientStatus = 'ACTIVE' | 'INACTIVE' | 'DECEASED' | 'TRANSFERRED';
-export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | 'UNKNOWN';
-export type EncounterType = 'CONSULTATION' | 'HOSPITALIZATION' | 'EMERGENCY' | 'FOLLOW_UP' | 'LABORATORY' | 'IMAGING';
-export type EncounterStatus = 'PLANNED' | 'ARRIVED' | 'IN_PROGRESS' | 'FINISHED' | 'CANCELLED';
-export type AllergyType = 'MEDICATION' | 'FOOD' | 'ENVIRONMENTAL' | 'LATEX' | 'OTHER';
-export type RecordType = 'PROGRESS_NOTE' | 'LAB_RESULT' | 'IMAGING_REPORT' | 'PRESCRIPTION' | 'DISCHARGE_SUMMARY' | 'CONSULTATION_NOTE';
+export type PatientStatus = "ACTIVE" | "INACTIVE" | "DECEASED" | "TRANSFERRED";
+export type Gender = "MALE" | "FEMALE" | "OTHER" | "UNKNOWN";
+export type EncounterType =
+  | "CONSULTATION"
+  | "HOSPITALIZATION"
+  | "EMERGENCY"
+  | "FOLLOW_UP"
+  | "LABORATORY"
+  | "IMAGING";
+export type EncounterStatus =
+  | "PLANNED"
+  | "ARRIVED"
+  | "IN_PROGRESS"
+  | "FINISHED"
+  | "CANCELLED";
+export type AllergyType =
+  | "MEDICATION"
+  | "FOOD"
+  | "ENVIRONMENTAL"
+  | "LATEX"
+  | "OTHER";
+export type RecordType =
+  | "PROGRESS_NOTE"
+  | "LAB_RESULT"
+  | "IMAGING_REPORT"
+  | "PRESCRIPTION"
+  | "DISCHARGE_SUMMARY"
+  | "CONSULTATION_NOTE";
 
 export interface Address {
   street: string;
@@ -73,16 +101,16 @@ export interface Medication {
   startDate: string;
   endDate?: string;
   prescribedBy: string;
-  status: 'ACTIVE' | 'DISCONTINUED' | 'PAUSED';
+  status: "ACTIVE" | "DISCONTINUED" | "PAUSED";
 }
 
 export interface Condition {
   id: string;
   code: string;
   name: string;
-  status: 'ACTIVE' | 'RESOLVED' | 'INACTIVE';
+  status: "ACTIVE" | "RESOLVED" | "INACTIVE";
   onsetDate: string;
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   notes?: string;
 }
 
@@ -90,10 +118,10 @@ export interface Allergy {
   id: string;
   allergen: string;
   type: AllergyType;
-  severity: 'MILD' | 'MODERATE' | 'SEVERE';
+  severity: "MILD" | "MODERATE" | "SEVERE";
   reaction: string;
   recordedDate: string;
-  status: 'CONFIRMED' | 'UNCONFIRMED' | 'RESOLVED';
+  status: "CONFIRMED" | "UNCONFIRMED" | "RESOLVED";
 }
 
 export interface ClinicalRecord {
@@ -113,7 +141,15 @@ export interface ClinicalRecord {
 }
 
 export interface FHIRResource {
-  resourceType: 'Patient' | 'Observation' | 'Medication' | 'MedicationRequest' | 'Condition' | 'Encounter' | 'DiagnosticReport' | 'Procedure';
+  resourceType:
+    | "Patient"
+    | "Observation"
+    | "Medication"
+    | "MedicationRequest"
+    | "Condition"
+    | "Encounter"
+    | "DiagnosticReport"
+    | "Procedure";
   id: string;
   meta?: {
     versionId: string;
@@ -135,33 +171,55 @@ export interface ComplianceStatus {
 // ─── HOOKS ──────────────────────────────────────────────────────────
 
 export function usePatients(filters?: ApiFilters): UseApiListResult<Patient> {
-  return useApiList<Patient>('/api/v4/patients', filters);
+  return useApiList<Patient>("/api/v4/patients", filters);
 }
 
-export function useEncounters(patientId: string | null): UseApiListResult<Encounter> {
-  return useApiList<Encounter>(patientId ? `/api/v4/patients/${patientId}/encounters` : null);
+export function useEncounters(
+  patientId: string | null,
+): UseApiListResult<Encounter> {
+  return useApiList<Encounter>(
+    patientId ? `/api/v4/patients/${patientId}/encounters` : null,
+  );
 }
 
-export function useClinicalRecords(patientId: string | null): UseApiListResult<ClinicalRecord> {
-  return useApiList<ClinicalRecord>(patientId ? `/api/v4/patients/${patientId}/records` : null);
+export function useClinicalRecords(
+  patientId: string | null,
+): UseApiListResult<ClinicalRecord> {
+  return useApiList<ClinicalRecord>(
+    patientId ? `/api/v4/patients/${patientId}/records` : null,
+  );
 }
 
-export function useMedications(patientId: string | null): UseApiListResult<Medication> {
-  return useApiList<Medication>(patientId ? `/api/v4/patients/${patientId}/medications` : null);
+export function useMedications(
+  patientId: string | null,
+): UseApiListResult<Medication> {
+  return useApiList<Medication>(
+    patientId ? `/api/v4/patients/${patientId}/medications` : null,
+  );
 }
 
-export function useConditions(patientId: string | null): UseApiListResult<Condition> {
-  return useApiList<Condition>(patientId ? `/api/v4/patients/${patientId}/conditions` : null);
+export function useConditions(
+  patientId: string | null,
+): UseApiListResult<Condition> {
+  return useApiList<Condition>(
+    patientId ? `/api/v4/patients/${patientId}/conditions` : null,
+  );
 }
 
-export function useAllergies(patientId: string | null): UseApiListResult<Allergy> {
-  return useApiList<Allergy>(patientId ? `/api/v4/patients/${patientId}/allergies` : null);
+export function useAllergies(
+  patientId: string | null,
+): UseApiListResult<Allergy> {
+  return useApiList<Allergy>(
+    patientId ? `/api/v4/patients/${patientId}/allergies` : null,
+  );
 }
 
-export function useFHIRResources(filters?: ApiFilters): UseApiListResult<FHIRResource> {
-  return useApiList<FHIRResource>('/api/v4/fhir/resources', filters);
+export function useFHIRResources(
+  filters?: ApiFilters,
+): UseApiListResult<FHIRResource> {
+  return useApiList<FHIRResource>("/api/v4/fhir/resources", filters);
 }
 
 export function useHealthcareCompliance(): UseApiQueryResult<ComplianceStatus> {
-  return useApiQuery<ComplianceStatus>('/api/v4/healthcare/compliance');
+  return useApiQuery<ComplianceStatus>("/api/v4/healthcare/compliance");
 }

@@ -6,46 +6,49 @@
  * - Mapbox Directions API v5
  */
 
-import type { Coordinate, LatLng } from './types.js';
+import type { Coordinate, LatLng } from "./types.js";
 
 /**
  * Routing modes/profiles
  */
 export type RoutingMode =
-  | 'DRIVE'
-  | 'DRIVE_TRAFFIC'
-  | 'TWO_WHEELER'
-  | 'WALK'
-  | 'CYCLE'
-  | 'TRANSIT';
+  | "DRIVE"
+  | "DRIVE_TRAFFIC"
+  | "TWO_WHEELER"
+  | "WALK"
+  | "CYCLE"
+  | "TRANSIT";
 
 /**
  * Traffic model for routing
  */
-export type TrafficModel = 'TRAFFIC_AWARE' | 'TRAFFIC_AWARE_OPTIMAL' | 'BEST_GUESS';
+export type TrafficModel =
+  | "TRAFFIC_AWARE"
+  | "TRAFFIC_AWARE_OPTIMAL"
+  | "BEST_GUESS";
 
 /**
  * Maneuver type for routing steps
  */
 export type ManeuverType =
-  | 'turn-sharp-right'
-  | 'turn-right'
-  | 'turn-slight-right'
-  | 'straight'
-  | 'turn-slight-left'
-  | 'turn-left'
-  | 'turn-sharp-left'
-  | 'uturn'
-  | 'fork-right'
-  | 'fork-left'
-  | 'merge'
-  | 'on-ramp'
-  | 'off-ramp'
-  | 'roundabout'
-  | 'exit-roundabout'
-  | 'destination'
-  | 'destination-right'
-  | 'destination-left';
+  | "turn-sharp-right"
+  | "turn-right"
+  | "turn-slight-right"
+  | "straight"
+  | "turn-slight-left"
+  | "turn-left"
+  | "turn-sharp-left"
+  | "uturn"
+  | "fork-right"
+  | "fork-left"
+  | "merge"
+  | "on-ramp"
+  | "off-ramp"
+  | "roundabout"
+  | "exit-roundabout"
+  | "destination"
+  | "destination-right"
+  | "destination-left";
 
 /**
  * Unified routing request
@@ -59,7 +62,7 @@ export interface RoutingRequest {
   departureTime?: Date | number; // Epoch timestamp
   avoidTolls?: boolean;
   avoidHighways?: boolean;
-  vehicleType?: 'sedan' | 'truck' | 'motorcycle' | 'bus';
+  vehicleType?: "sedan" | "truck" | "motorcycle" | "bus";
   language?: string;
   alternatives?: boolean;
 }
@@ -87,7 +90,7 @@ export interface RoutingResult {
   polyline: string; // Encoded polyline
   steps: RoutingStep[];
   trafficDelay?: number; // seconds of delay due to traffic
-  provider: 'google' | 'mapbox';
+  provider: "google" | "mapbox";
   alternatives?: RoutingResult[];
   warnings?: string[];
   summary?: string;
@@ -121,7 +124,7 @@ export interface GeocodingResult {
 export interface MatrixElement {
   duration: number; // seconds
   distance: number; // meters
-  status: 'OK' | 'NOT_FOUND' | 'ZERO_RESULTS' | 'MAX_ROUTE_LENGTH_EXCEEDED';
+  status: "OK" | "NOT_FOUND" | "ZERO_RESULTS" | "MAX_ROUTE_LENGTH_EXCEEDED";
   durationInTraffic?: number; // seconds with traffic
 }
 
@@ -132,7 +135,7 @@ export interface MatrixResult {
   origins: LatLng[];
   destinations: LatLng[];
   rows: MatrixElement[][];
-  provider: 'google' | 'mapbox';
+  provider: "google" | "mapbox";
 }
 
 /**
@@ -152,7 +155,7 @@ export interface OptimizationResult {
   waypointOrder: number[]; // Indices in optimized order
   totalDistance: number; // meters
   totalDuration: number; // seconds
-  provider: 'google' | 'mapbox';
+  provider: "google" | "mapbox";
 }
 
 /**
@@ -225,7 +228,7 @@ export class WitylogixRoutingError extends Error {
     public details?: Record<string, unknown>,
   ) {
     super(message);
-    this.name = 'WitylogixRoutingError';
+    this.name = "WitylogixRoutingError";
   }
 }
 

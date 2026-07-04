@@ -3,29 +3,35 @@
  * Live region management and accessible announcements
  */
 
-import React, { useEffect, useRef, createContext, useContext, ReactNode } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+  ReactNode,
+} from "react";
 
 /**
  * Live region component for screen reader announcements
  */
 export function LiveRegion({
   children,
-  mode = 'polite',
+  mode = "polite",
   className,
 }: {
   children: ReactNode;
-  mode?: 'polite' | 'assertive';
+  mode?: "polite" | "assertive";
   className?: string;
 }): React.ReactElement {
   return React.createElement(
-    'div',
+    "div",
     {
-      role: 'status',
-      'aria-live': mode,
-      'aria-atomic': 'true',
-      className: `sr-only ${className || ''}`,
+      role: "status",
+      "aria-live": mode,
+      "aria-atomic": "true",
+      className: `sr-only ${className || ""}`,
     },
-    children
+    children,
   );
 }
 
@@ -34,7 +40,7 @@ export function LiveRegion({
  */
 let announceQueue: Array<{
   message: string;
-  mode: 'polite' | 'assertive';
+  mode: "polite" | "assertive";
   timestamp: number;
 }> = [];
 
@@ -46,12 +52,12 @@ let liveRegionElement: HTMLDivElement | null = null;
 function initializeLiveRegion(): HTMLDivElement {
   if (liveRegionElement) return liveRegionElement;
 
-  const region = document.createElement('div');
-  region.id = 'sr-announcer';
-  region.setAttribute('role', 'status');
-  region.setAttribute('aria-live', 'polite');
-  region.setAttribute('aria-atomic', 'true');
-  region.className = 'sr-only';
+  const region = document.createElement("div");
+  region.id = "sr-announcer";
+  region.setAttribute("role", "status");
+  region.setAttribute("aria-live", "polite");
+  region.setAttribute("aria-atomic", "true");
+  region.className = "sr-only";
   document.body.appendChild(region);
 
   liveRegionElement = region;
@@ -63,22 +69,24 @@ function initializeLiveRegion(): HTMLDivElement {
  */
 export function announce(
   message: string,
-  mode: 'polite' | 'assertive' = 'polite'
+  mode: "polite" | "assertive" = "polite",
 ): void {
   const region = initializeLiveRegion();
 
   announceQueue.push({ message, mode, timestamp: Date.now() });
 
   // Update aria-live attribute based on mode
-  region.setAttribute('aria-live', mode);
+  region.setAttribute("aria-live", mode);
 
   // Clear and set new content
-  region.textContent = '';
+  region.textContent = "";
   region.textContent = message;
 
   // Dequeue old announcements
   setTimeout(() => {
-    announceQueue = announceQueue.filter((item) => Date.now() - item.timestamp < 1000);
+    announceQueue = announceQueue.filter(
+      (item) => Date.now() - item.timestamp < 1000,
+    );
   }, 1000);
 }
 
@@ -86,28 +94,28 @@ export function announce(
  * Announce route/page navigation
  */
 export function announceRouteChange(title: string): void {
-  announce(`Navigated to ${title}`, 'assertive');
+  announce(`Navigated to ${title}`, "assertive");
 }
 
 /**
  * Announce a completed action
  */
 export function announceAction(message: string): void {
-  announce(message, 'polite');
+  announce(message, "polite");
 }
 
 /**
  * Announce an error (assertively)
  */
 export function announceError(message: string): void {
-  announce(`Error: ${message}`, 'assertive');
+  announce(`Error: ${message}`, "assertive");
 }
 
 /**
  * React hook for managing announcements
  */
 export function useAnnounce(): {
-  announce: (message: string, mode?: 'polite' | 'assertive') => void;
+  announce: (message: string, mode?: "polite" | "assertive") => void;
   announceAction: (message: string) => void;
   announceError: (message: string) => void;
 } {
@@ -122,11 +130,11 @@ export function useAnnounce(): {
  * Context for announcer (optional, for shared state)
  */
 type AnnouncerContextType = {
-  announce: (message: string, mode?: 'polite' | 'assertive') => void;
+  announce: (message: string, mode?: "polite" | "assertive") => void;
 };
 
 const AnnouncerContext = createContext<AnnouncerContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function AnnouncerProvider({
@@ -138,17 +146,15 @@ export function AnnouncerProvider({
     announce,
   };
 
-  return React.createElement(
-    AnnouncerContext.Provider,
-    { value },
-    children
-  );
+  return React.createElement(AnnouncerContext.Provider, { value }, children);
 }
 
 export function useAnnouncerContext(): AnnouncerContextType {
   const context = useContext(AnnouncerContext);
   if (!context) {
-    throw new Error('useAnnouncerContext must be used within AnnouncerProvider');
+    throw new Error(
+      "useAnnouncerContext must be used within AnnouncerProvider",
+    );
   }
   return context;
 }

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
 /**
  * SWR global configuration and provider.
  * Dependency: swr (must be installed in package.json)
  */
 
-import { ReactNode } from 'react';
-import { SWRConfig } from 'swr';
-import { api } from './api';
+import { ReactNode } from "react";
+import { SWRConfig } from "swr";
+import { api } from "./api";
 
 /**
  * Global SWR config with sensible defaults for the dashboard

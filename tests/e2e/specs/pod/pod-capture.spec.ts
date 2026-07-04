@@ -1,35 +1,43 @@
-import { test, expect } from '../../fixtures/auth.fixture';
-import { Page } from '@playwright/test';
+import { test, expect } from "../../fixtures/auth.fixture";
+import { Page } from "@playwright/test";
 
-test.describe('POD (Proof of Delivery) Capture', () => {
+test.describe("POD (Proof of Delivery) Capture", () => {
   test.beforeEach(async ({ page, driverPage }) => {
     // Navigate to driver delivery page
-    await driverPage.goto('/driver/deliveries', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries", { waitUntil: "networkidle" });
   });
 
-  test('should upload photo POD with thumbnail generation', async ({ driverPage }) => {
+  test("should upload photo POD with thumbnail generation", async ({
+    driverPage,
+  }) => {
     // Navigate to delivery detail
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Click upload photo button
-    const uploadPhotoBtn = driverPage.locator('[data-testid="upload-photo-btn"]');
+    const uploadPhotoBtn = driverPage.locator(
+      '[data-testid="upload-photo-btn"]',
+    );
     await expect(uploadPhotoBtn).toBeVisible();
     await uploadPhotoBtn.click();
 
     // Verify photo upload modal opens
-    const uploadModal = driverPage.locator('[data-testid="photo-upload-modal"]');
+    const uploadModal = driverPage.locator(
+      '[data-testid="photo-upload-modal"]',
+    );
     await expect(uploadModal).toBeVisible();
 
     // Note: In real test, would upload actual image file
     // For E2E test with mocks:
     await driverPage.locator('[data-testid="photo-file-input"]').setInputFiles({
-      name: 'test-photo.jpg',
-      mimeType: 'image/jpeg',
-      buffer: Buffer.from('fake-image-data'),
+      name: "test-photo.jpg",
+      mimeType: "image/jpeg",
+      buffer: Buffer.from("fake-image-data"),
     });
 
     // Wait for upload
-    await driverPage.waitForLoadState('networkidle');
+    await driverPage.waitForLoadState("networkidle");
 
     // Verify thumbnail appears
     const thumbnail = driverPage.locator('[data-testid="pod-thumbnail"]');
@@ -44,9 +52,11 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
   });
 
-  test('should capture e-signature and store SVG', async ({ driverPage }) => {
+  test("should capture e-signature and store SVG", async ({ driverPage }) => {
     // Navigate to delivery detail
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Click e-signature button
     const signatureBtn = driverPage.locator('[data-testid="signature-btn"]');
@@ -58,7 +68,7 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     await expect(signaturePad).toBeVisible();
 
     // Simulate signature draw (would be actual mouse/touch in real test)
-    const canvas = driverPage.locator('canvas').first();
+    const canvas = driverPage.locator("canvas").first();
     if (await canvas.isVisible()) {
       // In real test, would draw signature with mouse movements
       // For mock test, just verify canvas exists
@@ -66,22 +76,30 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
 
     // Click confirm/save signature
-    const confirmSignBtn = driverPage.locator('[data-testid="confirm-signature-btn"]');
-    const isConfirmVisible = await confirmSignBtn.isVisible().catch(() => false);
+    const confirmSignBtn = driverPage.locator(
+      '[data-testid="confirm-signature-btn"]',
+    );
+    const isConfirmVisible = await confirmSignBtn
+      .isVisible()
+      .catch(() => false);
     if (isConfirmVisible) {
       await confirmSignBtn.click();
-      await driverPage.waitForLoadState('networkidle');
+      await driverPage.waitForLoadState("networkidle");
 
       // Verify signature is saved
-      const signatureSaved = driverPage.locator('[data-testid="signature-saved"]');
+      const signatureSaved = driverPage.locator(
+        '[data-testid="signature-saved"]',
+      );
       const isSaved = await signatureSaved.isVisible().catch(() => false);
       expect(isSaved || true).toBeTruthy();
     }
   });
 
-  test('should validate QR code scan', async ({ driverPage }) => {
+  test("should validate QR code scan", async ({ driverPage }) => {
     // Navigate to delivery detail
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Click QR code button
     const qrBtn = driverPage.locator('[data-testid="qr-scan-btn"]');
@@ -96,11 +114,13 @@ test.describe('POD (Proof of Delivery) Capture', () => {
       expect(isScannerVisible || true).toBeTruthy();
 
       // Mock QR code detection
-      await driverPage.locator('[data-testid="qr-input"]').fill('ORD-001-QR-CODE');
-      await driverPage.keyboard.press('Enter');
+      await driverPage
+        .locator('[data-testid="qr-input"]')
+        .fill("ORD-001-QR-CODE");
+      await driverPage.keyboard.press("Enter");
 
       // Wait for validation
-      await driverPage.waitForLoadState('networkidle');
+      await driverPage.waitForLoadState("networkidle");
 
       // Verify QR is valid
       const validationMsg = driverPage.locator('[data-testid="qr-valid"]');
@@ -109,9 +129,13 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
   });
 
-  test('should show delivery timeline with all events', async ({ driverPage }) => {
+  test("should show delivery timeline with all events", async ({
+    driverPage,
+  }) => {
     // Navigate to delivery detail
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Verify timeline is displayed
     const timeline = driverPage.locator('[data-testid="delivery-timeline"]');
@@ -137,9 +161,13 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
   });
 
-  test('should mark delivery as complete after POD capture', async ({ driverPage }) => {
+  test("should mark delivery as complete after POD capture", async ({
+    driverPage,
+  }) => {
     // Navigate to delivery detail
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Get initial status
     const statusBadge = driverPage.locator('[data-testid="delivery-status"]');
@@ -158,17 +186,19 @@ test.describe('POD (Proof of Delivery) Capture', () => {
 
       if (isFileInputVisible) {
         await fileInput.setInputFiles({
-          name: 'delivery-photo.jpg',
-          mimeType: 'image/jpeg',
-          buffer: Buffer.from('photo-data'),
+          name: "delivery-photo.jpg",
+          mimeType: "image/jpeg",
+          buffer: Buffer.from("photo-data"),
         });
 
         // Submit
-        const submitBtn = driverPage.locator('[data-testid="submit-photo-btn"]');
+        const submitBtn = driverPage.locator(
+          '[data-testid="submit-photo-btn"]',
+        );
         const isSubmitVisible = await submitBtn.isVisible().catch(() => false);
         if (isSubmitVisible) {
           await submitBtn.click();
-          await driverPage.waitForLoadState('networkidle');
+          await driverPage.waitForLoadState("networkidle");
 
           // Verify status changed
           const newStatus = await statusBadge.textContent();
@@ -178,9 +208,13 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
   });
 
-  test('should handle POD capture without internet gracefully', async ({ driverPage }) => {
+  test("should handle POD capture without internet gracefully", async ({
+    driverPage,
+  }) => {
     // Navigate to delivery
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Simulate offline mode
     await driverPage.context().setOffline(true);
@@ -207,9 +241,13 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     await driverPage.context().setOffline(false);
   });
 
-  test('should sync POD data when connection restored', async ({ driverPage }) => {
+  test("should sync POD data when connection restored", async ({
+    driverPage,
+  }) => {
     // Navigate to delivery
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Go offline
     await driverPage.context().setOffline(true);
@@ -226,12 +264,14 @@ test.describe('POD (Proof of Delivery) Capture', () => {
 
       if (isFileVisible) {
         await fileInput.setInputFiles({
-          name: 'offline-photo.jpg',
-          mimeType: 'image/jpeg',
-          buffer: Buffer.from('offline-image-data'),
+          name: "offline-photo.jpg",
+          mimeType: "image/jpeg",
+          buffer: Buffer.from("offline-image-data"),
         });
 
-        const submitBtn = driverPage.locator('[data-testid="submit-photo-btn"]');
+        const submitBtn = driverPage.locator(
+          '[data-testid="submit-photo-btn"]',
+        );
         const isSubmitVisible = await submitBtn.isVisible().catch(() => false);
         if (isSubmitVisible) {
           await submitBtn.click();
@@ -240,15 +280,19 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
 
     // Verify offline indicator
-    const offlineIndicator = driverPage.locator('[data-testid="offline-indicator"]');
-    const isOfflineShown = await offlineIndicator.isVisible().catch(() => false);
+    const offlineIndicator = driverPage.locator(
+      '[data-testid="offline-indicator"]',
+    );
+    const isOfflineShown = await offlineIndicator
+      .isVisible()
+      .catch(() => false);
     expect(isOfflineShown || true).toBeTruthy();
 
     // Restore connection
     await driverPage.context().setOffline(false);
 
     // Wait for sync
-    await driverPage.waitForLoadState('networkidle');
+    await driverPage.waitForLoadState("networkidle");
 
     // Verify sync completed
     const syncStatus = driverPage.locator('[data-testid="sync-status"]');
@@ -256,14 +300,20 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     expect(isSyncVisible || true).toBeTruthy();
   });
 
-  test('should display POD photos in delivery history', async ({ driverPage }) => {
+  test("should display POD photos in delivery history", async ({
+    driverPage,
+  }) => {
     // Navigate to completed delivery
-    await driverPage.goto('/driver/completed-deliveries', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/completed-deliveries", {
+      waitUntil: "networkidle",
+    });
 
     // Click on delivery with POD
-    const deliveryItem = driverPage.locator('[data-testid="delivery-item"]').first();
+    const deliveryItem = driverPage
+      .locator('[data-testid="delivery-item"]')
+      .first();
     await deliveryItem.click();
-    await driverPage.waitForLoadState('networkidle');
+    await driverPage.waitForLoadState("networkidle");
 
     // Verify POD photos are shown
     const podGallery = driverPage.locator('[data-testid="pod-gallery"]');
@@ -276,9 +326,13 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
   });
 
-  test('should allow POD data editing before submission', async ({ driverPage }) => {
+  test("should allow POD data editing before submission", async ({
+    driverPage,
+  }) => {
     // Navigate to delivery
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Start POD capture
     const uploadBtn = driverPage.locator('[data-testid="upload-photo-btn"]');
@@ -292,7 +346,7 @@ test.describe('POD (Proof of Delivery) Capture', () => {
       const isNotesVisible = await notesField.isVisible().catch(() => false);
 
       if (isNotesVisible) {
-        await notesField.fill('Delivered to customer in person');
+        await notesField.fill("Delivered to customer in person");
       }
 
       // Edit delivery details
@@ -303,16 +357,24 @@ test.describe('POD (Proof of Delivery) Capture', () => {
         await editBtn.click();
 
         // Should allow editing
-        const recipientField = driverPage.locator('[data-testid="recipient-name"]');
-        const isRecipientVisible = await recipientField.isVisible().catch(() => false);
+        const recipientField = driverPage.locator(
+          '[data-testid="recipient-name"]',
+        );
+        const isRecipientVisible = await recipientField
+          .isVisible()
+          .catch(() => false);
         expect(isRecipientVisible || true).toBeTruthy();
       }
     }
   });
 
-  test('should validate POD data before final submission', async ({ driverPage }) => {
+  test("should validate POD data before final submission", async ({
+    driverPage,
+  }) => {
     // Navigate to delivery
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Try to submit without POD
     const submitBtn = driverPage.locator('[data-testid="mark-delivered-btn"]');
@@ -320,10 +382,12 @@ test.describe('POD (Proof of Delivery) Capture', () => {
 
     if (isSubmitVisible) {
       await submitBtn.click();
-      await driverPage.waitForLoadState('networkidle');
+      await driverPage.waitForLoadState("networkidle");
 
       // Should show validation error or require POD
-      const validationMsg = driverPage.locator('[data-testid="pod-required-error"]');
+      const validationMsg = driverPage.locator(
+        '[data-testid="pod-required-error"]',
+      );
       const isErrorVisible = await validationMsg.isVisible().catch(() => false);
 
       // Either shows error or button is disabled
@@ -333,9 +397,11 @@ test.describe('POD (Proof of Delivery) Capture', () => {
     }
   });
 
-  test('should handle large photo uploads', async ({ driverPage }) => {
+  test("should handle large photo uploads", async ({ driverPage }) => {
     // Navigate to delivery
-    await driverPage.goto('/driver/deliveries/ORD-001', { waitUntil: 'networkidle' });
+    await driverPage.goto("/driver/deliveries/ORD-001", {
+      waitUntil: "networkidle",
+    });
 
     // Click upload
     const uploadBtn = driverPage.locator('[data-testid="upload-photo-btn"]');
@@ -352,17 +418,21 @@ test.describe('POD (Proof of Delivery) Capture', () => {
         // Create a larger buffer to simulate large file
         const largeBuffer = Buffer.alloc(5 * 1024 * 1024); // 5MB
         await fileInput.setInputFiles({
-          name: 'large-photo.jpg',
-          mimeType: 'image/jpeg',
+          name: "large-photo.jpg",
+          mimeType: "image/jpeg",
           buffer: largeBuffer,
         });
 
         // Wait for processing
-        await driverPage.waitForLoadState('networkidle');
+        await driverPage.waitForLoadState("networkidle");
 
         // Should compress and show compressed size
-        const uploadStatus = driverPage.locator('[data-testid="upload-status"]');
-        const isStatusVisible = await uploadStatus.isVisible().catch(() => false);
+        const uploadStatus = driverPage.locator(
+          '[data-testid="upload-status"]',
+        );
+        const isStatusVisible = await uploadStatus
+          .isVisible()
+          .catch(() => false);
         expect(isStatusVisible || true).toBeTruthy();
       }
     }

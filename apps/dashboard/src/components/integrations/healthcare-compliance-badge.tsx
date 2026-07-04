@@ -52,7 +52,8 @@ const defaultRequirements: ComplianceRequirement[] = [
     id: "req-003",
     name: "Data Integrity",
     status: "completed",
-    description: "Mechanisms to protect health information from improper alteration",
+    description:
+      "Mechanisms to protect health information from improper alteration",
   },
   {
     id: "req-004",
@@ -130,14 +131,16 @@ export function HealthcareComplianceBadge({
     }
   };
 
-  const completedCount = requirements.filter((r) => r.status === "completed").length;
+  const completedCount = requirements.filter(
+    (r) => r.status === "completed",
+  ).length;
   const failedCount = requirements.filter((r) => r.status === "failed").length;
 
   return (
     <div
       className={cn(
         "flex flex-col border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden transition-all duration-200",
-        className
+        className,
       )}
     >
       {/* Main badge section */}
@@ -193,7 +196,11 @@ export function HealthcareComplianceBadge({
               {nextScheduledDate.toLocaleDateString()}
             </p>
             <p className="text-xs text-wl-text-secondary mt-1">
-              {Math.ceil((nextScheduledDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
+              {Math.ceil(
+                (nextScheduledDate.getTime() - new Date().getTime()) /
+                  (1000 * 60 * 60 * 24),
+              )}{" "}
+              days
             </p>
           </div>
         </div>
@@ -219,7 +226,10 @@ export function HealthcareComplianceBadge({
             Compliance Requirements Checklist
           </span>
           <ChevronDown
-            className={cn("w-4 h-4 text-wl-text-secondary transition-transform", isExpanded && "rotate-180")}
+            className={cn(
+              "w-4 h-4 text-wl-text-secondary transition-transform",
+              isExpanded && "rotate-180",
+            )}
           />
         </button>
 
@@ -234,7 +244,7 @@ export function HealthcareComplianceBadge({
                     ? "border-wl-success-400/20 bg-wl-success-bg/20"
                     : req.status === "pending"
                       ? "border-wl-warning-400/20 bg-wl-warning-bg/20"
-                      : "border-wl-danger-400/20 bg-wl-danger-bg/20"
+                      : "border-wl-danger-400/20 bg-wl-danger-bg/20",
                 )}
               >
                 <div className="flex items-start gap-3">
@@ -250,7 +260,9 @@ export function HealthcareComplianceBadge({
 
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className="text-sm font-semibold text-wl-text-primary">{req.name}</h4>
+                      <h4 className="text-sm font-semibold text-wl-text-primary">
+                        {req.name}
+                      </h4>
                       <Badge
                         variant={
                           req.status === "completed"
@@ -269,7 +281,9 @@ export function HealthcareComplianceBadge({
                       </Badge>
                     </div>
 
-                    <p className="text-xs text-wl-text-secondary">{req.description}</p>
+                    <p className="text-xs text-wl-text-secondary">
+                      {req.description}
+                    </p>
 
                     {req.dueDate && req.status !== "completed" && (
                       <div className="flex items-center gap-1.5 mt-2">

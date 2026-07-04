@@ -43,6 +43,7 @@ witylogix-platform/
 ```
 
 **Rationale**: Turborepo with pnpm workspaces provides:
+
 - Monorepo benefits: single version control, atomic commits, unified dependency management
 - Fast incremental builds via Turborepo's task caching
 - Workspace isolation: each package has its own `package.json`, tsconfig, and build configuration
@@ -78,12 +79,14 @@ packages/db/prisma/
 ```
 
 **Schema File Ordering (00-25)**:
+
 - Files are lexicographically ordered via numeric prefixes
 - `00-config.prisma` contains datasource and generator blocks only
 - Models reference across files; Prisma resolves dependencies automatically
 - Gaps in numbering (e.g., 18-24) reserved for future domains
 
 **Benefits**:
+
 - **Domain-driven organization**: Each `.prisma` file represents a business domain
 - **Easier onboarding**: New developers understand system by reading domain files
 - **Reduced merge conflicts**: Multiple teams can work on different domains simultaneously
@@ -108,7 +111,7 @@ export const dbWithRLS = (prisma: PrismaClient) =>
           if (args.shopId || args.tenantId) {
             await prisma.$executeRawUnsafe(
               `SELECT set_config('app.current_shop_id', $1, false)`,
-              [args.shopId || args.tenantId]
+              [args.shopId || args.tenantId],
             );
           }
           return query(args);
@@ -163,6 +166,7 @@ CREATE POLICY shop_isolation_shipments ON public.shipments
 ```
 
 **Defense-in-Depth Benefits**:
+
 - Middleware enforces tenant context at API layer (code level)
 - PostgreSQL RLS enforces at database layer (data level)
 - SQL injection or middleware bypass cannot expose other tenants' data
@@ -177,9 +181,9 @@ The API is built on Fastify 5 with a plugin-based routing system, enabling modul
 ```typescript
 // apps/api/src/routes/shipments.routes.ts
 
-import { FastifyInstance } from 'fastify';
-import { ShipmentService } from '@witylogix/core';
-import { createShipmentSchema } from '@witylogix/validators';
+import { FastifyInstance } from "fastify";
+import { ShipmentService } from "@witylogix/core";
+import { createShipmentSchema } from "@witylogix/validators";
 
 export default async function shipmentRoutes(fastify: FastifyInstance) {
   // Register service as plugin
@@ -187,7 +191,7 @@ export default async function shipmentRoutes(fastify: FastifyInstance) {
 
   // Protected endpoint with RLS
   fastify.post<{ Body: CreateShipmentRequest }>(
-    '/shipments',
+    "/shipments",
     {
       preHandler: [fastify.authenticate, fastify.tenantContext],
       schema: { body: createShipmentSchema },
@@ -198,14 +202,14 @@ export default async function shipmentRoutes(fastify: FastifyInstance) {
         shopId: request.tenantContext.shopId, // From middleware
       });
       return reply.code(201).send(shipment);
-    }
+    },
   );
 
   // Domain-specific routes: GET /shipments/:id, PATCH, DELETE, etc.
 }
 
 // Register in main application
-fastify.register(shipmentRoutes, { prefix: '/api/v1' });
+fastify.register(shipmentRoutes, { prefix: "/api/v1" });
 ```
 
 #### Middleware Stack
@@ -232,7 +236,7 @@ export class AppError extends Error {
   constructor(
     public code: string,
     public statusCode: number,
-    public details?: Record<string, unknown>
+    public details?: Record<string, unknown>,
   ) {
     super();
   }
@@ -240,19 +244,19 @@ export class AppError extends Error {
 
 class ValidationError extends AppError {
   constructor(details: Record<string, unknown>) {
-    super('VALIDATION_ERROR', 400, details);
+    super("VALIDATION_ERROR", 400, details);
   }
 }
 
 class UnauthorizedError extends AppError {
   constructor(message: string) {
-    super('UNAUTHORIZED', 401, { message });
+    super("UNAUTHORIZED", 401, { message });
   }
 }
 
 class NotFoundError extends AppError {
   constructor(resource: string) {
-    super('NOT_FOUND', 404, { resource });
+    super("NOT_FOUND", 404, { resource });
   }
 }
 ```
@@ -277,15 +281,15 @@ Long-running operations use BullMQ workers:
 
 ```typescript
 // Enqueue notification job
-await fastify.notificationQueue.add('send-sms', {
+await fastify.notificationQueue.add("send-sms", {
   shipmentId,
   phoneNumber: request.body.phoneNumber,
-  template: 'shipment_ready_for_pickup',
-  variables: { estimatedPickupTime: '2:00 PM' },
+  template: "shipment_ready_for_pickup",
+  variables: { estimatedPickupTime: "2:00 PM" },
 });
 
 // Worker process
-notificationWorker.process('send-sms', async (job) => {
+notificationWorker.process("send-sms", async (job) => {
   const { shipmentId, phoneNumber, template, variables } = job.data;
   const message = await templateEngine.render(template, variables);
   await twilioClient.messages.create({
@@ -302,31 +306,35 @@ A custom Mustache-like template engine provides flexible, version-tracked notifi
 #### Template Syntax
 
 ```handlebars
-Dear {{customer.name}},
-
-Your order #{{order.id}} is ready for pickup!
-Estimated time: {{formatDate pickup_time "short"}}
+Dear
+{{customer.name}}, Your order #{{order.id}}
+is ready for pickup! Estimated time:
+{{formatDate pickup_time "short"}}
 
 {{#if same_day_delivery}}
-  We can deliver today for {{formatCurrency same_day_fee}}.
+  We can deliver today for
+  {{formatCurrency same_day_fee}}.
 {{/if}}
 
 {{#each delivery_options}}
-  - {{name}}: {{formatCurrency price}}
+  -
+  {{name}}:
+  {{formatCurrency price}}
 {{/each}}
 
-{{{raw_html}}} <!-- Raw HTML (no escaping) -->
+{{{raw_html}}}
+<!-- Raw HTML (no escaping) -->
 ```
 
 #### Built-In Helpers
 
-| Helper | Example | Output |
-|--------|---------|--------|
-| `formatCurrency` | `{{formatCurrency 29.99}}` | `$29.99` |
-| `formatDate` | `{{formatDate date "short"}}` | `Mar 6, 2026` |
-| `uppercase` | `{{uppercase "hello"}}` | `HELLO` |
-| `lowercase` | `{{lowercase "WORLD"}}` | `world` |
-| `truncate` | `{{truncate "hello world" 5}}` | `hello` |
+| Helper           | Example                        | Output        |
+| ---------------- | ------------------------------ | ------------- |
+| `formatCurrency` | `{{formatCurrency 29.99}}`     | `$29.99`      |
+| `formatDate`     | `{{formatDate date "short"}}`  | `Mar 6, 2026` |
+| `uppercase`      | `{{uppercase "hello"}}`        | `HELLO`       |
+| `lowercase`      | `{{lowercase "WORLD"}}`        | `world`       |
+| `truncate`       | `{{truncate "hello world" 5}}` | `hello`       |
 
 #### Version Tracking
 
@@ -334,7 +342,7 @@ Estimated time: {{formatDate pickup_time "short"}}
 interface NotificationTemplate {
   id: string;
   name: string; // e.g., "shipment_ready_for_pickup"
-  type: 'sms' | 'email' | 'push';
+  type: "sms" | "email" | "push";
   content: string;
   version: number; // Auto-incremented on updates
   variables: string[]; // e.g., ["customer.name", "order.id"]
@@ -345,6 +353,7 @@ interface NotificationTemplate {
 ```
 
 **Benefits**:
+
 - Marketing teams can update copy without code deployment
 - Version history enables rollback if needed
 - Compiled templates cached in Redis for performance
@@ -361,20 +370,20 @@ The admin dashboard uses a **token-based design system** built on CSS custom pro
 
 :root {
   /* Colors */
-  --wl-color-primary: #F5A623;           /* Amber accent */
-  --wl-color-primary-light: #FDD8A8;
-  --wl-color-primary-dark: #D68A1B;
+  --wl-color-primary: #f5a623; /* Amber accent */
+  --wl-color-primary-light: #fdd8a8;
+  --wl-color-primary-dark: #d68a1b;
 
-  --wl-color-neutral-50: #FAFAFA;
-  --wl-color-neutral-900: #0F0F0F;
-  --wl-color-neutral-text: #1F1F1F;      /* Dark theme default */
+  --wl-color-neutral-50: #fafafa;
+  --wl-color-neutral-900: #0f0f0f;
+  --wl-color-neutral-text: #1f1f1f; /* Dark theme default */
 
-  --wl-color-success: #10B981;
-  --wl-color-warning: #F59E0B;
-  --wl-color-error: #EF4444;
+  --wl-color-success: #10b981;
+  --wl-color-warning: #f59e0b;
+  --wl-color-error: #ef4444;
 
   /* Typography */
-  --wl-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --wl-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --wl-font-size-xs: 0.75rem;
   --wl-font-size-sm: 0.875rem;
   --wl-font-size-base: 1rem;
@@ -406,19 +415,19 @@ The admin dashboard uses a **token-based design system** built on CSS custom pro
 
 /* Dark theme (default) */
 [data-theme="dark"] {
-  --wl-bg-primary: #0F0F0F;
-  --wl-bg-secondary: #1A1A1A;
+  --wl-bg-primary: #0f0f0f;
+  --wl-bg-secondary: #1a1a1a;
   --wl-bg-tertiary: #242424;
-  --wl-text-primary: #FFFFFF;
-  --wl-text-secondary: #A0A0A0;
+  --wl-text-primary: #ffffff;
+  --wl-text-secondary: #a0a0a0;
 }
 
 /* Light theme variant */
 [data-theme="light"] {
-  --wl-bg-primary: #FFFFFF;
-  --wl-bg-secondary: #F9F9F9;
-  --wl-bg-tertiary: #F0F0F0;
-  --wl-text-primary: #0F0F0F;
+  --wl-bg-primary: #ffffff;
+  --wl-bg-secondary: #f9f9f9;
+  --wl-bg-tertiary: #f0f0f0;
+  --wl-text-primary: #0f0f0f;
   --wl-text-secondary: #666666;
 }
 ```
@@ -430,11 +439,9 @@ The admin dashboard uses a **token-based design system** built on CSS custom pro
 ```jsx
 <Card className="wl-card">
   <Card.Header>
-    <h2 style={{ color: 'var(--wl-text-primary)' }}>Shipments</h2>
+    <h2 style={{ color: "var(--wl-text-primary)" }}>Shipments</h2>
   </Card.Header>
-  <Card.Body>
-    {/* Content */}
-  </Card.Body>
+  <Card.Body>{/* Content */}</Card.Body>
 </Card>
 ```
 
@@ -476,11 +483,11 @@ All components use **inline style objects with token references**:
 export const Card = ({ children, className }) => (
   <div
     style={{
-      backgroundColor: 'var(--wl-bg-secondary)',
-      border: '1px solid var(--wl-color-neutral-200)',
-      borderRadius: 'var(--wl-radius-md)',
-      padding: 'var(--wl-spacing-lg)',
-      boxShadow: 'var(--wl-shadow-sm)',
+      backgroundColor: "var(--wl-bg-secondary)",
+      border: "1px solid var(--wl-color-neutral-200)",
+      borderRadius: "var(--wl-radius-md)",
+      padding: "var(--wl-spacing-lg)",
+      boxShadow: "var(--wl-shadow-sm)",
     }}
     className={className}
   >
@@ -490,6 +497,7 @@ export const Card = ({ children, className }) => (
 ```
 
 **Why Not Tailwind?**
+
 - Tailwind's utility classes require significant learning curve for large teams
 - CSS custom properties allow non-technical users (designers, marketers) to adjust colors/spacing in CSS files without touching component code
 - Complete control over design system evolution without Tailwind major version constraints
@@ -545,6 +553,7 @@ export const Card = ({ children, className }) => (
 **Pros**: True service isolation; independent deployments; clear ownership boundaries
 
 **Cons**:
+
 - Difficult to keep API and validators in sync across repos
 - Atomic commits across multiple repos impossible; ACID guarantees lost
 - Dependency management nightmare (shared packages require git submodules or private npm registry)
@@ -557,6 +566,7 @@ export const Card = ({ children, className }) => (
 **Pros**: Simple deployment; no dependency management; easier onboarding initially
 
 **Cons**:
+
 - Schema file already 1,216 lines and still growing
 - All features must deploy together; risky for critical bug fixes
 - Difficult to parallelize development across teams
@@ -567,11 +577,13 @@ export const Card = ({ children, className }) => (
 ### 3. GraphQL API (instead of REST + Fastify)
 
 **Pros**:
+
 - Single query language for frontend and mobile clients
 - No over-fetching; clients specify exact fields needed
 - Self-documenting via schema
 
 **Cons**:
+
 - Steeper learning curve; fewer team members experienced with GraphQL
 - Complex authorization (field-level permissions) requires custom middleware
 - Debugging slower (opaque query strings vs. clear REST endpoints)
@@ -582,11 +594,13 @@ export const Card = ({ children, className }) => (
 ### 4. Tailwind CSS (instead of CSS Custom Properties)
 
 **Pros**:
+
 - Massive ecosystem; pre-built component libraries
 - Better IDE autocomplete for class names
 - Smaller team can maintain complex designs
 
 **Cons**:
+
 - Large CSS bundle (requires PurgeCSS configuration)
 - Utility classes scattered in component files; difficult for designers to adjust without touching code
 - Opinionated constraints limit design flexibility
@@ -599,6 +613,7 @@ export const Card = ({ children, className }) => (
 **Pros**: Simple to understand initially; fewer files to track
 
 **Cons**:
+
 - 1,216 lines difficult to navigate
 - Merge conflicts when multiple teams modify schema
 - No clear domain boundaries
@@ -610,12 +625,12 @@ export const Card = ({ children, className }) => (
 
 ## Implementation Timeline
 
-| Phase | Deliverable | Timeline |
-|-------|-------------|----------|
-| **Phase 1** ✓ | Turborepo setup, schema modularization, RLS extensions | Complete |
-| **Phase 1.5** | Dashboard design system, template engine v1 | In Progress (current) |
-| **Phase 2** | Service extraction (routing microservice), GraphQL gateway | Q2 2026 |
-| **Phase 3** | Mobile app (React Native), webhook v2 | Q3 2026 |
+| Phase         | Deliverable                                                | Timeline              |
+| ------------- | ---------------------------------------------------------- | --------------------- |
+| **Phase 1** ✓ | Turborepo setup, schema modularization, RLS extensions     | Complete              |
+| **Phase 1.5** | Dashboard design system, template engine v1                | In Progress (current) |
+| **Phase 2**   | Service extraction (routing microservice), GraphQL gateway | Q2 2026               |
+| **Phase 3**   | Mobile app (React Native), webhook v2                      | Q3 2026               |
 
 ---
 
@@ -815,17 +830,18 @@ witylogix-platform/
 
 ## Approval & Review
 
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| CTO | Arjun Rao | 2026-03-06 | ✓ |
-| Tech Lead | [To be assigned] | - | - |
-| Infrastructure Lead | [To be assigned] | - | - |
+| Role                | Name             | Date       | Signature |
+| ------------------- | ---------------- | ---------- | --------- |
+| CTO                 | Arjun Rao        | 2026-03-06 | ✓         |
+| Tech Lead           | [To be assigned] | -          | -         |
+| Infrastructure Lead | [To be assigned] | -          | -         |
 
 ---
 
 ## Appendix: Prisma Schema File Breakdown
 
 ### 00-config.prisma
+
 ```prisma
 datasource db {
   provider = "postgresql"
@@ -838,6 +854,7 @@ generator client {
 ```
 
 ### 01-organizations.prisma
+
 ```prisma
 model Organization {
   id          String   @id @default(cuid())
@@ -865,6 +882,7 @@ model Subscription {
 ```
 
 ### 02-shops.prisma
+
 ```prisma
 model Shop {
   id              String   @id @default(cuid())
@@ -885,6 +903,7 @@ model Shop {
 ```
 
 ### 06-shipments.prisma
+
 ```prisma
 model Shipment {
   id          String   @id @default(cuid())
@@ -908,6 +927,7 @@ model Shipment {
 ```
 
 ### 13-templates.prisma
+
 ```prisma
 model NotificationTemplate {
   id          String   @id @default(cuid())

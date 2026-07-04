@@ -2,9 +2,9 @@
  * Order Confirmed Email Template
  */
 
-import { OrderEmailData } from '../types';
-import { baseLayout } from './base-layout';
-import { renderTemplate, formatCurrency } from '../template-engine';
+import { OrderEmailData } from "../types";
+import { baseLayout } from "./base-layout";
+import { renderTemplate, formatCurrency } from "../template-engine";
 
 export function orderConfirmedTemplate(data: OrderEmailData): string {
   const content = `

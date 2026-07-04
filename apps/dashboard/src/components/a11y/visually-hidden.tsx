@@ -3,8 +3,8 @@
  * Content visible only to screen readers, properly hidden from visual users
  */
 
-import React, { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import React, { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface VisuallyHiddenProps {
   children: ReactNode;
@@ -23,9 +23,9 @@ export function VisuallyHidden({
   return (
     <span
       className={cn(
-        'sr-only absolute w-1 h-1 p-0 -m-1 overflow-hidden ' +
-        'clip-path-inset-50 whitespace-nowrap border-0',
-        className
+        "sr-only absolute w-1 h-1 p-0 -m-1 overflow-hidden " +
+          "clip-path-inset-50 whitespace-nowrap border-0",
+        className,
       )}
     >
       {children}
@@ -39,13 +39,13 @@ export function VisuallyHidden({
 export function VisuallyHiddenDiv({
   children,
   className,
-}: Omit<VisuallyHiddenProps, 'asChild'>): React.ReactElement {
+}: Omit<VisuallyHiddenProps, "asChild">): React.ReactElement {
   return (
     <div
       className={cn(
-        'sr-only absolute w-1 h-1 p-0 -m-1 overflow-hidden ' +
-        'clip-path-inset-50 whitespace-nowrap border-0',
-        className
+        "sr-only absolute w-1 h-1 p-0 -m-1 overflow-hidden " +
+          "clip-path-inset-50 whitespace-nowrap border-0",
+        className,
       )}
     >
       {children}
@@ -67,8 +67,8 @@ export function VisuallyHiddenLabel({
     <label
       htmlFor={htmlFor}
       className={cn(
-        'sr-only absolute w-1 h-1 p-0 -m-1 overflow-hidden ' +
-        'clip-path-inset-50 whitespace-nowrap border-0'
+        "sr-only absolute w-1 h-1 p-0 -m-1 overflow-hidden " +
+          "clip-path-inset-50 whitespace-nowrap border-0",
       )}
     >
       {children}

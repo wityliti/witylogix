@@ -29,7 +29,13 @@ export function Sparkline({
 }: SparklineProps) {
   const { points, min, max, trend, finalColor } = useMemo(() => {
     if (!data || data.length === 0) {
-      return { points: [], min: 0, max: 100, trend: "flat", finalColor: "#999" };
+      return {
+        points: [],
+        min: 0,
+        max: 100,
+        trend: "flat",
+        finalColor: "#999",
+      };
     }
 
     const min = Math.min(...data);
@@ -45,7 +51,8 @@ export function Sparkline({
     let finalColor = color;
 
     if (trendColor) {
-      finalColor = trend === "up" ? "var(--wl-success-500)" : "var(--wl-danger-500)";
+      finalColor =
+        trend === "up" ? "var(--wl-success-500)" : "var(--wl-danger-500)";
     } else if (!color) {
       finalColor = "var(--wl-info-500)";
     }
@@ -86,13 +93,7 @@ export function Sparkline({
       className="overflow-visible"
     >
       {/* Area under line */}
-      {showArea && (
-        <path
-          d={areaPath}
-          fill={finalColor}
-          fillOpacity={0.1}
-        />
-      )}
+      {showArea && <path d={areaPath} fill={finalColor} fillOpacity={0.1} />}
 
       {/* Line */}
       <path

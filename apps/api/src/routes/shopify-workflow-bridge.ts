@@ -101,7 +101,7 @@ const shopifyOrderSchema = z.object({
       quantity: z.number(),
       price: z.string(),
       sku: z.string(),
-    })
+    }),
   ),
   shipping_address: z
     .object({
@@ -161,7 +161,7 @@ const shopifyFulfillmentSchema = z.object({
  * @param fastify Fastify instance
  */
 async function shopifyWorkflowBridgeRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   const queue = getNotificationQueue();
 
@@ -181,16 +181,16 @@ async function shopifyWorkflowBridgeRoutes(
   fastify.post(
     "/api/v4/webhooks/shopify/orders",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const signature = request.headers[
-        "x-shopify-hmac-sha256"
-      ] as string | undefined;
+      const signature = request.headers["x-shopify-hmac-sha256"] as
+        | string
+        | undefined;
       const shopId = request.headers["x-shopify-shop-id"] as string | undefined;
 
       // Validate headers
       if (!signature || !shopId) {
         request.log.warn(
           { signature: !!signature, shopId: !!shopId },
-          "Missing required Shopify headers"
+          "Missing required Shopify headers",
         );
         return reply.status(400).send({
           error: "Missing X-Shopify-Hmac-SHA256 or X-Shopify-Shop-Id header",
@@ -202,7 +202,7 @@ async function shopifyWorkflowBridgeRoutes(
         const isValid = verifyShopifySignature(
           request.rawBody as string,
           signature,
-          process.env.SHOPIFY_WEBHOOK_SECRET || ""
+          process.env.SHOPIFY_WEBHOOK_SECRET || "",
         );
 
         if (!isValid) {
@@ -217,7 +217,7 @@ async function shopifyWorkflowBridgeRoutes(
         if (!validPayload.success) {
           request.log.warn(
             { shopId, errors: validPayload.error.errors },
-            "Invalid Shopify order payload"
+            "Invalid Shopify order payload",
           );
           return reply.status(400).send({
             error: "Invalid payload",
@@ -227,8 +227,12 @@ async function shopifyWorkflowBridgeRoutes(
 
         const order = validPayload.data;
         request.log.info(
-          { shopId, externalOrderId: order.id, orderNumber: order.order_number },
-          "Shopify order webhook received"
+          {
+            shopId,
+            externalOrderId: order.id,
+            orderNumber: order.order_number,
+          },
+          "Shopify order webhook received",
         );
 
         // Check idempotency — avoid duplicate processing
@@ -242,7 +246,7 @@ async function shopifyWorkflowBridgeRoutes(
         if (existingOrder) {
           request.log.info(
             { externalOrderId: order.id, existingId: existingOrder.id },
-            "Order already processed, skipping"
+            "Order already processed, skipping",
           );
           return reply.status(200).send({
             success: true,
@@ -288,12 +292,12 @@ async function shopifyWorkflowBridgeRoutes(
               delay: 2000,
             },
             removeOnComplete: true,
-          }
+          },
         );
 
         request.log.info(
           { jobId, externalOrderId: order.id },
-          "Enqueued createDeliveryOrder workflow"
+          "Enqueued createDeliveryOrder workflow",
         );
 
         // Log webhook delivery
@@ -321,7 +325,7 @@ async function shopifyWorkflowBridgeRoutes(
             shopId,
             error: error instanceof Error ? error.message : String(error),
           },
-          "Error processing Shopify order webhook"
+          "Error processing Shopify order webhook",
         );
 
         // Log failed delivery
@@ -347,7 +351,7 @@ async function shopifyWorkflowBridgeRoutes(
           details: error instanceof Error ? error.message : String(error),
         });
       }
-    }
+    },
   );
 
   /**
@@ -365,15 +369,15 @@ async function shopifyWorkflowBridgeRoutes(
   fastify.post(
     "/api/v4/webhooks/shopify/fulfillments",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const signature = request.headers[
-        "x-shopify-hmac-sha256"
-      ] as string | undefined;
+      const signature = request.headers["x-shopify-hmac-sha256"] as
+        | string
+        | undefined;
       const shopId = request.headers["x-shopify-shop-id"] as string | undefined;
 
       if (!signature || !shopId) {
         request.log.warn(
           { signature: !!signature, shopId: !!shopId },
-          "Missing required Shopify headers"
+          "Missing required Shopify headers",
         );
         return reply.status(400).send({
           error: "Missing X-Shopify-Hmac-SHA256 or X-Shopify-Shop-Id header",
@@ -385,7 +389,7 @@ async function shopifyWorkflowBridgeRoutes(
         const isValid = verifyShopifySignature(
           request.rawBody as string,
           signature,
-          process.env.SHOPIFY_WEBHOOK_SECRET || ""
+          process.env.SHOPIFY_WEBHOOK_SECRET || "",
         );
 
         if (!isValid) {
@@ -400,7 +404,7 @@ async function shopifyWorkflowBridgeRoutes(
         if (!validPayload.success) {
           request.log.warn(
             { shopId, errors: validPayload.error.errors },
-            "Invalid Shopify fulfillment payload"
+            "Invalid Shopify fulfillment payload",
           );
           return reply.status(400).send({
             error: "Invalid payload",
@@ -415,7 +419,7 @@ async function shopifyWorkflowBridgeRoutes(
             shopifyFulfillmentId: fulfillment.id,
             orderId: fulfillment.order_id,
           },
-          "Shopify fulfillment webhook received"
+          "Shopify fulfillment webhook received",
         );
 
         // Find associated order
@@ -429,7 +433,7 @@ async function shopifyWorkflowBridgeRoutes(
         if (!order) {
           request.log.warn(
             { externalOrderId: fulfillment.order_id },
-            "Order not found for fulfillment"
+            "Order not found for fulfillment",
           );
           return reply.status(404).send({
             error: "Associated order not found",
@@ -463,12 +467,12 @@ async function shopifyWorkflowBridgeRoutes(
               delay: 2000,
             },
             removeOnComplete: true,
-          }
+          },
         );
 
         request.log.info(
           { jobId, fulfillmentId: fulfillment.id },
-          "Enqueued updateShipmentStatus workflow"
+          "Enqueued updateShipmentStatus workflow",
         );
 
         // Log webhook delivery
@@ -496,7 +500,7 @@ async function shopifyWorkflowBridgeRoutes(
             shopId,
             error: error instanceof Error ? error.message : String(error),
           },
-          "Error processing Shopify fulfillment webhook"
+          "Error processing Shopify fulfillment webhook",
         );
 
         // Log failed delivery
@@ -522,7 +526,7 @@ async function shopifyWorkflowBridgeRoutes(
           details: error instanceof Error ? error.message : String(error),
         });
       }
-    }
+    },
   );
 }
 
@@ -537,7 +541,7 @@ async function shopifyWorkflowBridgeRoutes(
 function verifyShopifySignature(
   rawBody: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   if (!secret) {
     console.warn("Shopify webhook secret not configured");
@@ -607,7 +611,7 @@ function transformShopifyOrder(order: ShopifyOrder): Record<string, unknown> {
  * Converts fulfillment data to the internal shipment status format.
  */
 function transformShopifyFulfillment(
-  fulfillment: ShopifyFulfillment
+  fulfillment: ShopifyFulfillment,
 ): Record<string, unknown> {
   const statusMap: Record<string, string> = {
     pending: "PROCESSING",

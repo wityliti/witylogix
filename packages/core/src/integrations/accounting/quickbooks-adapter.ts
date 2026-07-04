@@ -4,20 +4,20 @@
  * Handles authentication, invoice syncing, payment syncing, and customer management
  */
 
-import type { Invoice, PaymentRecord } from '../../invoicing/types.js';
+import type { Invoice, PaymentRecord } from "../../invoicing/types.js";
 import type {
   AccountingConnection,
   QuickBooksInvoice,
   AccountingSyncResult,
   RateLimitInfo,
   AccountingError,
-} from './types.js';
+} from "./types.js";
 
 export interface QuickBooksConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
-  environment?: 'sandbox' | 'production';
+  environment?: "sandbox" | "production";
   timeout?: number;
   maxRetries?: number;
 }
@@ -48,11 +48,12 @@ export class QuickBooksAdapter {
     this.config = {
       timeout: 30000,
       maxRetries: 3,
-      environment: 'production',
+      environment: "production",
       ...config,
     };
 
-    const env = this.config.environment === 'sandbox' ? 'sandbox' : 'quickbooks';
+    const env =
+      this.config.environment === "sandbox" ? "sandbox" : "quickbooks";
     this.apiBaseUrl = `https://quickbooks.api.intuit.com/v2/company`;
     this.authBaseUrl = `https://${env}.intuit.com/oauth2`;
   }
@@ -63,8 +64,8 @@ export class QuickBooksAdapter {
   getAuthorizationUrl(state?: string): string {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
-      response_type: 'code',
-      scope: 'com.intuit.quickbooks.accounting',
+      response_type: "code",
+      scope: "com.intuit.quickbooks.accounting",
       redirect_uri: this.config.redirectUri,
       state: state || this.generateRandomString(32),
     });
@@ -75,7 +76,10 @@ export class QuickBooksAdapter {
   /**
    * Exchange authorization code for access token
    */
-  async authenticate(authCode: string, realmId: string): Promise<AccountingConnection> {
+  async authenticate(
+    authCode: string,
+    realmId: string,
+  ): Promise<AccountingConnection> {
     // INTEGRATION: Exchange code for token
     // POST https://oauth.platform.intuit.com/oauth2/tokens/bearer
     // with: grant_type=authorization_code&code={code}&redirect_uri={redirectUri}
@@ -85,7 +89,7 @@ export class QuickBooksAdapter {
       refresh_token: `qbo_rt_${Date.now()}`,
       expires_in: 3600,
       realm_id: realmId,
-      token_type: 'Bearer',
+      token_type: "Bearer",
     };
 
     const expiresAt = new Date();
@@ -93,8 +97,8 @@ export class QuickBooksAdapter {
 
     return {
       id: `qb_conn_${Date.now()}`,
-      tenantId: '', // Will be set by service
-      provider: 'quickbooks',
+      tenantId: "", // Will be set by service
+      provider: "quickbooks",
       accessToken: mockResponse.access_token,
       refreshToken: mockResponse.refresh_token,
       expiresAt,
@@ -110,7 +114,11 @@ export class QuickBooksAdapter {
    */
   async refreshToken(connection: AccountingConnection): Promise<string> {
     if (!connection.refreshToken) {
-      throw this.createError('No refresh token available', 'MISSING_REFRESH_TOKEN', true);
+      throw this.createError(
+        "No refresh token available",
+        "MISSING_REFRESH_TOKEN",
+        true,
+      );
     }
 
     // INTEGRATION: POST https://oauth.platform.intuit.com/oauth2/tokens/bearer
@@ -123,9 +131,16 @@ export class QuickBooksAdapter {
   /**
    * Create or update invoice in QuickBooks
    */
-  async createInvoice(invoice: Invoice, connection: AccountingConnection): Promise<AccountingSyncResult> {
+  async createInvoice(
+    invoice: Invoice,
+    connection: AccountingConnection,
+  ): Promise<AccountingSyncResult> {
     if (!connection.accountId) {
-      throw this.createError('QB account ID not configured', 'MISSING_ACCOUNT_ID', false);
+      throw this.createError(
+        "QB account ID not configured",
+        "MISSING_ACCOUNT_ID",
+        false,
+      );
     }
 
     // Check rate limits
@@ -142,7 +157,7 @@ export class QuickBooksAdapter {
       success: true,
       invoiceId: invoice.id,
       externalId,
-      provider: 'quickbooks',
+      provider: "quickbooks",
       message: `Invoice created in QuickBooks: ${externalId}`,
       timestamp: new Date(),
     };
@@ -157,7 +172,11 @@ export class QuickBooksAdapter {
     connection: AccountingConnection,
   ): Promise<AccountingSyncResult> {
     if (!connection.accountId) {
-      throw this.createError('QB account ID not configured', 'MISSING_ACCOUNT_ID', false);
+      throw this.createError(
+        "QB account ID not configured",
+        "MISSING_ACCOUNT_ID",
+        false,
+      );
     }
 
     // Get the QB invoice ID from sync records
@@ -173,7 +192,7 @@ export class QuickBooksAdapter {
       success: true,
       invoiceId: invoice.id,
       externalId: paymentId,
-      provider: 'quickbooks',
+      provider: "quickbooks",
       message: `Payment recorded in QuickBooks: ${paymentId}`,
       timestamp: new Date(),
     };
@@ -188,7 +207,11 @@ export class QuickBooksAdapter {
     connection?: AccountingConnection,
   ): Promise<string> {
     if (!connection || !connection.accountId) {
-      throw this.createError('QB account ID not configured', 'MISSING_ACCOUNT_ID', false);
+      throw this.createError(
+        "QB account ID not configured",
+        "MISSING_ACCOUNT_ID",
+        false,
+      );
     }
 
     // INTEGRATION: Query QB for existing customer with email
@@ -208,9 +231,16 @@ export class QuickBooksAdapter {
   /**
    * Sync line items to QuickBooks items
    */
-  async syncLineItems(invoiceId: string, connection: AccountingConnection): Promise<void> {
+  async syncLineItems(
+    invoiceId: string,
+    connection: AccountingConnection,
+  ): Promise<void> {
     if (!connection.accountId) {
-      throw this.createError('QB account ID not configured', 'MISSING_ACCOUNT_ID', false);
+      throw this.createError(
+        "QB account ID not configured",
+        "MISSING_ACCOUNT_ID",
+        false,
+      );
     }
 
     // INTEGRATION: For each line item, ensure corresponding QB Item exists
@@ -237,8 +267,11 @@ export class QuickBooksAdapter {
   /**
    * Map Witylogix invoice to QB format
    */
-  private mapToQBInvoice(invoice: Invoice, connection: AccountingConnection): QuickBooksInvoice {
-    const lines: QuickBooksInvoice['line'] = [];
+  private mapToQBInvoice(
+    invoice: Invoice,
+    connection: AccountingConnection,
+  ): QuickBooksInvoice {
+    const lines: QuickBooksInvoice["line"] = [];
 
     // Add line items
     if (invoice.lineItems && invoice.lineItems.length > 0) {
@@ -247,10 +280,10 @@ export class QuickBooksAdapter {
           lineNum: idx + 1,
           description: item.description,
           amount: item.amount,
-          detailType: 'SalesItemLineDetail',
+          detailType: "SalesItemLineDetail",
           salesItemLineDetail: {
             itemRef: {
-              value: '1', // Default item ID - should be mapped
+              value: "1", // Default item ID - should be mapped
             },
             qty: item.quantity,
             unitPrice: item.unitPrice,
@@ -261,24 +294,31 @@ export class QuickBooksAdapter {
 
     // Add discounts if any
     if (invoice.discounts && invoice.discounts.length > 0) {
-      const totalDiscount = invoice.discounts.reduce((sum, d) => sum + d.amount, 0);
+      const totalDiscount = invoice.discounts.reduce(
+        (sum, d) => sum + d.amount,
+        0,
+      );
       lines.push({
-        detailType: 'DescriptionLineDetail',
-        description: 'Discount',
+        detailType: "DescriptionLineDetail",
+        description: "Discount",
         amount: -totalDiscount,
       });
     }
 
     return {
       docNumber: invoice.invoiceNumber,
-      txnDate: invoice.issuedAt.toISOString().split('T')[0],
-      dueDate: invoice.dueAt.toISOString().split('T')[0],
+      txnDate: invoice.issuedAt.toISOString().split("T")[0],
+      dueDate: invoice.dueAt.toISOString().split("T")[0],
       customerRef: {
-        value: `qb_cust_${invoice.customerId || 'unknown'}`,
+        value: `qb_cust_${invoice.customerId || "unknown"}`,
       },
       line: lines,
       totalAmt: invoice.total,
-      balanceAmt: invoice.total - (invoice.paidAt ? invoice.payments?.reduce((s, p) => s + p.amount, 0) ?? 0 : 0),
+      balanceAmt:
+        invoice.total -
+        (invoice.paidAt
+          ? (invoice.payments?.reduce((s, p) => s + p.amount, 0) ?? 0)
+          : 0),
       totalTax: invoice.taxTotal,
     };
   }
@@ -290,7 +330,9 @@ export class QuickBooksAdapter {
     const rateLimit = this.rateLimits.get(connectionId);
 
     if (rateLimit && rateLimit.remaining < this.RATE_LIMIT_THRESHOLD) {
-      const waitTime = Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000);
+      const waitTime = Math.ceil(
+        (rateLimit.resetAt.getTime() - Date.now()) / 1000,
+      );
       if (waitTime > 0) {
         console.warn(
           `[QB] Approaching rate limit. ${rateLimit.remaining}/${rateLimit.limit} remaining. Resets in ${waitTime}s`,
@@ -302,9 +344,13 @@ export class QuickBooksAdapter {
   /**
    * Create accounting error
    */
-  private createError(message: string, code?: string, retryable?: boolean): AccountingError {
+  private createError(
+    message: string,
+    code?: string,
+    retryable?: boolean,
+  ): AccountingError {
     const error = new Error(message) as AccountingError;
-    error.provider = 'quickbooks';
+    error.provider = "quickbooks";
     error.code = code;
     error.retryable = retryable ?? true;
     return error;
@@ -314,7 +360,7 @@ export class QuickBooksAdapter {
    * Generate random string for OAuth state
    */
   private generateRandomString(length: number): string {
-    return Array.from({ length }, () => Math.random().toString(36)[2]).join('');
+    return Array.from({ length }, () => Math.random().toString(36)[2]).join("");
   }
 }
 
@@ -325,7 +371,7 @@ export function createQuickBooksConfig(
   clientId: string,
   clientSecret: string,
   redirectUri: string,
-  environment?: 'sandbox' | 'production',
+  environment?: "sandbox" | "production",
 ): QuickBooksConfig {
   return {
     clientId,

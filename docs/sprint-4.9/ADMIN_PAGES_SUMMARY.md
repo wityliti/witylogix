@@ -5,7 +5,9 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 ## Pages Created
 
 ### 1. System Health Dashboard (`/admin/system`)
+
 **File**: `system/page.tsx` (521 lines)
+
 - Service status grid with 6 services (API, Dashboard, Worker, Redis, PostgreSQL, Nginx)
 - Health badges (healthy/degraded/critical) with uptime % (24h, 7d, 30d)
 - SVG line chart showing response times over 24 hours
@@ -16,6 +18,7 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 - Refresh and Export Report buttons
 
 **Features**:
+
 - Pure SVG charts (no external charting library)
 - Animated circular gauges for memory/CPU
 - Service-specific response time tracking
@@ -25,7 +28,9 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 ---
 
 ### 2. Integration Health Dashboard (`/admin/integrations`)
+
 **File**: `integrations/page.tsx` (510 lines)
+
 - Connected integrations list (Stripe, Shippo, Google Analytics, SendGrid, Shopify)
 - Category filter tabs (Payment, Shipping, Analytics, Notifications, Inventory)
 - Status badges (connected/disconnected/error)
@@ -36,6 +41,7 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 - Category filtering with live counts
 
 **Features**:
+
 - 5 mock integrations with realistic data
 - Expandable integration details with error history
 - Performance metrics display (success rate, total syncs)
@@ -46,7 +52,9 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 ---
 
 ### 3. Error Log Viewer (`/admin/logs`)
+
 **File**: `logs/page.tsx` (535 lines)
+
 - Filterable log table (timestamp, level, service, message)
 - Log severity levels: Error, Warning, Info with color coding
 - Search functionality across log messages
@@ -59,6 +67,7 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 - Log stats dashboard (error/warning/info counts)
 
 **Features**:
+
 - 8 mock logs with realistic error scenarios
 - Expandable log details modal with stack traces
 - Metadata section for contextual information
@@ -71,7 +80,9 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 ---
 
 ### 4. User Activity Feed (`/admin/activity`)
+
 **File**: `activity/page.tsx` (445 lines)
+
 - Timeline of user actions (login, order created, route planned, settings changed, logout, permissions, export, payment)
 - User avatar with initials and color coding
 - Activity type filter tabs
@@ -82,6 +93,7 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 - "Load More" pagination button
 
 **Features**:
+
 - 9 mock activity logs with realistic user actions
 - Timeline visualization with connecting lines
 - Activity type icons and color-coded badges
@@ -95,7 +107,9 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 ---
 
 ### 5. API Documentation Viewer (`/admin/api-docs`)
+
 **File**: `api-docs/page.tsx` (632 lines)
+
 - 6 API endpoints (Orders, Routes, Webhooks, Health)
 - Method badges (GET, POST, PUT, DELETE, PATCH)
 - Authentication type badges (Bearer, API Key, Public)
@@ -112,6 +126,7 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 - Download spec button
 
 **Features**:
+
 - 6 realistic API endpoints
 - Method-specific color coding
 - Parameter documentation with types
@@ -127,7 +142,7 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 ## Technical Stack
 
 - **Framework**: Next.js 13+ (App Router)
-- **UI Components**: Custom Tailwind v3.4 with --wl-* CSS variables
+- **UI Components**: Custom Tailwind v3.4 with --wl-\* CSS variables
 - **Icons**: Lucide React
 - **Styling**: Tailwind CSS with cn() utility
 - **State Management**: React useState/useMemo
@@ -136,6 +151,7 @@ Complete implementation of 5 admin dashboard pages for Witylogix platform monito
 ## Component Imports
 
 All pages use:
+
 - `@/components/layout/header` - Header component
 - `@/components/ui/card` - Card, CardHeader, CardTitle, CardContent
 - `@/components/ui/badge` - Badge component with variants
@@ -145,7 +161,8 @@ All pages use:
 ## Design System Integration
 
 All pages follow Witylogix design standards:
-- Color system: bg-wl-*, text-wl-*, border-wl-*
+
+- Color system: bg-wl-_, text-wl-_, border-wl-\*
 - Badge variants: default, success, warning, danger, info, primary
 - Button variants: primary, secondary, ghost, danger
 - Responsive grid layouts
@@ -155,6 +172,7 @@ All pages follow Witylogix design standards:
 ## Mock Data Structure
 
 Each page includes realistic mock data:
+
 - **System**: 6 services, metrics, charts
 - **Integrations**: 5 integrations, error logs
 - **Logs**: 8 error logs with stack traces

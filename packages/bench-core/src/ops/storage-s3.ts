@@ -3,10 +3,10 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   HeadObjectCommand,
-} from '@aws-sdk/client-s3';
-import type { Readable } from 'node:stream';
-import type { BenchConfigStorage } from '../config.js';
-import type { StorageClient, StorageObject } from './storage.js';
+} from "@aws-sdk/client-s3";
+import type { Readable } from "node:stream";
+import type { BenchConfigStorage } from "../config.js";
+import type { StorageClient, StorageObject } from "./storage.js";
 
 export class S3StorageClient implements StorageClient {
   private readonly client: S3Client;
@@ -14,13 +14,15 @@ export class S3StorageClient implements StorageClient {
 
   constructor(config: BenchConfigStorage) {
     if (!config.bucket) {
-      throw new Error(`storage.bucket is required when backend=${config.backend}`);
+      throw new Error(
+        `storage.bucket is required when backend=${config.backend}`,
+      );
     }
     this.bucket = config.bucket;
     this.client = new S3Client({
-      region: config.region ?? 'us-east-1',
+      region: config.region ?? "us-east-1",
       endpoint: config.endpoint ?? undefined,
-      forcePathStyle: config.backend === 'r2' || !!config.endpoint,
+      forcePathStyle: config.backend === "r2" || !!config.endpoint,
     });
   }
 
@@ -57,7 +59,7 @@ export class S3StorageClient implements StorageClient {
         lastModified: out.LastModified,
       };
     } catch (err) {
-      if ((err as { name?: string }).name === 'NotFound') return null;
+      if ((err as { name?: string }).name === "NotFound") return null;
       throw err;
     }
   }

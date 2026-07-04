@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { WLMap } from '@/components/map/wl-map';
-import { ZoneLayer } from '@/components/map/zone-layer';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { useApiQuery } from '@/hooks/use-api';
-import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin } from 'lucide-react';
-import type { FeatureCollection } from 'geojson';
+import { useMemo } from "react";
+import { WLMap } from "@/components/map/wl-map";
+import { ZoneLayer } from "@/components/map/zone-layer";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { useApiQuery } from "@/hooks/use-api";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MapPin } from "lucide-react";
+import type { FeatureCollection } from "geojson";
 
 function MapLayers({ zones }: { zones: FeatureCollection }) {
   const map = useWLMap();
@@ -18,9 +18,9 @@ function MapLayers({ zones }: { zones: FeatureCollection }) {
     for (const f of zones.features) {
       const geom = f.geometry;
       const polys =
-        geom.type === 'Polygon'
+        geom.type === "Polygon"
           ? [geom.coordinates[0]]
-          : geom.type === 'MultiPolygon'
+          : geom.type === "MultiPolygon"
             ? geom.coordinates.map((p) => p[0])
             : [];
       for (const ring of polys) {
@@ -39,7 +39,7 @@ function MapLayers({ zones }: { zones: FeatureCollection }) {
 
 export function CampaignReachMap() {
   const { data: zonesGeo, loading } = useApiQuery<FeatureCollection>(
-    '/api/v4/zones?format=geojson',
+    "/api/v4/zones?format=geojson",
   );
 
   if (loading) {
@@ -60,12 +60,15 @@ export function CampaignReachMap() {
           Zone Health
         </p>
         {[
-          { color: 'var(--wl-success-500)', label: 'Good' },
-          { color: 'var(--wl-warning-500)', label: 'Watch' },
-          { color: 'var(--wl-danger-500)', label: 'Slipping' },
+          { color: "var(--wl-success-500)", label: "Good" },
+          { color: "var(--wl-warning-500)", label: "Watch" },
+          { color: "var(--wl-danger-500)", label: "Slipping" },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm opacity-70" style={{ background: color }} />
+            <div
+              className="w-3 h-3 rounded-sm opacity-70"
+              style={{ background: color }}
+            />
             <span className="text-xs text-white/70">{label}</span>
           </div>
         ))}
@@ -73,14 +76,18 @@ export function CampaignReachMap() {
 
       {/* Zone count badge */}
       <div className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-xl px-3 py-2 text-xs text-white/70">
-        {hasZones ? `${zonesGeo!.features.length} delivery zones` : 'No zones configured'}
+        {hasZones
+          ? `${zonesGeo!.features.length} delivery zones`
+          : "No zones configured"}
       </div>
 
       {!hasZones && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center bg-black/70 backdrop-blur-sm rounded-xl px-6 py-5">
             <MapPin className="w-8 h-8 text-white/20 mx-auto mb-3" />
-            <p className="text-sm font-medium text-white/50">No delivery zones configured</p>
+            <p className="text-sm font-medium text-white/50">
+              No delivery zones configured
+            </p>
             <p className="text-xs text-white/30 mt-1">
               Add delivery zones to see campaign geographic reach
             </p>

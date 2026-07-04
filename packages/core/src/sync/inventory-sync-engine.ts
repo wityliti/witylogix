@@ -77,7 +77,10 @@ export class InventorySyncEngine {
    * @param warehouseId - Warehouse ID
    * @returns Stock level record or undefined
    */
-  public getStockLevel(sku: string, warehouseId: string): StockLevel | undefined {
+  public getStockLevel(
+    sku: string,
+    warehouseId: string,
+  ): StockLevel | undefined {
     const key = `${sku}:${warehouseId}`;
     return this.stockLevels.get(key);
   }
@@ -110,12 +113,19 @@ export class InventorySyncEngine {
     orderId: string,
     sku: string,
     quantity: number,
-    warehouseId: string
+    warehouseId: string,
   ): ReservationRecord {
     // Check if oversell is prevented
-    if (!this.overSellProtection.canReserve(this.stockLevels, sku, warehouseId, quantity)) {
+    if (
+      !this.overSellProtection.canReserve(
+        this.stockLevels,
+        sku,
+        warehouseId,
+        quantity,
+      )
+    ) {
       throw new Error(
-        `Insufficient stock for SKU ${sku} in warehouse ${warehouseId}. Required: ${quantity}`
+        `Insufficient stock for SKU ${sku} in warehouse ${warehouseId}. Required: ${quantity}`,
       );
     }
 
@@ -125,7 +135,7 @@ export class InventorySyncEngine {
       orderId,
       sku,
       quantity,
-      warehouseId
+      warehouseId,
     );
 
     // Update stock level
@@ -195,12 +205,12 @@ export class InventorySyncEngine {
     platformCounts: Record<string, number>,
     sku: string,
     warehouseId: string,
-    strategy: StockConflictStrategy = StockConflictStrategy.AVERAGE
+    strategy: StockConflictStrategy = StockConflictStrategy.AVERAGE,
   ): StockDiscrepancy | null {
     const discrepancy = this.reconciler.detectDiscrepancies(
       platformCounts,
       sku,
-      warehouseId
+      warehouseId,
     );
 
     if (!discrepancy) {
@@ -210,7 +220,10 @@ export class InventorySyncEngine {
     discrepancy.strategy = strategy;
 
     // Resolve conflict
-    const resolved = this.conflictHandler.resolveConflict(discrepancy, strategy);
+    const resolved = this.conflictHandler.resolveConflict(
+      discrepancy,
+      strategy,
+    );
     discrepancy.resolvedCount = resolved;
     discrepancy.isResolved = true;
     discrepancy.resolvedAt = new Date().toISOString();
@@ -227,7 +240,7 @@ export class InventorySyncEngine {
           adjustment,
           StockAdjustmentReason.RECOUNT,
           `Reconciled from platforms`,
-          "SYSTEM"
+          "SYSTEM",
         );
       }
     }
@@ -251,7 +264,7 @@ export class InventorySyncEngine {
     quantity: number,
     reason: StockAdjustmentReason,
     notes?: string,
-    adjustedBy: string = "SYSTEM"
+    adjustedBy: string = "SYSTEM",
   ): StockAdjustment {
     const key = `${sku}:${warehouseId}`;
     let level = this.stockLevels.get(key);
@@ -317,7 +330,7 @@ export class InventorySyncEngine {
       quantity: number;
       reason?: StockAdjustmentReason;
     }>,
-    userId: string
+    userId: string,
   ): Promise<BulkStockUpdateJob> {
     const job: BulkStockUpdateJob = {
       jobId: this.generateId("BUL"),
@@ -341,7 +354,7 @@ export class InventorySyncEngine {
           update.quantity,
           update.reason || StockAdjustmentReason.MANUAL,
           undefined,
-          userId
+          userId,
         );
         processed++;
       } catch (error) {
@@ -402,7 +415,7 @@ export class InventorySyncEngine {
     const earlier = new Date(now.getTime() - 60000); // Last minute
 
     const recentAudits = this.auditLog.filter(
-      (a) => new Date(a.createdAt) >= earlier
+      (a) => new Date(a.createdAt) >= earlier,
     );
 
     return {
@@ -412,7 +425,7 @@ export class InventorySyncEngine {
       failedCount: 0,
       discrepancyCount: 0,
       reservedCount: Array.from(this.reservations.values()).filter(
-        (r) => r.status === ReservationStatus.ACTIVE
+        (r) => r.status === ReservationStatus.ACTIVE,
       ).length,
       alertsTriggered: 0,
       durationMs: 0,
@@ -420,14 +433,14 @@ export class InventorySyncEngine {
       completedAt: now.toISOString(),
       summary: {
         skusProcessed: new Set(
-          Array.from(this.stockLevels.values()).map((s) => s.sku)
+          Array.from(this.stockLevels.values()).map((s) => s.sku),
         ).size,
         warehousesAffected: new Set(
-          Array.from(this.stockLevels.values()).map((s) => s.warehouseId)
+          Array.from(this.stockLevels.values()).map((s) => s.warehouseId),
         ).size,
         totalQuantityAdjusted: recentAudits.reduce(
           (sum, a) => sum + (a.action === "ADJUST" ? 1 : 0),
-          0
+          0,
         ),
         platformsSynced: [],
       },
@@ -458,7 +471,7 @@ export class StockReconciler {
   public detectDiscrepancies(
     platformCounts: Record<string, number>,
     sku: string,
-    warehouseId: string
+    warehouseId: string,
   ): StockDiscrepancy | null {
     const counts = Object.values(platformCounts);
     if (counts.length < 2) {
@@ -519,7 +532,10 @@ export class MultiWarehouseManager {
    * @param platformLocationId - Platform location ID
    * @returns Witylogix warehouse ID
    */
-  public getWarehouseId(platformType: string, platformLocationId: string): string | null {
+  public getWarehouseId(
+    platformType: string,
+    platformLocationId: string,
+  ): string | null {
     const key = `${platformType}:${platformLocationId}`;
     const mapping = this.mappings.get(key);
     return mapping?.witylogixWarehouseId || null;
@@ -560,7 +576,7 @@ export class InventoryReservation {
     orderId: string,
     sku: string,
     quantity: number,
-    warehouseId: string
+    warehouseId: string,
   ): ReservationRecord {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5);
@@ -614,7 +630,8 @@ export class LowStockMonitor {
    * @returns Alert if triggered, null otherwise
    */
   public checkAndAlert(level: StockLevel): InventoryAlert | null {
-    const config = this.configs.get(`${level.sku}:${level.warehouseId}`) ||
+    const config =
+      this.configs.get(`${level.sku}:${level.warehouseId}`) ||
       this.configs.get(`${level.sku}:*`);
 
     if (!config?.alertEnabled) {
@@ -705,7 +722,7 @@ export class OverSellProtection {
     stockLevels: Map<string, StockLevel>,
     sku: string,
     warehouseId: string,
-    quantityNeeded: number
+    quantityNeeded: number,
   ): boolean {
     const key = `${sku}:${warehouseId}`;
     const level = stockLevels.get(key);
@@ -739,7 +756,7 @@ export class SyncConflictHandler {
    */
   public resolveConflict(
     discrepancy: StockDiscrepancy,
-    strategy: StockConflictStrategy
+    strategy: StockConflictStrategy,
   ): number {
     switch (strategy) {
       case StockConflictStrategy.HIGHEST:
@@ -773,7 +790,7 @@ export class BulkStockUpdateProcessor {
    */
   public async process(
     job: BulkStockUpdateJob,
-    engine: InventorySyncEngine
+    engine: InventorySyncEngine,
   ): Promise<BulkStockUpdateJob> {
     job.status = "IN_PROGRESS";
 
@@ -783,7 +800,7 @@ export class BulkStockUpdateProcessor {
           update.sku,
           update.warehouseId,
           update.quantity,
-          update.reason || StockAdjustmentReason.MANUAL
+          update.reason || StockAdjustmentReason.MANUAL,
         );
         job.processedCount++;
       } catch (error) {

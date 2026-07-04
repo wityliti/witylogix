@@ -70,7 +70,9 @@ export class UberDirectClient extends CourierAdapter {
       // Test API call
       await this.request("GET", `/customers/${this.customerId}`, { token });
     } catch (error) {
-      throw new Error(`Failed to validate Uber Direct credentials: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to validate Uber Direct credentials: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -83,12 +85,16 @@ export class UberDirectClient extends CourierAdapter {
 
     const payload = {
       pickup_location: {
-        address: request.pickup.address || `${request.pickup.latitude},${request.pickup.longitude}`,
+        address:
+          request.pickup.address ||
+          `${request.pickup.latitude},${request.pickup.longitude}`,
         latitude: request.pickup.latitude,
         longitude: request.pickup.longitude,
       },
       dropoff_location: {
-        address: request.dropoff.address || `${request.dropoff.latitude},${request.dropoff.longitude}`,
+        address:
+          request.dropoff.address ||
+          `${request.dropoff.latitude},${request.dropoff.longitude}`,
         latitude: request.dropoff.latitude,
         longitude: request.dropoff.longitude,
       },
@@ -96,10 +102,14 @@ export class UberDirectClient extends CourierAdapter {
     };
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    const response = await this.request("POST", `/customers/${this.customerId}/delivery_quotes`, {
-      body: payload,
-      token,
-    });
+    const response = await this.request(
+      "POST",
+      `/customers/${this.customerId}/delivery_quotes`,
+      {
+        body: payload,
+        token,
+      },
+    );
 
     const quote = response as UberDeliveryQuote;
 
@@ -118,12 +128,16 @@ export class UberDirectClient extends CourierAdapter {
    * Create a delivery with Uber Direct.
    * Uses POST /customers/{id}/deliveries to create delivery.
    */
-  async createDelivery(request: CreateDeliveryRequest): Promise<CourierDelivery> {
+  async createDelivery(
+    request: CreateDeliveryRequest,
+  ): Promise<CourierDelivery> {
     const token = await this.getAccessToken();
 
     const payload = {
       pickup_location: {
-        address: request.pickup.address || `${request.pickup.latitude},${request.pickup.longitude}`,
+        address:
+          request.pickup.address ||
+          `${request.pickup.latitude},${request.pickup.longitude}`,
         latitude: request.pickup.latitude,
         longitude: request.pickup.longitude,
         access_instructions: request.pickup.instructions,
@@ -131,7 +145,9 @@ export class UberDirectClient extends CourierAdapter {
         contact_phone: request.pickup.phone,
       },
       dropoff_location: {
-        address: request.dropoff.address || `${request.dropoff.latitude},${request.dropoff.longitude}`,
+        address:
+          request.dropoff.address ||
+          `${request.dropoff.latitude},${request.dropoff.longitude}`,
         latitude: request.dropoff.latitude,
         longitude: request.dropoff.longitude,
         access_instructions: request.dropoff.instructions,
@@ -148,15 +164,21 @@ export class UberDirectClient extends CourierAdapter {
           ]
         : undefined,
       order_reference_id: request.orderId,
-      scheduled_dropoff_time: request.scheduledFor ? request.scheduledFor.toISOString() : undefined,
+      scheduled_dropoff_time: request.scheduledFor
+        ? request.scheduledFor.toISOString()
+        : undefined,
       requires_dropoff_signature: request.package?.requiresSignature ?? false,
     };
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    const response = await this.request("POST", `/customers/${this.customerId}/deliveries`, {
-      body: payload,
-      token,
-    });
+    const response = await this.request(
+      "POST",
+      `/customers/${this.customerId}/deliveries`,
+      {
+        body: payload,
+        token,
+      },
+    );
 
     const delivery = response as UberDelivery;
 
@@ -168,7 +190,9 @@ export class UberDirectClient extends CourierAdapter {
       trackingUrl: delivery.tracking_url,
       driverName: delivery.courier?.name,
       driverPhone: delivery.courier?.phone,
-      estimatedMinutes: Math.ceil((delivery.estimated_dropoff_time_seconds || 0) / 60),
+      estimatedMinutes: Math.ceil(
+        (delivery.estimated_dropoff_time_seconds || 0) / 60,
+      ),
       rawResponse: delivery as unknown as Record<string, unknown>,
     };
   }
@@ -181,9 +205,13 @@ export class UberDirectClient extends CourierAdapter {
     const token = await this.getAccessToken();
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    const delivery = (await this.request("GET", `/customers/${this.customerId}/deliveries/${deliveryId}`, {
-      token,
-    })) as UberDelivery;
+    const delivery = (await this.request(
+      "GET",
+      `/customers/${this.customerId}/deliveries/${deliveryId}`,
+      {
+        token,
+      },
+    )) as UberDelivery;
 
     const driverLocation = delivery.courier?.location
       ? {
@@ -203,7 +231,9 @@ export class UberDirectClient extends CourierAdapter {
       estimatedArrivalAt: delivery.estimated_dropoff_time_seconds
         ? new Date(Date.now() + delivery.estimated_dropoff_time_seconds * 1000)
         : undefined,
-      deliveredAt: delivery.dropoff_time ? new Date(delivery.dropoff_time) : undefined,
+      deliveredAt: delivery.dropoff_time
+        ? new Date(delivery.dropoff_time)
+        : undefined,
       rawResponse: delivery as unknown as Record<string, unknown>,
     };
   }
@@ -216,10 +246,14 @@ export class UberDirectClient extends CourierAdapter {
     const token = await this.getAccessToken();
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    await this.request("POST", `/customers/${this.customerId}/deliveries/${deliveryId}/cancel`, {
-      body: {},
-      token,
-    });
+    await this.request(
+      "POST",
+      `/customers/${this.customerId}/deliveries/${deliveryId}/cancel`,
+      {
+        body: {},
+        token,
+      },
+    );
 
     // Fetch updated status
     return this.getDeliveryStatus(deliveryId);
@@ -233,12 +267,18 @@ export class UberDirectClient extends CourierAdapter {
     const token = await this.getAccessToken();
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    const delivery = (await this.request("GET", `/customers/${this.customerId}/deliveries/${deliveryId}`, {
-      token,
-    })) as UberDelivery;
+    const delivery = (await this.request(
+      "GET",
+      `/customers/${this.customerId}/deliveries/${deliveryId}`,
+      {
+        token,
+      },
+    )) as UberDelivery;
 
     if (!delivery.courier || !delivery.courier.location) {
-      throw new Error(`No driver assigned or location unavailable for delivery ${deliveryId}`);
+      throw new Error(
+        `No driver assigned or location unavailable for delivery ${deliveryId}`,
+      );
     }
 
     return {
@@ -256,9 +296,13 @@ export class UberDirectClient extends CourierAdapter {
     const token = await this.getAccessToken();
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    const response = (await this.request("GET", `/customers/${this.customerId}/webhooks`, {
-      token,
-    })) as { webhooks: UberWebhook[] };
+    const response = (await this.request(
+      "GET",
+      `/customers/${this.customerId}/webhooks`,
+      {
+        token,
+      },
+    )) as { webhooks: UberWebhook[] };
 
     return response.webhooks.map((webhook) => ({
       id: webhook.webhook_id,
@@ -273,7 +317,9 @@ export class UberDirectClient extends CourierAdapter {
    * Register a webhook with Uber Direct.
    * Uses POST /customers/{id}/webhooks.
    */
-  async registerWebhook(registration: WebhookRegistration): Promise<WebhookInfo> {
+  async registerWebhook(
+    registration: WebhookRegistration,
+  ): Promise<WebhookInfo> {
     const token = await this.getAccessToken();
 
     const payload = {
@@ -282,10 +328,14 @@ export class UberDirectClient extends CourierAdapter {
     };
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    const webhook = (await this.request("POST", `/customers/${this.customerId}/webhooks`, {
-      body: payload,
-      token,
-    })) as UberWebhook;
+    const webhook = (await this.request(
+      "POST",
+      `/customers/${this.customerId}/webhooks`,
+      {
+        body: payload,
+        token,
+      },
+    )) as UberWebhook;
 
     return {
       id: webhook.webhook_id,
@@ -304,9 +354,13 @@ export class UberDirectClient extends CourierAdapter {
     const token = await this.getAccessToken();
 
     // INTEGRATION: Actual HTTP call to Uber Direct API
-    await this.request("DELETE", `/customers/${this.customerId}/webhooks/${webhookId}`, {
-      token,
-    });
+    await this.request(
+      "DELETE",
+      `/customers/${this.customerId}/webhooks/${webhookId}`,
+      {
+        token,
+      },
+    );
   }
 
   /**
@@ -464,7 +518,8 @@ export class UberDirectClient extends CourierAdapter {
       [WebhookEvent.DELIVERY_DELIVERED]: "delivery_completed",
       [WebhookEvent.DELIVERY_FAILED]: "delivery_failed",
       [WebhookEvent.DELIVERY_CANCELLED]: "delivery_cancelled",
-      [WebhookEvent.DRIVER_LOCATION_UPDATED]: "delivery_courier_location_updated",
+      [WebhookEvent.DRIVER_LOCATION_UPDATED]:
+        "delivery_courier_location_updated",
     };
 
     return events.map((event) => eventMap[event]);

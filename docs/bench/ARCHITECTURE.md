@@ -48,10 +48,10 @@ Witylogix Bench is the provisioning and operations layer for the Witylogix platf
 
 ## Two-Artifact Split
 
-| Artifact | Purpose | Audience | License | Distribution |
-|----------|---------|----------|---------|--------------|
-| **`@witylogix/bench` (CLI)** | Provision, operate, upgrade a Witylogix installation. | Self-hosters, contributors, Witylogix DevOps. | MIT | npm, `npx`, eventually `pkg`-bundled binary |
-| **Witylogix Cloud (`apps/bench-web`)** | SaaS control plane that uses the CLI's core as a library to run our managed offering. Billing, tenant lifecycle, audit log, SUPERADMIN console. | Witylogix internal operators (for v1); customer self-service signup (v2). | Source-available (BSL) or private | Deployed internally only |
+| Artifact                               | Purpose                                                                                                                                         | Audience                                                                  | License                           | Distribution                                |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------- |
+| **`@witylogix/bench` (CLI)**           | Provision, operate, upgrade a Witylogix installation.                                                                                           | Self-hosters, contributors, Witylogix DevOps.                             | MIT                               | npm, `npx`, eventually `pkg`-bundled binary |
+| **Witylogix Cloud (`apps/bench-web`)** | SaaS control plane that uses the CLI's core as a library to run our managed offering. Billing, tenant lifecycle, audit log, SUPERADMIN console. | Witylogix internal operators (for v1); customer self-service signup (v2). | Source-available (BSL) or private | Deployed internally only                    |
 
 Key invariant: **everything the Cloud control plane does is expressible as CLI commands.** If we can't drive it from the CLI, we don't add it to the Cloud.
 
@@ -103,23 +103,23 @@ witylogix init my-company
 
 ### Command Surface (v0.1)
 
-| Command | Purpose |
-|---------|---------|
-| `bench init <name>` | Scaffold a new installation directory with `bench.config.yaml`, secrets template, provider defaults. |
-| `bench doctor` | Check preconditions: Docker, Node, Postgres reachability, disk space, ports. |
-| `bench start [service]` | Bring services up. `start` alone starts everything; `bench start api` starts one. |
-| `bench stop [service]` | Graceful shutdown. |
-| `bench restart [service]` | Rolling restart. |
-| `bench logs <service> [--follow]` | Tail logs from the provider. |
-| `bench status` | Health matrix: service, state, version, health check, last deploy. |
-| `bench migrate` | Run Prisma migrations on the current database. Safe to run repeatedly. |
-| `bench new-tenant <slug>` | Create a tenant row + default seed data in the running platform. Used for Managed plan. |
-| `bench backup [--to <path>]` | DB dump + uploads archive + config snapshot. |
-| `bench restore <archive>` | Inverse of `backup`. Requires `--yes` if target DB is non-empty. |
-| `bench update [--to <version>]` | Pull new Witylogix version, run migrations, blue/green swap if provider supports. |
-| `bench rotate-secret <key>` | Rotate a managed secret through the configured secret backend. |
-| `bench deploy <provider>` | Apply `bench.config.yaml` to the provider (creates/updates all services). |
-| `bench destroy` | Tear down the installation. Requires `--yes` and name confirmation. |
+| Command                           | Purpose                                                                                              |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `bench init <name>`               | Scaffold a new installation directory with `bench.config.yaml`, secrets template, provider defaults. |
+| `bench doctor`                    | Check preconditions: Docker, Node, Postgres reachability, disk space, ports.                         |
+| `bench start [service]`           | Bring services up. `start` alone starts everything; `bench start api` starts one.                    |
+| `bench stop [service]`            | Graceful shutdown.                                                                                   |
+| `bench restart [service]`         | Rolling restart.                                                                                     |
+| `bench logs <service> [--follow]` | Tail logs from the provider.                                                                         |
+| `bench status`                    | Health matrix: service, state, version, health check, last deploy.                                   |
+| `bench migrate`                   | Run Prisma migrations on the current database. Safe to run repeatedly.                               |
+| `bench new-tenant <slug>`         | Create a tenant row + default seed data in the running platform. Used for Managed plan.              |
+| `bench backup [--to <path>]`      | DB dump + uploads archive + config snapshot.                                                         |
+| `bench restore <archive>`         | Inverse of `backup`. Requires `--yes` if target DB is non-empty.                                     |
+| `bench update [--to <version>]`   | Pull new Witylogix version, run migrations, blue/green swap if provider supports.                    |
+| `bench rotate-secret <key>`       | Rotate a managed secret through the configured secret backend.                                       |
+| `bench deploy <provider>`         | Apply `bench.config.yaml` to the provider (creates/updates all services).                            |
+| `bench destroy`                   | Tear down the installation. Requires `--yes` and name confirmation.                                  |
 
 ### Command Surface (v0.2+)
 
@@ -152,14 +152,14 @@ metadata:
   contact: ops@acme.example
 
 witylogix:
-  version: 4.0.0           # semver, null = "latest stable"
-  channel: stable          # stable | beta | canary
+  version: 4.0.0 # semver, null = "latest stable"
+  channel: stable # stable | beta | canary
 
 provider:
-  type: docker-compose     # docker-compose | railway | fly | k8s | systemd
+  type: docker-compose # docker-compose | railway | fly | k8s | systemd
   config:
     project: acme-prod
-    region: iad             # provider-specific
+    region: iad # provider-specific
 
 services:
   api:
@@ -175,20 +175,20 @@ services:
     replicas: 1
 
 database:
-  provider: postgres-managed   # or postgres-external | postgres-self-hosted
+  provider: postgres-managed # or postgres-external | postgres-self-hosted
   version: "16"
-  isolation: rls               # rls (default) | dedicated
+  isolation: rls # rls (default) | dedicated
   backup:
     schedule: "0 3 * * *"
     retention_days: 30
 
 redis:
-  provider: redis-managed       # or redis-external | redis-self-hosted
+  provider: redis-managed # or redis-external | redis-self-hosted
   version: "7"
 
 secrets:
-  backend: file                 # file | doppler | sops | railway | fly
-  path: ./secrets/              # for backend=file
+  backend: file # file | doppler | sops | railway | fly
+  path: ./secrets/ # for backend=file
   # for backend=doppler:
   # project: acme-prod
   # config: prd
@@ -198,13 +198,14 @@ observability:
   logs: { sink: loki, endpoint: "..." }
   metrics: { prometheus_scrape: true }
 
-cloud:                          # only present if managed by Witylogix Cloud
-  plan: managed                 # managed | dedicated
+cloud: # only present if managed by Witylogix Cloud
+  plan: managed # managed | dedicated
   tenant_slug: acme
   billing_id: sub_123
 ```
 
 Core invariants:
+
 - Everything in this file is declarative. Bench reconciles reality to match it.
 - Unset fields inherit provider defaults; no mandatory fields beyond `metadata.name` and `provider.type`.
 - Secrets are NEVER stored in `bench.config.yaml` — only references to the secret backend.
@@ -236,13 +237,13 @@ A `Plan` is the diff between the desired `bench.config.yaml` and the current liv
 
 ### Provider Matrix (v0.1 → v1.0)
 
-| Provider | v0.1 | v0.5 | v1.0 |
-|----------|:----:|:----:|:----:|
-| docker-compose | ✅ full | ✅ full | ✅ full |
-| railway | ✅ deploy, logs, status | ✅ backup, restore, rotate | ✅ full |
-| fly | — | ⏳ deploy, logs | ✅ full |
-| k8s (helm) | — | — | ⏳ deploy, logs |
-| systemd | — | — | ⏳ deploy, logs |
+| Provider       |          v0.1           |            v0.5            |      v1.0       |
+| -------------- | :---------------------: | :------------------------: | :-------------: |
+| docker-compose |         ✅ full         |          ✅ full           |     ✅ full     |
+| railway        | ✅ deploy, logs, status | ✅ backup, restore, rotate |     ✅ full     |
+| fly            |            —            |      ⏳ deploy, logs       |     ✅ full     |
+| k8s (helm)     |            —            |             —              | ⏳ deploy, logs |
+| systemd        |            —            |             —              | ⏳ deploy, logs |
 
 ---
 
@@ -293,13 +294,13 @@ Rollback is `bench update --to <previous>` or `bench restore <pre-upgrade-backup
 
 Bench does not store plaintext secrets. It speaks to a pluggable backend:
 
-| Backend | Use Case |
-|---------|----------|
-| `file` | Local dev, simple self-host (gitignored `.env`-style files) |
-| `doppler` | Team self-host, centralized rotation |
-| `sops` | Git-stored encrypted secrets with KMS |
-| `railway` | Witylogix Cloud production (Railway Variables) |
-| `fly` | Fly.io installations |
+| Backend   | Use Case                                                    |
+| --------- | ----------------------------------------------------------- |
+| `file`    | Local dev, simple self-host (gitignored `.env`-style files) |
+| `doppler` | Team self-host, centralized rotation                        |
+| `sops`    | Git-stored encrypted secrets with KMS                       |
+| `railway` | Witylogix Cloud production (Railway Variables)              |
+| `fly`     | Fly.io installations                                        |
 
 The backend is declared in `bench.config.yaml` → `secrets.backend`. The CLI fetches secrets at runtime and injects them into provider deployments. Bench never writes plaintext secrets to disk except under `secrets.backend: file`.
 
@@ -344,17 +345,18 @@ Public `cloud.witylogix.io` → plan selection → Stripe checkout → webhook t
 
 Separate concerns from the tenant-facing dashboard:
 
-| Control | Requirement |
-|---------|-------------|
-| Network | Private deploy (separate Railway project), no public ingress except auth endpoint. |
-| Auth | WebAuthn/hardware-key MFA mandatory. Password auth disabled. |
-| Session | 1-hour idle timeout, 8-hour max session, per-tab session binding. |
-| Authorization | Single role: `BENCH_ADMIN`. All actions role-gated at route, API, and UI layers. |
-| Audit | Every mutation logged with actor, IP, request hash, before/after diff. |
-| Break-glass | Time-limited signed token for emergency access, requires two approvers, auto-expires, auto-alerts. |
-| Provider credentials | Stored in Railway Variables, mounted read-only, never returned to the browser. |
+| Control              | Requirement                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Network              | Private deploy (separate Railway project), no public ingress except auth endpoint.                 |
+| Auth                 | WebAuthn/hardware-key MFA mandatory. Password auth disabled.                                       |
+| Session              | 1-hour idle timeout, 8-hour max session, per-tab session binding.                                  |
+| Authorization        | Single role: `BENCH_ADMIN`. All actions role-gated at route, API, and UI layers.                   |
+| Audit                | Every mutation logged with actor, IP, request hash, before/after diff.                             |
+| Break-glass          | Time-limited signed token for emergency access, requires two approvers, auto-expires, auto-alerts. |
+| Provider credentials | Stored in Railway Variables, mounted read-only, never returned to the browser.                     |
 
 Threat model focuses on:
+
 1. Compromised Bench operator credentials (mitigated: WebAuthn + audit + break-glass review).
 2. Compromised provider API token (mitigated: scoped tokens per installation, rotation via `rotate-secret`).
 3. Tenant data leak via provisioning misconfiguration (mitigated: policy tests on every generated plan before apply).
@@ -378,12 +380,12 @@ Threat model focuses on:
 
 ## Licensing
 
-| Component | License | Rationale |
-|-----------|---------|-----------|
-| `@witylogix/bench` (CLI) | MIT | Encourages adoption, no friction for self-hosters. |
-| `@witylogix/bench-core` | MIT | Same engine drives open-source and Cloud — must be MIT for Cloud to use it without copyleft complications. |
-| `@witylogix/bench-providers/*` | MIT | Community contributions welcome. |
-| `apps/bench-web` (Cloud) | Source-available (BSL 1.1 with 2-year convert-to-Apache-2.0) OR private | Protects the managed offering while still signaling openness. Decision deferred to launch. |
+| Component                      | License                                                                 | Rationale                                                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `@witylogix/bench` (CLI)       | MIT                                                                     | Encourages adoption, no friction for self-hosters.                                                         |
+| `@witylogix/bench-core`        | MIT                                                                     | Same engine drives open-source and Cloud — must be MIT for Cloud to use it without copyleft complications. |
+| `@witylogix/bench-providers/*` | MIT                                                                     | Community contributions welcome.                                                                           |
+| `apps/bench-web` (Cloud)       | Source-available (BSL 1.1 with 2-year convert-to-Apache-2.0) OR private | Protects the managed offering while still signaling openness. Decision deferred to launch.                 |
 
 Trademark policy: "Witylogix" is a protected mark; forks/self-hosts must not use the name for competing managed offerings. Rebrandable via a future `bench.config.yaml` → `branding` block.
 
@@ -445,14 +447,14 @@ These are deliberately left unresolved in this draft; each one blocks its respec
 
 ## Appendix: Inspirations and Differentiators
 
-| Tool | What we borrow | What we differ on |
-|------|----------------|-------------------|
-| Frappe Bench | CLI-first, self-host-first, one command to stand up a full stack. | TypeScript/Node instead of Python; provider-agnostic instead of Nginx+supervisord-only. |
-| Frappe Cloud | SaaS control plane driving the same CLI/engine; plan tiers (managed vs dedicated). | Cloud dashboard is BSL/private, not open-core-competitive. |
-| Vercel CLI | Smooth `deploy` UX, progress reporting, dry-run semantics. | Own your own infrastructure; not tied to one provider. |
-| Railway CLI | Simple env/service model, pragmatic provider-first. | Declarative config file, not imperative-only. |
-| Supabase CLI | `supabase start` → full local stack via Docker Compose. | Bench also targets prod, not just local dev. |
-| Kubernetes Helm | Declarative, versioned releases, rollback. | No Kubernetes required for 80% of users. |
+| Tool            | What we borrow                                                                     | What we differ on                                                                       |
+| --------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Frappe Bench    | CLI-first, self-host-first, one command to stand up a full stack.                  | TypeScript/Node instead of Python; provider-agnostic instead of Nginx+supervisord-only. |
+| Frappe Cloud    | SaaS control plane driving the same CLI/engine; plan tiers (managed vs dedicated). | Cloud dashboard is BSL/private, not open-core-competitive.                              |
+| Vercel CLI      | Smooth `deploy` UX, progress reporting, dry-run semantics.                         | Own your own infrastructure; not tied to one provider.                                  |
+| Railway CLI     | Simple env/service model, pragmatic provider-first.                                | Declarative config file, not imperative-only.                                           |
+| Supabase CLI    | `supabase start` → full local stack via Docker Compose.                            | Bench also targets prod, not just local dev.                                            |
+| Kubernetes Helm | Declarative, versioned releases, rollback.                                         | No Kubernetes required for 80% of users.                                                |
 
 ---
 

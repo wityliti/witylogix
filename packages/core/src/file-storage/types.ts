@@ -2,7 +2,7 @@
 
 /**
  * File Storage Provider Types and Interfaces
- * 
+ *
  * Defines the contract for file storage implementations.
  * Supports both cloud (S3) and local filesystem backends.
  */
@@ -35,7 +35,7 @@ export interface FileStorageProvider {
   upload(
     key: string,
     data: Buffer | NodeJS.ReadableStream,
-    options?: UploadOptions
+    options?: UploadOptions,
   ): Promise<FileMetadata>;
 
   /**
@@ -70,7 +70,7 @@ export interface FileStorageProvider {
 }
 
 export interface StorageConfig {
-  type: 'local' | 's3';
+  type: "local" | "s3";
   tenantId?: string;
   local?: {
     basePath: string;
@@ -95,7 +95,7 @@ export interface TenantStorageConfig {
 }
 
 export interface DeployerStorageConfig {
-  defaultType: 's3' | 'local';
+  defaultType: "s3" | "local";
   s3?: {
     bucketName: string;
     region: string;

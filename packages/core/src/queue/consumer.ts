@@ -245,12 +245,10 @@ export abstract class QueueConsumer {
     const isConsumerError = error instanceof QueueConsumerError;
     const isRetriable = isConsumerError ? error.retriable : true;
     const code = isConsumerError ? error.code : "UNKNOWN_ERROR";
-    const message =
-      error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? error.message : String(error);
 
     // Determine if we should retry
-    const shouldRetry =
-      isRetriable && attempt < this.config.maxAttempts;
+    const shouldRetry = isRetriable && attempt < this.config.maxAttempts;
 
     // Calculate backoff delay for next attempt
     const delayMs = shouldRetry
@@ -311,10 +309,7 @@ export abstract class QueueConsumer {
       this.config.initialDelayMs *
       Math.pow(this.config.backoffMultiplier, attempt - 1);
 
-    const capped = Math.min(
-      exponentialDelay,
-      this.config.maxDelayMs,
-    );
+    const capped = Math.min(exponentialDelay, this.config.maxDelayMs);
 
     // Add jitter: ±10% to prevent thundering herd
     const jitter = capped * 0.1 * (Math.random() * 2 - 1);
@@ -338,7 +333,10 @@ export abstract class QueueConsumer {
     console.warn("[QueueConsumer] Job sent to DLQ", deadLetterJob);
 
     // Emit metric for monitoring
-    this.metrics.set("dlqCount", (this.metrics.get("dlqCount") as number || 0) + 1);
+    this.metrics.set(
+      "dlqCount",
+      ((this.metrics.get("dlqCount") as number) || 0) + 1,
+    );
   }
 
   /**
@@ -350,7 +348,8 @@ export abstract class QueueConsumer {
     const completed = (this.metrics.get("completedCount") as number) + 1;
     this.metrics.set("completedCount", completed);
 
-    const totalTime = (this.metrics.get("totalProcessingTimeMs") as number) + processingTimeMs;
+    const totalTime =
+      (this.metrics.get("totalProcessingTimeMs") as number) + processingTimeMs;
     this.metrics.set("totalProcessingTimeMs", totalTime);
 
     const times = this.metrics.get("processingTimes") as number[];
@@ -374,12 +373,13 @@ export abstract class QueueConsumer {
     this.metrics.set("failedCount", failed);
 
     if (!willRetry) {
-      const dlq = (this.metrics.get("dlqCount") as number || 0) + 1;
+      const dlq = ((this.metrics.get("dlqCount") as number) || 0) + 1;
       this.metrics.set("dlqCount", dlq);
     }
 
     // Track error codes
-    const errorCounts = this.metrics.get("errorCounts") as Map<string, number> || new Map();
+    const errorCounts =
+      (this.metrics.get("errorCounts") as Map<string, number>) || new Map();
     errorCounts.set(code, (errorCounts.get(code) ?? 0) + 1);
     this.metrics.set("errorCounts", errorCounts);
   }

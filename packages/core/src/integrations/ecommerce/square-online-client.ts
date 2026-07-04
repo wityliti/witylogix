@@ -280,7 +280,10 @@ interface SquareInventoryCount {
 /**
  * Square API Client
  */
-export class SquareOnlineClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class SquareOnlineClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private baseUrl = "https://connect.squareup.com";
   private clientId: string;
   private clientSecret: string;
@@ -295,7 +298,9 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
     super(config);
 
     if (!config.apiKey || !config.apiSecret || !config.accessToken) {
-      throw new Error("Square API requires clientId, clientSecret, and accessToken");
+      throw new Error(
+        "Square API requires clientId, clientSecret, and accessToken",
+      );
     }
 
     this.clientId = config.apiKey;
@@ -307,7 +312,11 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
   /**
    * Make authenticated request to Square API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     await this.rateLimiter.waitIfNeeded();
 
     const url = `${this.baseUrl}${path}`;
@@ -323,7 +332,9 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
     });
 
     if (!response.ok) {
-      throw new Error(`Square API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Square API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -365,7 +376,10 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     const current = await this.getOrderById(orderId);
 
     await this.request<unknown>("PUT", `/v2/orders/${orderId}`, {
@@ -388,7 +402,10 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
       const response = await this.request<{
         objects: SquareCatalogObject[];
         cursor?: string;
-      }>("GET", `/v2/catalog/list?limit=${Math.min(options?.limit ?? 100, 100)}&types=ITEM`);
+      }>(
+        "GET",
+        `/v2/catalog/list?limit=${Math.min(options?.limit ?? 100, 100)}&types=ITEM`,
+      );
 
       for (const obj of response.objects) {
         if (obj.item) {
@@ -463,7 +480,10 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
   /**
    * Update product
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const current = await this.getProductById(productId);
 
     const updateData: Record<string, unknown> = {
@@ -497,7 +517,9 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
         cursor?: string;
       }>("GET", `/v2/customers?limit=${Math.min(options?.limit ?? 100, 100)}`);
 
-      customers.push(...response.customers.map((cust) => this.normalizeCustomer(cust)));
+      customers.push(
+        ...response.customers.map((cust) => this.normalizeCustomer(cust)),
+      );
     } catch (error) {
       this.logger.error("Failed to get customers from Square", error);
     }
@@ -519,7 +541,10 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer> {
+  async updateCustomer(
+    customerId: string,
+    data: Partial<ECommerceCustomer>,
+  ): Promise<ECommerceCustomer> {
     const updateData: Record<string, unknown> = {};
 
     if (data.firstName) updateData.given_name = data.firstName;
@@ -537,14 +562,19 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
   /**
    * Create fulfillment
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     try {
       const current = await this.getOrderById(orderId);
 
       const fulfillment: SquareFulfillment = {
         uid: `fulfillment-${Date.now()}`,
         state: "COMPLETED",
-        note: request.trackingNumber ? `Tracking: ${request.trackingNumber}` : undefined,
+        note: request.trackingNumber
+          ? `Tracking: ${request.trackingNumber}`
+          : undefined,
       };
 
       await this.request<unknown>("PUT", `/v2/orders/${orderId}`, {
@@ -625,26 +655,24 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
-    await this.request<unknown>(
-      "POST",
-      "/v2/inventory/batch-change",
-      {
-        idempotency_key: `inventory-${Date.now()}`,
-        changes: [
-          {
-            type: "ADJUSTMENT",
-            adjustment: {
-              catalog_object_id: request.variantId,
-              from_state: "IN_STOCK",
-              to_state: "IN_STOCK",
-              location_id: this.locationId,
-              quantity_delta: request.quantity,
-            },
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
+    await this.request<unknown>("POST", "/v2/inventory/batch-change", {
+      idempotency_key: `inventory-${Date.now()}`,
+      changes: [
+        {
+          type: "ADJUSTMENT",
+          adjustment: {
+            catalog_object_id: request.variantId,
+            from_state: "IN_STOCK",
+            to_state: "IN_STOCK",
+            location_id: this.locationId,
+            quantity_delta: request.quantity,
           },
-        ],
-      },
-    );
+        },
+      ],
+    });
 
     return this.getInventory(request.variantId);
   }
@@ -695,8 +723,12 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
    */
   private normalizeOrder(order: SquareOrderData): ECommerceOrder {
     const status: OrderStatus = this.mapOrderState(order.state);
-    const paymentStatus: PaymentStatus = order.tender?.length ? "captured" : "pending";
-    const fulfillmentStatus: FulfillmentStatus = order.fulfillments?.some((f) => f.state === "COMPLETED")
+    const paymentStatus: PaymentStatus = order.tender?.length
+      ? "captured"
+      : "pending";
+    const fulfillmentStatus: FulfillmentStatus = order.fulfillments?.some(
+      (f) => f.state === "COMPLETED",
+    )
       ? "complete"
       : "pending";
 
@@ -775,7 +807,9 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
       lastName: customer.family_name || "",
       phone: customer.phone_number,
       acceptsMarketing: !customer.preferences?.email_unsubscribed,
-      defaultAddress: customer.address ? this.normalizeAddress(customer.address) : undefined,
+      defaultAddress: customer.address
+        ? this.normalizeAddress(customer.address)
+        : undefined,
       createdAt: new Date(customer.created_at),
       updatedAt: new Date(customer.updated_at),
     };
@@ -817,7 +851,9 @@ export class SquareOnlineClient extends ECommerceAdapterBase implements IECommer
               price: (v.item_variation_data?.price_money?.amount || 0) / 100,
               inventory: {
                 variantId: v.id,
-                quantity: v.item_variation_data?.quantity ? parseInt(v.item_variation_data.quantity) : 0,
+                quantity: v.item_variation_data?.quantity
+                  ? parseInt(v.item_variation_data.quantity)
+                  : 0,
                 trackQuantity: true,
                 allowNegativeStock: false,
                 updatedAt: new Date(),

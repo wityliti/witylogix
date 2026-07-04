@@ -3,9 +3,9 @@
  * Provides background cache population
  */
 
-import { CacheClient } from './client';
-import { TenantCacheStrategy, EntityCacheStrategy } from './strategies';
-import { WarmingStatus } from './types';
+import { CacheClient } from "./client";
+import { TenantCacheStrategy, EntityCacheStrategy } from "./strategies";
+import { WarmingStatus } from "./types";
 
 /**
  * Data loaders for warming strategies
@@ -59,7 +59,7 @@ export class CacheWarmer {
       // Warm zones
       if (this.loaders.loadZones) {
         const zonesPromise = this.loaders.loadZones(shopId).then((zones) => {
-          const key = TenantCacheStrategy.createKey(shopId, 'zones');
+          const key = TenantCacheStrategy.createKey(shopId, "zones");
           return this.cache.set(key, zones, ttl, [`tenant:${shopId}:zones`]);
         });
         promises.push(zonesPromise);
@@ -67,10 +67,14 @@ export class CacheWarmer {
 
       // Warm drivers
       if (this.loaders.loadDrivers) {
-        const driversPromise = this.loaders.loadDrivers(shopId).then((drivers) => {
-          const key = TenantCacheStrategy.createKey(shopId, 'drivers');
-          return this.cache.set(key, drivers, ttl, [`tenant:${shopId}:drivers`]);
-        });
+        const driversPromise = this.loaders
+          .loadDrivers(shopId)
+          .then((drivers) => {
+            const key = TenantCacheStrategy.createKey(shopId, "drivers");
+            return this.cache.set(key, drivers, ttl, [
+              `tenant:${shopId}:drivers`,
+            ]);
+          });
         promises.push(driversPromise);
       }
 
@@ -79,7 +83,10 @@ export class CacheWarmer {
         const profilesPromise = this.loaders
           .loadShippingProfiles(shopId)
           .then((profiles) => {
-            const key = TenantCacheStrategy.createKey(shopId, 'shipping_profiles');
+            const key = TenantCacheStrategy.createKey(
+              shopId,
+              "shipping_profiles",
+            );
             return this.cache.set(key, profiles, ttl, [
               `tenant:${shopId}:shipping_profiles`,
             ]);
@@ -106,10 +113,10 @@ export class CacheWarmer {
       }
 
       const products = await this.loaders.loadProducts(shopId);
-      const cacheTag = EntityCacheStrategy.createTypeTag('product');
+      const cacheTag = EntityCacheStrategy.createTypeTag("product");
 
       for (const product of products) {
-        const key = EntityCacheStrategy.createKey('product', product.id);
+        const key = EntityCacheStrategy.createKey("product", product.id);
         await this.cache.set(key, product, ttl, [cacheTag]);
       }
     } catch (error) {
@@ -130,8 +137,10 @@ export class CacheWarmer {
       }
 
       const rateCards = await this.loaders.loadRateCards(shopId);
-      const key = TenantCacheStrategy.createKey(shopId, 'rate_cards');
-      await this.cache.set(key, rateCards, ttl, [`tenant:${shopId}:rate_cards`]);
+      const key = TenantCacheStrategy.createKey(shopId, "rate_cards");
+      await this.cache.set(key, rateCards, ttl, [
+        `tenant:${shopId}:rate_cards`,
+      ]);
     } catch (error) {
       console.error(`Rate card cache warming error for shop ${shopId}:`, error);
       this.status.lastError = (error as Error).message;
@@ -161,7 +170,7 @@ export class CacheWarmer {
 
       const duration = Date.now() - startTime;
       console.log(
-        `Cache warming completed for shop ${shopId}: ${itemsWarmed} items in ${duration}ms`
+        `Cache warming completed for shop ${shopId}: ${itemsWarmed} items in ${duration}ms`,
       );
 
       return itemsWarmed;
@@ -180,7 +189,7 @@ export class CacheWarmer {
   scheduleWarming(
     shopIds: string[],
     interval: number = 3600000, // 1 hour default
-    ttl: number = 3600
+    ttl: number = 3600,
   ): void {
     if (this.warmingInterval) {
       clearInterval(this.warmingInterval);
@@ -237,7 +246,10 @@ export class CacheWarmer {
 
         this.status.lastExecution = Date.now();
         this.status.itemsWarmed = totalItems;
-        this.status.coverage = Math.min(100, (totalItems / (shopIds.length * 10)) * 100);
+        this.status.coverage = Math.min(
+          100,
+          (totalItems / (shopIds.length * 10)) * 100,
+        );
         this.status.lastError = undefined;
       } catch (error) {
         this.status.lastError = (error as Error).message;

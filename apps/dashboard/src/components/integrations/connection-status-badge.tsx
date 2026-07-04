@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-type ConnectionStatus = "connected" | "disconnected" | "error" | "syncing" | "pending";
+type ConnectionStatus =
+  | "connected"
+  | "disconnected"
+  | "error"
+  | "syncing"
+  | "pending";
 
 type BadgeMode = "compact" | "full";
 
@@ -33,7 +38,7 @@ export function ConnectionStatusBadge({
   const [showingTooltip, setShowingTooltip] = useState(false);
 
   const getStatusConfig = (
-    status: ConnectionStatus
+    status: ConnectionStatus,
   ): {
     color: string;
     bgColor: string;
@@ -128,7 +133,7 @@ export function ConnectionStatusBadge({
               "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10",
               "px-2 py-1 rounded text-xs whitespace-nowrap",
               "bg-wl-bg-surface text-white dark:bg-wl-bg-elevated",
-              "shadow-lg"
+              "shadow-lg",
             )}
           >
             {tooltipContent()}
@@ -145,7 +150,7 @@ export function ConnectionStatusBadge({
         config.bgColor,
         config.color,
         "transition-all duration-200",
-        className
+        className,
       )}
       onMouseEnter={() => setShowingTooltip(true)}
       onMouseLeave={() => setShowingTooltip(false)}
@@ -163,7 +168,7 @@ export function ConnectionStatusBadge({
             "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10",
             "px-2 py-1 rounded text-xs whitespace-nowrap",
             "bg-wl-bg-surface text-white dark:bg-wl-bg-elevated",
-            "shadow-lg"
+            "shadow-lg",
           )}
         >
           {tooltipContent()}

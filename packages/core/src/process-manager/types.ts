@@ -7,7 +7,12 @@
 /**
  * Worker execution status.
  */
-export type WorkerStatus = "idle" | "running" | "stopping" | "stopped" | "error";
+export type WorkerStatus =
+  | "idle"
+  | "running"
+  | "stopping"
+  | "stopped"
+  | "error";
 
 /**
  * Worker configuration.

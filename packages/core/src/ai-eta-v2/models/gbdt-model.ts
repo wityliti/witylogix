@@ -14,7 +14,11 @@
  * Features: shrinkage (learning rate), max depth, min samples, subsampling
  */
 
-import type { FeatureVector, HistoricalDelivery, ModelPrediction } from '../types.js';
+import type {
+  FeatureVector,
+  HistoricalDelivery,
+  ModelPrediction,
+} from "../types.js";
 
 // ─── Decision Tree Node ───────────────────────────────────────────────────────
 
@@ -34,7 +38,7 @@ interface TreeNode {
 // ─── Feature Encoding ─────────────────────────────────────────────────────────
 
 const ZONE_TYPE_MAP: Record<string, number> = {
-  'urban-core': 0,
+  "urban-core": 0,
   urban: 1,
   suburban: 2,
   rural: 3,
@@ -64,23 +68,23 @@ const VEHICLE_MAP: Record<string, number> = {
 };
 
 const FEATURE_NAMES = [
-  'distance_km',
-  'zone_type',
-  'hour',
-  'day_of_week',
-  'is_holiday',
-  'is_weekend',
-  'weather_condition',
-  'weather_intensity',
-  'traffic_condition',
-  'traffic_multiplier',
-  'historical_avg_minutes',
-  'driver_experience_score',
-  'vehicle_type',
-  'num_stops_remaining',
-  'temperature_celsius',
-  'wind_speed_kmh',
-  'precipitation_mm',
+  "distance_km",
+  "zone_type",
+  "hour",
+  "day_of_week",
+  "is_holiday",
+  "is_weekend",
+  "weather_condition",
+  "weather_intensity",
+  "traffic_condition",
+  "traffic_multiplier",
+  "historical_avg_minutes",
+  "driver_experience_score",
+  "vehicle_type",
+  "num_stops_remaining",
+  "temperature_celsius",
+  "wind_speed_kmh",
+  "precipitation_mm",
 ] as const;
 
 function encodeFeatures(fv: FeatureVector): number[] {
@@ -117,7 +121,7 @@ function encodeHistorical(d: HistoricalDelivery): number[] {
     d.weather_intensity,
     TRAFFIC_MAP[d.traffic_condition] ?? 1,
     1.0, // traffic_multiplier not in historical
-    0,   // historical_avg_minutes — filled in during training
+    0, // historical_avg_minutes — filled in during training
     d.driver_experience_score,
     VEHICLE_MAP[d.vehicle_type] ?? 1,
     d.num_stops,
@@ -193,10 +197,20 @@ class RegressionTree {
     X: number[][],
     y: number[],
     indices: number[],
-  ): { featureIndex: number; threshold: number; leftIdx: number[]; rightIdx: number[] } | null {
+  ): {
+    featureIndex: number;
+    threshold: number;
+    leftIdx: number[];
+    rightIdx: number[];
+  } | null {
     const nFeatures = X[0].length;
     let bestGain = -Infinity;
-    let bestSplit: { featureIndex: number; threshold: number; leftIdx: number[]; rightIdx: number[] } | null = null;
+    let bestSplit: {
+      featureIndex: number;
+      threshold: number;
+      leftIdx: number[];
+      rightIdx: number[];
+    } | null = null;
 
     const parentMSE = this.mse(y, indices);
 
@@ -211,7 +225,10 @@ class RegressionTree {
         const leftIdx = indices.filter((i) => X[i][fi] <= threshold);
         const rightIdx = indices.filter((i) => X[i][fi] > threshold);
 
-        if (leftIdx.length < this.minSamples || rightIdx.length < this.minSamples) {
+        if (
+          leftIdx.length < this.minSamples ||
+          rightIdx.length < this.minSamples
+        ) {
           continue;
         }
 
@@ -233,7 +250,9 @@ class RegressionTree {
   private mse(y: number[], indices: number[]): number {
     if (indices.length === 0) return 0;
     const m = this.mean(y, indices);
-    return indices.reduce((sum, i) => sum + (y[i] - m) ** 2, 0) / indices.length;
+    return (
+      indices.reduce((sum, i) => sum + (y[i] - m) ** 2, 0) / indices.length
+    );
   }
 
   private mean(y: number[], indices: number[]): number {
@@ -334,7 +353,10 @@ export class GBDTModel {
     const zoneAvgs = new Map<string, number>();
     const zoneCounts = new Map<string, number>();
     for (const d of historicalDeliveries) {
-      zoneAvgs.set(d.zone_type, (zoneAvgs.get(d.zone_type) ?? 0) + d.actual_duration_minutes);
+      zoneAvgs.set(
+        d.zone_type,
+        (zoneAvgs.get(d.zone_type) ?? 0) + d.actual_duration_minutes,
+      );
       zoneCounts.set(d.zone_type, (zoneCounts.get(d.zone_type) ?? 0) + 1);
     }
     for (const [z, sum] of zoneAvgs) {
@@ -347,14 +369,22 @@ export class GBDTModel {
       enc[10] = zoneAvgs.get(d.zone_type) ?? 30; // historical_avg_minutes
       return enc;
     });
-    const y: number[] = historicalDeliveries.map((d) => d.actual_duration_minutes);
+    const y: number[] = historicalDeliveries.map(
+      (d) => d.actual_duration_minutes,
+    );
 
     // Initialize F_0 = mean(y)
     this.basePrediction = y.reduce((s, v) => s + v, 0) / n;
     const F = new Array(n).fill(this.basePrediction);
 
     this.trees = [];
-    const { nEstimators, learningRate, maxDepth, minSamplesSplit, subsampleRate } = this.config;
+    const {
+      nEstimators,
+      learningRate,
+      maxDepth,
+      minSamplesSplit,
+      subsampleRate,
+    } = this.config;
 
     for (let m = 0; m < nEstimators; m++) {
       // Compute pseudo-residuals (negative gradient of MSE = y - F)
@@ -379,8 +409,9 @@ export class GBDTModel {
     }
 
     // Final training MSE
-    this.trainingError =
-      Math.sqrt(F.reduce((s, f, i) => s + (y[i] - f) ** 2, 0) / n);
+    this.trainingError = Math.sqrt(
+      F.reduce((s, f, i) => s + (y[i] - f) ** 2, 0) / n,
+    );
     this.trainingSamples = n;
     this.isTrained = true;
 
@@ -414,7 +445,7 @@ export class GBDTModel {
     const upperBound = clampedPred + halfInterval;
 
     return {
-      modelName: 'gbdt',
+      modelName: "gbdt",
       predicted_duration_minutes: clampedPred,
       confidence,
       lower_bound_minutes: lowerBound,
@@ -462,7 +493,8 @@ export class GBDTModel {
     if (this.trainingSamples < 200) return 0.7;
 
     // Higher confidence when prediction is near baseline, lower near extremes
-    const deviation = Math.abs(predicted - this.basePrediction) / (this.trainingError || 30);
+    const deviation =
+      Math.abs(predicted - this.basePrediction) / (this.trainingError || 30);
     const raw = Math.max(0.5, Math.min(0.95, 0.92 - deviation * 0.08));
     return raw;
   }
@@ -475,7 +507,7 @@ export class GBDTModel {
     const pred = base * traffic * weather;
 
     return {
-      modelName: 'gbdt',
+      modelName: "gbdt",
       predicted_duration_minutes: pred,
       confidence: 0.4,
       lower_bound_minutes: pred * 0.7,

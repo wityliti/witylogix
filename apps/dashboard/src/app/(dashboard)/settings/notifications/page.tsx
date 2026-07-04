@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -12,20 +12,13 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import {
-  Mail,
-  MessageSquare,
-  Bell,
-  Smartphone,
-  Save,
-  X,
-} from 'lucide-react';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Mail, MessageSquare, Bell, Smartphone, Save, X } from "lucide-react";
 
 interface NotificationPrefs {
   [key: string]: {
@@ -45,27 +38,43 @@ interface NotificationSettings {
 }
 
 const CHANNELS = [
-  { id: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
-  { id: 'sms', label: 'SMS', icon: <MessageSquare className="w-4 h-4" /> },
-  { id: 'push', label: 'Push', icon: <Bell className="w-4 h-4" /> },
-  { id: 'whatsapp', label: 'WhatsApp', icon: <Smartphone className="w-4 h-4" /> },
-  { id: 'in-app', label: 'In-App', icon: <Bell className="w-4 h-4" /> },
+  { id: "email", label: "Email", icon: <Mail className="w-4 h-4" /> },
+  { id: "sms", label: "SMS", icon: <MessageSquare className="w-4 h-4" /> },
+  { id: "push", label: "Push", icon: <Bell className="w-4 h-4" /> },
+  {
+    id: "whatsapp",
+    label: "WhatsApp",
+    icon: <Smartphone className="w-4 h-4" />,
+  },
+  { id: "in-app", label: "In-App", icon: <Bell className="w-4 h-4" /> },
 ];
 
 const EVENT_CATEGORIES = [
-  'Orders',
-  'Deliveries',
-  'Drivers',
-  'System Alerts',
-  'Billing',
+  "Orders",
+  "Deliveries",
+  "Drivers",
+  "System Alerts",
+  "Billing",
 ];
 
 export default function NotificationsPage() {
-  const { data: settings, loading, error, refetch } = useApiQuery<NotificationSettings>('/api/v4/settings/notifications');
-  const { execute: updateSettings } = useApiMutation('PATCH', '/api/v4/settings/notifications');
+  const {
+    data: settings,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<NotificationSettings>("/api/v4/settings/notifications");
+  const { execute: updateSettings } = useApiMutation(
+    "PATCH",
+    "/api/v4/settings/notifications",
+  );
 
-  const [preferences, setPreferences] = useState<NotificationPrefs>(settings?.preferences ?? {});
-  const [quietHours, setQuietHours] = useState<QuietHours>(settings?.quietHours ?? { enabled: true, start: '22:00', end: '08:00' });
+  const [preferences, setPreferences] = useState<NotificationPrefs>(
+    settings?.preferences ?? {},
+  );
+  const [quietHours, setQuietHours] = useState<QuietHours>(
+    settings?.quietHours ?? { enabled: true, start: "22:00", end: "08:00" },
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -110,7 +119,8 @@ export default function NotificationsPage() {
             <CardHeader>
               <CardTitle>Notification Channels & Preferences</CardTitle>
               <CardDescription>
-                Choose which notification channels to use for different event types
+                Choose which notification channels to use for different event
+                types
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -128,7 +138,9 @@ export default function NotificationsPage() {
                         >
                           <div className="flex items-center justify-center gap-1">
                             {channel.icon}
-                            <span className="hidden sm:inline">{channel.label}</span>
+                            <span className="hidden sm:inline">
+                              {channel.label}
+                            </span>
                           </div>
                         </th>
                       ))}
@@ -144,15 +156,26 @@ export default function NotificationsPage() {
                           {category}
                         </td>
                         {CHANNELS.map((channel) => {
-                          const categoryKey = category.toLowerCase().replace(/\s+/g, "");
-                          const isChecked = preferences[channel.id]?.[categoryKey] ?? false;
+                          const categoryKey = category
+                            .toLowerCase()
+                            .replace(/\s+/g, "");
+                          const isChecked =
+                            preferences[channel.id]?.[categoryKey] ?? false;
                           return (
-                            <td key={`${channel.id}-${category}`} className="text-center py-4 px-3">
+                            <td
+                              key={`${channel.id}-${category}`}
+                              className="text-center py-4 px-3"
+                            >
                               <label className="flex justify-center cursor-pointer">
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
-                                  onChange={() => handlePreferenceChange(channel.id, categoryKey)}
+                                  onChange={() =>
+                                    handlePreferenceChange(
+                                      channel.id,
+                                      categoryKey,
+                                    )
+                                  }
                                   className="w-4 h-4 rounded border-wl-border-default text-blue-500 cursor-pointer"
                                 />
                               </label>
@@ -190,7 +213,7 @@ export default function NotificationsPage() {
             <CardContent
               className={cn(
                 "space-y-4 transition-opacity",
-                !quietHours.enabled && "opacity-50 pointer-events-none"
+                !quietHours.enabled && "opacity-50 pointer-events-none",
               )}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -222,7 +245,8 @@ export default function NotificationsPage() {
                 </div>
               </div>
               <p className="text-xs text-wl-text-secondary">
-                Notifications will be silenced from {quietHours.start} to {quietHours.end} daily
+                Notifications will be silenced from {quietHours.start} to{" "}
+                {quietHours.end} daily
               </p>
             </CardContent>
           </Card>
@@ -247,7 +271,7 @@ export default function NotificationsPage() {
                     {Object.values(preferences).reduce(
                       (sum, channel) =>
                         sum + Object.values(channel).filter(Boolean).length,
-                      0
+                      0,
                     )}
                   </p>
                 </div>

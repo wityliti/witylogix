@@ -156,7 +156,8 @@ export function PartnersDemo() {
           Partner Management Components
         </h1>
         <p className="text-wl-text-secondary">
-          Comprehensive showcase of courier partner and logistics management components
+          Comprehensive showcase of courier partner and logistics management
+          components
         </p>
       </div>
 

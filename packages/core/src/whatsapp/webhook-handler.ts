@@ -11,7 +11,7 @@ import {
   MessageStatusEvent,
   IncomingMessageEvent,
   MessageStatus,
-} from './types';
+} from "./types";
 
 /**
  * Webhook handler for processing Meta WhatsApp events
@@ -34,15 +34,15 @@ export class WebhookHandler {
   static verifyWebhookSignature(
     payload: string,
     signature: string,
-    appSecret: string
+    appSecret: string,
   ): boolean {
     if (!appSecret || !signature) {
       return false;
     }
 
     // Extract hash from signature header (format: "sha256=hash")
-    const [algorithm, hash] = signature.split('=');
-    if (algorithm !== 'sha256' || !hash) {
+    const [algorithm, hash] = signature.split("=");
+    if (algorithm !== "sha256" || !hash) {
       return false;
     }
 
@@ -64,13 +64,14 @@ export class WebhookHandler {
     // In production, implement proper HMAC-SHA256
     try {
       // Attempt to use crypto if available (Node.js environment)
-      const crypto = (globalThis as unknown as Record<string, unknown>).crypto as
+      const crypto = (globalThis as unknown as Record<string, unknown>)
+        .crypto as
         | {
             subtle?: {
               sign(
                 algorithm: string,
                 key: Uint8Array,
-                data: Uint8Array
+                data: Uint8Array,
               ): Promise<ArrayBuffer>;
             };
           }
@@ -78,14 +79,14 @@ export class WebhookHandler {
 
       if (crypto?.subtle) {
         // Return placeholder - async operation requires different approach
-        return '';
+        return "";
       }
     } catch {
       // Fallback to placeholder
     }
 
     // Placeholder implementation - should be replaced with actual HMAC
-    return '';
+    return "";
   }
 
   /**
@@ -95,7 +96,7 @@ export class WebhookHandler {
    */
   parseWebhook(payload: WebhookPayload): WebhookEvent[] {
     if (!payload || !payload.entry) {
-      throw new Error('Invalid webhook payload structure');
+      throw new Error("Invalid webhook payload structure");
     }
 
     const events: WebhookEvent[] = [];
@@ -144,7 +145,7 @@ export class WebhookHandler {
    * Parse message status update event
    */
   private parseStatusUpdate(
-    status: Record<string, unknown>
+    status: Record<string, unknown>,
   ): MessageStatusEvent | null {
     try {
       const statusValue = status.status as string;
@@ -174,7 +175,7 @@ export class WebhookHandler {
 
       return event;
     } catch (error) {
-      console.error('Error parsing status update:', error);
+      console.error("Error parsing status update:", error);
       return null;
     }
   }
@@ -184,7 +185,7 @@ export class WebhookHandler {
    */
   private parseIncomingMessage(
     message: Record<string, unknown>,
-    contacts?: Array<Record<string, unknown>>
+    contacts?: Array<Record<string, unknown>>,
   ): IncomingMessageEvent | null {
     try {
       const event: IncomingMessageEvent = {
@@ -195,14 +196,14 @@ export class WebhookHandler {
       };
 
       // Parse message content based on type
-      if (message.text && typeof message.text === 'object') {
+      if (message.text && typeof message.text === "object") {
         const textObj = message.text as Record<string, unknown>;
         event.text = {
           body: textObj.body as string,
         };
       }
 
-      if (message.media && typeof message.media === 'object') {
+      if (message.media && typeof message.media === "object") {
         const mediaObj = message.media as Record<string, unknown>;
         event.media = {
           type: mediaObj.type as string,
@@ -212,7 +213,7 @@ export class WebhookHandler {
         };
       }
 
-      if (message.location && typeof message.location === 'object') {
+      if (message.location && typeof message.location === "object") {
         const locObj = message.location as Record<string, unknown>;
         event.location = {
           latitude: locObj.latitude as number,
@@ -220,7 +221,7 @@ export class WebhookHandler {
         };
       }
 
-      if (message.button && typeof message.button === 'object') {
+      if (message.button && typeof message.button === "object") {
         const btnObj = message.button as Record<string, unknown>;
         event.button = {
           payload: btnObj.payload as string,
@@ -228,14 +229,14 @@ export class WebhookHandler {
         };
       }
 
-      if (message.interactive && typeof message.interactive === 'object') {
+      if (message.interactive && typeof message.interactive === "object") {
         const intObj = message.interactive as Record<string, unknown>;
         const interactive: Record<string, unknown> = {
           type: intObj.type as string,
         };
 
         // Parse list reply
-        if (intObj.list_reply && typeof intObj.list_reply === 'object') {
+        if (intObj.list_reply && typeof intObj.list_reply === "object") {
           const listReply = intObj.list_reply as Record<string, unknown>;
           interactive.listReply = {
             id: listReply.id as string,
@@ -245,7 +246,7 @@ export class WebhookHandler {
         }
 
         // Parse button reply
-        if (intObj.button_reply && typeof intObj.button_reply === 'object') {
+        if (intObj.button_reply && typeof intObj.button_reply === "object") {
           const btnReply = intObj.button_reply as Record<string, unknown>;
           interactive.buttonReply = {
             id: btnReply.id as string,
@@ -257,7 +258,7 @@ export class WebhookHandler {
       }
 
       // Parse context (message reply)
-      if (message.context && typeof message.context === 'object') {
+      if (message.context && typeof message.context === "object") {
         const ctxObj = message.context as Record<string, unknown>;
         event.context = {
           from: ctxObj.from as string,
@@ -267,7 +268,7 @@ export class WebhookHandler {
 
       return event;
     } catch (error) {
-      console.error('Error parsing incoming message:', error);
+      console.error("Error parsing incoming message:", error);
       return null;
     }
   }
@@ -277,13 +278,13 @@ export class WebhookHandler {
    */
   private mapStatusValue(status: string): MessageStatus | null {
     switch (status.toLowerCase()) {
-      case 'sent':
+      case "sent":
         return MessageStatus.SENT;
-      case 'delivered':
+      case "delivered":
         return MessageStatus.DELIVERED;
-      case 'read':
+      case "read":
         return MessageStatus.READ;
-      case 'failed':
+      case "failed":
         return MessageStatus.FAILED;
       default:
         return null;
@@ -295,13 +296,13 @@ export class WebhookHandler {
    */
   filterEventsByType<T extends WebhookEvent>(
     events: WebhookEvent[],
-    type: 'status' | 'message'
+    type: "status" | "message",
   ): T[] {
     return events.filter((event) => {
-      if (type === 'status') {
-        return 'status' in event;
-      } else if (type === 'message') {
-        return 'type' in event && !('status' in event);
+      if (type === "status") {
+        return "status" in event;
+      } else if (type === "message") {
+        return "type" in event && !("status" in event);
       }
       return false;
     }) as T[];
@@ -319,9 +320,9 @@ export class WebhookHandler {
     mode: string,
     token: string,
     challenge: string,
-    webhookToken: string
+    webhookToken: string,
   ): string | null {
-    if (mode === 'subscribe' && token === webhookToken) {
+    if (mode === "subscribe" && token === webhookToken) {
       return challenge;
     }
     return null;
@@ -337,13 +338,14 @@ export class WebhookHandler {
   /**
    * Verify webhook with stored app secret
    */
-  verifyWithStoredSecret(
-    payload: string,
-    signature: string
-  ): boolean {
+  verifyWithStoredSecret(payload: string, signature: string): boolean {
     if (!this.appSecret) {
-      throw new Error('App secret not configured');
+      throw new Error("App secret not configured");
     }
-    return WebhookHandler.verifyWebhookSignature(payload, signature, this.appSecret);
+    return WebhookHandler.verifyWebhookSignature(
+      payload,
+      signature,
+      this.appSecret,
+    );
   }
 }

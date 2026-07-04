@@ -35,7 +35,7 @@ export const triggerBillingStep: WorkflowStep<
 
   async invoke(
     input: TriggerBillingInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<TriggerBillingOutput>> {
     const logger = context.logger;
     logger?.info("Creating billing record", {
@@ -44,7 +44,7 @@ export const triggerBillingStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // ─── Validate Input ────────────────────────────────────────────
       if (!input.orderId || input.orderId.trim().length === 0) {
@@ -144,7 +144,7 @@ export const triggerBillingStep: WorkflowStep<
 
   async compensate(
     input: TriggerBillingInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     const logger = context.logger;
     logger?.info("Compensating billing record", {
@@ -152,7 +152,7 @@ export const triggerBillingStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Find and void the billing record
       const billing = await prisma.paymentTransaction.findFirst({

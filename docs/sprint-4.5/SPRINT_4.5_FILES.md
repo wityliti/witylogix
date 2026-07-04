@@ -1,6 +1,7 @@
 # Sprint 4.5 - Complete File Index
 
 ## Overview
+
 This document provides a complete index of all files created during Sprint 4.5 for the Shopify Checkout Extension + Google Maps/Calendar integration.
 
 ## File Structure
@@ -8,8 +9,10 @@ This document provides a complete index of all files created during Sprint 4.5 f
 ### 1. Google Integration Services (Core Package)
 
 #### `/packages/core/src/integrations/google/types.ts` (4.4 KB)
+
 **Purpose**: TypeScript type definitions for Google integration
 **Key Types**:
+
 - `GeocodingResult` - Address geocoding with components
 - `DistanceResult` - Distance/duration between points
 - `DirectionsResult` - Full route information with legs and steps
@@ -23,8 +26,10 @@ This document provides a complete index of all files created during Sprint 4.5 f
 - `RateLimitInfo` - API usage tracking
 
 #### `/packages/core/src/integrations/google/maps-service.ts` (12 KB)
+
 **Purpose**: Google Maps API integration service
 **Key Features**:
+
 - Geocoding with address components extraction
 - Distance matrix calculations
 - Multi-waypoint directions
@@ -36,6 +41,7 @@ This document provides a complete index of all files created during Sprint 4.5 f
 - Error handling and validation
 
 **Key Methods**:
+
 ```
 - geocodeAddress(address: string)
 - calculateDistance(origin, destination)
@@ -50,8 +56,10 @@ This document provides a complete index of all files created during Sprint 4.5 f
 ```
 
 #### `/packages/core/src/integrations/google/calendar-service.ts` (11 KB)
+
 **Purpose**: Google Calendar API with OAuth2 integration
 **Key Features**:
+
 - OAuth2 authorization flow with CSRF protection
 - Token exchange and refresh
 - Event creation/update/deletion
@@ -60,6 +68,7 @@ This document provides a complete index of all files created during Sprint 4.5 f
 - Extended properties for order metadata
 
 **Key Methods**:
+
 ```
 - getAuthorizationUrl(state: string)
 - exchangeCodeForToken(code: string)
@@ -73,8 +82,10 @@ This document provides a complete index of all files created during Sprint 4.5 f
 ```
 
 #### `/packages/core/src/integrations/google/zone-visualizer.ts` (9.9 KB)
+
 **Purpose**: Zone visualization and analysis utilities
 **Key Features**:
+
 - GeoJSON polygon generation
 - Point-in-polygon boundary detection
 - Zone coverage statistics (Shoelace formula)
@@ -85,6 +96,7 @@ This document provides a complete index of all files created during Sprint 4.5 f
 - Haversine distance calculations
 
 **Key Methods**:
+
 ```
 - getZonePolygons(zones)
 - isPointInZone(lat, lng, zone)
@@ -97,15 +109,19 @@ This document provides a complete index of all files created during Sprint 4.5 f
 ```
 
 #### `/packages/core/src/integrations/google/index.ts` (710 B)
+
 **Purpose**: Public API exports for Google integration
 **Exports**:
+
 - Service classes: GoogleMapsService, GoogleCalendarService, ZoneVisualizerService
 - Factory functions: createGoogleMapsService(), createGoogleCalendarService(), createZoneVisualizerService()
 - All type definitions and interfaces
 
 #### `/packages/core/src/integrations/google/__tests__/maps-service.test.ts` (6.4 KB)
+
 **Purpose**: Unit tests for Maps Service
 **Test Coverage**:
+
 - Constructor validation
 - Geocoding functionality
 - Distance calculations
@@ -116,8 +132,10 @@ This document provides a complete index of all files created during Sprint 4.5 f
 - Error scenarios
 
 #### `/packages/core/src/integrations/google/__tests__/calendar-service.test.ts` (5.8 KB)
+
 **Purpose**: Unit tests for Calendar Service
 **Test Coverage**:
+
 - Constructor validation
 - OAuth2 URL generation
 - Token exchange
@@ -129,14 +147,17 @@ This document provides a complete index of all files created during Sprint 4.5 f
 ### 2. Checkout Extension API Client
 
 #### `/extensions/checkout-ui/src/api/witylogix-api.ts` (7.2 KB)
+
 **Purpose**: Witylogix API client for checkout extension
 **Key Types**:
+
 - `SlotAvailability` - Delivery slot with capacity info
 - `ZoneRate` - Zone-based delivery rates
 - `Reservation` - Slot reservation confirmation
 - `GeocodingResult` - Address geocoding result
 
 **Key Features**:
+
 - Full API client class with methods
 - Session token from Shopify App Bridge
 - Comprehensive error handling
@@ -144,6 +165,7 @@ This document provides a complete index of all files created during Sprint 4.5 f
 - Factory function for initialization
 
 **Key Methods**:
+
 ```
 - fetchSlots(date, shopDomain)
 - fetchRates(zipcode, shopDomain)
@@ -154,14 +176,18 @@ This document provides a complete index of all files created during Sprint 4.5 f
 ```
 
 #### `/extensions/checkout-ui/package.json` (UPDATED)
+
 **Changes**:
+
 - Added `zod` dependency (^3.22.4)
 
 ### 3. API Route Handlers
 
 #### `/apps/api/src/routes/integrations/shopify-checkout.ts` (11 KB)
+
 **Purpose**: Shopify checkout integration endpoints
 **Endpoints**:
+
 ```
 GET    /slots              - Get available slots for date
 POST   /reserve            - Reserve a time slot
@@ -172,6 +198,7 @@ POST   /webhook/order      - Handle post-checkout order
 ```
 
 **Features**:
+
 - Zod schema validation
 - Database integration
 - Slot capacity management
@@ -180,6 +207,7 @@ POST   /webhook/order      - Handle post-checkout order
 - Comprehensive error handling
 
 **Request/Response Examples**:
+
 ```json
 // GET /slots?date=2024-03-15&shop=myshop.myshopify.com
 Response: { slots: [...] }
@@ -193,8 +221,10 @@ Response: { zone, baseFee, perMile, estimatedDelivery }
 ```
 
 #### `/apps/api/src/routes/integrations/google.ts` (14 KB)
+
 **Purpose**: Google integration endpoints
 **Endpoints**:
+
 ```
 GET    /geocode             - Geocode address with Google Maps
 GET    /distance            - Calculate distance between points
@@ -206,6 +236,7 @@ POST   /zone/validate       - Validate address in service zone
 ```
 
 **Features**:
+
 - Google Maps API integration
 - Google Calendar OAuth2 flow
 - CSRF protection with state tokens
@@ -218,8 +249,10 @@ POST   /zone/validate       - Validate address in service zone
 ### 4. Documentation
 
 #### `/INTEGRATION_GUIDE.md` (626 lines)
+
 **Purpose**: Complete integration and usage guide
 **Contents**:
+
 - Architecture overview
 - Component descriptions
 - Setup instructions (step-by-step)
@@ -235,8 +268,10 @@ POST   /zone/validate       - Validate address in service zone
 - Future enhancements
 
 #### `/SPRINT_4.5_SUMMARY.md` (388 lines)
+
 **Purpose**: Sprint completion summary
 **Contents**:
+
 - Project overview
 - Complete file listing with descriptions
 - Architecture highlights
@@ -249,8 +284,10 @@ POST   /zone/validate       - Validate address in service zone
 - File locations summary
 
 #### `/.env.integration.example` (87 lines)
+
 **Purpose**: Environment variable template
 **Contents**:
+
 - Google Maps configuration
 - Google OAuth2 settings
 - API base URLs
@@ -264,30 +301,34 @@ POST   /zone/validate       - Validate address in service zone
 - Logging configuration
 
 #### `/SPRINT_4.5_FILES.md` (THIS FILE)
+
 **Purpose**: Complete file index and reference
 
 ## Summary Statistics
 
 ### Code Files
-| Category | Count | Lines | Size |
-|----------|-------|-------|------|
-| Core Services | 3 | ~1,800 | 34 KB |
-| Type Definitions | 1 | ~200 | 4.4 KB |
-| Public API | 1 | ~20 | 710 B |
-| Tests | 2 | ~370 | 12 KB |
-| Checkout Client | 1 | ~200 | 7.2 KB |
-| API Routes | 2 | ~600 | 25 KB |
-| **Total** | **10** | **~3,190** | **83 KB** |
+
+| Category         | Count  | Lines      | Size      |
+| ---------------- | ------ | ---------- | --------- |
+| Core Services    | 3      | ~1,800     | 34 KB     |
+| Type Definitions | 1      | ~200       | 4.4 KB    |
+| Public API       | 1      | ~20        | 710 B     |
+| Tests            | 2      | ~370       | 12 KB     |
+| Checkout Client  | 1      | ~200       | 7.2 KB    |
+| API Routes       | 2      | ~600       | 25 KB     |
+| **Total**        | **10** | **~3,190** | **83 KB** |
 
 ### Documentation
-| File | Lines | Size |
-|------|-------|------|
-| INTEGRATION_GUIDE.md | 626 | Comprehensive guide |
-| SPRINT_4.5_SUMMARY.md | 388 | Completion summary |
-| .env.integration.example | 87 | Configuration template |
-| SPRINT_4.5_FILES.md | This file | Index & reference |
+
+| File                     | Lines     | Size                   |
+| ------------------------ | --------- | ---------------------- |
+| INTEGRATION_GUIDE.md     | 626       | Comprehensive guide    |
+| SPRINT_4.5_SUMMARY.md    | 388       | Completion summary     |
+| .env.integration.example | 87        | Configuration template |
+| SPRINT_4.5_FILES.md      | This file | Index & reference      |
 
 ### Test Coverage
+
 - Maps Service: 7 test cases
 - Calendar Service: 8 test cases
 - Total: 15+ test cases
@@ -295,6 +336,7 @@ POST   /zone/validate       - Validate address in service zone
 ## Key Implementations
 
 ### 1. Google Maps Integration
+
 - Address geocoding with component extraction
 - Distance matrix calculations
 - Multi-waypoint routing
@@ -304,6 +346,7 @@ POST   /zone/validate       - Validate address in service zone
 - Haversine distance formula
 
 ### 2. Google Calendar Integration
+
 - Complete OAuth2 flow with CSRF protection
 - Token exchange and refresh
 - Event lifecycle management
@@ -311,6 +354,7 @@ POST   /zone/validate       - Validate address in service zone
 - Automatic token expiration handling
 
 ### 3. Zone Management
+
 - Polygon-based zone definitions
 - GeoJSON export for visualization
 - Coverage statistics and analysis
@@ -319,6 +363,7 @@ POST   /zone/validate       - Validate address in service zone
 - Boundary simplification algorithm
 
 ### 4. API Design
+
 - RESTful endpoints with proper verbs
 - Comprehensive input validation
 - Meaningful HTTP status codes
@@ -364,14 +409,14 @@ api/routes/integrations/
 
 ## Performance Characteristics
 
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Geocoding | 100-500ms | Cached for 1 hour |
-| Distance | 100-500ms | Cached for 1 hour |
-| Zone Detection | 1-10ms | In-memory ray casting |
-| Nearest Zone | 10-50ms | Haversine calculations |
-| Calendar Sync | 1-5s per order | API rate limited |
-| Token Refresh | 200-500ms | Automatic when expired |
+| Operation      | Time           | Notes                  |
+| -------------- | -------------- | ---------------------- |
+| Geocoding      | 100-500ms      | Cached for 1 hour      |
+| Distance       | 100-500ms      | Cached for 1 hour      |
+| Zone Detection | 1-10ms         | In-memory ray casting  |
+| Nearest Zone   | 10-50ms        | Haversine calculations |
+| Calendar Sync  | 1-5s per order | API rate limited       |
+| Token Refresh  | 200-500ms      | Automatic when expired |
 
 ## Security Features
 
@@ -387,12 +432,14 @@ api/routes/integrations/
 ## Testing
 
 Run tests with:
+
 ```bash
 npm run test -- packages/core/src/integrations/google
 ```
 
 Test framework: Vitest
 Coverage includes:
+
 - Service initialization
 - API calls and responses
 - Input validation

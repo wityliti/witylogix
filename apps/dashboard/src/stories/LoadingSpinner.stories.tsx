@@ -168,7 +168,9 @@ export const InlineWithText: Story = {
     <div className="space-y-4 max-w-md">
       <div className="flex items-center gap-2">
         <LoadingSpinner size="sm" />
-        <span className="text-sm text-wl-text-secondary">Loading results...</span>
+        <span className="text-sm text-wl-text-secondary">
+          Loading results...
+        </span>
       </div>
 
       <div className="flex items-center gap-2">

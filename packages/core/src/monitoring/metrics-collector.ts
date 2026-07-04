@@ -68,7 +68,7 @@ export class MetricsCollector {
   incrementCounter(
     name: string,
     value: number = 1,
-    labels?: Record<string, string>
+    labels?: Record<string, string>,
   ): void {
     const key = this.makeKey(name, labels);
     this.counters.set(key, (this.counters.get(key) || 0) + value);
@@ -77,11 +77,7 @@ export class MetricsCollector {
   /**
    * Set a gauge value.
    */
-  setGauge(
-    name: string,
-    value: number,
-    labels?: Record<string, string>
-  ): void {
+  setGauge(name: string, value: number, labels?: Record<string, string>): void {
     const key = this.makeKey(name, labels);
     this.gauges.set(key, value);
   }
@@ -92,7 +88,7 @@ export class MetricsCollector {
   recordHistogram(
     name: string,
     value: number,
-    labels?: Record<string, string>
+    labels?: Record<string, string>,
   ): void {
     const key = this.makeKey(name, labels);
     const values = this.histograms.get(key) || [];
@@ -111,7 +107,7 @@ export class MetricsCollector {
   recordSummary(
     name: string,
     value: number,
-    labels?: Record<string, string>
+    labels?: Record<string, string>,
   ): void {
     const key = this.makeKey(name, labels);
     const summary = this.summaries.get(key) || { values: [], sum: 0 };
@@ -283,27 +279,24 @@ export class MetricsCollector {
         const count = sorted.filter((v) => v <= bucketSize).length;
         const bucketLabels = { ...labels, le: `${bucketSize}` };
         lines.push(
-          this.formatPrometheusMetric(`${name}_bucket`, count, bucketLabels)
+          this.formatPrometheusMetric(`${name}_bucket`, count, bucketLabels),
         );
       }
 
       // +Inf bucket
       lines.push(
-        this.formatPrometheusMetric(
-          `${name}_bucket`,
-          values.length,
-          { ...labels, le: "+Inf" }
-        )
+        this.formatPrometheusMetric(`${name}_bucket`, values.length, {
+          ...labels,
+          le: "+Inf",
+        }),
       );
 
       // Count and sum
       const sum = sorted.reduce((a, b) => a + b, 0);
       lines.push(
-        this.formatPrometheusMetric(`${name}_count`, values.length, labels)
+        this.formatPrometheusMetric(`${name}_count`, values.length, labels),
       );
-      lines.push(
-        this.formatPrometheusMetric(`${name}_sum`, sum, labels)
-      );
+      lines.push(this.formatPrometheusMetric(`${name}_sum`, sum, labels));
     }
 
     // Add summary metrics (percentiles)
@@ -322,11 +315,7 @@ export class MetricsCollector {
           quantile: `${percentile}`,
         };
         lines.push(
-          this.formatPrometheusMetric(
-            `${name}`,
-            value,
-            percentileLabels
-          )
+          this.formatPrometheusMetric(`${name}`, value, percentileLabels),
         );
       }
 
@@ -335,15 +324,11 @@ export class MetricsCollector {
         this.formatPrometheusMetric(
           `${name}_count`,
           summary.values.length,
-          labels
-        )
+          labels,
+        ),
       );
       lines.push(
-        this.formatPrometheusMetric(
-          `${name}_sum`,
-          summary.sum,
-          labels
-        )
+        this.formatPrometheusMetric(`${name}_sum`, summary.sum, labels),
       );
     }
 
@@ -433,7 +418,7 @@ export class MetricsCollector {
   private formatPrometheusMetric(
     name: string,
     value: number,
-    labels?: Record<string, string>
+    labels?: Record<string, string>,
   ): string {
     if (!labels || Object.keys(labels).length === 0) {
       return `${name} ${value}`;

@@ -80,21 +80,28 @@ function isShipmentCreate(request: FastifyRequest): boolean {
  * Check if a route is a shipment status update
  */
 function isShipmentStatusUpdate(request: FastifyRequest): boolean {
-  return request.method === "PATCH" && request.url.match(/\/shipments\/\w+\/status/);
+  return (
+    request.method === "PATCH" && request.url.match(/\/shipments\/\w+\/status/)
+  );
 }
 
 /**
  * Check if a route is a driver assignment
  */
 function isDriverAssignment(request: FastifyRequest): boolean {
-  return request.method === "POST" && request.url.match(/\/shipments\/\w+\/assign/);
+  return (
+    request.method === "POST" && request.url.match(/\/shipments\/\w+\/assign/)
+  );
 }
 
 /**
  * Check if a route is a delivery completion
  */
 function isDeliveryCompletion(request: FastifyRequest): boolean {
-  return request.method === "POST" && request.url.match(/\/deliveries\/\w+\/complete/);
+  return (
+    request.method === "POST" &&
+    request.url.match(/\/deliveries\/\w+\/complete/)
+  );
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -106,7 +113,9 @@ function isDeliveryCompletion(request: FastifyRequest): boolean {
  */
 function extractEntityId(request: FastifyRequest): string {
   // Try to find ID in URL params
-  const match = request.url.match(/\/(orders|shipments|deliveries)\/([a-zA-Z0-9_-]+)/);
+  const match = request.url.match(
+    /\/(orders|shipments|deliveries)\/([a-zA-Z0-9_-]+)/,
+  );
   if (match?.[2]) return match[2];
 
   // Try to find ID in request body
@@ -121,7 +130,11 @@ function extractEntityId(request: FastifyRequest): string {
 /**
  * Extract user info from request
  */
-function extractUserInfo(request: FastifyRequest): { userId?: string; shopId?: string; orgId?: string } {
+function extractUserInfo(request: FastifyRequest): {
+  userId?: string;
+  shopId?: string;
+  orgId?: string;
+} {
   const userId = (request.user as any)?.id || (request as any).userId;
   const shopId = (request as any).shopId;
   const orgId = (request as any).orgId;
@@ -155,7 +168,10 @@ function extractEntityData(body: any): Record<string, any> {
 /**
  * Register Fastify hooks for workflow triggers
  */
-export function registerApiHooks(fastify: FastifyInstance, options: ApiHooksOptions): void {
+export function registerApiHooks(
+  fastify: FastifyInstance,
+  options: ApiHooksOptions,
+): void {
   const { registry, logger, timeout = 30000, enabled = true } = options;
 
   if (!enabled) return;
@@ -167,72 +183,75 @@ export function registerApiHooks(fastify: FastifyInstance, options: ApiHooksOpti
    * onAfterHandler hook — triggered after successful API response
    * Checks if any triggers match and executes them
    */
-  fastify.addHook("onResponse", async (request: FastifyRequest, reply: FastifyReply) => {
-    // Only trigger on successful responses (2xx)
-    if (reply.statusCode < 200 || reply.statusCode >= 300) {
-      return;
-    }
-
-    try {
-      const eventType = detectEventType(request);
-      if (!eventType) return;
-
-      const hookContext: ApiHookContext = {
-        request,
-        reply,
-        statusCode: reply.statusCode,
-        requestBody: request.body as Record<string, any>,
-        responseBody: reply.getPayload() as Record<string, any>,
-      };
-
-      // Extract context
-      const entityId = extractEntityId(request);
-      const { userId, shopId, orgId } = extractUserInfo(request);
-      const entity = extractEntityData(hookContext.responseBody);
-
-      if (!entityId || !entity || !shopId) {
+  fastify.addHook(
+    "onResponse",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      // Only trigger on successful responses (2xx)
+      if (reply.statusCode < 200 || reply.statusCode >= 300) {
         return;
       }
 
-      const triggerContext = {
-        eventType,
-        entityId,
-        entity,
-        userId,
-        shopId,
-        orgId,
-        metadata: {
-          sourceRoute: request.url,
-          method: request.method,
+      try {
+        const eventType = detectEventType(request);
+        if (!eventType) return;
+
+        const hookContext: ApiHookContext = {
+          request,
+          reply,
           statusCode: reply.statusCode,
-        },
-      };
+          requestBody: request.body as Record<string, any>,
+          responseBody: reply.getPayload() as Record<string, any>,
+        };
 
-      // Match triggers
-      const matched = await registry.match(eventType, triggerContext);
+        // Extract context
+        const entityId = extractEntityId(request);
+        const { userId, shopId, orgId } = extractUserInfo(request);
+        const entity = extractEntityData(hookContext.responseBody);
 
-      // Execute matched triggers (non-blocking)
-      if (matched.length > 0) {
-        logger?.debug?.(
-          `Matched ${matched.length} triggers for event ${eventType} on entity ${entityId}`,
-        );
+        if (!entityId || !entity || !shopId) {
+          return;
+        }
 
-        // Fire triggers in background
-        setImmediate(async () => {
-          for (const match of matched) {
-            try {
-              await match.execute({ timeout });
-            } catch (error) {
-              logger?.error?.(`Trigger execution failed: ${error}`);
+        const triggerContext = {
+          eventType,
+          entityId,
+          entity,
+          userId,
+          shopId,
+          orgId,
+          metadata: {
+            sourceRoute: request.url,
+            method: request.method,
+            statusCode: reply.statusCode,
+          },
+        };
+
+        // Match triggers
+        const matched = await registry.match(eventType, triggerContext);
+
+        // Execute matched triggers (non-blocking)
+        if (matched.length > 0) {
+          logger?.debug?.(
+            `Matched ${matched.length} triggers for event ${eventType} on entity ${entityId}`,
+          );
+
+          // Fire triggers in background
+          setImmediate(async () => {
+            for (const match of matched) {
+              try {
+                await match.execute({ timeout });
+              } catch (error) {
+                logger?.error?.(`Trigger execution failed: ${error}`);
+              }
             }
-          }
-        });
+          });
+        }
+      } catch (error) {
+        logger?.error?.(`Error in workflow trigger hook: ${error}`);
+        // Never let trigger errors break the API response
       }
-    } catch (error) {
-      logger?.error?.(`Error in workflow trigger hook: ${error}`);
-      // Never let trigger errors break the API response
-    }
-  });
+    },
+  );
 }
 
 /**
@@ -240,7 +259,13 @@ export function registerApiHooks(fastify: FastifyInstance, options: ApiHooksOpti
  */
 function detectEventType(
   request: FastifyRequest,
-): "order.created" | "order.updated" | "shipment.created" | "shipment.status_changed" | "driver.assigned" | null {
+):
+  | "order.created"
+  | "order.updated"
+  | "shipment.created"
+  | "shipment.status_changed"
+  | "driver.assigned"
+  | null {
   if (isOrderCreate(request)) return "order.created";
   if (isOrderUpdate(request)) return "order.updated";
   if (isShipmentCreate(request)) return "shipment.created";

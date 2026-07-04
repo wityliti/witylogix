@@ -137,7 +137,10 @@ const store = new RateLimitStore();
  * Create a rate limiter handler for a route
  */
 export function createRateLimiter(config: RateLimitConfig) {
-  return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  return async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<void> => {
     // Skip if configured
     if (config.skip && config.skip(request)) {
       return;

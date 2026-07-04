@@ -121,7 +121,10 @@ describe("Campaigns Routes", () => {
       mockRequest.query = {};
 
       const page = Math.max(1, parseInt(String(mockRequest.query.page)) || 1);
-      const limit = Math.min(100, Math.max(1, parseInt(String(mockRequest.query.limit)) || 20));
+      const limit = Math.min(
+        100,
+        Math.max(1, parseInt(String(mockRequest.query.limit)) || 20),
+      );
 
       expect(page).toBe(1);
       expect(limit).toBe(20);
@@ -130,7 +133,10 @@ describe("Campaigns Routes", () => {
     it("should enforce maximum limit of 100", () => {
       mockRequest.query = { limit: 150 };
 
-      const limit = Math.min(100, Math.max(1, parseInt(String(mockRequest.query.limit)) || 20));
+      const limit = Math.min(
+        100,
+        Math.max(1, parseInt(String(mockRequest.query.limit)) || 20),
+      );
       expect(limit).toBe(100);
     });
 
@@ -284,7 +290,9 @@ describe("Campaigns Routes", () => {
         created_at: new Date(),
       };
 
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ id: "template-123" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { id: "template-123" },
+      ]);
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([newCampaign]);
 
       mockRequest.body = {
@@ -425,7 +433,9 @@ describe("Campaigns Routes", () => {
         scheduled_at: new Date("2026-04-01"),
       });
 
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SCHEDULED" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SCHEDULED" },
+      ]);
 
       mockRequest.body = { scheduledAt: "2026-05-01T10:00:00Z" };
       mockRequest.params = { id: "campaign-123" };
@@ -434,7 +444,9 @@ describe("Campaigns Routes", () => {
     });
 
     it("should reject update to SENDING campaign", () => {
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SENDING" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SENDING" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
       mockRequest.body = { name: "New Name" };
@@ -524,7 +536,9 @@ describe("Campaigns Routes", () => {
         scheduled_at: new Date("2026-04-01"),
       });
 
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SCHEDULED" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SCHEDULED" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
 
@@ -532,7 +546,9 @@ describe("Campaigns Routes", () => {
     });
 
     it("should reject sending campaign already SENDING", () => {
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SENDING" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SENDING" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
 
@@ -548,7 +564,9 @@ describe("Campaigns Routes", () => {
     });
 
     it("should reject sending PAUSED campaign directly", () => {
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "PAUSED" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "PAUSED" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
 
@@ -589,7 +607,9 @@ describe("Campaigns Routes", () => {
         status: "SENDING",
       });
 
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SENDING" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SENDING" },
+      ]);
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
         { ...campaign, status: "PAUSED" },
       ]);
@@ -604,7 +624,9 @@ describe("Campaigns Routes", () => {
         status: "SCHEDULED",
       });
 
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SCHEDULED" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SCHEDULED" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
 
@@ -653,7 +675,9 @@ describe("Campaigns Routes", () => {
         paused_at: new Date(),
       });
 
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "PAUSED" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "PAUSED" },
+      ]);
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
         { ...campaign, status: "SENDING", paused_at: null },
       ]);
@@ -672,7 +696,9 @@ describe("Campaigns Routes", () => {
     });
 
     it("should reject resuming SENDING campaign", () => {
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SENDING" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SENDING" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
 
@@ -716,13 +742,18 @@ describe("Campaigns Routes", () => {
       mockRequest.params = { id: "campaign-123" };
       mockRequest.shopId = "shop-789";
 
-      await mockTenantDb.$queryRawUnsafe(`SELECT status FROM campaigns WHERE id = $1`, "campaign-123");
+      await mockTenantDb.$queryRawUnsafe(
+        `SELECT status FROM campaigns WHERE id = $1`,
+        "campaign-123",
+      );
 
       expect(mockTenantDb.$queryRawUnsafe).toHaveBeenCalled();
     });
 
     it("should reject deleting SCHEDULED campaign", () => {
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SCHEDULED" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SCHEDULED" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
 
@@ -730,7 +761,9 @@ describe("Campaigns Routes", () => {
     });
 
     it("should reject deleting SENDING campaign", () => {
-      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ status: "SENDING" }]);
+      mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([
+        { status: "SENDING" },
+      ]);
 
       mockRequest.params = { id: "campaign-123" };
 
@@ -762,7 +795,10 @@ describe("Campaigns Routes", () => {
 
       mockRequest.params = { id: "campaign-123" };
 
-      await mockTenantDb.$queryRawUnsafe(`DELETE FROM campaign_events WHERE campaign_id = $1`, "campaign-123");
+      await mockTenantDb.$queryRawUnsafe(
+        `DELETE FROM campaign_events WHERE campaign_id = $1`,
+        "campaign-123",
+      );
 
       expect(mockTenantDb.$queryRawUnsafe).toHaveBeenCalled();
     });
@@ -775,7 +811,10 @@ describe("Campaigns Routes", () => {
 
       mockRequest.params = { id: "campaign-123" };
 
-      await mockTenantDb.$queryRawUnsafe(`DELETE FROM campaign_recipients WHERE campaign_id = $1`, "campaign-123");
+      await mockTenantDb.$queryRawUnsafe(
+        `DELETE FROM campaign_recipients WHERE campaign_id = $1`,
+        "campaign-123",
+      );
 
       expect(mockTenantDb.$queryRawUnsafe).toHaveBeenCalled();
     });
@@ -843,7 +882,10 @@ describe("Campaigns Routes", () => {
       mockRequest.query = {};
 
       const page = Math.max(1, parseInt(String(mockRequest.query.page)) || 1);
-      const limit = Math.min(100, Math.max(1, parseInt(String(mockRequest.query.limit)) || 20));
+      const limit = Math.min(
+        100,
+        Math.max(1, parseInt(String(mockRequest.query.limit)) || 20),
+      );
 
       expect(page).toBe(1);
       expect(limit).toBe(20);
@@ -852,7 +894,10 @@ describe("Campaigns Routes", () => {
     it("should enforce maximum limit of 100", () => {
       mockRequest.query = { limit: 150 };
 
-      const limit = Math.min(100, Math.max(1, parseInt(String(mockRequest.query.limit)) || 20));
+      const limit = Math.min(
+        100,
+        Math.max(1, parseInt(String(mockRequest.query.limit)) || 20),
+      );
       expect(limit).toBe(100);
     });
   });
@@ -919,7 +964,10 @@ describe("Campaigns Routes", () => {
       mockRequest.query = {};
 
       const page = Math.max(1, parseInt(String(mockRequest.query.page)) || 1);
-      const limit = Math.min(200, Math.max(1, parseInt(String(mockRequest.query.limit)) || 50));
+      const limit = Math.min(
+        200,
+        Math.max(1, parseInt(String(mockRequest.query.limit)) || 50),
+      );
 
       expect(page).toBe(1);
       expect(limit).toBe(50);
@@ -928,7 +976,10 @@ describe("Campaigns Routes", () => {
     it("should enforce maximum limit of 200", () => {
       mockRequest.query = { limit: 250 };
 
-      const limit = Math.min(200, Math.max(1, parseInt(String(mockRequest.query.limit)) || 50));
+      const limit = Math.min(
+        200,
+        Math.max(1, parseInt(String(mockRequest.query.limit)) || 50),
+      );
       expect(limit).toBe(200);
     });
 

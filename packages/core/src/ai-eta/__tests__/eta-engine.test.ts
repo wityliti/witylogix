@@ -4,11 +4,11 @@
  * Tests for the ML-powered traffic-aware ETA prediction engine
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ETAEngine } from '../eta-engine.js';
-import type { HistoricalRoute, TrafficZone } from '../types.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { ETAEngine } from "../eta-engine.js";
+import type { HistoricalRoute, TrafficZone } from "../types.js";
 
-describe('ETAEngine', () => {
+describe("ETAEngine", () => {
   let engine: ETAEngine;
 
   beforeEach(() => {
@@ -20,12 +20,12 @@ describe('ETAEngine', () => {
     });
   });
 
-  it('should predict ETA for a delivery', () => {
+  it("should predict ETA for a delivery", () => {
     const prediction = engine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
     expect(prediction).toBeDefined();
@@ -36,12 +36,12 @@ describe('ETAEngine', () => {
     expect(prediction.confidence).toBeLessThanOrEqual(1);
   });
 
-  it('should generate confidence intervals', () => {
+  it("should generate confidence intervals", () => {
     const prediction = engine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
     // Verify interval ordering
@@ -53,7 +53,7 @@ describe('ETAEngine', () => {
     );
   });
 
-  it('should adjust for time of day', () => {
+  it("should adjust for time of day", () => {
     // Use time-of-day model only to isolate the signal
     const timeOnlyEngine = new ETAEngine({
       enableTimeOfDay: true,
@@ -67,7 +67,7 @@ describe('ETAEngine', () => {
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T07:00:00'),
+      departureTime: new Date("2026-03-15T07:00:00"),
     });
 
     // Night time (11 PM) — multiplier 0.85
@@ -75,22 +75,26 @@ describe('ETAEngine', () => {
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T23:00:00'),
+      departureTime: new Date("2026-03-15T23:00:00"),
     });
 
     // Rush hour (7am, multiplier 1.4) should have longer travel duration than night (11pm, multiplier 0.85)
-    const rushDuration = rushPrediction.prediction.expected.getTime() - new Date('2026-03-15T07:00:00').getTime();
-    const nightDuration = nightPrediction.prediction.expected.getTime() - new Date('2026-03-15T23:00:00').getTime();
+    const rushDuration =
+      rushPrediction.prediction.expected.getTime() -
+      new Date("2026-03-15T07:00:00").getTime();
+    const nightDuration =
+      nightPrediction.prediction.expected.getTime() -
+      new Date("2026-03-15T23:00:00").getTime();
     expect(rushDuration).toBeGreaterThan(nightDuration);
   });
 
-  it('should adjust for distance', () => {
+  it("should adjust for distance", () => {
     // Short distance
     const shortPrediction = engine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
-      destination: { lat: 40.7150, lng: -74.0050 },
+      destination: { lat: 40.715, lng: -74.005 },
       distanceKm: 0.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
     // Long distance
@@ -98,7 +102,7 @@ describe('ETAEngine', () => {
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.8, lng: -73.9 },
       distanceKm: 15,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
     // Longer distance should have longer ETA
@@ -107,34 +111,34 @@ describe('ETAEngine', () => {
     );
   });
 
-  it('should estimate traffic condition', () => {
+  it("should estimate traffic condition", () => {
     const prediction = engine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
-    expect(['light', 'moderate', 'heavy', 'unknown']).toContain(
+    expect(["light", "moderate", "heavy", "unknown"]).toContain(
       prediction.trafficCondition,
     );
   });
 
-  it('should load historical data', () => {
+  it("should load historical data", () => {
     const historicalData: HistoricalRoute[] = [
       {
-        routeId: 'route_1',
+        routeId: "route_1",
         origin: { lat: 40.7128, lng: -74.006 },
         destination: { lat: 40.758, lng: -73.9855 },
         distanceKm: 5.5,
-        departureTime: new Date('2026-03-10T10:00:00'),
-        estimatedArrival: new Date('2026-03-10T10:25:00'),
-        actualArrival: new Date('2026-03-10T10:22:00'),
+        departureTime: new Date("2026-03-10T10:00:00"),
+        estimatedArrival: new Date("2026-03-10T10:25:00"),
+        actualArrival: new Date("2026-03-10T10:22:00"),
         dayOfWeek: 2,
         hourOfDay: 10,
-        trafficCondition: 'moderate',
-        zoneType: 'urban',
-        driverId: 'driver_1',
+        trafficCondition: "moderate",
+        zoneType: "urban",
+        driverId: "driver_1",
         success: true,
       },
     ];
@@ -145,19 +149,19 @@ describe('ETAEngine', () => {
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
     expect(prediction).toBeDefined();
     expect(prediction.modelsConsidered.length).toBeGreaterThan(0);
   });
 
-  it('should register traffic zones', () => {
+  it("should register traffic zones", () => {
     const zones: TrafficZone[] = [
       {
-        zoneId: 'zone_1',
-        zoneName: 'Downtown',
-        zoneType: 'urban',
+        zoneId: "zone_1",
+        zoneName: "Downtown",
+        zoneType: "urban",
         center: { lat: 40.7128, lng: -74.006 },
         boundingBox: {
           ne: { lat: 40.8, lng: -73.9 },
@@ -174,86 +178,83 @@ describe('ETAEngine', () => {
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
-      zoneId: 'zone_1',
+      departureTime: new Date("2026-03-15T10:00:00"),
+      zoneId: "zone_1",
     });
 
     expect(prediction).toBeDefined();
   });
 
-  it('should record actual deliveries for model training', () => {
+  it("should record actual deliveries for model training", () => {
     const prediction = engine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
-      orderId: 'order_1',
+      departureTime: new Date("2026-03-15T10:00:00"),
+      orderId: "order_1",
     });
 
-    const actualTime = new Date('2026-03-15T10:18:00');
+    const actualTime = new Date("2026-03-15T10:18:00");
     engine.recordActualDelivery(prediction, actualTime);
 
     // Should not throw
-    expect(prediction.orderId).toBe('order_1');
+    expect(prediction.orderId).toBe("order_1");
   });
 
-  it('should get model accuracy metrics', () => {
+  it("should get model accuracy metrics", () => {
     // Record some predictions
     const prediction = engine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
-    engine.recordActualDelivery(
-      prediction,
-      new Date('2026-03-15T10:18:00'),
-    );
+    engine.recordActualDelivery(prediction, new Date("2026-03-15T10:18:00"));
 
     const accuracies = engine.getModelAccuracy();
     expect(Array.isArray(accuracies)).toBe(true);
   });
 
-  it('should get specific model accuracy', () => {
+  it("should get specific model accuracy", () => {
     engine.recordActualDelivery(
       engine.predictETA({
         origin: { lat: 40.7128, lng: -74.006 },
         destination: { lat: 40.758, lng: -73.9855 },
         distanceKm: 5.5,
-        departureTime: new Date('2026-03-15T10:00:00'),
+        departureTime: new Date("2026-03-15T10:00:00"),
       }),
-      new Date('2026-03-15T10:18:00'),
+      new Date("2026-03-15T10:18:00"),
     );
 
-    const accuracy = engine.getModelAccuracy('TimeOfDayModel');
+    const accuracy = engine.getModelAccuracy("TimeOfDayModel");
     expect(Array.isArray(accuracy)).toBe(true);
   });
 
-  it('should return statistics', () => {
+  it("should return statistics", () => {
     const stats = engine.getStatistics();
 
-    expect(stats).toHaveProperty('registeredModels');
-    expect(stats).toHaveProperty('enabledModels');
-    expect(stats).toHaveProperty('predictionsRecorded');
-    expect(stats).toHaveProperty('averageAccuracy');
+    expect(stats).toHaveProperty("registeredModels");
+    expect(stats).toHaveProperty("enabledModels");
+    expect(stats).toHaveProperty("predictionsRecorded");
+    expect(stats).toHaveProperty("averageAccuracy");
     expect(stats.registeredModels).toBeGreaterThan(0);
   });
 
-  it('should support batch predictions', () => {
+  it("should support batch predictions", () => {
     const response = engine.predictBatch({
       deliveries: [
         {
-          orderId: 'order_1',
+          orderId: "order_1",
           origin: { lat: 40.7128, lng: -74.006 },
           destination: { lat: 40.758, lng: -73.9855 },
-          departureTime: new Date('2026-03-15T10:00:00'),
+          departureTime: new Date("2026-03-15T10:00:00"),
         },
         {
-          orderId: 'order_2',
+          orderId: "order_2",
           origin: { lat: 40.7, lng: -73.95 },
           destination: { lat: 40.75, lng: -73.9 },
-          departureTime: new Date('2026-03-15T10:30:00'),
+          departureTime: new Date("2026-03-15T10:30:00"),
         },
       ],
     });
@@ -262,7 +263,7 @@ describe('ETAEngine', () => {
     expect(response.processingTimeMs).toBeGreaterThanOrEqual(0);
   });
 
-  it('should allow disabling models', () => {
+  it("should allow disabling models", () => {
     const limitedEngine = new ETAEngine({
       enableTimeOfDay: true,
       enableDistance: true,
@@ -274,13 +275,13 @@ describe('ETAEngine', () => {
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T10:00:00'),
+      departureTime: new Date("2026-03-15T10:00:00"),
     });
 
     expect(prediction.modelsConsidered.length).toBeLessThanOrEqual(2);
   });
 
-  it('should reset to defaults', () => {
+  it("should reset to defaults", () => {
     engine.reset();
 
     const stats = engine.getStatistics();

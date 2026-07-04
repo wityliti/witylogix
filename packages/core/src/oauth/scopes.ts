@@ -11,33 +11,33 @@
  */
 
 export const OAUTH_SCOPES = {
-  'shipments:read': 'Read shipments, their status, and activity flow stage',
-  'orders:read': 'Read orders, line items, and current fulfillment state',
-  'drivers:read': 'Read driver profiles and availability',
-  'routes:read': 'Read planned and active delivery routes',
-  'customers:read': 'Read customer contact and address information',
-  'operations:read': 'Read activity flow configurations',
+  "shipments:read": "Read shipments, their status, and activity flow stage",
+  "orders:read": "Read orders, line items, and current fulfillment state",
+  "drivers:read": "Read driver profiles and availability",
+  "routes:read": "Read planned and active delivery routes",
+  "customers:read": "Read customer contact and address information",
+  "operations:read": "Read activity flow configurations",
 
-  'shipments:write': 'Create and update shipments',
-  'orders:write': 'Create and update orders',
-  'drivers:write': 'Create and update drivers',
-  'routes:write': 'Create and update delivery routes',
-  'operations:write': 'Create and update activity flow configurations',
+  "shipments:write": "Create and update shipments",
+  "orders:write": "Create and update orders",
+  "drivers:write": "Create and update drivers",
+  "routes:write": "Create and update delivery routes",
+  "operations:write": "Create and update activity flow configurations",
 
   // State transitions — separate from :write to allow read-only apps
   // that can advance stages without editing entity fields.
-  'shipments:transition': 'Advance shipments through activity flow stages',
-  'orders:transition': 'Advance orders through activity flow stages',
+  "shipments:transition": "Advance shipments through activity flow stages",
+  "orders:transition": "Advance orders through activity flow stages",
 
-  'webhooks:manage': 'Register, update, and remove webhook subscriptions',
-} as const
+  "webhooks:manage": "Register, update, and remove webhook subscriptions",
+} as const;
 
-export type OAuthScope = keyof typeof OAUTH_SCOPES
+export type OAuthScope = keyof typeof OAUTH_SCOPES;
 
-export const ALL_OAUTH_SCOPES = Object.keys(OAUTH_SCOPES) as OAuthScope[]
+export const ALL_OAUTH_SCOPES = Object.keys(OAUTH_SCOPES) as OAuthScope[];
 
-export function isValidScope (scope: string): scope is OAuthScope {
-  return scope in OAUTH_SCOPES
+export function isValidScope(scope: string): scope is OAuthScope {
+  return scope in OAUTH_SCOPES;
 }
 
 /**
@@ -46,17 +46,20 @@ export function isValidScope (scope: string): scope is OAuthScope {
  * client wasn't approved for) and by /oauth/token (to make sure the
  * issued access token is a subset of the install's scopes).
  */
-export function subtractScopes (requested: string[], allowed: string[]): string[] {
-  const allowedSet = new Set(allowed)
-  return requested.filter((s) => !allowedSet.has(s))
+export function subtractScopes(
+  requested: string[],
+  allowed: string[],
+): string[] {
+  const allowedSet = new Set(allowed);
+  return requested.filter((s) => !allowedSet.has(s));
 }
 
 /**
  * True iff every scope in `required` is present in `granted`.
  * Used by the API middleware for per-route scope enforcement.
  */
-export function hasScopes (granted: string[], required: string[]): boolean {
-  if (required.length === 0) return true
-  const grantedSet = new Set(granted)
-  return required.every((s) => grantedSet.has(s))
+export function hasScopes(granted: string[], required: string[]): boolean {
+  if (required.length === 0) return true;
+  const grantedSet = new Set(granted);
+  return required.every((s) => grantedSet.has(s));
 }

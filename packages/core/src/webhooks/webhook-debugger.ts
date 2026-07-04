@@ -4,7 +4,11 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import type { WebhookDelivery, WebhookEventType, DeliveryStatus } from "./types";
+import type {
+  WebhookDelivery,
+  WebhookEventType,
+  DeliveryStatus,
+} from "./types";
 
 /**
  * Delivery entry with full request/response details
@@ -75,7 +79,7 @@ export class WebhookDebugger {
     },
     status: DeliveryStatus,
     error?: string,
-    nextRetryAt?: Date
+    nextRetryAt?: Date,
   ): DeliveryRecord {
     const record: DeliveryRecord = {
       id: uuidv4(),
@@ -112,10 +116,7 @@ export class WebhookDebugger {
   /**
    * Get delivery history for an endpoint
    */
-  getEndpointHistory(
-    endpointId: string,
-    limit: number = 50
-  ): DeliveryRecord[] {
+  getEndpointHistory(endpointId: string, limit: number = 50): DeliveryRecord[] {
     const deliveries = this.deliveryStore.get(endpointId) || [];
     return deliveries.slice(0, limit);
   }
@@ -142,7 +143,7 @@ export class WebhookDebugger {
     }
 
     return timeline.sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
     );
   }
 
@@ -198,7 +199,9 @@ export class WebhookDebugger {
   } {
     const deliveries = this.deliveryStore.get(endpointId) || [];
 
-    const successCount = deliveries.filter((d) => d.status === "delivered").length;
+    const successCount = deliveries.filter(
+      (d) => d.status === "delivered",
+    ).length;
     const failureCount = deliveries.filter((d) => d.status === "failed").length;
     const totalDeliveries = deliveries.length;
 
@@ -210,7 +213,7 @@ export class WebhookDebugger {
         : 0;
 
     const successfulDeliveries = deliveries.filter(
-      (d) => d.status === "delivered"
+      (d) => d.status === "delivered",
     );
     const avgAttemptsToSuccess =
       successfulDeliveries.length > 0
@@ -239,7 +242,7 @@ export class WebhookDebugger {
    */
   getResponseTimeHistogram(
     endpointId: string,
-    buckets: number = 5
+    buckets: number = 5,
   ): {
     bucket: string;
     count: number;
@@ -260,7 +263,7 @@ export class WebhookDebugger {
     deliveries.forEach((delivery) => {
       const bucketIndex = Math.min(
         Math.floor((delivery.durationMs - min) / bucketSize),
-        buckets - 1
+        buckets - 1,
       );
       histogram[bucketIndex]++;
     });
@@ -296,7 +299,8 @@ export class WebhookDebugger {
     }
     if (statusCode && statusCode >= 500) return "server_error";
     if (error.includes("econnrefused")) return "connection_refused";
-    if (error.includes("enotfound") || error.includes("dns")) return "dns_error";
+    if (error.includes("enotfound") || error.includes("dns"))
+      return "dns_error";
     if (error.includes("econnreset")) return "connection_reset";
 
     return "unknown_error";
@@ -305,16 +309,14 @@ export class WebhookDebugger {
   /**
    * Filter deliveries by criteria
    */
-  filterDeliveries(
-    criteria: {
-      endpointId?: string;
-      eventType?: WebhookEventType;
-      status?: DeliveryStatus;
-      startDate?: Date;
-      endDate?: Date;
-      errorOnly?: boolean;
-    }
-  ): DeliveryRecord[] {
+  filterDeliveries(criteria: {
+    endpointId?: string;
+    eventType?: WebhookEventType;
+    status?: DeliveryStatus;
+    startDate?: Date;
+    endDate?: Date;
+    errorOnly?: boolean;
+  }): DeliveryRecord[] {
     let results: DeliveryRecord[] = [];
 
     if (criteria.endpointId) {
@@ -326,16 +328,10 @@ export class WebhookDebugger {
     }
 
     return results.filter((delivery) => {
-      if (
-        criteria.eventType &&
-        delivery.eventType !== criteria.eventType
-      )
+      if (criteria.eventType && delivery.eventType !== criteria.eventType)
         return false;
       if (criteria.status && delivery.status !== criteria.status) return false;
-      if (
-        criteria.startDate &&
-        delivery.timestamp < criteria.startDate
-      )
+      if (criteria.startDate && delivery.timestamp < criteria.startDate)
         return false;
       if (criteria.endDate && delivery.timestamp > criteria.endDate)
         return false;

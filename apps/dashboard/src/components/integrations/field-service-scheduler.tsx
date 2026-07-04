@@ -15,7 +15,12 @@ import {
 } from "lucide-react";
 
 type AvailabilityStatus = "available" | "partial" | "busy";
-type JobType = "maintenance" | "installation" | "repair" | "inspection" | "followup";
+type JobType =
+  | "maintenance"
+  | "installation"
+  | "repair"
+  | "inspection"
+  | "followup";
 
 interface TimeSlot {
   id: string;
@@ -103,9 +108,27 @@ const defaultTechnicians: TechnicianAvailability[] = [
     availableSlots: 2,
     totalCapacity: 4,
   },
-  { technician: "Sarah Wilson", status: "available", bookedSlots: 1, availableSlots: 3, totalCapacity: 4 },
-  { technician: "Mike Chen", status: "partial", bookedSlots: 1, availableSlots: 2, totalCapacity: 3 },
-  { technician: "Lisa Martinez", status: "available", bookedSlots: 0, availableSlots: 4, totalCapacity: 4 },
+  {
+    technician: "Sarah Wilson",
+    status: "available",
+    bookedSlots: 1,
+    availableSlots: 3,
+    totalCapacity: 4,
+  },
+  {
+    technician: "Mike Chen",
+    status: "partial",
+    bookedSlots: 1,
+    availableSlots: 2,
+    totalCapacity: 3,
+  },
+  {
+    technician: "Lisa Martinez",
+    status: "available",
+    bookedSlots: 0,
+    availableSlots: 4,
+    totalCapacity: 4,
+  },
 ];
 
 export function FieldServiceScheduler({
@@ -115,7 +138,9 @@ export function FieldServiceScheduler({
   onQuickAssign,
   className,
 }: FieldServiceSchedulerProps) {
-  const [hoveredAppointment, setHoveredAppointment] = useState<string | null>(null);
+  const [hoveredAppointment, setHoveredAppointment] = useState<string | null>(
+    null,
+  );
   const [weekOffset, setWeekOffset] = useState(0);
 
   const currentWeekStart = useMemo(() => {
@@ -137,7 +162,18 @@ export function FieldServiceScheduler({
     return days;
   }, [currentWeekStart]);
 
-  const timeSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+  const timeSlots = [
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+  ];
 
   const getAppointmentsForTechAndDay = (tech: string, day: Date) => {
     return appointments.filter((apt) => {
@@ -180,15 +216,19 @@ export function FieldServiceScheduler({
     <div
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
       <div className="p-4 border-b border-wl-border-subtle bg-wl-bg-overlay">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base font-semibold text-wl-text-primary">Weekly Schedule</h3>
-            <p className="text-xs text-wl-text-secondary mt-1">Technician assignments and availability</p>
+            <h3 className="text-base font-semibold text-wl-text-primary">
+              Weekly Schedule
+            </h3>
+            <p className="text-xs text-wl-text-secondary mt-1">
+              Technician assignments and availability
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -203,7 +243,10 @@ export function FieldServiceScheduler({
             </Button>
 
             <span className="text-sm font-medium text-wl-text-primary px-3">
-              {currentWeekStart.toLocaleDateString()} - {new Date(currentWeekStart.getTime() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+              {currentWeekStart.toLocaleDateString()} -{" "}
+              {new Date(
+                currentWeekStart.getTime() + 4 * 24 * 60 * 60 * 1000,
+              ).toLocaleDateString()}
             </span>
 
             <Button
@@ -220,7 +263,9 @@ export function FieldServiceScheduler({
 
         {/* Technician availability bar */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-wl-text-secondary uppercase">Technician Availability</p>
+          <p className="text-xs font-semibold text-wl-text-secondary uppercase">
+            Technician Availability
+          </p>
           <div className="grid grid-cols-4 gap-2">
             {technicians.map((tech) => (
               <div
@@ -231,11 +276,13 @@ export function FieldServiceScheduler({
                     ? "border-wl-success-400/20 bg-wl-success-bg/20"
                     : tech.status === "partial"
                       ? "border-wl-warning-400/20 bg-wl-warning-bg/20"
-                      : "border-wl-danger-400/20 bg-wl-danger-bg/20"
+                      : "border-wl-danger-400/20 bg-wl-danger-bg/20",
                 )}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-wl-text-primary">{tech.technician}</span>
+                  <span className="font-semibold text-wl-text-primary">
+                    {tech.technician}
+                  </span>
                   {tech.status === "available" && (
                     <CheckCircle2 className="w-3 h-3 text-wl-success-400" />
                   )}
@@ -257,9 +304,12 @@ export function FieldServiceScheduler({
         <div className="px-4 py-3 bg-wl-warning-bg/30 border-b border-wl-warning-400/20 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-wl-warning-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-wl-warning-400">Time conflicts detected</p>
+            <p className="text-sm font-semibold text-wl-warning-400">
+              Time conflicts detected
+            </p>
             <p className="text-xs text-wl-warning-300">
-              {conflictIds.length} appointment(s) have overlapping times. Reschedule to resolve.
+              {conflictIds.length} appointment(s) have overlapping times.
+              Reschedule to resolve.
             </p>
           </div>
         </div>
@@ -278,8 +328,12 @@ export function FieldServiceScheduler({
                   key={day.toISOString()}
                   className="px-4 py-3 text-center text-xs font-semibold text-wl-text-secondary border-l border-wl-border-subtle"
                 >
-                  <div>{day.toLocaleDateString("en-US", { weekday: "short" })}</div>
-                  <div className="text-wl-text-secondary mt-1">{day.getDate()}</div>
+                  <div>
+                    {day.toLocaleDateString("en-US", { weekday: "short" })}
+                  </div>
+                  <div className="text-wl-text-secondary mt-1">
+                    {day.getDate()}
+                  </div>
                 </th>
               ))}
             </tr>
@@ -299,37 +353,45 @@ export function FieldServiceScheduler({
                   >
                     <div className="min-h-12 space-y-1">
                       {technicians.map((tech) => {
-                        const dayAppts = getAppointmentsForTechAndDay(tech.technician, day);
+                        const dayAppts = getAppointmentsForTechAndDay(
+                          tech.technician,
+                          day,
+                        );
                         const techApts = dayAppts.filter((apt) => {
                           const [h] = apt.startTime.split(":").map(Number);
                           return h === parseInt(slot);
                         });
 
-                        return techApts.length > 0 ? (
-                          techApts.map((apt) => (
-                            <div
-                              key={apt.id}
-                              onMouseEnter={() => setHoveredAppointment(apt.id)}
-                              onMouseLeave={() => setHoveredAppointment(null)}
-                              className={cn(
-                                "p-1.5 rounded text-xs cursor-move transition-all duration-200 group",
-                                "flex items-center gap-1",
-                                conflictIds.includes(apt.id)
-                                  ? "bg-wl-danger-bg/50 border border-wl-danger-400/50 text-wl-danger-400"
-                                  : "text-white border border-transparent hover:border-current/50",
-                                hoveredAppointment === apt.id && "shadow-md ring-1 ring-wl-primary-400"
-                              )}
-                              style={{
-                                backgroundColor: conflictIds.includes(apt.id)
-                                  ? undefined
-                                  : jobTypeColors[apt.jobType],
-                              }}
-                            >
-                              <GripVertical className="w-3 h-3 opacity-0 group-hover:opacity-100" />
-                              <span className="font-medium truncate flex-1">{apt.description}</span>
-                            </div>
-                          ))
-                        ) : null;
+                        return techApts.length > 0
+                          ? techApts.map((apt) => (
+                              <div
+                                key={apt.id}
+                                onMouseEnter={() =>
+                                  setHoveredAppointment(apt.id)
+                                }
+                                onMouseLeave={() => setHoveredAppointment(null)}
+                                className={cn(
+                                  "p-1.5 rounded text-xs cursor-move transition-all duration-200 group",
+                                  "flex items-center gap-1",
+                                  conflictIds.includes(apt.id)
+                                    ? "bg-wl-danger-bg/50 border border-wl-danger-400/50 text-wl-danger-400"
+                                    : "text-white border border-transparent hover:border-current/50",
+                                  hoveredAppointment === apt.id &&
+                                    "shadow-md ring-1 ring-wl-primary-400",
+                                )}
+                                style={{
+                                  backgroundColor: conflictIds.includes(apt.id)
+                                    ? undefined
+                                    : jobTypeColors[apt.jobType],
+                                }}
+                              >
+                                <GripVertical className="w-3 h-3 opacity-0 group-hover:opacity-100" />
+                                <span className="font-medium truncate flex-1">
+                                  {apt.description}
+                                </span>
+                              </div>
+                            ))
+                          : null;
                       })}
                     </div>
                   </td>
@@ -350,12 +412,18 @@ export function FieldServiceScheduler({
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: color }}
                 />
-                <span className="text-xs text-wl-text-secondary capitalize">{type}</span>
+                <span className="text-xs text-wl-text-secondary capitalize">
+                  {type}
+                </span>
               </div>
             ))}
           </div>
 
-          <Button variant="secondary" size="sm" className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-2"
+          >
             <Clock className="w-4 h-4" />
             Quick Assign
           </Button>

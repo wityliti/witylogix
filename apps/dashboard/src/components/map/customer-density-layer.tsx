@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
-import type { Feature, Point } from 'geojson';
-import { useWLMap } from './wl-map-context';
+import { useEffect, useRef } from "react";
+import type { GeoJSONSource, MapLayerMouseEvent } from "maplibre-gl";
+import type { Feature, Point } from "geojson";
+import { useWLMap } from "./wl-map-context";
 
 export interface CustomerLocation {
   id: string;
@@ -14,7 +14,7 @@ export interface CustomerLocation {
   country: string;
   totalOrders: number;
   totalSpent: number;
-  tier: 'standard' | 'premium' | 'enterprise';
+  tier: "standard" | "premium" | "enterprise";
 }
 
 export interface CustomerDensityLayerProps {
@@ -24,21 +24,28 @@ export interface CustomerDensityLayerProps {
 }
 
 const TIER_COLORS: Record<string, string> = {
-  enterprise: '#f59e0b',
-  premium:    '#60a5fa',
-  standard:   '#6b7280',
+  enterprise: "#f59e0b",
+  premium: "#60a5fa",
+  standard: "#6b7280",
 };
 
-const SOURCE_ID = 'customer-density';
-const CIRCLE_LAYER = 'customer-density-circles';
-const LABEL_LAYER = 'customer-density-labels';
+const SOURCE_ID = "customer-density";
+const CIRCLE_LAYER = "customer-density-circles";
+const LABEL_LAYER = "customer-density-labels";
 
-const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const fmt = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
-function buildFeatures(customers: CustomerLocation[], selectedId?: string | null): Feature<Point>[] {
+function buildFeatures(
+  customers: CustomerLocation[],
+  selectedId?: string | null,
+): Feature<Point>[] {
   return customers.map((c) => ({
-    type: 'Feature' as const,
-    geometry: { type: 'Point' as const, coordinates: [c.lng, c.lat] },
+    type: "Feature" as const,
+    geometry: { type: "Point" as const, coordinates: [c.lng, c.lat] },
     properties: {
       id: c.id,
       name: c.name,
@@ -53,69 +60,76 @@ function buildFeatures(customers: CustomerLocation[], selectedId?: string | null
   }));
 }
 
-export function CustomerDensityLayer({ customers, selectedId, onCustomerClick }: CustomerDensityLayerProps) {
+export function CustomerDensityLayer({
+  customers,
+  selectedId,
+  onCustomerClick,
+}: CustomerDensityLayerProps) {
   const map = useWLMap();
-  const clickHandlerRef = useRef<((e: MapLayerMouseEvent) => void) | null>(null);
+  const clickHandlerRef = useRef<((e: MapLayerMouseEvent) => void) | null>(
+    null,
+  );
 
   useEffect(() => {
     const setup = () => {
       if (map.getSource(SOURCE_ID)) return;
 
       map.addSource(SOURCE_ID, {
-        type: 'geojson',
+        type: "geojson",
         data: {
-          type: 'FeatureCollection',
+          type: "FeatureCollection",
           features: buildFeatures(customers, selectedId),
         },
       });
 
       map.addLayer({
         id: CIRCLE_LAYER,
-        type: 'circle',
+        type: "circle",
         source: SOURCE_ID,
         paint: {
-          'circle-radius': [
-            'case',
-            ['==', ['get', 'isSelected'], 1], 12,
-            ['==', ['get', 'tier'], 'enterprise'], 9,
-            ['==', ['get', 'tier'], 'premium'], 7,
+          "circle-radius": [
+            "case",
+            ["==", ["get", "isSelected"], 1],
+            12,
+            ["==", ["get", "tier"], "enterprise"],
+            9,
+            ["==", ["get", "tier"], "premium"],
+            7,
             6,
           ],
-          'circle-color': ['get', 'color'],
-          'circle-stroke-color': [
-            'case',
-            ['==', ['get', 'isSelected'], 1], '#ffffff',
-            'rgba(0,0,0,0.6)',
+          "circle-color": ["get", "color"],
+          "circle-stroke-color": [
+            "case",
+            ["==", ["get", "isSelected"], 1],
+            "#ffffff",
+            "rgba(0,0,0,0.6)",
           ],
-          'circle-stroke-width': [
-            'case',
-            ['==', ['get', 'isSelected'], 1], 2.5,
+          "circle-stroke-width": [
+            "case",
+            ["==", ["get", "isSelected"], 1],
+            2.5,
             1,
           ],
-          'circle-opacity': [
-            'case',
-            ['==', ['get', 'isSelected'], 1], 1,
-            0.82,
-          ],
+          "circle-opacity": ["case", ["==", ["get", "isSelected"], 1], 1, 0.82],
         },
       });
 
       map.addLayer({
         id: LABEL_LAYER,
-        type: 'symbol',
+        type: "symbol",
         source: SOURCE_ID,
-        filter: ['==', ['get', 'tier'], 'enterprise'],
+        filter: ["==", ["get", "tier"], "enterprise"],
         layout: {
-          'text-field': ['slice', ['get', 'name'], 0, 1],
-          'text-size': 9,
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Regular'],
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
+          "text-field": ["slice", ["get", "name"], 0, 1],
+          "text-size": 9,
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
         },
         paint: {
-          'text-color': '#ffffff',
-          'text-halo-color': 'rgba(0,0,0,0.5)',
-          'text-halo-width': 0.5,
+          "text-color": "#ffffff",
+          "text-halo-color": "rgba(0,0,0,0.5)",
+          "text-halo-width": 0.5,
         },
       });
 
@@ -127,18 +141,22 @@ export function CustomerDensityLayer({ customers, selectedId, onCustomerClick }:
       };
 
       clickHandlerRef.current = clickHandler;
-      map.on('click', CIRCLE_LAYER, clickHandler);
-      map.on('mouseenter', CIRCLE_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', CIRCLE_LAYER, () => { map.getCanvas().style.cursor = ''; });
+      map.on("click", CIRCLE_LAYER, clickHandler);
+      map.on("mouseenter", CIRCLE_LAYER, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", CIRCLE_LAYER, () => {
+        map.getCanvas().style.cursor = "";
+      });
     };
 
     if (map.isStyleLoaded()) setup();
-    else map.on('load', setup);
+    else map.on("load", setup);
 
     return () => {
       if (clickHandlerRef.current) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        map.off('click', CIRCLE_LAYER, clickHandlerRef.current as any);
+        map.off("click", CIRCLE_LAYER, clickHandlerRef.current as any);
       }
       if (map.getLayer(LABEL_LAYER)) map.removeLayer(LABEL_LAYER);
       if (map.getLayer(CIRCLE_LAYER)) map.removeLayer(CIRCLE_LAYER);
@@ -152,7 +170,7 @@ export function CustomerDensityLayer({ customers, selectedId, onCustomerClick }:
     const src = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
     if (!src) return;
     src.setData({
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features: buildFeatures(customers, selectedId),
     });
   }, [map, customers, selectedId]);

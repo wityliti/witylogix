@@ -2,8 +2,15 @@
  * Zones resource - manage delivery zones
  */
 
-import type { WitylogixClient } from '../client';
-import type { Zone, ZoneCheckResult, Location, ListParams, PaginatedResponse, ZoneStatus } from '../types';
+import type { WitylogixClient } from "../client";
+import type {
+  Zone,
+  ZoneCheckResult,
+  Location,
+  ListParams,
+  PaginatedResponse,
+  ZoneStatus,
+} from "../types";
 
 export interface CreateZoneData {
   name: string;
@@ -37,7 +44,7 @@ export class ZonesResource {
    * const zones = await client.zones.list({ page: 1, limit: 20 });
    */
   public async list(params?: ListParams): Promise<PaginatedResponse<Zone>> {
-    return this.client.get<PaginatedResponse<Zone>>('/v1/zones', params);
+    return this.client.get<PaginatedResponse<Zone>>("/v1/zones", params);
   }
 
   /**
@@ -65,7 +72,7 @@ export class ZonesResource {
    * });
    */
   public async create(data: CreateZoneData): Promise<Zone> {
-    return this.client.post<Zone>('/v1/zones', data);
+    return this.client.post<Zone>("/v1/zones", data);
   }
 
   /**
@@ -99,8 +106,11 @@ export class ZonesResource {
    *   console.log(`Location is in zone: ${result.zone_id}`);
    * }
    */
-  public async checkPoint(latitude: number, longitude: number): Promise<ZoneCheckResult> {
-    return this.client.post<ZoneCheckResult>('/v1/zones/check-point', {
+  public async checkPoint(
+    latitude: number,
+    longitude: number,
+  ): Promise<ZoneCheckResult> {
+    return this.client.post<ZoneCheckResult>("/v1/zones/check-point", {
       latitude,
       longitude,
     });
@@ -115,7 +125,7 @@ export class ZonesResource {
   public async isPointInZone(
     zoneId: string,
     latitude: number,
-    longitude: number
+    longitude: number,
   ): Promise<boolean> {
     const result = await this.checkPoint(latitude, longitude);
     return result.zone_id === zoneId && result.inside;
@@ -129,9 +139,9 @@ export class ZonesResource {
    */
   public async getByStatus(
     status: ZoneStatus,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Zone>> {
-    return this.client.get<PaginatedResponse<Zone>>('/v1/zones', {
+    return this.client.get<PaginatedResponse<Zone>>("/v1/zones", {
       ...params,
       status,
     });
@@ -143,11 +153,17 @@ export class ZonesResource {
    * @example
    * const zones = await client.zones.findByLocation(40.7128, -74.0060);
    */
-  public async findByLocation(latitude: number, longitude: number): Promise<Zone[]> {
-    const response = await this.client.get<{ zones: Zone[] }>('/v1/zones/by-location', {
-      latitude,
-      longitude,
-    });
+  public async findByLocation(
+    latitude: number,
+    longitude: number,
+  ): Promise<Zone[]> {
+    const response = await this.client.get<{ zones: Zone[] }>(
+      "/v1/zones/by-location",
+      {
+        latitude,
+        longitude,
+      },
+    );
     return response.zones || [];
   }
 
@@ -160,7 +176,7 @@ export class ZonesResource {
   public async addDriver(zoneId: string, driverId: string): Promise<Zone> {
     return this.client.patch<Zone>(`/v1/zones/${zoneId}/drivers`, {
       driver_id: driverId,
-      action: 'add',
+      action: "add",
     });
   }
 
@@ -173,7 +189,7 @@ export class ZonesResource {
   public async removeDriver(zoneId: string, driverId: string): Promise<Zone> {
     return this.client.patch<Zone>(`/v1/zones/${zoneId}/drivers`, {
       driver_id: driverId,
-      action: 'remove',
+      action: "remove",
     });
   }
 }

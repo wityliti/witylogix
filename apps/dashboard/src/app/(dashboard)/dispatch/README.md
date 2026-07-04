@@ -29,13 +29,16 @@ dispatch/
 ## Components Overview
 
 ### StatsBar
+
 Displays key dispatch metrics at the top of the page:
+
 - Active Driver Count
 - Total Stops
 - Total Distance (km)
 - Estimated Time (hours)
 
 **Props**:
+
 ```typescript
 interface StatsBarProps {
   stats: DispatchStats;
@@ -44,9 +47,11 @@ interface StatsBarProps {
 ```
 
 ### DispatchMap
+
 Interactive map showing routes and stops. Ready for Leaflet integration.
 
 **Features**:
+
 - Color-coded route polylines (16 distinct colors)
 - Stop markers with sequence numbers
 - Driver position indicators
@@ -54,6 +59,7 @@ Interactive map showing routes and stops. Ready for Leaflet integration.
 - Click handlers for stop selection
 
 **Props**:
+
 ```typescript
 interface DispatchMapProps {
   routes: Route[];
@@ -66,9 +72,11 @@ interface DispatchMapProps {
 ```
 
 ### RouteTimeline
+
 Horizontal timeline showing routes and stops across the operating day.
 
 **Features**:
+
 - Time axis from 8 AM to 7 PM
 - One row per route
 - Stops positioned by ETA
@@ -76,6 +84,7 @@ Horizontal timeline showing routes and stops across the operating day.
 - Ready for drag-and-drop implementation
 
 **Props**:
+
 ```typescript
 interface RouteTimelineProps {
   routes: Route[];
@@ -87,9 +96,11 @@ interface RouteTimelineProps {
 ```
 
 ### DriverCard
+
 Displays driver information and assigned route details.
 
 **Features**:
+
 - Driver name and photo
 - Vehicle type and plate number
 - Route statistics
@@ -97,6 +108,7 @@ Displays driver information and assigned route details.
 - Status indicator
 
 **Props**:
+
 ```typescript
 interface DriverCardProps {
   driver: Driver;
@@ -107,9 +119,11 @@ interface DriverCardProps {
 ```
 
 ### StopDetailPanel
+
 Detailed view of a selected stop with actions.
 
 **Features**:
+
 - Order and customer information
 - Delivery address with coordinates
 - Time window and ETA
@@ -117,6 +131,7 @@ Detailed view of a selected stop with actions.
 - Action buttons (Reassign, Skip, Prioritize)
 
 **Props**:
+
 ```typescript
 interface StopDetailPanelProps {
   stop: Stop | null;
@@ -145,7 +160,9 @@ page.tsx (Main)
 ## Key Features
 
 ### 1. Real-time Metrics
+
 The `stats-bar` component displays:
+
 - Number of active drivers on the road
 - Total delivery stops for the day
 - Total kilometers to cover
@@ -153,7 +170,9 @@ The `stats-bar` component displays:
 - Trend indicators (% change from previous day)
 
 ### 2. Route Visualization
+
 The `dispatch-map` is ready for Leaflet integration:
+
 ```typescript
 // Future: Map will show
 // - Polylines for each route (color-coded)
@@ -163,21 +182,27 @@ The `dispatch-map` is ready for Leaflet integration:
 ```
 
 ### 3. Timeline View
+
 The `route-timeline` shows all routes horizontally:
+
 - Operating hours: 8 AM to 7 PM
 - Stop dots positioned by estimated arrival time
 - Hover to see stop details
 - Click to select stop
 
 ### 4. Stop Management
+
 Click on a stop to see detailed panel:
+
 - Customer and delivery information
 - Address with GPS coordinates
 - Time window constraints
 - Action buttons for dispatcher decisions
 
 ### 5. Driver Overview
+
 Right sidebar shows all active drivers:
+
 - Name and vehicle type
 - Route progress (stops, distance, time)
 - Capacity information
@@ -189,17 +214,17 @@ All components use Witylogix design tokens:
 
 ```typescript
 // Color system
-"bg-wl-bg-primary"      // Main background
-"bg-wl-bg-surface"      // Card/surface background
-"text-wl-text-primary"  // Main text
-"text-wl-text-secondary" // Secondary text
-"border-wl-border-subtle" // Subtle borders
+"bg-wl-bg-primary"; // Main background
+"bg-wl-bg-surface"; // Card/surface background
+"text-wl-text-primary"; // Main text
+"text-wl-text-secondary"; // Secondary text
+"border-wl-border-subtle"; // Subtle borders
 
 // Status colors
-"text-wl-success-400"   // Success/completed
-"text-wl-warning-400"   // Warning/in-progress
-"text-wl-danger-400"    // Danger/failed
-"text-wl-info-400"      // Info/en-route
+"text-wl-success-400"; // Success/completed
+"text-wl-warning-400"; // Warning/in-progress
+"text-wl-danger-400"; // Danger/failed
+"text-wl-info-400"; // Info/en-route
 ```
 
 ## Integration with Backend
@@ -229,29 +254,38 @@ const result = await service.optimizeRoutes({
 ## Actions
 
 ### Optimize Routes
+
 Click "Plan Routes" button to trigger batch optimization:
+
 1. Fetches unscheduled orders
 2. Gets available drivers
 3. Calls optimization algorithm
 4. Updates route assignments
 
 ### Select Stop
+
 Click a stop marker or timeline dot to view details
 
 ### Reassign Stop
+
 From the detail panel, click "Reassign to Another Route"
+
 - In production: Opens modal to select target route
 - Updates sequence numbers in both routes
 - Recalculates metrics
 
 ### Skip Stop
+
 Mark a stop as skipped (customer unavailable, etc.)
+
 - Updates stop status to "skipped"
 - Removes from route
 - Recalculates route metrics
 
 ### Prioritize Stop
+
 Mark a stop as priority (VIP customer, time-sensitive, etc.)
+
 - Moves stop up in route sequence
 - Updates ETA calculations
 - Notifies driver
@@ -266,16 +300,19 @@ Mark a stop as priority (VIP customer, time-sensitive, etc.)
 ## Testing
 
 ### Component Tests
+
 ```bash
 npm run test components/dispatch
 ```
 
 ### Service Tests
+
 ```bash
 npm run test dispatch-service
 ```
 
 ### E2E Tests
+
 ```bash
 npm run test:e2e dispatch
 ```
@@ -293,6 +330,7 @@ npm run test:e2e dispatch
 ### Debug Mode
 
 Enable detailed logging:
+
 ```typescript
 // In page.tsx
 useEffect(() => {

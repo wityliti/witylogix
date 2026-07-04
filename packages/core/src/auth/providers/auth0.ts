@@ -66,13 +66,21 @@ export class Auth0Provider implements BaseAuthProvider {
    * For OIDC flow, return the authorization URL.
    * For direct credentials (not implemented), would raise error.
    */
-  async authenticate(request: AuthenticationRequest): Promise<AuthResult | AuthorizationUrl> {
+  async authenticate(
+    request: AuthenticationRequest,
+  ): Promise<AuthResult | AuthorizationUrl> {
     const redirectUri = request.redirectUri;
     if (!redirectUri) {
-      throw new ConfigurationError("auth0", "redirectUri is required for Auth0 OIDC flow");
+      throw new ConfigurationError(
+        "auth0",
+        "redirectUri is required for Auth0 OIDC flow",
+      );
     }
 
-    return this.getAuthorizationUrl(redirectUri, request.state || this.generateState());
+    return this.getAuthorizationUrl(
+      redirectUri,
+      request.state || this.generateState(),
+    );
   }
 
   /**
@@ -105,7 +113,9 @@ export class Auth0Provider implements BaseAuthProvider {
 
       // Fetch user info using access token
       // In production: GET https://{domain}/userinfo
-      const userInfo = await this.getUserInfoFromProvider(tokenResponse.access_token);
+      const userInfo = await this.getUserInfoFromProvider(
+        tokenResponse.access_token,
+      );
 
       // Map Auth0 roles to Witylogix roles
       const roles = this.mapRolesToWitylogix(userInfo.roles || []);
@@ -130,7 +140,10 @@ export class Auth0Provider implements BaseAuthProvider {
       if (error instanceof InvalidCredentialsError) {
         throw error;
       }
-      throw new ProviderUnavailableError("auth0", `Token exchange failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "auth0",
+        `Token exchange failed: ${String(error)}`,
+      );
     }
   }
 
@@ -168,7 +181,9 @@ export class Auth0Provider implements BaseAuthProvider {
       const tokenResponse = await this.refreshAccessToken(refreshToken);
 
       // Fetch updated user info
-      const userInfo = await this.getUserInfoFromProvider(tokenResponse.access_token);
+      const userInfo = await this.getUserInfoFromProvider(
+        tokenResponse.access_token,
+      );
       const roles = this.mapRolesToWitylogix(userInfo.roles || []);
 
       return {
@@ -187,7 +202,10 @@ export class Auth0Provider implements BaseAuthProvider {
         },
       };
     } catch (error) {
-      throw new ProviderUnavailableError("auth0", `Token refresh failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "auth0",
+        `Token refresh failed: ${String(error)}`,
+      );
     }
   }
 
@@ -195,7 +213,10 @@ export class Auth0Provider implements BaseAuthProvider {
    * Revoke access + refresh tokens (logout).
    * Calls Auth0's revocation endpoint.
    */
-  async revokeSession(accessToken: string, refreshToken?: string): Promise<void> {
+  async revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void> {
     try {
       // In production: POST to https://{domain}/oauth/revoke
       if (refreshToken) {
@@ -233,12 +254,17 @@ export class Auth0Provider implements BaseAuthProvider {
   /**
    * Get the authorization URL for redirecting to Auth0 login.
    */
-  async getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl> {
+  async getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl> {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: redirectUri,
       response_type: "code",
-      scope: this.config.rolesClaim ? "openid profile email" : "openid profile email",
+      scope: this.config.rolesClaim
+        ? "openid profile email"
+        : "openid profile email",
       state,
     });
 
@@ -258,8 +284,15 @@ export class Auth0Provider implements BaseAuthProvider {
    * Validate Auth0 configuration (check connectivity, credentials).
    */
   async validateConfiguration(): Promise<void> {
-    if (!this.config.domain || !this.config.clientId || !this.config.clientSecret) {
-      throw new ConfigurationError("auth0", "Auth0 domain, clientId, and clientSecret are required");
+    if (
+      !this.config.domain ||
+      !this.config.clientId ||
+      !this.config.clientSecret
+    ) {
+      throw new ConfigurationError(
+        "auth0",
+        "Auth0 domain, clientId, and clientSecret are required",
+      );
     }
 
     try {
@@ -267,7 +300,10 @@ export class Auth0Provider implements BaseAuthProvider {
       const discoveryUrl = `https://${this.config.domain}/.well-known/openid-configuration`;
       // Would validate that discoveryUrl is accessible and returns valid JSON
     } catch (error) {
-      throw new ConfigurationError("auth0", `Invalid Auth0 domain: ${this.config.domain}`);
+      throw new ConfigurationError(
+        "auth0",
+        `Invalid Auth0 domain: ${this.config.domain}`,
+      );
     }
   }
 
@@ -418,6 +454,8 @@ export class Auth0Provider implements BaseAuthProvider {
    * Generate a random state token for CSRF protection.
    */
   private generateState(): string {
-    return Buffer.from(Math.random().toString()).toString("base64").substring(0, 32);
+    return Buffer.from(Math.random().toString())
+      .toString("base64")
+      .substring(0, 32);
   }
 }

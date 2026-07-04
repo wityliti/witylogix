@@ -25,14 +25,14 @@ import type {
   AnalyticsError,
   FilterDefinition,
   DataSource,
-} from './types.js';
+} from "./types.js";
 
 // ─── CIRCUIT BREAKER ────────────────────────────────────────────────────
 
 enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN',
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 interface CircuitBreakerConfig {
@@ -62,7 +62,7 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now: number = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts: number) => now - ts < this.windowMs
+      (ts: number) => now - ts < this.windowMs,
     );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
@@ -84,9 +84,12 @@ class RateLimiter {
   getInfo(): RateLimitInfo {
     const now: number = Date.now();
     const recentRequests: number[] = this.requestTimestamps.filter(
-      (ts: number) => now - ts < this.windowMs
+      (ts: number) => now - ts < this.windowMs,
     );
-    const remaining: number = Math.max(0, this.maxRequests - recentRequests.length);
+    const remaining: number = Math.max(
+      0,
+      this.maxRequests - recentRequests.length,
+    );
     const resetAt: Date = new Date(now + this.windowMs);
 
     return {
@@ -126,7 +129,7 @@ class CircuitBreaker {
         this.state = CircuitState.HALF_OPEN;
         this.successCount = 0;
       } else {
-        throw new Error('Circuit breaker is OPEN');
+        throw new Error("Circuit breaker is OPEN");
       }
     }
 
@@ -198,8 +201,9 @@ class RetryHandler {
 
         if (attempt < this.config.maxAttempts - 1) {
           const delay: number = Math.min(
-            this.config.initialDelayMs * Math.pow(this.config.backoffMultiplier, attempt),
-            this.config.maxDelayMs
+            this.config.initialDelayMs *
+              Math.pow(this.config.backoffMultiplier, attempt),
+            this.config.maxDelayMs,
           );
           await new Promise((resolve: (value: void) => void) => {
             setTimeout(resolve, delay);
@@ -208,7 +212,7 @@ class RetryHandler {
       }
     }
 
-    throw lastError || new Error('Retry handler failed');
+    throw lastError || new Error("Retry handler failed");
   }
 }
 
@@ -313,8 +317,14 @@ export abstract class AnalyticsAdapter {
     this.config = config;
 
     // Initialize rate limiter
-    const rateLimitConfig = config.rateLimit || { maxRequests: 100, windowMs: 60000 };
-    this.rateLimiter = new RateLimiter(rateLimitConfig.maxRequests, rateLimitConfig.windowMs);
+    const rateLimitConfig = config.rateLimit || {
+      maxRequests: 100,
+      windowMs: 60000,
+    };
+    this.rateLimiter = new RateLimiter(
+      rateLimitConfig.maxRequests,
+      rateLimitConfig.windowMs,
+    );
 
     // Initialize circuit breaker
     const cbConfig = config.circuitBreaker || {
@@ -334,10 +344,14 @@ export abstract class AnalyticsAdapter {
     this.retryHandler = new RetryHandler(retryConfig);
 
     // Initialize cache
-    const cacheConfig = config.cache || { enabled: true, defaultTtl: 3600, maxEntries: 100 };
+    const cacheConfig = config.cache || {
+      enabled: true,
+      defaultTtl: 3600,
+      maxEntries: 100,
+    };
     this.cache = new LRUCache<QueryResult>(
       cacheConfig.maxEntries,
-      cacheConfig.defaultTtl * 1000
+      cacheConfig.defaultTtl * 1000,
     );
   }
 
@@ -381,7 +395,9 @@ export abstract class AnalyticsAdapter {
    * @param dashboard Dashboard definition
    * @returns Created/updated dashboard with ID
    */
-  async createDashboard(dashboard: DashboardDefinition): Promise<DashboardDefinition> {
+  async createDashboard(
+    dashboard: DashboardDefinition,
+  ): Promise<DashboardDefinition> {
     await this.rateLimiter.acquire();
 
     return this.circuitBreaker.execute(() => {
@@ -414,7 +430,7 @@ export abstract class AnalyticsAdapter {
    */
   async updateDashboard(
     dashboardId: string,
-    updates: Partial<DashboardDefinition>
+    updates: Partial<DashboardDefinition>,
   ): Promise<DashboardDefinition> {
     await this.rateLimiter.acquire();
 
@@ -453,13 +469,19 @@ export abstract class AnalyticsAdapter {
     userId: string,
     scopes: EmbedScope[],
     rlsRules?: RLSRule[],
-    expiryMinutes: number = 60
+    expiryMinutes: number = 60,
   ): Promise<EmbedToken> {
     await this.rateLimiter.acquire();
 
     return this.circuitBreaker.execute(() => {
       return this.retryHandler.execute(() => {
-        return this._generateEmbedTokenImpl(entityId, userId, scopes, rlsRules, expiryMinutes);
+        return this._generateEmbedTokenImpl(
+          entityId,
+          userId,
+          scopes,
+          rlsRules,
+          expiryMinutes,
+        );
       });
     });
   }
@@ -474,7 +496,7 @@ export abstract class AnalyticsAdapter {
   async exportDashboard(
     entityId: string,
     format: AnalyticsExportFormat,
-    filters?: FilterDefinition[]
+    filters?: FilterDefinition[],
   ): Promise<ExportResult> {
     await this.rateLimiter.acquire();
 
@@ -497,7 +519,8 @@ export abstract class AnalyticsAdapter {
       result.responseTimeMs = Date.now() - startTime;
       return result;
     } catch (error: unknown) {
-      const message: string = error instanceof Error ? error.message : String(error);
+      const message: string =
+        error instanceof Error ? error.message : String(error);
       return {
         healthy: false,
         authenticated: false,
@@ -540,21 +563,27 @@ export abstract class AnalyticsAdapter {
    * @param query Query definition
    * @returns Query result
    */
-  protected abstract _executeQueryImpl(query: QueryDefinition): Promise<QueryResult>;
+  protected abstract _executeQueryImpl(
+    query: QueryDefinition,
+  ): Promise<QueryResult>;
 
   /**
    * Provider-specific dashboard creation implementation.
    * @param dashboard Dashboard definition
    * @returns Created dashboard
    */
-  protected abstract _createDashboardImpl(dashboard: DashboardDefinition): Promise<DashboardDefinition>;
+  protected abstract _createDashboardImpl(
+    dashboard: DashboardDefinition,
+  ): Promise<DashboardDefinition>;
 
   /**
    * Provider-specific dashboard retrieval implementation.
    * @param dashboardId Dashboard identifier
    * @returns Dashboard definition
    */
-  protected abstract _getDashboardImpl(dashboardId: string): Promise<DashboardDefinition>;
+  protected abstract _getDashboardImpl(
+    dashboardId: string,
+  ): Promise<DashboardDefinition>;
 
   /**
    * Provider-specific dashboard update implementation.
@@ -564,7 +593,7 @@ export abstract class AnalyticsAdapter {
    */
   protected abstract _updateDashboardImpl(
     dashboardId: string,
-    updates: Partial<DashboardDefinition>
+    updates: Partial<DashboardDefinition>,
   ): Promise<DashboardDefinition>;
 
   /**
@@ -587,7 +616,7 @@ export abstract class AnalyticsAdapter {
     userId: string,
     scopes: EmbedScope[],
     rlsRules?: RLSRule[],
-    expiryMinutes?: number
+    expiryMinutes?: number,
   ): Promise<EmbedToken>;
 
   /**
@@ -600,7 +629,7 @@ export abstract class AnalyticsAdapter {
   protected abstract _exportDashboardImpl(
     entityId: string,
     format: AnalyticsExportFormat,
-    filters?: FilterDefinition[]
+    filters?: FilterDefinition[],
   ): Promise<ExportResult>;
 
   /**

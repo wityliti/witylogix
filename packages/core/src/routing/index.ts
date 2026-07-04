@@ -76,7 +76,11 @@ export type {
   BenchmarkSummary,
   BenchmarkReport,
 } from "./routing-benchmark.js";
-export { RoutingBenchmark, getDefaultBenchmarkRoutes, getDefaultProviders } from "./routing-benchmark.js";
+export {
+  RoutingBenchmark,
+  getDefaultBenchmarkRoutes,
+  getDefaultProviders,
+} from "./routing-benchmark.js";
 
 import type {
   RoutingProvider,
@@ -109,7 +113,12 @@ export const PROVIDER_REGISTRY: ReadonlyMap<RoutingProviderSlug, ProviderMeta> =
         credentialPattern: /^[ps]k\.\w+/,
         credentialHelpUrl: "https://account.mapbox.com/access-tokens/",
         requiresBaseUrl: false,
-        capabilities: { routing: true, matrix: true, geocoding: true, eta: true },
+        capabilities: {
+          routing: true,
+          matrix: true,
+          geocoding: true,
+          eta: true,
+        },
         status: "available",
       },
     ],
@@ -126,7 +135,12 @@ export const PROVIDER_REGISTRY: ReadonlyMap<RoutingProviderSlug, ProviderMeta> =
         credentialLabel: "Server URL",
         credentialPlaceholder: "http://osrm.example.com:5000",
         requiresBaseUrl: true,
-        capabilities: { routing: true, matrix: true, geocoding: false, eta: true },
+        capabilities: {
+          routing: true,
+          matrix: true,
+          geocoding: false,
+          eta: true,
+        },
         status: "available",
       },
     ],
@@ -144,7 +158,12 @@ export const PROVIDER_REGISTRY: ReadonlyMap<RoutingProviderSlug, ProviderMeta> =
         credentialPattern: /^AIza[0-9A-Za-z_-]{35}$/,
         credentialHelpUrl: "https://console.cloud.google.com/apis/credentials",
         requiresBaseUrl: false,
-        capabilities: { routing: true, matrix: true, geocoding: true, eta: true },
+        capabilities: {
+          routing: true,
+          matrix: true,
+          geocoding: true,
+          eta: true,
+        },
         status: "coming_soon",
       },
     ],
@@ -161,7 +180,12 @@ export const PROVIDER_REGISTRY: ReadonlyMap<RoutingProviderSlug, ProviderMeta> =
         credentialPlaceholder: "your-here-api-key",
         credentialHelpUrl: "https://platform.here.com/admin/apps",
         requiresBaseUrl: false,
-        capabilities: { routing: true, matrix: true, geocoding: true, eta: true },
+        capabilities: {
+          routing: true,
+          matrix: true,
+          geocoding: true,
+          eta: true,
+        },
         status: "coming_soon",
       },
     ],
@@ -178,7 +202,12 @@ export const PROVIDER_REGISTRY: ReadonlyMap<RoutingProviderSlug, ProviderMeta> =
         credentialPlaceholder: "your-graphhopper-key",
         credentialHelpUrl: "https://www.graphhopper.com/dashboard/#/api-keys",
         requiresBaseUrl: false,
-        capabilities: { routing: true, matrix: true, geocoding: true, eta: true },
+        capabilities: {
+          routing: true,
+          matrix: true,
+          geocoding: true,
+          eta: true,
+        },
         status: "coming_soon",
       },
     ],
@@ -195,7 +224,12 @@ export const PROVIDER_REGISTRY: ReadonlyMap<RoutingProviderSlug, ProviderMeta> =
         credentialPlaceholder: "your-tomtom-key",
         credentialHelpUrl: "https://developer.tomtom.com/user/me/apps",
         requiresBaseUrl: false,
-        capabilities: { routing: true, matrix: true, geocoding: true, eta: true },
+        capabilities: {
+          routing: true,
+          matrix: true,
+          geocoding: true,
+          eta: true,
+        },
         status: "coming_soon",
       },
     ],
@@ -205,9 +239,9 @@ export const PROVIDER_REGISTRY: ReadonlyMap<RoutingProviderSlug, ProviderMeta> =
  * Get list of all provider metadata (for Settings UI).
  * Optionally filter by status.
  */
-export function getProviderRegistry(
-  filter?: { status?: "available" | "coming_soon" },
-): ProviderMeta[] {
+export function getProviderRegistry(filter?: {
+  status?: "available" | "coming_soon";
+}): ProviderMeta[] {
   const all = Array.from(PROVIDER_REGISTRY.values());
   if (filter?.status) {
     return all.filter((p) => p.status === filter.status);
@@ -365,7 +399,8 @@ export function createRoutingProvider(
   tenantCredentials?: RoutingCredentials,
   shopId?: string,
 ): ResolvedProvider {
-  const deployerProvider = (process.env.ROUTING_PROVIDER || "mapbox") as RoutingProviderSlug;
+  const deployerProvider = (process.env.ROUTING_PROVIDER ||
+    "mapbox") as RoutingProviderSlug;
   const byok = process.env.ROUTING_BYOK === "true";
 
   // ── Attempt 1: Tenant's own provider + credentials ──────────
@@ -379,7 +414,12 @@ export function createRoutingProvider(
           tenantCredentials.apiKey,
           tenantCredentials.baseUrl,
         );
-        return { instance, provider: tenantCredentials.provider, usedFallback: false, shopId };
+        return {
+          instance,
+          provider: tenantCredentials.provider,
+          usedFallback: false,
+          shopId,
+        };
       } catch {
         // Tenant credentials are invalid — fall through to deployer fallback
         console.warn(
@@ -398,7 +438,12 @@ export function createRoutingProvider(
         tenantCredentials.apiKey,
         tenantCredentials.baseUrl,
       );
-      return { instance, provider: deployerProvider, usedFallback: false, shopId };
+      return {
+        instance,
+        provider: deployerProvider,
+        usedFallback: false,
+        shopId,
+      };
     } catch {
       // Fall through
     }
@@ -409,7 +454,11 @@ export function createRoutingProvider(
   const fallbackUrl = resolveDeployerBaseUrl(deployerProvider);
 
   try {
-    const instance = instantiateProvider(deployerProvider, fallbackKey, fallbackUrl);
+    const instance = instantiateProvider(
+      deployerProvider,
+      fallbackKey,
+      fallbackUrl,
+    );
     const resolved: ResolvedProvider = {
       instance,
       provider: deployerProvider,
@@ -424,11 +473,12 @@ export function createRoutingProvider(
   } catch (err) {
     throw new Error(
       `Cannot create routing provider. Deployer default is "${deployerProvider}" ` +
-      `but credentials are missing. ${byok
-        ? "BYOK is enabled — configure your credentials in Settings → Routing, " +
-          "or ask your platform administrator to set fallback credentials in .env."
-        : `Set ${getEnvVarHint(deployerProvider)} in your .env file.`
-      }`,
+        `but credentials are missing. ${
+          byok
+            ? "BYOK is enabled — configure your credentials in Settings → Routing, " +
+              "or ask your platform administrator to set fallback credentials in .env."
+            : `Set ${getEnvVarHint(deployerProvider)} in your .env file.`
+        }`,
     );
   }
 }
@@ -438,7 +488,8 @@ export function createRoutingProvider(
  * Always uses deployer credentials, no metering.
  */
 export function createDeployerRoutingProvider(): RoutingProvider {
-  const provider = (process.env.ROUTING_PROVIDER || "mapbox") as RoutingProviderSlug;
+  const provider = (process.env.ROUTING_PROVIDER ||
+    "mapbox") as RoutingProviderSlug;
   const key = resolveDeployerCredential(provider);
   const url = resolveDeployerBaseUrl(provider);
   return instantiateProvider(provider, key, url);
@@ -465,38 +516,40 @@ function instantiateProvider(
     case "google_maps":
       throw new Error(
         "Google Maps provider is coming soon. " +
-        "Please use Mapbox or OSRM in the meantime.",
+          "Please use Mapbox or OSRM in the meantime.",
       );
 
     case "here":
       throw new Error(
         "HERE provider is coming soon. " +
-        "Please use Mapbox or OSRM in the meantime.",
+          "Please use Mapbox or OSRM in the meantime.",
       );
 
     case "graphhopper":
       throw new Error(
         "GraphHopper provider is coming soon. " +
-        "Please use Mapbox or OSRM in the meantime.",
+          "Please use Mapbox or OSRM in the meantime.",
       );
 
     case "tomtom":
       throw new Error(
         "TomTom provider is coming soon. " +
-        "Please use Mapbox or OSRM in the meantime.",
+          "Please use Mapbox or OSRM in the meantime.",
       );
 
     default:
       throw new Error(
         `Unknown routing provider: "${slug}". ` +
-        `Supported: ${Array.from(PROVIDER_REGISTRY.keys()).join(", ")}`,
+          `Supported: ${Array.from(PROVIDER_REGISTRY.keys()).join(", ")}`,
       );
   }
 }
 
 // ─── Deployer Credential Resolution ────────────────────────
 
-function resolveDeployerCredential(slug: RoutingProviderSlug): string | undefined {
+function resolveDeployerCredential(
+  slug: RoutingProviderSlug,
+): string | undefined {
   switch (slug) {
     case "mapbox":
       return process.env.MAPBOX_ACCESS_TOKEN;

@@ -103,7 +103,10 @@ export class AlertEngine {
     }
 
     // Determine recipients based on severity
-    const recipients = this.determineRecipients(alert.severity, alert.anomalyType);
+    const recipients = this.determineRecipients(
+      alert.severity,
+      alert.anomalyType,
+    );
     alert.recipients = recipients;
 
     // Create tracking record
@@ -297,7 +300,10 @@ export class AlertEngine {
       date,
       totalAlerts: dayAlerts.length,
       alertsBySeverity,
-      alertsByType: Object.fromEntries(alertsByType) as Record<AnomalyType, number>,
+      alertsByType: Object.fromEntries(alertsByType) as Record<
+        AnomalyType,
+        number
+      >,
       topIssues,
       generatedAt: new Date().toISOString(),
     };
@@ -380,10 +386,7 @@ export class AlertEngine {
     let cleared = 0;
 
     for (const [id, record] of this.alertRecords.entries()) {
-      if (
-        record.alert.status === "resolved" &&
-        record.createdAt < cutoffTime
-      ) {
+      if (record.alert.status === "resolved" && record.createdAt < cutoffTime) {
         this.alertRecords.delete(id);
         cleared++;
       }
@@ -480,9 +483,11 @@ export class AlertEngine {
 
       case "warning":
         recipients.dispatcher = true;
-        if ([AnomalyType.DRIVER_IDLE, AnomalyType.ROUTE_DEVIATION].includes(
-          anomalyType,
-        )) {
+        if (
+          [AnomalyType.DRIVER_IDLE, AnomalyType.ROUTE_DEVIATION].includes(
+            anomalyType,
+          )
+        ) {
           recipients.driver = true;
         }
         break;

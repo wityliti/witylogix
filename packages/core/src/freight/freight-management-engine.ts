@@ -33,7 +33,7 @@ export class LaneManager {
    */
   createLane(
     tenantId: string,
-    laneData: Omit<Lane, "id" | "createdAt" | "updatedAt">
+    laneData: Omit<Lane, "id" | "createdAt" | "updatedAt">,
   ): Lane {
     return {
       id: this.generateId("lane"),
@@ -65,7 +65,7 @@ export class LaneManager {
    */
   addVolumeCommitment(
     lane: Lane,
-    commitment: Omit<VolumeCommitment, "commitmentId">
+    commitment: Omit<VolumeCommitment, "commitmentId">,
   ): Lane {
     const newCommitment: VolumeCommitment = {
       commitmentId: this.generateId("commitment"),
@@ -89,7 +89,7 @@ export class LaneManager {
         tier.effectiveDate <= now &&
         now <= tier.expiryDate &&
         loadsThisMonth >= tier.minLoads &&
-        (!tier.maxLoads || loadsThisMonth <= tier.maxLoads)
+        (!tier.maxLoads || loadsThisMonth <= tier.maxLoads),
     );
 
     if (applicableTiers.length === 0) return null;
@@ -104,7 +104,7 @@ export class LaneManager {
   checkCommitmentFulfillment(
     lane: Lane,
     monthNumber: number,
-    loadsDelivered: number
+    loadsDelivered: number,
   ): {
     commitment: VolumeCommitment;
     fulfilled: boolean;
@@ -114,14 +114,16 @@ export class LaneManager {
     const now = new Date();
 
     return lane.volumeCommitments
-      .filter(
-        (c) =>
-          c.startDate <= now && now <= c.endDate
-      )
+      .filter((c) => c.startDate <= now && now <= c.endDate)
       .map((commitment) => {
         const fulfilled = loadsDelivered >= commitment.loadsPerMonth;
-        const shortfall = Math.max(0, commitment.loadsPerMonth - loadsDelivered);
-        const penalty = fulfilled ? undefined : shortfall * (commitment.penalty ?? 100);
+        const shortfall = Math.max(
+          0,
+          commitment.loadsPerMonth - loadsDelivered,
+        );
+        const penalty = fulfilled
+          ? undefined
+          : shortfall * (commitment.penalty ?? 100);
 
         return {
           commitment,
@@ -137,7 +139,7 @@ export class LaneManager {
    */
   updateLaneStatus(
     lane: Lane,
-    status: "active" | "inactive" | "archived"
+    status: "active" | "inactive" | "archived",
   ): Lane {
     return {
       ...lane,
@@ -189,7 +191,7 @@ export class CarrierScorecard {
     carrierId: string,
     carrierName: string,
     metrics: CarrierMetrics,
-    reviewPeriod: "monthly" | "quarterly" | "annual"
+    reviewPeriod: "monthly" | "quarterly" | "annual",
   ): ScoreCard {
     const scores = this.calculateWeightedScores(metrics);
     const overallScore = this.calculateOverallScore(scores);
@@ -217,7 +219,10 @@ export class CarrierScorecard {
   /**
    * Update scorecard metrics
    */
-  updateScorecard(scorecard: ScoreCard, metrics: Partial<CarrierMetrics>): ScoreCard {
+  updateScorecard(
+    scorecard: ScoreCard,
+    metrics: Partial<CarrierMetrics>,
+  ): ScoreCard {
     const updatedMetrics = {
       ...scorecard.metrics,
       ...metrics,
@@ -231,7 +236,10 @@ export class CarrierScorecard {
       metrics: updatedMetrics,
       scores,
       overallScore,
-      recommendations: this.generateRecommendations(updatedMetrics, overallScore),
+      recommendations: this.generateRecommendations(
+        updatedMetrics,
+        overallScore,
+      ),
       updatedAt: new Date(),
     };
   }
@@ -247,7 +255,7 @@ export class CarrierScorecard {
     const maxClaimsRatio = 0.05; // 5% is poor
     const claimsScore = Math.max(
       0,
-      100 - (metrics.claimsRatio / maxClaimsRatio) * 100
+      100 - (metrics.claimsRatio / maxClaimsRatio) * 100,
     );
 
     // Tender acceptance score (0-100, higher is better)
@@ -257,7 +265,7 @@ export class CarrierScorecard {
     const targetCostPerMile = 1.5;
     const costScore = Math.max(
       0,
-      100 - (metrics.costPerMile / targetCostPerMile) * 100
+      100 - (metrics.costPerMile / targetCostPerMile) * 100,
     );
 
     // Safety score (0-100, based on FMCSA rating)
@@ -285,7 +293,7 @@ export class CarrierScorecard {
         scores.claimsScore * this.config.claimsWeight +
         scores.tenderScore * this.config.tenderWeight +
         scores.costScore * this.config.costWeight +
-        scores.safetyScore * this.config.safetyWeight
+        scores.safetyScore * this.config.safetyWeight,
     );
   }
 
@@ -294,7 +302,7 @@ export class CarrierScorecard {
    */
   private generateRecommendations(
     metrics: CarrierMetrics,
-    overallScore: number
+    overallScore: number,
   ): string[] {
     const recommendations: string[] = [];
 
@@ -303,11 +311,15 @@ export class CarrierScorecard {
     }
 
     if (metrics.claimsRatio > 0.03) {
-      recommendations.push("Reduce cargo claims through better loading/securing practices");
+      recommendations.push(
+        "Reduce cargo claims through better loading/securing practices",
+      );
     }
 
     if (metrics.tenderAcceptanceRate < 0.9) {
-      recommendations.push("Increase tender acceptance rate to maintain lane assignments");
+      recommendations.push(
+        "Increase tender acceptance rate to maintain lane assignments",
+      );
     }
 
     if (metrics.costPerMile > 1.5) {
@@ -323,9 +335,13 @@ export class CarrierScorecard {
     }
 
     if (overallScore < 70) {
-      recommendations.push("Consider performance improvement plan or contract termination");
+      recommendations.push(
+        "Consider performance improvement plan or contract termination",
+      );
     } else if (overallScore > 90) {
-      recommendations.push("Consider preferred carrier status and volume commitments");
+      recommendations.push(
+        "Consider preferred carrier status and volume commitments",
+      );
     }
 
     return recommendations;
@@ -369,7 +385,7 @@ export class RateNegotiationTracker {
     tenantId: string,
     laneId: string,
     carrierIds: string[],
-    bidDueDays: number = 5
+    bidDueDays: number = 5,
   ): NegotiationRound {
     const bidDueDate = new Date();
     bidDueDate.setDate(bidDueDate.getDate() + bidDueDays);
@@ -398,7 +414,7 @@ export class RateNegotiationTracker {
   receiveBid(
     negotiation: NegotiationRound,
     carrierId: string,
-    bid: Omit<CarrierBid, "carrierId" | "carrierName">
+    bid: Omit<CarrierBid, "carrierId" | "carrierName">,
   ): NegotiationRound {
     const updatedCarriers = negotiation.carriers.map((c) =>
       c.carrierId === carrierId
@@ -407,7 +423,7 @@ export class RateNegotiationTracker {
             ...bid,
             carrierId,
           }
-        : c
+        : c,
     );
 
     const allBidsReceived = updatedCarriers.every((c) => c.baseRate > 0);
@@ -428,7 +444,7 @@ export class RateNegotiationTracker {
   sendCounterOffer(
     negotiation: NegotiationRound,
     carrierId: string,
-    counterOffer: Omit<CounterOffer, "offerId" | "createdAt">
+    counterOffer: Omit<CounterOffer, "offerId" | "createdAt">,
   ): NegotiationRound {
     const updatedCarriers = negotiation.carriers.map((c) =>
       c.carrierId === carrierId
@@ -443,7 +459,7 @@ export class RateNegotiationTracker {
               } as CounterOffer,
             ],
           }
-        : c
+        : c,
     );
 
     return {
@@ -460,14 +476,14 @@ export class RateNegotiationTracker {
   awardContract(
     negotiation: NegotiationRound,
     carrierId: string,
-    rate: number
+    rate: number,
   ): NegotiationRound {
     const awardDate = new Date();
 
     const updatedCarriers = negotiation.carriers.map((c) =>
       c.carrierId === carrierId
         ? { ...c, awardedAt: awardDate }
-        : { ...c, rejectedAt: awardDate, rejectReason: "Not selected" }
+        : { ...c, rejectedAt: awardDate, rejectReason: "Not selected" },
     );
 
     return {
@@ -518,7 +534,7 @@ export class RateNegotiationTracker {
         averageBid: 0,
         totalDaysToAward: Math.floor(
           (new Date().getTime() - negotiation.createdAt.getTime()) /
-            (1000 * 60 * 60 * 24)
+            (1000 * 60 * 60 * 24),
         ),
       };
     }
@@ -528,10 +544,11 @@ export class RateNegotiationTracker {
     return {
       lowestBid: sorted[0],
       highestBid: sorted[sorted.length - 1],
-      averageBid: activeBids.reduce((sum, b) => sum + b.baseRate, 0) / activeBids.length,
+      averageBid:
+        activeBids.reduce((sum, b) => sum + b.baseRate, 0) / activeBids.length,
       totalDaysToAward: Math.floor(
         (new Date().getTime() - negotiation.createdAt.getTime()) /
-          (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24),
       ),
     };
   }
@@ -553,7 +570,7 @@ export class CapacityPlanner {
     tenantId: string,
     laneId: string | null,
     historicalLoads: { date: Date; loads: number }[],
-    forecastDays: number = 90
+    forecastDays: number = 90,
   ): CapacityForecast {
     const forecastData = this.calculateForecasts(historicalLoads, forecastDays);
     const seasonalIndex = this.calculateSeasonalIndex(historicalLoads);
@@ -572,7 +589,10 @@ export class CapacityPlanner {
       surgeDetected,
       surgeThreshold: this.calculateSurgeThreshold(forecastData),
       backupCarriers: [],
-      recommendations: this.generateRecommendations(surgeDetected, seasonalIndex),
+      recommendations: this.generateRecommendations(
+        surgeDetected,
+        seasonalIndex,
+      ),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -583,7 +603,7 @@ export class CapacityPlanner {
    */
   activateBackupCarriers(
     forecast: CapacityForecast,
-    backupCarrierIds: string[]
+    backupCarrierIds: string[],
   ): CapacityForecast {
     return {
       ...forecast,
@@ -606,7 +626,7 @@ export class CapacityPlanner {
    * Calculate seasonal index
    */
   private calculateSeasonalIndex(
-    historicalLoads: { date: Date; loads: number }[]
+    historicalLoads: { date: Date; loads: number }[],
   ): number {
     if (historicalLoads.length === 0) return 1.0;
 
@@ -633,7 +653,7 @@ export class CapacityPlanner {
    */
   private calculateForecasts(
     historicalLoads: { date: Date; loads: number }[],
-    forecastDays: number
+    forecastDays: number,
   ): ForecastPoint[] {
     const forecastData: ForecastPoint[] = [];
 
@@ -663,7 +683,7 @@ export class CapacityPlanner {
       date.setDate(date.getDate() + i);
 
       const expectedLoads = Math.round(
-        avgLoads * (0.9 + Math.random() * 0.2) // Add some variance
+        avgLoads * (0.9 + Math.random() * 0.2), // Add some variance
       );
 
       forecastData.push({
@@ -695,20 +715,28 @@ export class CapacityPlanner {
    */
   private generateRecommendations(
     surgeDetected: boolean,
-    seasonalIndex: number
+    seasonalIndex: number,
   ): string[] {
     const recommendations: string[] = [];
 
     if (surgeDetected) {
-      recommendations.push("Activate backup carriers for upcoming surge periods");
-      recommendations.push("Consider freight forwarding for peak demand periods");
+      recommendations.push(
+        "Activate backup carriers for upcoming surge periods",
+      );
+      recommendations.push(
+        "Consider freight forwarding for peak demand periods",
+      );
     }
 
     if (seasonalIndex > 1.2) {
-      recommendations.push("Negotiate volume commitments to secure capacity during peaks");
+      recommendations.push(
+        "Negotiate volume commitments to secure capacity during peaks",
+      );
     }
 
-    recommendations.push("Review historical trends and adjust forecasts quarterly");
+    recommendations.push(
+      "Review historical trends and adjust forecasts quarterly",
+    );
 
     return recommendations;
   }
@@ -769,7 +797,7 @@ export class FreightManagementEngine {
   createContractFromAward(
     tenantId: string,
     negotiation: NegotiationRound,
-    rateSheet: Omit<RateSheet, "id" | "contractId">
+    rateSheet: Omit<RateSheet, "id" | "contractId">,
   ): CarrierContract {
     if (!negotiation.selectedCarrierId) {
       throw new Error("No carrier selected in negotiation");
@@ -777,7 +805,7 @@ export class FreightManagementEngine {
 
     const contractId = this.generateId("contract");
     const selectedCarrier = negotiation.carriers.find(
-      (c) => c.carrierId === negotiation.selectedCarrierId
+      (c) => c.carrierId === negotiation.selectedCarrierId,
     );
 
     if (!selectedCarrier) {

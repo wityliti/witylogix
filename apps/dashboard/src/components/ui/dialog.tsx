@@ -1,6 +1,11 @@
 "use client";
 
-import { forwardRef, type ReactNode, type HTMLAttributes, useEffect } from "react";
+import {
+  forwardRef,
+  type ReactNode,
+  type HTMLAttributes,
+  useEffect,
+} from "react";
 import { cn } from "@/lib/utils";
 
 interface DialogProps {
@@ -22,70 +27,96 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
   return <>{children}</>;
 }
 
-function DialogTrigger({ children, asChild }: { children: ReactNode; asChild?: boolean }) {
+function DialogTrigger({
+  children,
+  asChild,
+}: {
+  children: ReactNode;
+  asChild?: boolean;
+}) {
   return <>{children}</>;
 }
 
-const DialogOverlay = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+const DialogOverlay = forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("fixed inset-0 z-50 bg-black/70 backdrop-blur-sm", className)}
+    {...props}
+  />
+));
+DialogOverlay.displayName = "DialogOverlay";
+
+const DialogContent = forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement> & { children: ReactNode }
+>(({ className, children, ...props }, ref) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div
       ref={ref}
       className={cn(
-        "fixed inset-0 z-50 bg-black/70 backdrop-blur-sm",
-        className
+        "bg-wl-bg-elevated border border-white/[0.08] rounded-xl shadow-xl",
+        "w-full max-w-lg p-6",
+        "shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]",
+        className,
       )}
       {...props}
-    />
-  )
-);
-DialogOverlay.displayName = "DialogOverlay";
-
-const DialogContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement> & { children: ReactNode }>(
-  ({ className, children, ...props }, ref) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        ref={ref}
-        className={cn(
-          "bg-wl-bg-elevated border border-white/[0.08] rounded-xl shadow-xl",
-          "w-full max-w-lg p-6",
-          "shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
+    >
+      {children}
     </div>
-  )
-);
+  </div>
+));
 DialogContent.displayName = "DialogContent";
 
 const DialogHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col gap-1.5 mb-4", className)} {...props} />
-  )
+    <div
+      ref={ref}
+      className={cn("flex flex-col gap-1.5 mb-4", className)}
+      {...props}
+    />
+  ),
 );
 DialogHeader.displayName = "DialogHeader";
 
 const DialogFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center justify-end gap-2 mt-4 pt-4 border-t border-white/[0.06]", className)} {...props} />
-  )
+    <div
+      ref={ref}
+      className={cn(
+        "flex items-center justify-end gap-2 mt-4 pt-4 border-t border-white/[0.06]",
+        className,
+      )}
+      {...props}
+    />
+  ),
 );
 DialogFooter.displayName = "DialogFooter";
 
-const DialogTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h2 ref={ref} className={cn("text-lg font-semibold text-wl-text-primary", className)} {...props} />
-  )
-);
+const DialogTitle = forwardRef<
+  HTMLHeadingElement,
+  HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h2
+    ref={ref}
+    className={cn("text-lg font-semibold text-wl-text-primary", className)}
+    {...props}
+  />
+));
 DialogTitle.displayName = "DialogTitle";
 
-const DialogDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-wl-text-secondary", className)} {...props} />
-  )
-);
+const DialogDescription = forwardRef<
+  HTMLParagraphElement,
+  HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-wl-text-secondary", className)}
+    {...props}
+  />
+));
 DialogDescription.displayName = "DialogDescription";
 
 // Modal - Compatibility alias for Dialog with enhanced features
@@ -140,7 +171,7 @@ function Modal({
       className={cn(
         "fixed inset-0 z-50",
         "flex items-center justify-center",
-        "animate-fadeIn"
+        "animate-fadeIn",
       )}
       onClick={onClose}
     >
@@ -159,7 +190,7 @@ function Modal({
           "shadow-lg",
           "animate-slideIn",
           "max-h-[90vh] overflow-y-auto",
-          sizeClasses[size]
+          sizeClasses[size],
         )}
       >
         {/* Header */}
@@ -180,7 +211,7 @@ function Modal({
               "text-wl-text-secondary",
               "cursor-pointer transition-all duration-fast ease-default",
               "ml-auto",
-              "hover:bg-wl-bg-surface hover:text-wl-text-primary"
+              "hover:bg-wl-bg-surface hover:text-wl-text-primary",
             )}
             aria-label="Close modal"
           >
@@ -200,9 +231,7 @@ function Modal({
         </div>
 
         {/* Body */}
-        <div className="px-5 py-5 text-wl-text-primary">
-          {children}
-        </div>
+        <div className="px-5 py-5 text-wl-text-primary">{children}</div>
 
         {/* Footer */}
         {footer && (

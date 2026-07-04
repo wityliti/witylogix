@@ -3,7 +3,11 @@
  * Supports OAuth2, domain-specific endpoints, COQL queries, and bulk operations
  */
 
-import { CRMAdapterBase, FieldMappingEngine, PaginationHandler } from './crm-adapter.js';
+import {
+  CRMAdapterBase,
+  FieldMappingEngine,
+  PaginationHandler,
+} from "./crm-adapter.js";
 import type {
   CRMContact,
   CRMAccount,
@@ -19,7 +23,7 @@ import type {
   OAuth2Token,
   TokenRefreshResponse,
   ZohoCRMConfig,
-} from './types.js';
+} from "./types.js";
 
 // ─── ZOHO-SPECIFIC TYPES ────────────────────────────────────────────
 
@@ -47,7 +51,7 @@ interface ZohoCRMRecord {
 
 interface ZohoBulkOperation {
   id: string;
-  status: 'QUEUED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  status: "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
   result?: {
     success?: Array<{ id: string; message: string }>;
     failed?: Array<{ id: string; message: string; errors: string[] }>;
@@ -64,7 +68,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   constructor(
     config: ZohoCRMConfig,
     connection: CRMConnection,
-    fieldMappings: CRMFieldMapping[] = []
+    fieldMappings: CRMFieldMapping[] = [],
   ) {
     super(connection, fieldMappings);
     this.config = config;
@@ -74,18 +78,18 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   private getBaseUrl(): string {
     const domainMap: Record<string, string> = {
-      com: 'https://www.zohoapis.com',
-      eu: 'https://www.zohoapis.eu',
-      in: 'https://www.zohoapis.in',
-      au: 'https://www.zohoapis.com.au',
-      ca: 'https://www.zohoapis.ca',
-      jp: 'https://www.zohoapis.jp',
+      com: "https://www.zohoapis.com",
+      eu: "https://www.zohoapis.eu",
+      in: "https://www.zohoapis.in",
+      au: "https://www.zohoapis.com.au",
+      ca: "https://www.zohoapis.ca",
+      jp: "https://www.zohoapis.jp",
     };
     return domainMap[this.config.domain] || domainMap.com;
   }
 
   private getApiVersion(): string {
-    return this.config.apiVersion || 'v6';
+    return this.config.apiVersion || "v6";
   }
 
   /**
@@ -105,14 +109,14 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   private async refreshAccessToken(): Promise<void> {
     if (!this.connection.refreshToken) {
-      throw new Error('Refresh token not available for Zoho CRM');
+      throw new Error("Refresh token not available for Zoho CRM");
     }
 
     const response = await fetch(`${this.baseUrl}/oauth/v2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        grant_type: 'refresh_token',
+        grant_type: "refresh_token",
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
         refresh_token: this.connection.refreshToken,
@@ -120,7 +124,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to refresh Zoho CRM token: ${response.statusText}`);
+      throw new Error(
+        `Failed to refresh Zoho CRM token: ${response.statusText}`,
+      );
     }
 
     const data = (await response.json()) as TokenRefreshResponse;
@@ -131,14 +137,14 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   private async zohoRequest<T>(
     method: string,
     endpoint: string,
-    body?: Record<string, unknown> | null
+    body?: Record<string, unknown> | null,
   ): Promise<T> {
     await this.ensureValidToken();
 
     const url = `${this.baseUrl}/crm/${this.getApiVersion()}${endpoint}`;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.connection.accessToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     const options: RequestInit = { method, headers };
@@ -158,16 +164,16 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getContacts(
     filters?: Record<string, unknown>,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMContact>> {
-    let coql = 'SELECT * FROM Contacts';
+    let coql = "SELECT * FROM Contacts";
 
     if (filters?.modifiedAfter) {
       coql += ` WHERE Modified_Time > '${(filters.modifiedAfter as Date).toISOString()}'`;
     }
 
     if (pagination?.sortBy) {
-      coql += ` ORDER BY ${pagination.sortBy} ${pagination.sortOrder || 'asc'}`;
+      coql += ` ORDER BY ${pagination.sortBy} ${pagination.sortOrder || "asc"}`;
     }
 
     const limit = pagination?.limit || 200;
@@ -180,7 +186,10 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
-    }>('GET', `/Contacts?fields=*&limit=${limit}&offset=${pagination?.offset || 0}`);
+    }>(
+      "GET",
+      `/Contacts?fields=*&limit=${limit}&offset=${pagination?.offset || 0}`,
+    );
 
     return {
       data: response.data.map((record) => this.transformZohoToContact(record)),
@@ -191,18 +200,23 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getContact(id: string): Promise<CRMContact> {
     const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
-      'GET',
-      `/Contacts/${id}`
+      "GET",
+      `/Contacts/${id}`,
     );
     return this.transformZohoToContact(response.data[0] as ZohoCRMRecord);
   }
 
-  async createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', contact as unknown as Record<string, unknown>);
+  async createContact(
+    contact: Omit<CRMContact, "id" | "lastModifiedAt">,
+  ): Promise<CRMContact> {
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "contact",
+      contact as unknown as Record<string, unknown>,
+    );
 
     const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Contacts', { data: [zohoData] });
+    }>("POST", "/Contacts", { data: [zohoData] });
 
     const createdId = response.data[0]?.id;
     return this.getContact(createdId);
@@ -210,11 +224,14 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async updateContact(
     id: string,
-    updates: Partial<CRMContact>
+    updates: Partial<CRMContact>,
   ): Promise<CRMContact> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', updates as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "contact",
+      updates as unknown as Record<string, unknown>,
+    );
 
-    await this.zohoRequest('PUT', `/Contacts/${id}`, { data: [zohoData] });
+    await this.zohoRequest("PUT", `/Contacts/${id}`, { data: [zohoData] });
     return this.getContact(id);
   }
 
@@ -222,7 +239,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getAccounts(
     filters?: Record<string, unknown>,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMAccount>> {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
@@ -230,7 +247,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
-    }>('GET', `/Accounts?fields=*&limit=${limit}&offset=${offset}`);
+    }>("GET", `/Accounts?fields=*&limit=${limit}&offset=${offset}`);
 
     return {
       data: response.data.map((record) => this.transformZohoToAccount(record)),
@@ -241,18 +258,23 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getAccount(id: string): Promise<CRMAccount> {
     const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
-      'GET',
-      `/Accounts/${id}`
+      "GET",
+      `/Accounts/${id}`,
     );
     return this.transformZohoToAccount(response.data[0] as ZohoCRMRecord);
   }
 
-  async createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('account', account as unknown as Record<string, unknown>);
+  async createAccount(
+    account: Omit<CRMAccount, "id" | "lastModifiedAt">,
+  ): Promise<CRMAccount> {
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "account",
+      account as unknown as Record<string, unknown>,
+    );
 
     const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Accounts', { data: [zohoData] });
+    }>("POST", "/Accounts", { data: [zohoData] });
 
     const createdId = response.data[0]?.id;
     return this.getAccount(createdId);
@@ -260,11 +282,14 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async updateAccount(
     id: string,
-    updates: Partial<CRMAccount>
+    updates: Partial<CRMAccount>,
   ): Promise<CRMAccount> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('account', updates as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "account",
+      updates as unknown as Record<string, unknown>,
+    );
 
-    await this.zohoRequest('PUT', `/Accounts/${id}`, { data: [zohoData] });
+    await this.zohoRequest("PUT", `/Accounts/${id}`, { data: [zohoData] });
     return this.getAccount(id);
   }
 
@@ -272,7 +297,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getDeals(
     filters?: Record<string, unknown>,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMDeal>> {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
@@ -280,7 +305,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
-    }>('GET', `/Deals?fields=*&limit=${limit}&offset=${offset}`);
+    }>("GET", `/Deals?fields=*&limit=${limit}&offset=${offset}`);
 
     return {
       data: response.data.map((record) => this.transformZohoToDeal(record)),
@@ -291,34 +316,42 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getDeal(id: string): Promise<CRMDeal> {
     const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
-      'GET',
-      `/Deals/${id}`
+      "GET",
+      `/Deals/${id}`,
     );
     return this.transformZohoToDeal(response.data[0] as ZohoCRMRecord);
   }
 
-  async createDeal(deal: Omit<CRMDeal, 'id' | 'lastModifiedAt'>): Promise<CRMDeal> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('deal', deal as unknown as Record<string, unknown>);
+  async createDeal(
+    deal: Omit<CRMDeal, "id" | "lastModifiedAt">,
+  ): Promise<CRMDeal> {
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "deal",
+      deal as unknown as Record<string, unknown>,
+    );
 
     const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Deals', { data: [zohoData] });
+    }>("POST", "/Deals", { data: [zohoData] });
 
     const createdId = response.data[0]?.id;
     return this.getDeal(createdId);
   }
 
   async updateDeal(id: string, updates: Partial<CRMDeal>): Promise<CRMDeal> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('deal', updates as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "deal",
+      updates as unknown as Record<string, unknown>,
+    );
 
-    await this.zohoRequest('PUT', `/Deals/${id}`, { data: [zohoData] });
+    await this.zohoRequest("PUT", `/Deals/${id}`, { data: [zohoData] });
     return this.getDeal(id);
   }
 
   // ─── LEAD OPERATIONS ────────────────────────────────────────────────
 
   async getLeads(
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMLead>> {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
@@ -326,7 +359,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
-    }>('GET', `/Leads?fields=*&limit=${limit}&offset=${offset}`);
+    }>("GET", `/Leads?fields=*&limit=${limit}&offset=${offset}`);
 
     return {
       data: response.data.map((record) => this.transformZohoToLead(record)),
@@ -337,18 +370,23 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getLead(id: string): Promise<CRMLead> {
     const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
-      'GET',
-      `/Leads/${id}`
+      "GET",
+      `/Leads/${id}`,
     );
     return this.transformZohoToLead(response.data[0] as ZohoCRMRecord);
   }
 
-  async createLead(lead: Omit<CRMLead, 'id' | 'lastModifiedAt'>): Promise<CRMLead> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('lead', lead as unknown as Record<string, unknown>);
+  async createLead(
+    lead: Omit<CRMLead, "id" | "lastModifiedAt">,
+  ): Promise<CRMLead> {
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "lead",
+      lead as unknown as Record<string, unknown>,
+    );
 
     const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Leads', { data: [zohoData] });
+    }>("POST", "/Leads", { data: [zohoData] });
 
     const createdId = response.data[0]?.id;
     return this.getLead(createdId);
@@ -358,7 +396,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getActivities(
     recordId: string,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMActivity>> {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
@@ -366,7 +404,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
-    }>('GET', `/Activities?fields=*&limit=${limit}&offset=${offset}`);
+    }>("GET", `/Activities?fields=*&limit=${limit}&offset=${offset}`);
 
     return {
       data: response.data.map((record) => this.transformZohoToActivity(record)),
@@ -375,55 +413,70 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     };
   }
 
-  async createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity> {
-    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('activity', activity as unknown as Record<string, unknown>);
-
-    const response = await this.zohoRequest<{
-      data: Array<{ id: string; message: string }>;
-    }>('POST', '/Activities', { data: [zohoData] });
-
-    const createdId = response.data[0]?.id;
-    return (await this.getActivities('', { limit: 1 })).data[0] as CRMActivity;
-  }
-
-  // ─── BULK OPERATIONS ────────────────────────────────────────────────
-
-  async bulkCreateContacts(contacts: Omit<CRMContact, 'id' | 'lastModifiedAt'>[]): Promise<CRMSyncResult[]> {
-    const zohoData = contacts.map((c) =>
-      this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', c as unknown as Record<string, unknown>)
+  async createActivity(
+    activity: Omit<CRMActivity, "id" | "lastModifiedAt">,
+  ): Promise<CRMActivity> {
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM(
+      "activity",
+      activity as unknown as Record<string, unknown>,
     );
 
     const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Contacts', { data: zohoData });
+    }>("POST", "/Activities", { data: [zohoData] });
+
+    const createdId = response.data[0]?.id;
+    return (await this.getActivities("", { limit: 1 })).data[0] as CRMActivity;
+  }
+
+  // ─── BULK OPERATIONS ────────────────────────────────────────────────
+
+  async bulkCreateContacts(
+    contacts: Omit<CRMContact, "id" | "lastModifiedAt">[],
+  ): Promise<CRMSyncResult[]> {
+    const zohoData = contacts.map((c) =>
+      this.zohoFieldMappingEngine.mapWitylogixToCRM(
+        "contact",
+        c as unknown as Record<string, unknown>,
+      ),
+    );
+
+    const response = await this.zohoRequest<{
+      data: Array<{ id: string; message: string }>;
+    }>("POST", "/Contacts", { data: zohoData });
 
     return response.data.map((item) => ({
       id: item.id,
-      recordType: 'contact',
+      recordType: "contact",
       recordId: item.id,
-      provider: 'zoho',
-      status: 'synced',
+      provider: "zoho",
+      status: "synced",
       message: item.message,
       timestamp: new Date(),
     }));
   }
 
-  async bulkUpdateContacts(contacts: Array<{ id: string; data: Partial<CRMContact> }>): Promise<CRMSyncResult[]> {
+  async bulkUpdateContacts(
+    contacts: Array<{ id: string; data: Partial<CRMContact> }>,
+  ): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) => ({
       id: c.id,
-      ...this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
+      ...this.zohoFieldMappingEngine.mapWitylogixToCRM(
+        "contact",
+        c.data as unknown as Record<string, unknown>,
+      ),
     }));
 
     const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('PUT', '/Contacts', { data: zohoData });
+    }>("PUT", "/Contacts", { data: zohoData });
 
     return response.data.map((item) => ({
       id: item.id,
-      recordType: 'contact',
+      recordType: "contact",
       recordId: item.id,
-      provider: 'zoho',
-      status: 'synced',
+      provider: "zoho",
+      status: "synced",
       message: item.message,
       timestamp: new Date(),
     }));
@@ -432,24 +485,27 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   // ─── UPSERT OPERATIONS ──────────────────────────────────────────────
 
   async upsertContacts(
-    contacts: Array<{ externalId?: string; data: Omit<CRMContact, 'id'> }>
+    contacts: Array<{ externalId?: string; data: Omit<CRMContact, "id"> }>,
   ): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) => ({
       ...(c.externalId && { id: c.externalId }),
-      ...this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
+      ...this.zohoFieldMappingEngine.mapWitylogixToCRM(
+        "contact",
+        c.data as unknown as Record<string, unknown>,
+      ),
     }));
 
     const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Contacts/upsert', { data: zohoData });
+    }>("POST", "/Contacts/upsert", { data: zohoData });
 
     return response.data.map((item) => ({
       id: item.id,
-      recordType: 'contact',
+      recordType: "contact",
       recordId: item.id,
       externalId: item.id,
-      provider: 'zoho',
-      status: 'synced',
+      provider: "zoho",
+      status: "synced",
       message: item.message,
       timestamp: new Date(),
     }));
@@ -460,14 +516,17 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   async search(
     query: string,
     recordType: string,
-    pagination?: CRMPaginationParams
+    pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<unknown>> {
     const limit = pagination?.limit || 200;
 
     const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
-    }>('GET', `/${recordType}?search_text=${encodeURIComponent(query)}&limit=${limit}`);
+    }>(
+      "GET",
+      `/${recordType}?search_text=${encodeURIComponent(query)}&limit=${limit}`,
+    );
 
     return {
       data: response.data,
@@ -480,8 +539,8 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async getNotes(recordId: string): Promise<Array<Record<string, unknown>>> {
     const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
-      'GET',
-      `/Notes?record_id=${recordId}`
+      "GET",
+      `/Notes?record_id=${recordId}`,
     );
     return response.data;
   }
@@ -489,11 +548,11 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   async createNote(
     recordId: string,
     title: string,
-    content: string
+    content: string,
   ): Promise<Record<string, unknown>> {
     const response = await this.zohoRequest<{
       data: Array<{ id: string }>;
-    }>('POST', '/Notes', {
+    }>("POST", "/Notes", {
       data: [
         {
           title,
@@ -511,7 +570,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   async executeCOQL(coql: string): Promise<Array<Record<string, unknown>>> {
     const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
-    }>('POST', '/coql', { select_query: coql });
+    }>("POST", "/coql", { select_query: coql });
 
     return response.data;
   }
@@ -521,15 +580,27 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   private transformZohoToContact(record: ZohoCRMRecord): CRMContact {
     return {
       id: record.id as string,
-      firstName: (record.First_Name || '') as string,
-      lastName: (record.Last_Name || '') as string,
-      email: (record.Email || '') as string,
-      phone: (record.Phone || '') as string,
-      company: (record.Account_Name || '') as string,
-      title: (record.Title || '') as string,
+      firstName: (record.First_Name || "") as string,
+      lastName: (record.Last_Name || "") as string,
+      email: (record.Email || "") as string,
+      phone: (record.Phone || "") as string,
+      company: (record.Account_Name || "") as string,
+      title: (record.Title || "") as string,
       lastModifiedAt: new Date(record.Modified_Time as string),
       customFields: Object.fromEntries(
-        Object.entries(record).filter(([key]) => !['id', 'First_Name', 'Last_Name', 'Email', 'Phone', 'Account_Name', 'Title', 'Modified_Time'].includes(key))
+        Object.entries(record).filter(
+          ([key]) =>
+            ![
+              "id",
+              "First_Name",
+              "Last_Name",
+              "Email",
+              "Phone",
+              "Account_Name",
+              "Title",
+              "Modified_Time",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -537,15 +608,27 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   private transformZohoToAccount(record: ZohoCRMRecord): CRMAccount {
     return {
       id: record.id as string,
-      name: (record.Account_Name || '') as string,
-      industry: (record.Industry || '') as string,
-      website: (record.Website || '') as string,
-      phone: (record.Phone || '') as string,
+      name: (record.Account_Name || "") as string,
+      industry: (record.Industry || "") as string,
+      website: (record.Website || "") as string,
+      phone: (record.Phone || "") as string,
       employees: (record.Employees || 0) as number,
       annualRevenue: (record.Annual_Revenue || 0) as number,
       lastModifiedAt: new Date(record.Modified_Time as string),
       customFields: Object.fromEntries(
-        Object.entries(record).filter(([key]) => !['id', 'Account_Name', 'Industry', 'Website', 'Phone', 'Employees', 'Annual_Revenue', 'Modified_Time'].includes(key))
+        Object.entries(record).filter(
+          ([key]) =>
+            ![
+              "id",
+              "Account_Name",
+              "Industry",
+              "Website",
+              "Phone",
+              "Employees",
+              "Annual_Revenue",
+              "Modified_Time",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -554,15 +637,29 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const accountNameRef = record.Account_Name as { id?: string } | undefined;
     return {
       id: record.id as string,
-      name: (record.Deal_Name || '') as string,
-      companyId: accountNameRef?.id ?? '',
+      name: (record.Deal_Name || "") as string,
+      companyId: accountNameRef?.id ?? "",
       amount: (record.Amount || 0) as number,
-      currency: (record.Currency || 'USD') as string,
-      closeDate: record.Closing_Date ? new Date(record.Closing_Date as string) : undefined,
-      description: (record.Description || '') as string,
+      currency: (record.Currency || "USD") as string,
+      closeDate: record.Closing_Date
+        ? new Date(record.Closing_Date as string)
+        : undefined,
+      description: (record.Description || "") as string,
       lastModifiedAt: new Date(record.Modified_Time as string),
       customFields: Object.fromEntries(
-        Object.entries(record).filter(([key]) => !['id', 'Deal_Name', 'Account_Name', 'Amount', 'Currency', 'Closing_Date', 'Description', 'Modified_Time'].includes(key))
+        Object.entries(record).filter(
+          ([key]) =>
+            ![
+              "id",
+              "Deal_Name",
+              "Account_Name",
+              "Amount",
+              "Currency",
+              "Closing_Date",
+              "Description",
+              "Modified_Time",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -570,16 +667,29 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   private transformZohoToLead(record: ZohoCRMRecord): CRMLead {
     return {
       id: record.id as string,
-      firstName: (record.First_Name || '') as string,
-      lastName: (record.Last_Name || '') as string,
-      email: (record.Email || '') as string,
-      phone: (record.Phone || '') as string,
-      company: (record.Company || '') as string,
-      source: (record.Source || '') as string,
-      status: (record.Lead_Status || '') as string,
+      firstName: (record.First_Name || "") as string,
+      lastName: (record.Last_Name || "") as string,
+      email: (record.Email || "") as string,
+      phone: (record.Phone || "") as string,
+      company: (record.Company || "") as string,
+      source: (record.Source || "") as string,
+      status: (record.Lead_Status || "") as string,
       lastModifiedAt: new Date(record.Modified_Time as string),
       customFields: Object.fromEntries(
-        Object.entries(record).filter(([key]) => !['id', 'First_Name', 'Last_Name', 'Email', 'Phone', 'Company', 'Source', 'Lead_Status', 'Modified_Time'].includes(key))
+        Object.entries(record).filter(
+          ([key]) =>
+            ![
+              "id",
+              "First_Name",
+              "Last_Name",
+              "Email",
+              "Phone",
+              "Company",
+              "Source",
+              "Lead_Status",
+              "Modified_Time",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -587,14 +697,24 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   private transformZohoToActivity(record: ZohoCRMRecord): CRMActivity {
     return {
       id: record.id as string,
-      type: (record.Activity_Type || 'task') as 'call' | 'email' | 'meeting' | 'task' | 'note',
-      subject: (record.Subject || '') as string,
-      description: (record.Description || '') as string,
-      recordType: 'contact',
-      recordId: (record.record_id || '') as string,
-      owner: ((record.Owner as { name?: string } | undefined)?.name ?? '') as string,
-      dueDate: record.Due_Date ? new Date(record.Due_Date as string) : undefined,
-      completedAt: record.Completed_Time ? new Date(record.Completed_Time as string) : undefined,
+      type: (record.Activity_Type || "task") as
+        | "call"
+        | "email"
+        | "meeting"
+        | "task"
+        | "note",
+      subject: (record.Subject || "") as string,
+      description: (record.Description || "") as string,
+      recordType: "contact",
+      recordId: (record.record_id || "") as string,
+      owner: ((record.Owner as { name?: string } | undefined)?.name ??
+        "") as string,
+      dueDate: record.Due_Date
+        ? new Date(record.Due_Date as string)
+        : undefined,
+      completedAt: record.Completed_Time
+        ? new Date(record.Completed_Time as string)
+        : undefined,
       lastModifiedAt: new Date(record.Modified_Time as string),
     };
   }

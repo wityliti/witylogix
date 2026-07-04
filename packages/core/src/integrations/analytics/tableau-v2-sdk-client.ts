@@ -31,7 +31,7 @@ import type {
   RateLimitInfo,
   PaginatedResponse,
   HealthCheckResult,
-} from './analytics-sdk-types.js';
+} from "./analytics-sdk-types.js";
 
 // ─── TABLEAU-SPECIFIC TYPES ─────────────────────────────────────────
 
@@ -125,7 +125,7 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
@@ -141,7 +141,7 @@ class RateLimiter {
   getInfo(): RateLimitInfo {
     const now = Date.now();
     const recentRequests = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
     const remaining = Math.max(0, this.maxRequests - recentRequests.length);
 
@@ -176,15 +176,13 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error: unknown) {
-        lastError =
-          error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         const statusCode =
           lastError instanceof Error &&
-          'statusCode' in lastError &&
-          typeof (lastError as Record<string, unknown>).statusCode === 'number'
-            ? ((lastError as Record<string, unknown>)
-                .statusCode as number)
+          "statusCode" in lastError &&
+          typeof (lastError as Record<string, unknown>).statusCode === "number"
+            ? ((lastError as Record<string, unknown>).statusCode as number)
             : 500;
 
         const shouldRetry =
@@ -197,7 +195,7 @@ class RetryHandler {
         const delay = Math.min(
           this.config.maxDelayMs,
           this.config.initialDelayMs *
-            Math.pow(this.config.backoffMultiplier, attempt)
+            Math.pow(this.config.backoffMultiplier, attempt),
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -215,7 +213,7 @@ class RetryHandler {
  */
 export class TableauV2SDKClient {
   private baseUrl: string;
-  private siteId: string = '';
+  private siteId: string = "";
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
   private readonly authConfig: TableauAuthConfig;
@@ -227,7 +225,7 @@ export class TableauV2SDKClient {
     siteName?: string;
     auth: TableauAuthConfig;
   }) {
-    this.baseUrl = config.instanceUrl.replace(/\/$/, '');
+    this.baseUrl = config.instanceUrl.replace(/\/$/, "");
     this.authConfig = config.auth;
     this.rateLimiter = new RateLimiter(100, 60000);
     this.retryHandler = new RetryHandler({
@@ -265,8 +263,8 @@ export class TableauV2SDKClient {
             };
 
       const response = await fetch(`${this.baseUrl}/api/3.21/auth/signin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -288,15 +286,15 @@ export class TableauV2SDKClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     return this.retryHandler.execute(async () => {
       await this.rateLimiter.acquire();
 
       const token = await this.ensureAuthenticated();
       const headers = {
-        'Content-Type': 'application/json',
-        'X-Tableau-Auth': token,
+        "Content-Type": "application/json",
+        "X-Tableau-Auth": token,
         ...(options.headers as Record<string, string>),
       };
 
@@ -307,7 +305,7 @@ export class TableauV2SDKClient {
 
       if (!response.ok) {
         const error = new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `API request failed: ${response.status} ${response.statusText}`,
         ) as AnalyticsSDKError;
         error.statusCode = response.status;
         error.code = `TABLEAU_API_ERROR`;
@@ -315,8 +313,8 @@ export class TableauV2SDKClient {
         throw error;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
         return (await response.json()) as T;
       }
 
@@ -335,14 +333,18 @@ export class TableauV2SDKClient {
     filter?: string;
   }): Promise<PaginatedResponse<NormalizedDashboard>> {
     const params = new URLSearchParams();
-    if (options?.pageSize) params.append('pageSize', String(options.pageSize));
+    if (options?.pageSize) params.append("pageSize", String(options.pageSize));
     if (options?.pageNumber)
-      params.append('pageNumber', String(options.pageNumber));
-    if (options?.filter) params.append('filter', options.filter);
+      params.append("pageNumber", String(options.pageNumber));
+    if (options?.filter) params.append("filter", options.filter);
 
-    const data = (await this.request<{ pagination: { totalItems: number; pageSize: number; pageNumber: number }; workbook: TableauWorkbook[] }>(
-      `/sites/${this.siteId}/workbooks?${params.toString()}`
-    )) as { pagination: { totalItems: number; pageSize: number; pageNumber: number }; workbook: TableauWorkbook[] };
+    const data = (await this.request<{
+      pagination: { totalItems: number; pageSize: number; pageNumber: number };
+      workbook: TableauWorkbook[];
+    }>(`/sites/${this.siteId}/workbooks?${params.toString()}`)) as {
+      pagination: { totalItems: number; pageSize: number; pageNumber: number };
+      workbook: TableauWorkbook[];
+    };
 
     return {
       items: data.workbook.map((wb) => this.normalizeWorkbook(wb)),
@@ -359,9 +361,9 @@ export class TableauV2SDKClient {
    * Get a specific workbook
    */
   async getWorkbook(workbookId: string): Promise<NormalizedDashboard> {
-    const data = (await this.request<{workbook: TableauWorkbook}>(
-      `/sites/${this.siteId}/workbooks/${workbookId}`
-    )) as {workbook: TableauWorkbook};
+    const data = (await this.request<{ workbook: TableauWorkbook }>(
+      `/sites/${this.siteId}/workbooks/${workbookId}`,
+    )) as { workbook: TableauWorkbook };
 
     return this.normalizeWorkbook(data.workbook);
   }
@@ -376,7 +378,7 @@ export class TableauV2SDKClient {
       description?: string;
       owner?: string;
       project?: string;
-    }
+    },
   ): Promise<NormalizedDashboard> {
     const payload = {
       workbook: {
@@ -387,13 +389,13 @@ export class TableauV2SDKClient {
       },
     };
 
-    const data = (await this.request<{workbook: TableauWorkbook}>(
+    const data = (await this.request<{ workbook: TableauWorkbook }>(
       `/sites/${this.siteId}/workbooks/${workbookId}`,
       {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify(payload),
-      }
-    )) as {workbook: TableauWorkbook};
+      },
+    )) as { workbook: TableauWorkbook };
 
     return this.normalizeWorkbook(data.workbook);
   }
@@ -402,12 +404,9 @@ export class TableauV2SDKClient {
    * Delete a workbook
    */
   async deleteWorkbook(workbookId: string): Promise<void> {
-    await this.request(
-      `/sites/${this.siteId}/workbooks/${workbookId}`,
-      {
-        method: 'DELETE',
-      }
-    );
+    await this.request(`/sites/${this.siteId}/workbooks/${workbookId}`, {
+      method: "DELETE",
+    });
   }
 
   /**
@@ -421,33 +420,33 @@ export class TableauV2SDKClient {
       projectId?: string;
       overwrite?: boolean;
       asJob?: boolean;
-    }
+    },
   ): Promise<{ workbookId: string; jobId?: string }> {
     return this.retryHandler.execute(async () => {
       await this.rateLimiter.acquire();
 
       const fileBuffer = Buffer.from(workbookPath); // In real implementation, read from path
       const params = new URLSearchParams();
-      params.append('workbook', options.name);
-      if (options.overwrite) params.append('overwrite', 'true');
-      if (options.asJob) params.append('asJob', 'true');
+      params.append("workbook", options.name);
+      if (options.overwrite) params.append("overwrite", "true");
+      if (options.asJob) params.append("asJob", "true");
 
       const formData = new FormData();
       const blob = new Blob([fileBuffer], {
-        type: 'application/octet-stream',
+        type: "application/octet-stream",
       });
-      formData.append('file', blob);
+      formData.append("file", blob);
 
       const token = await this.ensureAuthenticated();
       const response = await fetch(
         `${this.baseUrl}/api/3.21/sites/${this.siteId}/workbooks?${params.toString()}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'X-Tableau-Auth': token,
+            "X-Tableau-Auth": token,
           },
           body: formData,
-        }
+        },
       );
 
       if (!response.ok) {
@@ -459,7 +458,7 @@ export class TableauV2SDKClient {
         job?: { id: string };
       };
       return {
-        workbookId: data.item?.id || '',
+        workbookId: data.item?.id || "",
         jobId: data.job?.id,
       };
     });
@@ -472,7 +471,7 @@ export class TableauV2SDKClient {
    */
   async listViews(workbookId: string): Promise<NormalizedDashboard[]> {
     const data = (await this.request<{ view: TableauView[] }>(
-      `/sites/${this.siteId}/workbooks/${workbookId}/views`
+      `/sites/${this.siteId}/workbooks/${workbookId}/views`,
     )) as { view: TableauView[] };
 
     return data.view.map((v) => this.normalizeView(v));
@@ -483,7 +482,7 @@ export class TableauV2SDKClient {
    */
   async getView(viewId: string): Promise<NormalizedDashboard> {
     const data = (await this.request<{ view: TableauView }>(
-      `/sites/${this.siteId}/views/${viewId}`
+      `/sites/${this.siteId}/views/${viewId}`,
     )) as { view: TableauView };
 
     return this.normalizeView(data.view);
@@ -496,7 +495,7 @@ export class TableauV2SDKClient {
    */
   async listDatasources(): Promise<NormalizedDataset[]> {
     const data = (await this.request<{ datasource: TableauDatasource[] }>(
-      `/sites/${this.siteId}/datasources`
+      `/sites/${this.siteId}/datasources`,
     )) as { datasource: TableauDatasource[] };
 
     return data.datasource.map((ds) => this.normalizeDatasource(ds));
@@ -507,7 +506,7 @@ export class TableauV2SDKClient {
    */
   async getDatasource(datasourceId: string): Promise<NormalizedDataset> {
     const data = (await this.request<{ datasource: TableauDatasource }>(
-      `/sites/${this.siteId}/datasources/${datasourceId}`
+      `/sites/${this.siteId}/datasources/${datasourceId}`,
     )) as { datasource: TableauDatasource };
 
     return this.normalizeDatasource(data.datasource);
@@ -519,7 +518,7 @@ export class TableauV2SDKClient {
   async refreshExtract(datasourceId: string): Promise<{ taskId: string }> {
     const data = (await this.request<{ task: { id: string } }>(
       `/sites/${this.siteId}/datasources/${datasourceId}/refresh`,
-      { method: 'POST', body: JSON.stringify({}) }
+      { method: "POST", body: JSON.stringify({}) },
     )) as { task: { id: string } };
 
     return { taskId: data.task.id };
@@ -537,7 +536,7 @@ export class TableauV2SDKClient {
       viewId?: string;
       baseUrl?: string;
       expiresIn?: number;
-    }
+    },
   ): Promise<EmbedConfig> {
     const payload = {
       username,
@@ -546,18 +545,20 @@ export class TableauV2SDKClient {
     };
 
     const data = (await this.request<{ credentials: { ticket: string } }>(
-      `/sites/${this.siteId}/views/${options?.viewId || 'default'}/trusted`,
+      `/sites/${this.siteId}/views/${options?.viewId || "default"}/trusted`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(payload),
-      }
+      },
     )) as { credentials: { ticket: string } };
 
     return {
-      type: 'view',
-      contentId: options?.viewId || '',
+      type: "view",
+      contentId: options?.viewId || "",
       token: data.credentials.ticket,
-      tokenExpiresAt: new Date(Date.now() + (options?.expiresIn || 3600) * 1000),
+      tokenExpiresAt: new Date(
+        Date.now() + (options?.expiresIn || 3600) * 1000,
+      ),
       url: `${options?.baseUrl || this.baseUrl}/trusted/${data.credentials.ticket}/views`,
     };
   }
@@ -566,18 +567,18 @@ export class TableauV2SDKClient {
    * Generate JWT token for embed (connected apps)
    */
   async generateConnectedAppToken(
-    config: EmbedConfig
+    config: EmbedConfig,
   ): Promise<{ token: string; expiresAt: Date }> {
     // In real implementation, would use HS256 to sign JWT with connected app secret
     const payload = {
-      iss: this.authConfig.jwtSecret || 'tableau-sdk',
+      iss: this.authConfig.jwtSecret || "tableau-sdk",
       sub: config.contentId,
-      scope: ['tableau:content:read'],
+      scope: ["tableau:content:read"],
       exp: Math.floor(Date.now() / 1000) + 3600,
     };
 
     const tokenStr = JSON.stringify(payload);
-    const token = Buffer.from(tokenStr).toString('base64');
+    const token = Buffer.from(tokenStr).toString("base64");
 
     return {
       token,
@@ -596,9 +597,9 @@ export class TableauV2SDKClient {
     const data = (await this.request<{ data: Record<string, unknown> }>(
       `/sites/${this.siteId}/metadata/query`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(payload),
-      }
+      },
     )) as { data: Record<string, unknown> };
 
     return data.data;
@@ -610,7 +611,7 @@ export class TableauV2SDKClient {
    * Create a subscription
    */
   async createSubscription(
-    config: SubscriptionConfig
+    config: SubscriptionConfig,
   ): Promise<SubscriptionConfig> {
     const payload = {
       subscription: {
@@ -625,9 +626,9 @@ export class TableauV2SDKClient {
     const data = (await this.request<{ subscription: { id: string } }>(
       `/sites/${this.siteId}/subscriptions`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(payload),
-      }
+      },
     )) as { subscription: { id: string } };
 
     return { ...config, id: data.subscription.id };
@@ -638,7 +639,7 @@ export class TableauV2SDKClient {
    */
   async listSubscriptions(): Promise<SubscriptionConfig[]> {
     const data = (await this.request<{ subscription: TableauSubscription[] }>(
-      `/sites/${this.siteId}/subscriptions`
+      `/sites/${this.siteId}/subscriptions`,
     )) as { subscription: TableauSubscription[] };
 
     return data.subscription.map((s) => this.normalizeSubscription(s));
@@ -650,7 +651,7 @@ export class TableauV2SDKClient {
   async deleteSubscription(subscriptionId: string): Promise<void> {
     await this.request(
       `/sites/${this.siteId}/subscriptions/${subscriptionId}`,
-      { method: 'DELETE' }
+      { method: "DELETE" },
     );
   }
 
@@ -660,13 +661,11 @@ export class TableauV2SDKClient {
    * Get permissions for a workbook
    */
   async getWorkbookPermissions(
-    workbookId: string
+    workbookId: string,
   ): Promise<Array<{ grantee: string; role: string }>> {
     const data = (await this.request<{
       permission: Array<{ grantee: { id: string }; role: string }>;
-    }>(
-      `/sites/${this.siteId}/workbooks/${workbookId}/permissions`
-    )) as {
+    }>(`/sites/${this.siteId}/workbooks/${workbookId}/permissions`)) as {
       permission: Array<{ grantee: { id: string }; role: string }>;
     };
 
@@ -682,21 +681,21 @@ export class TableauV2SDKClient {
   async addWorkbookPermission(
     workbookId: string,
     granteeId: string,
-    role: string
+    role: string,
   ): Promise<void> {
     const payload = {
       permission: {
         grantee: { id: granteeId },
-        capabilities: [{ name: role, mode: 'Allow' }],
+        capabilities: [{ name: role, mode: "Allow" }],
       },
     };
 
     await this.request(
       `/sites/${this.siteId}/workbooks/${workbookId}/permissions`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(payload),
-      }
+      },
     );
   }
 
@@ -706,27 +705,23 @@ export class TableauV2SDKClient {
    * Add a workbook to favorites
    */
   async addToFavorites(workbookId: string): Promise<void> {
-    await this.request(
-      `/sites/${this.siteId}/favorites`,
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          favorite: {
-            workbook: { id: workbookId },
-          },
-        }),
-      }
-    );
+    await this.request(`/sites/${this.siteId}/favorites`, {
+      method: "POST",
+      body: JSON.stringify({
+        favorite: {
+          workbook: { id: workbookId },
+        },
+      }),
+    });
   }
 
   /**
    * Remove from favorites
    */
   async removeFromFavorites(favoriteId: string): Promise<void> {
-    await this.request(
-      `/sites/${this.siteId}/favorites/${favoriteId}`,
-      { method: 'DELETE' }
-    );
+    await this.request(`/sites/${this.siteId}/favorites/${favoriteId}`, {
+      method: "DELETE",
+    });
   }
 
   // ─── WEBHOOKS ───────────────────────────────────────────────────
@@ -745,9 +740,9 @@ export class TableauV2SDKClient {
     const data = (await this.request<{ webhook: { id: string } }>(
       `/sites/${this.siteId}/webhooks`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(payload),
-      }
+      },
     )) as { webhook: { id: string } };
 
     return { ...config, id: data.webhook.id };
@@ -757,9 +752,11 @@ export class TableauV2SDKClient {
    * List webhooks
    */
   async listWebhooks(): Promise<WebhookConfig[]> {
-    const data = (await this.request<{ webhook: Array<{ id: string; url: string; event: string }> }>(
-      `/sites/${this.siteId}/webhooks`
-    )) as { webhook: Array<{ id: string; url: string; event: string }> };
+    const data = (await this.request<{
+      webhook: Array<{ id: string; url: string; event: string }>;
+    }>(`/sites/${this.siteId}/webhooks`)) as {
+      webhook: Array<{ id: string; url: string; event: string }>;
+    };
 
     return data.webhook.map((w) => ({
       id: w.id,
@@ -775,10 +772,9 @@ export class TableauV2SDKClient {
    * Delete a webhook
    */
   async deleteWebhook(webhookId: string): Promise<void> {
-    await this.request(
-      `/sites/${this.siteId}/webhooks/${webhookId}`,
-      { method: 'DELETE' }
-    );
+    await this.request(`/sites/${this.siteId}/webhooks/${webhookId}`, {
+      method: "DELETE",
+    });
   }
 
   // ─── EXPORT OPERATIONS ──────────────────────────────────────────
@@ -788,16 +784,16 @@ export class TableauV2SDKClient {
    */
   async exportView(
     viewId: string,
-    format: ExportFormat
+    format: ExportFormat,
   ): Promise<ExportResult> {
     const response = await this.request<ArrayBuffer>(
       `/sites/${this.siteId}/views/${viewId}/${format}`,
-      { method: 'GET' }
+      { method: "GET" },
     );
 
     return {
       id: `export-${Date.now()}`,
-      status: 'completed',
+      status: "completed",
       format,
       fileSize: (response as unknown as Blob).size,
       createdAt: new Date(),
@@ -820,7 +816,7 @@ export class TableauV2SDKClient {
       items: wb.views.map((v) => ({
         id: v.id,
         title: v.name,
-        type: 'chart' as const,
+        type: "chart" as const,
         x: 0,
         y: 0,
         width: 12,
@@ -863,19 +859,17 @@ export class TableauV2SDKClient {
     };
   }
 
-  private normalizeSubscription(
-    s: TableauSubscription
-  ): SubscriptionConfig {
+  private normalizeSubscription(s: TableauSubscription): SubscriptionConfig {
     return {
       id: s.id,
       name: s.subject,
       contentId: s.content.id,
-      contentType: s.content.type as 'dashboard' | 'report' | 'dataset',
+      contentType: s.content.type as "dashboard" | "report" | "dataset",
       recipients: [],
       schedule: {
         id: s.schedule.id,
         name: s.schedule.name,
-        frequency: s.frequency as 'daily' | 'weekly' | 'monthly' | 'hourly',
+        frequency: s.frequency as "daily" | "weekly" | "monthly" | "hourly",
         enabled: true,
       },
       enabled: true,
@@ -897,17 +891,17 @@ export class TableauV2SDKClient {
       const duration = Date.now() - startTime;
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date(),
         responseTimeMs: duration,
       };
     } catch (error: unknown) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date(),
         responseTimeMs: Date.now() - startTime,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         },
       };
     }

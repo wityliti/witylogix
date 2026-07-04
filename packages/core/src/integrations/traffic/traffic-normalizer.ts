@@ -15,7 +15,7 @@ import type {
   DirectionsResult,
   TomTomRoute,
   LatLng,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Traffic Normalizer
@@ -67,7 +67,7 @@ export class TrafficNormalizer {
    * Encode coordinates to polyline
    */
   static encodePolyline(points: Array<[number, number]>): string {
-    let encoded = '';
+    let encoded = "";
     let prevLat = 0;
     let prevLng = 0;
 
@@ -92,7 +92,7 @@ export class TrafficNormalizer {
     value = value << 1;
     if (value < 0) value = ~value;
 
-    let encoded = '';
+    let encoded = "";
     while (value >= 0x20) {
       encoded += String.fromCharCode((0x20 | (value & 0x1f)) + 63);
       value >>= 5;
@@ -106,12 +106,12 @@ export class TrafficNormalizer {
    */
   static normalizeGoogleRoute(result: DirectionsResult): NormalizedRoute {
     if (!result.routes || result.routes.length === 0) {
-      throw new Error('No routes in Google Directions response');
+      throw new Error("No routes in Google Directions response");
     }
 
     const route = result.routes[0];
     if (!route.legs || route.legs.length === 0) {
-      throw new Error('No legs in Google Directions route');
+      throw new Error("No legs in Google Directions route");
     }
 
     let totalDistanceKm = 0;
@@ -133,7 +133,7 @@ export class TrafficNormalizer {
         steps.push({
           distance_km: step.distance.value / 1000,
           duration_min: step.duration.value / 60,
-          instruction: step.html_instructions.replace(/<[^>]*>/g, ''),
+          instruction: step.html_instructions.replace(/<[^>]*>/g, ""),
           polyline: step.polyline.points,
           start_location: {
             lat: step.start_location.lat,
@@ -173,7 +173,10 @@ export class TrafficNormalizer {
   static normalizeTomTomRoute(route: TomTomRoute): NormalizedRoute {
     const totalDistanceKm = route.summary.lengthInMeters / 1000;
     const totalDurationMin = route.summary.travelTimeInSeconds / 60;
-    const totalDurationInTrafficMin = (route.summary.travelTimeInSeconds + route.summary.trafficDelayInSeconds) / 60;
+    const totalDurationInTrafficMin =
+      (route.summary.travelTimeInSeconds +
+        route.summary.trafficDelayInSeconds) /
+      60;
 
     const steps: RouteStep[] = [];
     let distanceAccum = 0;
@@ -182,7 +185,9 @@ export class TrafficNormalizer {
       const legDistanceKm = leg.summary.lengthInMeters / 1000;
       const legDurationMin = leg.summary.travelTimeInSeconds / 60;
 
-      const points = leg.points.map((p) => [p.latitude, p.longitude] as [number, number]);
+      const points = leg.points.map(
+        (p) => [p.latitude, p.longitude] as [number, number],
+      );
       const polyline = this.encodePolyline(points);
 
       steps.push({
@@ -206,7 +211,9 @@ export class TrafficNormalizer {
     // Combine all points for overview polyline
     const allPoints: Array<[number, number]> = [];
     for (const leg of route.legs) {
-      allPoints.push(...leg.points.map((p) => [p.latitude, p.longitude] as [number, number]));
+      allPoints.push(
+        ...leg.points.map((p) => [p.latitude, p.longitude] as [number, number]),
+      );
     }
     const overviewPolyline = this.encodePolyline(allPoints);
 
@@ -241,15 +248,15 @@ export class TrafficNormalizer {
 
     let condition: TrafficCondition;
     if (speedRatio >= 0.9) {
-      condition = 'free_flow';
+      condition = "free_flow";
     } else if (speedRatio >= 0.7) {
-      condition = 'light';
+      condition = "light";
     } else if (speedRatio >= 0.5) {
-      condition = 'moderate';
+      condition = "moderate";
     } else if (speedRatio >= 0.25) {
-      condition = 'heavy';
+      condition = "heavy";
     } else {
-      condition = 'severe';
+      condition = "severe";
     }
 
     return {
@@ -269,22 +276,24 @@ export class TrafficNormalizer {
     routeWithTraffic: NormalizedRoute,
     confidence: number = 0.85,
   ): TrafficImpact {
-    const delayMinutes = routeWithTraffic.duration_in_traffic_min - routeWithoutTraffic.duration_min;
+    const delayMinutes =
+      routeWithTraffic.duration_in_traffic_min -
+      routeWithoutTraffic.duration_min;
 
     // Determine congestion level
     const delayRatio = delayMinutes / routeWithoutTraffic.duration_min;
     let congestionLevel: TrafficCondition;
 
     if (delayRatio < 0.05) {
-      congestionLevel = 'free_flow';
+      congestionLevel = "free_flow";
     } else if (delayRatio < 0.15) {
-      congestionLevel = 'light';
-    } else if (delayRatio < 0.30) {
-      congestionLevel = 'moderate';
-    } else if (delayRatio < 0.50) {
-      congestionLevel = 'heavy';
+      congestionLevel = "light";
+    } else if (delayRatio < 0.3) {
+      congestionLevel = "moderate";
+    } else if (delayRatio < 0.5) {
+      congestionLevel = "heavy";
     } else {
-      congestionLevel = 'severe';
+      congestionLevel = "severe";
     }
 
     // Create affected segments (simple: just one segment for overall route)

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { ReactNode } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,11 +13,11 @@ export default function AnalyticsLayout({ children }: LayoutProps) {
   const pathname = usePathname();
 
   const tabs = [
-    { name: 'Overview', href: '/analytics' },
-    { name: 'Route Performance', href: '/analytics/route-performance' },
-    { name: 'ETA Accuracy', href: '/analytics/eta-accuracy' },
-    { name: 'Reports', href: '/analytics/reports' },
-    { name: 'Dashboards', href: '/analytics/dashboards' },
+    { name: "Overview", href: "/analytics" },
+    { name: "Route Performance", href: "/analytics/route-performance" },
+    { name: "ETA Accuracy", href: "/analytics/eta-accuracy" },
+    { name: "Reports", href: "/analytics/reports" },
+    { name: "Dashboards", href: "/analytics/dashboards" },
   ];
 
   return (
@@ -36,18 +36,19 @@ export default function AnalyticsLayout({ children }: LayoutProps) {
       <div className="border-b border-wl-border-subtle">
         <div className="flex gap-8">
           {tabs.map((tab) => {
-            const isActive = tab.href === '/analytics'
-              ? pathname === '/analytics'
-              : pathname.startsWith(tab.href);
+            const isActive =
+              tab.href === "/analytics"
+                ? pathname === "/analytics"
+                : pathname.startsWith(tab.href);
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
                 className={cn(
-                  'px-1 py-3 text-sm font-medium border-b-2 transition-colors',
+                  "px-1 py-3 text-sm font-medium border-b-2 transition-colors",
                   isActive
-                    ? 'border-wl-primary-500 text-wl-primary-400'
-                    : 'border-transparent text-wl-text-secondary hover:text-wl-text-primary'
+                    ? "border-wl-primary-500 text-wl-primary-400"
+                    : "border-transparent text-wl-text-secondary hover:text-wl-text-primary",
                 )}
               >
                 {tab.name}

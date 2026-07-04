@@ -113,12 +113,28 @@ export type Granularity = "hourly" | "daily" | "weekly" | "monthly";
 /**
  * Supported aggregation functions.
  */
-export type AggregationFunc = "count" | "sum" | "avg" | "min" | "max" | "percentile_50" | "percentile_95" | "percentile_99";
+export type AggregationFunc =
+  | "count"
+  | "sum"
+  | "avg"
+  | "min"
+  | "max"
+  | "percentile_50"
+  | "percentile_95"
+  | "percentile_99";
 
 /**
  * Filter operator for metadata queries.
  */
-export type FilterOperator = "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "contains";
+export type FilterOperator =
+  | "eq"
+  | "neq"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "in"
+  | "contains";
 
 /**
  * A single filter condition on metadata.

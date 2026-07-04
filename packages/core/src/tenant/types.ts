@@ -385,7 +385,7 @@ export class TenantResolutionError extends Error {
       | "TENANT_INACTIVE"
       | "MULTIPLE_MATCHES"
       | "RESOLUTION_FAILED",
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = "TenantResolutionError";
@@ -400,11 +400,9 @@ export class QuotaExceededError extends Error {
   constructor(
     public resource: string, // "requests", "drivers", "vehicles", etc.
     public limit: number,
-    public current: number
+    public current: number,
   ) {
-    super(
-      `Quota exceeded for ${resource}: limit=${limit}, current=${current}`
-    );
+    super(`Quota exceeded for ${resource}: limit=${limit}, current=${current}`);
     this.name = "QuotaExceededError";
   }
 

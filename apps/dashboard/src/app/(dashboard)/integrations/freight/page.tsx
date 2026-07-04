@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Truck } from 'lucide-react';
+import Link from "next/link";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Truck } from "lucide-react";
 
 export default function FreightIntegrationsPage() {
   return (
@@ -14,7 +14,9 @@ export default function FreightIntegrationsPage() {
         subtitle="Manage load boards, rates, bookings, and compliance"
         actions={
           <Link href="/integrations/marketplace">
-            <Button variant="primary" size="sm">Browse Marketplace</Button>
+            <Button variant="primary" size="sm">
+              Browse Marketplace
+            </Button>
           </Link>
         }
       />
@@ -27,11 +29,13 @@ export default function FreightIntegrationsPage() {
           <CardContent>
             <div className="p-12 text-center">
               <Truck className="w-12 h-12 text-wl-text-muted mx-auto mb-4 opacity-40" />
-              <p className="text-wl-text-secondary mb-1">Freight integrations coming soon</p>
+              <p className="text-wl-text-secondary mb-1">
+                Freight integrations coming soon
+              </p>
               <p className="text-sm text-wl-text-muted mb-6 max-w-sm mx-auto">
-                Load board connections for DAT, Truckstop, 123Loadboard, and Direct Freight are
-                not yet available in the marketplace. Check back soon or contact support to
-                request early access.
+                Load board connections for DAT, Truckstop, 123Loadboard, and
+                Direct Freight are not yet available in the marketplace. Check
+                back soon or contact support to request early access.
               </p>
               <div className="flex gap-3 justify-center">
                 <Link href="/integrations/marketplace">

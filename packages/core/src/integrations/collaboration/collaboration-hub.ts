@@ -3,10 +3,10 @@
  * Unified messaging, presence, and notification routing across platforms
  */
 
-import { CollaborationAdapter } from './collaboration-adapter';
-import { SlackClient } from './slack-client';
-import { TeamsClient } from './teams-client';
-import { PusherClient } from './pusher-client';
+import { CollaborationAdapter } from "./collaboration-adapter";
+import { SlackClient } from "./slack-client";
+import { TeamsClient } from "./teams-client";
+import { PusherClient } from "./pusher-client";
 import {
   CollaborationAdapterInterface,
   CollaborationAttachment,
@@ -25,7 +25,7 @@ import {
   ChannelType,
   MessageType,
   PresenceStatus,
-} from './types';
+} from "./types";
 
 export class CollaborationHub {
   private config: CollaborationHubConfig;
@@ -42,13 +42,13 @@ export class CollaborationHub {
 
     // Initialize adapters
     if (config.adapters.slack) {
-      this.adapters.set('slack', new SlackClient(config.adapters.slack));
+      this.adapters.set("slack", new SlackClient(config.adapters.slack));
     }
     if (config.adapters.teams) {
-      this.adapters.set('teams', new TeamsClient(config.adapters.teams));
+      this.adapters.set("teams", new TeamsClient(config.adapters.teams));
     }
     if (config.adapters.pusher) {
-      this.adapters.set('pusher', new PusherClient(config.adapters.pusher));
+      this.adapters.set("pusher", new PusherClient(config.adapters.pusher));
     }
 
     // Initialize message templates
@@ -68,11 +68,9 @@ export class CollaborationHub {
   async connect(): Promise<void> {
     try {
       const promises = Array.from(this.adapters.values()).map((adapter) =>
-        adapter
-          .connect()
-          .catch((error) => {
-            console.error(`Failed to connect adapter: ${error}`);
-          })
+        adapter.connect().catch((error) => {
+          console.error(`Failed to connect adapter: ${error}`);
+        }),
       );
 
       await Promise.all(promises);
@@ -96,7 +94,7 @@ export class CollaborationHub {
       const promises = Array.from(this.adapters.values()).map((adapter) =>
         adapter.disconnect().catch((error) => {
           console.error(`Failed to disconnect adapter: ${error}`);
-        })
+        }),
       );
 
       await Promise.all(promises);
@@ -109,17 +107,22 @@ export class CollaborationHub {
    * Send message to multiple platforms
    */
   async sendCrossplatformMessage(
-    targetChannels: { platform: 'slack' | 'teams' | 'pusher'; channelId: string }[],
+    targetChannels: {
+      platform: "slack" | "teams" | "pusher";
+      channelId: string;
+    }[],
     content: string,
     options?: {
       type?: MessageType;
       richContent?: Record<string, unknown>;
       attachments?: CollaborationAttachment[];
       templateId?: string;
-      formatting?: 'rich' | 'plain' | 'markdown';
+      formatting?: "rich" | "plain" | "markdown";
       metadata?: Record<string, unknown>;
-    }
-  ): Promise<{ platform: string; channelId: string; message: CollaborationMessage }[]> {
+    },
+  ): Promise<
+    { platform: string; channelId: string; message: CollaborationMessage }[]
+  > {
     try {
       // Apply rate limiting
       await this.applyHubRateLimit();
@@ -130,11 +133,11 @@ export class CollaborationHub {
           const formatted = await this.formatMessageForPlatform(
             target.platform,
             content,
-            options
+            options,
           );
 
           return { ...target, formatted };
-        })
+        }),
       );
 
       // Send messages in parallel with semaphore control
@@ -145,7 +148,9 @@ export class CollaborationHub {
       }[] = [];
 
       for (const target of formattedMessages) {
-        while (this.operationSemaphore >= (this.config.maxConcurrentOperations || 5)) {
+        while (
+          this.operationSemaphore >= (this.config.maxConcurrentOperations || 5)
+        ) {
           await new Promise((resolve) => setTimeout(resolve, 10));
         }
 
@@ -165,11 +170,16 @@ export class CollaborationHub {
               richContent: target.formatted.richContent,
               attachments: options?.attachments,
               metadata: options?.metadata,
-            }
+            },
           );
 
           // Track delivery
-          this.trackDelivery(message.id, target.channelId, target.platform, 'sent');
+          this.trackDelivery(
+            message.id,
+            target.channelId,
+            target.platform,
+            "sent",
+          );
 
           results.push({
             platform: target.platform,
@@ -178,12 +188,17 @@ export class CollaborationHub {
           });
         } catch (error) {
           console.error(
-            `Failed to send message to ${target.platform}/${target.channelId}: ${error}`
+            `Failed to send message to ${target.platform}/${target.channelId}: ${error}`,
           );
 
           // Record failure
           const failureId = `${target.platform}:${target.channelId}`;
-          this.trackDelivery(failureId, target.channelId, target.platform, 'failed');
+          this.trackDelivery(
+            failureId,
+            target.channelId,
+            target.platform,
+            "failed",
+          );
         } finally {
           this.operationSemaphore -= 1;
         }
@@ -199,13 +214,13 @@ export class CollaborationHub {
    * Format message for specific platform
    */
   private async formatMessageForPlatform(
-    platform: 'slack' | 'teams' | 'pusher',
+    platform: "slack" | "teams" | "pusher",
     content: string,
     options?: {
       templateId?: string;
-      formatting?: 'rich' | 'plain' | 'markdown';
+      formatting?: "rich" | "plain" | "markdown";
       richContent?: Record<string, unknown>;
-    }
+    },
   ): Promise<{ content: string; richContent?: Record<string, unknown> }> {
     let formatted = content;
     let richContent = options?.richContent;
@@ -214,7 +229,7 @@ export class CollaborationHub {
     if (options?.templateId) {
       const template = this.messageTemplates.get(options.templateId);
       if (template) {
-        if (template.platform === 'all' || template.platform === platform) {
+        if (template.platform === "all" || template.platform === platform) {
           formatted = template.content;
           richContent = template.richContent;
 
@@ -222,8 +237,8 @@ export class CollaborationHub {
           if (template.variables) {
             for (const variable of template.variables) {
               formatted = formatted.replace(
-                new RegExp(`{{${variable}}}`, 'g'),
-                content
+                new RegExp(`{{${variable}}}`, "g"),
+                content,
               );
             }
           }
@@ -233,11 +248,11 @@ export class CollaborationHub {
 
     // Apply platform-specific formatting
     switch (platform) {
-      case 'slack':
+      case "slack":
         return this.formatSlackMessage(formatted, richContent);
-      case 'teams':
+      case "teams":
         return this.formatTeamsMessage(formatted, richContent);
-      case 'pusher':
+      case "pusher":
         return this.formatPusherMessage(formatted, richContent);
       default:
         return { content: formatted, richContent };
@@ -249,13 +264,13 @@ export class CollaborationHub {
    */
   private formatSlackMessage(
     content: string,
-    richContent?: Record<string, unknown>
+    richContent?: Record<string, unknown>,
   ): { content: string; richContent?: Record<string, unknown> } {
     const blocks = richContent?.blocks || [
       {
-        type: 'section',
+        type: "section",
         text: {
-          type: 'mrkdwn',
+          type: "mrkdwn",
           text: content,
         },
       },
@@ -272,14 +287,14 @@ export class CollaborationHub {
    */
   private formatTeamsMessage(
     content: string,
-    richContent?: Record<string, unknown>
+    richContent?: Record<string, unknown>,
   ): { content: string; richContent?: Record<string, unknown> } {
     const adaptiveCards = richContent?.adaptiveCards || [
       {
-        type: 'AdaptiveCard',
+        type: "AdaptiveCard",
         body: [
           {
-            type: 'TextBlock',
+            type: "TextBlock",
             text: content,
             wrap: true,
           },
@@ -298,7 +313,7 @@ export class CollaborationHub {
    */
   private formatPusherMessage(
     content: string,
-    richContent?: Record<string, unknown>
+    richContent?: Record<string, unknown>,
   ): { content: string; richContent?: Record<string, unknown> } {
     return {
       content,
@@ -309,7 +324,9 @@ export class CollaborationHub {
   /**
    * Get aggregated presence across platforms
    */
-  async getCrossPlatformPresence(userId: string): Promise<CrossPlatformPresence | null> {
+  async getCrossPlatformPresence(
+    userId: string,
+  ): Promise<CrossPlatformPresence | null> {
     try {
       const cached = this.crossPlatformPresence.get(userId);
       if (cached && Date.now() - cached.lastUpdateTime.getTime() < 30000) {
@@ -322,7 +339,7 @@ export class CollaborationHub {
         pusher?: CollaborationPresence;
       } = {};
 
-      let aggregatedStatus: PresenceStatus = 'offline';
+      let aggregatedStatus: PresenceStatus = "offline";
 
       for (const [name, adapter] of this.adapters) {
         try {
@@ -331,23 +348,23 @@ export class CollaborationHub {
             platforms[name as keyof typeof platforms] = presence;
 
             // Determine aggregated status (prioritize active)
-            if (presence.status === 'active') {
-              aggregatedStatus = 'active';
+            if (presence.status === "active") {
+              aggregatedStatus = "active";
             } else if (
-              presence.status === 'do_not_disturb' &&
-              aggregatedStatus !== 'active'
+              presence.status === "do_not_disturb" &&
+              aggregatedStatus !== "active"
             ) {
-              aggregatedStatus = 'do_not_disturb';
+              aggregatedStatus = "do_not_disturb";
             } else if (
-              presence.status === 'away' &&
-              aggregatedStatus === 'offline'
+              presence.status === "away" &&
+              aggregatedStatus === "offline"
             ) {
-              aggregatedStatus = 'away';
+              aggregatedStatus = "away";
             }
           }
         } catch (error) {
           console.error(
-            `Failed to get presence from ${name} adapter: ${error}`
+            `Failed to get presence from ${name} adapter: ${error}`,
           );
         }
       }
@@ -372,7 +389,7 @@ export class CollaborationHub {
    */
   async routeNotification(
     message: CollaborationMessage,
-    sourceChannelId: string
+    sourceChannelId: string,
   ): Promise<{
     notified: boolean;
     channels: { platform: string; channelId: string }[];
@@ -385,18 +402,13 @@ export class CollaborationHub {
         if (!rule.enabled) continue;
 
         // Check conditions
-        const matches = this.checkNotificationRuleConditions(
-          rule,
-          message
-        );
+        const matches = this.checkNotificationRuleConditions(rule, message);
 
         if (matches) {
           // Apply actions
           if (rule.actions.notifyChannels) {
             for (const channelId of rule.actions.notifyChannels) {
-              const platform = this.determinePlatformFromChannelId(
-                channelId
-              );
+              const platform = this.determinePlatformFromChannelId(channelId);
               channels.push({ platform, channelId });
             }
           }
@@ -432,21 +444,27 @@ export class CollaborationHub {
    */
   private checkNotificationRuleConditions(
     rule: NotificationRule,
-    message: CollaborationMessage
+    message: CollaborationMessage,
   ): boolean {
     const { conditions } = rule;
 
-    if (conditions.messageType && !conditions.messageType.includes(message.type)) {
+    if (
+      conditions.messageType &&
+      !conditions.messageType.includes(message.type)
+    ) {
       return false;
     }
 
-    if (conditions.platforms && !conditions.platforms.includes(message.platform)) {
+    if (
+      conditions.platforms &&
+      !conditions.platforms.includes(message.platform)
+    ) {
       return false;
     }
 
     if (conditions.keywords && conditions.keywords.length > 0) {
       const hasKeyword = conditions.keywords.some((keyword) =>
-        message.content.toLowerCase().includes(keyword.toLowerCase())
+        message.content.toLowerCase().includes(keyword.toLowerCase()),
       );
       if (!hasKeyword) return false;
     }
@@ -460,8 +478,8 @@ export class CollaborationHub {
   private trackDelivery(
     messageId: string,
     channelId: string,
-    platform: 'slack' | 'teams' | 'pusher',
-    status: 'pending' | 'sent' | 'delivered' | 'failed' | 'read'
+    platform: "slack" | "teams" | "pusher",
+    status: "pending" | "sent" | "delivered" | "failed" | "read",
   ): void {
     if (!this.config.deliveryTrackingEnabled) return;
 
@@ -470,7 +488,7 @@ export class CollaborationHub {
       messageId,
       channelId,
       platform,
-      status: 'pending',
+      status: "pending",
       retryCount: 0,
     };
 
@@ -479,11 +497,11 @@ export class CollaborationHub {
       status,
     };
 
-    if (status === 'sent') {
+    if (status === "sent") {
       updated.sentAt = new Date();
-    } else if (status === 'delivered') {
+    } else if (status === "delivered") {
       updated.deliveredAt = new Date();
-    } else if (status === 'read') {
+    } else if (status === "read") {
       updated.readAt = new Date();
     }
 
@@ -523,15 +541,14 @@ export class CollaborationHub {
                   `Synced from ${
                     Object.keys(presence.platforms).find(
                       (p) =>
-                        presence.platforms[
-                          p as keyof typeof presence.platforms
-                        ]?.status === 'active'
-                    ) || 'multiple'
-                  }`
+                        presence.platforms[p as keyof typeof presence.platforms]
+                          ?.status === "active",
+                    ) || "multiple"
+                  }`,
                 );
               } catch (error) {
                 console.error(
-                  `Failed to sync presence to ${platform}: ${error}`
+                  `Failed to sync presence to ${platform}: ${error}`,
                 );
               }
             }
@@ -549,8 +566,7 @@ export class CollaborationHub {
   private async applyHubRateLimit(): Promise<void> {
     // Simple rate limiting based on max concurrent operations
     while (
-      this.operationSemaphore >=
-      (this.config.maxConcurrentOperations || 5)
+      this.operationSemaphore >= (this.config.maxConcurrentOperations || 5)
     ) {
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
@@ -560,11 +576,11 @@ export class CollaborationHub {
    * Helper to determine platform from channel ID
    */
   private determinePlatformFromChannelId(
-    channelId: string
-  ): 'slack' | 'teams' | 'pusher' {
-    if (channelId.startsWith('slack-')) return 'slack';
-    if (channelId.startsWith('teams-')) return 'teams';
-    if (channelId.startsWith('pusher-')) return 'pusher';
+    channelId: string,
+  ): "slack" | "teams" | "pusher" {
+    if (channelId.startsWith("slack-")) return "slack";
+    if (channelId.startsWith("teams-")) return "teams";
+    if (channelId.startsWith("pusher-")) return "pusher";
     return this.config.primaryPlatform;
   }
 
@@ -579,7 +595,7 @@ export class CollaborationHub {
    * Get specific adapter
    */
   getAdapter(
-    platform: 'slack' | 'teams' | 'pusher'
+    platform: "slack" | "teams" | "pusher",
   ): CollaborationAdapterInterface | undefined {
     return this.adapters.get(platform);
   }
@@ -588,16 +604,13 @@ export class CollaborationHub {
    * Health check
    */
   async health(): Promise<{
-    status: 'healthy' | 'degraded' | 'unhealthy';
-    adapters: Record<
-      string,
-      'healthy' | 'degraded' | 'unhealthy'
-    >;
+    status: "healthy" | "degraded" | "unhealthy";
+    adapters: Record<string, "healthy" | "degraded" | "unhealthy">;
   }> {
     try {
       const adapterHealth: Record<
         string,
-        'healthy' | 'degraded' | 'unhealthy'
+        "healthy" | "degraded" | "unhealthy"
       > = {};
 
       for (const [name, adapter] of this.adapters) {
@@ -606,23 +619,23 @@ export class CollaborationHub {
       }
 
       const allHealthy = Object.values(adapterHealth).every(
-        (status) => status === 'healthy'
+        (status) => status === "healthy",
       );
       const anyUnhealthy = Object.values(adapterHealth).some(
-        (status) => status === 'unhealthy'
+        (status) => status === "unhealthy",
       );
 
-      let status: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+      let status: "healthy" | "degraded" | "unhealthy" = "healthy";
       if (anyUnhealthy) {
-        status = 'unhealthy';
+        status = "unhealthy";
       } else if (!allHealthy) {
-        status = 'degraded';
+        status = "degraded";
       }
 
       return { status, adapters: adapterHealth };
     } catch (error) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         adapters: {},
       };
     }
@@ -639,7 +652,9 @@ export class CollaborationHub {
    * Remove notification rule
    */
   removeNotificationRule(ruleId: string): void {
-    this.notificationRules = this.notificationRules.filter((r) => r.id !== ruleId);
+    this.notificationRules = this.notificationRules.filter(
+      (r) => r.id !== ruleId,
+    );
   }
 
   /**

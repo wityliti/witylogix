@@ -23,12 +23,13 @@ export function ErrorState({
   onAction,
   className,
 }: ErrorStateProps) {
-  const displayMessage = message ?? error?.message ?? "An unexpected error occurred.";
+  const displayMessage =
+    message ?? error?.message ?? "An unexpected error occurred.";
   return (
     <div
       className={cn(
         "flex flex-col items-center justify-center p-12 min-h-80 text-center",
-        className
+        className,
       )}
     >
       {icon ? (

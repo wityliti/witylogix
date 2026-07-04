@@ -162,7 +162,7 @@ export class TruckstopClient extends FreightAdapter {
               scope: "loadboard trucks",
             }).toString(),
           }),
-        "Truckstop authentication"
+        "Truckstop authentication",
       );
 
       if (!response.ok) {
@@ -178,7 +178,7 @@ export class TruckstopClient extends FreightAdapter {
     } catch (error) {
       this.circuitBreaker.recordFailure();
       throw new Error(
-        `Truckstop authentication error: ${error instanceof Error ? error.message : String(error)}`
+        `Truckstop authentication error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -195,7 +195,7 @@ export class TruckstopClient extends FreightAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -214,7 +214,7 @@ export class TruckstopClient extends FreightAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `Truckstop ${method} ${endpoint}`
+        `Truckstop ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -269,7 +269,7 @@ export class TruckstopClient extends FreightAdapter {
           pickupDate: load.pickupDate?.toISOString(),
           deliveryDate: load.deliveryDate?.toISOString(),
         },
-      }
+      },
     );
 
     return this.mapTruckstopLoadToLoadPosting(response);
@@ -294,7 +294,7 @@ export class TruckstopClient extends FreightAdapter {
     const responses = await this.apiRequest<TruckstopLoadResponse[]>(endpoint);
 
     return responses.map((response) =>
-      this.mapTruckstopLoadToLoadPosting(response)
+      this.mapTruckstopLoadToLoadPosting(response),
     );
   }
 
@@ -326,7 +326,7 @@ export class TruckstopClient extends FreightAdapter {
       "POST",
       {
         carrierId,
-      }
+      },
     );
 
     return quote as FreightQuote;
@@ -340,7 +340,7 @@ export class TruckstopClient extends FreightAdapter {
    */
   async getQuotes(loadId: string): Promise<FreightQuote[]> {
     const quotes = await this.apiRequest<FreightQuote[]>(
-      `/api/v1/loads/${loadId}/quotes`
+      `/api/v1/loads/${loadId}/quotes`,
     );
 
     return quotes;
@@ -356,7 +356,7 @@ export class TruckstopClient extends FreightAdapter {
     const confirmation = await this.apiRequest(
       `/api/v1/quotes/${quoteId}/accept`,
       "POST",
-      {}
+      {},
     );
 
     return confirmation as BookingConfirmation;
@@ -369,9 +369,7 @@ export class TruckstopClient extends FreightAdapter {
    * @returns Carrier profile
    */
   async getCarrier(carrierId: string): Promise<CarrierProfile> {
-    const carrier = await this.apiRequest(
-      `/api/v1/carriers/${carrierId}`
-    );
+    const carrier = await this.apiRequest(`/api/v1/carriers/${carrierId}`);
 
     return carrier as CarrierProfile;
   }
@@ -382,7 +380,9 @@ export class TruckstopClient extends FreightAdapter {
    * @param criteria - Search criteria
    * @returns Array of carrier profiles
    */
-  async searchCarriers(criteria: Record<string, unknown>): Promise<CarrierProfile[]> {
+  async searchCarriers(
+    criteria: Record<string, unknown>,
+  ): Promise<CarrierProfile[]> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -407,7 +407,7 @@ export class TruckstopClient extends FreightAdapter {
     const carrier = await this.apiRequest(
       `/api/v1/carriers/${carrierId}/score`,
       "POST",
-      {}
+      {},
     );
 
     return carrier as CarrierProfile;
@@ -421,7 +421,7 @@ export class TruckstopClient extends FreightAdapter {
    */
   async getCarrierSafetyScore(usdotNumber: string): Promise<SafetyScore> {
     const safetyScore = await this.apiRequest(
-      `/api/v1/safety-scores/${usdotNumber}`
+      `/api/v1/safety-scores/${usdotNumber}`,
     );
 
     return safetyScore as SafetyScore;
@@ -436,7 +436,7 @@ export class TruckstopClient extends FreightAdapter {
    */
   async getLaneRate(origin: string, destination: string): Promise<LaneRate> {
     const laneRate = await this.apiRequest(
-      `/api/v1/rates/lane?origin=${origin}&destination=${destination}`
+      `/api/v1/rates/lane?origin=${origin}&destination=${destination}`,
     );
 
     return laneRate as LaneRate;
@@ -450,7 +450,7 @@ export class TruckstopClient extends FreightAdapter {
    */
   async getTracking(trackingNumber: string): Promise<ShipmentTracking> {
     const tracking = await this.apiRequest(
-      `/api/v1/shipments/${trackingNumber}/tracking`
+      `/api/v1/shipments/${trackingNumber}/tracking`,
     );
 
     return tracking as ShipmentTracking;
@@ -463,9 +463,7 @@ export class TruckstopClient extends FreightAdapter {
    * @returns Freight invoice
    */
   async getInvoice(loadId: string): Promise<FreightInvoice> {
-    const invoice = await this.apiRequest(
-      `/api/v1/loads/${loadId}/invoice`
-    );
+    const invoice = await this.apiRequest(`/api/v1/loads/${loadId}/invoice`);
 
     return invoice as FreightInvoice;
   }
@@ -476,9 +474,11 @@ export class TruckstopClient extends FreightAdapter {
    * @param carrierId - Carrier identifier
    * @returns Array of compliance documents
    */
-  async getComplianceDocuments(carrierId: string): Promise<ComplianceDocument[]> {
+  async getComplianceDocuments(
+    carrierId: string,
+  ): Promise<ComplianceDocument[]> {
     const documents = await this.apiRequest<ComplianceDocument[]>(
-      `/api/v1/carriers/${carrierId}/documents`
+      `/api/v1/carriers/${carrierId}/documents`,
     );
 
     return documents;
@@ -490,11 +490,13 @@ export class TruckstopClient extends FreightAdapter {
    * @param carrierData - Carrier information
    * @returns Created carrier profile
    */
-  async onboardCarrier(carrierData: Record<string, unknown>): Promise<CarrierProfile> {
+  async onboardCarrier(
+    carrierData: Record<string, unknown>,
+  ): Promise<CarrierProfile> {
     const carrier = await this.apiRequest(
       `/api/v1/carriers/onboard`,
       "POST",
-      carrierData
+      carrierData,
     );
 
     return carrier as CarrierProfile;
@@ -509,12 +511,12 @@ export class TruckstopClient extends FreightAdapter {
    */
   async uploadComplianceDocument(
     carrierId: string,
-    document: Record<string, unknown>
+    document: Record<string, unknown>,
   ): Promise<ComplianceDocument> {
     const uploaded = await this.apiRequest(
       `/api/v1/carriers/${carrierId}/documents`,
       "POST",
-      document
+      document,
     );
 
     return uploaded as ComplianceDocument;
@@ -529,12 +531,12 @@ export class TruckstopClient extends FreightAdapter {
    */
   async negotiateRate(
     quoteId: string,
-    negotiationData: Record<string, unknown>
+    negotiationData: Record<string, unknown>,
   ): Promise<FreightQuote> {
     const quote = await this.apiRequest(
       `/api/v1/quotes/${quoteId}/negotiate`,
       "POST",
-      negotiationData
+      negotiationData,
     );
 
     return quote as FreightQuote;
@@ -550,7 +552,7 @@ export class TruckstopClient extends FreightAdapter {
     const quote = await this.apiRequest(
       `/api/v1/quotes/${quoteId}/accept-negotiation`,
       "POST",
-      {}
+      {},
     );
 
     return quote as FreightQuote;
@@ -563,7 +565,7 @@ export class TruckstopClient extends FreightAdapter {
    * @returns LoadPosting object
    */
   private mapTruckstopLoadToLoadPosting(
-    response: TruckstopLoadResponse
+    response: TruckstopLoadResponse,
   ): LoadPosting {
     return {
       loadId: response.postId,

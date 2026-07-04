@@ -11,12 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  ChevronDown,
-  ChevronUp,
-  MessageSquare,
-  Plus,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare, Plus } from "lucide-react";
 import { useApiQuery, useApiMutation } from "@/hooks/use-api";
 import { ErrorState } from "@/components/ui/error-state";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
@@ -81,7 +76,9 @@ const faqs: FAQ[] = [
   },
 ];
 
-function getStatusBadge(status: string): "warning" | "info" | "success" | "default" {
+function getStatusBadge(
+  status: string,
+): "warning" | "info" | "success" | "default" {
   switch (status) {
     case "OPEN":
       return "warning";
@@ -116,10 +113,8 @@ export default function SupportPage() {
   } = useApiQuery<TicketsResponse>("/api/v4/support/tickets");
 
   // Create ticket mutation
-  const { execute: createTicket, loading: creating } = useApiMutation<SupportTicket>(
-    "POST",
-    "/api/v4/support/tickets"
-  );
+  const { execute: createTicket, loading: creating } =
+    useApiMutation<SupportTicket>("POST", "/api/v4/support/tickets");
 
   const tickets = ticketsData?.data ?? [];
 
@@ -134,7 +129,7 @@ export default function SupportPage() {
         // error surfaced via mutation hook
       }
     },
-    [formData, createTicket, refetch]
+    [formData, createTicket, refetch],
   );
 
   if (loading) return <LoadingSkeleton />;
@@ -151,7 +146,7 @@ export default function SupportPage() {
       }
       return acc;
     },
-    [] as { category: string; items: FAQ[] }[]
+    [] as { category: string; items: FAQ[] }[],
   );
 
   return (
@@ -159,7 +154,9 @@ export default function SupportPage() {
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Support & Help Center</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Support & Help Center
+          </h1>
           <p className="text-wl-text-secondary text-sm">
             Get help with Witylogix platform and manage support tickets
           </p>
@@ -170,7 +167,9 @@ export default function SupportPage() {
           <div className="flex flex-col gap-4">
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Frequently Asked Questions</CardTitle>
+                <CardTitle className="text-white">
+                  Frequently Asked Questions
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {faqSections.map((section) => (
@@ -182,15 +181,23 @@ export default function SupportPage() {
                       <div key={item.id} className="mb-2">
                         <button
                           onClick={() =>
-                            setExpandedFaq(expandedFaq === item.id ? null : item.id)
+                            setExpandedFaq(
+                              expandedFaq === item.id ? null : item.id,
+                            )
                           }
                           className="w-full flex items-center justify-between p-3 bg-wl-bg-elevated border border-wl-border-default rounded hover:bg-wl-bg-elevated/80 cursor-pointer text-white text-sm font-medium transition-all"
                         >
                           <span className="text-left">{item.q}</span>
                           {expandedFaq === item.id ? (
-                            <ChevronUp size={16} className="flex-shrink-0 ml-2" />
+                            <ChevronUp
+                              size={16}
+                              className="flex-shrink-0 ml-2"
+                            />
                           ) : (
-                            <ChevronDown size={16} className="flex-shrink-0 ml-2" />
+                            <ChevronDown
+                              size={16}
+                              className="flex-shrink-0 ml-2"
+                            />
                           )}
                         </button>
                         {expandedFaq === item.id && (
@@ -218,11 +225,15 @@ export default function SupportPage() {
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                   <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">Subject</label>
+                    <label className="block text-white text-sm font-medium mb-1.5">
+                      Subject
+                    </label>
                     <input
                       type="text"
                       value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subject: e.target.value })
+                      }
                       required
                       minLength={5}
                       className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
@@ -230,7 +241,9 @@ export default function SupportPage() {
                   </div>
 
                   <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">Priority</label>
+                    <label className="block text-white text-sm font-medium mb-1.5">
+                      Priority
+                    </label>
                     <select
                       value={formData.priority}
                       onChange={(e) =>
@@ -254,7 +267,12 @@ export default function SupportPage() {
                     </label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       required
                       minLength={10}
                       className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm min-h-[100px] resize-vertical placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
@@ -290,7 +308,9 @@ export default function SupportPage() {
           <CardContent>
             {error && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center justify-between">
-                <span className="text-sm text-red-400">Failed to load tickets</span>
+                <span className="text-sm text-red-400">
+                  Failed to load tickets
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -308,11 +328,21 @@ export default function SupportPage() {
                     <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
                       Ticket ID
                     </th>
-                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Subject</th>
-                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Priority</th>
-                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Status</th>
-                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Created</th>
-                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">Updated</th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
+                      Subject
+                    </th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
+                      Priority
+                    </th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
+                      Status
+                    </th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
+                      Created
+                    </th>
+                    <th className="p-3 text-left text-wl-text-secondary text-xs font-semibold">
+                      Updated
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -327,7 +357,10 @@ export default function SupportPage() {
                     ))
                   ) : tickets.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-wl-text-secondary text-sm">
+                      <td
+                        colSpan={6}
+                        className="py-8 text-center text-wl-text-secondary text-sm"
+                      >
                         No support tickets yet. Create one above.
                       </td>
                     </tr>
@@ -336,13 +369,15 @@ export default function SupportPage() {
                       <tr
                         key={ticket.id}
                         className={cn(
-                          "border-b border-b-[#1e1e2e] hover:bg-wl-bg-elevated/40 transition-colors"
+                          "border-b border-b-[#1e1e2e] hover:bg-wl-bg-elevated/40 transition-colors",
                         )}
                       >
                         <td className="p-3 text-white text-sm font-medium font-mono">
                           {ticket.id.slice(0, 8).toUpperCase()}
                         </td>
-                        <td className="p-3 text-white text-sm">{ticket.subject}</td>
+                        <td className="p-3 text-white text-sm">
+                          {ticket.subject}
+                        </td>
                         <td className="p-3">
                           <Badge
                             variant={

@@ -3,7 +3,10 @@
  * Mock data for analytics integration tests
  */
 
-import type { RouteData, DeliveryStop } from "../../../packages/core/src/analytics/route-analytics.js";
+import type {
+  RouteData,
+  DeliveryStop,
+} from "../../../packages/core/src/analytics/route-analytics.js";
 
 const today = new Date();
 
@@ -11,7 +14,7 @@ const today = new Date();
  * Create mock delivery stop
  */
 export function createMockDeliveryStop(
-  overrides?: Partial<DeliveryStop>
+  overrides?: Partial<DeliveryStop>,
 ): DeliveryStop {
   return {
     orderId: "order_001",
@@ -63,19 +66,16 @@ export function createMockRoutes(count: number): RouteData[] {
       id: `route_${String(i + 1).padStart(3, "0")}`,
       driverId: `driver_${(i % 5) + 1}`,
       zoneId: `zone_${["north", "south", "east", "west"][i % 4]}`,
-      vehicleType: [
-        "motorcycle",
-        "van",
-        "truck-small",
-        "truck-large",
-      ][i % 4] as "motorcycle" | "van" | "truck-small" | "truck-large",
+      vehicleType: ["motorcycle", "van", "truck-small", "truck-large"][
+        i % 4
+      ] as "motorcycle" | "van" | "truck-small" | "truck-large",
       plannedStartTime: new Date(
-        today.getTime() + (i % 7) * 24 * 60 * 60 * 1000
+        today.getTime() + (i % 7) * 24 * 60 * 60 * 1000,
       ),
       plannedEndTime: new Date(
-        today.getTime() + (i % 7) * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000
+        today.getTime() + (i % 7) * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000,
       ),
-    })
+    }),
   );
 }
 
@@ -91,12 +91,16 @@ export function createMockOnTimeRoute(): RouteData {
       createMockDeliveryStop({
         orderId: "order_1",
         estimatedArrival: new Date(today.getTime() + 30 * 60 * 1000),
-        actualArrival: new Date(today.getTime() + 30 * 60 * 1000 + 2 * 60 * 1000), // 2 min late (within 5 min buffer)
+        actualArrival: new Date(
+          today.getTime() + 30 * 60 * 1000 + 2 * 60 * 1000,
+        ), // 2 min late (within 5 min buffer)
       }),
       createMockDeliveryStop({
         orderId: "order_2",
         estimatedArrival: new Date(today.getTime() + 60 * 60 * 1000),
-        actualArrival: new Date(today.getTime() + 60 * 60 * 1000 - 1 * 60 * 1000), // 1 min early
+        actualArrival: new Date(
+          today.getTime() + 60 * 60 * 1000 - 1 * 60 * 1000,
+        ), // 1 min early
       }),
       createMockDeliveryStop({
         orderId: "order_3",

@@ -16,7 +16,12 @@
  * - FMCSA violation codes (395.3, 395.8, etc.)
  */
 
-import type { LogEntry, DutyStatus, HOSViolation, RuleSet } from "./hos-types.js";
+import type {
+  LogEntry,
+  DutyStatus,
+  HOSViolation,
+  RuleSet,
+} from "./hos-types.js";
 import { HOSCalculator } from "./hos-calculator.js";
 
 /**
@@ -36,18 +41,13 @@ export class ViolationDetector {
     vehicleId: string,
     newLog: LogEntry,
     allLogs: LogEntry[],
-    ruleSet: RuleSet
+    ruleSet: RuleSet,
   ): HOSViolation[] {
     const detectedViolations: HOSViolation[] = [];
 
     // 1. Check for driving after 11h limit
-    const driving11Remaining = HOSCalculator.calculateDrivingRemaining(
-      allLogs
-    );
-    if (
-      newLog.dutyStatus === "DRIVING" &&
-      driving11Remaining <= 0
-    ) {
+    const driving11Remaining = HOSCalculator.calculateDrivingRemaining(allLogs);
+    if (newLog.dutyStatus === "DRIVING" && driving11Remaining <= 0) {
       detectedViolations.push({
         id: `vio_${Date.now()}_11h_active`,
         accountId,
@@ -147,7 +147,7 @@ export class ViolationDetector {
     // 5. Falsified log detection (GPS vs duty status discrepancy)
     const falsificationFlag = this.detectFalsifiedLog(
       newLog,
-      allLogs.slice(-5)
+      allLogs.slice(-5),
     );
     if (falsificationFlag) {
       detectedViolations.push({
@@ -192,13 +192,13 @@ export class ViolationDetector {
     accountId: string,
     vehicleId: string,
     logs: LogEntry[],
-    ruleSet: RuleSet
+    ruleSet: RuleSet,
   ): HOSViolation[] {
     const detectedViolations: HOSViolation[] = [];
 
     const cycleRemaining = HOSCalculator.calculateCycleRemaining(
       logs,
-      ruleSet.cycleRule
+      ruleSet.cycleRule,
     );
 
     if (cycleRemaining < 0) {
@@ -234,12 +234,12 @@ export class ViolationDetector {
    */
   checkAutoResolution(
     violation: HOSViolation,
-    currentLogs: LogEntry[]
+    currentLogs: LogEntry[],
   ): boolean {
     if (!currentLogs || currentLogs.length === 0) return false;
 
     const sortedLogs = [...currentLogs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     // For driving violations, check if adequate rest has been taken
@@ -294,7 +294,7 @@ export class ViolationDetector {
     const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
 
     const recentViolations = violations.filter(
-      (v) => v.createdAt.getTime() >= ninetyDaysAgo
+      (v) => v.createdAt.getTime() >= ninetyDaysAgo,
     );
 
     let score = 0;
@@ -316,7 +316,7 @@ export class ViolationDetector {
 
     // CRITICAL violations weighted 2x
     const criticalCount = recentViolations.filter(
-      (v) => v.severity === "CRITICAL"
+      (v) => v.severity === "CRITICAL",
     ).length;
     score += criticalCount * 2;
 
@@ -329,7 +329,7 @@ export class ViolationDetector {
   getViolations(
     accountId: string,
     driverId: string,
-    days?: number
+    days?: number,
   ): HOSViolation[] {
     const key = `${accountId}:${driverId}`;
     const violations = this.violations.get(key) || [];
@@ -375,8 +375,14 @@ export class ViolationDetector {
    * Detect falsified log by comparing GPS movement to duty status.
    * Heuristic: If driver is "off-duty" but vehicle moved > 5 miles, flag as suspicious.
    */
-  private detectFalsifiedLog(newLog: LogEntry, recentLogs: LogEntry[]): boolean {
-    if (newLog.dutyStatus !== "OFF_DUTY" && newLog.dutyStatus !== "SLEEPER_BERTH") {
+  private detectFalsifiedLog(
+    newLog: LogEntry,
+    recentLogs: LogEntry[],
+  ): boolean {
+    if (
+      newLog.dutyStatus !== "OFF_DUTY" &&
+      newLog.dutyStatus !== "SLEEPER_BERTH"
+    ) {
       return false;
     }
 
@@ -391,7 +397,7 @@ export class ViolationDetector {
         newLog.startLocation.latitude,
         newLog.startLocation.longitude,
         newLog.endLocation.latitude,
-        newLog.endLocation.longitude
+        newLog.endLocation.longitude,
       );
 
       // If off-duty but moved > 5 miles, flag as suspicious
@@ -410,7 +416,7 @@ export class ViolationDetector {
     lat1: number,
     lon1: number,
     lat2: number,
-    lon2: number
+    lon2: number,
   ): number {
     const R = 3959; // Earth radius in miles
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -430,13 +436,13 @@ export class ViolationDetector {
    */
   private updateRepeatOffender(
     driverId: string,
-    violations: HOSViolation[]
+    violations: HOSViolation[],
   ): void {
     if (violations.length === 0) return;
 
     const current = this.repeatOffenders.get(driverId) || 0;
     const criticalCount = violations.filter(
-      (v) => v.severity === "CRITICAL"
+      (v) => v.severity === "CRITICAL",
     ).length;
 
     this.repeatOffenders.set(driverId, current + criticalCount);

@@ -1,6 +1,12 @@
 "use client";
 
-import { forwardRef, useRef, useState, useEffect, type HTMLAttributes } from "react";
+import {
+  forwardRef,
+  useRef,
+  useState,
+  useEffect,
+  type HTMLAttributes,
+} from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,16 +18,22 @@ interface VerificationCodeInputProps extends HTMLAttributes<HTMLDivElement> {
   length?: number;
 }
 
-const VerificationCodeInput = forwardRef<HTMLDivElement, VerificationCodeInputProps>(
-  ({
-    onComplete,
-    error = false,
-    loading = false,
-    disabled = false,
-    length = 6,
-    className,
-    ...props
-  }, ref) => {
+const VerificationCodeInput = forwardRef<
+  HTMLDivElement,
+  VerificationCodeInputProps
+>(
+  (
+    {
+      onComplete,
+      error = false,
+      loading = false,
+      disabled = false,
+      length = 6,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
     const [codes, setCodes] = useState<string[]>(Array(length).fill(""));
     const [activeIndex, setActiveIndex] = useState(0);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -84,7 +96,10 @@ const VerificationCodeInput = forwardRef<HTMLDivElement, VerificationCodeInputPr
       }
     };
 
-    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (
+      index: number,
+      e: React.KeyboardEvent<HTMLInputElement>,
+    ) => {
       if (e.key === "Backspace") {
         e.preventDefault();
         if (codes[index]) {
@@ -138,92 +153,96 @@ const VerificationCodeInput = forwardRef<HTMLDivElement, VerificationCodeInputPr
             animation: pulse-success 0.5s ease-out;
           }
         `}</style>
-        <div
-        ref={ref}
-        className={cn(
-          "w-full space-y-4",
-          className
-        )}
-        {...props}
-      >
-        {/* Code input boxes */}
-        <div
-          className={cn(
-            "flex gap-2 md:gap-3 justify-center",
-            error && !success && "code-input-shake"
+        <div ref={ref} className={cn("w-full space-y-4", className)} {...props}>
+          {/* Code input boxes */}
+          <div
+            className={cn(
+              "flex gap-2 md:gap-3 justify-center",
+              error && !success && "code-input-shake",
+            )}
+          >
+            {Array.from({ length }).map((_, index) => (
+              <input
+                key={index}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={codes[index]}
+                onChange={(e) => handleInputChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onFocus={() => handleFocus(index)}
+                disabled={disabled || loading}
+                className={cn(
+                  "w-12 h-14 md:w-14 md:h-16 flex-shrink-0",
+                  "rounded-lg border-2 text-center text-xl md:text-2xl font-semibold",
+                  "bg-wl-bg-overlay transition-all duration-base",
+                  "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  activeIndex === index && !disabled && !loading
+                    ? "border-wl-primary-500 focus:ring-wl-primary-500/50"
+                    : "border-wl-border-subtle",
+                  loading && "border-wl-primary-500/50",
+                  success &&
+                    "code-input-success bg-wl-success-500/10 border-wl-success-500 text-wl-success-400",
+                  error &&
+                    !success &&
+                    "bg-wl-danger-bg border-wl-danger-500 text-wl-danger-400",
+                  codes[index] &&
+                    !error &&
+                    !success &&
+                    "bg-wl-primary-500/5 text-wl-text-primary",
+                  !codes[index] &&
+                    !error &&
+                    !success &&
+                    "text-wl-text-tertiary",
+                )}
+              />
+            ))}
+          </div>
+
+          {/* Status messages */}
+          {loading && (
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-wl-primary-500 animate-pulse" />
+              <p className="text-sm text-wl-text-secondary">
+                Verifying code...
+              </p>
+            </div>
           )}
-        >
-          {Array.from({ length }).map((_, index) => (
-            <input
-              key={index}
-              ref={(el) => {
-                inputRefs.current[index] = el;
-              }}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={codes[index]}
-              onChange={(e) => handleInputChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              onFocus={() => handleFocus(index)}
-              disabled={disabled || loading}
-              className={cn(
-                "w-12 h-14 md:w-14 md:h-16 flex-shrink-0",
-                "rounded-lg border-2 text-center text-xl md:text-2xl font-semibold",
-                "bg-wl-bg-overlay transition-all duration-base",
-                "focus:outline-none focus:ring-2 focus:ring-offset-2",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                activeIndex === index && !disabled && !loading
-                  ? "border-wl-primary-500 focus:ring-wl-primary-500/50"
-                  : "border-wl-border-subtle",
-                loading && "border-wl-primary-500/50",
-                success && "code-input-success bg-wl-success-500/10 border-wl-success-500 text-wl-success-400",
-                error && !success && "bg-wl-danger-bg border-wl-danger-500 text-wl-danger-400",
-                codes[index] && !error && !success && "bg-wl-primary-500/5 text-wl-text-primary",
-                !codes[index] && !error && !success && "text-wl-text-tertiary"
-              )}
-            />
-          ))}
-        </div>
 
-        {/* Status messages */}
-        {loading && (
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-wl-primary-500 animate-pulse" />
-            <p className="text-sm text-wl-text-secondary">Verifying code...</p>
-          </div>
-        )}
+          {error && !success && (
+            <div className="text-center">
+              <p className="text-sm font-semibold text-wl-danger-400">
+                Invalid verification code
+              </p>
+              <p className="text-xs text-wl-text-tertiary mt-1">
+                Please try again
+              </p>
+            </div>
+          )}
 
-        {error && !success && (
-          <div className="text-center">
-            <p className="text-sm font-semibold text-wl-danger-400">
-              Invalid verification code
+          {success && (
+            <div className="flex items-center justify-center gap-2">
+              <Check className="w-5 h-5 text-wl-success-400" strokeWidth={3} />
+              <p className="text-sm font-semibold text-wl-success-400">
+                Code verified successfully
+              </p>
+            </div>
+          )}
+
+          {/* Helper text */}
+          {!error && !loading && !success && (
+            <p className="text-center text-xs text-wl-text-tertiary">
+              Enter the {length}-digit code sent to your email
             </p>
-            <p className="text-xs text-wl-text-tertiary mt-1">
-              Please try again
-            </p>
-          </div>
-        )}
-
-        {success && (
-          <div className="flex items-center justify-center gap-2">
-            <Check className="w-5 h-5 text-wl-success-400" strokeWidth={3} />
-            <p className="text-sm font-semibold text-wl-success-400">
-              Code verified successfully
-            </p>
-          </div>
-        )}
-
-        {/* Helper text */}
-        {!error && !loading && !success && (
-          <p className="text-center text-xs text-wl-text-tertiary">
-            Enter the {length}-digit code sent to your email
-          </p>
-        )}
+          )}
         </div>
       </>
     );
-  }
+  },
 );
 
 VerificationCodeInput.displayName = "VerificationCodeInput";

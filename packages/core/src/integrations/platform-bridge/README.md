@@ -11,12 +11,14 @@ The Platform Bridge is a critical abstraction that normalizes data from differen
 ### Core Concepts
 
 **Platform Source**: Enum identifying the e-commerce platform
+
 - `SHOPIFY` - Shopify Plus/Standard
 - `WOOCOMMERCE` - WooCommerce
 - `MAGENTO` - Adobe Commerce/Magento
 - `CUSTOM` - Custom platform
 
 **Unified Types**: Common schema for all platforms
+
 - `UnifiedOrder` - Normalized order
 - `UnifiedProduct` - Normalized product
 - `UnifiedCustomer` - Normalized customer
@@ -31,31 +33,41 @@ Converts platform-specific data to unified format.
 #### Usage
 
 ```typescript
-import { DataNormalizer } from '@witylogix/core/integrations/platform-bridge';
+import { DataNormalizer } from "@witylogix/core/integrations/platform-bridge";
 
 // Normalize WooCommerce order
-const wcOrder = { /* WC order data */ };
-const result = DataNormalizer.normalizeOrder('woocommerce', wcOrder);
+const wcOrder = {
+  /* WC order data */
+};
+const result = DataNormalizer.normalizeOrder("woocommerce", wcOrder);
 
 if (result.success) {
   const unifiedOrder: UnifiedOrder = result.data;
   // Use unified order across system
 } else {
-  console.error('Normalization failed:', result.errors);
+  console.error("Normalization failed:", result.errors);
 }
 
 // Normalize product
-const wcProduct = { /* WC product data */ };
-const productResult = DataNormalizer.normalizeProduct('woocommerce', wcProduct);
+const wcProduct = {
+  /* WC product data */
+};
+const productResult = DataNormalizer.normalizeProduct("woocommerce", wcProduct);
 
 // Normalize customer
-const wcCustomer = { /* WC customer data */ };
-const customerResult = DataNormalizer.normalizeCustomer('woocommerce', wcCustomer);
+const wcCustomer = {
+  /* WC customer data */
+};
+const customerResult = DataNormalizer.normalizeCustomer(
+  "woocommerce",
+  wcCustomer,
+);
 ```
 
 #### Supported Conversions
 
 **WooCommerce → Unified**
+
 - Order status: `pending|processing|on-hold|completed|cancelled|refunded|failed` → `pending|confirmed|dispatched|out_for_delivery|delivered|cancelled|returned`
 - Pricing: String prices converted to cents (integers)
 - Addresses: Normalized to common schema
@@ -63,9 +75,11 @@ const customerResult = DataNormalizer.normalizeCustomer('woocommerce', wcCustome
 - Line items: Full mapping with product/variant IDs
 
 **Shopify → Unified**
+
 - (Placeholder for future implementation)
 
 **Magento → Unified**
+
 - (Placeholder for future implementation)
 
 ### 2. WebhookNormalizer
@@ -75,21 +89,21 @@ Converts platform-specific webhook events to unified format.
 #### Usage
 
 ```typescript
-import { WebhookNormalizer } from '@witylogix/core/integrations/platform-bridge';
+import { WebhookNormalizer } from "@witylogix/core/integrations/platform-bridge";
 
 // Identify platform from headers
 const headers = {
-  'x-wc-webhook-id': '123',
-  'x-wc-webhook-topic': 'order.created'
+  "x-wc-webhook-id": "123",
+  "x-wc-webhook-topic": "order.created",
 };
 const platform = WebhookNormalizer.identifyPlatform(headers);
 // Returns: 'woocommerce'
 
 // Normalize webhook event
 const event = WebhookNormalizer.normalizeWebhookEvent(
-  'woocommerce',
-  'order.created',
-  wcOrderPayload
+  "woocommerce",
+  "order.created",
+  wcOrderPayload,
 );
 
 if (event) {
@@ -98,21 +112,25 @@ if (event) {
 }
 
 // Map topic to unified format
-const unifiedTopic = WebhookNormalizer.getUnifiedTopic('woocommerce', 'order.created');
+const unifiedTopic = WebhookNormalizer.getUnifiedTopic(
+  "woocommerce",
+  "order.created",
+);
 // Returns: 'order.created'
 
 // Verify webhook signature
 const isValid = WebhookNormalizer.verifyWebhookSignature(
-  'woocommerce',
+  "woocommerce",
   payload,
   signature,
-  secret
+  secret,
 );
 ```
 
 #### Webhook Topic Mapping
 
 **WooCommerce Topics**
+
 - `order.created` → Unified: `order.created`
 - `order.updated` → Unified: `order.updated`
 - `order.deleted` → Unified: `order.deleted`
@@ -120,6 +138,7 @@ const isValid = WebhookNormalizer.verifyWebhookSignature(
 - `customer.created` → Unified: `customer.created`
 
 **Shopify Topics** (Conversion)
+
 - `orders/created` → Unified: `order.created`
 - `products/create` → Unified: `product.created`
 - `customers/create` → Unified: `customer.created`
@@ -130,26 +149,26 @@ const isValid = WebhookNormalizer.verifyWebhookSignature(
 
 ```typescript
 interface UnifiedOrder {
-  id: string;                           // Internal ID (e.g., "wc-order-123")
-  externalId: string;                   // Platform-specific ID
-  platform: PlatformSource;             // Source platform
-  number: string;                       // Order number/reference
-  status: OrderStatus;                  // Normalized status
-  currency: string;                     // ISO 4217 code
-  createdAt: Date;                      // Order creation timestamp
-  modifiedAt: Date;                     // Last modification timestamp
-  customer: UnifiedCustomer;            // Customer object
-  lineItems: UnifiedLineItem[];         // Ordered products
-  shippingAddress: UnifiedAddress;      // Delivery address
-  billingAddress: UnifiedAddress;       // Billing address
-  paymentMethod: string;                // Payment method name
-  subtotal: number;                     // Pre-tax subtotal in cents
-  taxTotal: number;                     // Total tax in cents
-  shippingTotal: number;                // Shipping cost in cents
-  discountTotal: number;                // Discount amount in cents
-  total: number;                        // Grand total in cents
-  notes: string;                        // Customer notes
-  metadata: Record<string, unknown>;    // Platform-specific metadata
+  id: string; // Internal ID (e.g., "wc-order-123")
+  externalId: string; // Platform-specific ID
+  platform: PlatformSource; // Source platform
+  number: string; // Order number/reference
+  status: OrderStatus; // Normalized status
+  currency: string; // ISO 4217 code
+  createdAt: Date; // Order creation timestamp
+  modifiedAt: Date; // Last modification timestamp
+  customer: UnifiedCustomer; // Customer object
+  lineItems: UnifiedLineItem[]; // Ordered products
+  shippingAddress: UnifiedAddress; // Delivery address
+  billingAddress: UnifiedAddress; // Billing address
+  paymentMethod: string; // Payment method name
+  subtotal: number; // Pre-tax subtotal in cents
+  taxTotal: number; // Total tax in cents
+  shippingTotal: number; // Shipping cost in cents
+  discountTotal: number; // Discount amount in cents
+  total: number; // Grand total in cents
+  notes: string; // Customer notes
+  metadata: Record<string, unknown>; // Platform-specific metadata
 }
 ```
 
@@ -157,24 +176,24 @@ interface UnifiedOrder {
 
 ```typescript
 interface UnifiedProduct {
-  id: string;                           // Internal ID
-  externalId: string;                   // Platform ID
-  platform: PlatformSource;             // Source platform
-  name: string;                         // Product name
-  description: string;                  // Full description
-  sku: string;                          // Stock keeping unit
-  price: number;                        // Current price in cents
-  compareAtPrice?: number;              // Regular/compare price in cents
-  cost?: number;                        // Cost price in cents
-  weight?: number;                      // Weight in pounds/kg
-  status: 'draft' | 'active' | 'archived';  // Product status
-  createdAt: Date;                      // Creation timestamp
-  modifiedAt: Date;                     // Modification timestamp
-  images: UnifiedImage[];               // Product images
-  variants: UnifiedProductVariant[];    // Product variants
-  categories: string[];                 // Category names
-  tags: string[];                       // Product tags
-  metadata: Record<string, unknown>;    // Platform-specific metadata
+  id: string; // Internal ID
+  externalId: string; // Platform ID
+  platform: PlatformSource; // Source platform
+  name: string; // Product name
+  description: string; // Full description
+  sku: string; // Stock keeping unit
+  price: number; // Current price in cents
+  compareAtPrice?: number; // Regular/compare price in cents
+  cost?: number; // Cost price in cents
+  weight?: number; // Weight in pounds/kg
+  status: "draft" | "active" | "archived"; // Product status
+  createdAt: Date; // Creation timestamp
+  modifiedAt: Date; // Modification timestamp
+  images: UnifiedImage[]; // Product images
+  variants: UnifiedProductVariant[]; // Product variants
+  categories: string[]; // Category names
+  tags: string[]; // Product tags
+  metadata: Record<string, unknown>; // Platform-specific metadata
 }
 ```
 
@@ -182,22 +201,22 @@ interface UnifiedProduct {
 
 ```typescript
 interface UnifiedCustomer {
-  id: string;                           // Internal ID
-  externalId: string;                   // Platform ID
-  platform: PlatformSource;             // Source platform
-  email: string;                        // Email address
-  firstName: string;                    // First name
-  lastName: string;                     // Last name
-  phone?: string;                       // Phone number
-  defaultAddress?: UnifiedAddress;      // Primary address
-  shippingAddresses: UnifiedAddress[];  // All shipping addresses
-  billingAddress?: UnifiedAddress;      // Billing address
-  totalOrders: number;                  // Lifetime order count
-  totalSpent: number;                   // Lifetime spending in cents
-  isVerified: boolean;                  // Email verified flag
-  createdAt: Date;                      // Account creation date
-  modifiedAt: Date;                     // Last modified date
-  metadata: Record<string, unknown>;    // Platform-specific metadata
+  id: string; // Internal ID
+  externalId: string; // Platform ID
+  platform: PlatformSource; // Source platform
+  email: string; // Email address
+  firstName: string; // First name
+  lastName: string; // Last name
+  phone?: string; // Phone number
+  defaultAddress?: UnifiedAddress; // Primary address
+  shippingAddresses: UnifiedAddress[]; // All shipping addresses
+  billingAddress?: UnifiedAddress; // Billing address
+  totalOrders: number; // Lifetime order count
+  totalSpent: number; // Lifetime spending in cents
+  isVerified: boolean; // Email verified flag
+  createdAt: Date; // Account creation date
+  modifiedAt: Date; // Last modified date
+  metadata: Record<string, unknown>; // Platform-specific metadata
 }
 ```
 
@@ -212,9 +231,9 @@ interface UnifiedAddress {
   street1: string;
   street2?: string;
   city: string;
-  state: string;                        // State/Province code
-  postalCode: string;                   // ZIP/Postal code
-  country: string;                      // Country code (ISO 3166-1 alpha-2)
+  state: string; // State/Province code
+  postalCode: string; // ZIP/Postal code
+  country: string; // Country code (ISO 3166-1 alpha-2)
   email?: string;
   phone?: string;
   isDefault?: boolean;
@@ -225,15 +244,15 @@ interface UnifiedAddress {
 
 ```typescript
 interface UnifiedWebhookEvent {
-  id: string;                           // Unique event ID
-  platform: PlatformSource;             // Source platform
-  topic: string;                        // Platform-specific topic
-  eventType: 'created' | 'updated' | 'deleted' | 'action_required';
-  resourceType: 'order' | 'product' | 'customer' | 'fulfillment';
-  resourceId: string;                   // ID of affected resource
-  data: UnifiedOrder | UnifiedProduct | UnifiedCustomer;  // Normalized data
-  timestamp: Date;                      // Event timestamp
-  metadata: Record<string, unknown>;    // Platform-specific metadata
+  id: string; // Unique event ID
+  platform: PlatformSource; // Source platform
+  topic: string; // Platform-specific topic
+  eventType: "created" | "updated" | "deleted" | "action_required";
+  resourceType: "order" | "product" | "customer" | "fulfillment";
+  resourceId: string; // ID of affected resource
+  data: UnifiedOrder | UnifiedProduct | UnifiedCustomer; // Normalized data
+  timestamp: Date; // Event timestamp
+  metadata: Record<string, unknown>; // Platform-specific metadata
 }
 ```
 
@@ -245,13 +264,13 @@ All monetary values are stored as **cents (integers)** in unified schema to avoi
 
 ```typescript
 // Input: WooCommerce (decimal strings)
-wcOrder.total = "147.50"
+wcOrder.total = "147.50";
 
 // Conversion
-total = Math.round(parseFloat("147.50") * 100) // 14750 cents
+total = Math.round(parseFloat("147.50") * 100); // 14750 cents
 
 // Output: Unified (integer cents)
-unifiedOrder.total = 14750
+unifiedOrder.total = 14750;
 ```
 
 ### Dates
@@ -273,15 +292,15 @@ unifiedOrder.createdAt = Date(...)
 
 Order statuses are normalized to unified statuses:
 
-| WooCommerce | Unified |
-|---|---|
-| `pending` | `pending` |
+| WooCommerce  | Unified     |
+| ------------ | ----------- |
+| `pending`    | `pending`   |
 | `processing` | `confirmed` |
-| `on-hold` | `pending` |
-| `completed` | `delivered` |
-| `cancelled` | `cancelled` |
-| `refunded` | `returned` |
-| `failed` | `cancelled` |
+| `on-hold`    | `pending`   |
+| `completed`  | `delivered` |
+| `cancelled`  | `cancelled` |
+| `refunded`   | `returned`  |
+| `failed`     | `cancelled` |
 
 ## Error Handling
 
@@ -295,19 +314,19 @@ interface NormalizationResult<T> {
 }
 
 interface NormalizationError {
-  field: string;           // Field that failed
-  value: unknown;          // The problematic value
-  reason: string;          // Error description
+  field: string; // Field that failed
+  value: unknown; // The problematic value
+  reason: string; // Error description
 }
 ```
 
 Example error handling:
 
 ```typescript
-const result = DataNormalizer.normalizeOrder('woocommerce', rawOrder);
+const result = DataNormalizer.normalizeOrder("woocommerce", rawOrder);
 
 if (!result.success) {
-  result.errors?.forEach(error => {
+  result.errors?.forEach((error) => {
     console.error(`Field ${error.field}: ${error.reason}`);
   });
 }
@@ -318,7 +337,7 @@ if (!result.success) {
 ### Order Processing
 
 ```typescript
-import { DataNormalizer } from '@witylogix/core/integrations/platform-bridge';
+import { DataNormalizer } from "@witylogix/core/integrations/platform-bridge";
 
 async function processOrder(platform, rawOrder) {
   // Normalize to unified schema
@@ -340,39 +359,36 @@ async function processOrder(platform, rawOrder) {
 ### Webhook Handling
 
 ```typescript
-import { WebhookNormalizer } from '@witylogix/core/integrations/platform-bridge';
+import { WebhookNormalizer } from "@witylogix/core/integrations/platform-bridge";
 
 async function handleWebhook(headers, body, signature) {
   // Identify platform
   const platform = WebhookNormalizer.identifyPlatform(headers);
-  if (!platform) throw new Error('Unknown platform');
+  if (!platform) throw new Error("Unknown platform");
 
   // Verify signature
-  if (!WebhookNormalizer.verifyWebhookSignature(
-    platform,
-    body,
-    signature,
-    secret
-  )) {
-    throw new Error('Invalid signature');
+  if (
+    !WebhookNormalizer.verifyWebhookSignature(platform, body, signature, secret)
+  ) {
+    throw new Error("Invalid signature");
   }
 
   // Normalize event
-  const topic = headers['x-wc-webhook-topic'] || headers['x-shopify-topic'];
+  const topic = headers["x-wc-webhook-topic"] || headers["x-shopify-topic"];
   const event = WebhookNormalizer.normalizeWebhookEvent(
     platform,
     topic,
-    JSON.parse(body)
+    JSON.parse(body),
   );
 
   if (!event) return; // Could not normalize
 
   // Route by event type
   switch (event.eventType) {
-    case 'created':
+    case "created":
       await handleCreated(event);
       break;
-    case 'updated':
+    case "updated":
       await handleUpdated(event);
       break;
   }
@@ -397,6 +413,7 @@ npm test --workspace=@witylogix/core
 To add a new platform:
 
 1. Create normalizer methods in `DataNormalizer`:
+
    ```typescript
    private static normalizeNewPlatformOrder(order: any): NormalizationResult<UnifiedOrder> {
      // Implementation
@@ -404,6 +421,7 @@ To add a new platform:
    ```
 
 2. Add webhook handler in `WebhookNormalizer`:
+
    ```typescript
    static normalizeNewPlatformWebhook(topic: string, payload: any): UnifiedWebhookEvent | null {
      // Implementation
@@ -442,6 +460,7 @@ To add a new platform:
 ## Support
 
 For integration questions or issues:
+
 - Email: integrations@witylogix.com
 - Docs: https://docs.witylogix.com/platform-bridge
 - Issues: https://github.com/witylogix/platform-bridge/issues

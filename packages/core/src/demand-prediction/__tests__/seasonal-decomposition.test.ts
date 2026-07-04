@@ -4,7 +4,7 @@
  * Tests for trend extraction, seasonal decomposition, and forecasting
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   extractTrend,
   extractSeasonalComponent,
@@ -14,9 +14,9 @@ import {
   forecastMultiSeasonal,
   getSeasonalityStrength,
   getTrendStrength,
-} from '../models/seasonal-decomposition';
+} from "../models/seasonal-decomposition";
 
-describe('Seasonal Decomposition', () => {
+describe("Seasonal Decomposition", () => {
   let sampleSeries: number[];
 
   beforeEach(() => {
@@ -31,8 +31,8 @@ describe('Seasonal Decomposition', () => {
     }
   });
 
-  describe('extractTrend', () => {
-    it('should extract smooth trend from noisy data', () => {
+  describe("extractTrend", () => {
+    it("should extract smooth trend from noisy data", () => {
       const trend = extractTrend(sampleSeries, 24);
 
       expect(trend).toHaveLength(sampleSeries.length);
@@ -46,7 +46,7 @@ describe('Seasonal Decomposition', () => {
       expect(increases / trend.length).toBeGreaterThan(0.5); // 50% non-decreasing (with noise)
     });
 
-    it('should handle different window sizes', () => {
+    it("should handle different window sizes", () => {
       const trend12 = extractTrend(sampleSeries, 12);
       const trend24 = extractTrend(sampleSeries, 24);
 
@@ -62,15 +62,15 @@ describe('Seasonal Decomposition', () => {
       expect(variance24).toBeLessThan(variance12);
     });
 
-    it('should handle edge cases', () => {
+    it("should handle edge cases", () => {
       const short = extractTrend([1, 2, 3, 4, 5], 3);
       expect(short).toHaveLength(5);
       expect(short.every((v) => !isNaN(v))).toBe(true);
     });
   });
 
-  describe('extractSeasonalComponent', () => {
-    it('should extract repeating seasonal pattern', () => {
+  describe("extractSeasonalComponent", () => {
+    it("should extract repeating seasonal pattern", () => {
       const detrended = sampleSeries.map((v, i) => v - (50 + i * 0.1));
       const seasonal = extractSeasonalComponent(detrended, 24);
 
@@ -86,15 +86,15 @@ describe('Seasonal Decomposition', () => {
       }
     });
 
-    it('should be centered around zero', () => {
+    it("should be centered around zero", () => {
       const seasonal = extractSeasonalComponent(sampleSeries, 12);
       const mean = seasonal.reduce((a, b) => a + b, 0) / seasonal.length;
       expect(Math.abs(mean)).toBeLessThan(0.1);
     });
   });
 
-  describe('decomposeSeries', () => {
-    it('should decompose into trend, seasonal, and residual', () => {
+  describe("decomposeSeries", () => {
+    it("should decompose into trend, seasonal, and residual", () => {
       const decomp = decomposeSeries(sampleSeries, 24);
 
       expect(decomp.original).toHaveLength(sampleSeries.length);
@@ -104,12 +104,13 @@ describe('Seasonal Decomposition', () => {
       expect(decomp.seasonality_period).toBe(24);
     });
 
-    it('should reconstruct original approximately', () => {
+    it("should reconstruct original approximately", () => {
       const decomp = decomposeSeries(sampleSeries, 24);
 
       let mse = 0;
       for (let i = 0; i < sampleSeries.length; i++) {
-        const reconstructed = decomp.trend[i] + decomp.seasonal[i] + decomp.residual[i];
+        const reconstructed =
+          decomp.trend[i] + decomp.seasonal[i] + decomp.residual[i];
         mse += Math.pow(sampleSeries[i] - reconstructed, 2);
       }
       mse /= sampleSeries.length;
@@ -117,15 +118,15 @@ describe('Seasonal Decomposition', () => {
       expect(mse).toBeLessThan(10); // Low reconstruction error
     });
 
-    it('should throw on insufficient data', () => {
+    it("should throw on insufficient data", () => {
       expect(() => {
         decomposeSeries([1, 2, 3], 24);
       }).toThrow();
     });
   });
 
-  describe('decomposeMultiSeasonal', () => {
-    it('should handle multiple seasonality periods', () => {
+  describe("decomposeMultiSeasonal", () => {
+    it("should handle multiple seasonality periods", () => {
       const multi = decomposeMultiSeasonal(sampleSeries, [24, 168]);
 
       expect(multi.decompositions.size).toBe(2);
@@ -135,10 +136,11 @@ describe('Seasonal Decomposition', () => {
       expect(multi.residualStdDev).toBeGreaterThan(0);
     });
 
-    it('should improve residuals with multiple periods', () => {
+    it("should improve residuals with multiple periods", () => {
       const single = decomposeSeries(sampleSeries, 24);
       const singleResidualStdDev = Math.sqrt(
-        single.residual.reduce((sum, r) => sum + r * r, 0) / single.residual.length,
+        single.residual.reduce((sum, r) => sum + r * r, 0) /
+          single.residual.length,
       );
 
       const multi = decomposeMultiSeasonal(sampleSeries, [24, 168]);
@@ -147,8 +149,8 @@ describe('Seasonal Decomposition', () => {
     });
   });
 
-  describe('forecastSeasonal', () => {
-    it('should forecast into future', () => {
+  describe("forecastSeasonal", () => {
+    it("should forecast into future", () => {
       const decomp = decomposeSeries(sampleSeries, 24);
       const forecast = forecastSeasonal(decomp, 24);
 
@@ -161,7 +163,7 @@ describe('Seasonal Decomposition', () => {
       expect(forecast.lower.every((l) => l >= 0)).toBe(true);
     });
 
-    it('should have wider bounds for longer horizons', () => {
+    it("should have wider bounds for longer horizons", () => {
       const decomp = decomposeSeries(sampleSeries, 24);
       const forecast = forecastSeasonal(decomp, 48);
 
@@ -181,19 +183,21 @@ describe('Seasonal Decomposition', () => {
       expect(lateMargin).toBeGreaterThan(earlyMargin);
     });
 
-    it('bounds should contain predictions', () => {
+    it("bounds should contain predictions", () => {
       const decomp = decomposeSeries(sampleSeries, 24);
       const forecast = forecastSeasonal(decomp, 12);
 
       for (let i = 0; i < 12; i++) {
-        expect(forecast.predictions[i]).toBeGreaterThanOrEqual(forecast.lower[i]);
+        expect(forecast.predictions[i]).toBeGreaterThanOrEqual(
+          forecast.lower[i],
+        );
         expect(forecast.predictions[i]).toBeLessThanOrEqual(forecast.upper[i]);
       }
     });
   });
 
-  describe('forecastMultiSeasonal', () => {
-    it('should combine multiple seasonal components', () => {
+  describe("forecastMultiSeasonal", () => {
+    it("should combine multiple seasonal components", () => {
       const decomp = decomposeMultiSeasonal(sampleSeries, [24, 168]);
       const forecast = forecastMultiSeasonal(decomp, 24, [24, 168]);
 
@@ -201,7 +205,7 @@ describe('Seasonal Decomposition', () => {
       expect(forecast.predictions.every((p) => p >= 0)).toBe(true);
     });
 
-    it('should produce reasonable confidence intervals', () => {
+    it("should produce reasonable confidence intervals", () => {
       const decomp = decomposeMultiSeasonal(sampleSeries, [24, 168]);
       const forecast = forecastMultiSeasonal(decomp, 24, [24, 168]);
 
@@ -213,8 +217,8 @@ describe('Seasonal Decomposition', () => {
     });
   });
 
-  describe('getSeasonalityStrength', () => {
-    it('should measure seasonal strength', () => {
+  describe("getSeasonalityStrength", () => {
+    it("should measure seasonal strength", () => {
       const decomp = decomposeSeries(sampleSeries, 24);
       const strength = getSeasonalityStrength(decomp);
 
@@ -222,7 +226,7 @@ describe('Seasonal Decomposition', () => {
       expect(strength).toBeLessThanOrEqual(1);
     });
 
-    it('should be higher with strong seasonality', () => {
+    it("should be higher with strong seasonality", () => {
       // Series with strong daily pattern
       const strongSeasonal: number[] = [];
       for (let i = 0; i < 168; i++) {
@@ -241,8 +245,8 @@ describe('Seasonal Decomposition', () => {
     });
   });
 
-  describe('getTrendStrength', () => {
-    it('should measure trend strength', () => {
+  describe("getTrendStrength", () => {
+    it("should measure trend strength", () => {
       const decomp = decomposeSeries(sampleSeries, 24);
       const strength = getTrendStrength(decomp);
 
@@ -250,8 +254,11 @@ describe('Seasonal Decomposition', () => {
       expect(strength).toBeLessThanOrEqual(1);
     });
 
-    it('should detect increasing trends', () => {
-      const increasing: number[] = Array.from({ length: 100 }, (_, i) => 10 + i * 0.5 + Math.random());
+    it("should detect increasing trends", () => {
+      const increasing: number[] = Array.from(
+        { length: 100 },
+        (_, i) => 10 + i * 0.5 + Math.random(),
+      );
       const decomp = decomposeSeries(increasing, 10);
       const strength = getTrendStrength(decomp);
 
@@ -259,8 +266,8 @@ describe('Seasonal Decomposition', () => {
     });
   });
 
-  describe('Edge cases and robustness', () => {
-    it('should handle constant series', () => {
+  describe("Edge cases and robustness", () => {
+    it("should handle constant series", () => {
       const constant = Array(50).fill(42);
       const decomp = decomposeSeries(constant, 10);
 
@@ -268,16 +275,19 @@ describe('Seasonal Decomposition', () => {
       expect(decomp.seasonal.every((s) => Math.abs(s) < 0.1)).toBe(true);
     });
 
-    it('should handle series with zeros', () => {
+    it("should handle series with zeros", () => {
       const withZeros = [0, 5, 10, 5, 0, 5, 10, 5, 0, 5, 10, 5];
       const decomp = decomposeSeries(withZeros, 4);
 
       expect(decomp.original.length).toBe(withZeros.length);
-      expect(decomp.trend.every((t) => typeof t === 'number')).toBe(true);
+      expect(decomp.trend.every((t) => typeof t === "number")).toBe(true);
     });
 
-    it('should handle very large values', () => {
-      const large = Array.from({ length: 100 }, (_, i) => 1000000 + i * 1000 + Math.random() * 1000);
+    it("should handle very large values", () => {
+      const large = Array.from(
+        { length: 100 },
+        (_, i) => 1000000 + i * 1000 + Math.random() * 1000,
+      );
       const decomp = decomposeSeries(large, 10);
 
       expect(decomp.trend.length).toBe(100);

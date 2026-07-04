@@ -5,7 +5,12 @@
  */
 
 export type DriverStatus = "available" | "en-route" | "delivering" | "offline";
-export type DeliveryStatus = "pending" | "en-route" | "delivering" | "completed" | "cancelled";
+export type DeliveryStatus =
+  | "pending"
+  | "en-route"
+  | "delivering"
+  | "completed"
+  | "cancelled";
 
 export interface Location {
   latitude: number;

@@ -11,6 +11,7 @@ Research → Plan → Branch → Execute (10 agents) → Verify → Commit → D
 ### Phase 1: Research (5 min)
 
 Before planning, audit what exists:
+
 - `git status` — clean working tree?
 - Count API vs mock pages: `git ls-files ... | grep page.tsx | while read f; do ...`
 - Check registered routes: `grep 'prefix.*"/api/v4' apps/api/src/server.ts`
@@ -30,6 +31,7 @@ Before planning, audit what exists:
 ### Phase 3: Execute (10-30 min)
 
 Launch Claude agents for each task. Rules:
+
 - Launch agents in parallel when tasks are independent
 - Each agent prompt MUST specify:
   - Working directory
@@ -42,6 +44,7 @@ Launch Claude agents for each task. Rules:
 ### Phase 4: Verify (5 min)
 
 After all agents complete:
+
 1. **Count check**: `git ls-files ... | grep page.tsx | ... | uniq -c` (API vs mock)
 2. **Escaped directory check**: `ls -d apps/dashboard/src/app/\\\\*` (should find nothing)
 3. **Secrets scan**: `git diff HEAD --no-color | grep -iE 'sk_live|sk_test|secret_key|...'`
@@ -65,6 +68,7 @@ EOF
 ```
 
 Rules:
+
 - Use Conventional Commits: `feat`, `fix`, `chore`, `docs`
 - Git identity: `user.email=connect@wityliti.io`, `user.name=youthocrat`
 - NEVER use `git add .` or `git add -A` — add specific files
@@ -85,6 +89,7 @@ sprint-X.X-descriptive-kebab-case-name
 ```
 
 Examples:
+
 - `sprint-9.1-returns-driver-scoring-dispatch`
 - `sprint-9.3-tech-debt-blitz`
 - `sprint-9.4-mass-page-rewiring-design`

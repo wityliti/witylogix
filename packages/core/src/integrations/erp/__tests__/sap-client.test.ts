@@ -3,10 +3,10 @@
  * Comprehensive test suite for SAP Business One / S/4HANA adapter
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { ERPConnection } from '../types.js';
-import { ConnectionStatus } from '../types.js';
-import { SAPClient } from '../sap-client.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import type { ERPConnection } from "../types.js";
+import { ConnectionStatus } from "../types.js";
+import { SAPClient } from "../sap-client.js";
 
 const mockFetch = vi.fn();
 
@@ -17,7 +17,7 @@ function okJson(data: any) {
   return {
     ok: true,
     status: 200,
-    statusText: 'OK',
+    statusText: "OK",
     json: async () => data,
     text: async () => JSON.stringify(data),
     headers: new Headers(),
@@ -28,26 +28,26 @@ function okJson(data: any) {
  * Helper: build a successful JSON response for OData list endpoints
  */
 function okODataList(items: any[], count?: number) {
-  return okJson({ value: items, 'odata.count': count ?? items.length });
+  return okJson({ value: items, "odata.count": count ?? items.length });
 }
 
-describe('SAPClient', () => {
+describe("SAPClient", () => {
   let sapClient: SAPClient;
   let mockConnection: ERPConnection;
 
   beforeEach(() => {
-    vi.stubGlobal('fetch', mockFetch);
+    vi.stubGlobal("fetch", mockFetch);
     mockFetch.mockReset();
 
     mockConnection = {
-      id: 'sap_conn_1',
-      tenantId: 'tenant_1',
-      provider: 'sap',
+      id: "sap_conn_1",
+      tenantId: "tenant_1",
+      provider: "sap",
       status: ConnectionStatus.ACTIVE,
       credentials: {
-        accessToken: 'mock_token',
-        instanceUrl: 'https://my.example.com:50000',
-        sapPassport: 'mock_passport',
+        accessToken: "mock_token",
+        instanceUrl: "https://my.example.com:50000",
+        sapPassport: "mock_passport",
       },
       config: {
         timeout: 30000,
@@ -59,11 +59,11 @@ describe('SAPClient', () => {
     };
 
     sapClient = new SAPClient(mockConnection, {
-      clientId: 'sap_client_id',
-      clientSecret: 'sap_client_secret',
-      redirectUri: 'https://localhost/callback',
-      instanceUrl: 'https://my.example.com:50000',
-      environment: 'sandbox',
+      clientId: "sap_client_id",
+      clientSecret: "sap_client_secret",
+      redirectUri: "https://localhost/callback",
+      instanceUrl: "https://my.example.com:50000",
+      environment: "sandbox",
     });
   });
 
@@ -71,107 +71,119 @@ describe('SAPClient', () => {
     vi.restoreAllMocks();
   });
 
-  describe('Authentication', () => {
-    it('should authenticate with OAuth2', async () => {
-      await sapClient.authenticate('auth_code');
+  describe("Authentication", () => {
+    it("should authenticate with OAuth2", async () => {
+      await sapClient.authenticate("auth_code");
       expect(mockConnection.credentials.accessToken).toBeDefined();
     });
 
-    it('should get authorization URL', () => {
-      const authUrl = sapClient.getAuthorizationUrl('state123');
-      expect(authUrl).toContain('oauth2');
-      expect(authUrl).toContain('client_id=sap_client_id');
+    it("should get authorization URL", () => {
+      const authUrl = sapClient.getAuthorizationUrl("state123");
+      expect(authUrl).toContain("oauth2");
+      expect(authUrl).toContain("client_id=sap_client_id");
     });
   });
 
-  describe('Health Check', () => {
-    it('should check health', async () => {
-      mockFetch.mockResolvedValueOnce(okODataList([{ CardCode: 'C001' }]));
+  describe("Health Check", () => {
+    it("should check health", async () => {
+      mockFetch.mockResolvedValueOnce(okODataList([{ CardCode: "C001" }]));
       const isHealthy = await sapClient.checkHealth();
-      expect(typeof isHealthy).toBe('boolean');
+      expect(typeof isHealthy).toBe("boolean");
     });
   });
 
-  describe('Business Partners (Customers)', () => {
-    it('should create customer', async () => {
+  describe("Business Partners (Customers)", () => {
+    it("should create customer", async () => {
       const customer = {
-        code: 'CUST001',
-        name: 'Test Customer',
-        email: 'customer@example.com',
-        phone: '+1234567890',
+        code: "CUST001",
+        name: "Test Customer",
+        email: "customer@example.com",
+        phone: "+1234567890",
         creditLimit: 10000,
-        currency: 'USD',
+        currency: "USD",
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ CardCode: 'CUST001', CardName: 'Test Customer' }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({ CardCode: "CUST001", CardName: "Test Customer" }),
+      );
 
       const result = await sapClient.createCustomer(customer);
       expect(result.id).toBeDefined();
       expect(result.externalId).toBeDefined();
     });
 
-    it('should get customer', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({
-        CardCode: 'CUST001', CardName: 'Test Customer', Email: 'test@example.com',
-      }));
+    it("should get customer", async () => {
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          CardCode: "CUST001",
+          CardName: "Test Customer",
+          Email: "test@example.com",
+        }),
+      );
 
-      const customer = await sapClient.getCustomer('CUST001');
-      expect(customer).toHaveProperty('name');
+      const customer = await sapClient.getCustomer("CUST001");
+      expect(customer).toHaveProperty("name");
     });
 
-    it('should update customer', async () => {
+    it("should update customer", async () => {
       // PATCH call
       mockFetch.mockResolvedValueOnce(okJson({}));
       // GET call (re-fetch after update)
-      mockFetch.mockResolvedValueOnce(okJson({
-        CardCode: 'CUST001', CardName: 'Test Customer', CreditLimit: 20000,
-      }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          CardCode: "CUST001",
+          CardName: "Test Customer",
+          CreditLimit: 20000,
+        }),
+      );
 
-      const updatedCustomer = await sapClient.updateCustomer('CUST001', {
+      const updatedCustomer = await sapClient.updateCustomer("CUST001", {
         creditLimit: 20000,
       });
       expect(updatedCustomer.creditLimit).toBe(20000);
     });
 
-    it('should query business partners', async () => {
-      mockFetch.mockResolvedValueOnce(okODataList([
-        { CardCode: 'C001', CardName: 'Customer 1' },
-      ], 1));
+    it("should query business partners", async () => {
+      mockFetch.mockResolvedValueOnce(
+        okODataList([{ CardCode: "C001", CardName: "Customer 1" }], 1),
+      );
 
       const result = await sapClient.queryBusinessPartners(undefined, {
         skip: 0,
         limit: 10,
       });
       expect(result.items).toBeDefined();
-      expect(typeof result.total).toBe('number');
-      expect(typeof result.hasMore).toBe('boolean');
+      expect(typeof result.total).toBe("number");
+      expect(typeof result.hasMore).toBe("boolean");
     });
 
-    it('should create vendor', async () => {
+    it("should create vendor", async () => {
       const vendor = {
-        code: 'VEND001',
-        name: 'Test Vendor',
-        email: 'vendor@example.com',
-        phone: '+1987654321',
+        code: "VEND001",
+        name: "Test Vendor",
+        email: "vendor@example.com",
+        phone: "+1987654321",
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ CardCode: 'VEND001', CardName: 'Test Vendor' }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({ CardCode: "VEND001", CardName: "Test Vendor" }),
+      );
 
       const result = await sapClient.createVendor(vendor);
       expect(result.id).toBeDefined();
     });
   });
 
-  describe('Sales Orders', () => {
-    it('should create sales order', async () => {
+  describe("Sales Orders", () => {
+    it("should create sales order", async () => {
       const order = {
-        customerId: 'CUST001',
+        customerId: "CUST001",
         orderDate: new Date(),
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         lineItems: [
           {
-            itemCode: 'ITEM001',
-            itemName: 'Test Item',
+            itemCode: "ITEM001",
+            itemName: "Test Item",
             quantity: 5,
             unitPrice: 100,
             totalAmount: 500,
@@ -180,79 +192,106 @@ describe('SAPClient', () => {
         total: 500,
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1', DocNum: 'SO001' }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({ DocEntry: "1", DocNum: "SO001" }),
+      );
 
       const result = await sapClient.createOrder(order);
       expect(result.id).toBeDefined();
       expect(result.externalId).toBeDefined();
     });
 
-    it('should get sales order', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({
-        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
-        DocDate: '2024-01-01', DocumentLines: [],
-      }));
+    it("should get sales order", async () => {
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          DocEntry: "1",
+          DocNum: "SO001",
+          CardCode: "C001",
+          DocDate: "2024-01-01",
+          DocumentLines: [],
+        }),
+      );
 
-      const order = await sapClient.getOrder('1');
-      expect(order).toHaveProperty('orderNumber');
+      const order = await sapClient.getOrder("1");
+      expect(order).toHaveProperty("orderNumber");
     });
 
-    it('should update sales order', async () => {
+    it("should update sales order", async () => {
       // PATCH
       mockFetch.mockResolvedValueOnce(okJson({}));
       // GET (re-fetch)
-      mockFetch.mockResolvedValueOnce(okJson({
-        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
-        DocDate: '2024-01-01', DocumentLines: [],
-      }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          DocEntry: "1",
+          DocNum: "SO001",
+          CardCode: "C001",
+          DocDate: "2024-01-01",
+          DocumentLines: [],
+        }),
+      );
 
-      const updatedOrder = await sapClient.updateOrder('1', {
-        status: 'completed',
+      const updatedOrder = await sapClient.updateOrder("1", {
+        status: "completed",
       });
-      expect(updatedOrder.status).toBe('completed');
+      expect(updatedOrder.status).toBe("completed");
     });
 
-    it('should close sales order', async () => {
+    it("should close sales order", async () => {
       // getOrder (inside closeOrder)
-      mockFetch.mockResolvedValueOnce(okJson({
-        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
-        DocDate: '2024-01-01', DocumentLines: [],
-      }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          DocEntry: "1",
+          DocNum: "SO001",
+          CardCode: "C001",
+          DocDate: "2024-01-01",
+          DocumentLines: [],
+        }),
+      );
       // updateOrder -> PATCH
       mockFetch.mockResolvedValueOnce(okJson({}));
       // updateOrder -> GET
-      mockFetch.mockResolvedValueOnce(okJson({
-        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
-        DocDate: '2024-01-01', DocumentLines: [],
-      }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          DocEntry: "1",
+          DocNum: "SO001",
+          CardCode: "C001",
+          DocDate: "2024-01-01",
+          DocumentLines: [],
+        }),
+      );
 
-      await expect(sapClient.closeOrder('1')).resolves.toBeUndefined();
+      await expect(sapClient.closeOrder("1")).resolves.toBeUndefined();
     });
 
-    it('should cancel sales order', async () => {
+    it("should cancel sales order", async () => {
       // updateOrder -> PATCH
       mockFetch.mockResolvedValueOnce(okJson({}));
       // updateOrder -> GET
-      mockFetch.mockResolvedValueOnce(okJson({
-        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
-        DocDate: '2024-01-01', DocumentLines: [],
-      }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          DocEntry: "1",
+          DocNum: "SO001",
+          CardCode: "C001",
+          DocDate: "2024-01-01",
+          DocumentLines: [],
+        }),
+      );
 
-      await expect(sapClient.cancelOrder('1')).resolves.toBeUndefined();
+      await expect(sapClient.cancelOrder("1")).resolves.toBeUndefined();
     });
   });
 
-  describe('Invoices', () => {
-    it('should create sales invoice', async () => {
+  describe("Invoices", () => {
+    it("should create sales invoice", async () => {
       const invoice = {
-        customerId: 'CUST001',
-        invoiceNumber: 'INV001',
+        customerId: "CUST001",
+        invoiceNumber: "INV001",
         invoiceDate: new Date(),
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         lineItems: [
           {
-            itemCode: 'ITEM001',
-            itemName: 'Test Item',
+            itemCode: "ITEM001",
+            itemName: "Test Item",
             quantity: 5,
             unitPrice: 100,
             totalAmount: 500,
@@ -261,92 +300,112 @@ describe('SAPClient', () => {
         total: 500,
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1', DocNum: 'INV001' }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({ DocEntry: "1", DocNum: "INV001" }),
+      );
 
       const result = await sapClient.createInvoice(invoice);
       expect(result.id).toBeDefined();
-      expect(result.invoiceNumber).toBe('INV001');
+      expect(result.invoiceNumber).toBe("INV001");
     });
 
-    it('should get invoice', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({
-        DocEntry: '1', DocNum: 'INV001', CardCode: 'C001',
-        DocDate: '2024-01-01', DueDate: '2024-02-01', DocumentLines: [],
-      }));
+    it("should get invoice", async () => {
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          DocEntry: "1",
+          DocNum: "INV001",
+          CardCode: "C001",
+          DocDate: "2024-01-01",
+          DueDate: "2024-02-01",
+          DocumentLines: [],
+        }),
+      );
 
-      const invoice = await sapClient.getInvoice('1');
-      expect(invoice).toHaveProperty('invoiceNumber');
+      const invoice = await sapClient.getInvoice("1");
+      expect(invoice).toHaveProperty("invoiceNumber");
     });
 
-    it('should post invoice', async () => {
+    it("should post invoice", async () => {
       mockFetch.mockResolvedValueOnce(okJson({}));
-      await expect(sapClient.postInvoice('1')).resolves.toBeUndefined();
+      await expect(sapClient.postInvoice("1")).resolves.toBeUndefined();
     });
 
-    it('should create credit note', async () => {
+    it("should create credit note", async () => {
       const creditNote = {
-        customerId: 'CUST001',
-        invoiceNumber: 'CN001',
+        customerId: "CUST001",
+        invoiceNumber: "CN001",
         invoiceDate: new Date(),
         dueDate: new Date(),
         lineItems: [],
         total: -500,
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1', DocNum: 'CN001' }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({ DocEntry: "1", DocNum: "CN001" }),
+      );
 
       const result = await sapClient.createCreditNote(creditNote);
-      expect(result.invoiceType).toBe('credit_memo');
+      expect(result.invoiceType).toBe("credit_memo");
     });
   });
 
-  describe('Items (Products)', () => {
-    it('should create item', async () => {
+  describe("Items (Products)", () => {
+    it("should create item", async () => {
       const product = {
-        sku: 'ITEM001',
-        name: 'Test Product',
-        description: 'A test product',
-        category: 'Electronics',
-        unit: 'EA',
+        sku: "ITEM001",
+        name: "Test Product",
+        description: "A test product",
+        category: "Electronics",
+        unit: "EA",
         unitPrice: 99.99,
         cost: 50,
-        status: 'active' as const,
+        status: "active" as const,
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ ItemCode: 'ITEM001', ItemName: 'Test Product' }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({ ItemCode: "ITEM001", ItemName: "Test Product" }),
+      );
 
       const result = await sapClient.createItem(product);
       expect(result.id).toBeDefined();
-      expect(result.sku).toBe('ITEM001');
+      expect(result.sku).toBe("ITEM001");
     });
 
-    it('should get item', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({
-        ItemCode: 'ITEM001', ItemName: 'Test Product', SalesUnit: 'EA',
-      }));
+    it("should get item", async () => {
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          ItemCode: "ITEM001",
+          ItemName: "Test Product",
+          SalesUnit: "EA",
+        }),
+      );
 
-      const item = await sapClient.getItem('ITEM001');
-      expect(item).toHaveProperty('name');
+      const item = await sapClient.getItem("ITEM001");
+      expect(item).toHaveProperty("name");
     });
 
-    it('should update item', async () => {
+    it("should update item", async () => {
       // PATCH
       mockFetch.mockResolvedValueOnce(okJson({}));
       // GET
-      mockFetch.mockResolvedValueOnce(okJson({
-        ItemCode: 'ITEM001', ItemName: 'Test Product', SalesPrice: 109.99,
-      }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          ItemCode: "ITEM001",
+          ItemName: "Test Product",
+          SalesPrice: 109.99,
+        }),
+      );
 
-      const updatedItem = await sapClient.updateItem('ITEM001', {
+      const updatedItem = await sapClient.updateItem("ITEM001", {
         unitPrice: 109.99,
       });
       expect(updatedItem.unitPrice).toBe(109.99);
     });
 
-    it('should query items', async () => {
-      mockFetch.mockResolvedValueOnce(okODataList([
-        { ItemCode: 'ITEM001', ItemName: 'Test Product' },
-      ]));
+    it("should query items", async () => {
+      mockFetch.mockResolvedValueOnce(
+        okODataList([{ ItemCode: "ITEM001", ItemName: "Test Product" }]),
+      );
 
       const result = await sapClient.queryItems({
         skip: 0,
@@ -357,108 +416,117 @@ describe('SAPClient', () => {
     });
   });
 
-  describe('Inventory Management', () => {
-    it('should get inventory for item', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({
-        ItemCode: 'ITEM001', QuantityOnStock: 42, QuantityOnOrder: 10,
-      }));
+  describe("Inventory Management", () => {
+    it("should get inventory for item", async () => {
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          ItemCode: "ITEM001",
+          QuantityOnStock: 42,
+          QuantityOnOrder: 10,
+        }),
+      );
 
-      const inventory = await sapClient.getInventory('ITEM001');
-      expect(inventory).toHaveProperty('itemCode');
-      expect(typeof inventory.quantity).toBe('number');
+      const inventory = await sapClient.getInventory("ITEM001");
+      expect(inventory).toHaveProperty("itemCode");
+      expect(typeof inventory.quantity).toBe("number");
     });
 
-    it('should perform stock transfer', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1' }));
+    it("should perform stock transfer", async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: "1" }));
 
       await expect(
-        sapClient.stockTransfer('WH001', 'WH002', 'ITEM001', 10),
+        sapClient.stockTransfer("WH001", "WH002", "ITEM001", 10),
       ).resolves.toBeUndefined();
     });
 
-    it('should perform goods receipt', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1' }));
+    it("should perform goods receipt", async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: "1" }));
 
       await expect(
-        sapClient.goodsReceipt('PO001', [
-          { itemCode: 'ITEM001', quantity: 100 },
+        sapClient.goodsReceipt("PO001", [
+          { itemCode: "ITEM001", quantity: 100 },
         ]),
       ).resolves.toBeUndefined();
     });
 
-    it('should perform goods issue', async () => {
-      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1' }));
+    it("should perform goods issue", async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: "1" }));
 
       await expect(
-        sapClient.goodsIssue('SO001', [{ itemCode: 'ITEM001', quantity: 5 }]),
+        sapClient.goodsIssue("SO001", [{ itemCode: "ITEM001", quantity: 5 }]),
       ).resolves.toBeUndefined();
     });
   });
 
-  describe('Journal Entries', () => {
-    it('should post journal entry', async () => {
+  describe("Journal Entries", () => {
+    it("should post journal entry", async () => {
       const entry = {
-        referenceNumber: 'JE001',
+        referenceNumber: "JE001",
         transactionDate: new Date(),
         lines: [
           {
-            accountCode: '1000',
+            accountCode: "1000",
             debitAmount: 1000,
           },
           {
-            accountCode: '2000',
+            accountCode: "2000",
             creditAmount: 1000,
           },
         ],
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ ReferenceNumber: 'JE001' }));
+      mockFetch.mockResolvedValueOnce(okJson({ ReferenceNumber: "JE001" }));
 
       const result = await sapClient.postJournalEntry(entry);
       expect(result.id).toBeDefined();
     });
 
-    it('should reverse journal entry', async () => {
+    it("should reverse journal entry", async () => {
       // GET the existing entry
-      mockFetch.mockResolvedValueOnce(okJson({
-        ReferenceNumber: 'JE001', DebitCredit: [],
-      }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({
+          ReferenceNumber: "JE001",
+          DebitCredit: [],
+        }),
+      );
       // POST the reversal
-      mockFetch.mockResolvedValueOnce(okJson({ ReferenceNumber: 'JE001_REV' }));
+      mockFetch.mockResolvedValueOnce(okJson({ ReferenceNumber: "JE001_REV" }));
 
-      await expect(sapClient.reverseJournalEntry('JE001')).resolves.toBeUndefined();
+      await expect(
+        sapClient.reverseJournalEntry("JE001"),
+      ).resolves.toBeUndefined();
     });
   });
 
-  describe('Rate Limiting', () => {
-    it('should track rate limit info', () => {
+  describe("Rate Limiting", () => {
+    it("should track rate limit info", () => {
       const info = sapClient.getRateLimitInfo();
-      expect(info).toHaveProperty('remaining');
-      expect(info).toHaveProperty('limit');
-      expect(info).toHaveProperty('resetAt');
+      expect(info).toHaveProperty("remaining");
+      expect(info).toHaveProperty("limit");
+      expect(info).toHaveProperty("resetAt");
     });
 
-    it('should reset rate limiter', () => {
+    it("should reset rate limiter", () => {
       sapClient.resetRateLimit();
       const info = sapClient.getRateLimitInfo();
       expect(info.remaining).toBe(info.limit);
     });
   });
 
-  describe('Circuit Breaker', () => {
-    it('should get circuit breaker state', () => {
+  describe("Circuit Breaker", () => {
+    it("should get circuit breaker state", () => {
       const state = sapClient.getCircuitBreakerState();
-      expect(['CLOSED', 'OPEN', 'HALF_OPEN']).toContain(state);
+      expect(["CLOSED", "OPEN", "HALF_OPEN"]).toContain(state);
     });
   });
 
-  describe('Connection Management', () => {
-    it('should get connection', () => {
+  describe("Connection Management", () => {
+    it("should get connection", () => {
       const connection = sapClient.getConnection();
-      expect(connection.id).toBe('sap_conn_1');
+      expect(connection.id).toBe("sap_conn_1");
     });
 
-    it('should update connection', () => {
+    it("should update connection", () => {
       sapClient.updateConnection({
         config: { timeout: 60000 },
       });
@@ -467,18 +535,18 @@ describe('SAPClient', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle missing company database', async () => {
+  describe("Error Handling", () => {
+    it("should handle missing company database", async () => {
       const invalidClient = new SAPClient(
         {
           ...mockConnection,
-          credentials: { accessToken: 'invalid' },
+          credentials: { accessToken: "invalid" },
         },
         {
-          clientId: 'test',
-          clientSecret: 'test',
-          redirectUri: 'test',
-          instanceUrl: 'https://test.com',
+          clientId: "test",
+          clientSecret: "test",
+          redirectUri: "test",
+          instanceUrl: "https://test.com",
         },
       );
 
@@ -486,17 +554,17 @@ describe('SAPClient', () => {
       expect(invalidClient).toBeDefined();
     });
 
-    it('should handle authentication errors', async () => {
+    it("should handle authentication errors", async () => {
       const invalidConnection: ERPConnection = {
         ...mockConnection,
         credentials: {},
       };
 
       const client = new SAPClient(invalidConnection, {
-        clientId: 'test',
-        clientSecret: 'test',
-        redirectUri: 'test',
-        instanceUrl: 'https://test.com',
+        clientId: "test",
+        clientSecret: "test",
+        redirectUri: "test",
+        instanceUrl: "https://test.com",
       });
 
       // Would throw when attempting operations without valid token
@@ -504,16 +572,16 @@ describe('SAPClient', () => {
     });
   });
 
-  describe('Batch Operations', () => {
-    it('should execute batch requests', async () => {
+  describe("Batch Operations", () => {
+    it("should execute batch requests", async () => {
       const requests = [
         {
-          method: 'GET',
-          url: '/BusinessPartners',
+          method: "GET",
+          url: "/BusinessPartners",
         },
         {
-          method: 'GET',
-          url: '/Items',
+          method: "GET",
+          url: "/Items",
         },
       ];
 
@@ -524,45 +592,49 @@ describe('SAPClient', () => {
     });
   });
 
-  describe('Field Mapping', () => {
-    it('should map customer to SAP format', async () => {
+  describe("Field Mapping", () => {
+    it("should map customer to SAP format", async () => {
       const customer = {
-        code: 'CUST001',
-        name: 'Test',
-        email: 'test@example.com',
+        code: "CUST001",
+        name: "Test",
+        email: "test@example.com",
       };
 
-      mockFetch.mockResolvedValueOnce(okJson({ CardCode: 'CUST001', CardName: 'Test' }));
+      mockFetch.mockResolvedValueOnce(
+        okJson({ CardCode: "CUST001", CardName: "Test" }),
+      );
 
       const result = await sapClient.createCustomer(customer);
       expect(result).toBeDefined();
     });
   });
 
-  describe('Webhook Support', () => {
-    it('should register webhook', async () => {
+  describe("Webhook Support", () => {
+    it("should register webhook", async () => {
       await sapClient.registerWebhook({
-        url: 'https://example.com/webhook',
-        events: ['customer.created', 'invoice.posted'],
+        url: "https://example.com/webhook",
+        events: ["customer.created", "invoice.posted"],
         isActive: true,
       });
     });
 
-    it('should unregister webhook', async () => {
-      await sapClient.unregisterWebhook('https://example.com/webhook');
+    it("should unregister webhook", async () => {
+      await sapClient.unregisterWebhook("https://example.com/webhook");
     });
 
-    it('should handle webhook payload', async () => {
+    it("should handle webhook payload", async () => {
       const payload = {
-        eventType: 'customer.created',
-        entityType: 'customer' as const,
-        action: 'create' as const,
-        recordId: 'CUST001',
-        data: { name: 'New Customer' },
+        eventType: "customer.created",
+        entityType: "customer" as const,
+        action: "create" as const,
+        recordId: "CUST001",
+        data: { name: "New Customer" },
         timestamp: new Date(),
       };
 
-      await expect(sapClient.handleWebhookPayload(payload)).resolves.toBeUndefined();
+      await expect(
+        sapClient.handleWebhookPayload(payload),
+      ).resolves.toBeUndefined();
     });
   });
 });

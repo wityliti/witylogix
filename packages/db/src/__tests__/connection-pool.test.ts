@@ -87,42 +87,42 @@ describe("Connection Pool Configuration", () => {
     it("should reject min connections < 1", () => {
       const invalid = { ...validConfig, min: 0 };
       expect(() => validatePoolConfig(invalid)).toThrow(
-        "Pool min connections must be at least 1"
+        "Pool min connections must be at least 1",
       );
     });
 
     it("should reject max < min", () => {
       const invalid = { ...validConfig, min: 20, max: 10 };
       expect(() => validatePoolConfig(invalid)).toThrow(
-        "Pool max connections must be >= min connections"
+        "Pool max connections must be >= min connections",
       );
     });
 
     it("should reject connection timeout < 1000ms", () => {
       const invalid = { ...validConfig, connectionTimeoutMs: 500 };
       expect(() => validatePoolConfig(invalid)).toThrow(
-        "Connection timeout must be >= 1000ms"
+        "Connection timeout must be >= 1000ms",
       );
     });
 
     it("should reject idle timeout < 5000ms", () => {
       const invalid = { ...validConfig, idleTimeoutMs: 3000 };
       expect(() => validatePoolConfig(invalid)).toThrow(
-        "Idle timeout must be >= 5000ms"
+        "Idle timeout must be >= 5000ms",
       );
     });
 
     it("should reject statement timeout < 1000ms", () => {
       const invalid = { ...validConfig, statementTimeoutMs: 500 };
       expect(() => validatePoolConfig(invalid)).toThrow(
-        "Statement timeout must be >= 1000ms"
+        "Statement timeout must be >= 1000ms",
       );
     });
 
     it("should reject health check interval < 1000ms", () => {
       const invalid = { ...validConfig, healthCheckIntervalMs: 500 };
       expect(() => validatePoolConfig(invalid)).toThrow(
-        "Health check interval must be >= 1000ms"
+        "Health check interval must be >= 1000ms",
       );
     });
 
@@ -192,7 +192,9 @@ describe("Connection Pool Configuration", () => {
         callCount++;
         // First call (start): return base time
         // Second call (duration check): return base + connectionTimeoutMs to simulate slow query
-        return callCount <= 1 ? baseTime : baseTime + config.connectionTimeoutMs;
+        return callCount <= 1
+          ? baseTime
+          : baseTime + config.connectionTimeoutMs;
       });
 
       const mockClient = {
@@ -246,7 +248,7 @@ describe("Connection Pool Configuration", () => {
       await hooks.onConnect(mockClient);
 
       expect(mockClient.query).toHaveBeenCalledWith(
-        expect.stringContaining("statement_timeout")
+        expect.stringContaining("statement_timeout"),
       );
       expect(customOnConnect).toHaveBeenCalledWith(mockClient);
     });
@@ -263,7 +265,7 @@ describe("Connection Pool Configuration", () => {
 
       const calls = mockClient.query.mock.calls;
       const statementTimeoutCall = calls.find((call) =>
-        call[0].includes("statement_timeout")
+        call[0].includes("statement_timeout"),
       );
 
       expect(statementTimeoutCall).toBeDefined();
@@ -286,7 +288,9 @@ describe("Connection Pool Configuration", () => {
 
     it("should handle onConnect errors gracefully", async () => {
       const config = createPoolConfig("staging");
-      const customOnConnect = vi.fn().mockRejectedValue(new Error("Custom error"));
+      const customOnConnect = vi
+        .fn()
+        .mockRejectedValue(new Error("Custom error"));
       config.onConnect = customOnConnect;
 
       const hooks = createLifecycleHooks(config);

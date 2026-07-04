@@ -81,18 +81,20 @@ export class KeepTruckinSDKClient extends ELDAdapter {
    */
   async initialize(): Promise<void> {
     if (!this.apiKey && !this.accessToken) {
-      throw new Error(
-        "KeepTruckin API key or OAuth2 access token is required"
-      );
+      throw new Error("KeepTruckin API key or OAuth2 access token is required");
     }
 
-    if (this.accessToken && this.tokenExpiresAt && this.tokenExpiresAt < new Date()) {
+    if (
+      this.accessToken &&
+      this.tokenExpiresAt &&
+      this.tokenExpiresAt < new Date()
+    ) {
       await this.refreshAccessToken();
     }
 
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ id: string }>("GET", "/organization")
+        this.makeRequest<{ id: string }>("GET", "/organization"),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -139,7 +141,9 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       this.refreshToken = data.refresh_token;
     }
 
-    this.tokenExpiresAt = new Date(Date.now() + (data.expires_in || 3600) * 1000);
+    this.tokenExpiresAt = new Date(
+      Date.now() + (data.expires_in || 3600) * 1000,
+    );
 
     this.logEvent({
       type: "diagnostic-event",
@@ -153,7 +157,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinHOSLogEntry>>(
@@ -162,8 +166,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
         {
           start_time: startDate.toISOString(),
           end_time: endDate.toISOString(),
-        }
-      )
+        },
+      ),
     );
 
     return response.data.map((log, idx) => ({
@@ -191,13 +195,13 @@ export class KeepTruckinSDKClient extends ELDAdapter {
    */
   async getDutyStatus(driverId: string): Promise<ELDDutyStatus> {
     const driver = await this.executeWithRetry(() =>
-      this.makeRequest<KeepTruckinDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<KeepTruckinDriver>("GET", `/drivers/${driverId}`),
     );
 
     const summary = await this.executeWithRetry(() =>
       this.makeRequest<any>("GET", `/drivers/${driverId}/hos-summary`, {
         date: new Date().toISOString().split("T")[0],
-      })
+      }),
     );
 
     return {
@@ -220,7 +224,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const payload = {
       status: this.mapDutyStatusReverse(status),
@@ -229,7 +233,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     };
 
     await this.executeWithRetry(() =>
-      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, payload)
+      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, payload),
     );
 
     this.logEvent({
@@ -246,7 +250,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
    */
   async getViolations(
     driverId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -255,8 +259,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinViolation>>(
         "GET",
         `/drivers/${driverId}/violations`,
-        { start_date: startDate.toISOString().split("T")[0] }
-      )
+        { start_date: startDate.toISOString().split("T")[0] },
+      ),
     );
 
     return response.data.map((v) => ({
@@ -284,14 +288,14 @@ export class KeepTruckinSDKClient extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<KeepTruckinVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<KeepTruckinVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     const location = await this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinVehicleLocation>(
         "GET",
-        `/vehicles/${vehicleId}/location`
-      )
+        `/vehicles/${vehicleId}/location`,
+      ),
     );
 
     return {
@@ -304,7 +308,9 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       year: vehicle.year,
       group: undefined,
       odometerMiles: vehicle.odometerMiles,
-      fuelType: (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") || undefined,
+      fuelType:
+        (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") ||
+        undefined,
       capacityLbs: vehicle.gvwr,
       currentLocation: location
         ? {
@@ -331,8 +337,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinVehicle>>(
         "GET",
-        "/vehicles"
-      )
+        "/vehicles",
+      ),
     );
 
     const vehicles: ELDVehicle[] = [];
@@ -359,13 +365,13 @@ export class KeepTruckinSDKClient extends ELDAdapter {
    */
   async getDailyLog(
     driverId: string,
-    date: Date
+    date: Date,
   ): Promise<KeepTruckinDailyLog> {
     return this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinDailyLog>(
         "GET",
-        `/drivers/${driverId}/daily-logs/${date.toISOString().split("T")[0]}`
-      )
+        `/drivers/${driverId}/daily-logs/${date.toISOString().split("T")[0]}`,
+      ),
     );
   }
 
@@ -375,26 +381,28 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async certifyDailyLog(
     driverId: string,
     date: Date,
-    signature?: string
+    signature?: string,
   ): Promise<KeepTruckinDailyLog> {
     return this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinDailyLog>(
         "POST",
         `/drivers/${driverId}/daily-logs/${date.toISOString().split("T")[0]}/certify`,
-        { signature }
-      )
+        { signature },
+      ),
     );
   }
 
   /**
    * Get unidentified driving
    */
-  async getUnidentifiedDriving(driverId: string): Promise<KeepTruckinHOSLogEntry[]> {
+  async getUnidentifiedDriving(
+    driverId: string,
+  ): Promise<KeepTruckinHOSLogEntry[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinHOSLogEntry>>(
         "GET",
-        `/drivers/${driverId}/unidentified-driving`
-      )
+        `/drivers/${driverId}/unidentified-driving`,
+      ),
     );
 
     return response.data;
@@ -423,7 +431,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     };
 
     const response = await this.executeWithRetry(() =>
-      this.makeRequest<KeepTruckinDVIR>("POST", "/dvirs", payload)
+      this.makeRequest<KeepTruckinDVIR>("POST", "/dvirs", payload),
     );
 
     return this.mapKeepTruckinDVIRtoELDDVIR(response);
@@ -440,8 +448,11 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinDVIR>>(
         "GET",
         "/dvirs",
-        { vehicle_id: vehicleId, start_date: startDate.toISOString().split("T")[0] }
-      )
+        {
+          vehicle_id: vehicleId,
+          start_date: startDate.toISOString().split("T")[0],
+        },
+      ),
     );
 
     return response.data.map((d) => this.mapKeepTruckinDVIRtoELDDVIR(d));
@@ -453,26 +464,28 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async resolveDVIRDefect(
     dvirId: string,
     defectId: string,
-    repairStatus: string
+    repairStatus: string,
   ): Promise<KeepTruckinDVIR> {
     return this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinDVIR>(
         "PATCH",
         `/dvirs/${dvirId}/defects/${defectId}`,
-        { repairStatus }
-      )
+        { repairStatus },
+      ),
     );
   }
 
   /**
    * Get vehicle location
    */
-  async getVehicleLocation(vehicleId: string): Promise<KeepTruckinVehicleLocation> {
+  async getVehicleLocation(
+    vehicleId: string,
+  ): Promise<KeepTruckinVehicleLocation> {
     return this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinVehicleLocation>(
         "GET",
-        `/vehicles/${vehicleId}/location`
-      )
+        `/vehicles/${vehicleId}/location`,
+      ),
     );
   }
 
@@ -483,8 +496,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     return this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinEngineData>(
         "GET",
-        `/vehicles/${vehicleId}/engine-data`
-      )
+        `/vehicles/${vehicleId}/engine-data`,
+      ),
     );
   }
 
@@ -495,8 +508,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinFaultCode>>(
         "GET",
-        `/vehicles/${vehicleId}/fault-codes`
-      )
+        `/vehicles/${vehicleId}/fault-codes`,
+      ),
     );
 
     return response.data;
@@ -508,7 +521,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async getIFTATrips(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<KeepTruckinIFTATrip[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinIFTATrip>>(
@@ -517,8 +530,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
         {
           start_date: startDate.toISOString().split("T")[0],
           end_date: endDate.toISOString().split("T")[0],
-        }
-      )
+        },
+      ),
     );
 
     return response.data;
@@ -531,7 +544,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     driverId: string,
     docType: string,
     category: string,
-    fileUrl: string
+    fileUrl: string,
   ): Promise<KeepTruckinDocument> {
     return this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinDocument>(
@@ -541,8 +554,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
           type: docType,
           category,
           file_url: fileUrl,
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -553,8 +566,8 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinPaginationResponse<KeepTruckinDocument>>(
         "GET",
-        `/drivers/${driverId}/documents`
-      )
+        `/drivers/${driverId}/documents`,
+      ),
     );
 
     return response.data;
@@ -566,7 +579,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async exporteRODS(
     startDate: Date,
     endDate: Date,
-    driverIds?: string[]
+    driverIds?: string[],
   ): Promise<KeepTruckinERodsExport> {
     return this.executeWithRetry(() =>
       this.makeRequest<KeepTruckinERodsExport>(
@@ -576,22 +589,19 @@ export class KeepTruckinSDKClient extends ELDAdapter {
           start_date: startDate.toISOString().split("T")[0],
           end_date: endDate.toISOString().split("T")[0],
           driver_ids: driverIds,
-        }
-      )
+        },
+      ),
     );
   }
 
   /**
    * Get HOS summary
    */
-  async getHOSSummary(
-    driverId: string,
-    date: Date
-  ): Promise<HOSSummary> {
+  async getHOSSummary(driverId: string, date: Date): Promise<HOSSummary> {
     const summary = await this.executeWithRetry(() =>
       this.makeRequest<any>("GET", `/drivers/${driverId}/hos-summary`, {
         date: date.toISOString().split("T")[0],
-      })
+      }),
     );
 
     return {
@@ -610,10 +620,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   /**
    * Verify webhook signature
    */
-  verifyWebhookSignature(
-    payload: string,
-    signature: string
-  ): boolean {
+  verifyWebhookSignature(payload: string, signature: string): boolean {
     if (!this.webhookSecret) {
       return false;
     }
@@ -660,7 +667,9 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       default:
         this.logEvent({
           type: "diagnostic-event",
-          data: { message: `Unhandled webhook event type: ${payload.eventType}` },
+          data: {
+            message: `Unhandled webhook event type: ${payload.eventType}`,
+          },
         });
     }
   }
@@ -671,7 +680,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ id: string }>("GET", "/organization")
+        this.makeRequest<{ id: string }>("GET", "/organization"),
       );
       return true;
     } catch {
@@ -684,7 +693,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
   private async makeRequest<T>(
     method: string,
     path: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
 
@@ -710,7 +719,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
     if (this.accessToken) {
       options.headers = {
         ...options.headers,
-        "Authorization": `Bearer ${this.accessToken}`,
+        Authorization: `Bearer ${this.accessToken}`,
       };
     } else if (this.apiKey) {
       options.headers = {
@@ -779,7 +788,9 @@ export class KeepTruckinSDKClient extends ELDAdapter {
       condition: dvir.status === "Pass" ? "pass" : "defect",
       defects: dvir.defects.map((d) => ({
         component: d.component,
-        severity: (d.severity.toLowerCase() as "minor" | "major" | "critical") || "minor",
+        severity:
+          (d.severity.toLowerCase() as "minor" | "major" | "critical") ||
+          "minor",
         description: d.description,
         evidenceUrls: [],
       })),
@@ -797,7 +808,7 @@ export class KeepTruckinSDKClient extends ELDAdapter {
 export class KeepTruckinAPIError extends Error {
   constructor(
     public statusCode: number,
-    public body: string
+    public body: string,
   ) {
     super(`KeepTruckin API Error ${statusCode}: ${body}`);
   }

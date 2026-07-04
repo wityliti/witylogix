@@ -2,8 +2,13 @@
  * Orders resource - manage delivery orders
  */
 
-import type { WitylogixClient } from '../client';
-import type { Order, ListParams, PaginatedResponse, OrderStatus } from '../types';
+import type { WitylogixClient } from "../client";
+import type {
+  Order,
+  ListParams,
+  PaginatedResponse,
+  OrderStatus,
+} from "../types";
 
 export interface CreateOrderData {
   reference_number: string;
@@ -29,7 +34,7 @@ export interface CreateOrderData {
       length: number;
       width: number;
       height: number;
-      unit: 'cm' | 'in';
+      unit: "cm" | "in";
     };
   }>;
   scheduled_date: string;
@@ -64,7 +69,7 @@ export class OrdersResource {
    * const orders = await client.orders.list({ page: 1, limit: 20 });
    */
   public async list(params?: ListParams): Promise<PaginatedResponse<Order>> {
-    return this.client.get<PaginatedResponse<Order>>('/v1/orders', params);
+    return this.client.get<PaginatedResponse<Order>>("/v1/orders", params);
   }
 
   /**
@@ -91,7 +96,7 @@ export class OrdersResource {
    * });
    */
   public async create(data: CreateOrderData): Promise<Order> {
-    return this.client.post<Order>('/v1/orders', data);
+    return this.client.post<Order>("/v1/orders", data);
   }
 
   /**
@@ -148,9 +153,9 @@ export class OrdersResource {
    */
   public async getByStatus(
     status: OrderStatus,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Order>> {
-    return this.client.get<PaginatedResponse<Order>>('/v1/orders', {
+    return this.client.get<PaginatedResponse<Order>>("/v1/orders", {
       ...params,
       status,
     });
@@ -164,9 +169,9 @@ export class OrdersResource {
    */
   public async getByDate(
     date: string,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Order>> {
-    return this.client.get<PaginatedResponse<Order>>('/v1/orders', {
+    return this.client.get<PaginatedResponse<Order>>("/v1/orders", {
       ...params,
       scheduled_date: date,
     });
@@ -180,9 +185,9 @@ export class OrdersResource {
    */
   public async getByDriver(
     driverId: string,
-    params?: ListParams
+    params?: ListParams,
   ): Promise<PaginatedResponse<Order>> {
-    return this.client.get<PaginatedResponse<Order>>('/v1/orders', {
+    return this.client.get<PaginatedResponse<Order>>("/v1/orders", {
       ...params,
       assigned_driver_id: driverId,
     });

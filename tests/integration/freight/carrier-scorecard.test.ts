@@ -86,8 +86,8 @@ describe("Scorecard Calculation From Delivery Data", () => {
 
   it("should aggregate delivery data into metrics", () => {
     const deliveries = [
-      { deliveredOnTime: true, damageClaim: false, cost: 2.10 },
-      { deliveredOnTime: true, damageClaim: false, cost: 2.20 },
+      { deliveredOnTime: true, damageClaim: false, cost: 2.1 },
+      { deliveredOnTime: true, damageClaim: false, cost: 2.2 },
       { deliveredOnTime: false, damageClaim: true, cost: 2.15 },
     ];
 
@@ -97,7 +97,8 @@ describe("Scorecard Calculation From Delivery Data", () => {
     const damagedDeliveries = deliveries.filter((d) => d.damageClaim).length;
     const claimsRatio = damagedDeliveries / deliveries.length;
 
-    const avgCost = deliveries.reduce((sum, d) => sum + d.cost, 0) / deliveries.length;
+    const avgCost =
+      deliveries.reduce((sum, d) => sum + d.cost, 0) / deliveries.length;
 
     expect(onTimeRate).toBeCloseTo(0.667, 2);
     expect(claimsRatio).toBeCloseTo(0.333, 2);
@@ -345,7 +346,8 @@ describe("Quarterly Comparison and Trend Detection", () => {
     const scores = [85, 85, 86, 85];
     const avgScore = scores.reduce((a, b) => a + b) / scores.length;
     const stdDev = Math.sqrt(
-      scores.reduce((sq, n) => sq + Math.pow(n - avgScore, 2), 0) / scores.length,
+      scores.reduce((sq, n) => sq + Math.pow(n - avgScore, 2), 0) /
+        scores.length,
     );
 
     const isStable = stdDev < 1;
@@ -419,7 +421,9 @@ describe("Carrier Ranking Within Fleet", () => {
       { carrierId: "c4", grade: "C" },
     ];
 
-    const underperformers = carriers.filter((c) => c.grade === "D" || c.grade === "F");
+    const underperformers = carriers.filter(
+      (c) => c.grade === "D" || c.grade === "F",
+    );
 
     expect(underperformers).toHaveLength(2);
   });
@@ -442,7 +446,9 @@ describe("Carrier Ranking Within Fleet", () => {
       },
     };
 
-    expect(report.distribution.A + report.distribution.B).toBeGreaterThan(report.distribution.D + report.distribution.F);
+    expect(report.distribution.A + report.distribution.B).toBeGreaterThan(
+      report.distribution.D + report.distribution.F,
+    );
   });
 });
 
@@ -457,7 +463,8 @@ describe("Allocation Recommendation Based on Scorecard", () => {
       { carrierId: "c2", grade: "A", score: 94 },
     ];
 
-    const recommendedAllocation = aGradeCarriers.length > 0 ? "INCREASE" : "MAINTAIN";
+    const recommendedAllocation =
+      aGradeCarriers.length > 0 ? "INCREASE" : "MAINTAIN";
 
     expect(recommendedAllocation).toBe("INCREASE");
   });

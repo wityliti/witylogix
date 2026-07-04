@@ -1,18 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui';
-import { PreviewSection } from './preview-section';
+import { Button } from "@/components/ui";
+import { PreviewSection } from "./preview-section";
 
 export function ButtonsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Buttons
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Buttons</h2>
         <p className="text-wl-neutral-300 mb-8">
-          Button component with 4 variants: primary, secondary, ghost, and danger.
-          Supports small, medium, and large sizes.
+          Button component with 4 variants: primary, secondary, ghost, and
+          danger. Supports small, medium, and large sizes.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

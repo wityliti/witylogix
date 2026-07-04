@@ -1,5 +1,5 @@
-import type { Readable } from 'node:stream';
-import type { BenchConfigStorage } from '../config.js';
+import type { Readable } from "node:stream";
+import type { BenchConfigStorage } from "../config.js";
 
 export interface StorageObject {
   size: number;
@@ -22,21 +22,23 @@ export async function createStorageClient(
   config: BenchConfigStorage,
 ): Promise<StorageClient> {
   switch (config.backend) {
-    case 'local': {
-      const { LocalStorageClient } = await import('./storage-local.js');
+    case "local": {
+      const { LocalStorageClient } = await import("./storage-local.js");
       if (!config.path) {
-        throw new Error('storage.path is required when backend=local');
+        throw new Error("storage.path is required when backend=local");
       }
       return new LocalStorageClient(config.path);
     }
-    case 's3':
-    case 'r2': {
-      const { S3StorageClient } = await import('./storage-s3.js');
+    case "s3":
+    case "r2": {
+      const { S3StorageClient } = await import("./storage-s3.js");
       return new S3StorageClient(config);
     }
-    case 'gcs':
-      throw new Error('GCS storage backend is planned for Phase 1c');
+    case "gcs":
+      throw new Error("GCS storage backend is planned for Phase 1c");
     default:
-      throw new Error(`Unknown storage backend: ${(config as { backend: string }).backend}`);
+      throw new Error(
+        `Unknown storage backend: ${(config as { backend: string }).backend}`,
+      );
   }
 }

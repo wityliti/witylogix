@@ -16,7 +16,10 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TrimbleELDClient } from "../../../packages/core/src/integrations/eld/trimble-eld-sdk-client";
-import type { ELDConfig, DutyStatus } from "../../../packages/core/src/integrations/eld/types";
+import type {
+  ELDConfig,
+  DutyStatus,
+} from "../../../packages/core/src/integrations/eld/types";
 
 describe("TrimbleELDClient", () => {
   let client: TrimbleELDClient;
@@ -44,13 +47,13 @@ describe("TrimbleELDClient", () => {
               access_token: "token_123",
               expires_in: 3600,
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ organization: { id: "org_123" } }), {
             status: 200,
-          })
+          }),
         );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -61,17 +64,17 @@ describe("TrimbleELDClient", () => {
       const invalidClient = new TrimbleELDClient(invalidConfig);
 
       expect(() => invalidClient.initialize()).rejects.toThrow(
-        "Trimble OAuth2 credentials"
+        "Trimble OAuth2 credentials",
       );
     });
 
     it("should throw error if OAuth2 token request fails", async () => {
       vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Connection refused")
+        new Error("Connection refused"),
       );
 
       await expect(client.initialize()).rejects.toThrow(
-        "Failed to initialize Trimble ELD"
+        "Failed to initialize Trimble ELD",
       );
     });
   });
@@ -85,13 +88,13 @@ describe("TrimbleELDClient", () => {
               access_token: "token_123",
               expires_in: 3600,
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ organization: { id: "org_123" } }), {
             status: 200,
-          })
+          }),
         );
     });
 
@@ -114,7 +117,7 @@ describe("TrimbleELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLogs), { status: 200 })
+        new Response(JSON.stringify(mockLogs), { status: 200 }),
       );
 
       const startDate = new Date("2026-03-12");
@@ -128,7 +131,7 @@ describe("TrimbleELDClient", () => {
 
     it("should handle empty logs response", async () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify({ records: [] }), { status: 200 })
+        new Response(JSON.stringify({ records: [] }), { status: 200 }),
       );
 
       const startDate = new Date("2026-03-12");
@@ -147,8 +150,8 @@ describe("TrimbleELDClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -172,7 +175,7 @@ describe("TrimbleELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDriver), { status: 200 })
+        new Response(JSON.stringify(mockDriver), { status: 200 }),
       );
 
       const status = await client.getDutyStatus("driver_1");
@@ -184,7 +187,9 @@ describe("TrimbleELDClient", () => {
 
     it("should set driver duty status", async () => {
       vi.spyOn(global, "fetch")
-        .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({}), { status: 200 }),
+        )
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -198,8 +203,8 @@ describe("TrimbleELDClient", () => {
                 availableOnDuty: 8,
               },
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         );
 
       const newStatus = await client.setDutyStatus("driver_1", "on-duty");
@@ -216,8 +221,8 @@ describe("TrimbleELDClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -237,7 +242,7 @@ describe("TrimbleELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockViolations), { status: 200 })
+        new Response(JSON.stringify(mockViolations), { status: 200 }),
       );
 
       const violations = await client.getViolations("driver_1", 30);
@@ -256,8 +261,8 @@ describe("TrimbleELDClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -285,7 +290,7 @@ describe("TrimbleELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockVehicle), { status: 200 })
+        new Response(JSON.stringify(mockVehicle), { status: 200 }),
       );
 
       const vehicle = await client.getVehicle("vehicle_1");
@@ -297,15 +302,17 @@ describe("TrimbleELDClient", () => {
 
     it("should paginate through multiple vehicles", async () => {
       const mockVehicles1 = {
-        vehicles: Array(100).fill(0).map((_, i) => ({
-          id: `vehicle_${i}`,
-          unitNumber: `UNIT-${i}`,
-          vin: `VIN-${i}`,
-          licensePlate: `PLATE-${i}`,
-          status: "active",
-          createdAt: "2020-01-01T00:00:00Z",
-          updatedAt: "2026-03-12T12:00:00Z",
-        })),
+        vehicles: Array(100)
+          .fill(0)
+          .map((_, i) => ({
+            id: `vehicle_${i}`,
+            unitNumber: `UNIT-${i}`,
+            vin: `VIN-${i}`,
+            licensePlate: `PLATE-${i}`,
+            status: "active",
+            createdAt: "2020-01-01T00:00:00Z",
+            updatedAt: "2026-03-12T12:00:00Z",
+          })),
       };
 
       const mockVehicles2 = {
@@ -314,10 +321,10 @@ describe("TrimbleELDClient", () => {
 
       vi.spyOn(global, "fetch")
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockVehicles1), { status: 200 })
+          new Response(JSON.stringify(mockVehicles1), { status: 200 }),
         )
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockVehicles2), { status: 200 })
+          new Response(JSON.stringify(mockVehicles2), { status: 200 }),
         )
         .mockResolvedValue(
           new Response(
@@ -330,8 +337,8 @@ describe("TrimbleELDClient", () => {
               createdAt: "2020-01-01T00:00:00Z",
               updatedAt: "2026-03-12T12:00:00Z",
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         );
 
       const vehicles = await client.getVehicles();
@@ -349,8 +356,8 @@ describe("TrimbleELDClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -368,7 +375,7 @@ describe("TrimbleELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDVIR), { status: 200 })
+        new Response(JSON.stringify(mockDVIR), { status: 200 }),
       );
 
       const dvir = await client.submitDVIR({
@@ -407,7 +414,7 @@ describe("TrimbleELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDVIRs), { status: 200 })
+        new Response(JSON.stringify(mockDVIRs), { status: 200 }),
       );
 
       const dvirs = await client.getDVIRs("vehicle_1", 30);
@@ -445,7 +452,7 @@ describe("TrimbleELDClient", () => {
 
       // Should not throw - signature verification is optional
       await expect(
-        client.handleWebhook(event, invalidSignature)
+        client.handleWebhook(event, invalidSignature),
       ).rejects.toThrow();
     });
   });
@@ -459,13 +466,13 @@ describe("TrimbleELDClient", () => {
               access_token: "token_123",
               expires_in: 3600,
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ organization: { id: "org_123" } }), {
             status: 200,
-          })
+          }),
         );
 
       const isHealthy = await client.healthCheck();
@@ -475,7 +482,7 @@ describe("TrimbleELDClient", () => {
 
     it("should return false for failed health check", async () => {
       vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Connection timeout")
+        new Error("Connection timeout"),
       );
 
       const isHealthy = await client.healthCheck();

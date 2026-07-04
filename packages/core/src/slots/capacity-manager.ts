@@ -118,7 +118,8 @@ export class CapacityManager {
       totalCapacity > 0 ? (activeReservations / totalCapacity) * 100 : 0;
 
     // Determine status
-    let status: "available" | "high_demand" | "at_capacity" | "closed" = "available";
+    let status: "available" | "high_demand" | "at_capacity" | "closed" =
+      "available";
     if (percentUtilized >= 100) {
       status = "at_capacity";
     } else if (percentUtilized >= 80) {
@@ -354,9 +355,7 @@ export class CapacityManager {
       recommendations.push(
         "Critical capacity. Consider increasing slot capacity or adding additional slots.",
       );
-      recommendations.push(
-        "Implement dynamic pricing to manage demand.",
-      );
+      recommendations.push("Implement dynamic pricing to manage demand.");
     } else if (percentUtilized >= 80) {
       recommendations.push(
         "High demand. Monitor closely and prepare for scale.",

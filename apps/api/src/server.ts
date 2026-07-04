@@ -30,12 +30,54 @@ import { shutdownQueues } from "./lib/queue.js";
 import { p95Tracker } from "./lib/p95-tracker.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
 // Workers are started lazily to avoid @witylogix/core import failures
-const startNotificationWorker = async () => { try { const m = await import("./workers/notification-worker.js"); return m.startNotificationWorker(); } catch { console.warn("[Worker] Notification worker unavailable"); } };
-const startOptimizationWorker = async () => { try { const m = await import("./workers/optimization-worker.js"); return m.startOptimizationWorker(); } catch { console.warn("[Worker] Optimization worker unavailable"); } };
-const startIntegrationWorker = async () => { try { const m = await import("./workers/integration-worker.js"); return m.startIntegrationWorker(); } catch { console.warn("[Worker] Integration worker unavailable"); } };
-const startGeofenceWorker = async () => { try { const m = await import("./workers/geofence-worker.js"); return m.startGeofenceWorker(); } catch { console.warn("[Worker] Geofence worker unavailable"); } };
-const startFailedDeliveryWorker = async () => { try { const m = await import("./workers/failed-delivery-worker.js"); return m.startFailedDeliveryWorker(); } catch { console.warn("[Worker] Failed-delivery worker unavailable"); } };
-const startWCWebhookWorker = async () => { try { const m = await import("./workers/wc-webhook-worker.js"); return m.startWCWebhookWorker(); } catch { console.warn("[Worker] WC webhook worker unavailable"); } };
+const startNotificationWorker = async () => {
+  try {
+    const m = await import("./workers/notification-worker.js");
+    return m.startNotificationWorker();
+  } catch {
+    console.warn("[Worker] Notification worker unavailable");
+  }
+};
+const startOptimizationWorker = async () => {
+  try {
+    const m = await import("./workers/optimization-worker.js");
+    return m.startOptimizationWorker();
+  } catch {
+    console.warn("[Worker] Optimization worker unavailable");
+  }
+};
+const startIntegrationWorker = async () => {
+  try {
+    const m = await import("./workers/integration-worker.js");
+    return m.startIntegrationWorker();
+  } catch {
+    console.warn("[Worker] Integration worker unavailable");
+  }
+};
+const startGeofenceWorker = async () => {
+  try {
+    const m = await import("./workers/geofence-worker.js");
+    return m.startGeofenceWorker();
+  } catch {
+    console.warn("[Worker] Geofence worker unavailable");
+  }
+};
+const startFailedDeliveryWorker = async () => {
+  try {
+    const m = await import("./workers/failed-delivery-worker.js");
+    return m.startFailedDeliveryWorker();
+  } catch {
+    console.warn("[Worker] Failed-delivery worker unavailable");
+  }
+};
+const startWCWebhookWorker = async () => {
+  try {
+    const m = await import("./workers/wc-webhook-worker.js");
+    return m.startWCWebhookWorker();
+  } catch {
+    console.warn("[Worker] WC webhook worker unavailable");
+  }
+};
 // Lazy imports — @witylogix/core modules may not resolve in dev
 const onRoutingMeter = (..._args: any[]) => {};
 const onNotificationMeter = (..._args: any[]) => {};
@@ -62,8 +104,14 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   // Safe route/plugin registration — log errors but don't crash the server
-  const safeRegister = async (route: Promise<any>, prefixOrOpts?: string | { prefix: string }) => {
-    const opts = typeof prefixOrOpts === "string" ? { prefix: prefixOrOpts } : prefixOrOpts;
+  const safeRegister = async (
+    route: Promise<any>,
+    prefixOrOpts?: string | { prefix: string },
+  ) => {
+    const opts =
+      typeof prefixOrOpts === "string"
+        ? { prefix: prefixOrOpts }
+        : prefixOrOpts;
     try {
       await app.register(route, opts);
     } catch (err: any) {
@@ -90,8 +138,7 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // 3. CORS — restrictive in production, permissive in dev
   // CORS_ORIGINS env (comma-separated) takes precedence over the config defaults.
-  const corsEnvOrigins = process.env.CORS_ORIGINS
-    ?.split(",")
+  const corsEnvOrigins = process.env.CORS_ORIGINS?.split(",")
     .map((o) => o.trim())
     .filter(Boolean);
   const corsProdOrigins =
@@ -147,7 +194,9 @@ export async function buildServer(): Promise<FastifyInstance> {
     try {
       rateLimitOpts.redis = getRedis();
     } catch {
-      app.log.warn("[RateLimit] Redis unavailable, falling back to in-memory store");
+      app.log.warn(
+        "[RateLimit] Redis unavailable, falling back to in-memory store",
+      );
     }
   }
   await app.register(rateLimit, rateLimitOpts);
@@ -158,9 +207,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   // Bench Admin API — only enabled when BENCH_SERVICE_TOKEN is set
   // (see apps/api/src/routes/internal/bench.ts, docs/bench/ARCHITECTURE.md §3)
   if (process.env.BENCH_SERVICE_TOKEN) {
-    const benchAdminRoutes = (
-      await import("./routes/internal/bench.js")
-    ).default;
+    const benchAdminRoutes = (await import("./routes/internal/bench.js"))
+      .default;
     await app.register(benchAdminRoutes, { prefix: "/internal/bench" });
     app.log.info("bench admin API registered at /internal/bench");
   }
@@ -211,118 +259,283 @@ export async function buildServer(): Promise<FastifyInstance> {
   // ─── Latency Percentile Metrics (p95 dashboard) ─────────────
   // Exposes rolling p50/p95/p99 for BFS-certified endpoints.
   // carrier_rates p95 must stay ≤ 500ms per BFS SLA.
-  app.get("/metrics/p95", { preHandler: [requireAuth, requireRole("admin")] }, async (_request, reply) => {
-    const stats = p95Tracker.allStats();
-    const bfsSla = {
-      carrier_rates: { threshold_ms: 500, status: "no_data" as "no_data" | "pass" | "fail" },
-    };
-    if (stats.carrier_rates) {
-      bfsSla.carrier_rates.status = stats.carrier_rates.p95 <= 500 ? "pass" : "fail";
-    }
-    return reply.send({ timestamp: new Date().toISOString(), endpoints: stats, bfs_sla: bfsSla });
-  });
+  app.get(
+    "/metrics/p95",
+    { preHandler: [requireAuth, requireRole("admin")] },
+    async (_request, reply) => {
+      const stats = p95Tracker.allStats();
+      const bfsSla = {
+        carrier_rates: {
+          threshold_ms: 500,
+          status: "no_data" as "no_data" | "pass" | "fail",
+        },
+      };
+      if (stats.carrier_rates) {
+        bfsSla.carrier_rates.status =
+          stats.carrier_rates.p95 <= 500 ? "pass" : "fail";
+      }
+      return reply.send({
+        timestamp: new Date().toISOString(),
+        endpoints: stats,
+        bfs_sla: bfsSla,
+      });
+    },
+  );
 
   // ─── API Routes (v4) ───────────────────────────────────────
 
   await safeRegister(import("./routes/orders.js"), "/api/v4/orders");
   await safeRegister(import("./routes/drivers.js"), "/api/v4/drivers");
   await safeRegister(import("./routes/zones.js"), { prefix: "/api/v4/zones" });
-  await safeRegister(import("./routes/routes.js"), { prefix: "/api/v4/routes" });
-  await safeRegister(import("./routes/carriers.js"), { prefix: "/api/v4/carriers" });
-  await safeRegister(import("./routes/webhooks.js"), { prefix: "/api/v4/webhooks" });
-  await safeRegister(import("./routes/tracking.js"), { prefix: "/api/v4/tracking" });
-  await safeRegister(import("./routes/time-slots.js"), { prefix: "/api/v4/time-slots" });
+  await safeRegister(import("./routes/routes.js"), {
+    prefix: "/api/v4/routes",
+  });
+  await safeRegister(import("./routes/carriers.js"), {
+    prefix: "/api/v4/carriers",
+  });
+  await safeRegister(import("./routes/webhooks.js"), {
+    prefix: "/api/v4/webhooks",
+  });
+  await safeRegister(import("./routes/tracking.js"), {
+    prefix: "/api/v4/tracking",
+  });
+  await safeRegister(import("./routes/time-slots.js"), {
+    prefix: "/api/v4/time-slots",
+  });
   await safeRegister(import("./routes/shops.js"), { prefix: "/api/v4/shops" });
   await safeRegister(import("./routes/orgs.js"), { prefix: "/api/v4/orgs" });
   await safeRegister(import("./routes/auth.js"), { prefix: "/api/v4/auth" });
   // Legacy alias — same handlers (older docs / envs used /api/v1/auth/*).
   await safeRegister(import("./routes/auth.js"), { prefix: "/api/v1/auth" });
-  await safeRegister(import("./routes/onboarding.js"), { prefix: "/api/v4/onboarding" });
+  await safeRegister(import("./routes/onboarding.js"), {
+    prefix: "/api/v4/onboarding",
+  });
   await safeRegister(import("./routes/admin.js"), { prefix: "/api/v4/admin" });
-  await safeRegister(import("./routes/auth-providers.js"), { prefix: "/api/v4/auth-providers" });
+  await safeRegister(import("./routes/auth-providers.js"), {
+    prefix: "/api/v4/auth-providers",
+  });
   await safeRegister(import("./routes/users.js"), { prefix: "/api/v4/users" });
-  await safeRegister(import("./routes/integrations.js"), { prefix: "/api/v4/integrations" });
-  await safeRegister(import("./routes/integrations/crm.js"), { prefix: "/api/v4/integrations/crm" });
+  await safeRegister(import("./routes/integrations.js"), {
+    prefix: "/api/v4/integrations",
+  });
+  await safeRegister(import("./routes/integrations/crm.js"), {
+    prefix: "/api/v4/integrations/crm",
+  });
   await safeRegister(import("./routes/crm/crm.js"), { prefix: "/api/v4" });
-  await safeRegister(import("./routes/shipments.js"), { prefix: "/api/v4/shipments" });
-  await safeRegister(import("./routes/locations.js"), { prefix: "/api/v4/locations" });
-  await safeRegister(import("./routes/shipping-profiles.js"), { prefix: "/api/v4/shipping-profiles" });
-  await safeRegister(import("./routes/calendar-rules.js"), { prefix: "/api/v4/calendar-rules" });
-  await safeRegister(import("./routes/notification-templates.js"), { prefix: "/api/v4/notification-templates" });
-  await safeRegister(import("./routes/activity-logs.js"), { prefix: "/api/v4/activity-logs" });
-  await safeRegister(import("./routes/payments.js"), { prefix: "/api/v4/payments" });
-  await safeRegister(import("./routes/products.js"), { prefix: "/api/v4/products" });
-  await safeRegister(import("./routes/customers.js"), { prefix: "/api/v4/customers" });
-  await safeRegister(import("./routes/analytics.js"), { prefix: "/api/v4/analytics" });
-  await safeRegister(import("./routes/analytics-events.js"), { prefix: "/api/v4/analytics/v2" });
-  await safeRegister(import("./routes/analytics/route-performance.js"), { prefix: "/api/v4/analytics" });
-  await safeRegister(import("./routes/dashboard-stats.js"), { prefix: "/api/v4/dashboard" });
-  await safeRegister(import("./routes/payment-methods.js"), { prefix: "/api/v4/payment-methods" });
-  await safeRegister(import("./routes/billing.js"), { prefix: "/api/v4/billing" });
-  await safeRegister(import("./routes/billing-subscriptions.js"), { prefix: "/api/v4/billing/subscriptions" });
-  await safeRegister(import("./routes/campaigns.js"), { prefix: "/api/v4/campaigns" });
-  await safeRegister(import("./routes/messages.js"), { prefix: "/api/v4/messages" });
+  await safeRegister(import("./routes/shipments.js"), {
+    prefix: "/api/v4/shipments",
+  });
+  await safeRegister(import("./routes/locations.js"), {
+    prefix: "/api/v4/locations",
+  });
+  await safeRegister(import("./routes/shipping-profiles.js"), {
+    prefix: "/api/v4/shipping-profiles",
+  });
+  await safeRegister(import("./routes/calendar-rules.js"), {
+    prefix: "/api/v4/calendar-rules",
+  });
+  await safeRegister(import("./routes/notification-templates.js"), {
+    prefix: "/api/v4/notification-templates",
+  });
+  await safeRegister(import("./routes/activity-logs.js"), {
+    prefix: "/api/v4/activity-logs",
+  });
+  await safeRegister(import("./routes/payments.js"), {
+    prefix: "/api/v4/payments",
+  });
+  await safeRegister(import("./routes/products.js"), {
+    prefix: "/api/v4/products",
+  });
+  await safeRegister(import("./routes/customers.js"), {
+    prefix: "/api/v4/customers",
+  });
+  await safeRegister(import("./routes/analytics.js"), {
+    prefix: "/api/v4/analytics",
+  });
+  await safeRegister(import("./routes/analytics-events.js"), {
+    prefix: "/api/v4/analytics/v2",
+  });
+  await safeRegister(import("./routes/analytics/route-performance.js"), {
+    prefix: "/api/v4/analytics",
+  });
+  await safeRegister(import("./routes/dashboard-stats.js"), {
+    prefix: "/api/v4/dashboard",
+  });
+  await safeRegister(import("./routes/payment-methods.js"), {
+    prefix: "/api/v4/payment-methods",
+  });
+  await safeRegister(import("./routes/billing.js"), {
+    prefix: "/api/v4/billing",
+  });
+  await safeRegister(import("./routes/billing-subscriptions.js"), {
+    prefix: "/api/v4/billing/subscriptions",
+  });
+  await safeRegister(import("./routes/campaigns.js"), {
+    prefix: "/api/v4/campaigns",
+  });
+  await safeRegister(import("./routes/messages.js"), {
+    prefix: "/api/v4/messages",
+  });
   await safeRegister(import("./routes/chaos.js"), { prefix: "/api/v4/chaos" });
   await safeRegister(import("./routes/audit.js"), { prefix: "/api/v4/audit" });
-  await safeRegister(import("./routes/permissions.js"), { prefix: "/api/v4/permissions" });
-  await safeRegister(import("./routes/support-tickets.js"), { prefix: "/api/v4/support/tickets" });
-  await safeRegister(import("./routes/feature-requests.js"), { prefix: "/api/v4/support/feature-requests" });
-  await safeRegister(import("./routes/saved-views.js"), { prefix: "/api/v4/views" });
-  await safeRegister(import("./routes/widget-config.js"), { prefix: "/api/v4/widgets" });
+  await safeRegister(import("./routes/permissions.js"), {
+    prefix: "/api/v4/permissions",
+  });
+  await safeRegister(import("./routes/support-tickets.js"), {
+    prefix: "/api/v4/support/tickets",
+  });
+  await safeRegister(import("./routes/feature-requests.js"), {
+    prefix: "/api/v4/support/feature-requests",
+  });
+  await safeRegister(import("./routes/saved-views.js"), {
+    prefix: "/api/v4/views",
+  });
+  await safeRegister(import("./routes/widget-config.js"), {
+    prefix: "/api/v4/widgets",
+  });
   await safeRegister(import("./routes/pos.js"), { prefix: "/api/v4/pos" });
-  await safeRegister(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
-  await safeRegister(import("./routes/couriers.js"), { prefix: "/api/v4/couriers" });
-  await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
-  await safeRegister(import("./routes/field-service.js"), { prefix: "/api/v4/field-service" });
-  await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
-  await safeRegister(import("./routes/delivery-otp.js"), { prefix: "/api/v4/deliveries" });
-  await safeRegister(import("./routes/delivery-events.js"), { prefix: "/api/v4/deliveries" });
-  await safeRegister(import("./routes/failed-deliveries.js"), { prefix: "/api/v4/failed-deliveries" });
-  await safeRegister(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
-  await safeRegister(import("./routes/driver-scoring.js"), { prefix: "/api/v4/driver-scoring" });
-  await safeRegister(import("./routes/ecommerce.js"), { prefix: "/api/v4/ecommerce" });
-  await safeRegister(import("./routes/health.js"), { prefix: "/api/v4/health" });
-  await safeRegister(import("./routes/invoices.js"), { prefix: "/api/v4/invoices" });
-  await safeRegister(import("./routes/magento-webhooks.js"), { prefix: "/api/v4/magento-webhooks" });
-  await safeRegister(import("./routes/notification-preferences.js"), { prefix: "/api/v4/notification-preferences" });
-  await safeRegister(import("./routes/notifications-v2.js"), { prefix: "/api/v4/notifications" });
-  await safeRegister(import("./routes/outbound-webhooks.js"), { prefix: "/api/v4/outbound-webhooks" });
+  await safeRegister(import("./routes/collections.js"), {
+    prefix: "/api/v4/collections",
+  });
+  await safeRegister(import("./routes/couriers.js"), {
+    prefix: "/api/v4/couriers",
+  });
+  await safeRegister(import("./routes/dispatch.js"), {
+    prefix: "/api/v4/dispatch",
+  });
+  await safeRegister(import("./routes/field-service.js"), {
+    prefix: "/api/v4/field-service",
+  });
+  await safeRegister(import("./routes/deliveries.js"), {
+    prefix: "/api/v4/deliveries",
+  });
+  await safeRegister(import("./routes/delivery-otp.js"), {
+    prefix: "/api/v4/deliveries",
+  });
+  await safeRegister(import("./routes/delivery-events.js"), {
+    prefix: "/api/v4/deliveries",
+  });
+  await safeRegister(import("./routes/failed-deliveries.js"), {
+    prefix: "/api/v4/failed-deliveries",
+  });
+  await safeRegister(import("./routes/custom-webhooks.js"), {
+    prefix: "/api/v4/custom-webhooks",
+  });
+  await safeRegister(import("./routes/driver-scoring.js"), {
+    prefix: "/api/v4/driver-scoring",
+  });
+  await safeRegister(import("./routes/ecommerce.js"), {
+    prefix: "/api/v4/ecommerce",
+  });
+  await safeRegister(import("./routes/health.js"), {
+    prefix: "/api/v4/health",
+  });
+  await safeRegister(import("./routes/invoices.js"), {
+    prefix: "/api/v4/invoices",
+  });
+  await safeRegister(import("./routes/magento-webhooks.js"), {
+    prefix: "/api/v4/magento-webhooks",
+  });
+  await safeRegister(import("./routes/notification-preferences.js"), {
+    prefix: "/api/v4/notification-preferences",
+  });
+  await safeRegister(import("./routes/notifications-v2.js"), {
+    prefix: "/api/v4/notifications",
+  });
+  await safeRegister(import("./routes/outbound-webhooks.js"), {
+    prefix: "/api/v4/outbound-webhooks",
+  });
   await safeRegister(import("./routes/oauth.js"), { prefix: "/api/v4/oauth" });
-  await safeRegister(import("./routes/operations.js"), { prefix: "/api/v4/operations" });
-  await safeRegister(import("./routes/platform/platform.js"), { prefix: "/api/v4" });
-  await safeRegister(import("./routes/payments-v2.js"), { prefix: "/api/v4/payments/v2" });
+  await safeRegister(import("./routes/operations.js"), {
+    prefix: "/api/v4/operations",
+  });
+  await safeRegister(import("./routes/platform/platform.js"), {
+    prefix: "/api/v4",
+  });
+  await safeRegister(import("./routes/payments-v2.js"), {
+    prefix: "/api/v4/payments/v2",
+  });
   await safeRegister(import("./routes/pod.js"), { prefix: "/api/v4/pod" });
-  await safeRegister(import("./routes/returns.js"), { prefix: "/api/v4/returns" });
-  await safeRegister(import("./routes/settings.js"), { prefix: "/api/v4/settings" });
-  await safeRegister(import("./routes/shopify-webhooks.js"), { prefix: "/api/v4/shopify/webhooks" });
-  await safeRegister(import("./routes/shopify-workflow-bridge.js"), { prefix: "/api/v4/shopify/workflow-bridge" });
-  await safeRegister(import("./routes/webhook-deliveries.js"), { prefix: "/api/v4/webhook-deliveries" });
-  await safeRegister(import("./routes/woocommerce-webhooks.js"), { prefix: "/api/v4/woocommerce/webhooks" });
-  await safeRegister(import("./routes/workflow-delivery.js"), { prefix: "/api/v4/workflow/delivery" });
-  await safeRegister(import("./routes/workflow-drivers.js"), { prefix: "/api/v4/workflow/drivers" });
-  await safeRegister(import("./routes/workflow-executions.js"), { prefix: "/api/v4/workflow/executions" });
-  await safeRegister(import("./routes/workflow-orders.js"), { prefix: "/api/v4/workflow/orders" });
-  await safeRegister(import("./routes/route-optimization.js"), { prefix: "/api/v4/route-optimization" });
-  await safeRegister(import("./routes/live-tracking.js"), { prefix: "/api/v4/tracking/live" });
-  await safeRegister(import("./routes/proof-of-delivery.js"), { prefix: "/api/v4/pod/v2" });
-  await safeRegister(import("./routes/supply-chain.js"), { prefix: "/api/v4/supply-chain" });
-  await safeRegister(import("./routes/inventory.js"), { prefix: "/api/v4/inventory" });
-  await safeRegister(import("./routes/warehouse.js"), { prefix: "/api/v4/warehouse" });
-  await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/fleet" });
-  await safeRegister(import("./routes/cold-chain/cold-chain.js"), { prefix: "/api/v4/cold-chain" });
+  await safeRegister(import("./routes/returns.js"), {
+    prefix: "/api/v4/returns",
+  });
+  await safeRegister(import("./routes/settings.js"), {
+    prefix: "/api/v4/settings",
+  });
+  await safeRegister(import("./routes/shopify-webhooks.js"), {
+    prefix: "/api/v4/shopify/webhooks",
+  });
+  await safeRegister(import("./routes/shopify-workflow-bridge.js"), {
+    prefix: "/api/v4/shopify/workflow-bridge",
+  });
+  await safeRegister(import("./routes/webhook-deliveries.js"), {
+    prefix: "/api/v4/webhook-deliveries",
+  });
+  await safeRegister(import("./routes/woocommerce-webhooks.js"), {
+    prefix: "/api/v4/woocommerce/webhooks",
+  });
+  await safeRegister(import("./routes/workflow-delivery.js"), {
+    prefix: "/api/v4/workflow/delivery",
+  });
+  await safeRegister(import("./routes/workflow-drivers.js"), {
+    prefix: "/api/v4/workflow/drivers",
+  });
+  await safeRegister(import("./routes/workflow-executions.js"), {
+    prefix: "/api/v4/workflow/executions",
+  });
+  await safeRegister(import("./routes/workflow-orders.js"), {
+    prefix: "/api/v4/workflow/orders",
+  });
+  await safeRegister(import("./routes/route-optimization.js"), {
+    prefix: "/api/v4/route-optimization",
+  });
+  await safeRegister(import("./routes/live-tracking.js"), {
+    prefix: "/api/v4/tracking/live",
+  });
+  await safeRegister(import("./routes/proof-of-delivery.js"), {
+    prefix: "/api/v4/pod/v2",
+  });
+  await safeRegister(import("./routes/supply-chain.js"), {
+    prefix: "/api/v4/supply-chain",
+  });
+  await safeRegister(import("./routes/inventory.js"), {
+    prefix: "/api/v4/inventory",
+  });
+  await safeRegister(import("./routes/warehouse.js"), {
+    prefix: "/api/v4/warehouse",
+  });
+  await safeRegister(import("./routes/fleet/fleet.js"), {
+    prefix: "/api/v4/fleet",
+  });
+  await safeRegister(import("./routes/cold-chain/cold-chain.js"), {
+    prefix: "/api/v4/cold-chain",
+  });
   await safeRegister(import("./routes/eld.js"), { prefix: "/api/v4/eld" });
 
-
-  await safeRegister(import("./routes/ai/eta-recalculate.js"), { prefix: "/api/v4/ai/eta/recalculate" });
-  await safeRegister(import("./routes/finance-cod.js"), { prefix: "/api/v4/finance/cod" });
-  await safeRegister(import("./routes/finance.js"), { prefix: "/api/v4/finance" });
-  await safeRegister(import("./routes/ai/copilot.js"), { prefix: "/api/v4/ai/copilot" });
-  await safeRegister(import("./routes/ai/analytics.js"), { prefix: "/api/v4/ai/analytics" });
-  await safeRegister(import("./routes/ai/slots.js"), { prefix: "/api/v4/ai/slots" });
+  await safeRegister(import("./routes/ai/eta-recalculate.js"), {
+    prefix: "/api/v4/ai/eta/recalculate",
+  });
+  await safeRegister(import("./routes/finance-cod.js"), {
+    prefix: "/api/v4/finance/cod",
+  });
+  await safeRegister(import("./routes/finance.js"), {
+    prefix: "/api/v4/finance",
+  });
+  await safeRegister(import("./routes/ai/copilot.js"), {
+    prefix: "/api/v4/ai/copilot",
+  });
+  await safeRegister(import("./routes/ai/analytics.js"), {
+    prefix: "/api/v4/ai/analytics",
+  });
+  await safeRegister(import("./routes/ai/slots.js"), {
+    prefix: "/api/v4/ai/slots",
+  });
   await safeRegister(import("./routes/esignatures.js"), { prefix: "/api/v4" });
   await safeRegister(import("./routes/search.js"), { prefix: "/api/v4" });
   await safeRegister(import("./routes/orders-sync.js"), { prefix: "/api/v4" });
-  await safeRegister(import("./routes/accounting/accounting.js"), { prefix: "/api" });
+  await safeRegister(import("./routes/accounting/accounting.js"), {
+    prefix: "/api",
+  });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 
@@ -479,7 +692,10 @@ async function start(): Promise<void> {
       });
     } catch (err) {
       // Table may not exist yet — log and continue, never block routing
-      app.log.debug(err, "[routing:metering] Failed to persist (table may not exist yet)");
+      app.log.debug(
+        err,
+        "[routing:metering] Failed to persist (table may not exist yet)",
+      );
     }
   });
 
@@ -512,7 +728,10 @@ async function start(): Promise<void> {
         },
       });
     } catch (err) {
-      app.log.debug(err, "[notifications:metering] Failed to persist (table may not exist yet)");
+      app.log.debug(
+        err,
+        "[notifications:metering] Failed to persist (table may not exist yet)",
+      );
     }
   });
 
@@ -547,7 +766,10 @@ async function start(): Promise<void> {
         },
       });
     } catch (err) {
-      app.log.debug(err, "[integrations:metering] Failed to persist (table may not exist yet)");
+      app.log.debug(
+        err,
+        "[integrations:metering] Failed to persist (table may not exist yet)",
+      );
     }
   });
 
@@ -561,26 +783,36 @@ async function start(): Promise<void> {
   startGeofenceWorker().then(async () => {
     try {
       const { getGeofenceQueue } = await import("./lib/queue.js");
-      const intervalMs = parseInt(process.env.GEOFENCE_CHECK_INTERVAL_MS ?? "30000", 10);
+      const intervalMs = parseInt(
+        process.env.GEOFENCE_CHECK_INTERVAL_MS ?? "30000",
+        10,
+      );
       const geofenceQueue = getGeofenceQueue();
       await geofenceQueue.add(
         "geofence-check",
         { triggeredAt: new Date().toISOString() },
         { repeat: { every: intervalMs }, jobId: "geofence-check-repeatable" },
       );
-      app.log.info(`[geofence-worker] Repeatable job scheduled every ${intervalMs}ms`);
+      app.log.info(
+        `[geofence-worker] Repeatable job scheduled every ${intervalMs}ms`,
+      );
     } catch (err: any) {
-      app.log.warn(`[geofence-worker] Failed to schedule repeatable job: ${err.message}`);
+      app.log.warn(
+        `[geofence-worker] Failed to schedule repeatable job: ${err.message}`,
+      );
     }
   });
 
   startFailedDeliveryWorker();
   startWCWebhookWorker();
-  app.log.info("BullMQ workers started (notification, optimization, integration, geofence, failed-delivery, wc-webhooks)");
+  app.log.info(
+    "BullMQ workers started (notification, optimization, integration, geofence, failed-delivery, wc-webhooks)",
+  );
 
   // ─── Bootstrap Carrier Adapters ───────────────────────────
   try {
-    const { bootstrapCarriersFromEnv } = await import("@witylogix/core/integrations/shipping");
+    const { bootstrapCarriersFromEnv } =
+      await import("@witylogix/core/integrations/shipping");
     await bootstrapCarriersFromEnv();
     app.log.info("Carrier adapters bootstrapped from env");
   } catch (err) {

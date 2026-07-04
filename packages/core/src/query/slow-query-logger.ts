@@ -86,7 +86,7 @@ export class SlowQueryLogger {
     sql: string,
     params: any[] = [],
     duration: number,
-    caller: string = "unknown"
+    caller: string = "unknown",
   ): void {
     if (duration < this.threshold) {
       return;
@@ -130,9 +130,7 @@ export class SlowQueryLogger {
    * @returns Top slowest queries
    */
   getTopSlowest(limit: number = 10): SlowQueryRecord[] {
-    return this.records
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, limit);
+    return this.records.sort((a, b) => b.duration - a.duration).slice(0, limit);
   }
 
   /**
@@ -146,7 +144,7 @@ export class SlowQueryLogger {
     this.fingerprintMap.forEach((records, fingerprint) => {
       const durations = records.map((r) => r.duration);
       const trend = this.detectTrend(
-        this.fingerprintTrends.get(fingerprint) || []
+        this.fingerprintTrends.get(fingerprint) || [],
       );
 
       patterns.push({
@@ -154,7 +152,7 @@ export class SlowQueryLogger {
         sampleSql: this.truncateSql(records[0].sql),
         count: records.length,
         avgDuration: Math.round(
-          durations.reduce((a, b) => a + b, 0) / durations.length
+          durations.reduce((a, b) => a + b, 0) / durations.length,
         ),
         maxDuration: Math.max(...durations),
         minDuration: Math.min(...durations),
@@ -241,7 +239,7 @@ export class SlowQueryLogger {
    * @returns Trend direction
    */
   private detectTrend(
-    durations: number[]
+    durations: number[],
   ): "improving" | "degrading" | "stable" {
     if (durations.length < 3) return "stable";
 
@@ -250,13 +248,10 @@ export class SlowQueryLogger {
     const older = durations.slice(0, mid);
     const recent = durations.slice(mid);
 
-    const olderAvg =
-      older.reduce((a, b) => a + b, 0) / older.length;
-    const recentAvg =
-      recent.reduce((a, b) => a + b, 0) / recent.length;
+    const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
 
-    const percentChange =
-      ((recentAvg - olderAvg) / olderAvg) * 100;
+    const percentChange = ((recentAvg - olderAvg) / olderAvg) * 100;
 
     if (percentChange > 10) return "degrading";
     if (percentChange < -10) return "improving";
@@ -287,7 +282,7 @@ export class SlowQueryLogger {
     const slowest = patterns.slice(0, 3);
     if (slowest.length > 0) {
       recommendations.push(
-        `Address top 3 slow queries: avg durations ${slowest.map((p) => `${p.avgDuration}ms`).join(", ")}`
+        `Address top 3 slow queries: avg durations ${slowest.map((p) => `${p.avgDuration}ms`).join(", ")}`,
       );
     }
 
@@ -295,7 +290,7 @@ export class SlowQueryLogger {
     const degrading = patterns.filter((p) => p.trend === "degrading");
     if (degrading.length > 0) {
       recommendations.push(
-        `${degrading.length} queries are degrading in performance; investigate index usage`
+        `${degrading.length} queries are degrading in performance; investigate index usage`,
       );
     }
 
@@ -303,7 +298,7 @@ export class SlowQueryLogger {
     const frequent = patterns.filter((p) => p.count > 10);
     if (frequent.length > 0) {
       recommendations.push(
-        `${frequent.length} frequently executed slow queries detected; optimization would have high impact`
+        `${frequent.length} frequently executed slow queries detected; optimization would have high impact`,
       );
     }
 

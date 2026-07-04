@@ -16,7 +16,7 @@ import type {
   ScoringWeights,
   PlannedRouteSegment,
   RouteDataPoint,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Default scoring weights
@@ -24,9 +24,9 @@ import type {
 const DEFAULT_WEIGHTS: ScoringWeights = {
   distanceEfficiency: 0.25,
   timeEfficiency: 0.25,
-  stopEfficiency: 0.20,
-  idleTimeRatio: 0.20,
-  deviationCount: 0.10,
+  stopEfficiency: 0.2,
+  idleTimeRatio: 0.2,
+  deviationCount: 0.1,
 };
 
 /**
@@ -110,20 +110,46 @@ function countRouteDeviations(
       const segEnd = plannedStops[i + 1];
 
       // Interpolate expected position on this segment based on nearest point
-      const d1 = haversineDistance(point.lat, point.lng, segStart.lat, segStart.lng);
-      const d2 = haversineDistance(point.lat, point.lng, segEnd.lat, segEnd.lng);
-      const segLen = haversineDistance(segStart.lat, segStart.lng, segEnd.lat, segEnd.lng);
+      const d1 = haversineDistance(
+        point.lat,
+        point.lng,
+        segStart.lat,
+        segStart.lng,
+      );
+      const d2 = haversineDistance(
+        point.lat,
+        point.lng,
+        segEnd.lat,
+        segEnd.lng,
+      );
+      const segLen = haversineDistance(
+        segStart.lat,
+        segStart.lng,
+        segEnd.lat,
+        segEnd.lng,
+      );
 
       if (segLen < 1) continue;
 
       // Project point onto segment: clamp t to [0, 1]
-      const t = Math.max(0, Math.min(1, (d1 * d1 + segLen * segLen - d2 * d2) / (2 * segLen * segLen)));
+      const t = Math.max(
+        0,
+        Math.min(
+          1,
+          (d1 * d1 + segLen * segLen - d2 * d2) / (2 * segLen * segLen),
+        ),
+      );
 
       // Interpolate the expected position on the segment
       const expectedLat = segStart.lat + t * (segEnd.lat - segStart.lat);
       const expectedLng = segStart.lng + t * (segEnd.lng - segStart.lng);
 
-      const dist = haversineDistance(point.lat, point.lng, expectedLat, expectedLng);
+      const dist = haversineDistance(
+        point.lat,
+        point.lng,
+        expectedLat,
+        expectedLng,
+      );
       if (dist < minDistance) {
         minDistance = dist;
       }
@@ -393,7 +419,8 @@ export function calculateRouteEfficiencyBatch(
   }));
 
   const scoreValues = scores.map((s) => s.score).sort((a, b) => a - b);
-  const averageScore = scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length;
+  const averageScore =
+    scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length;
   const medianScore =
     scoreValues.length % 2 === 0
       ? (scoreValues[scoreValues.length / 2 - 1] +

@@ -40,7 +40,10 @@ interface GeneratedPDF {
 }
 
 class PDFService {
-  generateInvoicePDF(invoice: fixtures.InvoiceData, options?: PDFOptions): GeneratedPDF {
+  generateInvoicePDF(
+    invoice: fixtures.InvoiceData,
+    options?: PDFOptions,
+  ): GeneratedPDF {
     // Validate invoice
     if (!invoice.invoiceNumber) {
       throw new Error("Invoice number required");
@@ -84,7 +87,7 @@ class PDFService {
       accentColor?: string;
       companyName?: string;
       companyWebsite?: string;
-    }
+    },
   ): GeneratedPDF {
     if (branding.logoUrl) {
       pdf.fileSize += 50000; // logo adds ~50KB
@@ -95,7 +98,7 @@ class PDFService {
 
   renderAllFields(
     pdf: GeneratedPDF,
-    invoice: fixtures.InvoiceData
+    invoice: fixtures.InvoiceData,
   ): {
     fields: string[];
     rendered: boolean;
@@ -175,15 +178,22 @@ class PDFService {
     };
   }
 
-  validateMultiPageLayout(pdf: GeneratedPDF, invoice: fixtures.InvoiceData): boolean {
+  validateMultiPageLayout(
+    pdf: GeneratedPDF,
+    invoice: fixtures.InvoiceData,
+  ): boolean {
     // Check if page breaks are correct
     const itemsPerPage = 50;
-    const expectedPages = Math.ceil(invoice.lineItems.length / itemsPerPage) + 1; // +1 for summary
+    const expectedPages =
+      Math.ceil(invoice.lineItems.length / itemsPerPage) + 1; // +1 for summary
 
     return pdf.pageCount === expectedPages;
   }
 
-  formatNumberForPDF(value: number | string, format: "currency" | "percentage" | "number"): string {
+  formatNumberForPDF(
+    value: number | string,
+    format: "currency" | "percentage" | "number",
+  ): string {
     const num = typeof value === "string" ? parseFloat(value) : value;
 
     switch (format) {
@@ -226,7 +236,9 @@ describe("PDF Generation Integration Tests", () => {
     it("should throw error for invoice without number", () => {
       const invoice = fixtures.createInvoice({ invoiceNumber: "" });
 
-      expect(() => pdfService.generateInvoicePDF(invoice)).toThrow("Invoice number required");
+      expect(() => pdfService.generateInvoicePDF(invoice)).toThrow(
+        "Invoice number required",
+      );
     });
 
     it("should set correct metadata", () => {
@@ -441,7 +453,8 @@ describe("PDF Generation Integration Tests", () => {
 
   describe("Edge Cases", () => {
     it("should handle very long customer names", () => {
-      const longName = "A".repeat(200) + " & B".repeat(50) + " Corporation Limited";
+      const longName =
+        "A".repeat(200) + " & B".repeat(50) + " Corporation Limited";
       const invoice = fixtures.createInvoice({
         customerName: longName,
       });

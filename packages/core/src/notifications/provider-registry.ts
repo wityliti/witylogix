@@ -60,10 +60,8 @@ interface ProviderInstance {
  */
 export class TenantProviderRegistry {
   private instances: Map<string, ProviderInstance> = new Map(); // key: "channel:providerName"
-  private fallbackChains: Map<
-    string,
-    { primary: string; backups: string[] }
-  > = new Map(); // key: "channel"
+  private fallbackChains: Map<string, { primary: string; backups: string[] }> =
+    new Map(); // key: "channel"
 
   /**
    * Register a provider instance for a channel.
@@ -119,9 +117,7 @@ export class TenantProviderRegistry {
    * Get the fallback chain for a channel.
    * Returns [primary, ...backups] in order of preference.
    */
-  getFallbackChain(
-    channel: "EMAIL" | "SMS" | "WHATSAPP" | "PUSH",
-  ): string[] {
+  getFallbackChain(channel: "EMAIL" | "SMS" | "WHATSAPP" | "PUSH"): string[] {
     const chain = this.fallbackChains.get(channel);
     if (!chain) return [];
     return [chain.primary, ...chain.backups];
@@ -282,10 +278,7 @@ export class TenantProviderRegistry {
   /**
    * Get all channel chains (for debugging).
    */
-  getAllChains(): Record<
-    string,
-    { primary: string; backups: string[] }
-  > {
+  getAllChains(): Record<string, { primary: string; backups: string[] }> {
     const result: Record<string, { primary: string; backups: string[] }> = {};
     const entries = Array.from(this.fallbackChains.entries());
     for (let i = 0; i < entries.length; i++) {

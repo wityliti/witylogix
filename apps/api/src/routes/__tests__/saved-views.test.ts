@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import type { FastifyRequest, FastifyReply } from "fastify";
 
 interface MockRequest extends Partial<FastifyRequest> {
   body?: Record<string, any>;
@@ -16,22 +16,22 @@ interface MockReply extends Partial<FastifyReply> {
   send?: (data: unknown) => MockReply;
 }
 
-describe('Saved Views Routes', () => {
+describe("Saved Views Routes", () => {
   let mockRequest: MockRequest;
   let mockReply: MockReply;
   let mockTenantDb: Record<string, any>;
 
   const mockSavedView = {
-    id: 'view-123',
-    shopId: 'shop-456',
-    userId: 'user-123',
-    name: 'High Value Orders',
-    tableName: 'orders',
+    id: "view-123",
+    shopId: "shop-456",
+    userId: "user-123",
+    name: "High Value Orders",
+    tableName: "orders",
     filters: JSON.stringify([
-      { field: 'totalPrice', operator: 'gte', value: 100 },
-      { field: 'status', operator: 'eq', value: 'pending' },
+      { field: "totalPrice", operator: "gte", value: 100 },
+      { field: "status", operator: "eq", value: "pending" },
     ]),
-    sortConfig: JSON.stringify({ field: 'createdAt', order: 'desc' }),
+    sortConfig: JSON.stringify({ field: "createdAt", order: "desc" }),
     columnVisibility: JSON.stringify({
       id: true,
       customerName: true,
@@ -41,8 +41,8 @@ describe('Saved Views Routes', () => {
     }),
     isShared: false,
     isDefault: false,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-03-01'),
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-03-01"),
   };
 
   beforeEach(() => {
@@ -62,9 +62,9 @@ describe('Saved Views Routes', () => {
       body: {},
       query: {},
       params: {},
-      shopId: 'shop-456',
+      shopId: "shop-456",
       tenantDb: mockTenantDb,
-      auth: { userId: 'user-123' },
+      auth: { userId: "user-123" },
     };
 
     mockReply = {
@@ -85,29 +85,29 @@ describe('Saved Views Routes', () => {
     vi.clearAllMocks();
   });
 
-  describe('POST / - Create Saved View', () => {
-    it('should create a new saved view', async () => {
+  describe("POST / - Create Saved View", () => {
+    it("should create a new saved view", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce(mockSavedView);
 
       mockRequest.body = {
-        name: 'High Value Orders',
-        tableName: 'orders',
-        filters: [{ field: 'totalPrice', operator: 'gte', value: 100 }],
+        name: "High Value Orders",
+        tableName: "orders",
+        filters: [{ field: "totalPrice", operator: "gte", value: 100 }],
       };
 
       expect(mockTenantDb.savedView.create).toBeDefined();
-      expect(mockRequest.body.name).toBe('High Value Orders');
+      expect(mockRequest.body.name).toBe("High Value Orders");
     });
 
-    it('should set isDefault to false by default', async () => {
+    it("should set isDefault to false by default", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
         isDefault: false,
       });
 
       mockRequest.body = {
-        name: 'My View',
-        tableName: 'orders',
+        name: "My View",
+        tableName: "orders",
       };
 
       const result = { data: { ...mockSavedView, isDefault: false } };
@@ -115,15 +115,15 @@ describe('Saved Views Routes', () => {
       expect(result.data.isDefault).toBe(false);
     });
 
-    it('should set isShared to false by default', async () => {
+    it("should set isShared to false by default", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
         isShared: false,
       });
 
       mockRequest.body = {
-        name: 'My View',
-        tableName: 'orders',
+        name: "My View",
+        tableName: "orders",
       };
 
       const result = { data: { ...mockSavedView, isShared: false } };
@@ -131,84 +131,84 @@ describe('Saved Views Routes', () => {
       expect(result.data.isShared).toBe(false);
     });
 
-    it('should validate table name exists', async () => {
+    it("should validate table name exists", async () => {
       mockRequest.body = {
-        name: 'Invalid View',
-        tableName: 'invalid_table',
+        name: "Invalid View",
+        tableName: "invalid_table",
       };
 
       // Should validate table name
-      expect(mockRequest.body.tableName).toBe('invalid_table');
+      expect(mockRequest.body.tableName).toBe("invalid_table");
     });
 
-    it('should support orders table', async () => {
+    it("should support orders table", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        tableName: 'orders',
+        tableName: "orders",
       });
 
       mockRequest.body = {
-        name: 'Orders View',
-        tableName: 'orders',
+        name: "Orders View",
+        tableName: "orders",
       };
 
-      const result = { data: { ...mockSavedView, tableName: 'orders' } };
+      const result = { data: { ...mockSavedView, tableName: "orders" } };
 
-      expect(result.data.tableName).toBe('orders');
+      expect(result.data.tableName).toBe("orders");
     });
 
-    it('should support shipments table', async () => {
+    it("should support shipments table", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        tableName: 'shipments',
+        tableName: "shipments",
       });
 
       mockRequest.body = {
-        name: 'Shipments View',
-        tableName: 'shipments',
+        name: "Shipments View",
+        tableName: "shipments",
       };
 
-      const result = { data: { ...mockSavedView, tableName: 'shipments' } };
+      const result = { data: { ...mockSavedView, tableName: "shipments" } };
 
-      expect(result.data.tableName).toBe('shipments');
+      expect(result.data.tableName).toBe("shipments");
     });
 
-    it('should support products table', async () => {
+    it("should support products table", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        tableName: 'products',
+        tableName: "products",
       });
 
       mockRequest.body = {
-        name: 'Products View',
-        tableName: 'products',
+        name: "Products View",
+        tableName: "products",
       };
 
-      const result = { data: { ...mockSavedView, tableName: 'products' } };
+      const result = { data: { ...mockSavedView, tableName: "products" } };
 
-      expect(result.data.tableName).toBe('products');
+      expect(result.data.tableName).toBe("products");
     });
 
-    it('should support drivers table', async () => {
+    it("should support drivers table", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        tableName: 'drivers',
+        tableName: "drivers",
       });
 
       mockRequest.body = {
-        name: 'Drivers View',
-        tableName: 'drivers',
+        name: "Drivers View",
+        tableName: "drivers",
       };
 
-      const result = { data: { ...mockSavedView, tableName: 'drivers' } };
+      const result = { data: { ...mockSavedView, tableName: "drivers" } };
 
-      expect(result.data.tableName).toBe('drivers');
+      expect(result.data.tableName).toBe("drivers");
     });
 
-    it('should serialize filters to JSON', async () => {
+    it("should serialize filters to JSON", async () => {
       const filters = [
-        { field: 'status', operator: 'eq', value: 'pending' },
-        { field: 'totalPrice', operator: 'gte', value: 50 },
+        { field: "status", operator: "eq", value: "pending" },
+        { field: "totalPrice", operator: "gte", value: 50 },
       ];
 
       mockTenantDb.savedView.create.mockResolvedValueOnce({
@@ -217,18 +217,20 @@ describe('Saved Views Routes', () => {
       });
 
       mockRequest.body = {
-        name: 'Filtered View',
-        tableName: 'orders',
+        name: "Filtered View",
+        tableName: "orders",
         filters,
       };
 
-      const result = { data: { ...mockSavedView, filters: JSON.stringify(filters) } };
+      const result = {
+        data: { ...mockSavedView, filters: JSON.stringify(filters) },
+      };
 
       expect(JSON.parse(result.data.filters)).toHaveLength(2);
     });
 
-    it('should serialize sort configuration to JSON', async () => {
-      const sortConfig = { field: 'totalPrice', order: 'desc' };
+    it("should serialize sort configuration to JSON", async () => {
+      const sortConfig = { field: "totalPrice", order: "desc" };
 
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
@@ -236,37 +238,39 @@ describe('Saved Views Routes', () => {
       });
 
       mockRequest.body = {
-        name: 'Sorted View',
-        tableName: 'orders',
+        name: "Sorted View",
+        tableName: "orders",
         sortConfig,
       };
 
-      const result = { data: { ...mockSavedView, sortConfig: JSON.stringify(sortConfig) } };
+      const result = {
+        data: { ...mockSavedView, sortConfig: JSON.stringify(sortConfig) },
+      };
 
-      expect(JSON.parse(result.data.sortConfig).field).toBe('totalPrice');
-      expect(JSON.parse(result.data.sortConfig).order).toBe('desc');
+      expect(JSON.parse(result.data.sortConfig).field).toBe("totalPrice");
+      expect(JSON.parse(result.data.sortConfig).order).toBe("desc");
     });
 
-    it('should return 201 status code', async () => {
+    it("should return 201 status code", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce(mockSavedView);
 
       mockRequest.body = {
-        name: 'New View',
-        tableName: 'orders',
+        name: "New View",
+        tableName: "orders",
       };
 
       expect(mockReply.status).toBeDefined();
     });
 
-    it('should allow optional filters', async () => {
+    it("should allow optional filters", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
         filters: null,
       });
 
       mockRequest.body = {
-        name: 'Simple View',
-        tableName: 'orders',
+        name: "Simple View",
+        tableName: "orders",
       };
 
       const result = { data: { ...mockSavedView, filters: null } };
@@ -274,15 +278,15 @@ describe('Saved Views Routes', () => {
       expect(result.data.filters).toBeNull();
     });
 
-    it('should allow optional sort config', async () => {
+    it("should allow optional sort config", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
         sortConfig: null,
       });
 
       mockRequest.body = {
-        name: 'Simple View',
-        tableName: 'orders',
+        name: "Simple View",
+        tableName: "orders",
       };
 
       const result = { data: { ...mockSavedView, sortConfig: null } };
@@ -291,8 +295,8 @@ describe('Saved Views Routes', () => {
     });
   });
 
-  describe('GET / - List Saved Views', () => {
-    it('should list all user views with pagination', async () => {
+  describe("GET / - List Saved Views", () => {
+    it("should list all user views with pagination", async () => {
       mockTenantDb.savedView.findMany.mockResolvedValueOnce([mockSavedView]);
       mockTenantDb.savedView.count.mockResolvedValueOnce(1);
 
@@ -314,21 +318,21 @@ describe('Saved Views Routes', () => {
       expect(result.pagination.page).toBe(1);
     });
 
-    it('should filter views by table name', async () => {
+    it("should filter views by table name", async () => {
       mockTenantDb.savedView.findMany.mockResolvedValueOnce([mockSavedView]);
       mockTenantDb.savedView.count.mockResolvedValueOnce(1);
 
-      mockRequest.query = { page: 1, limit: 20, tableName: 'orders' };
+      mockRequest.query = { page: 1, limit: 20, tableName: "orders" };
 
       const result = {
         data: [mockSavedView],
         pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       };
 
-      expect(result.data[0].tableName).toBe('orders');
+      expect(result.data[0].tableName).toBe("orders");
     });
 
-    it('should handle pagination with multiple pages', async () => {
+    it("should handle pagination with multiple pages", async () => {
       const views = Array.from({ length: 40 }, (_, i) => ({
         ...mockSavedView,
         id: `view-${i}`,
@@ -348,9 +352,13 @@ describe('Saved Views Routes', () => {
       expect(result.pagination.totalPages).toBe(2);
     });
 
-    it('should order views by creation date descending', async () => {
-      const oldView = { ...mockSavedView, createdAt: new Date('2024-01-01') };
-      const newView = { ...mockSavedView, id: 'view-456', createdAt: new Date('2024-03-01') };
+    it("should order views by creation date descending", async () => {
+      const oldView = { ...mockSavedView, createdAt: new Date("2024-01-01") };
+      const newView = {
+        ...mockSavedView,
+        id: "view-456",
+        createdAt: new Date("2024-03-01"),
+      };
 
       mockTenantDb.savedView.findMany.mockResolvedValueOnce([newView, oldView]);
       mockTenantDb.savedView.count.mockResolvedValueOnce(2);
@@ -362,10 +370,12 @@ describe('Saved Views Routes', () => {
         pagination: { page: 1, limit: 20, total: 2, totalPages: 1 },
       };
 
-      expect(result.data[0].createdAt.getTime()).toBeGreaterThan(result.data[1].createdAt.getTime());
+      expect(result.data[0].createdAt.getTime()).toBeGreaterThan(
+        result.data[1].createdAt.getTime(),
+      );
     });
 
-    it('should deserialize JSON fields in response', async () => {
+    it("should deserialize JSON fields in response", async () => {
       mockTenantDb.savedView.findMany.mockResolvedValueOnce([mockSavedView]);
       mockTenantDb.savedView.count.mockResolvedValueOnce(1);
 
@@ -383,16 +393,16 @@ describe('Saved Views Routes', () => {
       };
 
       expect(Array.isArray(result.data[0].filters)).toBe(true);
-      expect(typeof result.data[0].sortConfig).toBe('object');
-      expect(typeof result.data[0].columnVisibility).toBe('object');
+      expect(typeof result.data[0].sortConfig).toBe("object");
+      expect(typeof result.data[0].columnVisibility).toBe("object");
     });
   });
 
-  describe('GET /:id - Get Single View', () => {
-    it('should get view by id', async () => {
+  describe("GET /:id - Get Single View", () => {
+    it("should get view by id", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const result = {
         data: {
@@ -403,44 +413,44 @@ describe('Saved Views Routes', () => {
         },
       };
 
-      expect(result.data.id).toBe('view-123');
+      expect(result.data.id).toBe("view-123");
     });
 
-    it('should throw NotFoundError when view does not exist', async () => {
+    it("should throw NotFoundError when view does not exist", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(null);
 
-      mockRequest.params = { id: 'nonexistent' };
+      mockRequest.params = { id: "nonexistent" };
 
       expect(mockTenantDb.savedView.findUnique).toBeDefined();
     });
 
-    it('should throw ForbiddenError if view from different shop', async () => {
+    it("should throw ForbiddenError if view from different shop", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        shopId: 'different-shop',
+        shopId: "different-shop",
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
-      const foundView = { ...mockSavedView, shopId: 'different-shop' };
+      const foundView = { ...mockSavedView, shopId: "different-shop" };
 
       if (foundView.shopId !== mockRequest.shopId) {
         expect(foundView.shopId).not.toBe(mockRequest.shopId);
       }
     });
 
-    it('should throw ForbiddenError if private view from different user', async () => {
+    it("should throw ForbiddenError if private view from different user", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
         isShared: false,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const foundView = {
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
         isShared: false,
       };
 
@@ -449,18 +459,18 @@ describe('Saved Views Routes', () => {
       }
     });
 
-    it('should allow access to shared views from other users', async () => {
+    it("should allow access to shared views from other users", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
         isShared: true,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const foundView = {
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
         isShared: true,
       };
 
@@ -468,27 +478,27 @@ describe('Saved Views Routes', () => {
     });
   });
 
-  describe('PUT /:id - Update View', () => {
-    it('should update view name', async () => {
+  describe("PUT /:id - Update View", () => {
+    it("should update view name", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.update.mockResolvedValueOnce({
         ...mockSavedView,
-        name: 'Updated View Name',
+        name: "Updated View Name",
       });
 
-      mockRequest.params = { id: 'view-123' };
-      mockRequest.body = { name: 'Updated View Name' };
+      mockRequest.params = { id: "view-123" };
+      mockRequest.body = { name: "Updated View Name" };
 
       const result = {
-        data: { ...mockSavedView, name: 'Updated View Name' },
+        data: { ...mockSavedView, name: "Updated View Name" },
       };
 
-      expect(result.data.name).toBe('Updated View Name');
+      expect(result.data.name).toBe("Updated View Name");
     });
 
-    it('should update filters', async () => {
+    it("should update filters", async () => {
       const newFilters = [
-        { field: 'status', operator: 'eq', value: 'shipped' },
+        { field: "status", operator: "eq", value: "shipped" },
       ];
 
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
@@ -497,7 +507,7 @@ describe('Saved Views Routes', () => {
         filters: JSON.stringify(newFilters),
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
       mockRequest.body = { filters: newFilters };
 
       const result = {
@@ -507,8 +517,8 @@ describe('Saved Views Routes', () => {
       expect(JSON.parse(result.data.filters)).toEqual(newFilters);
     });
 
-    it('should update sort configuration', async () => {
-      const newSort = { field: 'customerName', order: 'asc' };
+    it("should update sort configuration", async () => {
+      const newSort = { field: "customerName", order: "asc" };
 
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.update.mockResolvedValueOnce({
@@ -516,17 +526,17 @@ describe('Saved Views Routes', () => {
         sortConfig: JSON.stringify(newSort),
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
       mockRequest.body = { sortConfig: newSort };
 
       const result = {
         data: { ...mockSavedView, sortConfig: JSON.stringify(newSort) },
       };
 
-      expect(JSON.parse(result.data.sortConfig).field).toBe('customerName');
+      expect(JSON.parse(result.data.sortConfig).field).toBe("customerName");
     });
 
-    it('should update column visibility', async () => {
+    it("should update column visibility", async () => {
       const newVisibility = {
         id: true,
         customerName: false,
@@ -540,35 +550,38 @@ describe('Saved Views Routes', () => {
         columnVisibility: JSON.stringify(newVisibility),
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
       mockRequest.body = { columnVisibility: newVisibility };
 
       const result = {
-        data: { ...mockSavedView, columnVisibility: JSON.stringify(newVisibility) },
+        data: {
+          ...mockSavedView,
+          columnVisibility: JSON.stringify(newVisibility),
+        },
       };
 
       expect(JSON.parse(result.data.columnVisibility).customerName).toBe(false);
     });
 
-    it('should throw NotFoundError if view does not exist', async () => {
+    it("should throw NotFoundError if view does not exist", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(null);
 
-      mockRequest.params = { id: 'nonexistent' };
-      mockRequest.body = { name: 'Updated' };
+      mockRequest.params = { id: "nonexistent" };
+      mockRequest.body = { name: "Updated" };
 
       expect(mockTenantDb.savedView.findUnique).toBeDefined();
     });
 
-    it('should throw ForbiddenError if updating different user view', async () => {
+    it("should throw ForbiddenError if updating different user view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
       });
 
-      mockRequest.params = { id: 'view-123' };
-      mockRequest.body = { name: 'Updated' };
+      mockRequest.params = { id: "view-123" };
+      mockRequest.body = { name: "Updated" };
 
-      const foundView = { ...mockSavedView, userId: 'different-user' };
+      const foundView = { ...mockSavedView, userId: "different-user" };
 
       if (foundView.userId !== mockRequest.auth.userId) {
         expect(foundView.userId).not.toBe(mockRequest.auth.userId);
@@ -576,90 +589,90 @@ describe('Saved Views Routes', () => {
     });
   });
 
-  describe('DELETE /:id - Delete View', () => {
-    it('should delete a view', async () => {
+  describe("DELETE /:id - Delete View", () => {
+    it("should delete a view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.delete.mockResolvedValueOnce(mockSavedView);
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
-      const result = { message: 'View deleted successfully' };
+      const result = { message: "View deleted successfully" };
 
       expect(mockTenantDb.savedView.delete).toBeDefined();
     });
 
-    it('should throw NotFoundError if view does not exist', async () => {
+    it("should throw NotFoundError if view does not exist", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(null);
 
-      mockRequest.params = { id: 'nonexistent' };
+      mockRequest.params = { id: "nonexistent" };
 
       expect(mockTenantDb.savedView.findUnique).toBeDefined();
     });
 
-    it('should throw ForbiddenError if deleting different user view', async () => {
+    it("should throw ForbiddenError if deleting different user view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
-      const foundView = { ...mockSavedView, userId: 'different-user' };
+      const foundView = { ...mockSavedView, userId: "different-user" };
 
       if (foundView.userId !== mockRequest.auth.userId) {
         expect(foundView.userId).not.toBe(mockRequest.auth.userId);
       }
     });
 
-    it('should return 204 status code', async () => {
+    it("should return 204 status code", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.delete.mockResolvedValueOnce(mockSavedView);
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       expect(mockReply.status).toBeDefined();
     });
   });
 
-  describe('POST /:id/duplicate - Duplicate View', () => {
-    it('should duplicate a view', async () => {
+  describe("POST /:id/duplicate - Duplicate View", () => {
+    it("should duplicate a view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        id: 'view-clone-123',
-        name: 'High Value Orders (Copy)',
+        id: "view-clone-123",
+        name: "High Value Orders (Copy)",
         isDefault: false,
         isShared: false,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const result = {
         data: {
           ...mockSavedView,
-          id: 'view-clone-123',
-          name: 'High Value Orders (Copy)',
+          id: "view-clone-123",
+          name: "High Value Orders (Copy)",
         },
       };
 
-      expect(result.data.name).toContain('Copy');
-      expect(result.data.id).not.toBe('view-123');
+      expect(result.data.name).toContain("Copy");
+      expect(result.data.id).not.toBe("view-123");
     });
 
-    it('should preserve filters in duplication', async () => {
+    it("should preserve filters in duplication", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        id: 'view-clone-123',
+        id: "view-clone-123",
         filters: mockSavedView.filters,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const result = {
         data: {
           ...mockSavedView,
-          id: 'view-clone-123',
+          id: "view-clone-123",
           filters: mockSavedView.filters,
         },
       };
@@ -667,49 +680,49 @@ describe('Saved Views Routes', () => {
       expect(result.data.filters).toEqual(mockSavedView.filters);
     });
 
-    it('should set isShared to false when duplicating', async () => {
+    it("should set isShared to false when duplicating", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
         isShared: true,
       });
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        id: 'view-clone-123',
+        id: "view-clone-123",
         isShared: false,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const result = {
-        data: { ...mockSavedView, id: 'view-clone-123', isShared: false },
+        data: { ...mockSavedView, id: "view-clone-123", isShared: false },
       };
 
       expect(result.data.isShared).toBe(false);
     });
 
-    it('should return 201 status code', async () => {
+    it("should return 201 status code", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
-        id: 'view-clone-123',
+        id: "view-clone-123",
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       expect(mockReply.status).toBeDefined();
     });
 
-    it('should throw NotFoundError if view does not exist', async () => {
+    it("should throw NotFoundError if view does not exist", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(null);
 
-      mockRequest.params = { id: 'nonexistent' };
+      mockRequest.params = { id: "nonexistent" };
 
       expect(mockTenantDb.savedView.findUnique).toBeDefined();
     });
   });
 
-  describe('PUT /:id/default - Set as Default', () => {
-    it('should set view as default', async () => {
+  describe("PUT /:id/default - Set as Default", () => {
+    it("should set view as default", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
         isDefault: false,
@@ -720,14 +733,14 @@ describe('Saved Views Routes', () => {
         isDefault: true,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const result = { data: { ...mockSavedView, isDefault: true } };
 
       expect(result.data.isDefault).toBe(true);
     });
 
-    it('should unset previous default for same table', async () => {
+    it("should unset previous default for same table", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(mockSavedView);
       mockTenantDb.savedView.updateMany.mockResolvedValueOnce({});
       mockTenantDb.savedView.update.mockResolvedValueOnce({
@@ -735,28 +748,28 @@ describe('Saved Views Routes', () => {
         isDefault: true,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       expect(mockTenantDb.savedView.updateMany).toBeDefined();
     });
 
-    it('should throw NotFoundError if view does not exist', async () => {
+    it("should throw NotFoundError if view does not exist", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(null);
 
-      mockRequest.params = { id: 'nonexistent' };
+      mockRequest.params = { id: "nonexistent" };
 
       expect(mockTenantDb.savedView.findUnique).toBeDefined();
     });
 
-    it('should throw ForbiddenError if setting default for different user view', async () => {
+    it("should throw ForbiddenError if setting default for different user view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
-      const foundView = { ...mockSavedView, userId: 'different-user' };
+      const foundView = { ...mockSavedView, userId: "different-user" };
 
       if (foundView.userId !== mockRequest.auth.userId) {
         expect(foundView.userId).not.toBe(mockRequest.auth.userId);
@@ -764,8 +777,8 @@ describe('Saved Views Routes', () => {
     });
   });
 
-  describe('PUT /:id/share - Toggle Sharing', () => {
-    it('should share a private view', async () => {
+  describe("PUT /:id/share - Toggle Sharing", () => {
+    it("should share a private view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
         isShared: false,
@@ -775,18 +788,18 @@ describe('Saved Views Routes', () => {
         isShared: true,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const result = {
         data: { ...mockSavedView, isShared: true },
-        message: 'View is now shared',
+        message: "View is now shared",
       };
 
       expect(result.data.isShared).toBe(true);
-      expect(result.message).toContain('shared');
+      expect(result.message).toContain("shared");
     });
 
-    it('should unshare a shared view', async () => {
+    it("should unshare a shared view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
         isShared: true,
@@ -796,34 +809,34 @@ describe('Saved Views Routes', () => {
         isShared: false,
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
       const result = {
         data: { ...mockSavedView, isShared: false },
-        message: 'View is now private',
+        message: "View is now private",
       };
 
       expect(result.data.isShared).toBe(false);
-      expect(result.message).toContain('private');
+      expect(result.message).toContain("private");
     });
 
-    it('should throw NotFoundError if view does not exist', async () => {
+    it("should throw NotFoundError if view does not exist", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(null);
 
-      mockRequest.params = { id: 'nonexistent' };
+      mockRequest.params = { id: "nonexistent" };
 
       expect(mockTenantDb.savedView.findUnique).toBeDefined();
     });
 
-    it('should throw ForbiddenError if sharing different user view', async () => {
+    it("should throw ForbiddenError if sharing different user view", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
 
-      const foundView = { ...mockSavedView, userId: 'different-user' };
+      const foundView = { ...mockSavedView, userId: "different-user" };
 
       if (foundView.userId !== mockRequest.auth.userId) {
         expect(foundView.userId).not.toBe(mockRequest.auth.userId);
@@ -831,12 +844,12 @@ describe('Saved Views Routes', () => {
     });
   });
 
-  describe('Filter Serialization/Deserialization', () => {
-    it('should serialize complex filter objects', async () => {
+  describe("Filter Serialization/Deserialization", () => {
+    it("should serialize complex filter objects", async () => {
       const complexFilters = [
-        { field: 'totalPrice', operator: 'gte', value: 100 },
-        { field: 'status', operator: 'in', value: ['pending', 'processing'] },
-        { field: 'customerName', operator: 'contains', value: 'John' },
+        { field: "totalPrice", operator: "gte", value: 100 },
+        { field: "status", operator: "in", value: ["pending", "processing"] },
+        { field: "customerName", operator: "contains", value: "John" },
       ];
 
       mockTenantDb.savedView.create.mockResolvedValueOnce({
@@ -845,8 +858,8 @@ describe('Saved Views Routes', () => {
       });
 
       mockRequest.body = {
-        name: 'Complex Filters',
-        tableName: 'orders',
+        name: "Complex Filters",
+        tableName: "orders",
         filters: complexFilters,
       };
 
@@ -862,15 +875,15 @@ describe('Saved Views Routes', () => {
       expect(parsed[1].value).toHaveLength(2);
     });
 
-    it('should preserve null filters', async () => {
+    it("should preserve null filters", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
         filters: null,
       });
 
       mockRequest.body = {
-        name: 'No Filters',
-        tableName: 'orders',
+        name: "No Filters",
+        tableName: "orders",
       };
 
       const result = { data: { ...mockSavedView, filters: null } };
@@ -878,15 +891,15 @@ describe('Saved Views Routes', () => {
       expect(result.data.filters).toBeNull();
     });
 
-    it('should handle empty filter array', async () => {
+    it("should handle empty filter array", async () => {
       mockTenantDb.savedView.create.mockResolvedValueOnce({
         ...mockSavedView,
         filters: JSON.stringify([]),
       });
 
       mockRequest.body = {
-        name: 'Empty Filters',
-        tableName: 'orders',
+        name: "Empty Filters",
+        tableName: "orders",
         filters: [],
       };
 
@@ -899,8 +912,8 @@ describe('Saved Views Routes', () => {
     });
   });
 
-  describe('Column Configuration Persistence', () => {
-    it('should persist column visibility settings', async () => {
+  describe("Column Configuration Persistence", () => {
+    it("should persist column visibility settings", async () => {
       const visibility = {
         id: true,
         customerName: true,
@@ -916,8 +929,8 @@ describe('Saved Views Routes', () => {
       });
 
       mockRequest.body = {
-        name: 'Column View',
-        tableName: 'orders',
+        name: "Column View",
+        tableName: "orders",
         columnVisibility: visibility,
       };
 
@@ -933,7 +946,7 @@ describe('Saved Views Routes', () => {
       expect(parsed.status).toBe(false);
     });
 
-    it('should update column visibility', async () => {
+    it("should update column visibility", async () => {
       const newVisibility = {
         id: true,
         customerName: false,
@@ -948,7 +961,7 @@ describe('Saved Views Routes', () => {
         columnVisibility: JSON.stringify(newVisibility),
       });
 
-      mockRequest.params = { id: 'view-123' };
+      mockRequest.params = { id: "view-123" };
       mockRequest.body = { columnVisibility: newVisibility };
 
       const result = {
@@ -963,12 +976,12 @@ describe('Saved Views Routes', () => {
     });
   });
 
-  describe('View Ordering', () => {
-    it('should order views by creation date', async () => {
+  describe("View Ordering", () => {
+    it("should order views by creation date", async () => {
       const views = [
-        { ...mockSavedView, id: 'view-1', createdAt: new Date('2024-03-01') },
-        { ...mockSavedView, id: 'view-2', createdAt: new Date('2024-02-01') },
-        { ...mockSavedView, id: 'view-3', createdAt: new Date('2024-01-01') },
+        { ...mockSavedView, id: "view-1", createdAt: new Date("2024-03-01") },
+        { ...mockSavedView, id: "view-2", createdAt: new Date("2024-02-01") },
+        { ...mockSavedView, id: "view-3", createdAt: new Date("2024-01-01") },
       ];
 
       mockTenantDb.savedView.findMany.mockResolvedValueOnce(views);
@@ -981,25 +994,25 @@ describe('Saved Views Routes', () => {
         pagination: { page: 1, limit: 20, total: 3, totalPages: 1 },
       };
 
-      expect(result.data[0].id).toBe('view-1');
-      expect(result.data[result.data.length - 1].id).toBe('view-3');
+      expect(result.data[0].id).toBe("view-1");
+      expect(result.data[result.data.length - 1].id).toBe("view-3");
     });
   });
 
-  describe('Sharing Views Between Users', () => {
-    it('should allow shared views to be accessed by other users', async () => {
+  describe("Sharing Views Between Users", () => {
+    it("should allow shared views to be accessed by other users", async () => {
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce({
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
         isShared: true,
       });
 
-      mockRequest.params = { id: 'view-123' };
-      mockRequest.auth.userId = 'another-user';
+      mockRequest.params = { id: "view-123" };
+      mockRequest.auth.userId = "another-user";
 
       const foundView = {
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
         isShared: true,
       };
 
@@ -1007,19 +1020,22 @@ describe('Saved Views Routes', () => {
       expect(foundView.isShared).toBe(true);
     });
 
-    it('should prevent private views from being accessed by other users', async () => {
+    it("should prevent private views from being accessed by other users", async () => {
       const privateView = {
         ...mockSavedView,
-        userId: 'different-user',
+        userId: "different-user",
         isShared: false,
       };
 
       mockTenantDb.savedView.findUnique.mockResolvedValueOnce(privateView);
 
-      mockRequest.params = { id: 'view-123' };
-      mockRequest.auth.userId = 'another-user';
+      mockRequest.params = { id: "view-123" };
+      mockRequest.auth.userId = "another-user";
 
-      if (!privateView.isShared && privateView.userId !== mockRequest.auth.userId) {
+      if (
+        !privateView.isShared &&
+        privateView.userId !== mockRequest.auth.userId
+      ) {
         expect(privateView.userId).not.toBe(mockRequest.auth.userId);
       }
     });

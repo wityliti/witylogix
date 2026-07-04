@@ -8,12 +8,12 @@
  * Represents different types of rights under GDPR
  */
 export enum DataSubjectRequestType {
-  EXPORT = 'export',
-  DELETION = 'deletion',
-  RECTIFICATION = 'rectification',
-  ACCESS = 'access',
-  RESTRICTION = 'restriction',
-  PORTABILITY = 'portability',
+  EXPORT = "export",
+  DELETION = "deletion",
+  RECTIFICATION = "rectification",
+  ACCESS = "access",
+  RESTRICTION = "restriction",
+  PORTABILITY = "portability",
 }
 
 /**
@@ -21,11 +21,11 @@ export enum DataSubjectRequestType {
  * Tracks progression of a data subject request through the system
  */
 export enum RequestStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  REJECTED = 'rejected',
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  REJECTED = "rejected",
 }
 
 /**
@@ -70,8 +70,13 @@ export interface ConsentRecord {
 export interface PIIField {
   fieldName: string;
   tableName: string;
-  classification: 'direct' | 'indirect' | 'sensitive';
-  maskingStrategy: 'hash' | 'pseudonymize' | 'redact' | 'generalize' | 'encrypt';
+  classification: "direct" | "indirect" | "sensitive";
+  maskingStrategy:
+    | "hash"
+    | "pseudonymize"
+    | "redact"
+    | "generalize"
+    | "encrypt";
   description?: string;
   example?: string;
 }
@@ -81,12 +86,12 @@ export interface PIIField {
  * Defines how data should be anonymized and retention periods
  */
 export interface AnonymizationConfig {
-  strategy: 'hash' | 'pseudonymize' | 'redact' | 'generalize';
+  strategy: "hash" | "pseudonymize" | "redact" | "generalize";
   retentionDays: number;
   reversible?: boolean; // Whether anonymization can be reversed
   salt?: string; // For hashing operations
   visibleCharacters?: number; // For redaction strategy (e.g., last 4 digits)
-  generalizationLevel?: 'city' | 'region' | 'country'; // For location generalization
+  generalizationLevel?: "city" | "region" | "country"; // For location generalization
   metadata?: Record<string, unknown>;
 }
 
@@ -97,7 +102,7 @@ export interface AnonymizationConfig {
 export interface ComplianceReport {
   id: string;
   generatedAt: Date;
-  reportType: 'anonymization' | 'export' | 'deletion' | 'audit';
+  reportType: "anonymization" | "export" | "deletion" | "audit";
   totalRecords: number;
   anonymized: number;
   exported: number;
@@ -115,7 +120,7 @@ export interface ComplianceError {
   code: string;
   message: string;
   recordId?: string;
-  severity: 'warning' | 'error' | 'critical';
+  severity: "warning" | "error" | "critical";
   timestamp: Date;
 }
 
@@ -125,7 +130,13 @@ export interface ComplianceError {
  */
 export interface AuditEntry {
   id: string;
-  action: 'access' | 'export' | 'deletion' | 'modification' | 'consent_change' | 'anonymization';
+  action:
+    | "access"
+    | "export"
+    | "deletion"
+    | "modification"
+    | "consent_change"
+    | "anonymization";
   actor: string; // User ID or system identifier
   timestamp: Date;
   details: {
@@ -136,7 +147,7 @@ export interface AuditEntry {
   };
   ipAddress?: string;
   userAgent?: string;
-  status: 'success' | 'failure';
+  status: "success" | "failure";
   reason?: string;
 }
 
@@ -160,7 +171,7 @@ export interface DataExportPackage {
   dataSubjectId: string;
   exportedAt: Date;
   exportId: string;
-  format: 'json' | 'csv';
+  format: "json" | "csv";
   includes: {
     profile: Record<string, unknown>;
     orders: Array<Record<string, unknown>>;

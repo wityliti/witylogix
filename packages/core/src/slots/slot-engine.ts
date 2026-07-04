@@ -393,10 +393,7 @@ export class SlotEngine {
   /**
    * Update a slot
    */
-  async updateSlot(
-    slotId: string,
-    updates: Partial<Slot>,
-  ): Promise<Slot> {
+  async updateSlot(slotId: string, updates: Partial<Slot>): Promise<Slot> {
     const slot = await (this.db as any).deliverySlot.findUnique({
       where: { id: slotId },
     });
@@ -449,7 +446,9 @@ export class SlotEngine {
   private validateTime(time: string): void {
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!timeRegex.test(time)) {
-      throw new InvalidSlotDateError(`Invalid time format: ${time}. Expected HH:mm`);
+      throw new InvalidSlotDateError(
+        `Invalid time format: ${time}. Expected HH:mm`,
+      );
     }
   }
 

@@ -4,7 +4,7 @@
  * OAuth2 authentication
  */
 
-import { AbstractFieldServiceAdapter } from './field-service-adapter.js';
+import { AbstractFieldServiceAdapter } from "./field-service-adapter.js";
 import type {
   Job,
   JobStatus,
@@ -17,7 +17,7 @@ import type {
   PaginationParams,
   PaginatedResult,
   FieldServiceBatchResult,
-} from './types.js';
+} from "./types.js";
 
 interface JobberJobData {
   id: string;
@@ -133,17 +133,17 @@ interface JobberClientData {
  */
 export class JobberClient extends AbstractFieldServiceAdapter {
   private accessToken?: string;
-  private apiUrl: string = 'https://api.getjobber.com/graphql';
+  private apiUrl: string = "https://api.getjobber.com/graphql";
 
   /**
    * Initialize Jobber client
    */
   constructor(connection: FieldServiceConnection) {
-    super('jobber', connection);
+    super("jobber", connection);
 
     const { accessToken } = connection.credentials;
     if (!accessToken) {
-      throw new Error('Missing Jobber credentials: accessToken');
+      throw new Error("Missing Jobber credentials: accessToken");
     }
 
     this.accessToken = accessToken;
@@ -165,12 +165,15 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * GraphQL request helper
    */
-  private async graphqlRequest(query: string, variables?: Record<string, unknown>): Promise<any> {
+  private async graphqlRequest(
+    query: string,
+    variables?: Record<string, unknown>,
+  ): Promise<any> {
     const response = await fetch(this.apiUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.accessToken}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.accessToken}`,
         ...this.connection.config.customHeaders,
       },
       body: JSON.stringify({ query, variables }),
@@ -180,7 +183,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
     if (!response.ok) {
       throw this.createOperationError(
         `Jobber API error: ${response.statusText}`,
-        'API_ERROR',
+        "API_ERROR",
         response.status,
         response.status >= 500 || response.status === 429,
       );
@@ -191,7 +194,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
     if (data.errors) {
       throw this.createOperationError(
         `GraphQL error: ${data.errors[0]?.message}`,
-        'GRAPHQL_ERROR',
+        "GRAPHQL_ERROR",
         400,
       );
     }
@@ -408,8 +411,8 @@ export class JobberClient extends AbstractFieldServiceAdapter {
         jobNumber: workOrder.workOrderNumber,
         customerId: workOrder.jobId,
         title: workOrder.description,
-        location: { address: '', city: '', postalCode: '', country: '' },
-        status: 'scheduled',
+        location: { address: "", city: "", postalCode: "", country: "" },
+        status: "scheduled",
         priority: workOrder.priority,
       });
 
@@ -438,8 +441,8 @@ export class JobberClient extends AbstractFieldServiceAdapter {
         externalId: job.externalId,
         workOrderNumber: job.jobNumber,
         jobId: job.customerId,
-        status: 'in_progress',
-        description: job.description || '',
+        status: "in_progress",
+        description: job.description || "",
         priority: job.priority,
         createdAt: job.createdAt,
       };
@@ -449,7 +452,10 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * Update work order
    */
-  async updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder> {
+  async updateWorkOrder(
+    workOrderId: string,
+    updates: Partial<WorkOrder>,
+  ): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
       const job = await this.updateJob(workOrderId, {
         status: updates.status as JobStatus | undefined,
@@ -461,8 +467,8 @@ export class JobberClient extends AbstractFieldServiceAdapter {
         externalId: job.externalId,
         workOrderNumber: job.jobNumber,
         jobId: job.customerId,
-        status: updates.status || 'in_progress',
-        description: updates.description || '',
+        status: updates.status || "in_progress",
+        description: updates.description || "",
         priority: updates.priority || job.priority,
         createdAt: job.createdAt,
       };
@@ -472,7 +478,9 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * List work orders
    */
-  async listWorkOrders(params?: PaginationParams): Promise<PaginatedResult<WorkOrder>> {
+  async listWorkOrders(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<WorkOrder>> {
     return this.executeWithRetry(async () => {
       const result = await this.listJobs(params);
       return {
@@ -482,8 +490,8 @@ export class JobberClient extends AbstractFieldServiceAdapter {
           externalId: job.externalId,
           workOrderNumber: job.jobNumber,
           jobId: job.customerId,
-          status: 'in_progress' as const,
-          description: job.description || '',
+          status: "in_progress" as const,
+          description: job.description || "",
           priority: job.priority,
           createdAt: job.createdAt,
         })),
@@ -522,7 +530,9 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * List technicians
    */
-  async listTechnicians(params?: PaginationParams): Promise<PaginatedResult<Technician>> {
+  async listTechnicians(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Technician>> {
     return this.executeWithRetry(async () => {
       const query = `
         query ListTeamMembers($first: Int, $after: String) {
@@ -567,7 +577,10 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * Update technician availability
    */
-  async updateTechnicianAvailability(technicianId: string, status: string): Promise<Technician> {
+  async updateTechnicianAvailability(
+    technicianId: string,
+    status: string,
+  ): Promise<Technician> {
     return this.executeWithRetry(async () => {
       const query = `
         mutation UpdateTeamMember($id: ID!, $input: TeamMemberInput!) {
@@ -622,8 +635,8 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       const variables = {
         input: {
           teamMemberId: schedule.technician,
-          startDate: schedule.dateStart.toISOString().split('T')[0],
-          endDate: schedule.dateEnd.toISOString().split('T')[0],
+          startDate: schedule.dateStart.toISOString().split("T")[0],
+          endDate: schedule.dateEnd.toISOString().split("T")[0],
           type: schedule.type,
         },
       };
@@ -655,22 +668,28 @@ export class JobberClient extends AbstractFieldServiceAdapter {
 
       const variables = {
         teamMemberId: technicianId,
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
+        startDate: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
       };
 
       const result = await this.graphqlRequest(query, variables);
-      return (result.teamMemberAvailability.availableSlots || []).map((slot: any) => ({
-        start: new Date(slot.startTime),
-        end: new Date(slot.endTime),
-      }));
+      return (result.teamMemberAvailability.availableSlots || []).map(
+        (slot: any) => ({
+          start: new Date(slot.startTime),
+          end: new Date(slot.endTime),
+        }),
+      );
     });
   }
 
   /**
    * Schedule job for technician
    */
-  async scheduleJob(jobId: string, technicianId: string, start: Date): Promise<Job> {
+  async scheduleJob(
+    jobId: string,
+    technicianId: string,
+    start: Date,
+  ): Promise<Job> {
     return this.executeWithRetry(async () => {
       const query = `
         mutation ScheduleJob($id: ID!, $input: JobInput!) {
@@ -730,7 +749,9 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * List equipment
    */
-  async listEquipment(params?: PaginationParams): Promise<PaginatedResult<any>> {
+  async listEquipment(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<any>> {
     return this.executeWithRetry(async () => {
       const query = `
         query ListEquipment($first: Int, $after: String) {
@@ -857,7 +878,10 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, updates: Partial<CustomerRecord>): Promise<CustomerRecord> {
+  async updateCustomer(
+    customerId: string,
+    updates: Partial<CustomerRecord>,
+  ): Promise<CustomerRecord> {
     return this.executeWithRetry(async () => {
       const query = `
         mutation UpdateClient($id: ID!, $input: ClientInput!) {
@@ -893,7 +917,9 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * List customers
    */
-  async listCustomers(params?: PaginationParams): Promise<PaginatedResult<CustomerRecord>> {
+  async listCustomers(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<CustomerRecord>> {
     return this.executeWithRetry(async () => {
       const query = `
         query ListClients($first: Int, $after: String) {
@@ -1080,7 +1106,9 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * List invoices
    */
-  async listInvoices(params?: PaginationParams): Promise<PaginatedResult<Invoice>> {
+  async listInvoices(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Invoice>> {
     return this.executeWithRetry(async () => {
       const query = `
         query ListInvoices($first: Int, $after: String) {
@@ -1125,7 +1153,11 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * Record invoice payment
    */
-  async recordPayment(invoiceId: string, amount: number, method: string): Promise<Invoice> {
+  async recordPayment(
+    invoiceId: string,
+    amount: number,
+    method: string,
+  ): Promise<Invoice> {
     return this.executeWithRetry(async () => {
       const query = `
         mutation RecordPayment($input: PaymentInput!) {
@@ -1156,7 +1188,11 @@ export class JobberClient extends AbstractFieldServiceAdapter {
    */
   async createDispatchAssignment(assignment: any): Promise<any> {
     return this.executeWithRetry(async () => {
-      await this.scheduleJob(assignment.jobId, assignment.technicianId, new Date());
+      await this.scheduleJob(
+        assignment.jobId,
+        assignment.technicianId,
+        new Date(),
+      );
       return assignment;
     });
   }
@@ -1171,7 +1207,7 @@ export class JobberClient extends AbstractFieldServiceAdapter {
         id: assignmentId,
         jobId: job.id,
         technicianId: job.id,
-        status: 'assigned',
+        status: "assigned",
         assignedAt: job.createdAt,
       };
     });
@@ -1180,7 +1216,10 @@ export class JobberClient extends AbstractFieldServiceAdapter {
   /**
    * Update dispatch assignment
    */
-  async updateDispatchAssignment(assignmentId: string, updates: Partial<any>): Promise<any> {
+  async updateDispatchAssignment(
+    assignmentId: string,
+    updates: Partial<any>,
+  ): Promise<any> {
     return this.executeWithRetry(async () => {
       return this.getDispatchAssignment(assignmentId);
     });
@@ -1215,19 +1254,19 @@ export class JobberClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
+          recordId: jobs[index]!.id || "",
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
-          status: 'failed',
+          recordId: jobs[index]!.id || "",
+          status: "failed",
           error: (result.reason as any).message,
         });
       }
@@ -1256,19 +1295,19 @@ export class JobberClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
-          status: 'failed',
+          status: "failed",
           error: (result.reason as any).message,
         });
       }
@@ -1291,18 +1330,24 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       customerName: data.clientName,
       title: data.title,
       description: data.description,
-      status: (data.status.toLowerCase() as any) || 'scheduled',
-      priority: (data.priority.toLowerCase() as any) || 'medium',
-      scheduledStart: data.scheduledStartTime ? new Date(data.scheduledStartTime) : undefined,
-      scheduledEnd: data.scheduledEndTime ? new Date(data.scheduledEndTime) : undefined,
-      actualStart: data.actualStartTime ? new Date(data.actualStartTime) : undefined,
+      status: (data.status.toLowerCase() as any) || "scheduled",
+      priority: (data.priority.toLowerCase() as any) || "medium",
+      scheduledStart: data.scheduledStartTime
+        ? new Date(data.scheduledStartTime)
+        : undefined,
+      scheduledEnd: data.scheduledEndTime
+        ? new Date(data.scheduledEndTime)
+        : undefined,
+      actualStart: data.actualStartTime
+        ? new Date(data.actualStartTime)
+        : undefined,
       actualEnd: data.actualEndTime ? new Date(data.actualEndTime) : undefined,
       location: {
-        address: data.address?.street || '',
-        city: data.address?.city || '',
+        address: data.address?.street || "",
+        city: data.address?.city || "",
         state: data.address?.province,
-        postalCode: data.address?.postalCode || '',
-        country: data.address?.country || 'CA',
+        postalCode: data.address?.postalCode || "",
+        country: data.address?.country || "CA",
       },
       notes: data.notes,
       createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
@@ -1322,13 +1367,15 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       lastName: data.lastName,
       email: data.email,
       phone: data.phone,
-      status: (data.status.toLowerCase() as any) || 'available',
+      status: (data.status.toLowerCase() as any) || "available",
       skills: data.skills || [],
-      currentLocation: data.currentLocation ? {
-        latitude: data.currentLocation.latitude,
-        longitude: data.currentLocation.longitude,
-        timestamp: new Date(data.currentLocation.timestamp),
-      } : undefined,
+      currentLocation: data.currentLocation
+        ? {
+            latitude: data.currentLocation.latitude,
+            longitude: data.currentLocation.longitude,
+            timestamp: new Date(data.currentLocation.timestamp),
+          }
+        : undefined,
       currentJobId: data.currentJobId,
     };
   }
@@ -1347,14 +1394,14 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       phone: data.phone,
       mobile: data.mobile,
       primaryAddress: {
-        address: data.billingAddress?.street || '',
-        city: data.billingAddress?.city || '',
+        address: data.billingAddress?.street || "",
+        city: data.billingAddress?.city || "",
         state: data.billingAddress?.province,
-        postalCode: data.billingAddress?.postalCode || '',
-        country: data.billingAddress?.country || 'CA',
+        postalCode: data.billingAddress?.postalCode || "",
+        country: data.billingAddress?.country || "CA",
       },
-      type: 'both',
-      status: (data.status.toLowerCase() as any) || 'active',
+      type: "both",
+      status: (data.status.toLowerCase() as any) || "active",
     };
   }
 
@@ -1368,10 +1415,13 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       estimateNumber: data.quoteNumber,
       customerId: data.clientId,
       jobId: data.jobId,
-      status: (data.status.toLowerCase() as any) || 'draft',
+      status: (data.status.toLowerCase() as any) || "draft",
       issueDate: new Date(data.issueDate),
       expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
-      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
+      lineItems: (data.lineItems || []).map((item) => ({
+        ...item,
+        total: item.quantity * item.unitPrice,
+      })),
       subtotal: data.total * 0.9,
       total: data.total,
       notes: data.notes,
@@ -1390,14 +1440,17 @@ export class JobberClient extends AbstractFieldServiceAdapter {
       invoiceNumber: data.invoiceNumber,
       customerId: data.clientId,
       jobIds: data.jobIds,
-      status: (data.status.toLowerCase() as any) || 'draft',
+      status: (data.status.toLowerCase() as any) || "draft",
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
-      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
+      lineItems: (data.lineItems || []).map((item) => ({
+        ...item,
+        total: item.quantity * item.unitPrice,
+      })),
       subtotal: data.total * 0.9,
       total: data.total,
       amountPaid: data.amountPaid,
-      amountDue: (data.total - (data.amountPaid || 0)),
+      amountDue: data.total - (data.amountPaid || 0),
       notes: data.notes,
       sentAt: data.sentAt ? new Date(data.sentAt) : undefined,
     };

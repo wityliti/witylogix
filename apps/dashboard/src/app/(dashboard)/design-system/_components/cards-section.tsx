@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Card,
@@ -8,16 +8,14 @@ import {
   CardHeader,
   CardTitle,
   Button,
-} from '@/components/ui';
-import { PreviewSection } from './preview-section';
+} from "@/components/ui";
+import { PreviewSection } from "./preview-section";
 
 export function CardsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Cards
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Cards</h2>
         <p className="text-wl-neutral-300 mb-8">
           Card component with optional header, content, and footer sections.
           Supports hover and glow effects.

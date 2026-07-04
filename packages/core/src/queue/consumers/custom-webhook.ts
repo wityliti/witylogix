@@ -39,7 +39,11 @@ import { prisma as dbPrisma } from "@witylogix/db";
 import type { TypedEventBus } from "../../event-bus/index.js";
 import type { WitylogixEvents } from "../../event-bus/types.js";
 import { CustomAdapter } from "../../platforms/adapters/custom.js";
-import type { CustomCredentials, CustomWebhookConfig, CustomFieldMapping } from "../../platforms/adapters/custom.js";
+import type {
+  CustomCredentials,
+  CustomWebhookConfig,
+  CustomFieldMapping,
+} from "../../platforms/adapters/custom.js";
 
 /**
  * Custom webhook job payload
@@ -65,7 +69,10 @@ export class CustomWebhookConsumer extends QueueConsumer {
   private eventBus?: TypedEventBus<WitylogixEvents>;
   private adapter = new CustomAdapter();
 
-  constructor(config: ConsumerConfig, eventBus?: TypedEventBus<WitylogixEvents>) {
+  constructor(
+    config: ConsumerConfig,
+    eventBus?: TypedEventBus<WitylogixEvents>,
+  ) {
     super(config);
     this.eventBus = eventBus;
   }
@@ -148,10 +155,7 @@ export class CustomWebhookConsumer extends QueueConsumer {
         );
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("database")
-      ) {
+      if (error instanceof Error && error.message.includes("database")) {
         throw new QueueTransientError(
           `Database error processing webhook: ${error.message}`,
           { jobId, cause: error.message },
@@ -186,7 +190,9 @@ export class CustomWebhookConsumer extends QueueConsumer {
       );
 
       // Step 1: Map custom order data using adapter with field mapping
-      const mappedOrder = this.adapter.mapOrder(payload, { order: fieldMapping?.order });
+      const mappedOrder = this.adapter.mapOrder(payload, {
+        order: fieldMapping?.order,
+      });
 
       // Step 2: Set shopId (was empty after mapping)
       mappedOrder.shopId = shopId;
@@ -252,10 +258,14 @@ export class CustomWebhookConsumer extends QueueConsumer {
         case "create":
         case "update":
           if (!payload) {
-            throw new QueueValidationError("Payload required for create/update");
+            throw new QueueValidationError(
+              "Payload required for create/update",
+            );
           }
           // Map custom product data using adapter with field mapping
-          const mappedProduct = this.adapter.mapProduct(payload, { product: fieldMapping?.product });
+          const mappedProduct = this.adapter.mapProduct(payload, {
+            product: fieldMapping?.product,
+          });
 
           // Set shopId (was empty after mapping)
           mappedProduct.shopId = shopId;
@@ -362,7 +372,9 @@ export class CustomWebhookConsumer extends QueueConsumer {
       await this.simulateAsyncOperation(30);
 
       // Fulfill if status is ready (not cancelled, not refunded)
-      return status !== "cancelled" && status !== "refunded" && status !== "failed";
+      return (
+        status !== "cancelled" && status !== "refunded" && status !== "failed"
+      );
     } catch (error) {
       console.error(
         `[CustomWebhookConsumer] Error checking fulfillment readiness:`,
@@ -414,7 +426,9 @@ export class CustomWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[CustomWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[CustomWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
@@ -429,7 +443,7 @@ export class CustomWebhookConsumer extends QueueConsumer {
           currency: order.currency,
           createdAt: order.createdAt?.toISOString() || new Date().toISOString(),
         },
-        { tenantId: shopId }
+        { tenantId: shopId },
       );
 
       await this.simulateAsyncOperation(20);
@@ -447,10 +461,7 @@ export class CustomWebhookConsumer extends QueueConsumer {
    * @param shopId Shop identifier
    * @param product Mapped product from adapter
    */
-  private async syncProductData(
-    shopId: string,
-    product: any,
-  ): Promise<void> {
+  private async syncProductData(shopId: string, product: any): Promise<void> {
     try {
       console.log(
         `[CustomWebhookConsumer] Syncing product data for ${product.title || product.externalProductId}`,
@@ -505,9 +516,7 @@ export class CustomWebhookConsumer extends QueueConsumer {
     productId: string,
   ): Promise<void> {
     try {
-      console.log(
-        `[CustomWebhookConsumer] Deleting product ${productId}`,
-      );
+      console.log(`[CustomWebhookConsumer] Deleting product ${productId}`);
 
       // Soft delete product
       await (dbPrisma as any).product.update({
@@ -537,12 +546,12 @@ export class CustomWebhookConsumer extends QueueConsumer {
     action: string,
   ): Promise<void> {
     try {
-      console.log(
-        `[CustomWebhookConsumer] Emitting product event: ${action}`,
-      );
+      console.log(`[CustomWebhookConsumer] Emitting product event: ${action}`);
 
       if (!this.eventBus) {
-        console.warn("[CustomWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[CustomWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
@@ -555,7 +564,7 @@ export class CustomWebhookConsumer extends QueueConsumer {
             shopId,
             createdAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       } else if (action === "update") {
         await this.eventBus.emit(
@@ -565,7 +574,7 @@ export class CustomWebhookConsumer extends QueueConsumer {
             shopId,
             updatedAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       } else if (action === "delete") {
         await this.eventBus.emit(
@@ -575,7 +584,7 @@ export class CustomWebhookConsumer extends QueueConsumer {
             shopId,
             deletedAt: new Date().toISOString(),
           },
-          { tenantId: shopId }
+          { tenantId: shopId },
         );
       }
 

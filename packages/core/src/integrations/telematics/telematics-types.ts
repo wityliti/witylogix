@@ -123,13 +123,17 @@ export interface TelematicsProvider {
   getVehiclePosition(vehicleId: string): Promise<WitylogixVehiclePosition>;
 
   /** Get positions for multiple vehicles in batch */
-  getBatchVehiclePositions(vehicleIds: string[]): Promise<WitylogixVehiclePosition[]>;
+  getBatchVehiclePositions(
+    vehicleIds: string[],
+  ): Promise<WitylogixVehiclePosition[]>;
 
   /** Get driver status */
   getDriverStatus(driverId: string): Promise<WitylogixDriverStatus>;
 
   /** Get vehicle diagnostics */
-  getVehicleDiagnostics(vehicleId: string): Promise<WitylogixVehicleDiagnostics>;
+  getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<WitylogixVehicleDiagnostics>;
 
   /** Get location history trail */
   getLocationHistory(
@@ -157,7 +161,11 @@ export interface TelematicsProvider {
 /**
  * Vehicle feed event types
  */
-export type VehicleFeedEventType = "position-update" | "status-change" | "alert" | "error";
+export type VehicleFeedEventType =
+  | "position-update"
+  | "status-change"
+  | "alert"
+  | "error";
 
 /**
  * Vehicle feed event

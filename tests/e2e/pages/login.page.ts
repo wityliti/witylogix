@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect } from "@playwright/test";
 
 /**
  * Login Page Object Model
@@ -18,12 +18,20 @@ export class LoginPage {
     this.page = page;
 
     // Locators for login form elements
-    this.emailInput = page.locator('input[type="email"], input[name="email"]').first();
-    this.passwordInput = page.locator('input[type="password"], input[name="password"]').first();
+    this.emailInput = page
+      .locator('input[type="email"], input[name="email"]')
+      .first();
+    this.passwordInput = page
+      .locator('input[type="password"], input[name="password"]')
+      .first();
     this.submitButton = page.locator('button[type="submit"]');
-    this.errorMessage = page.locator('[data-testid="error-message"], .error, [role="alert"]');
+    this.errorMessage = page.locator(
+      '[data-testid="error-message"], .error, [role="alert"]',
+    );
     this.rememberMeCheckbox = page.locator('input[type="checkbox"]');
-    this.forgotPasswordLink = page.locator('a:has-text("Forgot password"), a:has-text("forgot")');
+    this.forgotPasswordLink = page.locator(
+      'a:has-text("Forgot password"), a:has-text("forgot")',
+    );
     this.pageTitle = page.locator('h1, [data-testid="page-title"]');
   }
 
@@ -31,7 +39,7 @@ export class LoginPage {
    * Navigate to login page
    */
   async navigate(): Promise<void> {
-    await this.page.goto('/login', { waitUntil: 'networkidle' });
+    await this.page.goto("/login", { waitUntil: "networkidle" });
     await expect(this.pageTitle).toBeVisible({ timeout: 5000 });
   }
 
@@ -78,7 +86,7 @@ export class LoginPage {
    */
   async getErrorMessage(): Promise<string | null> {
     try {
-      await this.errorMessage.waitFor({ state: 'visible', timeout: 5000 });
+      await this.errorMessage.waitFor({ state: "visible", timeout: 5000 });
       return await this.errorMessage.textContent();
     } catch {
       return null;
@@ -125,8 +133,8 @@ export class LoginPage {
    * Verify form is empty
    */
   async expectFormEmpty(): Promise<void> {
-    await expect(this.emailInput).toHaveValue('');
-    await expect(this.passwordInput).toHaveValue('');
+    await expect(this.emailInput).toHaveValue("");
+    await expect(this.passwordInput).toHaveValue("");
   }
 
   /**

@@ -78,7 +78,7 @@ class NotificationPreferenceService {
 
   updateChannels(
     customerId: string,
-    channels: Partial<NotificationPreference["channels"]>
+    channels: Partial<NotificationPreference["channels"]>,
   ): NotificationPreference {
     const pref = this.getPreference(customerId);
     if (!pref) throw new Error("Preference not found");
@@ -89,7 +89,7 @@ class NotificationPreferenceService {
 
   updateNotificationTypes(
     customerId: string,
-    preferences: Partial<NotificationPreference["preferences"]>
+    preferences: Partial<NotificationPreference["preferences"]>,
   ): NotificationPreference {
     const pref = this.getPreference(customerId);
     if (!pref) throw new Error("Preference not found");
@@ -102,7 +102,7 @@ class NotificationPreferenceService {
     customerId: string,
     enabled: boolean,
     startTime?: string,
-    endTime?: string
+    endTime?: string,
   ): NotificationPreference {
     const pref = this.getPreference(customerId);
     if (!pref) throw new Error("Preference not found");
@@ -112,7 +112,11 @@ class NotificationPreferenceService {
     }
 
     if (!pref.quietHours) {
-      pref.quietHours = { enabled: false, startTime: "22:00", endTime: "08:00" };
+      pref.quietHours = {
+        enabled: false,
+        startTime: "22:00",
+        endTime: "08:00",
+      };
     }
 
     pref.quietHours.enabled = enabled;
@@ -130,7 +134,9 @@ class NotificationPreferenceService {
     const minutes = currentTime.getMinutes();
     const currentTimeStr = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 
-    const [startHour, startMin] = pref.quietHours.startTime.split(":").map(Number);
+    const [startHour, startMin] = pref.quietHours.startTime
+      .split(":")
+      .map(Number);
     const [endHour, endMin] = pref.quietHours.endTime.split(":").map(Number);
 
     const startTotal = startHour * 60 + startMin;
@@ -145,10 +151,7 @@ class NotificationPreferenceService {
     }
   }
 
-  unsubscribe(
-    customerId: string,
-    reason?: string
-  ): NotificationPreference {
+  unsubscribe(customerId: string, reason?: string): NotificationPreference {
     const pref = this.getPreference(customerId);
     if (!pref) throw new Error("Preference not found");
 
@@ -186,7 +189,7 @@ class NotificationPreferenceService {
 
   updateMarketingConsent(
     customerId: string,
-    agreed: boolean
+    agreed: boolean,
   ): NotificationPreference {
     const pref = this.getPreference(customerId);
     if (!pref) throw new Error("Preference not found");
@@ -209,7 +212,7 @@ class NotificationPreferenceService {
     customerId: string,
     notificationType: keyof NotificationPreference["preferences"],
     channel: keyof NotificationPreference["channels"],
-    currentTime: Date
+    currentTime: Date,
   ): boolean {
     const pref = this.getPreference(customerId);
     if (!pref || pref.unsubscribed) return false;
@@ -234,10 +237,7 @@ describe("NotificationPreferenceService", () => {
 
   describe("CRUD Operations", () => {
     it("should create preference for customer", () => {
-      const pref = service.createPreference(
-        "cust_123",
-        "john@example.com"
-      );
+      const pref = service.createPreference("cust_123", "john@example.com");
 
       expect(pref.customerId).toBe("cust_123");
       expect(pref.email).toBe("john@example.com");
@@ -276,10 +276,7 @@ describe("NotificationPreferenceService", () => {
     });
 
     it("should set default enabled channels", () => {
-      const pref = service.createPreference(
-        "cust_123",
-        "john@example.com"
-      );
+      const pref = service.createPreference("cust_123", "john@example.com");
 
       expect(pref.channels.email).toBe(true);
       expect(pref.channels.sms).toBe(false);
@@ -380,12 +377,7 @@ describe("NotificationPreferenceService", () => {
     });
 
     it("should enable quiet hours", () => {
-      const updated = service.setQuietHours(
-        "cust_123",
-        true,
-        "22:00",
-        "08:00"
-      );
+      const updated = service.setQuietHours("cust_123", true, "22:00", "08:00");
 
       expect(updated.quietHours?.enabled).toBe(true);
       expect(updated.quietHours?.startTime).toBe("22:00");
@@ -394,11 +386,11 @@ describe("NotificationPreferenceService", () => {
 
     it("should require start and end time for quiet hours", () => {
       expect(() =>
-        service.setQuietHours("cust_123", true, undefined, "08:00")
+        service.setQuietHours("cust_123", true, undefined, "08:00"),
       ).toThrow();
 
       expect(() =>
-        service.setQuietHours("cust_123", true, "22:00", undefined)
+        service.setQuietHours("cust_123", true, "22:00", undefined),
       ).toThrow();
     });
 
@@ -461,10 +453,7 @@ describe("NotificationPreferenceService", () => {
     });
 
     it("should record unsubscribe reason", () => {
-      const unsubscribed = service.unsubscribe(
-        "cust_123",
-        "Too many emails"
-      );
+      const unsubscribed = service.unsubscribe("cust_123", "Too many emails");
 
       expect(unsubscribed.unsubscribeReason).toBe("Too many emails");
     });
@@ -558,7 +547,7 @@ describe("NotificationPreferenceService", () => {
         "cust_123",
         "orderConfirmation",
         "email",
-        time
+        time,
       );
 
       expect(can).toBe(true);
@@ -579,12 +568,7 @@ describe("NotificationPreferenceService", () => {
 
       const time = new Date();
 
-      const can = service.canSend(
-        "cust_123",
-        "promotions",
-        "email",
-        time
-      );
+      const can = service.canSend("cust_123", "promotions", "email", time);
 
       expect(can).toBe(false);
     });
@@ -595,12 +579,7 @@ describe("NotificationPreferenceService", () => {
       const night = new Date();
       night.setHours(23, 0);
 
-      const can = service.canSend(
-        "cust_123",
-        "orderUpdates",
-        "email",
-        night
-      );
+      const can = service.canSend("cust_123", "orderUpdates", "email", night);
 
       expect(can).toBe(false);
     });
@@ -610,12 +589,7 @@ describe("NotificationPreferenceService", () => {
 
       const time = new Date();
 
-      const can = service.canSend(
-        "cust_123",
-        "orderUpdates",
-        "email",
-        time
-      );
+      const can = service.canSend("cust_123", "orderUpdates", "email", time);
 
       expect(can).toBe(false);
     });
@@ -630,12 +604,10 @@ describe("NotificationPreferenceService", () => {
       const night = new Date();
       night.setHours(23, 0);
 
-      expect(
-        service.canSend("cust_123", "delivery", "email", day)
-      ).toBe(true);
-      expect(
-        service.canSend("cust_123", "delivery", "email", night)
-      ).toBe(false);
+      expect(service.canSend("cust_123", "delivery", "email", day)).toBe(true);
+      expect(service.canSend("cust_123", "delivery", "email", night)).toBe(
+        false,
+      );
     });
   });
 
@@ -658,7 +630,7 @@ describe("NotificationPreferenceService", () => {
 
     it("should handle bulk preference updates", () => {
       const customers = Array.from({ length: 100 }, (_, i) =>
-        service.createPreference(`cust_${i}`, `customer${i}@example.com`)
+        service.createPreference(`cust_${i}`, `customer${i}@example.com`),
       );
 
       expect(customers).toHaveLength(100);

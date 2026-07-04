@@ -42,7 +42,9 @@ export class ZoneRateCalculator {
     const zone = await this.getRateByZipcode(input.address.zipcode);
 
     if (!zone) {
-      throw new Error(`No delivery zone found for zipcode ${input.address.zipcode}`);
+      throw new Error(
+        `No delivery zone found for zipcode ${input.address.zipcode}`,
+      );
     }
 
     let baseFee = zone.baseRate;
@@ -188,7 +190,9 @@ export class ZoneRateCalculator {
 
     const usePerKm = zone.perKmRate > 0;
     const distance = usePerKm ? distanceKm : distanceMiles;
-    const rate = usePerKm ? distanceKm * zone.perKmRate : distanceMiles * (zone.perMileRate || 0);
+    const rate = usePerKm
+      ? distanceKm * zone.perKmRate
+      : distanceMiles * (zone.perMileRate || 0);
 
     return {
       distance: Math.round(distance * 100) / 100,
@@ -262,7 +266,8 @@ export class ZoneRateCalculator {
         metadata: {
           ...zone.metadata,
           weightRates: updates.weightRates || zone.metadata?.weightRates,
-          cartValueTiers: updates.cartValueTiers || zone.metadata?.cartValueTiers,
+          cartValueTiers:
+            updates.cartValueTiers || zone.metadata?.cartValueTiers,
         },
       },
     });
@@ -316,7 +321,10 @@ export class ZoneRateCalculator {
 
     for (const tier of sorted) {
       if (weight >= tier.minWeight) {
-        return (weight - tier.minWeight) * tier.ratePerUnit + tier.minWeight * tier.ratePerUnit;
+        return (
+          (weight - tier.minWeight) * tier.ratePerUnit +
+          tier.minWeight * tier.ratePerUnit
+        );
       }
     }
 
@@ -353,9 +361,7 @@ export class ZoneRateCalculator {
     if (data.weightRates) {
       for (const tier of data.weightRates) {
         if (tier.minWeight < 0 || tier.maxWeight < 0 || tier.ratePerUnit < 0) {
-          errors.push(
-            "Weight tier values must be non-negative",
-          );
+          errors.push("Weight tier values must be non-negative");
         }
         if (tier.minWeight > tier.maxWeight) {
           errors.push("minWeight must be less than maxWeight in weight tiers");

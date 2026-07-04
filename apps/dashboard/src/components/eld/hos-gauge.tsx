@@ -76,7 +76,7 @@ export function HOSGauge({
     startAngle: number,
     endAngle: number,
     radius: number,
-    innerRadius: number
+    innerRadius: number,
   ): string => {
     const start = startAngle * (Math.PI / 180);
     const end = endAngle * (Math.PI / 180);
@@ -107,7 +107,7 @@ export function HOSGauge({
     <div
       className={cn(
         "flex flex-col items-center justify-center gap-2",
-        className
+        className,
       )}
     >
       <svg
@@ -125,8 +125,14 @@ export function HOSGauge({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" style={{ stopColor: 'var(--wl-success-500)', stopOpacity: 0.8 }} />
-            <stop offset="100%" style={{ stopColor: 'var(--wl-success-600)', stopOpacity: 1 }} />
+            <stop
+              offset="0%"
+              style={{ stopColor: "var(--wl-success-500)", stopOpacity: 0.8 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "var(--wl-success-600)", stopOpacity: 1 }}
+            />
           </linearGradient>
 
           {/* Yellow gradient */}
@@ -137,8 +143,14 @@ export function HOSGauge({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" style={{ stopColor: 'var(--wl-warning-500)', stopOpacity: 0.8 }} />
-            <stop offset="100%" style={{ stopColor: 'var(--wl-warning-400)', stopOpacity: 1 }} />
+            <stop
+              offset="0%"
+              style={{ stopColor: "var(--wl-warning-500)", stopOpacity: 0.8 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "var(--wl-warning-400)", stopOpacity: 1 }}
+            />
           </linearGradient>
 
           {/* Red gradient */}
@@ -149,8 +161,14 @@ export function HOSGauge({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" style={{ stopColor: 'var(--wl-danger-500)', stopOpacity: 0.8 }} />
-            <stop offset="100%" style={{ stopColor: 'var(--wl-danger-600)', stopOpacity: 1 }} />
+            <stop
+              offset="0%"
+              style={{ stopColor: "var(--wl-danger-500)", stopOpacity: 0.8 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "var(--wl-danger-600)", stopOpacity: 1 }}
+            />
           </linearGradient>
         </defs>
 
@@ -166,14 +184,24 @@ export function HOSGauge({
 
         {/* Background arc (full) */}
         <path
-          d={createArcPath(startAngle, startAngle + totalAngle, config.radius, config.radius - 4)}
+          d={createArcPath(
+            startAngle,
+            startAngle + totalAngle,
+            config.radius,
+            config.radius - 4,
+          )}
           fill="var(--wl-bg-secondary)"
           opacity="0.5"
         />
 
         {/* Filled arc */}
         <path
-          d={createArcPath(startAngle, endAngle, config.radius, config.radius - 4)}
+          d={createArcPath(
+            startAngle,
+            endAngle,
+            config.radius,
+            config.radius - 4,
+          )}
           fill={getGaugeColor()}
           opacity="0.9"
         />
@@ -214,21 +242,25 @@ export function HOSGauge({
 
       {/* Label below gauge */}
       <div className="text-center mt-1">
-        <p className={cn(
-          "text-wl-text-secondary",
-          size === "sm" ? "text-xs" : size === "md" ? "text-sm" : "text-base"
-        )}>
+        <p
+          className={cn(
+            "text-wl-text-secondary",
+            size === "sm" ? "text-xs" : size === "md" ? "text-sm" : "text-base",
+          )}
+        >
           {label}
         </p>
-        <p className={cn(
-          "font-medium",
-          size === "sm" ? "text-xs" : size === "md" ? "text-sm" : "text-base",
-          percentage <= 25
-            ? "text-wl-danger-400"
-            : percentage <= 50
-              ? "text-wl-warning-400"
-              : "text-wl-success-400"
-        )}>
+        <p
+          className={cn(
+            "font-medium",
+            size === "sm" ? "text-xs" : size === "md" ? "text-sm" : "text-base",
+            percentage <= 25
+              ? "text-wl-danger-400"
+              : percentage <= 50
+                ? "text-wl-warning-400"
+                : "text-wl-success-400",
+          )}
+        >
           {variant === "driving" && "11h limit"}
           {variant === "window" && "14h limit"}
           {variant === "cycle" && "70h limit"}

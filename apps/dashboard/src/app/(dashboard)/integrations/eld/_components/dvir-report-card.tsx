@@ -1,15 +1,10 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Eye,
-  Download,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Eye, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface DVIRIssue {
   id: string;
@@ -75,14 +70,21 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
             </p>
           </div>
           <Badge
-            variant={report.status === "pass" ? "success" : report.status === "fail" ? "danger" : "default"}
-            className={cn(
-              "capitalize",
-              getStatusColor(report.status)
-            )}
+            variant={
+              report.status === "pass"
+                ? "success"
+                : report.status === "fail"
+                  ? "danger"
+                  : "default"
+            }
+            className={cn("capitalize", getStatusColor(report.status))}
           >
-            {report.status === "pass" && <CheckCircle2 className="w-3 h-3 mr-1" />}
-            {report.status === "fail" && <AlertCircle className="w-3 h-3 mr-1" />}
+            {report.status === "pass" && (
+              <CheckCircle2 className="w-3 h-3 mr-1" />
+            )}
+            {report.status === "fail" && (
+              <AlertCircle className="w-3 h-3 mr-1" />
+            )}
             {report.status}
           </Badge>
         </div>
@@ -95,16 +97,32 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
             </p>
             <div className="space-y-2">
               {report.issues.map((issue) => (
-                <div key={issue.id} className="flex items-start gap-3 p-3 bg-wl-bg-surface rounded-lg">
-                  <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
-                    issue.severity === "critical" ? "bg-red-500" : issue.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
-                  )} />
+                <div
+                  key={issue.id}
+                  className="flex items-start gap-3 p-3 bg-wl-bg-surface rounded-lg"
+                >
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
+                      issue.severity === "critical"
+                        ? "bg-red-500"
+                        : issue.severity === "warning"
+                          ? "bg-yellow-500"
+                          : "bg-blue-500",
+                    )}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold text-sm text-white">
                         {issue.category}
                       </p>
-                      <Badge variant="default" className={cn("text-xs capitalize", getSeverityColor(issue.severity))}>
+                      <Badge
+                        variant="default"
+                        className={cn(
+                          "text-xs capitalize",
+                          getSeverityColor(issue.severity),
+                        )}
+                      >
                         {issue.severity}
                       </Badge>
                     </div>

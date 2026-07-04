@@ -54,7 +54,8 @@ const API_ENDPOINTS: ApiEndpoint[] = [
         name: "limit",
         type: "integer",
         required: false,
-        description: "Maximum number of results to return (default: 20, max: 100)",
+        description:
+          "Maximum number of results to return (default: 20, max: 100)",
       },
       {
         name: "offset",
@@ -261,7 +262,7 @@ function MethodBadge({ method }: { method: string }) {
     <span
       className={cn(
         "px-2 py-1 rounded text-xs font-bold uppercase tracking-wider",
-        colors[method]
+        colors[method],
       )}
     >
       {method}
@@ -380,7 +381,7 @@ function EndpointCard({
                 <button
                   onClick={() =>
                     handleCopy(
-                      JSON.stringify(endpoint.requestBody?.example, null, 2)
+                      JSON.stringify(endpoint.requestBody?.example, null, 2),
                     )
                   }
                   className="absolute top-2 right-2 p-2 hover:bg-wl-bg-elevated rounded transition-colors"
@@ -393,9 +394,7 @@ function EndpointCard({
 
           {/* Responses */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-3">
-              Responses
-            </h4>
+            <h4 className="text-sm font-semibold text-white mb-3">Responses</h4>
             <div className="space-y-3">
               {endpoint.responses.map((response, idx) => (
                 <div
@@ -404,7 +403,7 @@ function EndpointCard({
                     "p-4 rounded-lg border",
                     response.code >= 200 && response.code < 300
                       ? "bg-emerald-600/30 border-emerald-500/30"
-                      : "bg-red-600/30 border-red-500/30"
+                      : "bg-red-600/30 border-red-500/30",
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -414,7 +413,7 @@ function EndpointCard({
                           "text-sm font-bold",
                           response.code >= 200 && response.code < 300
                             ? "text-emerald-500"
-                            : "text-red-500"
+                            : "text-red-500",
                         )}
                       >
                         {response.code}
@@ -499,9 +498,9 @@ export default function ApiDocsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const tags = Array.from(new Set(API_ENDPOINTS.map(e => e.tag)));
+  const tags = Array.from(new Set(API_ENDPOINTS.map((e) => e.tag)));
   const filteredEndpoints = selectedTag
-    ? API_ENDPOINTS.filter(e => e.tag === selectedTag)
+    ? API_ENDPOINTS.filter((e) => e.tag === selectedTag)
     : API_ENDPOINTS;
 
   return (
@@ -529,11 +528,10 @@ export default function ApiDocsPage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">
-                    REST API
-                  </p>
+                  <p className="text-sm font-semibold text-white">REST API</p>
                   <p className="text-sm text-wl-text-secondary mt-0.5">
-                    RESTful API for managing orders, routes, drivers, and integrations
+                    RESTful API for managing orders, routes, drivers, and
+                    integrations
                   </p>
                 </div>
               </div>
@@ -571,12 +569,12 @@ export default function ApiDocsPage() {
               "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
               !selectedTag
                 ? "bg-blue-600 text-white"
-                : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
+                : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated",
             )}
           >
             All Endpoints ({API_ENDPOINTS.length})
           </button>
-          {tags.map(tag => (
+          {tags.map((tag) => (
             <button
               key={tag}
               onClick={() => setSelectedTag(tag)}
@@ -584,26 +582,23 @@ export default function ApiDocsPage() {
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                 selectedTag === tag
                   ? "bg-blue-600 text-white"
-                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
+                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated",
               )}
             >
-              {tag} (
-              {API_ENDPOINTS.filter(e => e.tag === tag).length})
+              {tag} ({API_ENDPOINTS.filter((e) => e.tag === tag).length})
             </button>
           ))}
         </div>
 
         {/* Endpoints */}
         <div>
-          {filteredEndpoints.map(endpoint => (
+          {filteredEndpoints.map((endpoint) => (
             <EndpointCard
               key={endpoint.id}
               endpoint={endpoint}
               expanded={expandedId === endpoint.id}
               onToggle={() =>
-                setExpandedId(
-                  expandedId === endpoint.id ? null : endpoint.id
-                )
+                setExpandedId(expandedId === endpoint.id ? null : endpoint.id)
               }
             />
           ))}
@@ -619,8 +614,14 @@ export default function ApiDocsPage() {
                   Need Help?
                 </h4>
                 <p className="text-sm text-wl-text-secondary mt-1">
-                  Visit our <a href="#" className="text-blue-500 hover:underline">full API documentation</a> or contact{" "}
-                  <a href="#" className="text-blue-500 hover:underline">support@witylogix.com</a>
+                  Visit our{" "}
+                  <a href="#" className="text-blue-500 hover:underline">
+                    full API documentation
+                  </a>{" "}
+                  or contact{" "}
+                  <a href="#" className="text-blue-500 hover:underline">
+                    support@witylogix.com
+                  </a>
                 </p>
               </div>
             </div>

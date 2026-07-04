@@ -1,30 +1,30 @@
-'use client';
+"use client";
 
-import { cn } from '../../lib/utils';
+import { cn } from "../../lib/utils";
 
-type SpinnerSize = 'sm' | 'md' | 'lg' | 'xl';
-type SpinnerVariant = 'spinner' | 'dots' | 'pulse' | 'bars';
+type SpinnerSize = "sm" | "md" | "lg" | "xl";
+type SpinnerVariant = "spinner" | "dots" | "pulse" | "bars";
 
 interface LoadingSpinnerProps {
   size?: SpinnerSize;
   variant?: SpinnerVariant;
-  color?: 'primary' | 'secondary' | 'white';
+  color?: "primary" | "secondary" | "white";
   overlay?: boolean;
   label?: string;
   className?: string;
 }
 
 const sizeMap: Record<SpinnerSize, string> = {
-  sm: 'w-4 h-4',
-  md: 'w-8 h-8',
-  lg: 'w-12 h-12',
-  xl: 'w-16 h-16',
+  sm: "w-4 h-4",
+  md: "w-8 h-8",
+  lg: "w-12 h-12",
+  xl: "w-16 h-16",
 };
 
 const colorMap: Record<string, string> = {
-  primary: 'text-wl-primary-500',
-  secondary: 'text-wl-text-secondary',
-  white: 'text-white',
+  primary: "text-wl-primary-500",
+  secondary: "text-wl-text-secondary",
+  white: "text-white",
 };
 
 /**
@@ -38,7 +38,7 @@ function SpinnerVariantSpinner({
   color: string;
 }) {
   return (
-    <div className={cn('animate-spin', size, color)}>
+    <div className={cn("animate-spin", size, color)}>
       <svg
         className="w-full h-full"
         xmlns="http://www.w3.org/2000/svg"
@@ -66,25 +66,15 @@ function SpinnerVariantSpinner({
 /**
  * Bouncing dots variant
  */
-function SpinnerVariantDots({
-  size,
-  color,
-}: {
-  size: string;
-  color: string;
-}) {
-  const dotSize = size === 'w-4 h-4' ? 'w-1 h-1' : 'w-2 h-2';
+function SpinnerVariantDots({ size, color }: { size: string; color: string }) {
+  const dotSize = size === "w-4 h-4" ? "w-1 h-1" : "w-2 h-2";
 
   return (
-    <div className={cn('flex gap-1 items-center', size, color)}>
+    <div className={cn("flex gap-1 items-center", size, color)}>
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className={cn(
-            dotSize,
-            'rounded-full bg-current',
-            'animate-bounce'
-          )}
+          className={cn(dotSize, "rounded-full bg-current", "animate-bounce")}
           style={{
             animationDelay: `${i * 0.15}s`,
           }}
@@ -97,20 +87,14 @@ function SpinnerVariantDots({
 /**
  * Pulsing variant
  */
-function SpinnerVariantPulse({
-  size,
-  color,
-}: {
-  size: string;
-  color: string;
-}) {
+function SpinnerVariantPulse({ size, color }: { size: string; color: string }) {
   return (
     <div
       className={cn(
-        'rounded-full animate-pulse',
+        "rounded-full animate-pulse",
         size,
         color,
-        'bg-current/20 border-2 border-current'
+        "bg-current/20 border-2 border-current",
       )}
     />
   );
@@ -119,23 +103,17 @@ function SpinnerVariantPulse({
 /**
  * Animated bars variant
  */
-function SpinnerVariantBars({
-  size,
-  color,
-}: {
-  size: string;
-  color: string;
-}) {
-  const barCount = size === 'w-4 h-4' ? 4 : size === 'w-8 h-8' ? 5 : 6;
+function SpinnerVariantBars({ size, color }: { size: string; color: string }) {
+  const barCount = size === "w-4 h-4" ? 4 : size === "w-8 h-8" ? 5 : 6;
 
   return (
-    <div className={cn('flex gap-1 items-center justify-center', size, color)}>
+    <div className={cn("flex gap-1 items-center justify-center", size, color)}>
       {Array.from({ length: barCount }).map((_, i) => (
         <div
           key={i}
           className={cn(
-            'w-1 bg-current rounded-sm',
-            size === 'w-4 h-4' ? 'h-2' : size === 'w-8 h-8' ? 'h-4' : 'h-6'
+            "w-1 bg-current rounded-sm",
+            size === "w-4 h-4" ? "h-2" : size === "w-8 h-8" ? "h-4" : "h-6",
           )}
           style={{
             animation: `grow ${1}s ease-in-out ${i * 0.1}s infinite`,
@@ -169,9 +147,9 @@ function SpinnerVariantBars({
  * <LoadingSpinner variant="dots" size="lg" />
  */
 export function LoadingSpinner({
-  size = 'md',
-  variant = 'spinner',
-  color = 'primary',
+  size = "md",
+  variant = "spinner",
+  color = "primary",
   overlay = false,
   label,
   className,
@@ -181,13 +159,13 @@ export function LoadingSpinner({
 
   const spinner = (() => {
     switch (variant) {
-      case 'dots':
+      case "dots":
         return <SpinnerVariantDots size={sizeClass} color={colorClass} />;
-      case 'pulse':
+      case "pulse":
         return <SpinnerVariantPulse size={sizeClass} color={colorClass} />;
-      case 'bars':
+      case "bars":
         return <SpinnerVariantBars size={sizeClass} color={colorClass} />;
-      case 'spinner':
+      case "spinner":
       default:
         return <SpinnerVariantSpinner size={sizeClass} color={colorClass} />;
     }
@@ -195,30 +173,26 @@ export function LoadingSpinner({
 
   if (overlay) {
     return (
-      <div className={cn(
-        'fixed inset-0 flex items-center justify-center',
-        'bg-black/50 backdrop-blur-sm z-50',
-        className
-      )}>
+      <div
+        className={cn(
+          "fixed inset-0 flex items-center justify-center",
+          "bg-black/50 backdrop-blur-sm z-50",
+          className,
+        )}
+      >
         <div className="flex flex-col items-center gap-4">
           {spinner}
-          {label && (
-            <p className="text-sm font-medium text-white">
-              {label}
-            </p>
-          )}
+          {label && <p className="text-sm font-medium text-white">{label}</p>}
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn('flex flex-col items-center gap-2', className)}>
+    <div className={cn("flex flex-col items-center gap-2", className)}>
       {spinner}
       {label && (
-        <p className="text-xs font-medium text-wl-text-secondary">
-          {label}
-        </p>
+        <p className="text-xs font-medium text-wl-text-secondary">{label}</p>
       )}
     </div>
   );

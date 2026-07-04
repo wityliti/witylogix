@@ -2,21 +2,21 @@
  * Toast POS v2 SDK Client Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ToastV2SDKClient } from '../../../../packages/core/src/integrations/pos/toast-v2-sdk-client';
-import type { ToastV2 } from '../../../../packages/core/src/integrations/pos/pos-sdk-types';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { ToastV2SDKClient } from "../../../../packages/core/src/integrations/pos/toast-v2-sdk-client";
+import type { ToastV2 } from "../../../../packages/core/src/integrations/pos/pos-sdk-types";
 
-describe('ToastV2SDKClient', () => {
+describe("ToastV2SDKClient", () => {
   let client: ToastV2SDKClient;
   let config: ToastV2.Config;
 
   beforeEach(() => {
     config = {
-      environment: 'sandbox',
-      clientId: 'test-client-id',
-      clientSecret: 'test-secret',
-      accessToken: 'test-token',
-      restaurantGuid: 'test-restaurant-guid',
+      environment: "sandbox",
+      clientId: "test-client-id",
+      clientSecret: "test-secret",
+      accessToken: "test-token",
+      restaurantGuid: "test-restaurant-guid",
     };
 
     client = new ToastV2SDKClient(config);
@@ -29,42 +29,42 @@ describe('ToastV2SDKClient', () => {
     vi.clearAllMocks();
   });
 
-  describe('getLocation', () => {
-    it('should fetch location details', async () => {
+  describe("getLocation", () => {
+    it("should fetch location details", async () => {
       const mockLocation = {
-        guid: 'loc-123',
-        name: 'Test Restaurant',
-        street: '123 Main St',
-        city: 'New York',
-        state: 'NY',
-        zip: '10001',
-        country: 'US',
-        timezone: 'America/New_York',
+        guid: "loc-123",
+        name: "Test Restaurant",
+        street: "123 Main St",
+        city: "New York",
+        state: "NY",
+        zip: "10001",
+        country: "US",
+        timezone: "America/New_York",
         createdTime: Date.now(),
       };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockLocation,
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const result = await client.getLocation('loc-123');
+      const result = await client.getLocation("loc-123");
 
-      expect(result.id).toBe('loc-123');
-      expect(result.name).toBe('Test Restaurant');
-      expect(result.providerId).toBe('toast-v2');
+      expect(result.id).toBe("loc-123");
+      expect(result.name).toBe("Test Restaurant");
+      expect(result.providerId).toBe("toast-v2");
     });
   });
 
-  describe('getMenuItems', () => {
-    it('should fetch and cache menu items', async () => {
+  describe("getMenuItems", () => {
+    it("should fetch and cache menu items", async () => {
       const mockItems = [
         {
-          guid: 'item-1',
-          name: 'Burger',
+          guid: "item-1",
+          name: "Burger",
           price: 12.99,
-          categoryGuid: 'cat-1',
+          categoryGuid: "cat-1",
           taxable: true,
           discountable: true,
           deleted: false,
@@ -76,23 +76,23 @@ describe('ToastV2SDKClient', () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ records: mockItems }),
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const result = await client.getMenuItems('loc-123');
+      const result = await client.getMenuItems("loc-123");
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Burger');
-      expect(result[0].providerId).toBe('toast-v2');
+      expect(result[0].name).toBe("Burger");
+      expect(result[0].providerId).toBe("toast-v2");
     });
 
-    it('should use cached menu when available', async () => {
+    it("should use cached menu when available", async () => {
       const mockItems = [
         {
-          guid: 'item-1',
-          name: 'Burger',
+          guid: "item-1",
+          name: "Burger",
           price: 12.99,
-          categoryGuid: 'cat-1',
+          categoryGuid: "cat-1",
           taxable: true,
           discountable: true,
           deleted: false,
@@ -104,14 +104,14 @@ describe('ToastV2SDKClient', () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ records: mockItems }),
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
       // First call
-      await client.getMenuItems('loc-123');
+      await client.getMenuItems("loc-123");
 
       // Second call should use cache
-      const result = await client.getMenuItems('loc-123');
+      const result = await client.getMenuItems("loc-123");
 
       expect(result).toHaveLength(1);
       // Fetch should only be called once
@@ -119,18 +119,18 @@ describe('ToastV2SDKClient', () => {
     });
   });
 
-  describe('createOrder', () => {
-    it('should create order with line items', async () => {
+  describe("createOrder", () => {
+    it("should create order with line items", async () => {
       const mockCheck = {
-        guid: 'check-1',
-        checkNumber: '001',
-        status: 'open',
+        guid: "check-1",
+        checkNumber: "001",
+        status: "open",
         createdTime: Date.now(),
         tab: {
           lineItems: [],
           discounts: [],
           subtotal: 12.99,
-          tax: 1.30,
+          tax: 1.3,
           total: 14.29,
         },
         payments: [],
@@ -139,15 +139,15 @@ describe('ToastV2SDKClient', () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockCheck,
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const order = await client.createOrder('loc-123', {
-        orderType: 'takeout',
+      const order = await client.createOrder("loc-123", {
+        orderType: "takeout",
         lineItems: [
           {
-            id: 'li-1',
-            menuItemId: 'item-1',
+            id: "li-1",
+            menuItemId: "item-1",
             quantity: 1,
             price: 1299,
             subtotal: 1299,
@@ -160,14 +160,14 @@ describe('ToastV2SDKClient', () => {
         total: 1429,
       } as any);
 
-      expect(order.id).toBe('check-1');
-      expect(order.providerId).toBe('toast-v2');
-      expect(order.status).toBe('open');
+      expect(order.id).toBe("check-1");
+      expect(order.providerId).toBe("toast-v2");
+      expect(order.status).toBe("open");
     });
 
-    it('should validate order before creation', async () => {
+    it("should validate order before creation", async () => {
       try {
-        await client.createOrder('loc-123', {
+        await client.createOrder("loc-123", {
           lineItems: [],
           discounts: [],
           payments: [],
@@ -175,68 +175,74 @@ describe('ToastV2SDKClient', () => {
           tax: 0,
           total: 0,
         } as any);
-        expect.fail('Should throw validation error');
+        expect.fail("Should throw validation error");
       } catch (error: any) {
-        expect(error.code).toBe('INVALID_ORDER');
+        expect(error.code).toBe("INVALID_ORDER");
       }
     });
   });
 
-  describe('applyDiscount', () => {
-    it('should apply discount to order', async () => {
+  describe("applyDiscount", () => {
+    it("should apply discount to order", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ guid: 'discount-1' }),
-        headers: new Map([['X-RateLimit-Remaining', '498']]),
+        json: async () => ({ guid: "discount-1" }),
+        headers: new Map([["X-RateLimit-Remaining", "498"]]),
       });
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          guid: 'check-1',
-          checkNumber: '001',
-          status: 'open',
+          guid: "check-1",
+          checkNumber: "001",
+          status: "open",
           createdTime: Date.now(),
-          tab: { lineItems: [], discounts: [{ amount: 200, type: 'FIXED' }], subtotal: 1299, tax: 110, total: 1209 },
+          tab: {
+            lineItems: [],
+            discounts: [{ amount: 200, type: "FIXED" }],
+            subtotal: 1299,
+            tax: 110,
+            total: 1209,
+          },
           payments: [],
         }),
-        headers: new Map([['X-RateLimit-Remaining', '497']]),
+        headers: new Map([["X-RateLimit-Remaining", "497"]]),
       });
 
-      const result = await client.applyDiscount('loc-123', 'check-1', {
-        type: 'fixed',
+      const result = await client.applyDiscount("loc-123", "check-1", {
+        type: "fixed",
         amount: 200,
-        reason: 'Happy hour',
+        reason: "Happy hour",
       });
 
       expect(result.discounts).toHaveLength(1);
     });
   });
 
-  describe('splitPayment', () => {
-    it('should split payment across multiple methods', async () => {
+  describe("splitPayment", () => {
+    it("should split payment across multiple methods", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ guid: 'payment-1', amount: 700 }),
-        headers: new Map([['X-RateLimit-Remaining', '498']]),
+        json: async () => ({ guid: "payment-1", amount: 700 }),
+        headers: new Map([["X-RateLimit-Remaining", "498"]]),
       });
 
-      const result = await client.splitPayment('loc-123', 'check-1', 700);
+      const result = await client.splitPayment("loc-123", "check-1", 700);
 
-      expect(result.id).toBe('payment-1');
+      expect(result.id).toBe("payment-1");
       expect(result.amount).toBe(700);
     });
   });
 
-  describe('listEmployees', () => {
-    it('should list employees at location', async () => {
+  describe("listEmployees", () => {
+    it("should list employees at location", async () => {
       const mockEmployees = [
         {
-          guid: 'emp-1',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          role: 'manager',
+          guid: "emp-1",
+          firstName: "John",
+          lastName: "Doe",
+          email: "john@example.com",
+          role: "manager",
           deleted: false,
           createdTime: Date.now(),
         },
@@ -245,146 +251,150 @@ describe('ToastV2SDKClient', () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ records: mockEmployees }),
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const result = await client.listEmployees('loc-123');
+      const result = await client.listEmployees("loc-123");
 
       expect(result).toHaveLength(1);
-      expect(result[0].firstName).toBe('John');
-      expect(result[0].providerId).toBe('toast-v2');
+      expect(result[0].firstName).toBe("John");
+      expect(result[0].providerId).toBe("toast-v2");
     });
   });
 
-  describe('createShift', () => {
-    it('should create shift for employee', async () => {
+  describe("createShift", () => {
+    it("should create shift for employee", async () => {
       const mockShift = {
-        guid: 'shift-1',
-        employeeGuid: 'emp-1',
-        locationGuid: 'loc-123',
+        guid: "shift-1",
+        employeeGuid: "emp-1",
+        locationGuid: "loc-123",
         startTime: Date.now(),
-        status: 'open',
+        status: "open",
         createdTime: Date.now(),
       };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockShift,
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const result = await client.createShift('loc-123', {
-        employeeId: 'emp-1',
+      const result = await client.createShift("loc-123", {
+        employeeId: "emp-1",
         startTime: new Date(),
       } as any);
 
-      expect(result.id).toBe('shift-1');
-      expect(result.status).toBe('open');
+      expect(result.id).toBe("shift-1");
+      expect(result.status).toBe("open");
     });
   });
 
-  describe('clockIn', () => {
-    it('should clock in employee', async () => {
+  describe("clockIn", () => {
+    it("should clock in employee", async () => {
       const mockShift = {
-        guid: 'shift-1',
-        employeeGuid: 'emp-1',
+        guid: "shift-1",
+        employeeGuid: "emp-1",
         startTime: Date.now(),
-        status: 'open',
+        status: "open",
         createdTime: Date.now(),
       };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockShift,
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const result = await client.clockIn('emp-1', 'loc-123');
+      const result = await client.clockIn("emp-1", "loc-123");
 
-      expect(result.shiftId).toBe('shift-1');
+      expect(result.shiftId).toBe("shift-1");
       expect(result.timestamp).toBeInstanceOf(Date);
     });
   });
 
-  describe('getDailySalesReport', () => {
-    it('should fetch daily sales report', async () => {
+  describe("getDailySalesReport", () => {
+    it("should fetch daily sales report", async () => {
       const mockReport = {
-        grossSales: 1500.00,
-        netSales: 1300.00,
-        taxAmount: 130.00,
-        discountAmount: 70.00,
+        grossSales: 1500.0,
+        netSales: 1300.0,
+        taxAmount: 130.0,
+        discountAmount: 70.0,
       };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockReport,
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const result = await client.getDailySalesReport('loc-123', new Date());
+      const result = await client.getDailySalesReport("loc-123", new Date());
 
       expect(result.grossSales).toBe(150000);
       expect(result.taxAmount).toBe(13000);
     });
   });
 
-  describe('getProductMixReport', () => {
-    it('should fetch product mix report', async () => {
+  describe("getProductMixReport", () => {
+    it("should fetch product mix report", async () => {
       const mockReport = [
-        { name: 'Burger', quantity: 50, sales: 649.50 },
-        { name: 'Fries', quantity: 75, sales: 225.00 },
+        { name: "Burger", quantity: 50, sales: 649.5 },
+        { name: "Fries", quantity: 75, sales: 225.0 },
       ];
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ records: mockReport }),
-        headers: new Map([['X-RateLimit-Remaining', '499']]),
+        headers: new Map([["X-RateLimit-Remaining", "499"]]),
       });
 
-      const result = await client.getProductMixReport('loc-123', new Date(), new Date());
+      const result = await client.getProductMixReport(
+        "loc-123",
+        new Date(),
+        new Date(),
+      );
 
       expect(result).toHaveLength(2);
-      expect(result[0].name).toBe('Burger');
+      expect(result[0].name).toBe("Burger");
     });
   });
 
-  describe('verifyWebhookSignature', () => {
-    it('should verify HMAC-SHA256 webhook signature', () => {
-      const payload = 'test-payload';
-      const signature = 'a1b2c3d4e5f6g7h8i9j0';
+  describe("verifyWebhookSignature", () => {
+    it("should verify HMAC-SHA256 webhook signature", () => {
+      const payload = "test-payload";
+      const signature = "a1b2c3d4e5f6g7h8i9j0";
 
       const result = client.verifyWebhookSignature(payload, signature);
 
       // Result depends on actual HMAC calculation
-      expect(typeof result).toBe('boolean');
+      expect(typeof result).toBe("boolean");
     });
   });
 
-  describe('parseWebhookPayload', () => {
-    it('should parse webhook payload', () => {
+  describe("parseWebhookPayload", () => {
+    it("should parse webhook payload", () => {
       const payload = {
-        type: 'check.created',
-        entityId: 'check-1',
-        entityType: 'Check',
+        type: "check.created",
+        entityId: "check-1",
+        entityType: "Check",
         timestamp: Date.now(),
       };
 
       const result = client.parseWebhookPayload(payload);
 
       expect(result).not.toBeNull();
-      expect(result?.providerId).toBe('toast-v2');
-      expect(result?.resourceType).toBe('order');
+      expect(result?.providerId).toBe("toast-v2");
+      expect(result?.resourceType).toBe("order");
     });
   });
 
-  describe('rate limiting', () => {
-    it('should respect rate limit of 500 req/min', async () => {
+  describe("rate limiting", () => {
+    it("should respect rate limit of 500 req/min", async () => {
       const startTime = Date.now();
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
         json: async () => ({}),
-        headers: new Map([['X-RateLimit-Remaining', '0']]),
+        headers: new Map([["X-RateLimit-Remaining", "0"]]),
       });
 
       // Make requests and verify rate limiting is respected

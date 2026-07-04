@@ -65,7 +65,7 @@ export function FormField({
         "flex flex-col gap-1.5",
         variant === "inline" && "flex-row items-center",
         variant === "floating-label" && "relative",
-        className
+        className,
       )}
     >
       {/* Label */}
@@ -75,7 +75,7 @@ export function FormField({
           className={cn(
             "text-sm font-medium",
             hasError ? "text-wl-danger-400" : "text-wl-text-primary",
-            disabled && "opacity-50"
+            disabled && "opacity-50",
           )}
         >
           {label}
@@ -92,7 +92,7 @@ export function FormField({
         <div
           className={cn(
             variant === "floating-label" && "relative",
-            "flex items-center"
+            "flex items-center",
           )}
         >
           {children}
@@ -106,7 +106,7 @@ export function FormField({
                 "text-xs",
                 characterCount.current > characterCount.max * 0.9
                   ? "text-wl-warning-400"
-                  : "text-wl-text-tertiary"
+                  : "text-wl-text-tertiary",
               )}
             >
               {characterCount.current} / {characterCount.max}

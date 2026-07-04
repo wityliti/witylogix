@@ -20,7 +20,11 @@
  */
 
 // Import types only — erased at compile time, keeps IDE intellisense working.
-import type { PrismaClient as PrismaClientType, Prisma as PrismaType, PlanTier as PlanTierType } from "./generated/prisma";
+import type {
+  PrismaClient as PrismaClientType,
+  Prisma as PrismaType,
+  PlanTier as PlanTierType,
+} from "./generated/prisma";
 
 // Use createRequire to load the CJS-generated Prisma client at runtime.
 // A static `import { PrismaClient }` here causes Rollup to follow the
@@ -110,7 +114,7 @@ export function forTenantInOrg(shopId: string, orgId: string) {
     query: {
       $allModels: {
         async $allOperations({ args, query }) {
-          const [,, result] = await prisma.$transaction([
+          const [, , result] = await prisma.$transaction([
             prisma.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`,
             prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`,
             query(args),

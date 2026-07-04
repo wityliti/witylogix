@@ -2,7 +2,7 @@
  * Delivery Rules Engine - Barrel Export
  */
 
-export { RuleEngine, ruleEngine } from './engine';
+export { RuleEngine, ruleEngine } from "./engine";
 export type {
   DeliveryRuleCondition,
   DeliveryRuleAction,
@@ -21,4 +21,4 @@ export type {
   ActionType,
   RuleEvaluationMode,
   EvaluationOptions,
-} from './types';
+} from "./types";

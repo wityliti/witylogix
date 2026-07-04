@@ -13,36 +13,51 @@
  * ~250 lines, 22+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ============================================================================
 // MOCK TYPES & INTERFACES
 // ============================================================================
 
 interface FhirPatient {
-  resourceType: 'Patient';
+  resourceType: "Patient";
   id?: string;
   identifier?: Array<{ system: string; value: string }>;
   name?: Array<{ given: string[]; family: string }>;
   birthDate?: string;
-  gender?: 'male' | 'female' | 'other' | 'unknown';
+  gender?: "male" | "female" | "other" | "unknown";
   contact?: Array<{ telecom: Array<{ system: string; value: string }> }>;
 }
 
 interface FhirEncounter {
-  resourceType: 'Encounter';
+  resourceType: "Encounter";
   id?: string;
-  status: 'planned' | 'arrived' | 'triaged' | 'in-progress' | 'onleave' | 'finished' | 'cancelled';
+  status:
+    | "planned"
+    | "arrived"
+    | "triaged"
+    | "in-progress"
+    | "onleave"
+    | "finished"
+    | "cancelled";
   class: { system: string; code: string };
   subject: { reference: string };
   period: { start: string; end?: string };
-  type?: Array<{ coding: Array<{ system: string; code: string; display: string }> }>;
+  type?: Array<{
+    coding: Array<{ system: string; code: string; display: string }>;
+  }>;
 }
 
 interface FhirObservation {
-  resourceType: 'Observation';
+  resourceType: "Observation";
   id?: string;
-  status: 'registered' | 'preliminary' | 'final' | 'amended' | 'cancelled' | 'entered-in-error';
+  status:
+    | "registered"
+    | "preliminary"
+    | "final"
+    | "amended"
+    | "cancelled"
+    | "entered-in-error";
   code: { coding: Array<{ system: string; code: string }> };
   subject: { reference: string };
   effectiveDateTime?: string;
@@ -51,9 +66,15 @@ interface FhirObservation {
 }
 
 interface FhirBundle {
-  resourceType: 'Bundle';
+  resourceType: "Bundle";
   id?: string;
-  type: 'document' | 'message' | 'transaction' | 'transaction-response' | 'batch' | 'batch-response';
+  type:
+    | "document"
+    | "message"
+    | "transaction"
+    | "transaction-response"
+    | "batch"
+    | "batch-response";
   entry: Array<{
     resource: FhirPatient | FhirEncounter | FhirObservation;
     request?: { method: string; url: string };
@@ -62,7 +83,7 @@ interface FhirBundle {
 }
 
 interface SearchResult<T> {
-  resourceType: 'Bundle';
+  resourceType: "Bundle";
   total: number;
   entry: Array<{ resource: T }>;
 }
@@ -96,7 +117,10 @@ class MockFhirService {
     return patient;
   }
 
-  async updatePatient(id: string, patient: Partial<FhirPatient>): Promise<FhirPatient> {
+  async updatePatient(
+    id: string,
+    patient: Partial<FhirPatient>,
+  ): Promise<FhirPatient> {
     const existing = await this.readPatient(id);
     const updated = { ...existing, ...patient, id };
     this.patients.set(id, updated);
@@ -121,7 +145,9 @@ class MockFhirService {
     return encounter;
   }
 
-  async createObservation(observation: FhirObservation): Promise<FhirObservation> {
+  async createObservation(
+    observation: FhirObservation,
+  ): Promise<FhirObservation> {
     const id = `obs_${Math.random().toString(36).substr(2, 9)}`;
     const created = { ...observation, id };
     this.observations.set(id, created);
@@ -134,80 +160,91 @@ class MockFhirService {
     return observation;
   }
 
-  async searchPatients(query: Record<string, string>): Promise<SearchResult<FhirPatient>> {
+  async searchPatients(
+    query: Record<string, string>,
+  ): Promise<SearchResult<FhirPatient>> {
     let results = Array.from(this.patients.values());
 
     if (query.name) {
-      results = results.filter(p =>
-        p.name?.some(n =>
-          `${n.given.join(' ')} ${n.family}`.toLowerCase().includes(query.name.toLowerCase()),
+      results = results.filter((p) =>
+        p.name?.some((n) =>
+          `${n.given.join(" ")} ${n.family}`
+            .toLowerCase()
+            .includes(query.name.toLowerCase()),
         ),
       );
     }
 
     if (query.birthdate) {
-      results = results.filter(p => p.birthDate === query.birthdate);
+      results = results.filter((p) => p.birthDate === query.birthdate);
     }
 
     if (query.gender) {
-      results = results.filter(p => p.gender === query.gender);
+      results = results.filter((p) => p.gender === query.gender);
     }
 
     if (query.identifier) {
-      results = results.filter(p =>
-        p.identifier?.some(id => id.value === query.identifier),
+      results = results.filter((p) =>
+        p.identifier?.some((id) => id.value === query.identifier),
       );
     }
 
     return {
-      resourceType: 'Bundle',
+      resourceType: "Bundle",
       total: results.length,
-      entry: results.map(r => ({ resource: r })),
+      entry: results.map((r) => ({ resource: r })),
     };
   }
 
-  async searchEncounters(query: Record<string, string>): Promise<SearchResult<FhirEncounter>> {
+  async searchEncounters(
+    query: Record<string, string>,
+  ): Promise<SearchResult<FhirEncounter>> {
     let results = Array.from(this.encounters.values());
 
     if (query.subject) {
-      results = results.filter(e => e.subject.reference === query.subject);
+      results = results.filter((e) => e.subject.reference === query.subject);
     }
 
     if (query.status) {
-      results = results.filter(e => e.status === query.status);
+      results = results.filter((e) => e.status === query.status);
     }
 
     return {
-      resourceType: 'Bundle',
+      resourceType: "Bundle",
       total: results.length,
-      entry: results.map(r => ({ resource: r })),
+      entry: results.map((r) => ({ resource: r })),
     };
   }
 
-  async searchObservations(query: Record<string, string>): Promise<SearchResult<FhirObservation>> {
+  async searchObservations(
+    query: Record<string, string>,
+  ): Promise<SearchResult<FhirObservation>> {
     let results = Array.from(this.observations.values());
 
     if (query.subject) {
-      results = results.filter(o => o.subject.reference === query.subject);
+      results = results.filter((o) => o.subject.reference === query.subject);
     }
 
     if (query.code) {
-      results = results.filter(o =>
-        o.code.coding.some(c => c.code === query.code),
+      results = results.filter((o) =>
+        o.code.coding.some((c) => c.code === query.code),
       );
     }
 
     return {
-      resourceType: 'Bundle',
+      resourceType: "Bundle",
       total: results.length,
-      entry: results.map(r => ({ resource: r })),
+      entry: results.map((r) => ({ resource: r })),
     };
   }
 
   async processBundle(bundle: FhirBundle): Promise<FhirBundle> {
     const response: FhirBundle = {
-      resourceType: 'Bundle',
-      type: bundle.type === 'transaction' ? 'transaction-response' : 'batch-response',
+      resourceType: "Bundle",
+      type:
+        bundle.type === "transaction"
+          ? "transaction-response"
+          : "batch-response",
       entry: [],
     };
 
@@ -215,24 +252,32 @@ class MockFhirService {
       try {
         let createdResource: FhirPatient | FhirEncounter | FhirObservation;
 
-        if (entry.resource.resourceType === 'Patient') {
-          createdResource = await this.createPatient(entry.resource as FhirPatient);
-        } else if (entry.resource.resourceType === 'Encounter') {
-          createdResource = await this.createEncounter(entry.resource as FhirEncounter);
-        } else if (entry.resource.resourceType === 'Observation') {
-          createdResource = await this.createObservation(entry.resource as FhirObservation);
+        if (entry.resource.resourceType === "Patient") {
+          createdResource = await this.createPatient(
+            entry.resource as FhirPatient,
+          );
+        } else if (entry.resource.resourceType === "Encounter") {
+          createdResource = await this.createEncounter(
+            entry.resource as FhirEncounter,
+          );
+        } else if (entry.resource.resourceType === "Observation") {
+          createdResource = await this.createObservation(
+            entry.resource as FhirObservation,
+          );
         } else {
-          throw new Error(`Unknown resource type: ${(entry.resource as any).resourceType}`);
+          throw new Error(
+            `Unknown resource type: ${(entry.resource as any).resourceType}`,
+          );
         }
 
         response.entry.push({
           resource: createdResource,
-          response: { status: '201' },
+          response: { status: "201" },
         });
       } catch (error) {
         response.entry.push({
           resource: entry.resource,
-          response: { status: '400' },
+          response: { status: "400" },
         });
       }
     }
@@ -246,21 +291,25 @@ class MockFhirService {
 
     if (patient.name && patient.name.length > 0) {
       const searchName = patient.name[0];
-      matches = matches.filter(p =>
+      matches = matches.filter((p) =>
         p.name?.some(
-          n =>
+          (n) =>
             n.family === searchName.family &&
-            n.given.join(' ') === searchName.given.join(' '),
+            n.given.join(" ") === searchName.given.join(" "),
         ),
       );
     }
 
     if (patient.birthDate) {
-      matches = matches.filter(p => p.birthDate === patient.birthDate);
+      matches = matches.filter((p) => p.birthDate === patient.birthDate);
     }
 
     if (matches.length === 0) {
-      return { match: false, confidence: 0, reason: 'No matching patient found' };
+      return {
+        match: false,
+        confidence: 0,
+        reason: "No matching patient found",
+      };
     }
 
     if (matches.length === 1) {
@@ -268,28 +317,35 @@ class MockFhirService {
     }
 
     // Multiple matches - return highest confidence
-    return { match: true, confidence: 0.85, matchedPatient: matches[0], reason: 'Multiple potential matches' };
+    return {
+      match: true,
+      confidence: 0.85,
+      matchedPatient: matches[0],
+      reason: "Multiple potential matches",
+    };
   }
 
   async validateReference(resourceType: string, id: string): Promise<boolean> {
-    if (resourceType === 'Patient') {
+    if (resourceType === "Patient") {
       return this.patients.has(id);
-    } else if (resourceType === 'Encounter') {
+    } else if (resourceType === "Encounter") {
       return this.encounters.has(id);
-    } else if (resourceType === 'Observation') {
+    } else if (resourceType === "Observation") {
       return this.observations.has(id);
     }
     return false;
   }
 
-  async resolveReference(reference: string): Promise<FhirPatient | FhirEncounter | FhirObservation | null> {
-    const [resourceType, id] = reference.split('/');
+  async resolveReference(
+    reference: string,
+  ): Promise<FhirPatient | FhirEncounter | FhirObservation | null> {
+    const [resourceType, id] = reference.split("/");
 
-    if (resourceType === 'Patient') {
+    if (resourceType === "Patient") {
       return this.patients.get(id) || null;
-    } else if (resourceType === 'Encounter') {
+    } else if (resourceType === "Encounter") {
       return this.encounters.get(id) || null;
-    } else if (resourceType === 'Observation') {
+    } else if (resourceType === "Observation") {
       return this.observations.get(id) || null;
     }
 
@@ -301,7 +357,7 @@ class MockFhirService {
 // TEST SUITE
 // ============================================================================
 
-describe('FHIR Resources', () => {
+describe("FHIR Resources", () => {
   let service: MockFhirService;
 
   beforeEach(() => {
@@ -316,48 +372,48 @@ describe('FHIR Resources', () => {
   // Patient CRUD
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should create patient', async () => {
+  it("should create patient", async () => {
     const patient = await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['John'], family: 'Doe' }],
-      birthDate: '1980-01-01',
-      gender: 'male',
+      resourceType: "Patient",
+      name: [{ given: ["John"], family: "Doe" }],
+      birthDate: "1980-01-01",
+      gender: "male",
     });
 
     expect(patient.id).toBeTruthy();
-    expect(patient.name?.[0].family).toBe('Doe');
+    expect(patient.name?.[0].family).toBe("Doe");
   });
 
-  it('should read patient by ID', async () => {
+  it("should read patient by ID", async () => {
     const created = await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['Jane'], family: 'Smith' }],
+      resourceType: "Patient",
+      name: [{ given: ["Jane"], family: "Smith" }],
     });
 
     const read = await service.readPatient(created.id!);
 
     expect(read.id).toBe(created.id);
-    expect(read.name?.[0].given).toContain('Jane');
+    expect(read.name?.[0].given).toContain("Jane");
   });
 
-  it('should update patient', async () => {
+  it("should update patient", async () => {
     const created = await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['Bob'], family: 'Johnson' }],
+      resourceType: "Patient",
+      name: [{ given: ["Bob"], family: "Johnson" }],
     });
 
     const updated = await service.updatePatient(created.id!, {
-      gender: 'male',
+      gender: "male",
     });
 
-    expect(updated.gender).toBe('male');
-    expect(updated.name?.[0].family).toBe('Johnson');
+    expect(updated.gender).toBe("male");
+    expect(updated.name?.[0].family).toBe("Johnson");
   });
 
-  it('should delete patient', async () => {
+  it("should delete patient", async () => {
     const created = await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['Alice'], family: 'Brown' }],
+      resourceType: "Patient",
+      name: [{ given: ["Alice"], family: "Brown" }],
     });
 
     await service.deletePatient(created.id!);
@@ -369,215 +425,231 @@ describe('FHIR Resources', () => {
   // Encounter Operations
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should create encounter', async () => {
+  it("should create encounter", async () => {
     const encounter = await service.createEncounter({
-      resourceType: 'Encounter',
-      status: 'finished',
-      class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
-      subject: { reference: 'Patient/pat_123' },
-      period: { start: '2024-01-01T08:00:00Z', end: '2024-01-01T09:00:00Z' },
+      resourceType: "Encounter",
+      status: "finished",
+      class: {
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: "AMB",
+      },
+      subject: { reference: "Patient/pat_123" },
+      period: { start: "2024-01-01T08:00:00Z", end: "2024-01-01T09:00:00Z" },
     });
 
     expect(encounter.id).toBeTruthy();
-    expect(encounter.status).toBe('finished');
+    expect(encounter.status).toBe("finished");
   });
 
-  it('should read encounter by ID', async () => {
+  it("should read encounter by ID", async () => {
     const created = await service.createEncounter({
-      resourceType: 'Encounter',
-      status: 'in-progress',
-      class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
-      subject: { reference: 'Patient/pat_123' },
-      period: { start: '2024-01-01T08:00:00Z' },
+      resourceType: "Encounter",
+      status: "in-progress",
+      class: {
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: "AMB",
+      },
+      subject: { reference: "Patient/pat_123" },
+      period: { start: "2024-01-01T08:00:00Z" },
     });
 
     const read = await service.readEncounter(created.id!);
 
     expect(read.id).toBe(created.id);
-    expect(read.status).toBe('in-progress');
+    expect(read.status).toBe("in-progress");
   });
 
   // ──────────────────────────────────────────────────────────────────────────
   // Observation Operations
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should create observation', async () => {
+  it("should create observation", async () => {
     const observation = await service.createObservation({
-      resourceType: 'Observation',
-      status: 'final',
+      resourceType: "Observation",
+      status: "final",
       code: {
         coding: [
           {
-            system: 'http://loinc.org',
-            code: '9279-1',
-            display: 'Respiratory rate',
+            system: "http://loinc.org",
+            code: "9279-1",
+            display: "Respiratory rate",
           },
         ],
       },
-      subject: { reference: 'Patient/pat_123' },
-      effectiveDateTime: '2024-01-01T10:00:00Z',
-      valueQuantity: { value: 16, unit: 'breaths/min' },
+      subject: { reference: "Patient/pat_123" },
+      effectiveDateTime: "2024-01-01T10:00:00Z",
+      valueQuantity: { value: 16, unit: "breaths/min" },
     });
 
     expect(observation.id).toBeTruthy();
-    expect(observation.status).toBe('final');
+    expect(observation.status).toBe("final");
   });
 
-  it('should read observation by ID', async () => {
+  it("should read observation by ID", async () => {
     const created = await service.createObservation({
-      resourceType: 'Observation',
-      status: 'final',
-      code: { coding: [{ system: 'http://loinc.org', code: '39156-5' }] },
-      subject: { reference: 'Patient/pat_123' },
-      valueString: 'Normal',
+      resourceType: "Observation",
+      status: "final",
+      code: { coding: [{ system: "http://loinc.org", code: "39156-5" }] },
+      subject: { reference: "Patient/pat_123" },
+      valueString: "Normal",
     });
 
     const read = await service.readObservation(created.id!);
 
     expect(read.id).toBe(created.id);
-    expect(read.valueString).toBe('Normal');
+    expect(read.valueString).toBe("Normal");
   });
 
   // ──────────────────────────────────────────────────────────────────────────
   // Search Operations
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should search patients by name', async () => {
+  it("should search patients by name", async () => {
     await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['John'], family: 'Doe' }],
+      resourceType: "Patient",
+      name: [{ given: ["John"], family: "Doe" }],
     });
     await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['Jane'], family: 'Smith' }],
+      resourceType: "Patient",
+      name: [{ given: ["Jane"], family: "Smith" }],
     });
 
-    const results = await service.searchPatients({ name: 'John Doe' });
+    const results = await service.searchPatients({ name: "John Doe" });
 
     expect(results.total).toBe(1);
-    expect(results.entry[0].resource.name?.[0].family).toBe('Doe');
+    expect(results.entry[0].resource.name?.[0].family).toBe("Doe");
   });
 
-  it('should search patients by birthdate', async () => {
+  it("should search patients by birthdate", async () => {
     await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['John'], family: 'Doe' }],
-      birthDate: '1980-01-01',
+      resourceType: "Patient",
+      name: [{ given: ["John"], family: "Doe" }],
+      birthDate: "1980-01-01",
     });
     await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['Jane'], family: 'Smith' }],
-      birthDate: '1985-05-15',
+      resourceType: "Patient",
+      name: [{ given: ["Jane"], family: "Smith" }],
+      birthDate: "1985-05-15",
     });
 
-    const results = await service.searchPatients({ birthdate: '1980-01-01' });
+    const results = await service.searchPatients({ birthdate: "1980-01-01" });
 
     expect(results.total).toBe(1);
-    expect(results.entry[0].resource.birthDate).toBe('1980-01-01');
+    expect(results.entry[0].resource.birthDate).toBe("1980-01-01");
   });
 
-  it('should search encounters by patient', async () => {
+  it("should search encounters by patient", async () => {
     await service.createEncounter({
-      resourceType: 'Encounter',
-      status: 'finished',
-      class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
-      subject: { reference: 'Patient/pat_123' },
-      period: { start: '2024-01-01T08:00:00Z' },
+      resourceType: "Encounter",
+      status: "finished",
+      class: {
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: "AMB",
+      },
+      subject: { reference: "Patient/pat_123" },
+      period: { start: "2024-01-01T08:00:00Z" },
     });
     await service.createEncounter({
-      resourceType: 'Encounter',
-      status: 'finished',
-      class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
-      subject: { reference: 'Patient/pat_456' },
-      period: { start: '2024-01-02T08:00:00Z' },
+      resourceType: "Encounter",
+      status: "finished",
+      class: {
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: "AMB",
+      },
+      subject: { reference: "Patient/pat_456" },
+      period: { start: "2024-01-02T08:00:00Z" },
     });
 
-    const results = await service.searchEncounters({ subject: 'Patient/pat_123' });
+    const results = await service.searchEncounters({
+      subject: "Patient/pat_123",
+    });
 
     expect(results.total).toBe(1);
   });
 
-  it('should search observations by code', async () => {
+  it("should search observations by code", async () => {
     await service.createObservation({
-      resourceType: 'Observation',
-      status: 'final',
+      resourceType: "Observation",
+      status: "final",
       code: {
-        coding: [{ system: 'http://loinc.org', code: '9279-1' }],
+        coding: [{ system: "http://loinc.org", code: "9279-1" }],
       },
-      subject: { reference: 'Patient/pat_123' },
+      subject: { reference: "Patient/pat_123" },
     });
     await service.createObservation({
-      resourceType: 'Observation',
-      status: 'final',
+      resourceType: "Observation",
+      status: "final",
       code: {
-        coding: [{ system: 'http://loinc.org', code: '8480-6' }],
+        coding: [{ system: "http://loinc.org", code: "8480-6" }],
       },
-      subject: { reference: 'Patient/pat_123' },
+      subject: { reference: "Patient/pat_123" },
     });
 
-    const results = await service.searchObservations({ code: '9279-1' });
+    const results = await service.searchObservations({ code: "9279-1" });
 
     expect(results.total).toBe(1);
-    expect(results.entry[0].resource.code.coding[0].code).toBe('9279-1');
+    expect(results.entry[0].resource.code.coding[0].code).toBe("9279-1");
   });
 
   // ──────────────────────────────────────────────────────────────────────────
   // Bundle Processing
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should process transaction bundle', async () => {
+  it("should process transaction bundle", async () => {
     const bundle: FhirBundle = {
-      resourceType: 'Bundle',
-      type: 'transaction',
+      resourceType: "Bundle",
+      type: "transaction",
       entry: [
         {
           resource: {
-            resourceType: 'Patient',
-            name: [{ given: ['Alice'], family: 'Wonder' }],
+            resourceType: "Patient",
+            name: [{ given: ["Alice"], family: "Wonder" }],
           },
-          request: { method: 'POST', url: 'Patient' },
+          request: { method: "POST", url: "Patient" },
         },
         {
           resource: {
-            resourceType: 'Patient',
-            name: [{ given: ['Bob'], family: 'Builder' }],
+            resourceType: "Patient",
+            name: [{ given: ["Bob"], family: "Builder" }],
           },
-          request: { method: 'POST', url: 'Patient' },
+          request: { method: "POST", url: "Patient" },
         },
       ],
     };
 
     const response = await service.processBundle(bundle);
 
-    expect(response.type).toBe('transaction-response');
+    expect(response.type).toBe("transaction-response");
     expect(response.entry).toHaveLength(2);
-    expect(response.entry.every(e => e.response?.status === '201')).toBe(true);
+    expect(response.entry.every((e) => e.response?.status === "201")).toBe(
+      true,
+    );
   });
 
-  it('should process batch bundle', async () => {
+  it("should process batch bundle", async () => {
     const bundle: FhirBundle = {
-      resourceType: 'Bundle',
-      type: 'batch',
+      resourceType: "Bundle",
+      type: "batch",
       entry: [
         {
           resource: {
-            resourceType: 'Encounter',
-            status: 'finished',
+            resourceType: "Encounter",
+            status: "finished",
             class: {
-              system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
-              code: 'AMB',
+              system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+              code: "AMB",
             },
-            subject: { reference: 'Patient/pat_123' },
-            period: { start: '2024-01-01T08:00:00Z' },
+            subject: { reference: "Patient/pat_123" },
+            period: { start: "2024-01-01T08:00:00Z" },
           },
-          request: { method: 'POST', url: 'Encounter' },
+          request: { method: "POST", url: "Encounter" },
         },
       ],
     };
 
     const response = await service.processBundle(bundle);
 
-    expect(response.type).toBe('batch-response');
+    expect(response.type).toBe("batch-response");
     expect(response.entry).toHaveLength(1);
   });
 
@@ -585,17 +657,17 @@ describe('FHIR Resources', () => {
   // Patient Matching
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should match existing patient', async () => {
+  it("should match existing patient", async () => {
     const created = await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['John'], family: 'Doe' }],
-      birthDate: '1980-01-01',
+      resourceType: "Patient",
+      name: [{ given: ["John"], family: "Doe" }],
+      birthDate: "1980-01-01",
     });
 
     const result = await service.matchPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['John'], family: 'Doe' }],
-      birthDate: '1980-01-01',
+      resourceType: "Patient",
+      name: [{ given: ["John"], family: "Doe" }],
+      birthDate: "1980-01-01",
     });
 
     expect(result.match).toBe(true);
@@ -603,10 +675,10 @@ describe('FHIR Resources', () => {
     expect(result.matchedPatient?.id).toBe(created.id);
   });
 
-  it('should return no match for non-existent patient', async () => {
+  it("should return no match for non-existent patient", async () => {
     const result = await service.matchPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['Jane'], family: 'Nonexistent' }],
+      resourceType: "Patient",
+      name: [{ given: ["Jane"], family: "Nonexistent" }],
     });
 
     expect(result.match).toBe(false);
@@ -617,27 +689,30 @@ describe('FHIR Resources', () => {
   // Reference Integrity
   // ──────────────────────────────────────────────────────────────────────────
 
-  it('should validate patient reference', async () => {
+  it("should validate patient reference", async () => {
     const patient = await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['John'], family: 'Doe' }],
+      resourceType: "Patient",
+      name: [{ given: ["John"], family: "Doe" }],
     });
 
-    const isValid = await service.validateReference('Patient', patient.id!);
+    const isValid = await service.validateReference("Patient", patient.id!);
 
     expect(isValid).toBe(true);
   });
 
-  it('should detect invalid reference', async () => {
-    const isValid = await service.validateReference('Patient', 'nonexistent_id');
+  it("should detect invalid reference", async () => {
+    const isValid = await service.validateReference(
+      "Patient",
+      "nonexistent_id",
+    );
 
     expect(isValid).toBe(false);
   });
 
-  it('should resolve patient reference', async () => {
+  it("should resolve patient reference", async () => {
     const patient = await service.createPatient({
-      resourceType: 'Patient',
-      name: [{ given: ['Alice'], family: 'Wonder' }],
+      resourceType: "Patient",
+      name: [{ given: ["Alice"], family: "Wonder" }],
     });
 
     const resolved = await service.resolveReference(`Patient/${patient.id}`);
@@ -645,16 +720,21 @@ describe('FHIR Resources', () => {
     expect((resolved as FhirPatient)?.id).toBe(patient.id);
   });
 
-  it('should resolve encounter reference', async () => {
+  it("should resolve encounter reference", async () => {
     const encounter = await service.createEncounter({
-      resourceType: 'Encounter',
-      status: 'finished',
-      class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
-      subject: { reference: 'Patient/pat_123' },
-      period: { start: '2024-01-01T08:00:00Z' },
+      resourceType: "Encounter",
+      status: "finished",
+      class: {
+        system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        code: "AMB",
+      },
+      subject: { reference: "Patient/pat_123" },
+      period: { start: "2024-01-01T08:00:00Z" },
     });
 
-    const resolved = await service.resolveReference(`Encounter/${encounter.id}`);
+    const resolved = await service.resolveReference(
+      `Encounter/${encounter.id}`,
+    );
 
     expect((resolved as FhirEncounter)?.id).toBe(encounter.id);
   });

@@ -4,7 +4,12 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, TrendingUpIcon, TrendingDownIcon, ActivityIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  ActivityIcon,
+} from "lucide-react";
 
 interface VitalReading {
   timestamp: Date;
@@ -33,14 +38,20 @@ interface VitalMetric {
   change: number;
 }
 
-const getTrend = (current: number, previous: number | undefined): "up" | "down" | "stable" => {
+const getTrend = (
+  current: number,
+  previous: number | undefined,
+): "up" | "down" | "stable" => {
   if (previous === undefined) return "stable";
   const diff = current - previous;
   if (Math.abs(diff) < 0.5) return "stable";
   return diff > 0 ? "up" : "down";
 };
 
-const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): VitalMetric[] => [
+const getMetricsFromReadings = (
+  latest: VitalReading,
+  previous?: VitalReading,
+): VitalMetric[] => [
   {
     name: "Heart Rate",
     unit: "bpm",
@@ -69,7 +80,9 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     color: "wl-info-400",
     value: latest.bpDiastolic,
     trend: getTrend(latest.bpDiastolic, previous?.bpDiastolic),
-    change: previous ? Math.round(latest.bpDiastolic - previous.bpDiastolic) : 0,
+    change: previous
+      ? Math.round(latest.bpDiastolic - previous.bpDiastolic)
+      : 0,
   },
   {
     name: "Temperature",
@@ -79,7 +92,9 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     color: "wl-warning-400",
     value: latest.temperature,
     trend: getTrend(latest.temperature, previous?.temperature),
-    change: previous ? Math.round((latest.temperature - previous.temperature) * 10) / 10 : 0,
+    change: previous
+      ? Math.round((latest.temperature - previous.temperature) * 10) / 10
+      : 0,
   },
   {
     name: "SpO2",
@@ -99,7 +114,9 @@ const getMetricsFromReadings = (latest: VitalReading, previous?: VitalReading): 
     color: "wl-danger-400",
     value: latest.weight,
     trend: getTrend(latest.weight, previous?.weight),
-    change: previous ? Math.round((latest.weight - previous.weight) * 10) / 10 : 0,
+    change: previous
+      ? Math.round((latest.weight - previous.weight) * 10) / 10
+      : 0,
   },
 ];
 
@@ -149,7 +166,8 @@ const VitalsChart = ({
   }
 
   const latestReading = readings[readings.length - 1];
-  const previousReading = readings.length > 1 ? readings[readings.length - 2] : undefined;
+  const previousReading =
+    readings.length > 1 ? readings[readings.length - 2] : undefined;
   const metrics = getMetricsFromReadings(latestReading, previousReading);
 
   const now = Date.now();
@@ -161,7 +179,7 @@ const VitalsChart = ({
         : 30 * 24 * 60 * 60 * 1000;
 
   const filteredReadings = readings.filter(
-    (r) => now - r.timestamp.getTime() <= rangeMs
+    (r) => now - r.timestamp.getTime() <= rangeMs,
   );
 
   return (
@@ -188,7 +206,7 @@ const VitalsChart = ({
                         24 *
                         60 *
                         60 *
-                        1000
+                        1000,
                   );
                   onDateRangeChange(start, end);
                 }
@@ -230,7 +248,9 @@ const VitalsChart = ({
                     <p className="text-sm font-semibold text-wl-text-primary">
                       {metric.name}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary">{metric.unit}</p>
+                    <p className="text-xs text-wl-text-tertiary">
+                      {metric.unit}
+                    </p>
                   </div>
                 </div>
 
@@ -242,7 +262,9 @@ const VitalsChart = ({
                     <div
                       className={cn(
                         "flex items-center gap-1 text-xs font-medium",
-                        metric.change > 0 ? "text-wl-danger-400" : "text-wl-success-400"
+                        metric.change > 0
+                          ? "text-wl-danger-400"
+                          : "text-wl-success-400",
                       )}
                     >
                       {metric.trend === "up" && (
@@ -264,7 +286,7 @@ const VitalsChart = ({
                     <ChevronDownIcon
                       className={cn(
                         "w-4 h-4 transition-transform",
-                        isExpanded && "rotate-180"
+                        isExpanded && "rotate-180",
                       )}
                     />
                   </Button>

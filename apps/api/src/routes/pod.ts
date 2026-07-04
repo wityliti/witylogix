@@ -12,12 +12,12 @@
  *   GET    /api/pod/:deliveryId/verify         Verify POD
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import multipart from '@fastify/multipart';
-import { prisma } from '@witylogix/db';
-import { requireAuth } from '../middleware/auth.js';
-import { tenantContext } from '../middleware/tenant.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import multipart from "@fastify/multipart";
+import { prisma } from "@witylogix/db";
+import { requireAuth } from "../middleware/auth.js";
+import { tenantContext } from "../middleware/tenant.js";
 
 // ─── VALIDATION SCHEMAS ─────────────────────────────────────────
 
@@ -51,7 +51,7 @@ const confirmationSchema = z.object({
 // ─── CONSTANTS ──────────────────────────────────────────────────
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png'];
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png"];
 
 // ─── ROUTE PLUGIN ───────────────────────────────────────────────
 
@@ -64,13 +64,13 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // All routes require auth and tenant context
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // ─── PHOTO POD ───────────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/photo/:deliveryId',
+    "/photo/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -81,7 +81,7 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         if (!data) {
           return reply.code(400).send({
             success: false,
-            error: 'No file uploaded',
+            error: "No file uploaded",
           });
         }
 
@@ -89,12 +89,15 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         if (!ALLOWED_PHOTO_TYPES.includes(data.mimetype)) {
           return reply.code(400).send({
             success: false,
-            error: `Invalid file type: ${data.mimetype}. Allowed: ${ALLOWED_PHOTO_TYPES.join(', ')}`,
+            error: `Invalid file type: ${data.mimetype}. Allowed: ${ALLOWED_PHOTO_TYPES.join(", ")}`,
           });
         }
 
         // Check file size
-        if (data.file.readableLength && data.file.readableLength > MAX_PHOTO_SIZE) {
+        if (
+          data.file.readableLength &&
+          data.file.readableLength > MAX_PHOTO_SIZE
+        ) {
           return reply.code(413).send({
             success: false,
             error: `File exceeds maximum size of ${MAX_PHOTO_SIZE / 1024 / 1024}MB`,
@@ -121,9 +124,9 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         await prisma.deliveryTimeline.create({
           data: {
             deliveryId,
-            event: 'PHOTO_CAPTURED',
-            status: 'delivered',
-            description: 'Photo proof of delivery captured',
+            event: "PHOTO_CAPTURED",
+            status: "delivered",
+            description: "Photo proof of delivery captured",
             photoUrl,
           },
         });
@@ -133,10 +136,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: pod.id,
             deliveryId,
-            method: 'photo',
+            method: "photo",
             imageUrl: photoUrl,
-            thumbnailUrl: photoUrl.replace('.jpg', '-thumb.jpg'),
-            status: 'verified',
+            thumbnailUrl: photoUrl.replace(".jpg", "-thumb.jpg"),
+            status: "verified",
             capturedAt: pod.createdAt.toISOString(),
           },
         });
@@ -144,16 +147,16 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to upload photo POD',
+          error: "Failed to upload photo POD",
         });
       }
-    }
+    },
   );
 
   // ─── SIGNATURE POD ───────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/signature/:deliveryId',
+    "/signature/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -180,8 +183,8 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         await prisma.deliveryTimeline.create({
           data: {
             deliveryId,
-            event: 'DELIVERED',
-            status: 'delivered',
+            event: "DELIVERED",
+            status: "delivered",
             description: `Signed by ${payload.signerName}`,
             signatureUrl,
             notes: payload.notes,
@@ -193,10 +196,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: pod.id,
             deliveryId,
-            method: 'signature',
+            method: "signature",
             signerName: payload.signerName,
             signatureUrl,
-            status: 'verified',
+            status: "verified",
             signedAt: pod.updatedAt.toISOString(),
           },
         });
@@ -204,31 +207,32 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to capture signature POD',
+          error: "Failed to capture signature POD",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── QR CODE POD ────────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/qr/:deliveryId',
+    "/qr/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
         const payload = qrPODSchema.parse(request.body);
 
-        const isValid = payload.scannedData === (payload.expectedData || deliveryId);
+        const isValid =
+          payload.scannedData === (payload.expectedData || deliveryId);
         const now = new Date();
 
         await prisma.deliveryTimeline.create({
           data: {
             deliveryId,
-            event: 'QR_SCANNED',
-            status: isValid ? 'delivered' : 'failed',
-            description: `QR code scanned: ${isValid ? 'match' : 'mismatch'}`,
+            event: "QR_SCANNED",
+            status: isValid ? "delivered" : "failed",
+            description: `QR code scanned: ${isValid ? "match" : "mismatch"}`,
             notes: `scanned=${payload.scannedData}`,
             timestamp: now,
           },
@@ -239,10 +243,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: `pod-qr-${deliveryId}-${now.getTime()}`,
             deliveryId,
-            method: 'qr_scan',
+            method: "qr_scan",
             scannedData: payload.scannedData,
             verification: { valid: isValid, matchPercentage: 100 },
-            status: isValid ? 'verified' : 'failed',
+            status: isValid ? "verified" : "failed",
             scannedAt: now.toISOString(),
           },
         });
@@ -250,17 +254,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to capture QR code POD',
+          error: "Failed to capture QR code POD",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── BARCODE POD ────────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/barcode/:deliveryId',
+    "/barcode/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -273,16 +277,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         //   format: payload.format,
         // });
 
-        const isValid = payload.scannedBarcode === (payload.expectedBarcode || deliveryId);
+        const isValid =
+          payload.scannedBarcode === (payload.expectedBarcode || deliveryId);
         const now = new Date();
 
         await prisma.deliveryTimeline.create({
           data: {
             deliveryId,
-            event: 'BARCODE_SCANNED',
-            status: isValid ? 'delivered' : 'failed',
-            description: `Barcode scanned: ${isValid ? 'match' : 'mismatch'}`,
-            notes: `scanned=${payload.scannedBarcode}${payload.format ? ` format=${payload.format}` : ''}`,
+            event: "BARCODE_SCANNED",
+            status: isValid ? "delivered" : "failed",
+            description: `Barcode scanned: ${isValid ? "match" : "mismatch"}`,
+            notes: `scanned=${payload.scannedBarcode}${payload.format ? ` format=${payload.format}` : ""}`,
             timestamp: now,
           },
         });
@@ -292,11 +297,11 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: `pod-barcode-${deliveryId}-${now.getTime()}`,
             deliveryId,
-            method: 'barcode',
+            method: "barcode",
             scannedBarcode: payload.scannedBarcode,
             barcodeFormat: payload.format,
             verification: { valid: isValid },
-            status: isValid ? 'verified' : 'failed',
+            status: isValid ? "verified" : "failed",
             scannedAt: now.toISOString(),
           },
         });
@@ -304,17 +309,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to capture barcode POD',
+          error: "Failed to capture barcode POD",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── MANUAL CONFIRMATION ────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/confirm/:deliveryId',
+    "/confirm/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -346,8 +351,8 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         await prisma.deliveryTimeline.create({
           data: {
             deliveryId,
-            event: 'MANUALLY_CONFIRMED',
-            status: 'delivered',
+            event: "MANUALLY_CONFIRMED",
+            status: "delivered",
             description: `Manually confirmed by ${payload.confirmedBy}`,
             notes: payload.notes,
             timestamp: now,
@@ -359,10 +364,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: pod.id,
             deliveryId,
-            method: 'manual_confirm',
+            method: "manual_confirm",
             confirmedBy: payload.confirmedBy,
             notes: payload.notes,
-            status: 'verified',
+            status: "verified",
             confirmedAt: now.toISOString(),
           },
         });
@@ -370,17 +375,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to record manual confirmation',
+          error: "Failed to record manual confirmation",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── GET POD RECORD(S) ──────────────────────────────────────
 
   fastify.get<{ Params: { deliveryId: string } }>(
-    '/:deliveryId',
+    "/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -400,23 +405,23 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to retrieve POD records',
+          error: "Failed to retrieve POD records",
         });
       }
-    }
+    },
   );
 
   // ─── GET DELIVERY TIMELINE ──────────────────────────────────
 
   fastify.get<{ Params: { deliveryId: string } }>(
-    '/:deliveryId/timeline',
+    "/:deliveryId/timeline",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
 
         const timeline = await prisma.deliveryTimeline.findMany({
           where: { deliveryId },
-          orderBy: { timestamp: 'asc' },
+          orderBy: { timestamp: "asc" },
         });
 
         return reply.code(200).send({
@@ -428,16 +433,16 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to retrieve delivery timeline',
+          error: "Failed to retrieve delivery timeline",
         });
       }
-    }
+    },
   );
 
   // ─── VERIFY POD ─────────────────────────────────────────────
 
   fastify.get<{ Params: { deliveryId: string } }>(
-    '/:deliveryId/verify',
+    "/:deliveryId/verify",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -448,10 +453,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
 
         const hasPhoto = (pod?.photoUrls?.length ?? 0) > 0;
         const hasSignature = !!pod?.signatureUrl;
-        const isVerified = !!pod && (hasPhoto || hasSignature || !!pod.recipientName);
-        const method = hasSignature ? 'signature' : hasPhoto ? 'photo' : pod?.recipientName ? 'manual_confirm' : null;
+        const isVerified =
+          !!pod && (hasPhoto || hasSignature || !!pod.recipientName);
+        const method = hasSignature
+          ? "signature"
+          : hasPhoto
+            ? "photo"
+            : pod?.recipientName
+              ? "manual_confirm"
+              : null;
         const issues: string[] = [];
-        if (!pod) issues.push('No proof of delivery record found');
+        if (!pod) issues.push("No proof of delivery record found");
 
         return reply.code(200).send({
           success: true,
@@ -466,10 +478,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to verify POD',
+          error: "Failed to verify POD",
         });
       }
-    }
+    },
   );
 }
 

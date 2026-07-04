@@ -89,7 +89,9 @@ function CreateSlotModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between p-5 border-b border-wl-border-default">
-          <h2 className="text-base font-semibold text-wl-text-primary">New Time Slot</h2>
+          <h2 className="text-base font-semibold text-wl-text-primary">
+            New Time Slot
+          </h2>
           <button
             onClick={onClose}
             className="text-wl-text-muted hover:text-wl-text-primary transition-colors"
@@ -223,10 +225,17 @@ function CreateSlotModal({
 
 export default function TimeSlotsPage() {
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [showCreate, setShowCreate] = useState(false);
 
-  const { items: slots, loading, error, refetch } = useApiList<TimeSlot>("/api/v4/time-slots", {
+  const {
+    items: slots,
+    loading,
+    error,
+    refetch,
+  } = useApiList<TimeSlot>("/api/v4/time-slots", {
     limit: 100,
   });
 
@@ -241,13 +250,7 @@ export default function TimeSlotsPage() {
   }, [slots, search, filterStatus]);
 
   if (loading) return <LoadingSkeleton />;
-  if (error)
-    return (
-      <ErrorState
-        message={error.message}
-        onRetry={refetch}
-      />
-    );
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <>
@@ -329,11 +332,16 @@ export default function TimeSlotsPage() {
             },
             {
               label: "Total Capacity",
-              value: slots.filter((s) => s.isActive).reduce((a, s) => a + s.maxCapacity, 0),
+              value: slots
+                .filter((s) => s.isActive)
+                .reduce((a, s) => a + s.maxCapacity, 0),
               color: "text-blue-400",
             },
           ].map((c) => (
-            <Card key={c.label} className="bg-wl-bg-surface border-wl-border-default">
+            <Card
+              key={c.label}
+              className="bg-wl-bg-surface border-wl-border-default"
+            >
               <CardContent className="p-4">
                 <p className="text-xs text-wl-text-muted mb-1">{c.label}</p>
                 <p className={cn("text-2xl font-bold", c.color)}>{c.value}</p>
@@ -348,7 +356,9 @@ export default function TimeSlotsPage() {
             <CardContent className="p-12 text-center">
               <Clock className="w-12 h-12 text-wl-text-muted mx-auto mb-4" />
               <h3 className="text-base font-semibold text-wl-text-primary mb-2">
-                {slots.length === 0 ? "No time slots configured" : "No slots match your filter"}
+                {slots.length === 0
+                  ? "No time slots configured"
+                  : "No slots match your filter"}
               </h3>
               <p className="text-sm text-wl-text-muted mb-4">
                 {slots.length === 0
@@ -401,7 +411,10 @@ export default function TimeSlotsPage() {
                         <span className="text-sm font-semibold text-wl-text-primary">
                           {slot.name}
                         </span>
-                        <Badge variant={slot.isActive ? "success" : "default"} dot>
+                        <Badge
+                          variant={slot.isActive ? "success" : "default"}
+                          dot
+                        >
                           {slot.isActive ? "Active" : "Inactive"}
                         </Badge>
                         {surcharge > 0 && (
@@ -442,7 +455,9 @@ export default function TimeSlotsPage() {
                     {/* Capacity */}
                     <div className="w-36 shrink-0">
                       <div className="flex justify-between mb-1">
-                        <span className="text-xs text-wl-text-muted">Max Capacity</span>
+                        <span className="text-xs text-wl-text-muted">
+                          Max Capacity
+                        </span>
                         <span className="text-xs font-semibold text-wl-text-primary">
                           {slot.maxCapacity}
                         </span>
@@ -460,7 +475,11 @@ export default function TimeSlotsPage() {
                       <Button variant="ghost" size="sm" aria-label="Edit">
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="ghost" size="sm" aria-label="Toggle active">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Toggle active"
+                      >
                         <Power className="w-3.5 h-3.5" />
                       </Button>
                     </div>

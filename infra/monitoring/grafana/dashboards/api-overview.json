@@ -16,7 +16,7 @@
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(http_requests_total, environment)",
-          "current": {"value": "production", "text": "production"},
+          "current": { "value": "production", "text": "production" },
           "multi": false
         },
         {
@@ -24,14 +24,14 @@
           "type": "query",
           "datasource": "Prometheus",
           "query": "label_values(http_requests_total{environment=\"$environment\"}, service)",
-          "current": {"value": "all", "text": "All"},
+          "current": { "value": "all", "text": "All" },
           "multi": true
         },
         {
           "name": "timerange",
           "type": "interval",
           "values": ["5m", "10m", "30m", "1h", "6h", "24h"],
-          "current": {"value": "5m", "text": "5m"}
+          "current": { "value": "5m", "text": "5m" }
         }
       ]
     },
@@ -47,8 +47,8 @@
             "legendFormat": "{{service}}"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
-        "yaxes": [{"label": "req/s"}]
+        "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+        "yaxes": [{ "label": "req/s" }]
       },
       {
         "id": 2,
@@ -61,8 +61,8 @@
             "legendFormat": "Error Rate"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
-        "yaxes": [{"label": "%", "max": 100}]
+        "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 },
+        "yaxes": [{ "label": "%", "max": 100 }]
       },
       {
         "id": 3,
@@ -83,8 +83,8 @@
             "legendFormat": "P99"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
-        "yaxes": [{"label": "seconds"}]
+        "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 },
+        "yaxes": [{ "label": "seconds" }]
       },
       {
         "id": 4,
@@ -97,7 +97,7 @@
             "legendFormat": "{{status}}"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 }
       },
       {
         "id": 5,
@@ -110,7 +110,7 @@
             "format": "table"
           }
         ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
       },
       {
         "id": 6,
@@ -122,8 +122,8 @@
             "expr": "sum(http_active_connections{environment=\"$environment\",service=~\"$service\"})"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
-        "options": {"graphMode": "area", "colorMode": "value"}
+        "gridPos": { "h": 8, "w": 6, "x": 12, "y": 8 },
+        "options": { "graphMode": "area", "colorMode": "value" }
       },
       {
         "id": 7,
@@ -136,7 +136,7 @@
             "legendFormat": "Request Size"
           }
         ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8}
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 }
       }
     ]
   }

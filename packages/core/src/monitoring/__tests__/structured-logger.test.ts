@@ -4,7 +4,12 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { Logger, createLogger, type LogTransport, type StructuredLog } from "../structured-logger";
+import {
+  Logger,
+  createLogger,
+  type LogTransport,
+  type StructuredLog,
+} from "../structured-logger";
 
 // ─── TESTS ─────────────────────────────────────────────────────────────
 

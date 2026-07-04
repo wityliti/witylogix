@@ -6,7 +6,10 @@ interface MockRequest extends Partial<FastifyRequest> {
   body?: Record<string, unknown>;
   params?: Record<string, unknown>;
   jwt?: {
-    sign: (payload: Record<string, unknown>, options?: Record<string, unknown>) => string;
+    sign: (
+      payload: Record<string, unknown>,
+      options?: Record<string, unknown>,
+    ) => string;
   };
 }
 
@@ -157,7 +160,11 @@ describe("Payment Methods Routes", () => {
     it("should indicate default payment method", async () => {
       const tenant = generateTestTenant();
       const card1 = generateTestPaymentMethod();
-      const card2 = { ...generateTestPaymentMethod(), id: "pm-124", isDefault: false };
+      const card2 = {
+        ...generateTestPaymentMethod(),
+        id: "pm-124",
+        isDefault: false,
+      };
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
       mockPrisma.paymentMethod.findMany.mockResolvedValue([card1, card2]);
@@ -241,7 +248,9 @@ describe("Payment Methods Routes", () => {
       const tenant = generateTestTenant();
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
-      mockPrisma.paymentMethod.create.mockResolvedValue(generateTestPaymentMethod());
+      mockPrisma.paymentMethod.create.mockResolvedValue(
+        generateTestPaymentMethod(),
+      );
 
       mockRequest.body = {
         tenantId: tenant.id,
@@ -266,7 +275,9 @@ describe("Payment Methods Routes", () => {
       const tenant = generateTestTenant();
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
-      mockPrisma.paymentMethod.create.mockResolvedValue(generateTestBankAccount());
+      mockPrisma.paymentMethod.create.mockResolvedValue(
+        generateTestBankAccount(),
+      );
 
       mockRequest.body = {
         tenantId: tenant.id,
@@ -372,7 +383,9 @@ describe("Payment Methods Routes", () => {
         cardCvc: "123",
       };
 
-      const isValidCard = /^\d{13,19}$/.test(String(mockRequest.body.cardNumber));
+      const isValidCard = /^\d{13,19}$/.test(
+        String(mockRequest.body.cardNumber),
+      );
       expect(isValidCard).toBe(true);
     });
 
@@ -717,8 +730,10 @@ describe("Payment Methods Routes", () => {
       const expMonth = 1;
       const expYear = 2026;
 
-      const isExpired = expYear < currentDate.getFullYear() ||
-        (expYear === currentDate.getFullYear() && expMonth < currentDate.getMonth() + 1);
+      const isExpired =
+        expYear < currentDate.getFullYear() ||
+        (expYear === currentDate.getFullYear() &&
+          expMonth < currentDate.getMonth() + 1);
 
       expect(isExpired).toBe(true);
     });
@@ -728,8 +743,10 @@ describe("Payment Methods Routes", () => {
       const expMonth = 12;
       const expYear = 2026;
 
-      const isValid = expYear > currentDate.getFullYear() ||
-        (expYear === currentDate.getFullYear() && expMonth >= currentDate.getMonth() + 1);
+      const isValid =
+        expYear > currentDate.getFullYear() ||
+        (expYear === currentDate.getFullYear() &&
+          expMonth >= currentDate.getMonth() + 1);
 
       expect(isValid).toBe(true);
     });

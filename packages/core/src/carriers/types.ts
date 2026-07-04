@@ -6,32 +6,43 @@
 /**
  * Supported carrier codes
  */
-export type CarrierCode = 'ups' | 'fedex' | 'dhl' | 'usps' | 'canada_post' | 'generic';
+export type CarrierCode =
+  | "ups"
+  | "fedex"
+  | "dhl"
+  | "usps"
+  | "canada_post"
+  | "generic";
 
 /**
  * Service level categories (carrier-agnostic)
  */
-export type ServiceLevel = 'ground' | 'express' | 'overnight' | 'economy' | 'international';
+export type ServiceLevel =
+  | "ground"
+  | "express"
+  | "overnight"
+  | "economy"
+  | "international";
 
 /**
  * Weight units supported
  */
-export type WeightUnit = 'g' | 'kg' | 'oz' | 'lb';
+export type WeightUnit = "g" | "kg" | "oz" | "lb";
 
 /**
  * Dimension units supported
  */
-export type DimensionUnit = 'cm' | 'in';
+export type DimensionUnit = "cm" | "in";
 
 /**
  * Label formats supported by adapters
  */
-export type LabelFormat = 'PDF' | 'ZPL' | 'PNG';
+export type LabelFormat = "PDF" | "ZPL" | "PNG";
 
 /**
  * Label sizes (inches)
  */
-export type LabelSize = '4x6' | '6x4' | '8.5x11';
+export type LabelSize = "4x6" | "6x4" | "8.5x11";
 
 /**
  * Main carrier adapter interface
@@ -407,7 +418,7 @@ export interface TrackingResponse {
   exception?: {
     code: string;
     message: string;
-    severity: 'info' | 'warning' | 'error';
+    severity: "info" | "warning" | "error";
   };
 }
 
@@ -424,7 +435,7 @@ export interface PickupRequest {
   /** Time window for pickup */
   timeWindow?: {
     start: string; // HH:MM format
-    end: string;   // HH:MM format
+    end: string; // HH:MM format
   };
 
   /** Number of packages to pick up */
@@ -493,14 +504,14 @@ export interface AddressValidationResponse {
     field: string;
     code: string;
     message: string;
-    severity: 'info' | 'warning' | 'error';
+    severity: "info" | "warning" | "error";
   }[];
 
   /** Standardized/corrected address (if available) */
   correctedAddress?: Address;
 
   /** Address type classification */
-  addressType?: 'residential' | 'commercial' | 'po_box' | 'mixed';
+  addressType?: "residential" | "commercial" | "po_box" | "mixed";
 
   /** Whether address has been standardized */
   standardized: boolean;
@@ -526,7 +537,7 @@ export class CarrierError extends Error {
     public statusCode?: number,
   ) {
     super(message);
-    this.name = 'CarrierError';
+    this.name = "CarrierError";
     Object.setPrototypeOf(this, CarrierError.prototype);
   }
 }
@@ -539,7 +550,7 @@ export interface CarrierAuthConfig {
   carrier: CarrierCode;
 
   /** Authentication method */
-  method: 'oauth2' | 'api_key' | 'basic_auth' | 'none';
+  method: "oauth2" | "api_key" | "basic_auth" | "none";
 
   /** Client ID (for OAuth2) */
   clientId?: string;

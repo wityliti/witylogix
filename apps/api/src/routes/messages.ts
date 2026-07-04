@@ -61,61 +61,64 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── LIST MESSAGES ───────────────────────────────────────────
 
-  fastify.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const {
-          page = 1,
-          limit = 20,
-          channel,
-          status,
-          recipient,
-        } = request.query as {
-          page?: number;
-          limit?: number;
-          channel?: string;
-          status?: string;
-          recipient?: string;
-        };
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        channel,
+        status,
+        recipient,
+      } = request.query as {
+        page?: number;
+        limit?: number;
+        channel?: string;
+        status?: string;
+        recipient?: string;
+      };
 
-        const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 20));
-        const skip = (pageNum - 1) * pageSize;
+      const pageNum = Math.max(1, parseInt(String(page)) || 1);
+      const pageSize = Math.min(
+        100,
+        Math.max(1, parseInt(String(limit)) || 20),
+      );
+      const skip = (pageNum - 1) * pageSize;
 
-        let whereClause = "WHERE shop_id = $1::uuid";
-        const params: any[] = [(request as any).shopId];
-        let paramCount = 1;
+      let whereClause = "WHERE shop_id = $1::uuid";
+      const params: any[] = [(request as any).shopId];
+      let paramCount = 1;
 
-        if (channel) {
-          paramCount++;
-          whereClause += ` AND channel = $${paramCount}::text`;
-          params.push(channel);
-        }
+      if (channel) {
+        paramCount++;
+        whereClause += ` AND channel = $${paramCount}::text`;
+        params.push(channel);
+      }
 
-        if (status) {
-          paramCount++;
-          whereClause += ` AND status = $${paramCount}::text`;
-          params.push(status);
-        }
+      if (status) {
+        paramCount++;
+        whereClause += ` AND status = $${paramCount}::text`;
+        params.push(status);
+      }
 
-        if (recipient) {
-          paramCount++;
-          whereClause += ` AND (recipient_email ILIKE $${paramCount} OR recipient_phone ILIKE $${paramCount})`;
-          params.push(`%${recipient}%`);
-        }
+      if (recipient) {
+        paramCount++;
+        whereClause += ` AND (recipient_email ILIKE $${paramCount} OR recipient_phone ILIKE $${paramCount})`;
+        params.push(`%${recipient}%`);
+      }
 
-        // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `SELECT COUNT(*) as count FROM messages ${whereClause}`,
-          ...params
-        );
-        const total = Number(countResult[0]?.count || 0);
+      // Get total count
+      const countResult: any[] = await (
+        request as any
+      ).tenantDb.$queryRawUnsafe(
+        `SELECT COUNT(*) as count FROM messages ${whereClause}`,
+        ...params,
+      );
+      const total = Number(countResult[0]?.count || 0);
 
-        // Get paginated results
-        paramCount += 2;
-        const result: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `
+      // Get paginated results
+      paramCount += 2;
+      const result: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        `
             SELECT
               id, shop_id, channel, subject, body, status,
               recipient_email, recipient_phone, recipient_name,
@@ -127,59 +130,55 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
             LIMIT $${paramCount - 1}::int
             OFFSET $${paramCount}::int
           `,
-          ...params,
-          pageSize,
-          skip
-        );
+        ...params,
+        pageSize,
+        skip,
+      );
 
-        return {
-          data: result,
-          pagination: {
-            page: pageNum,
-            limit: pageSize,
-            total,
-            pages: Math.ceil(total / pageSize),
-          },
-        };
-      } catch (error) {
-        fastify.log.error({ err: error }, "Failed to list messages");
-        return reply.code(500).send({ error: "Failed to list messages" });
-      }
+      return {
+        data: result,
+        pagination: {
+          page: pageNum,
+          limit: pageSize,
+          total,
+          pages: Math.ceil(total / pageSize),
+        },
+      };
+    } catch (error) {
+      fastify.log.error({ err: error }, "Failed to list messages");
+      return reply.code(500).send({ error: "Failed to list messages" });
     }
-  );
+  });
 
   // ── GET SINGLE MESSAGE ──────────────────────────────────────
 
-  fastify.get(
-    "/:id",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const { id } = request.params as { id: string };
+  fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
 
-        const message: any[] = await (request as any).tenantDb.$queryRawUnsafe(
-          `
+      const message: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        `
             SELECT *
             FROM messages
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
-          id,
-          (request as any).shopId
-        );
+        id,
+        (request as any).shopId,
+      );
 
-        if (!message || message.length === 0) {
-          throw new NotFoundError("Message", id);
-        }
-
-        return message[0];
-      } catch (error) {
-        if (error instanceof NotFoundError) {
-          return reply.code(404).send({ error: error.message });
-        }
-        fastify.log.error({ err: error }, "Failed to get message");
-        return reply.code(500).send({ error: "Failed to get message" });
+      if (!message || message.length === 0) {
+        throw new NotFoundError("Message", id);
       }
+
+      return message[0];
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: error.message });
+      }
+      fastify.log.error({ err: error }, "Failed to get message");
+      return reply.code(500).send({ error: "Failed to get message" });
     }
-  );
+  });
 
   // ── SEND SINGLE MESSAGE ─────────────────────────────────────
 
@@ -195,7 +194,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           body.templateId,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!template || template.length === 0) {
@@ -221,12 +220,12 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         ["SMS", "WHATSAPP"].includes(body.channel) ? body.to : null,
         body.templateId || null,
         body.variables ? JSON.stringify(body.variables) : "{}",
-        body.metadata ? JSON.stringify(body.metadata) : "{}"
+        body.metadata ? JSON.stringify(body.metadata) : "{}",
       );
 
       fastify.log.info(
         { messageId: result[0].id, channel: body.channel },
-        "Message created"
+        "Message created",
       );
 
       return reply.code(201).send(result[0]);
@@ -263,13 +262,15 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
           .map((m) => m.templateId!);
 
         if (templateIds.length > 0) {
-          const templates: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+          const templates: any[] = await (
+            request as any
+          ).tenantDb.$queryRawUnsafe(
             `
               SELECT id FROM message_templates
               WHERE shop_id = $1::uuid AND id = ANY($2::uuid[])
             `,
             (request as any).shopId,
-            templateIds
+            templateIds,
           );
 
           if (templates.length !== new Set(templateIds).size) {
@@ -298,7 +299,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
             ["SMS", "WHATSAPP"].includes(msg.channel) ? msg.to : null,
             msg.templateId || null,
             msg.variables ? JSON.stringify(msg.variables) : "{}",
-            msg.metadata ? JSON.stringify(msg.metadata) : "{}"
+            msg.metadata ? JSON.stringify(msg.metadata) : "{}",
           );
 
           insertedMessages.push(result[0]);
@@ -306,7 +307,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
 
         fastify.log.info(
           { count: insertedMessages.length },
-          "Batch messages created"
+          "Batch messages created",
         );
 
         return reply.code(201).send({ data: insertedMessages });
@@ -322,7 +323,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to send batch messages");
         return reply.code(500).send({ error: "Failed to send batch messages" });
       }
-    }
+    },
   );
 
   // ── LIST TEMPLATES ──────────────────────────────────────────
@@ -331,14 +332,21 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
     "/templates",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { page = 1, limit = 20, channel } = request.query as {
+        const {
+          page = 1,
+          limit = 20,
+          channel,
+        } = request.query as {
           page?: number;
           limit?: number;
           channel?: string;
         };
 
         const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 20));
+        const pageSize = Math.min(
+          100,
+          Math.max(1, parseInt(String(limit)) || 20),
+        );
         const skip = (pageNum - 1) * pageSize;
 
         let whereClause = "WHERE shop_id = $1::uuid";
@@ -352,9 +360,11 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const countResult: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `SELECT COUNT(*) as count FROM message_templates ${whereClause}`,
-          ...params
+          ...params,
         );
         const total = Number(countResult[0]?.count || 0);
 
@@ -373,7 +383,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
           `,
           ...params,
           pageSize,
-          skip
+          skip,
         );
 
         return {
@@ -389,7 +399,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to list templates");
         return reply.code(500).send({ error: "Failed to list templates" });
       }
-    }
+    },
   );
 
   // ── CREATE TEMPLATE ─────────────────────────────────────────
@@ -414,7 +424,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
           body.subject || null,
           body.body,
           body.variables ? JSON.stringify(body.variables) : "[]",
-          body.metadata ? JSON.stringify(body.metadata) : "{}"
+          body.metadata ? JSON.stringify(body.metadata) : "{}",
         );
 
         return reply.code(201).send(result[0]);
@@ -427,7 +437,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to create template");
         return reply.code(500).send({ error: "Failed to create template" });
       }
-    }
+    },
   );
 
   // ── UPDATE TEMPLATE ─────────────────────────────────────────
@@ -447,7 +457,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!template || template.length === 0) {
@@ -499,7 +509,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
             RETURNING *
           `,
-          ...values
+          ...values,
         );
 
         return result[0];
@@ -515,7 +525,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to update template");
         return reply.code(500).send({ error: "Failed to update template" });
       }
-    }
+    },
   );
 
   // ── DELETE TEMPLATE ─────────────────────────────────────────
@@ -533,7 +543,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!template || template.length === 0) {
@@ -546,7 +556,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         return reply.code(204).send();
@@ -557,7 +567,7 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to delete template");
         return reply.code(500).send({ error: "Failed to delete template" });
       }
-    }
+    },
   );
 
   // ── WEBHOOK HANDLER ─────────────────────────────────────────
@@ -569,18 +579,12 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         const { provider } = request.params as { provider: string };
         const payload = request.body as any;
 
-        fastify.log.info(
-          { provider, payload },
-          "Received message webhook"
-        );
+        fastify.log.info({ provider, payload }, "Received message webhook");
 
         // Provider-specific handling
         switch (provider) {
           case "whatsapp":
-            await handleWhatsAppWebhook(
-              payload,
-              (request as any).tenantDb
-            );
+            await handleWhatsAppWebhook(payload, (request as any).tenantDb);
             break;
           case "email":
             await handleEmailWebhook(payload, (request as any).tenantDb);
@@ -597,13 +601,16 @@ async function messagesRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to process webhook");
         return reply.code(500).send({ error: "Failed to process webhook" });
       }
-    }
+    },
   );
 }
 
 // ─── WEBHOOK HANDLERS ────────────────────────────────────────
 
-async function handleWhatsAppWebhook(payload: any, tenantDb: any): Promise<void> {
+async function handleWhatsAppWebhook(
+  payload: any,
+  tenantDb: any,
+): Promise<void> {
   // Extract message ID and status from WhatsApp payload
   const messageId = payload.message_id;
   const status = payload.status;
@@ -627,7 +634,7 @@ async function handleWhatsAppWebhook(payload: any, tenantDb: any): Promise<void>
       WHERE id = $2::uuid
     `,
     dbStatus,
-    messageId
+    messageId,
   );
 }
 
@@ -660,7 +667,7 @@ async function handleEmailWebhook(payload: any, tenantDb: any): Promise<void> {
         WHERE id = $2::uuid
       `,
       dbStatus,
-      messageId
+      messageId,
     );
   }
 }
@@ -689,7 +696,7 @@ async function handleSmsWebhook(payload: any, tenantDb: any): Promise<void> {
       WHERE id = $2::uuid
     `,
     dbStatus,
-    messageId
+    messageId,
   );
 }
 

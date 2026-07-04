@@ -18,7 +18,7 @@ export interface TimeSlot {
   startTime: string; // ISO 8601 format: HH:MM
   endTime: string; // ISO 8601 format: HH:MM
   label: string; // Display: "9:00 AM - 12:00 PM"
-  timeGroup: 'morning' | 'afternoon' | 'evening';
+  timeGroup: "morning" | "afternoon" | "evening";
   available: boolean;
   slotsRemaining: number;
   price: number; // Delivery fee in cents
@@ -66,17 +66,17 @@ export interface CartItem {
  * Checkout attributes to save delivery selection
  */
 export interface CheckoutAttributes {
-  'witylogix_delivery_date'?: string;
-  'witylogix_delivery_slot'?: string;
-  'witylogix_delivery_fee'?: string;
-  'witylogix_time_label'?: string;
+  witylogix_delivery_date?: string;
+  witylogix_delivery_slot?: string;
+  witylogix_delivery_fee?: string;
+  witylogix_time_label?: string;
 }
 
 /**
  * Error state information
  */
 export interface ErrorState {
-  type: 'fetch' | 'validation' | 'save' | 'network';
+  type: "fetch" | "validation" | "save" | "network";
   message: string;
   retry?: () => void;
 }

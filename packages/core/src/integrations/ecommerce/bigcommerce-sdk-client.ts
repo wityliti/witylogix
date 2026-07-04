@@ -397,7 +397,9 @@ export class BigCommerceSDKClient extends EventEmitter {
     };
 
     if (!config.storeHash || !config.accessToken) {
-      throw new Error("storeHash and accessToken are required for BigCommerce SDK");
+      throw new Error(
+        "storeHash and accessToken are required for BigCommerce SDK",
+      );
     }
 
     this.baseUrl = `https://api.bigcommerce.com/stores/${config.storeHash}/${this.config.apiVersion}`;
@@ -431,7 +433,9 @@ export class BigCommerceSDKClient extends EventEmitter {
    * OAuth2: Handle install callback (app installed)
    * Store the authorization code for later token exchange
    */
-  async handleInstallCallback(payload: BigCommerceInstallPayload): Promise<void> {
+  async handleInstallCallback(
+    payload: BigCommerceInstallPayload,
+  ): Promise<void> {
     this.emit("app:install", {
       code: payload.code,
       scope: payload.scope,
@@ -481,8 +485,12 @@ export class BigCommerceSDKClient extends EventEmitter {
       page: (options?.page || 1).toString(),
       ...(options?.sort && { sort: options.sort }),
       ...(options?.status_id && { status_id: options.status_id.toString() }),
-      ...(options?.min_date_created && { min_date_created: options.min_date_created }),
-      ...(options?.max_date_created && { max_date_created: options.max_date_created }),
+      ...(options?.min_date_created && {
+        min_date_created: options.min_date_created,
+      }),
+      ...(options?.max_date_created && {
+        max_date_created: options.max_date_created,
+      }),
     });
 
     return this.get<BigCommerceApiResponse<BigCommerceOrder[]>>(
@@ -505,17 +513,21 @@ export class BigCommerceSDKClient extends EventEmitter {
   /**
    * Orders: Create new order
    */
-  async createOrder(order: Partial<BigCommerceOrder>): Promise<BigCommerceOrder> {
-    return this.post<BigCommerceApiResponse<BigCommerceOrder>>(
-      "/orders",
-      { order },
-    ).then((response) => response.data!);
+  async createOrder(
+    order: Partial<BigCommerceOrder>,
+  ): Promise<BigCommerceOrder> {
+    return this.post<BigCommerceApiResponse<BigCommerceOrder>>("/orders", {
+      order,
+    }).then((response) => response.data!);
   }
 
   /**
    * Orders: Update existing order
    */
-  async updateOrder(orderId: number, updates: Partial<BigCommerceOrder>): Promise<BigCommerceOrder> {
+  async updateOrder(
+    orderId: number,
+    updates: Partial<BigCommerceOrder>,
+  ): Promise<BigCommerceOrder> {
     return this.put<BigCommerceApiResponse<BigCommerceOrder>>(
       `/orders/${orderId}`,
       { order: updates },
@@ -533,18 +545,15 @@ export class BigCommerceSDKClient extends EventEmitter {
    * Orders: Count total orders
    */
   async countOrders(): Promise<number> {
-    const response = await this.get<BigCommerceApiResponse<any>>(
-      "/orders/count",
-    );
+    const response =
+      await this.get<BigCommerceApiResponse<any>>("/orders/count");
     return response.data || 0;
   }
 
   /**
    * Orders: Get order products/line items
    */
-  async getOrderProducts(
-    orderId: number,
-  ): Promise<Array<any>> {
+  async getOrderProducts(orderId: number): Promise<Array<any>> {
     const response = await this.get<BigCommerceApiResponse<any[]>>(
       `/orders/${orderId}/products`,
     );
@@ -557,9 +566,9 @@ export class BigCommerceSDKClient extends EventEmitter {
   async getOrderShippingAddresses(
     orderId: number,
   ): Promise<BigCommerceAddress[]> {
-    const response = await this.get<BigCommerceApiResponse<BigCommerceAddress[]>>(
-      `/orders/${orderId}/shipping_addresses`,
-    );
+    const response = await this.get<
+      BigCommerceApiResponse<BigCommerceAddress[]>
+    >(`/orders/${orderId}/shipping_addresses`);
     return response.data || [];
   }
 
@@ -577,9 +586,8 @@ export class BigCommerceSDKClient extends EventEmitter {
    * Orders: Get available order statuses
    */
   async getOrderStatuses(): Promise<Array<any>> {
-    const response = await this.get<BigCommerceApiResponse<any[]>>(
-      "/orders/statuses",
-    );
+    const response =
+      await this.get<BigCommerceApiResponse<any[]>>("/orders/statuses");
     return response.data || [];
   }
 
@@ -600,7 +608,9 @@ export class BigCommerceSDKClient extends EventEmitter {
       ...(options?.name && { name: options.name }),
       ...(options?.sku && { sku: options.sku }),
       ...(options?.status && { status: options.status }),
-      ...(options?.include_fields && { include_fields: options.include_fields }),
+      ...(options?.include_fields && {
+        include_fields: options.include_fields,
+      }),
     });
 
     return this.get<BigCommerceApiResponse<BigCommerceProduct[]>>(
@@ -614,7 +624,10 @@ export class BigCommerceSDKClient extends EventEmitter {
   /**
    * Products: Get single product by ID
    */
-  async getProduct(productId: number, includeFields?: string): Promise<BigCommerceProduct> {
+  async getProduct(
+    productId: number,
+    includeFields?: string,
+  ): Promise<BigCommerceProduct> {
     const params = new URLSearchParams(
       includeFields ? { include_fields: includeFields } : {},
     );
@@ -626,7 +639,9 @@ export class BigCommerceSDKClient extends EventEmitter {
   /**
    * Products: Create new product
    */
-  async createProduct(product: Partial<BigCommerceProduct>): Promise<BigCommerceProduct> {
+  async createProduct(
+    product: Partial<BigCommerceProduct>,
+  ): Promise<BigCommerceProduct> {
     return this.post<BigCommerceApiResponse<BigCommerceProduct>>(
       "/catalog/products",
       product,
@@ -657,9 +672,9 @@ export class BigCommerceSDKClient extends EventEmitter {
    * Products: Get product variants
    */
   async getProductVariants(productId: number): Promise<BigCommerceVariant[]> {
-    const response = await this.get<BigCommerceApiResponse<BigCommerceVariant[]>>(
-      `/catalog/products/${productId}/variants`,
-    );
+    const response = await this.get<
+      BigCommerceApiResponse<BigCommerceVariant[]>
+    >(`/catalog/products/${productId}/variants`);
     return response.data || [];
   }
 
@@ -675,7 +690,10 @@ export class BigCommerceSDKClient extends EventEmitter {
   /**
    * Products: Update variant
    */
-  async updateVariant(variantId: number, updates: Partial<BigCommerceVariant>): Promise<BigCommerceVariant> {
+  async updateVariant(
+    variantId: number,
+    updates: Partial<BigCommerceVariant>,
+  ): Promise<BigCommerceVariant> {
     return this.put<BigCommerceApiResponse<BigCommerceVariant>>(
       `/catalog/variants/${variantId}`,
       updates,
@@ -720,9 +738,8 @@ export class BigCommerceSDKClient extends EventEmitter {
    * Products: Get product brands
    */
   async getProductBrands(): Promise<Array<any>> {
-    const response = await this.get<BigCommerceApiResponse<any[]>>(
-      "/catalog/brands",
-    );
+    const response =
+      await this.get<BigCommerceApiResponse<any[]>>("/catalog/brands");
     return response.data || [];
   }
 
@@ -784,7 +801,9 @@ export class BigCommerceSDKClient extends EventEmitter {
   /**
    * Customers: Create new customer
    */
-  async createCustomer(customer: Partial<BigCommerceCustomer>): Promise<BigCommerceCustomer> {
+  async createCustomer(
+    customer: Partial<BigCommerceCustomer>,
+  ): Promise<BigCommerceCustomer> {
     return this.post<BigCommerceApiResponse<BigCommerceCustomer>>(
       "/customers",
       customer,
@@ -814,10 +833,12 @@ export class BigCommerceSDKClient extends EventEmitter {
   /**
    * Customers: Get customer addresses
    */
-  async getCustomerAddresses(customerId: number): Promise<BigCommerceAddress[]> {
-    const response = await this.get<BigCommerceApiResponse<BigCommerceAddress[]>>(
-      `/customers/${customerId}/addresses`,
-    );
+  async getCustomerAddresses(
+    customerId: number,
+  ): Promise<BigCommerceAddress[]> {
+    const response = await this.get<
+      BigCommerceApiResponse<BigCommerceAddress[]>
+    >(`/customers/${customerId}/addresses`);
     return response.data || [];
   }
 
@@ -838,9 +859,8 @@ export class BigCommerceSDKClient extends EventEmitter {
    * Customers: Get customer groups
    */
   async getCustomerGroups(): Promise<Array<any>> {
-    const response = await this.get<BigCommerceApiResponse<any[]>>(
-      "/customer_groups",
-    );
+    const response =
+      await this.get<BigCommerceApiResponse<any[]>>("/customer_groups");
     return response.data || [];
   }
 
@@ -885,23 +905,19 @@ export class BigCommerceSDKClient extends EventEmitter {
     destination: string,
     isActive?: boolean,
   ): Promise<BigCommerceWebhook> {
-    return this.post<BigCommerceApiResponse<BigCommerceWebhook>>(
-      "/hooks",
-      {
-        scope,
-        destination,
-        is_active: isActive ?? true,
-      },
-    ).then((response) => response.data!);
+    return this.post<BigCommerceApiResponse<BigCommerceWebhook>>("/hooks", {
+      scope,
+      destination,
+      is_active: isActive ?? true,
+    }).then((response) => response.data!);
   }
 
   /**
    * Webhooks: List all webhooks
    */
   async listWebhooks(): Promise<BigCommerceWebhook[]> {
-    const response = await this.get<BigCommerceApiResponse<BigCommerceWebhook[]>>(
-      "/hooks",
-    );
+    const response =
+      await this.get<BigCommerceApiResponse<BigCommerceWebhook[]>>("/hooks");
     return response.data || [];
   }
 
@@ -942,16 +958,19 @@ export class BigCommerceSDKClient extends EventEmitter {
    * Shipping: Get shipping zones
    */
   async getShippingZones(): Promise<BigCommerceShippingZone[]> {
-    const response = await this.get<BigCommerceApiResponse<BigCommerceShippingZone[]>>(
-      "/shipping/zones",
-    );
+    const response =
+      await this.get<BigCommerceApiResponse<BigCommerceShippingZone[]>>(
+        "/shipping/zones",
+      );
     return response.data || [];
   }
 
   /**
    * Shipping: Create shipping zone
    */
-  async createShippingZone(zone: Partial<BigCommerceShippingZone>): Promise<BigCommerceShippingZone> {
+  async createShippingZone(
+    zone: Partial<BigCommerceShippingZone>,
+  ): Promise<BigCommerceShippingZone> {
     return this.post<BigCommerceApiResponse<BigCommerceShippingZone>>(
       "/shipping/zones",
       zone,
@@ -1016,9 +1035,7 @@ export class BigCommerceSDKClient extends EventEmitter {
     return {
       requestsLeft: this.requestsLeftCache,
       timeWindowSeconds: 60,
-      requestsResetAt: Math.floor(
-        (Date.now() + 60000) / 1000,
-      ),
+      requestsResetAt: Math.floor((Date.now() + 60000) / 1000),
     };
   }
 
@@ -1079,15 +1096,12 @@ export class BigCommerceSDKClient extends EventEmitter {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
       "X-Auth-Token": this.config.accessToken,
-      "Accept": "application/json",
+      Accept: "application/json",
       "Content-Type": "application/json",
     };
 
     const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(),
-      this.config.timeout,
-    );
+    const timeout = setTimeout(() => controller.abort(), this.config.timeout);
 
     try {
       const response = await fetch(url, {
@@ -1116,7 +1130,9 @@ export class BigCommerceSDKClient extends EventEmitter {
       return JSON.parse(responseText);
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(`BigCommerce request timeout (${this.config.timeout}ms): ${endpoint}`);
+        throw new Error(
+          `BigCommerce request timeout (${this.config.timeout}ms): ${endpoint}`,
+        );
       }
       throw error;
     } finally {

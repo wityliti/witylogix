@@ -21,7 +21,10 @@ const THRESHOLDS = {
 
 type MetricName = keyof typeof THRESHOLDS;
 
-function ratingFor(name: MetricName, value: number): "good" | "needs-improvement" | "poor" {
+function ratingFor(
+  name: MetricName,
+  value: number,
+): "good" | "needs-improvement" | "poor" {
   const threshold = THRESHOLDS[name];
   // BFS: good < threshold; poor = 2× threshold; between = needs-improvement
   if (value <= threshold) return "good";
@@ -42,7 +45,10 @@ function buildPayload(metric: Metric) {
   };
 }
 
-async function sendToApi(apiBaseUrl: string, payload: ReturnType<typeof buildPayload>) {
+async function sendToApi(
+  apiBaseUrl: string,
+  payload: ReturnType<typeof buildPayload>,
+) {
   // Fire-and-forget — never block the page for telemetry
   try {
     navigator.sendBeacon(
@@ -90,5 +96,5 @@ export function initVitals(apiBaseUrl: string | null): void {
   // This gives faster feedback during development and finer attribution in production.
   onLCP(report);
   onCLS(report, { reportAllChanges: false }); // CLS: final value only (avoids duplicates)
-  onINP(report, { reportAllChanges: false });  // INP: final value on page hide
+  onINP(report, { reportAllChanges: false }); // INP: final value on page hide
 }

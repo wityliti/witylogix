@@ -81,9 +81,14 @@ export class TokenService {
     issuer?: string;
     audience?: string;
   }) {
-    this.accessTokenExpirySeconds = options?.accessTokenExpirySeconds ?? this.accessTokenExpirySeconds;
-    this.refreshTokenExpirySeconds = options?.refreshTokenExpirySeconds ?? this.refreshTokenExpirySeconds;
-    this.signingKey = options?.signingKey || process.env.JWT_SIGNING_KEY || "default-insecure-key";
+    this.accessTokenExpirySeconds =
+      options?.accessTokenExpirySeconds ?? this.accessTokenExpirySeconds;
+    this.refreshTokenExpirySeconds =
+      options?.refreshTokenExpirySeconds ?? this.refreshTokenExpirySeconds;
+    this.signingKey =
+      options?.signingKey ||
+      process.env.JWT_SIGNING_KEY ||
+      "default-insecure-key";
     if (options?.issuer) this.issuer = options.issuer;
     if (options?.audience) this.audience = options.audience;
 
@@ -172,7 +177,11 @@ export class TokenService {
       // Simple JWT verification (in production: use jsonwebtoken library)
       const parts = token.split(".");
       if (parts.length !== 3) {
-        return { claims: {} as TokenClaims, isValid: false, error: "Invalid JWT format" };
+        return {
+          claims: {} as TokenClaims,
+          isValid: false,
+          error: "Invalid JWT format",
+        };
       }
 
       // Decode payload (no verification for demo, normally verify signature)
@@ -181,16 +190,28 @@ export class TokenService {
       // Check expiration
       const now = Math.floor(Date.now() / 1000);
       if (payload.exp && payload.exp < now) {
-        return { claims: {} as TokenClaims, isValid: false, error: "Token has expired" };
+        return {
+          claims: {} as TokenClaims,
+          isValid: false,
+          error: "Token has expired",
+        };
       }
 
       // Check issuer and audience
       if (payload.iss !== this.issuer) {
-        return { claims: {} as TokenClaims, isValid: false, error: "Invalid token issuer" };
+        return {
+          claims: {} as TokenClaims,
+          isValid: false,
+          error: "Invalid token issuer",
+        };
       }
 
       if (payload.aud !== this.audience) {
-        return { claims: {} as TokenClaims, isValid: false, error: "Invalid token audience" };
+        return {
+          claims: {} as TokenClaims,
+          isValid: false,
+          error: "Invalid token audience",
+        };
       }
 
       return {
@@ -238,7 +259,9 @@ export class TokenService {
       const parts = token.split(".");
       if (parts.length !== 3) return null;
 
-      return JSON.parse(Buffer.from(parts[1], "base64").toString()) as TokenClaims;
+      return JSON.parse(
+        Buffer.from(parts[1], "base64").toString(),
+      ) as TokenClaims;
     } catch {
       return null;
     }
@@ -349,8 +372,12 @@ export class TokenService {
    */
   private signJWT(payload: TokenClaims): string {
     // Simple JWT signing (in production: use jsonwebtoken library)
-    const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64");
-    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64");
+    const header = Buffer.from(
+      JSON.stringify({ alg: "HS256", typ: "JWT" }),
+    ).toString("base64");
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64",
+    );
 
     // Create signature
     const signature = crypto

@@ -72,7 +72,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const response = await client.get<{ data: PaymentDetailData }>(
-      `/api/v4/payments/${paymentId}`
+      `/api/v4/payments/${paymentId}`,
     );
 
     return response;
@@ -130,7 +130,9 @@ export default function PaymentDetail() {
   const actionData = useActionData();
   const [isRefunding, setIsRefunding] = useState(false);
 
-  const getStatusTone = (status: string): "success" | "info" | "warning" | "critical" | undefined => {
+  const getStatusTone = (
+    status: string,
+  ): "success" | "info" | "warning" | "critical" | undefined => {
     switch (status) {
       case "COMPLETED":
         return "success";
@@ -145,7 +147,9 @@ export default function PaymentDetail() {
     }
   };
 
-  const getTypeTone = (type: string): "info" | "success" | "critical" | "warning" | undefined => {
+  const getTypeTone = (
+    type: string,
+  ): "info" | "success" | "critical" | "warning" | undefined => {
     switch (type) {
       case "CHARGE":
         return "info";
@@ -184,7 +188,10 @@ export default function PaymentDetail() {
       ),
     },
     { term: "Method", description: payment.method },
-    { term: "Amount", description: `${payment.currency} ${Number(payment.amount).toFixed(2)}` },
+    {
+      term: "Amount",
+      description: `${payment.currency} ${Number(payment.amount).toFixed(2)}`,
+    },
     {
       term: "Status",
       description: (
@@ -195,8 +202,14 @@ export default function PaymentDetail() {
       term: "Provider Transaction ID",
       description: payment.providerTransactionId || "\u2014",
     },
-    { term: "Created", description: new Date(payment.createdAt).toLocaleString() },
-    { term: "Updated", description: new Date(payment.updatedAt).toLocaleString() },
+    {
+      term: "Created",
+      description: new Date(payment.createdAt).toLocaleString(),
+    },
+    {
+      term: "Updated",
+      description: new Date(payment.updatedAt).toLocaleString(),
+    },
   ];
 
   return (
@@ -231,14 +244,27 @@ export default function PaymentDetail() {
                 <>
                   <Divider />
                   <BlockStack gap="200">
-                    <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                    <Text
+                      as="span"
+                      variant="bodySm"
+                      fontWeight="semibold"
+                      tone="subdued"
+                    >
                       Update Status
                     </Text>
                     <InlineStack gap="200">
                       {validTransitions.map((status) => (
                         <Form key={status} method="post">
-                          <input type="hidden" name="intent" value="update-status" />
-                          <input type="hidden" name="newStatus" value={status} />
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="update-status"
+                          />
+                          <input
+                            type="hidden"
+                            name="newStatus"
+                            value={status}
+                          />
                           <Button submit size="slim">
                             Mark as {status}
                           </Button>
@@ -321,7 +347,11 @@ export default function PaymentDetail() {
                 <Text as="h2" variant="headingMd">
                   Metadata
                 </Text>
-                <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                <Box
+                  padding="300"
+                  background="bg-surface-secondary"
+                  borderRadius="200"
+                >
                   <pre>
                     <Text as="span" variant="bodySm">
                       {JSON.stringify(payment.metadata, null, 2)}

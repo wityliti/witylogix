@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,14 +9,20 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-} from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { api } from '../services/api';
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { api } from "../services/api";
 
 interface Shipment {
   id: string;
   trackingNumber: string;
-  status: 'ASSIGNED' | 'PICKED_UP' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'FAILED';
+  status:
+    | "ASSIGNED"
+    | "PICKED_UP"
+    | "IN_TRANSIT"
+    | "OUT_FOR_DELIVERY"
+    | "DELIVERED"
+    | "FAILED";
   customer: {
     name: string;
     phone: string;
@@ -58,8 +64,8 @@ export const ShipmentScreen = () => {
       const response = await api.get(`/api/v4/shipments/${shipmentId}`);
       setShipment(response.data);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load shipment details');
-      console.error('Fetch shipment error:', error);
+      Alert.alert("Error", "Failed to load shipment details");
+      console.error("Fetch shipment error:", error);
     } finally {
       setLoading(false);
     }
@@ -73,11 +79,11 @@ export const ShipmentScreen = () => {
       await api.patch(`/api/v4/shipments/${shipmentId}`, { status: newStatus });
 
       // Update local state
-      setShipment({ ...shipment, status: newStatus as Shipment['status'] });
-      Alert.alert('Success', 'Shipment status updated');
+      setShipment({ ...shipment, status: newStatus as Shipment["status"] });
+      Alert.alert("Success", "Shipment status updated");
     } catch (error) {
-      Alert.alert('Error', 'Failed to update shipment status');
-      console.error('Status update error:', error);
+      Alert.alert("Error", "Failed to update shipment status");
+      console.error("Status update error:", error);
     } finally {
       setUpdating(false);
     }
@@ -98,14 +104,14 @@ export const ShipmentScreen = () => {
   };
 
   const handleNavigateToProof = () => {
-    navigation.navigate('DeliveryProof', { shipmentId });
+    navigation.navigate("DeliveryProof", { shipmentId });
   };
 
   const handleScanPickup = () => {
-    navigation.navigate('BarcodeScanner', {
-      mode: 'pickup',
+    navigation.navigate("BarcodeScanner", {
+      mode: "pickup",
       shipmentId,
-      expectedBarcode: shipment?.trackingNumber ?? '',
+      expectedBarcode: shipment?.trackingNumber ?? "",
     });
   };
 
@@ -113,7 +119,7 @@ export const ShipmentScreen = () => {
     if (!shipment || updating) return null;
 
     switch (shipment.status) {
-      case 'ASSIGNED':
+      case "ASSIGNED":
         return (
           <View style={styles.actionButtonsContainer}>
             <TouchableOpacity
@@ -124,31 +130,31 @@ export const ShipmentScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.rejectButton]}
-              onPress={() => handleStatusUpdate('FAILED')}
+              onPress={() => handleStatusUpdate("FAILED")}
             >
               <Text style={styles.actionButtonText}>Reject</Text>
             </TouchableOpacity>
           </View>
         );
-      case 'PICKED_UP':
+      case "PICKED_UP":
         return (
           <TouchableOpacity
             style={[styles.actionButton, styles.acceptButton]}
-            onPress={() => handleStatusUpdate('IN_TRANSIT')}
+            onPress={() => handleStatusUpdate("IN_TRANSIT")}
           >
             <Text style={styles.actionButtonText}>Start Delivery</Text>
           </TouchableOpacity>
         );
-      case 'IN_TRANSIT':
+      case "IN_TRANSIT":
         return (
           <TouchableOpacity
             style={[styles.actionButton, styles.acceptButton]}
-            onPress={() => handleStatusUpdate('OUT_FOR_DELIVERY')}
+            onPress={() => handleStatusUpdate("OUT_FOR_DELIVERY")}
           >
             <Text style={styles.actionButtonText}>Mark Arrived</Text>
           </TouchableOpacity>
         );
-      case 'OUT_FOR_DELIVERY':
+      case "OUT_FOR_DELIVERY":
         return (
           <View style={styles.actionButtonsContainer}>
             <TouchableOpacity
@@ -159,7 +165,7 @@ export const ShipmentScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.rejectButton]}
-              onPress={() => handleStatusUpdate('FAILED')}
+              onPress={() => handleStatusUpdate("FAILED")}
             >
               <Text style={styles.actionButtonText}>Mark Failed</Text>
             </TouchableOpacity>
@@ -172,14 +178,14 @@ export const ShipmentScreen = () => {
 
   const getStatusColor = (status: string) => {
     const statusColors: Record<string, string> = {
-      ASSIGNED: '#FFA500',
-      PICKED_UP: '#4169E1',
-      IN_TRANSIT: '#1E90FF',
-      OUT_FOR_DELIVERY: '#FFD700',
-      DELIVERED: '#28A745',
-      FAILED: '#DC3545',
+      ASSIGNED: "#FFA500",
+      PICKED_UP: "#4169E1",
+      IN_TRANSIT: "#1E90FF",
+      OUT_FOR_DELIVERY: "#FFD700",
+      DELIVERED: "#28A745",
+      FAILED: "#DC3545",
     };
-    return statusColors[status] || '#666';
+    return statusColors[status] || "#666";
   };
 
   if (loading) {
@@ -233,7 +239,9 @@ export const ShipmentScreen = () => {
               style={styles.addressContainer}
               onPress={handleOpenMaps}
             >
-              <Text style={styles.addressText}>📍 {shipment.customer.deliveryAddress}</Text>
+              <Text style={styles.addressText}>
+                📍 {shipment.customer.deliveryAddress}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -244,12 +252,15 @@ export const ShipmentScreen = () => {
           <View style={styles.card}>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Weight:</Text>
-              <Text style={styles.detailValue}>{shipment.package.weight} kg</Text>
+              <Text style={styles.detailValue}>
+                {shipment.package.weight} kg
+              </Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Dimensions:</Text>
               <Text style={styles.detailValue}>
-                {shipment.package.width}×{shipment.package.height}×{shipment.package.depth} cm
+                {shipment.package.width}×{shipment.package.height}×
+                {shipment.package.depth} cm
               </Text>
             </View>
             {shipment.package.specialInstructions && (
@@ -268,7 +279,8 @@ export const ShipmentScreen = () => {
           <Text style={styles.sectionTitle}>Delivery Time Slot</Text>
           <View style={styles.card}>
             <Text style={styles.timeSlotText}>
-              {shipment.deliveryTimeSlot.startTime} - {shipment.deliveryTimeSlot.endTime}
+              {shipment.deliveryTimeSlot.startTime} -{" "}
+              {shipment.deliveryTimeSlot.endTime}
             </Text>
           </View>
         </View>
@@ -278,10 +290,7 @@ export const ShipmentScreen = () => {
           <Text style={styles.sectionTitle}>Destination</Text>
           <View style={styles.mapPlaceholder}>
             <Text style={styles.mapPlaceholderText}>📍 Map View</Text>
-            <TouchableOpacity
-              style={styles.mapButton}
-              onPress={handleOpenMaps}
-            >
+            <TouchableOpacity style={styles.mapButton} onPress={handleOpenMaps}>
               <Text style={styles.mapButtonText}>Open in Maps</Text>
             </TouchableOpacity>
           </View>
@@ -305,30 +314,30 @@ export const ShipmentScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   scrollView: {
     flex: 1,
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    borderBottomColor: "#E0E0E0",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   trackingNumber: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
+    fontWeight: "700",
+    color: "#000",
     flex: 1,
   },
   statusBadge: {
@@ -337,9 +346,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   statusText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   section: {
     marginHorizontal: 16,
@@ -347,22 +356,22 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
     marginBottom: 8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
   },
   customerName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: "600",
+    color: "#000",
     marginBottom: 12,
   },
   phoneContainer: {
@@ -371,7 +380,7 @@ const styles = StyleSheet.create({
   },
   phoneText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: "#007AFF",
   },
   addressContainer: {
     paddingVertical: 8,
@@ -380,57 +389,57 @@ const styles = StyleSheet.create({
   },
   addressText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: "#007AFF",
   },
   detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginVertical: 8,
   },
   detailLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     flex: 1,
   },
   detailValue: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     flex: 1,
-    textAlign: 'right',
+    textAlign: "right",
   },
   timeSlotText: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    color: "#333",
+    fontWeight: "500",
   },
   mapPlaceholder: {
-    backgroundColor: '#E8E8E8',
+    backgroundColor: "#E8E8E8",
     borderRadius: 8,
     padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     minHeight: 180,
   },
   mapPlaceholderText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
     marginBottom: 12,
   },
   mapButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 6,
   },
   mapButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   actionButtonsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   actionButton: {
@@ -438,22 +447,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   acceptButton: {
-    backgroundColor: '#28A745',
+    backgroundColor: "#28A745",
   },
   rejectButton: {
-    backgroundColor: '#DC3545',
+    backgroundColor: "#DC3545",
   },
   actionButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   errorText: {
     fontSize: 16,
-    color: '#DC3545',
+    color: "#DC3545",
   },
 });

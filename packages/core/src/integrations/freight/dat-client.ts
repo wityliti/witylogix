@@ -6,7 +6,8 @@
  */
 
 // Node 22+ has global fetch — resolve at call-time so tests can stub it
-const nodeFetch = (...args: Parameters<typeof fetch>) => globalThis.fetch(...args);
+const nodeFetch = (...args: Parameters<typeof fetch>) =>
+  globalThis.fetch(...args);
 
 import { FreightAdapter } from "./freight-adapter";
 import type {
@@ -136,7 +137,7 @@ export class DATClient extends FreightAdapter {
               client_secret: this.config.clientSecret!,
             }).toString(),
           }),
-        "DAT authentication"
+        "DAT authentication",
       );
 
       if (!response.ok) {
@@ -152,7 +153,7 @@ export class DATClient extends FreightAdapter {
     } catch (error) {
       this.circuitBreaker.recordFailure();
       throw new Error(
-        `DAT authentication error: ${error instanceof Error ? error.message : String(error)}`
+        `DAT authentication error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -169,7 +170,7 @@ export class DATClient extends FreightAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -188,7 +189,7 @@ export class DATClient extends FreightAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `DAT ${method} ${endpoint}`
+        `DAT ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -222,23 +223,19 @@ export class DATClient extends FreightAdapter {
       throw new Error("Origin and destination are required");
     }
 
-    const response = await this.apiRequest<DATLoadResponse>(
-      "/loads",
-      "POST",
-      {
-        origin: load.origin,
-        destination: load.destination,
-        equipment: load.equipmentType,
-        weight: load.weight,
-        length: load.length,
-        rate: load.rate,
-        pickupDate: load.pickupDate?.toISOString(),
-        deliveryDate: load.deliveryDate?.toISOString(),
-        commodity: load.commodity,
-        hazmat: load.isHazmat,
-        specialInstructions: load.specialInstructions,
-      }
-    );
+    const response = await this.apiRequest<DATLoadResponse>("/loads", "POST", {
+      origin: load.origin,
+      destination: load.destination,
+      equipment: load.equipmentType,
+      weight: load.weight,
+      length: load.length,
+      rate: load.rate,
+      pickupDate: load.pickupDate?.toISOString(),
+      deliveryDate: load.deliveryDate?.toISOString(),
+      commodity: load.commodity,
+      hazmat: load.isHazmat,
+      specialInstructions: load.specialInstructions,
+    });
 
     return this.mapDATLoadToLoadPosting(response);
   }
@@ -261,9 +258,7 @@ export class DATClient extends FreightAdapter {
     const endpoint = `/loads/search?${params.toString()}`;
     const responses = await this.apiRequest<DATLoadResponse[]>(endpoint);
 
-    return responses.map((response) =>
-      this.mapDATLoadToLoadPosting(response)
-    );
+    return responses.map((response) => this.mapDATLoadToLoadPosting(response));
   }
 
   /**
@@ -289,13 +284,9 @@ export class DATClient extends FreightAdapter {
    * @returns Rate quote
    */
   async requestQuote(loadId: string, carrierId: string): Promise<FreightQuote> {
-    const quote = await this.apiRequest(
-      `/loads/${loadId}/quotes`,
-      "POST",
-      {
-        carrierId,
-      }
-    );
+    const quote = await this.apiRequest(`/loads/${loadId}/quotes`, "POST", {
+      carrierId,
+    });
 
     return quote as FreightQuote;
   }
@@ -308,7 +299,7 @@ export class DATClient extends FreightAdapter {
    */
   async getQuotes(loadId: string): Promise<FreightQuote[]> {
     const quotes = await this.apiRequest<FreightQuote[]>(
-      `/loads/${loadId}/quotes`
+      `/loads/${loadId}/quotes`,
     );
 
     return quotes;
@@ -324,7 +315,7 @@ export class DATClient extends FreightAdapter {
     const confirmation = await this.apiRequest(
       `/quotes/${quoteId}/accept`,
       "POST",
-      {}
+      {},
     );
 
     return confirmation as BookingConfirmation;
@@ -337,9 +328,7 @@ export class DATClient extends FreightAdapter {
    * @returns Carrier profile
    */
   async getCarrier(carrierId: string): Promise<CarrierProfile> {
-    const carrier = await this.apiRequest(
-      `/carriers/${carrierId}`
-    );
+    const carrier = await this.apiRequest(`/carriers/${carrierId}`);
 
     return carrier as CarrierProfile;
   }
@@ -350,7 +339,9 @@ export class DATClient extends FreightAdapter {
    * @param criteria - Search criteria (state, equipment, safety score, etc.)
    * @returns Array of carrier profiles
    */
-  async searchCarriers(criteria: Record<string, unknown>): Promise<CarrierProfile[]> {
+  async searchCarriers(
+    criteria: Record<string, unknown>,
+  ): Promise<CarrierProfile[]> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -375,7 +366,7 @@ export class DATClient extends FreightAdapter {
     const carrier = await this.apiRequest(
       `/carriers/${carrierId}/score`,
       "POST",
-      {}
+      {},
     );
 
     return carrier as CarrierProfile;
@@ -390,7 +381,7 @@ export class DATClient extends FreightAdapter {
    */
   async getLaneRate(origin: string, destination: string): Promise<LaneRate> {
     const laneRate = await this.apiRequest(
-      `/rates/lane?origin=${origin}&destination=${destination}`
+      `/rates/lane?origin=${origin}&destination=${destination}`,
     );
 
     return laneRate as LaneRate;
@@ -407,10 +398,10 @@ export class DATClient extends FreightAdapter {
   async getLaneRateTrend(
     origin: string,
     destination: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<Record<string, unknown>> {
     const trends = await this.apiRequest<Record<string, unknown>>(
-      `/rates/trends?origin=${origin}&destination=${destination}&days=${days}`
+      `/rates/trends?origin=${origin}&destination=${destination}&days=${days}`,
     );
 
     return trends;
@@ -423,9 +414,12 @@ export class DATClient extends FreightAdapter {
    * @param destination - Destination state
    * @returns Volume data
    */
-  async getLaneVolume(origin: string, destination: string): Promise<Record<string, unknown>> {
+  async getLaneVolume(
+    origin: string,
+    destination: string,
+  ): Promise<Record<string, unknown>> {
     const volume = await this.apiRequest<Record<string, unknown>>(
-      `/rates/volume?origin=${origin}&destination=${destination}`
+      `/rates/volume?origin=${origin}&destination=${destination}`,
     );
 
     return volume;
@@ -439,7 +433,7 @@ export class DATClient extends FreightAdapter {
    */
   async getTracking(trackingNumber: string): Promise<ShipmentTracking> {
     const tracking = await this.apiRequest(
-      `/shipments/${trackingNumber}/tracking`
+      `/shipments/${trackingNumber}/tracking`,
     );
 
     return tracking as ShipmentTracking;
@@ -452,9 +446,7 @@ export class DATClient extends FreightAdapter {
    * @returns Freight invoice
    */
   async getInvoice(loadId: string): Promise<FreightInvoice> {
-    const invoice = await this.apiRequest(
-      `/loads/${loadId}/invoice`
-    );
+    const invoice = await this.apiRequest(`/loads/${loadId}/invoice`);
 
     return invoice as FreightInvoice;
   }
@@ -465,9 +457,11 @@ export class DATClient extends FreightAdapter {
    * @param carrierId - Carrier identifier
    * @returns Array of compliance documents
    */
-  async getComplianceDocuments(carrierId: string): Promise<ComplianceDocument[]> {
+  async getComplianceDocuments(
+    carrierId: string,
+  ): Promise<ComplianceDocument[]> {
     const documents = await this.apiRequest<ComplianceDocument[]>(
-      `/carriers/${carrierId}/compliance`
+      `/carriers/${carrierId}/compliance`,
     );
 
     return documents;
@@ -482,12 +476,12 @@ export class DATClient extends FreightAdapter {
    */
   async integrateCarrierTMS(
     carrierId: string,
-    tmsData: Record<string, unknown>
+    tmsData: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const result = await this.apiRequest<Record<string, unknown>>(
       `/carriers/${carrierId}/tms-integration`,
       "POST",
-      tmsData
+      tmsData,
     );
 
     return result;
@@ -501,7 +495,7 @@ export class DATClient extends FreightAdapter {
    */
   async getCarrierMatches(loadId: string): Promise<CarrierProfile[]> {
     const matches = await this.apiRequest<CarrierProfile[]>(
-      `/loads/${loadId}/matches`
+      `/loads/${loadId}/matches`,
     );
 
     return matches;

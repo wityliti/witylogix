@@ -3,11 +3,11 @@
  * Shared types for QuickBooks, Xero, and future accounting providers
  */
 
-import type { Invoice, InvoiceLineItem } from '../../invoicing/types.js';
+import type { Invoice, InvoiceLineItem } from "../../invoicing/types.js";
 
-export type AccountingProvider = 'quickbooks' | 'xero';
+export type AccountingProvider = "quickbooks" | "xero";
 
-export type SyncStatus = 'pending' | 'synced' | 'failed' | 'skipped';
+export type SyncStatus = "pending" | "synced" | "failed" | "skipped";
 
 export interface AccountingConnection {
   id: string;
@@ -22,7 +22,7 @@ export interface AccountingConnection {
   lastSyncAt?: Date;
   syncConfig?: {
     autoSync: boolean;
-    syncFrequency?: 'hourly' | 'daily' | 'weekly';
+    syncFrequency?: "hourly" | "daily" | "weekly";
     includeDiscounts: boolean;
     includeTaxes: boolean;
     mapCustomFields?: Record<string, string>;
@@ -40,7 +40,7 @@ export interface SyncRecord {
   invoiceId: string;
   externalId?: string; // QB Invoice ID, Xero Invoice ID, etc.
   syncStatus: SyncStatus;
-  syncType: 'create' | 'update' | 'sync_payment';
+  syncType: "create" | "update" | "sync_payment";
   errorMessage?: string;
   errorDetails?: Record<string, unknown>;
   metadata?: {
@@ -76,7 +76,7 @@ export interface QuickBooksInvoice {
     lineNum?: number;
     description: string;
     amount: number;
-    detailType: 'SalesItemLineDetail' | 'DescriptionLineDetail';
+    detailType: "SalesItemLineDetail" | "DescriptionLineDetail";
     salesItemLineDetail?: {
       itemRef: {
         value: string;
@@ -105,15 +105,15 @@ export interface QuickBooksInvoice {
 
 export interface XeroInvoice {
   invoiceNumber: string;
-  type: 'ACCREC'; // Account receivable (sales invoice)
-  status?: 'DRAFT' | 'SUBMITTED' | 'AUTHORISED';
-  lineAmountTypes: 'Exclusive' | 'Inclusive';
+  type: "ACCREC"; // Account receivable (sales invoice)
+  status?: "DRAFT" | "SUBMITTED" | "AUTHORISED";
+  lineAmountTypes: "Exclusive" | "Inclusive";
   contactId?: string;
   contact?: {
     name: string;
     emailAddress?: string;
     addresses?: Array<{
-      addressType: 'STREET' | 'POBOX';
+      addressType: "STREET" | "POBOX";
       city?: string;
       region?: string;
       postalCode?: string;

@@ -10,7 +10,12 @@
  * - Goal affinity matrix for weighted scoring
  */
 
-import { Goal, Industry, DashboardLayout, IntegrationRecommendation } from "./types";
+import {
+  Goal,
+  Industry,
+  DashboardLayout,
+  IntegrationRecommendation,
+} from "./types";
 
 /**
  * Integration affinity scores for each goal.
@@ -20,68 +25,68 @@ const GOAL_INTEGRATION_AFFINITY: Record<Goal, Record<string, number>> = {
   [Goal.ROUTE_OPTIMIZATION]: {
     "valhalla-vroom": 1.0,
     "google-maps": 0.9,
-    "mapbox": 0.85,
-    "samsara": 0.7,
-    "motive": 0.65,
+    mapbox: 0.85,
+    samsara: 0.7,
+    motive: 0.65,
   },
   [Goal.FLEET_TRACKING]: {
-    "samsara": 1.0,
-    "motive": 0.95,
-    "flespi": 0.8,
+    samsara: 1.0,
+    motive: 0.95,
+    flespi: 0.8,
     "google-maps": 0.75,
-    "geotab": 0.7,
+    geotab: 0.7,
   },
   [Goal.LAST_MILE]: {
-    "doordash": 0.95,
+    doordash: 0.95,
     "uber-eats": 0.95,
-    "shipstation": 0.9,
+    shipstation: 0.9,
     "easy-post": 0.85,
     "google-maps": 0.8,
-    "onesignal": 0.75,
+    onesignal: 0.75,
   },
   [Goal.MULTI_CARRIER]: {
-    "shipstation": 1.0,
+    shipstation: 1.0,
     "easy-post": 0.95,
-    "shippo": 0.9,
-    "stripe": 0.6,
+    shippo: 0.9,
+    stripe: 0.6,
   },
   [Goal.ORDER_MANAGEMENT]: {
-    "shopify": 1.0,
-    "toast": 0.9,
-    "stripe": 0.85,
-    "square": 0.8,
-    "quickbooks": 0.7,
+    shopify: 1.0,
+    toast: 0.9,
+    stripe: 0.85,
+    square: 0.8,
+    quickbooks: 0.7,
   },
   [Goal.CUSTOMER_NOTIFICATIONS]: {
-    "twilio": 1.0,
-    "mailgun": 0.95,
-    "sendgrid": 0.9,
-    "onesignal": 0.85,
-    "firebase": 0.8,
+    twilio: 1.0,
+    mailgun: 0.95,
+    sendgrid: 0.9,
+    onesignal: 0.85,
+    firebase: 0.8,
   },
   [Goal.ANALYTICS]: {
-    "snowflake": 1.0,
-    "tableau": 0.95,
-    "powerbi": 0.95,
+    snowflake: 1.0,
+    tableau: 0.95,
+    powerbi: 0.95,
     "google-analytics": 0.85,
-    "datadog": 0.75,
+    datadog: 0.75,
   },
   [Goal.ERP_INTEGRATION]: {
-    "sap": 1.0,
-    "netsuite": 0.95,
-    "quickbooks": 0.85,
-    "xero": 0.8,
+    sap: 1.0,
+    netsuite: 0.95,
+    quickbooks: 0.85,
+    xero: 0.8,
   },
   [Goal.DRIVER_MANAGEMENT]: {
-    "samsara": 1.0,
-    "motive": 0.95,
+    samsara: 1.0,
+    motive: 0.95,
     "google-maps": 0.8,
-    "twilio": 0.75,
+    twilio: 0.75,
   },
   [Goal.COMPLIANCE_ELD]: {
-    "motive": 1.0,
-    "omnitracs": 0.95,
-    "samsara": 0.9,
+    motive: 1.0,
+    omnitracs: 0.95,
+    samsara: 0.9,
   },
 };
 
@@ -94,10 +99,20 @@ const GOAL_PAGE_MAPPING: Record<Goal, string[]> = {
   [Goal.LAST_MILE]: ["delivery", "customers", "tracking", "driver-map"],
   [Goal.MULTI_CARRIER]: ["shipping", "carriers", "rates", "orders"],
   [Goal.ORDER_MANAGEMENT]: ["orders", "customers", "inventory", "invoicing"],
-  [Goal.CUSTOMER_NOTIFICATIONS]: ["notifications", "messaging", "customers", "templates"],
+  [Goal.CUSTOMER_NOTIFICATIONS]: [
+    "notifications",
+    "messaging",
+    "customers",
+    "templates",
+  ],
   [Goal.ANALYTICS]: ["analytics", "dashboards", "reports", "kpi-tracking"],
   [Goal.ERP_INTEGRATION]: ["erp", "integrations", "inventory", "accounting"],
-  [Goal.DRIVER_MANAGEMENT]: ["drivers", "teams", "vehicles", "performance-metrics"],
+  [Goal.DRIVER_MANAGEMENT]: [
+    "drivers",
+    "teams",
+    "vehicles",
+    "performance-metrics",
+  ],
   [Goal.COMPLIANCE_ELD]: ["compliance", "eld", "drivers", "hos-tracking"],
 };
 
@@ -152,7 +167,8 @@ export function suggestDashboardLayout(goals: Goal[]): DashboardLayout {
   const layoutMap: Record<Goal, DashboardLayout> = {
     [Goal.ROUTE_OPTIMIZATION]: {
       name: "Route Optimization Hub",
-      description: "Focus on route planning, vehicle efficiency, and optimization",
+      description:
+        "Focus on route planning, vehicle efficiency, and optimization",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "route_map",
@@ -165,7 +181,8 @@ export function suggestDashboardLayout(goals: Goal[]): DashboardLayout {
     },
     [Goal.FLEET_TRACKING]: {
       name: "Fleet Visibility Hub",
-      description: "Real-time fleet status, driver locations, and vehicle health",
+      description:
+        "Real-time fleet status, driver locations, and vehicle health",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "live_map",
@@ -178,7 +195,8 @@ export function suggestDashboardLayout(goals: Goal[]): DashboardLayout {
     },
     [Goal.LAST_MILE]: {
       name: "Last-Mile Operations",
-      description: "Delivery tracking, driver assignments, and customer satisfaction",
+      description:
+        "Delivery tracking, driver assignments, and customer satisfaction",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "active_deliveries",
@@ -191,7 +209,8 @@ export function suggestDashboardLayout(goals: Goal[]): DashboardLayout {
     },
     [Goal.MULTI_CARRIER]: {
       name: "Shipping & Carriers",
-      description: "Multi-carrier management, rate comparison, and label generation",
+      description:
+        "Multi-carrier management, rate comparison, and label generation",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "carrier_comparison",
@@ -217,7 +236,8 @@ export function suggestDashboardLayout(goals: Goal[]): DashboardLayout {
     },
     [Goal.CUSTOMER_NOTIFICATIONS]: {
       name: "Customer Engagement",
-      description: "Notification campaigns, customer communication, and engagement",
+      description:
+        "Notification campaigns, customer communication, and engagement",
       gridLayout: { rows: 4, cols: 3 },
       defaultWidgets: [
         "campaign_status",
@@ -304,7 +324,12 @@ export function suggestDashboardLayout(goals: Goal[]): DashboardLayout {
 export function rankIntegrations(
   goals: Goal[],
   industry: Industry,
-  allIntegrations: Array<{ slug: string; name: string; category: string; popularity?: number }>,
+  allIntegrations: Array<{
+    slug: string;
+    name: string;
+    category: string;
+    popularity?: number;
+  }>,
   companySize?: string,
 ): IntegrationRecommendation[] {
   const recommendations: IntegrationRecommendation[] = [];
@@ -323,7 +348,8 @@ export function rankIntegrations(
     }
 
     // Normalize goal relevance by number of goals
-    const normalizedGoalRelevance = goals.length > 0 ? goalRelevanceScore / goals.length : 0;
+    const normalizedGoalRelevance =
+      goals.length > 0 ? goalRelevanceScore / goals.length : 0;
 
     // Industry-goal affinity (simplified — in production, would use detailed matrix)
     const industryGoalAffinity = normalizedGoalRelevance; // Proxy: reuse goal relevance
@@ -335,7 +361,10 @@ export function rankIntegrations(
     let companySizeFitScore = 0.5; // Default neutral
     if (companySize === "startup" && integration.slug.includes("small")) {
       companySizeFitScore = 1.0;
-    } else if (companySize === "enterprise" && integration.slug.includes("enterprise")) {
+    } else if (
+      companySize === "enterprise" &&
+      integration.slug.includes("enterprise")
+    ) {
       companySizeFitScore = 1.0;
     }
 
@@ -376,7 +405,11 @@ export function rankIntegrations(
 /**
  * Generate human-readable reason for recommendation.
  */
-function generateRecommendationReason(slug: string, goals: Goal[], score: number): string {
+function generateRecommendationReason(
+  slug: string,
+  goals: Goal[],
+  score: number,
+): string {
   const relevantGoals = goals
     .filter((goal) => {
       const affinity = GOAL_INTEGRATION_AFFINITY[goal]?.[slug] ?? 0;
@@ -410,7 +443,10 @@ export function getEnabledPages(goals: Goal[]): Set<string> {
  * @param goals - Selected goals
  * @returns True if integration helps with any of the goals
  */
-export function isIntegrationRelevantToGoals(integrationSlug: string, goals: Goal[]): boolean {
+export function isIntegrationRelevantToGoals(
+  integrationSlug: string,
+  goals: Goal[],
+): boolean {
   for (const goal of goals) {
     const affinity = GOAL_INTEGRATION_AFFINITY[goal]?.[integrationSlug];
     if (affinity && affinity > 0.3) {
@@ -427,25 +463,23 @@ export function isIntegrationRelevantToGoals(integrationSlug: string, goals: Goa
  * @param goals - Selected goals
  * @returns Integration slugs in this category relevant to goals
  */
-export function getIntegrationsByCategory(category: string, goals: Goal[]): string[] {
+export function getIntegrationsByCategory(
+  category: string,
+  goals: Goal[],
+): string[] {
   const integrations: string[] = [];
 
   // This is a simplified version — in production would query actual integration registry
   const categoryMap: Record<string, string[]> = {
-    "fleet-telematics": [
-      "samsara",
-      "motive",
-      "flespi",
-      "geotab",
-    ],
-    "routing": ["valhalla-vroom", "google-maps", "mapbox"],
-    "ecommerce": ["shopify", "woocommerce"],
-    "payments": ["stripe", "square"],
-    "shipping": ["shipstation", "easy-post", "shippo"],
-    "sms": ["twilio", "nexmo"],
-    "email": ["mailgun", "sendgrid"],
-    "analytics": ["snowflake", "tableau", "powerbi", "google-analytics"],
-    "erp": ["sap", "netsuite", "quickbooks"],
+    "fleet-telematics": ["samsara", "motive", "flespi", "geotab"],
+    routing: ["valhalla-vroom", "google-maps", "mapbox"],
+    ecommerce: ["shopify", "woocommerce"],
+    payments: ["stripe", "square"],
+    shipping: ["shipstation", "easy-post", "shippo"],
+    sms: ["twilio", "nexmo"],
+    email: ["mailgun", "sendgrid"],
+    analytics: ["snowflake", "tableau", "powerbi", "google-analytics"],
+    erp: ["sap", "netsuite", "quickbooks"],
     "delivery-platforms": ["doordash", "uber-eats", "instacart"],
   };
 

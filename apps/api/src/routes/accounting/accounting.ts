@@ -13,18 +13,26 @@
  *   POST   /accounting/reconcile               — Reconcile accounts
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { prisma } from '@witylogix/db';
-import { QuickBooksAdapter, XeroAdapter, AccountingSyncService } from '@witylogix/core/integrations/accounting';
-import { requireAuth } from '../../middleware/auth.js';
-import { tenantContext } from '../../middleware/tenant.js';
-import { NotFoundError, ValidationError, ForbiddenError } from '../../lib/errors.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { prisma } from "@witylogix/db";
+import {
+  QuickBooksAdapter,
+  XeroAdapter,
+  AccountingSyncService,
+} from "@witylogix/core/integrations/accounting";
+import { requireAuth } from "../../middleware/auth.js";
+import { tenantContext } from "../../middleware/tenant.js";
+import {
+  NotFoundError,
+  ValidationError,
+  ForbiddenError,
+} from "../../lib/errors.js";
 
 // ─── SCHEMAS ─────────────────────────────────────────────────────────
 
 const connectSchema = z.object({
-  provider: z.enum(['quickbooks', 'xero']),
+  provider: z.enum(["quickbooks", "xero"]),
   state: z.string().optional(),
 });
 
@@ -42,54 +50,58 @@ const syncInvoiceSchema = z.object({
 
 const batchSyncSchema = z.object({
   invoiceIds: z.array(z.string().uuid()),
-  providers: z.array(z.enum(['quickbooks', 'xero'])).optional(),
+  providers: z.array(z.enum(["quickbooks", "xero"])).optional(),
   force: z.boolean().optional(),
 });
 
 const syncHistorySchema = z.object({
-  provider: z.enum(['quickbooks', 'xero']).optional(),
+  provider: z.enum(["quickbooks", "xero"]).optional(),
   invoiceId: z.string().uuid().optional(),
-  status: z.enum(['pending', 'synced', 'failed', 'skipped']).optional(),
+  status: z.enum(["pending", "synced", "failed", "skipped"]).optional(),
   limit: z.coerce.number().int().positive().max(100).default(20),
   offset: z.coerce.number().int().nonnegative().default(0),
 });
 
 const reconcileSchema = z.object({
-  provider: z.enum(['quickbooks', 'xero']),
+  provider: z.enum(["quickbooks", "xero"]),
   fromDate: z.coerce.date(),
   toDate: z.coerce.date(),
 });
 
 // ─── REGISTER ROUTES ────────────────────────────────────────────────
 
-export async function registerAccountingRoutes(fastify: FastifyInstance): Promise<void> {
+export async function registerAccountingRoutes(
+  fastify: FastifyInstance,
+): Promise<void> {
   // ─── OAuth Connect ──────────────────────────────────────────────
 
   /**
    * POST /accounting/connect/:provider
    * Initiate OAuth flow for accounting provider
    */
-  fastify.post<{ Params: { provider: 'quickbooks' | 'xero' } }>(
-    '/accounting/connect/:provider',
+  fastify.post<{ Params: { provider: "quickbooks" | "xero" } }>(
+    "/accounting/connect/:provider",
     {
       onRequest: [requireAuth, tenantContext],
       schema: {
-        params: z.object({ provider: z.enum(['quickbooks', 'xero']) }),
+        params: z.object({ provider: z.enum(["quickbooks", "xero"]) }),
         querystring: connectSchema,
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { provider } = request.params as { provider: 'quickbooks' | 'xero' };
+      const { provider } = request.params as {
+        provider: "quickbooks" | "xero";
+      };
       const { state } = request.query as { state?: string };
       const tenantId = request.tenantId;
 
       // INTEGRATION: Get provider config from environment
       let authUrl: string;
 
-      if (provider === 'quickbooks') {
+      if (provider === "quickbooks") {
         const qbConfig = {
-          clientId: process.env.QB_CLIENT_ID || '',
-          clientSecret: process.env.QB_CLIENT_SECRET || '',
+          clientId: process.env.QB_CLIENT_ID || "",
+          clientSecret: process.env.QB_CLIENT_SECRET || "",
           redirectUri: `${process.env.API_BASE_URL}/accounting/callback/quickbooks`,
         };
 
@@ -97,8 +109,8 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         authUrl = adapter.getAuthorizationUrl(state);
       } else {
         const xeroConfig = {
-          clientId: process.env.XERO_CLIENT_ID || '',
-          clientSecret: process.env.XERO_CLIENT_SECRET || '',
+          clientId: process.env.XERO_CLIENT_ID || "",
+          clientSecret: process.env.XERO_CLIENT_SECRET || "",
           redirectUri: `${process.env.API_BASE_URL}/accounting/callback/xero`,
         };
 
@@ -123,44 +135,50 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
    * GET /accounting/callback/:provider
    * Handle OAuth callback from accounting provider
    */
-  fastify.get<{ Params: { provider: 'quickbooks' | 'xero' } }>(
-    '/accounting/callback/:provider',
+  fastify.get<{ Params: { provider: "quickbooks" | "xero" } }>(
+    "/accounting/callback/:provider",
     {
       schema: {
-        params: z.object({ provider: z.enum(['quickbooks', 'xero']) }),
+        params: z.object({ provider: z.enum(["quickbooks", "xero"]) }),
         querystring: callbackSchema,
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { provider } = request.params as { provider: 'quickbooks' | 'xero' };
-      const { code, state, realmId } = request.query as { code: string; state?: string; realmId?: string };
+      const { provider } = request.params as {
+        provider: "quickbooks" | "xero";
+      };
+      const { code, state, realmId } = request.query as {
+        code: string;
+        state?: string;
+        realmId?: string;
+      };
 
       if (!code) {
-        throw new ValidationError('Authorization code required');
+        throw new ValidationError("Authorization code required");
       }
 
       // Verify state
       const sessionState = (request.session as any)?.accountingState;
       if (state && sessionState && state !== sessionState) {
-        throw new ValidationError('Invalid state parameter');
+        throw new ValidationError("Invalid state parameter");
       }
 
       const tenantId = (request.session as any)?.accountingTenantId;
       if (!tenantId) {
-        throw new ForbiddenError('No tenant context in session');
+        throw new ForbiddenError("No tenant context in session");
       }
 
       try {
         let connection;
 
-        if (provider === 'quickbooks') {
+        if (provider === "quickbooks") {
           if (!realmId) {
-            throw new ValidationError('QB realmId required');
+            throw new ValidationError("QB realmId required");
           }
 
           const qbConfig = {
-            clientId: process.env.QB_CLIENT_ID || '',
-            clientSecret: process.env.QB_CLIENT_SECRET || '',
+            clientId: process.env.QB_CLIENT_ID || "",
+            clientSecret: process.env.QB_CLIENT_SECRET || "",
             redirectUri: `${process.env.API_BASE_URL}/accounting/callback/quickbooks`,
           };
 
@@ -169,8 +187,8 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
           connection = await adapter.authenticate(code, realmId);
         } else {
           const xeroConfig = {
-            clientId: process.env.XERO_CLIENT_ID || '',
-            clientSecret: process.env.XERO_CLIENT_SECRET || '',
+            clientId: process.env.XERO_CLIENT_ID || "",
+            clientSecret: process.env.XERO_CLIENT_SECRET || "",
             redirectUri: `${process.env.API_BASE_URL}/accounting/callback/xero`,
           };
 
@@ -181,7 +199,9 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         }
 
         // Save connection to database
-        const savedConnection = await (prisma as any).accountingConnection.create({
+        const savedConnection = await (
+          prisma as any
+        ).accountingConnection.create({
           data: {
             tenantId,
             provider,
@@ -195,10 +215,14 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
           },
         });
 
-        return reply.redirect(`/settings/accounting?success=connected&provider=${provider}`);
+        return reply.redirect(
+          `/settings/accounting?success=connected&provider=${provider}`,
+        );
       } catch (error) {
         console.error(`[OAuth] Error during ${provider} callback:`, error);
-        return reply.redirect(`/settings/accounting?error=auth_failed&provider=${provider}`);
+        return reply.redirect(
+          `/settings/accounting?error=auth_failed&provider=${provider}`,
+        );
       }
     },
   );
@@ -210,7 +234,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
    * Get accounting connection status
    */
   fastify.get(
-    '/accounting/status',
+    "/accounting/status",
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const tenantId = request.tenantId;
@@ -228,18 +252,18 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       });
 
       const syncCounts = await Promise.all(
-        connections.map(async (conn: typeof connections[0]) => {
+        connections.map(async (conn: (typeof connections)[0]) => {
           const syncedCount = await (prisma as any).accountingSyncRecord.count({
             where: {
               connectionId: conn.id,
-              syncStatus: 'synced',
+              syncStatus: "synced",
             },
           });
 
           const failedCount = await (prisma as any).accountingSyncRecord.count({
             where: {
               connectionId: conn.id,
-              syncStatus: 'failed',
+              syncStatus: "failed",
             },
           });
 
@@ -261,7 +285,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
    * Sync single invoice to accounting provider
    */
   fastify.post<{ Params: { id: string } }>(
-    '/accounting/sync/invoice/:id',
+    "/accounting/sync/invoice/:id",
     {
       onRequest: [requireAuth, tenantContext],
       schema: {
@@ -271,7 +295,10 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
-      const { force, autoRetry } = request.body as { force?: boolean; autoRetry?: boolean };
+      const { force, autoRetry } = request.body as {
+        force?: boolean;
+        autoRetry?: boolean;
+      };
       const tenantId = request.tenantId;
 
       // Fetch invoice
@@ -283,8 +310,10 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         throw new NotFoundError(`Invoice not found: ${id}`);
       }
 
-      if (invoice.status === 'draft') {
-        throw new ValidationError('Cannot sync draft invoices. Finalize first.');
+      if (invoice.status === "draft") {
+        throw new ValidationError(
+          "Cannot sync draft invoices. Finalize first.",
+        );
       }
 
       // Get active connections
@@ -293,17 +322,26 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       });
 
       if (connections.length === 0) {
-        throw new ValidationError('No active accounting connections');
+        throw new ValidationError("No active accounting connections");
       }
 
       // Sync to all active providers
       const syncService = new AccountingSyncService(prisma);
       const results = await Promise.allSettled(
-        connections.map((conn: typeof connections[0]) => syncService.syncInvoice(invoice as any, conn.provider, { force, autoRetry })),
+        connections.map((conn: (typeof connections)[0]) =>
+          syncService.syncInvoice(invoice as any, conn.provider, {
+            force,
+            autoRetry,
+          }),
+        ),
       );
 
-      const successful = results.filter((r: PromiseSettledResult<any>) => r.status === 'fulfilled');
-      const failed = results.filter((r: PromiseSettledResult<any>) => r.status === 'rejected');
+      const successful = results.filter(
+        (r: PromiseSettledResult<any>) => r.status === "fulfilled",
+      );
+      const failed = results.filter(
+        (r: PromiseSettledResult<any>) => r.status === "rejected",
+      );
 
       return reply.send({
         invoiceId: id,
@@ -327,7 +365,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
    * Sync multiple invoices to accounting providers
    */
   fastify.post(
-    '/accounting/sync/batch',
+    "/accounting/sync/batch",
     {
       onRequest: [requireAuth, tenantContext],
       schema: {
@@ -337,13 +375,13 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { invoiceIds, providers, force } = request.body as {
         invoiceIds: string[];
-        providers?: ('quickbooks' | 'xero')[];
+        providers?: ("quickbooks" | "xero")[];
         force?: boolean;
       };
       const tenantId = request.tenantId;
 
       if (invoiceIds.length === 0) {
-        throw new ValidationError('At least one invoice required');
+        throw new ValidationError("At least one invoice required");
       }
 
       // Fetch invoices
@@ -352,7 +390,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       });
 
       if (invoices.length === 0) {
-        throw new NotFoundError('No invoices found');
+        throw new NotFoundError("No invoices found");
       }
 
       // Get connections to sync
@@ -360,12 +398,14 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         where: {
           tenantId,
           isActive: true,
-          ...(providers && providers.length > 0 ? { provider: { in: providers } } : {}),
+          ...(providers && providers.length > 0
+            ? { provider: { in: providers } }
+            : {}),
         },
       });
 
       if (connections.length === 0) {
-        throw new ValidationError('No active accounting connections');
+        throw new ValidationError("No active accounting connections");
       }
 
       // Sync all invoices
@@ -379,10 +419,14 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
 
         for (const connection of connections) {
           try {
-            const syncRecord = await syncService.syncInvoice(invoice as any, connection.provider, {
-              force,
-              autoRetry: true,
-            });
+            const syncRecord = await syncService.syncInvoice(
+              invoice as any,
+              connection.provider,
+              {
+                force,
+                autoRetry: true,
+              },
+            );
 
             results[invoice.id].syncs.push({
               provider: connection.provider,
@@ -392,8 +436,8 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
           } catch (error) {
             results[invoice.id].syncs.push({
               provider: connection.provider,
-              status: 'failed',
-              error: error instanceof Error ? error.message : 'Unknown error',
+              status: "failed",
+              error: error instanceof Error ? error.message : "Unknown error",
             });
           }
         }
@@ -414,7 +458,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
    * Get sync operation history and log
    */
   fastify.get(
-    '/accounting/sync/history',
+    "/accounting/sync/history",
     {
       onRequest: [requireAuth, tenantContext],
       schema: {
@@ -423,9 +467,9 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { provider, invoiceId, status, limit, offset } = request.query as {
-        provider?: 'quickbooks' | 'xero';
+        provider?: "quickbooks" | "xero";
         invoiceId?: string;
-        status?: 'pending' | 'synced' | 'failed' | 'skipped';
+        status?: "pending" | "synced" | "failed" | "skipped";
         limit: number;
         offset: number;
       };
@@ -444,7 +488,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
               select: { provider: true, email: true },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           take: limit,
           skip: offset,
         }),
@@ -475,11 +519,13 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
    * DELETE /accounting/disconnect/:provider
    * Disconnect accounting provider
    */
-  fastify.delete<{ Params: { provider: 'quickbooks' | 'xero' } }>(
-    '/accounting/disconnect/:provider',
+  fastify.delete<{ Params: { provider: "quickbooks" | "xero" } }>(
+    "/accounting/disconnect/:provider",
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { provider } = request.params as { provider: 'quickbooks' | 'xero' };
+      const { provider } = request.params as {
+        provider: "quickbooks" | "xero";
+      };
       const tenantId = request.tenantId;
 
       const connection = await (prisma as any).accountingConnection.findFirst({
@@ -487,7 +533,9 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       });
 
       if (!connection) {
-        throw new NotFoundError(`No active connection for provider: ${provider}`);
+        throw new NotFoundError(
+          `No active connection for provider: ${provider}`,
+        );
       }
 
       // Deactivate connection
@@ -511,7 +559,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
    * Reconcile accounts between Witylogix and accounting provider
    */
   fastify.post(
-    '/accounting/reconcile',
+    "/accounting/reconcile",
     {
       onRequest: [requireAuth, tenantContext],
       schema: {
@@ -520,14 +568,14 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { provider, fromDate, toDate } = request.body as {
-        provider: 'quickbooks' | 'xero';
+        provider: "quickbooks" | "xero";
         fromDate: Date;
         toDate: Date;
       };
       const tenantId = request.tenantId;
 
       if (fromDate > toDate) {
-        throw new ValidationError('fromDate must be before toDate');
+        throw new ValidationError("fromDate must be before toDate");
       }
 
       const connection = await (prisma as any).accountingConnection.findFirst({
@@ -535,7 +583,9 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       });
 
       if (!connection) {
-        throw new NotFoundError(`No active connection for provider: ${provider}`);
+        throw new NotFoundError(
+          `No active connection for provider: ${provider}`,
+        );
       }
 
       const syncService = new AccountingSyncService(prisma);

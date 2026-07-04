@@ -15,7 +15,13 @@
 
 "use client";
 
-import React, { forwardRef, SelectHTMLAttributes, useState, useCallback, useEffect } from "react";
+import React, {
+  forwardRef,
+  SelectHTMLAttributes,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +32,10 @@ interface SelectOption {
   group?: string;
 }
 
-export interface FormSelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "value" | "onChange"> {
+export interface FormSelectProps extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "value" | "onChange"
+> {
   /** Label for the select field */
   label?: string;
   /** Options to display */
@@ -76,14 +85,14 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [options, setOptions] = useState<SelectOption[]>(initialOptions);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedValues, setSelectedValues] = useState<(string | number)[]>(
-      isMulti ? (Array.isArray(value) ? value : []) : []
+      isMulti ? (Array.isArray(value) ? value : []) : [],
     );
 
     /**
@@ -118,7 +127,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
           setIsOpen(false);
         }
       },
-      [isMulti, selectedValues, onChange]
+      [isMulti, selectedValues, onChange],
     );
 
     /**
@@ -142,7 +151,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
      * Filter options based on search term
      */
     const filteredOptions = options.filter((opt) =>
-      opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+      opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
     /**
@@ -155,7 +164,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
         acc[group].push(opt);
         return acc;
       },
-      {} as Record<string, SelectOption[]>
+      {} as Record<string, SelectOption[]>,
     );
 
     const selectedLabels = getSelectedLabels();
@@ -179,8 +188,10 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
               : "border-wl-border-default hover:border-wl-border-strong focus:border-wl-primary-500",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "focus:ring-1",
-            hasError ? "focus:ring-wl-danger-500/20" : "focus:ring-wl-primary-500/20",
-            className
+            hasError
+              ? "focus:ring-wl-danger-500/20"
+              : "focus:ring-wl-primary-500/20",
+            className,
           )}
           aria-invalid={hasError}
           aria-expanded={isOpen}
@@ -245,7 +256,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
                     "w-full px-2 py-1 text-sm rounded",
                     "bg-wl-bg-overlay border border-wl-border-default",
                     "text-wl-text-primary placeholder-wl-text-tertiary",
-                    "focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20"
+                    "focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20",
                   )}
                   autoFocus
                 />
@@ -255,9 +266,13 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
             {/* Options List */}
             <div className="max-h-56 overflow-y-auto">
               {isLoading ? (
-                <div className="px-3 py-2 text-sm text-wl-text-tertiary">{loadingText}</div>
+                <div className="px-3 py-2 text-sm text-wl-text-tertiary">
+                  {loadingText}
+                </div>
               ) : filteredOptions.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-wl-text-tertiary">No options</div>
+                <div className="px-3 py-2 text-sm text-wl-text-tertiary">
+                  No options
+                </div>
               ) : (
                 Object.entries(groupedOptions).map(([group, groupOpts]) => (
                   <div key={group}>
@@ -278,7 +293,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
                           "disabled:opacity-50 disabled:cursor-not-allowed",
                           selectedValues.includes(option.value)
                             ? "bg-wl-primary-500/20 text-wl-primary-500"
-                            : "hover:bg-wl-bg-overlay text-wl-text-primary"
+                            : "hover:bg-wl-bg-overlay text-wl-text-primary",
                         )}
                       >
                         {renderOption ? renderOption(option) : option.label}
@@ -295,7 +310,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 FormSelect.displayName = "FormSelect";

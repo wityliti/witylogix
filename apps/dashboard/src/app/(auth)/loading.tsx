@@ -5,14 +5,16 @@ export default function AuthLoading() {
       <div
         className="absolute -top-1/2 -right-1/5 w-96 h-96 rounded-full pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(245, 166, 35, 0.08) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(245, 166, 35, 0.08) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
       <div
         className="absolute -bottom-2/5 -left-1/4 w-96 h-96 rounded-full pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
@@ -30,7 +32,8 @@ export default function AuthLoading() {
           <div
             className="flex items-center justify-center w-14 h-14 rounded-lg mb-4 bg-wl-bg-primary"
             style={{
-              background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
+              background:
+                "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
               boxShadow: "0 8px 24px rgba(245, 166, 35, 0.2)",
             }}
           />

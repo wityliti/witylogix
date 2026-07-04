@@ -122,7 +122,9 @@ export class VehicleFeedService extends EventEmitter {
   /**
    * Update vehicle position with smoothing
    */
-  private async updateVehiclePosition(position: WitylogixVehiclePosition): Promise<void> {
+  private async updateVehiclePosition(
+    position: WitylogixVehiclePosition,
+  ): Promise<void> {
     let stored = this.getStoredPositions(position.vehicleId);
 
     if (!stored) {
@@ -261,7 +263,10 @@ export class VehicleFeedService extends EventEmitter {
   /**
    * Get position history for a vehicle
    */
-  getPositionHistory(vehicleId: string, limit?: number): WitylogixVehiclePosition[] {
+  getPositionHistory(
+    vehicleId: string,
+    limit?: number,
+  ): WitylogixVehiclePosition[] {
     const stored = this.getStoredPositions(vehicleId);
     if (!stored) return [];
 
@@ -302,14 +307,12 @@ export class VehicleFeedService extends EventEmitter {
   /**
    * Filter vehicles in a geofence
    */
-  filterByGeofence(
-    bounds: {
-      minLat: number;
-      maxLat: number;
-      minLng: number;
-      maxLng: number;
-    },
-  ): string[] {
+  filterByGeofence(bounds: {
+    minLat: number;
+    maxLat: number;
+    minLng: number;
+    maxLng: number;
+  }): string[] {
     const inGeofence: string[] = [];
 
     for (const [vehicleId, positions] of this.vehicles.entries()) {

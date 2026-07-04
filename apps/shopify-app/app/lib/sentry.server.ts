@@ -31,7 +31,10 @@ export async function initSentry() {
   }
 }
 
-export async function captureException(error: unknown, context?: Record<string, any>) {
+export async function captureException(
+  error: unknown,
+  context?: Record<string, any>,
+) {
   if (!process.env.SENTRY_DSN) return;
   try {
     const Sentry = await import("@sentry/node");

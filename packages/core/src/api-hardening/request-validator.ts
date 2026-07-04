@@ -18,7 +18,7 @@
 type FastifyRequest = any;
 type ZodSchema = any;
 
-import { ValidationError } from './error-handler.js';
+import { ValidationError } from "./error-handler.js";
 
 /**
  * Pagination parameters
@@ -27,7 +27,7 @@ export interface PaginationParams {
   page: number;
   pageSize: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 /**
@@ -57,25 +57,23 @@ const XSS_PATTERNS = [
  * Sanitize input string by removing XSS vectors
  */
 export function sanitizeInput(input: string): string {
-  if (typeof input !== 'string') {
+  if (typeof input !== "string") {
     return String(input);
   }
 
   let sanitized = input;
   XSS_PATTERNS.forEach((pattern) => {
-    sanitized = sanitized.replace(pattern, '');
+    sanitized = sanitized.replace(pattern, "");
   });
 
-  return sanitized
-    .trim()
-    .substring(0, 10000); // Limit length to prevent DoS
+  return sanitized.trim().substring(0, 10000); // Limit length to prevent DoS
 }
 
 /**
  * Recursively sanitize object values (strings only)
  */
 export function sanitizeObject(obj: any): any {
-  if (typeof obj === 'string') {
+  if (typeof obj === "string") {
     return sanitizeInput(obj);
   }
 
@@ -83,7 +81,7 @@ export function sanitizeObject(obj: any): any {
     return obj.map(sanitizeObject);
   }
 
-  if (obj !== null && typeof obj === 'object') {
+  if (obj !== null && typeof obj === "object") {
     const sanitized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       sanitized[key] = sanitizeObject(value);
@@ -98,7 +96,12 @@ export function sanitizeObject(obj: any): any {
  * Check if error is a Zod validation error
  */
 function isZodError(error: any): boolean {
-  return error && typeof error === 'object' && 'errors' in error && Array.isArray(error.errors);
+  return (
+    error &&
+    typeof error === "object" &&
+    "errors" in error &&
+    Array.isArray(error.errors)
+  );
 }
 
 /**
@@ -108,7 +111,7 @@ function extractValidationErrors(error: any): Record<string, string[]> {
   const fieldErrors: Record<string, string[]> = {};
 
   error.errors.forEach((err: any) => {
-    const path = err.path.join('.');
+    const path = err.path.join(".");
     if (!fieldErrors[path]) {
       fieldErrors[path] = [];
     }
@@ -123,7 +126,7 @@ function extractValidationErrors(error: any): Record<string, string[]> {
  */
 export async function validateBody<T>(
   request: FastifyRequest,
-  schema: any
+  schema: any,
 ): Promise<T> {
   try {
     // Sanitize body first to prevent XSS
@@ -132,8 +135,8 @@ export async function validateBody<T>(
   } catch (error) {
     if (isZodError(error)) {
       throw new ValidationError(
-        'Request body validation failed',
-        extractValidationErrors(error)
+        "Request body validation failed",
+        extractValidationErrors(error),
       );
     }
     throw error;
@@ -145,7 +148,7 @@ export async function validateBody<T>(
  */
 export async function validateQuery<T>(
   request: FastifyRequest,
-  schema: any
+  schema: any,
 ): Promise<T> {
   try {
     // Query params are strings, sanitize them
@@ -154,8 +157,8 @@ export async function validateQuery<T>(
   } catch (error) {
     if (isZodError(error)) {
       throw new ValidationError(
-        'Query parameters validation failed',
-        extractValidationErrors(error)
+        "Query parameters validation failed",
+        extractValidationErrors(error),
       );
     }
     throw error;
@@ -167,7 +170,7 @@ export async function validateQuery<T>(
  */
 export async function validateParams<T>(
   request: FastifyRequest,
-  schema: any
+  schema: any,
 ): Promise<T> {
   try {
     const sanitized = sanitizeObject(request.params);
@@ -175,8 +178,8 @@ export async function validateParams<T>(
   } catch (error) {
     if (isZodError(error)) {
       throw new ValidationError(
-        'Route parameters validation failed',
-        extractValidationErrors(error)
+        "Route parameters validation failed",
+        extractValidationErrors(error),
       );
     }
     throw error;
@@ -188,7 +191,7 @@ export async function validateParams<T>(
  */
 export async function validatePagination(
   request: FastifyRequest,
-  options: PaginationValidationOptions = {}
+  options: PaginationValidationOptions = {},
 ): Promise<PaginationParams> {
   const maxPageSize = options.maxPageSize || 100;
   const defaultPageSize = options.defaultPageSize || 20;
@@ -199,27 +202,27 @@ export async function validatePagination(
   // Parse page number
   let page = parseInt(query.page as string, 10) || 1;
   if (page < 1) {
-    throw new ValidationError('Page must be >= 1', { page });
+    throw new ValidationError("Page must be >= 1", { page });
   }
 
   // Parse page size with limits
   let pageSize = parseInt(query.pageSize as string, 10) || defaultPageSize;
   if (pageSize < 1) {
-    throw new ValidationError('pageSize must be >= 1', { pageSize });
+    throw new ValidationError("pageSize must be >= 1", { pageSize });
   }
   if (pageSize > maxPageSize) {
-    throw new ValidationError(
-      `pageSize must be <= ${maxPageSize}`,
-      { pageSize, maxPageSize }
-    );
+    throw new ValidationError(`pageSize must be <= ${maxPageSize}`, {
+      pageSize,
+      maxPageSize,
+    });
   }
 
   // Parse sort field and order
   const sortBy = query.sortBy ? sanitizeInput(String(query.sortBy)) : undefined;
-  const sortOrder = (query.sortOrder || 'asc') as 'asc' | 'desc';
+  const sortOrder = (query.sortOrder || "asc") as "asc" | "desc";
 
   // Validate sort order
-  if (sortOrder !== 'asc' && sortOrder !== 'desc') {
+  if (sortOrder !== "asc" && sortOrder !== "desc") {
     throw new ValidationError('sortOrder must be "asc" or "desc"', {
       sortOrder,
     });
@@ -232,8 +235,8 @@ export async function validatePagination(
     !allowedSortFields.includes(sortBy)
   ) {
     throw new ValidationError(
-      `sortBy must be one of: ${allowedSortFields.join(', ')}`,
-      { sortBy, allowedSortFields }
+      `sortBy must be one of: ${allowedSortFields.join(", ")}`,
+      { sortBy, allowedSortFields },
     );
   }
 
@@ -248,9 +251,10 @@ export async function validatePagination(
 /**
  * Validate and return offset/limit for database queries
  */
-export function getPaginationOffsetLimit(
-  pagination: PaginationParams
-): { offset: number; limit: number } {
+export function getPaginationOffsetLimit(pagination: PaginationParams): {
+  offset: number;
+  limit: number;
+} {
   return {
     offset: (pagination.page - 1) * pagination.pageSize,
     limit: pagination.pageSize,

@@ -86,7 +86,9 @@ const sampleGeotabRecord: GeotabRecord = {
 // NORMALIZATION FUNCTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-function normalizeSamsaraPosition(data: SamsaraPosition): WitylogixVehiclePosition {
+function normalizeSamsaraPosition(
+  data: SamsaraPosition,
+): WitylogixVehiclePosition {
   return {
     vehicleId: data.vehicleId,
     latitude: data.latitude,
@@ -365,10 +367,30 @@ describe("Telematics Data Integrity - GPS Jitter Deduplication", () => {
 
     // Simulate rapid GPS jitter
     const jitterPositions: WitylogixVehiclePosition[] = [
-      { ...basePos, timestamp: Date.now(), latitude: 40.7128, longitude: -74.006 },
-      { ...basePos, timestamp: Date.now() + 100, latitude: 40.71281, longitude: -74.00601 },
-      { ...basePos, timestamp: Date.now() + 200, latitude: 40.71282, longitude: -74.00602 },
-      { ...basePos, timestamp: Date.now() + 300, latitude: 40.71283, longitude: -74.00603 },
+      {
+        ...basePos,
+        timestamp: Date.now(),
+        latitude: 40.7128,
+        longitude: -74.006,
+      },
+      {
+        ...basePos,
+        timestamp: Date.now() + 100,
+        latitude: 40.71281,
+        longitude: -74.00601,
+      },
+      {
+        ...basePos,
+        timestamp: Date.now() + 200,
+        latitude: 40.71282,
+        longitude: -74.00602,
+      },
+      {
+        ...basePos,
+        timestamp: Date.now() + 300,
+        latitude: 40.71283,
+        longitude: -74.00603,
+      },
     ];
 
     // All should be within 5m

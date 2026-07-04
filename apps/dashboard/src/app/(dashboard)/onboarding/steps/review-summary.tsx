@@ -74,7 +74,7 @@ export function ReviewSummary({
   isLoading = false,
 }: ReviewSummaryProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(["company", "goals", "integrations", "dashboard"])
+    new Set(["company", "goals", "integrations", "dashboard"]),
   );
 
   const toggleSection = (sectionId: string) => {
@@ -123,7 +123,7 @@ export function ReviewSummary({
               className={cn(
                 "w-full px-4 py-3 flex items-center justify-between",
                 "hover:bg-wl-bg-surface/70 transition-colors",
-                "border-b border-wl-border-subtle"
+                "border-b border-wl-border-subtle",
               )}
             >
               <div className="flex items-center gap-3">
@@ -171,7 +171,7 @@ export function ReviewSummary({
             className={cn(
               "w-full px-4 py-3 flex items-center justify-between",
               "hover:bg-wl-bg-surface/70 transition-colors",
-              "border-b border-wl-border-subtle"
+              "border-b border-wl-border-subtle",
             )}
           >
             <div className="flex items-center gap-3">
@@ -231,7 +231,7 @@ export function ReviewSummary({
               className={cn(
                 "w-full px-4 py-3 flex items-center justify-between",
                 "hover:bg-wl-bg-surface/70 transition-colors",
-                "border-b border-wl-border-subtle"
+                "border-b border-wl-border-subtle",
               )}
             >
               <div className="flex items-center gap-3">
@@ -280,7 +280,7 @@ export function ReviewSummary({
               className={cn(
                 "w-full px-4 py-3 flex items-center justify-between",
                 "hover:bg-wl-bg-surface/70 transition-colors",
-                "border-b border-wl-border-subtle"
+                "border-b border-wl-border-subtle",
               )}
             >
               <div className="flex items-center gap-3">
@@ -334,7 +334,7 @@ export function ReviewSummary({
               className={cn(
                 "w-full px-4 py-3 flex items-center justify-between",
                 "hover:bg-wl-bg-surface/70 transition-colors",
-                "border-b border-wl-border-subtle"
+                "border-b border-wl-border-subtle",
               )}
             >
               <div className="flex items-center gap-3">

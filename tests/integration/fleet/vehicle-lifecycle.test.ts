@@ -9,7 +9,7 @@
  * - Fleet-wide utilization calculation
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createMockVehicle,
   createMockVehicles,
@@ -18,8 +18,11 @@ import {
   createMockHealthScoreComponents,
   calculateHealthScore,
   createFleetScenario,
-} from '../fixtures/fleet-fixtures.js';
-import type { Vehicle, MaintenanceRecord } from '../../../packages/core/src/fleet/fleet-types.js';
+} from "../fixtures/fleet-fixtures.js";
+import type {
+  Vehicle,
+  MaintenanceRecord,
+} from "../../../packages/core/src/fleet/fleet-types.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // SETUP & HELPERS
@@ -43,9 +46,9 @@ class VehicleService {
     return vehicle;
   }
 
-  updateVehicleStatus(vehicleId: string, status: Vehicle['status']): Vehicle {
+  updateVehicleStatus(vehicleId: string, status: Vehicle["status"]): Vehicle {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
     vehicle.status = status;
     vehicle.updatedAt = new Date();
@@ -53,7 +56,7 @@ class VehicleService {
   }
 
   retireVehicle(vehicleId: string): Vehicle {
-    const vehicle = this.updateVehicleStatus(vehicleId, 'RETIRED');
+    const vehicle = this.updateVehicleStatus(vehicleId, "RETIRED");
     // Unassign driver on retirement
     this.assignments.delete(vehicleId);
     vehicle.assignedDriverId = undefined;
@@ -61,7 +64,7 @@ class VehicleService {
   }
 
   disposeVehicle(vehicleId: string): Vehicle {
-    const vehicle = this.updateVehicleStatus(vehicleId, 'DISPOSED');
+    const vehicle = this.updateVehicleStatus(vehicleId, "DISPOSED");
     // Unassign driver on disposal
     this.assignments.delete(vehicleId);
     return vehicle;
@@ -69,16 +72,18 @@ class VehicleService {
 
   assignDriver(vehicleId: string, driverId: string): boolean {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
-    if (vehicle.status !== 'ACTIVE') {
-      throw new Error('Cannot assign driver to inactive vehicle');
+    if (vehicle.status !== "ACTIVE") {
+      throw new Error("Cannot assign driver to inactive vehicle");
     }
 
     // Check for assignment conflicts
     const existingAssignment = this.assignments.get(vehicleId);
     if (existingAssignment && existingAssignment !== driverId) {
-      throw new Error('Vehicle already assigned to another driver: ' + existingAssignment);
+      throw new Error(
+        "Vehicle already assigned to another driver: " + existingAssignment,
+      );
     }
 
     this.assignments.set(vehicleId, driverId);
@@ -88,7 +93,7 @@ class VehicleService {
 
   unassignDriver(vehicleId: string): void {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
     this.assignments.delete(vehicleId);
     vehicle.assignedDriverId = undefined;
@@ -99,7 +104,7 @@ class VehicleService {
     const driver2 = this.assignments.get(vehicleId2);
 
     if (!driver1 || !driver2) {
-      throw new Error('Both vehicles must have assigned drivers for swap');
+      throw new Error("Both vehicles must have assigned drivers for swap");
     }
 
     // Swap directly to avoid conflict check triggering on the existing assignment
@@ -118,18 +123,20 @@ class VehicleService {
 
   calculateHealthScore(vehicleId: string): number {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
     // Maintenance compliance: 0-100 based on schedule adherence
     const vehicleMaintenanceRecords = this.maintenanceRecords.filter(
-      (r) => r.vehicleId === vehicleId
+      (r) => r.vehicleId === vehicleId,
     );
     const completedRecords = vehicleMaintenanceRecords.filter(
-      (r) => r.status === 'COMPLETED'
+      (r) => r.status === "COMPLETED",
     ).length;
     const maintenanceCompliance =
       vehicleMaintenanceRecords.length > 0
-        ? Math.round((completedRecords / vehicleMaintenanceRecords.length) * 100)
+        ? Math.round(
+            (completedRecords / vehicleMaintenanceRecords.length) * 100,
+          )
         : 100;
 
     // Age score: newer vehicles score higher
@@ -160,12 +167,20 @@ class VehicleService {
     return Array.from(this.vehicles.values());
   }
 
-  calculateFleetUtilization(): { active: number; maintenance: number; retired: number; disposed: number; total: number } {
+  calculateFleetUtilization(): {
+    active: number;
+    maintenance: number;
+    retired: number;
+    disposed: number;
+    total: number;
+  } {
     const vehicles = this.getAllVehicles();
-    const active = vehicles.filter((v) => v.status === 'ACTIVE').length;
-    const maintenance = vehicles.filter((v) => v.status === 'MAINTENANCE').length;
-    const retired = vehicles.filter((v) => v.status === 'RETIRED').length;
-    const disposed = vehicles.filter((v) => v.status === 'DISPOSED').length;
+    const active = vehicles.filter((v) => v.status === "ACTIVE").length;
+    const maintenance = vehicles.filter(
+      (v) => v.status === "MAINTENANCE",
+    ).length;
+    const retired = vehicles.filter((v) => v.status === "RETIRED").length;
+    const disposed = vehicles.filter((v) => v.status === "DISPOSED").length;
 
     return {
       active,
@@ -176,12 +191,17 @@ class VehicleService {
     };
   }
 
-  checkExpiryAlerts(vehicleId: string): { registration: boolean; insurance: boolean } {
+  checkExpiryAlerts(vehicleId: string): {
+    registration: boolean;
+    insurance: boolean;
+  } {
     const vehicle = this.vehicles.get(vehicleId);
-    if (!vehicle) throw new Error('Vehicle not found');
+    if (!vehicle) throw new Error("Vehicle not found");
 
     const now = new Date();
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysFromNow = new Date(
+      now.getTime() + 30 * 24 * 60 * 60 * 1000,
+    );
 
     return {
       registration: vehicle.registration.expiryDate < thirtyDaysFromNow,
@@ -194,7 +214,7 @@ class VehicleService {
 // TESTS
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('Vehicle Lifecycle Management', () => {
+describe("Vehicle Lifecycle Management", () => {
   let service: VehicleService;
 
   beforeEach(() => {
@@ -205,51 +225,51 @@ describe('Vehicle Lifecycle Management', () => {
   // VEHICLE CRUD
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Vehicle CRUD Operations', () => {
-    it('should create a vehicle with VIN', () => {
+  describe("Vehicle CRUD Operations", () => {
+    it("should create a vehicle with VIN", () => {
       const vehicle = service.createVehicle({
-        vin: 'WVWZZZ3CZ' + 'DE123456',
+        vin: "WVWZZZ3CZ" + "DE123456",
       });
 
-      expect(vehicle.vin).toBe('WVWZZZ3CZ' + 'DE123456');
-      expect(vehicle.status).toBe('ACTIVE');
+      expect(vehicle.vin).toBe("WVWZZZ3CZ" + "DE123456");
+      expect(vehicle.status).toBe("ACTIVE");
       expect(vehicle.registration).toBeDefined();
       expect(vehicle.insurance).toBeDefined();
     });
 
-    it('should update vehicle status', () => {
+    it("should update vehicle status", () => {
       const vehicle = service.createVehicle({});
-      expect(vehicle.status).toBe('ACTIVE');
+      expect(vehicle.status).toBe("ACTIVE");
 
-      const updated = service.updateVehicleStatus(vehicle.id, 'MAINTENANCE');
-      expect(updated.status).toBe('MAINTENANCE');
+      const updated = service.updateVehicleStatus(vehicle.id, "MAINTENANCE");
+      expect(updated.status).toBe("MAINTENANCE");
     });
 
-    it('should retire a vehicle', () => {
+    it("should retire a vehicle", () => {
       const vehicle = service.createVehicle({});
       const retired = service.retireVehicle(vehicle.id);
 
-      expect(retired.status).toBe('RETIRED');
+      expect(retired.status).toBe("RETIRED");
     });
 
-    it('should dispose of a vehicle', () => {
+    it("should dispose of a vehicle", () => {
       const vehicle = service.createVehicle({});
       const disposed = service.disposeVehicle(vehicle.id);
 
-      expect(disposed.status).toBe('DISPOSED');
+      expect(disposed.status).toBe("DISPOSED");
     });
 
-    it('should retrieve vehicle by ID', () => {
+    it("should retrieve vehicle by ID", () => {
       const created = service.createVehicle({});
       const retrieved = service.getVehicle(created.id);
 
       expect(retrieved).toEqual(created);
     });
 
-    it('should list all vehicles', () => {
-      const v1 = service.createVehicle({ id: 'vehicle_1' });
-      const v2 = service.createVehicle({ id: 'vehicle_2' });
-      const v3 = service.createVehicle({ id: 'vehicle_3' });
+    it("should list all vehicles", () => {
+      const v1 = service.createVehicle({ id: "vehicle_1" });
+      const v2 = service.createVehicle({ id: "vehicle_2" });
+      const v3 = service.createVehicle({ id: "vehicle_3" });
 
       const all = service.getAllVehicles();
       expect(all).toHaveLength(3);
@@ -263,71 +283,71 @@ describe('Vehicle Lifecycle Management', () => {
   // DRIVER ASSIGNMENT
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Driver Assignment', () => {
-    it('should assign a driver to a vehicle', () => {
+  describe("Driver Assignment", () => {
+    it("should assign a driver to a vehicle", () => {
       const vehicle = service.createVehicle({});
-      service.assignDriver(vehicle.id, 'driver_john');
+      service.assignDriver(vehicle.id, "driver_john");
 
       const updated = service.getVehicle(vehicle.id);
-      expect(updated?.assignedDriverId).toBe('driver_john');
+      expect(updated?.assignedDriverId).toBe("driver_john");
     });
 
-    it('should prevent assignment to inactive vehicle', () => {
+    it("should prevent assignment to inactive vehicle", () => {
       const vehicle = service.createVehicle({});
-      service.updateVehicleStatus(vehicle.id, 'RETIRED');
+      service.updateVehicleStatus(vehicle.id, "RETIRED");
 
-      expect(() => service.assignDriver(vehicle.id, 'driver_jane')).toThrow(
-        'Cannot assign driver to inactive vehicle'
+      expect(() => service.assignDriver(vehicle.id, "driver_jane")).toThrow(
+        "Cannot assign driver to inactive vehicle",
       );
     });
 
-    it('should detect conflict: same vehicle assigned twice', () => {
+    it("should detect conflict: same vehicle assigned twice", () => {
       const vehicle = service.createVehicle({});
-      service.assignDriver(vehicle.id, 'driver_john');
+      service.assignDriver(vehicle.id, "driver_john");
 
-      expect(() => service.assignDriver(vehicle.id, 'driver_jane')).toThrow(
-        'Vehicle already assigned to another driver'
+      expect(() => service.assignDriver(vehicle.id, "driver_jane")).toThrow(
+        "Vehicle already assigned to another driver",
       );
     });
 
-    it('should allow reassignment to same driver', () => {
+    it("should allow reassignment to same driver", () => {
       const vehicle = service.createVehicle({});
-      service.assignDriver(vehicle.id, 'driver_john');
-      const result = service.assignDriver(vehicle.id, 'driver_john');
+      service.assignDriver(vehicle.id, "driver_john");
+      const result = service.assignDriver(vehicle.id, "driver_john");
 
       expect(result).toBe(true);
     });
 
-    it('should unassign driver from vehicle', () => {
+    it("should unassign driver from vehicle", () => {
       const vehicle = service.createVehicle({});
-      service.assignDriver(vehicle.id, 'driver_john');
+      service.assignDriver(vehicle.id, "driver_john");
       service.unassignDriver(vehicle.id);
 
       const updated = service.getVehicle(vehicle.id);
       expect(updated?.assignedDriverId).toBeUndefined();
     });
 
-    it('should swap drivers between vehicles', () => {
-      const v1 = service.createVehicle({ id: 'v1' });
-      const v2 = service.createVehicle({ id: 'v2' });
+    it("should swap drivers between vehicles", () => {
+      const v1 = service.createVehicle({ id: "v1" });
+      const v2 = service.createVehicle({ id: "v2" });
 
-      service.assignDriver(v1.id, 'driver_john');
-      service.assignDriver(v2.id, 'driver_jane');
+      service.assignDriver(v1.id, "driver_john");
+      service.assignDriver(v2.id, "driver_jane");
 
       service.swapDrivers(v1.id, v2.id);
 
-      expect(service.getVehicle(v1.id)?.assignedDriverId).toBe('driver_jane');
-      expect(service.getVehicle(v2.id)?.assignedDriverId).toBe('driver_john');
+      expect(service.getVehicle(v1.id)?.assignedDriverId).toBe("driver_jane");
+      expect(service.getVehicle(v2.id)?.assignedDriverId).toBe("driver_john");
     });
 
-    it('should fail swap if vehicle not assigned', () => {
-      const v1 = service.createVehicle({ id: 'v1' });
-      const v2 = service.createVehicle({ id: 'v2' });
+    it("should fail swap if vehicle not assigned", () => {
+      const v1 = service.createVehicle({ id: "v1" });
+      const v2 = service.createVehicle({ id: "v2" });
 
-      service.assignDriver(v1.id, 'driver_john');
+      service.assignDriver(v1.id, "driver_john");
 
       expect(() => service.swapDrivers(v1.id, v2.id)).toThrow(
-        'Both vehicles must have assigned drivers'
+        "Both vehicles must have assigned drivers",
       );
     });
   });
@@ -336,8 +356,8 @@ describe('Vehicle Lifecycle Management', () => {
   // HEALTH SCORE
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Vehicle Health Score', () => {
-    it('should calculate health score from components', () => {
+  describe("Vehicle Health Score", () => {
+    it("should calculate health score from components", () => {
       const components = createMockHealthScoreComponents({
         maintenanceCompliance: 95,
         ageScore: 90,
@@ -350,30 +370,30 @@ describe('Vehicle Lifecycle Management', () => {
       expect(score).toBeLessThanOrEqual(100);
     });
 
-    it('should factor maintenance compliance into health score', () => {
-      const vehicle = service.createVehicle({ id: 'v1' });
+    it("should factor maintenance compliance into health score", () => {
+      const vehicle = service.createVehicle({ id: "v1" });
 
       // Add completed maintenance
       service.addMaintenanceRecord(
         createMockMaintenanceRecord({
           vehicleId: vehicle.id,
-          status: 'COMPLETED',
-        })
+          status: "COMPLETED",
+        }),
       );
 
       const score = service.calculateHealthScore(vehicle.id);
       expect(score).toBeGreaterThan(80);
     });
 
-    it('should lower score with overdue maintenance', () => {
-      const vehicle = service.createVehicle({ id: 'v1' });
+    it("should lower score with overdue maintenance", () => {
+      const vehicle = service.createVehicle({ id: "v1" });
 
       // Add overdue maintenance
       service.addMaintenanceRecord(
         createMockMaintenanceRecord({
           vehicleId: vehicle.id,
-          status: 'OVERDUE',
-        })
+          status: "OVERDUE",
+        }),
       );
 
       const score = service.calculateHealthScore(vehicle.id);
@@ -381,7 +401,7 @@ describe('Vehicle Lifecycle Management', () => {
       expect(score).toBeLessThan(100);
     });
 
-    it('should consider vehicle age in health score', () => {
+    it("should consider vehicle age in health score", () => {
       const newVehicle = service.createVehicle({});
       const score = service.calculateHealthScore(newVehicle.id);
 
@@ -389,7 +409,7 @@ describe('Vehicle Lifecycle Management', () => {
       expect(score).toBeLessThanOrEqual(100);
     });
 
-    it('should consider mileage in health score', () => {
+    it("should consider mileage in health score", () => {
       const lowMileageVehicle = service.createVehicle({ mileage: 5000 });
       const highMileageVehicle = service.createVehicle({ mileage: 150000 });
 
@@ -404,43 +424,55 @@ describe('Vehicle Lifecycle Management', () => {
   // REGISTRATION & INSURANCE ALERTS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Registration and Insurance Expiry Alerts', () => {
-    it('should alert when registration expires within 30 days', () => {
+  describe("Registration and Insurance Expiry Alerts", () => {
+    it("should alert when registration expires within 30 days", () => {
       const vehicle = service.createVehicle({});
-      vehicle.registration.expiryDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
+      vehicle.registration.expiryDate = new Date(
+        Date.now() + 15 * 24 * 60 * 60 * 1000,
+      ); // 15 days
 
       const alerts = service.checkExpiryAlerts(vehicle.id);
       expect(alerts.registration).toBe(true);
     });
 
-    it('should not alert when registration expires after 30 days', () => {
+    it("should not alert when registration expires after 30 days", () => {
       const vehicle = service.createVehicle({});
-      vehicle.registration.expiryDate = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000); // 45 days
+      vehicle.registration.expiryDate = new Date(
+        Date.now() + 45 * 24 * 60 * 60 * 1000,
+      ); // 45 days
 
       const alerts = service.checkExpiryAlerts(vehicle.id);
       expect(alerts.registration).toBe(false);
     });
 
-    it('should alert when insurance expires within 30 days', () => {
+    it("should alert when insurance expires within 30 days", () => {
       const vehicle = service.createVehicle({});
-      vehicle.insurance.expiryDate = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000); // 20 days
+      vehicle.insurance.expiryDate = new Date(
+        Date.now() + 20 * 24 * 60 * 60 * 1000,
+      ); // 20 days
 
       const alerts = service.checkExpiryAlerts(vehicle.id);
       expect(alerts.insurance).toBe(true);
     });
 
-    it('should not alert when insurance expires after 30 days', () => {
+    it("should not alert when insurance expires after 30 days", () => {
       const vehicle = service.createVehicle({});
-      vehicle.insurance.expiryDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000); // 60 days
+      vehicle.insurance.expiryDate = new Date(
+        Date.now() + 60 * 24 * 60 * 60 * 1000,
+      ); // 60 days
 
       const alerts = service.checkExpiryAlerts(vehicle.id);
       expect(alerts.insurance).toBe(false);
     });
 
-    it('should alert for both registration and insurance if both expiring soon', () => {
+    it("should alert for both registration and insurance if both expiring soon", () => {
       const vehicle = service.createVehicle({});
-      vehicle.registration.expiryDate = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
-      vehicle.insurance.expiryDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
+      vehicle.registration.expiryDate = new Date(
+        Date.now() + 10 * 24 * 60 * 60 * 1000,
+      );
+      vehicle.insurance.expiryDate = new Date(
+        Date.now() + 15 * 24 * 60 * 60 * 1000,
+      );
 
       const alerts = service.checkExpiryAlerts(vehicle.id);
       expect(alerts.registration).toBe(true);
@@ -452,58 +484,58 @@ describe('Vehicle Lifecycle Management', () => {
   // FLEET-WIDE UTILIZATION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Fleet-wide Utilization', () => {
-    it('should calculate active vehicle count', () => {
-      service.createVehicle({ id: 'v1', status: 'ACTIVE' as any });
-      service.createVehicle({ id: 'v2', status: 'ACTIVE' as any });
-      service.createVehicle({ id: 'v3', status: 'MAINTENANCE' as any });
+  describe("Fleet-wide Utilization", () => {
+    it("should calculate active vehicle count", () => {
+      service.createVehicle({ id: "v1", status: "ACTIVE" as any });
+      service.createVehicle({ id: "v2", status: "ACTIVE" as any });
+      service.createVehicle({ id: "v3", status: "MAINTENANCE" as any });
 
       const utilization = service.calculateFleetUtilization();
       expect(utilization.active).toBe(2);
     });
 
-    it('should calculate maintenance count', () => {
-      service.createVehicle({ id: 'v1', status: 'ACTIVE' as any });
-      service.createVehicle({ id: 'v2', status: 'MAINTENANCE' as any });
-      service.createVehicle({ id: 'v3', status: 'MAINTENANCE' as any });
+    it("should calculate maintenance count", () => {
+      service.createVehicle({ id: "v1", status: "ACTIVE" as any });
+      service.createVehicle({ id: "v2", status: "MAINTENANCE" as any });
+      service.createVehicle({ id: "v3", status: "MAINTENANCE" as any });
 
       const utilization = service.calculateFleetUtilization();
       expect(utilization.maintenance).toBe(2);
     });
 
-    it('should count retired vehicles', () => {
-      service.createVehicle({ id: 'v1', status: 'ACTIVE' as any });
-      service.createVehicle({ id: 'v2', status: 'RETIRED' as any });
+    it("should count retired vehicles", () => {
+      service.createVehicle({ id: "v1", status: "ACTIVE" as any });
+      service.createVehicle({ id: "v2", status: "RETIRED" as any });
 
       const utilization = service.calculateFleetUtilization();
       expect(utilization.retired).toBe(1);
     });
 
-    it('should count disposed vehicles', () => {
-      service.createVehicle({ id: 'v1', status: 'ACTIVE' as any });
-      service.createVehicle({ id: 'v2', status: 'DISPOSED' as any });
+    it("should count disposed vehicles", () => {
+      service.createVehicle({ id: "v1", status: "ACTIVE" as any });
+      service.createVehicle({ id: "v2", status: "DISPOSED" as any });
 
       const utilization = service.calculateFleetUtilization();
       expect(utilization.disposed).toBe(1);
     });
 
-    it('should calculate total fleet size', () => {
-      service.createVehicle({ id: 'v1' });
-      service.createVehicle({ id: 'v2' });
-      service.createVehicle({ id: 'v3' });
-      service.createVehicle({ id: 'v4' });
-      service.createVehicle({ id: 'v5' });
+    it("should calculate total fleet size", () => {
+      service.createVehicle({ id: "v1" });
+      service.createVehicle({ id: "v2" });
+      service.createVehicle({ id: "v3" });
+      service.createVehicle({ id: "v4" });
+      service.createVehicle({ id: "v5" });
 
       const utilization = service.calculateFleetUtilization();
       expect(utilization.total).toBe(5);
     });
 
-    it('should show complete utilization breakdown', () => {
-      service.createVehicle({ id: 'v1', status: 'ACTIVE' as any });
-      service.createVehicle({ id: 'v2', status: 'ACTIVE' as any });
-      service.createVehicle({ id: 'v3', status: 'MAINTENANCE' as any });
-      service.createVehicle({ id: 'v4', status: 'RETIRED' as any });
-      service.createVehicle({ id: 'v5', status: 'DISPOSED' as any });
+    it("should show complete utilization breakdown", () => {
+      service.createVehicle({ id: "v1", status: "ACTIVE" as any });
+      service.createVehicle({ id: "v2", status: "ACTIVE" as any });
+      service.createVehicle({ id: "v3", status: "MAINTENANCE" as any });
+      service.createVehicle({ id: "v4", status: "RETIRED" as any });
+      service.createVehicle({ id: "v5", status: "DISPOSED" as any });
 
       const utilization = service.calculateFleetUtilization();
       expect(utilization.active).toBe(2);
@@ -518,26 +550,28 @@ describe('Vehicle Lifecycle Management', () => {
   // COMPLEX SCENARIOS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Complex Lifecycle Scenarios', () => {
-    it('should handle complete vehicle lifecycle', () => {
+  describe("Complex Lifecycle Scenarios", () => {
+    it("should handle complete vehicle lifecycle", () => {
       const vehicle = service.createVehicle({});
-      expect(vehicle.status).toBe('ACTIVE');
+      expect(vehicle.status).toBe("ACTIVE");
 
-      service.assignDriver(vehicle.id, 'driver_john');
-      expect(service.getVehicle(vehicle.id)?.assignedDriverId).toBe('driver_john');
+      service.assignDriver(vehicle.id, "driver_john");
+      expect(service.getVehicle(vehicle.id)?.assignedDriverId).toBe(
+        "driver_john",
+      );
 
-      service.updateVehicleStatus(vehicle.id, 'MAINTENANCE');
-      expect(service.getVehicle(vehicle.id)?.status).toBe('MAINTENANCE');
+      service.updateVehicleStatus(vehicle.id, "MAINTENANCE");
+      expect(service.getVehicle(vehicle.id)?.status).toBe("MAINTENANCE");
 
-      service.updateVehicleStatus(vehicle.id, 'ACTIVE');
+      service.updateVehicleStatus(vehicle.id, "ACTIVE");
       service.retireVehicle(vehicle.id);
-      expect(service.getVehicle(vehicle.id)?.status).toBe('RETIRED');
+      expect(service.getVehicle(vehicle.id)?.status).toBe("RETIRED");
 
       // Driver should be unassigned on retirement
       expect(service.getVehicle(vehicle.id)?.assignedDriverId).toBeUndefined();
     });
 
-    it('should manage realistic fleet scenario', () => {
+    it("should manage realistic fleet scenario", () => {
       const scenario = createFleetScenario(10);
 
       scenario.vehicles.forEach((vehicle) => {

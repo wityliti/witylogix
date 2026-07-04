@@ -34,7 +34,7 @@ export interface Order {
   id: string;
   items: OrderItem[];
   deliveryAddress: Coordinate;
-  priority: 'standard' | 'express' | 'overnight';
+  priority: "standard" | "express" | "overnight";
   createdAt: Date;
   weight: number; // total weight in kg
   volume: number; // total volume in cubic meters
@@ -99,7 +99,11 @@ export interface RoutingExplanation {
   alternativesConsidered: WarehouseCandidate[];
 }
 
-export type FulfillmentRule = 'prefer_local' | 'prefer_lowest_cost' | 'prefer_fastest' | 'custom_weights';
+export type FulfillmentRule =
+  | "prefer_local"
+  | "prefer_lowest_cost"
+  | "prefer_fastest"
+  | "custom_weights";
 
 export interface FulfillmentRules {
   rule: FulfillmentRule;
@@ -149,10 +153,19 @@ export class ProximityCalculator {
    * Calculate proximity score (0-100) based on distance.
    * Closer = higher score. Max distance is 1000 km.
    */
-  calculateScore(warehouseLocation: Coordinate, deliveryLocation: Coordinate): number {
-    const distance = calculateHaversineDistance(warehouseLocation, deliveryLocation);
+  calculateScore(
+    warehouseLocation: Coordinate,
+    deliveryLocation: Coordinate,
+  ): number {
+    const distance = calculateHaversineDistance(
+      warehouseLocation,
+      deliveryLocation,
+    );
     const maxDistance = 5000; // km (continental scale)
-    return Math.max(0, Math.round(100 * (1 - Math.min(distance, maxDistance) / maxDistance)));
+    return Math.max(
+      0,
+      Math.round(100 * (1 - Math.min(distance, maxDistance) / maxDistance)),
+    );
   }
 }
 
@@ -193,7 +206,8 @@ export class StockChecker {
 
     // Weighted score: items in stock counts as 60%, quantity availability as 40%
     const itemRatio = itemsInStock / items.length;
-    const qtyRatio = totalQtyNeeded > 0 ? totalQtyAvailable / totalQtyNeeded : 1;
+    const qtyRatio =
+      totalQtyNeeded > 0 ? totalQtyAvailable / totalQtyNeeded : 1;
 
     return Math.round(60 * itemRatio + 40 * qtyRatio);
   }
@@ -216,10 +230,12 @@ export class CapacityTracker {
    */
   hasCapacity(warehouse: Warehouse, order: Order): boolean {
     const trackedCount = this.dailyUtilization.get(warehouse.id);
-    const currentCount = trackedCount !== undefined
-      ? trackedCount
-      : warehouse.currentDailyCount;
-    const orderItemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    const currentCount =
+      trackedCount !== undefined ? trackedCount : warehouse.currentDailyCount;
+    const orderItemCount = order.items.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
     return currentCount + orderItemCount <= warehouse.dailyCapacity;
   }
 
@@ -228,9 +244,8 @@ export class CapacityTracker {
    */
   calculateScore(warehouse: Warehouse): number {
     const trackedCount = this.dailyUtilization.get(warehouse.id);
-    const currentCount = trackedCount !== undefined
-      ? trackedCount
-      : warehouse.currentDailyCount;
+    const currentCount =
+      trackedCount !== undefined ? trackedCount : warehouse.currentDailyCount;
     const utilization = currentCount / warehouse.dailyCapacity;
     return Math.round(100 * (1 - Math.min(utilization, 1)));
   }
@@ -248,7 +263,8 @@ export class CapacityTracker {
    * Get remaining capacity for warehouse.
    */
   getRemainingCapacity(warehouse: Warehouse): number {
-    const current = this.dailyUtilization.get(warehouse.id) ?? warehouse.currentDailyCount;
+    const current =
+      this.dailyUtilization.get(warehouse.id) ?? warehouse.currentDailyCount;
     return Math.max(0, warehouse.dailyCapacity - current);
   }
 }
@@ -260,7 +276,10 @@ export class CostEstimator {
    * Calculate estimated shipping cost from warehouse to delivery address.
    */
   estimateCost(warehouse: Warehouse, order: Order): number {
-    const distance = calculateHaversineDistance(warehouse.location, order.deliveryAddress);
+    const distance = calculateHaversineDistance(
+      warehouse.location,
+      order.deliveryAddress,
+    );
     const baseCost = distance * warehouse.costPerKm;
 
     // Add weight surcharge (2% per kg)
@@ -268,7 +287,11 @@ export class CostEstimator {
 
     // Add priority surcharge
     const prioritySurcharge =
-      order.priority === 'overnight' ? baseCost * 0.5 : order.priority === 'express' ? baseCost * 0.25 : 0;
+      order.priority === "overnight"
+        ? baseCost * 0.5
+        : order.priority === "express"
+          ? baseCost * 0.25
+          : 0;
 
     return baseCost + weightSurcharge + prioritySurcharge;
   }
@@ -326,13 +349,23 @@ export class FulfillmentScorer {
   /**
    * Score a warehouse for a given order.
    */
-  scoreWarehouse(warehouse: Warehouse, order: Order, rules: FulfillmentRules): FulfillmentScore {
-    const proximityScore = this.proximityCalc.calculateScore(warehouse.location, order.deliveryAddress);
+  scoreWarehouse(
+    warehouse: Warehouse,
+    order: Order,
+    rules: FulfillmentRules,
+  ): FulfillmentScore {
+    const proximityScore = this.proximityCalc.calculateScore(
+      warehouse.location,
+      order.deliveryAddress,
+    );
     const stockScore = this.stockChecker.calculateScore(warehouse, order.items);
     const capacityScore = this.capacityTracker.calculateScore(warehouse);
     const cost = this.costEstimator.estimateCost(warehouse, order);
     const costScore = this.costEstimator.calculateScore(cost);
-    const distance = calculateHaversineDistance(warehouse.location, order.deliveryAddress);
+    const distance = calculateHaversineDistance(
+      warehouse.location,
+      order.deliveryAddress,
+    );
     const slaScore = this.slaScorer.calculateScore(warehouse, order, distance);
 
     const weights = rules.weights ?? {
@@ -371,10 +404,14 @@ export class SplitOrderDetector {
   detectOptimalSplit(
     order: Order,
     warehouses: WarehouseCandidate[],
-    maxSplits: number = 3
+    maxSplits: number = 3,
   ): SplitOrder[] {
     // If top warehouse can fulfill, don't split
-    if (warehouses.length > 0 && warehouses[0].canFulfill && warehouses[0].score > 60) {
+    if (
+      warehouses.length > 0 &&
+      warehouses[0].canFulfill &&
+      warehouses[0].score > 60
+    ) {
       return [];
     }
 
@@ -435,26 +472,48 @@ export class RoutingExplainer {
   explain(
     selectedWarehouse: WarehouseCandidate,
     allCandidates: WarehouseCandidate[],
-    order: Order
+    order: Order,
   ): RoutingExplanation {
     const selected = selectedWarehouse.scores;
 
     return {
       summary: `Order assigned to ${selectedWarehouse.warehouseName} (score: ${selectedWarehouse.score}/100)`,
       proximityExplanation: `Proximity score ${selected.proximity}/100: warehouse is ${
-        selected.proximity > 80 ? 'very close' : selected.proximity > 60 ? 'reasonably close' : 'somewhat distant'
+        selected.proximity > 80
+          ? "very close"
+          : selected.proximity > 60
+            ? "reasonably close"
+            : "somewhat distant"
       } to delivery location`,
       stockExplanation: `Stock score ${selected.stock}/100: ${
-        selected.stock === 100 ? 'all items in stock' : selected.stock >= 80 ? 'most items in stock' : 'partial stock availability'
+        selected.stock === 100
+          ? "all items in stock"
+          : selected.stock >= 80
+            ? "most items in stock"
+            : "partial stock availability"
       }`,
       capacityExplanation: `Capacity score ${selected.capacity}/100: warehouse has ${
-        selected.capacity > 80 ? 'plenty of' : selected.capacity > 60 ? 'sufficient' : 'limited'
+        selected.capacity > 80
+          ? "plenty of"
+          : selected.capacity > 60
+            ? "sufficient"
+            : "limited"
       } fulfillment capacity`,
       costExplanation: `Cost score ${selected.cost}/100: shipping cost is ${
-        selected.cost > 80 ? 'very competitive' : selected.cost > 60 ? 'reasonable' : 'relatively high'
+        selected.cost > 80
+          ? "very competitive"
+          : selected.cost > 60
+            ? "reasonable"
+            : "relatively high"
       }`,
       slaExplanation: `SLA score ${selected.sla}/100: can ${
-        selected.sla === 100 ? 'easily meet' : selected.sla > 80 ? 'comfortably meet' : selected.sla > 60 ? 'meet' : 'may struggle to meet'
+        selected.sla === 100
+          ? "easily meet"
+          : selected.sla > 80
+            ? "comfortably meet"
+            : selected.sla > 60
+              ? "meet"
+              : "may struggle to meet"
       } delivery timeline`,
       alternativesConsidered: allCandidates.slice(1, 4),
     };
@@ -476,7 +535,7 @@ export class IntelligentOrderRouter {
     this.explainer = new RoutingExplainer();
     this.capacityTracker = new CapacityTracker();
     this.defaultRules = {
-      rule: 'custom_weights',
+      rule: "custom_weights",
       weights: {
         proximity: 0.35,
         stock: 0.25,
@@ -496,7 +555,7 @@ export class IntelligentOrderRouter {
   routeOrder(
     order: Order,
     warehouses: Warehouse[],
-    options: RoutingOptions = {}
+    options: RoutingOptions = {},
   ): RoutingDecision {
     const rules = options.rules ?? this.defaultRules;
     const maxCandidates = options.maxCandidates ?? 10;
@@ -506,9 +565,13 @@ export class IntelligentOrderRouter {
     const candidates: WarehouseCandidate[] = warehouses
       .map((warehouse) => {
         const scores = this.scorer.scoreWarehouse(warehouse, order, rules);
-        const orderItemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+        const orderItemCount = order.items.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        );
         const canFulfill =
-          warehouse.dailyCapacity - warehouse.currentDailyCount >= orderItemCount &&
+          warehouse.dailyCapacity - warehouse.currentDailyCount >=
+            orderItemCount &&
           (!rules.requireAllInStock || this.canFulfill(warehouse, order.items));
 
         return {
@@ -517,7 +580,7 @@ export class IntelligentOrderRouter {
           score: scores.weighted,
           scores,
           canFulfill,
-          reason: canFulfill ? 'Can fulfill' : 'Cannot fulfill',
+          reason: canFulfill ? "Can fulfill" : "Cannot fulfill",
         };
       })
       .sort((a, b) => b.score - a.score)
@@ -530,16 +593,16 @@ export class IntelligentOrderRouter {
     if (!selected) {
       return {
         orderId: order.id,
-        warehouseId: '',
-        warehouseName: 'UNROUTED',
+        warehouseId: "",
+        warehouseName: "UNROUTED",
         score: 0,
         explanation: {
-          summary: 'No suitable warehouse found for order',
-          proximityExplanation: 'No warehouses available',
-          stockExplanation: 'No warehouses available',
-          capacityExplanation: 'No warehouses available',
-          costExplanation: 'No warehouses available',
-          slaExplanation: 'No warehouses available',
+          summary: "No suitable warehouse found for order",
+          proximityExplanation: "No warehouses available",
+          stockExplanation: "No warehouses available",
+          capacityExplanation: "No warehouses available",
+          costExplanation: "No warehouses available",
+          slaExplanation: "No warehouses available",
           alternativesConsidered: [],
         },
         isSplit: false,
@@ -550,11 +613,17 @@ export class IntelligentOrderRouter {
     // Check for optimal split
     let splits: SplitOrder[] = [];
     if (considerSplits && !selected.canFulfill) {
-      splits = this.splitDetector.detectOptimalSplit(order, candidates, rules.maxSplitWarehouses);
+      splits = this.splitDetector.detectOptimalSplit(
+        order,
+        candidates,
+        rules.maxSplitWarehouses,
+      );
     }
 
     const isSplit = splits.length > 0;
-    const finalScore = isSplit ? Math.max(...splits.map((s) => s.score)) : selected.score;
+    const finalScore = isSplit
+      ? Math.max(...splits.map((s) => s.score))
+      : selected.score;
     const confidence = finalScore / 100;
 
     return {
@@ -572,7 +641,11 @@ export class IntelligentOrderRouter {
   /**
    * Evaluate all routing options for an order without assigning.
    */
-  evaluateOptions(order: Order, warehouses: Warehouse[], options: RoutingOptions = {}): WarehouseCandidate[] {
+  evaluateOptions(
+    order: Order,
+    warehouses: Warehouse[],
+    options: RoutingOptions = {},
+  ): WarehouseCandidate[] {
     const rules = options.rules ?? this.defaultRules;
     const maxCandidates = options.maxCandidates ?? 10;
 
@@ -580,8 +653,8 @@ export class IntelligentOrderRouter {
       .map((warehouse) => {
         const scores = this.scorer.scoreWarehouse(warehouse, order, rules);
         const canFulfill =
-          warehouse.dailyCapacity - warehouse.currentDailyCount >= order.items.length &&
-          this.canFulfill(warehouse, order.items);
+          warehouse.dailyCapacity - warehouse.currentDailyCount >=
+            order.items.length && this.canFulfill(warehouse, order.items);
 
         return {
           warehouseId: warehouse.id,
@@ -589,7 +662,9 @@ export class IntelligentOrderRouter {
           score: scores.weighted,
           scores,
           canFulfill,
-          reason: canFulfill ? 'Can fulfill' : 'Cannot fulfill - insufficient capacity or stock',
+          reason: canFulfill
+            ? "Can fulfill"
+            : "Cannot fulfill - insufficient capacity or stock",
         };
       })
       .sort((a, b) => b.score - a.score)

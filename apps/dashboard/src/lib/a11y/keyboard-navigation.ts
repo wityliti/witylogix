@@ -3,7 +3,7 @@
  * Arrow key navigation, roving tabindex, shortcuts, and type-ahead
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState } from "react";
 
 /**
  * Arrow key navigation for lists and menus
@@ -11,11 +11,11 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 export function useKeyboardNavigation<T>(
   items: T[],
   options: {
-    orientation?: 'vertical' | 'horizontal';
+    orientation?: "vertical" | "horizontal";
     loop?: boolean;
     onSelect?: (item: T, index: number) => void;
     getLabel?: (item: T) => string;
-  } = {}
+  } = {},
 ): {
   selectedIndex: number;
   setSelectedIndex: (index: number) => void;
@@ -24,30 +24,25 @@ export function useKeyboardNavigation<T>(
   };
 } {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const {
-    orientation = 'vertical',
-    loop = true,
-    onSelect,
-    getLabel,
-  } = options;
+  const { orientation = "vertical", loop = true, onSelect, getLabel } = options;
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      const isVertical = orientation === 'vertical';
-      const isArrowUp = e.key === 'ArrowUp';
-      const isArrowDown = e.key === 'ArrowDown';
-      const isArrowLeft = e.key === 'ArrowLeft';
-      const isArrowRight = e.key === 'ArrowRight';
+      const isVertical = orientation === "vertical";
+      const isArrowUp = e.key === "ArrowUp";
+      const isArrowDown = e.key === "ArrowDown";
+      const isArrowLeft = e.key === "ArrowLeft";
+      const isArrowRight = e.key === "ArrowRight";
 
       let isNavKey = false;
-      let direction: 'next' | 'prev' = 'next';
+      let direction: "next" | "prev" = "next";
 
       if (isVertical) {
         isNavKey = isArrowUp || isArrowDown;
-        direction = isArrowUp ? 'prev' : 'next';
+        direction = isArrowUp ? "prev" : "next";
       } else {
         isNavKey = isArrowLeft || isArrowRight;
-        direction = isArrowLeft ? 'prev' : 'next';
+        direction = isArrowLeft ? "prev" : "next";
       }
 
       if (!isNavKey) return;
@@ -55,7 +50,7 @@ export function useKeyboardNavigation<T>(
       e.preventDefault();
 
       let nextIndex = selectedIndex;
-      if (direction === 'next') {
+      if (direction === "next") {
         nextIndex = selectedIndex + 1;
         if (loop && nextIndex >= items.length) {
           nextIndex = 0;
@@ -74,7 +69,7 @@ export function useKeyboardNavigation<T>(
       setSelectedIndex(nextIndex);
       onSelect?.(items[nextIndex], nextIndex);
     },
-    [selectedIndex, items, orientation, loop, onSelect]
+    [selectedIndex, items, orientation, loop, onSelect],
   );
 
   return {
@@ -93,8 +88,8 @@ export function useKeyboardNavigation<T>(
 export function useRovingTabIndex(
   items: HTMLElement[],
   options: {
-    orientation?: 'vertical' | 'horizontal';
-  } = {}
+    orientation?: "vertical" | "horizontal";
+  } = {},
 ): {
   focusIndex: number;
   setFocusIndex: (index: number) => void;
@@ -103,17 +98,17 @@ export function useRovingTabIndex(
 
   useEffect(() => {
     items.forEach((item, index) => {
-      item.setAttribute('tabindex', index === focusIndex ? '0' : '-1');
+      item.setAttribute("tabindex", index === focusIndex ? "0" : "-1");
     });
   }, [items, focusIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isVertical = options.orientation !== 'horizontal';
-      const isArrowUp = e.key === 'ArrowUp';
-      const isArrowDown = e.key === 'ArrowDown';
-      const isArrowLeft = e.key === 'ArrowLeft';
-      const isArrowRight = e.key === 'ArrowRight';
+      const isVertical = options.orientation !== "horizontal";
+      const isArrowUp = e.key === "ArrowUp";
+      const isArrowDown = e.key === "ArrowDown";
+      const isArrowLeft = e.key === "ArrowLeft";
+      const isArrowRight = e.key === "ArrowRight";
 
       let isNavKey = false;
       let nextIndex = focusIndex;
@@ -137,9 +132,9 @@ export function useRovingTabIndex(
       }
     };
 
-    items[focusIndex]?.addEventListener('keydown', handleKeyDown);
+    items[focusIndex]?.addEventListener("keydown", handleKeyDown);
     return () => {
-      items[focusIndex]?.removeEventListener('keydown', handleKeyDown);
+      items[focusIndex]?.removeEventListener("keydown", handleKeyDown);
     };
   }, [focusIndex, items]);
 
@@ -152,14 +147,14 @@ export function useRovingTabIndex(
 export function useEscapeClose(onClose: () => void): void {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         e.preventDefault();
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 }
 
@@ -171,7 +166,7 @@ export function useTypeAhead<T>(
   getLabel: (item: T) => string,
   options: {
     timeout?: number;
-  } = {}
+  } = {},
 ): {
   selectedIndex: number;
   clear: () => void;
@@ -180,7 +175,7 @@ export function useTypeAhead<T>(
   };
 } {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const searchRef = useRef('');
+  const searchRef = useRef("");
   const timeoutRef = useRef<NodeJS.Timeout>();
   const { timeout = 500 } = options;
 
@@ -199,7 +194,7 @@ export function useTypeAhead<T>(
 
       // Find matching item
       const matchIndex = items.findIndex((item) =>
-        getLabel(item).toLowerCase().startsWith(searchRef.current)
+        getLabel(item).toLowerCase().startsWith(searchRef.current),
       );
 
       if (matchIndex !== -1) {
@@ -208,14 +203,14 @@ export function useTypeAhead<T>(
 
       // Clear search after timeout
       timeoutRef.current = setTimeout(() => {
-        searchRef.current = '';
+        searchRef.current = "";
       }, timeout);
     },
-    [items, getLabel, timeout]
+    [items, getLabel, timeout],
   );
 
   const clear = useCallback(() => {
-    searchRef.current = '';
+    searchRef.current = "";
     clearTimeout(timeoutRef.current);
   }, []);
 
@@ -238,7 +233,7 @@ export class KeyboardShortcutManager {
   register(
     key: string,
     handler: (e: KeyboardEvent) => void,
-    modifiers: string[] = []
+    modifiers: string[] = [],
   ): () => void {
     const shortcutKey = this.getShortcutKey(key, modifiers);
     this.shortcuts.set(shortcutKey, {
@@ -247,7 +242,7 @@ export class KeyboardShortcutManager {
     });
 
     if (this.shortcuts.size === 1) {
-      document.addEventListener('keydown', this.handleKeyDown.bind(this));
+      document.addEventListener("keydown", this.handleKeyDown.bind(this));
     }
 
     return () => this.unregister(key, modifiers);
@@ -258,7 +253,7 @@ export class KeyboardShortcutManager {
     this.shortcuts.delete(shortcutKey);
 
     if (this.shortcuts.size === 0) {
-      document.removeEventListener('keydown', this.handleKeyDown.bind(this));
+      document.removeEventListener("keydown", this.handleKeyDown.bind(this));
     }
   }
 
@@ -274,16 +269,16 @@ export class KeyboardShortcutManager {
   }
 
   private getShortcutKey(key: string, modifiers: string[]): string {
-    const normalizedModifiers = modifiers.sort().join('+');
-    return `${normalizedModifiers}${normalizedModifiers ? '+' : ''}${key}`;
+    const normalizedModifiers = modifiers.sort().join("+");
+    return `${normalizedModifiers}${normalizedModifiers ? "+" : ""}${key}`;
   }
 
   private getActiveModifiers(e: KeyboardEvent): Set<string> {
     const modifiers = new Set<string>();
-    if (e.ctrlKey) modifiers.add('ctrl');
-    if (e.shiftKey) modifiers.add('shift');
-    if (e.altKey) modifiers.add('alt');
-    if (e.metaKey) modifiers.add('meta');
+    if (e.ctrlKey) modifiers.add("ctrl");
+    if (e.shiftKey) modifiers.add("shift");
+    if (e.altKey) modifiers.add("alt");
+    if (e.metaKey) modifiers.add("meta");
     return modifiers;
   }
 }
@@ -294,10 +289,10 @@ export class KeyboardShortcutManager {
 export function useKeyboardShortcut(
   key: string,
   handler: (e: KeyboardEvent) => void,
-  modifiers: string[] = []
+  modifiers: string[] = [],
 ): void {
   const managerRef = useRef<KeyboardShortcutManager>(
-    new KeyboardShortcutManager()
+    new KeyboardShortcutManager(),
   );
 
   useEffect(() => {

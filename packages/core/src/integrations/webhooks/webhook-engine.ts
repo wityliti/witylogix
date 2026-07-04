@@ -11,8 +11,8 @@
  * - DeliveryAnalytics: Success/failure rates, health scoring
  */
 
-import { EventEmitter } from 'events';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { EventEmitter } from "events";
+import { createHmac, timingSafeEqual } from "crypto";
 import type {
   WebhookEndpoint,
   WebhookEvent,
@@ -26,7 +26,7 @@ import type {
   DeliveryAnalytics as DeliveryAnalyticsShape,
   EndpointHealth,
   DeliveryAttempt,
-} from './webhook-types';
+} from "./webhook-types";
 
 // ─── Webhook Registry ───────────────────────────────────────────
 
@@ -50,7 +50,7 @@ export class WebhookRegistry extends EventEmitter {
     }
     this.endpointsByProvider.get(key)!.push(endpoint.id);
 
-    this.emit('endpoint-registered', endpoint);
+    this.emit("endpoint-registered", endpoint);
   }
 
   /**
@@ -65,20 +65,25 @@ export class WebhookRegistry extends EventEmitter {
    */
   getEndpointsByProvider(providerId: string): WebhookEndpoint[] {
     const ids = this.endpointsByProvider.get(providerId) ?? [];
-    return ids.map((id) => this.endpoints.get(id)).filter((e) => e !== undefined) as WebhookEndpoint[];
+    return ids
+      .map((id) => this.endpoints.get(id))
+      .filter((e) => e !== undefined) as WebhookEndpoint[];
   }
 
   /**
    * Update endpoint
    */
-  updateEndpoint(endpointId: string, updates: Partial<WebhookEndpoint>): WebhookEndpoint | null {
+  updateEndpoint(
+    endpointId: string,
+    updates: Partial<WebhookEndpoint>,
+  ): WebhookEndpoint | null {
     const existing = this.endpoints.get(endpointId);
     if (!existing) return null;
 
     const updated = { ...existing, ...updates, updatedAt: new Date() };
     this.endpoints.set(endpointId, updated);
 
-    this.emit('endpoint-updated', updated);
+    this.emit("endpoint-updated", updated);
     return updated;
   }
 
@@ -96,7 +101,7 @@ export class WebhookRegistry extends EventEmitter {
       ids.filter((id) => id !== endpointId),
     );
 
-    this.emit('endpoint-deleted', endpointId);
+    this.emit("endpoint-deleted", endpointId);
     return true;
   }
 
@@ -111,7 +116,7 @@ export class WebhookRegistry extends EventEmitter {
     }
 
     this.subscriptions.get(providerId)!.push(subscription);
-    this.emit('subscription-registered', { subId, providerId, subscription });
+    this.emit("subscription-registered", { subId, providerId, subscription });
 
     return subId;
   }
@@ -119,11 +124,14 @@ export class WebhookRegistry extends EventEmitter {
   /**
    * Get subscriptions for event type
    */
-  getSubscriptions(providerId: string, eventType: string): WebhookSubscription[] {
+  getSubscriptions(
+    providerId: string,
+    eventType: string,
+  ): WebhookSubscription[] {
     const subs = this.subscriptions.get(providerId) ?? [];
     return subs.filter((s) => {
       // Handle wildcard patterns
-      const pattern = s.eventType.replace(/\*/g, '.*');
+      const pattern = s.eventType.replace(/\*/g, ".*");
       const regex = new RegExp(`^${pattern}$`);
       return regex.test(eventType);
     });
@@ -165,7 +173,10 @@ export class DeliveryQueue extends EventEmitter {
     this.queue.push(item);
     this.queue.sort((a, b) => a.priority - b.priority);
 
-    this.emit('enqueued', { deliveryId: delivery.id, queueLength: this.queue.length });
+    this.emit("enqueued", {
+      deliveryId: delivery.id,
+      queueLength: this.queue.length,
+    });
     this.processQueue();
   }
 
@@ -191,13 +202,16 @@ export class DeliveryQueue extends EventEmitter {
 
     this.processing = true;
 
-    while (this.queue.length > 0 && this.activeConcurrency < this.maxConcurrency) {
+    while (
+      this.queue.length > 0 &&
+      this.activeConcurrency < this.maxConcurrency
+    ) {
       const item = this.queue.shift();
       if (!item) break;
 
       this.activeConcurrency++;
 
-      this.emit('processing', {
+      this.emit("processing", {
         deliveryId: item.delivery.id,
         active: this.activeConcurrency,
         queued: this.queue.length,
@@ -207,7 +221,7 @@ export class DeliveryQueue extends EventEmitter {
       (async () => {
         try {
           // Delivery processing happens in FanOutManager
-          this.emit('delivery-start', item.delivery);
+          this.emit("delivery-start", item.delivery);
         } finally {
           this.activeConcurrency--;
           this.processQueue();
@@ -245,7 +259,7 @@ export class DeadLetterQueue extends EventEmitter {
       this.ttlTimers.set(entry.id, timer);
     }
 
-    this.emit('entry-added', entry);
+    this.emit("entry-added", entry);
   }
 
   /**
@@ -260,7 +274,7 @@ export class DeadLetterQueue extends EventEmitter {
    */
   getEntryByDelivery(deliveryId: string): DeadLetterEntry | null {
     const entryId = this.entriesByDelivery.get(deliveryId);
-    return entryId ? this.entries.get(entryId) ?? null : null;
+    return entryId ? (this.entries.get(entryId) ?? null) : null;
   }
 
   /**
@@ -286,7 +300,7 @@ export class DeadLetterQueue extends EventEmitter {
       this.ttlTimers.delete(entryId);
     }
 
-    this.emit('entry-deleted', entryId);
+    this.emit("entry-deleted", entryId);
     return true;
   }
 
@@ -305,7 +319,7 @@ export class DeadLetterQueue extends EventEmitter {
     if (!entry) return false;
 
     entry.manuallyRetried = true;
-    this.emit('entry-retried', entryId);
+    this.emit("entry-retried", entryId);
     return true;
   }
 }
@@ -324,9 +338,9 @@ export class SignatureVerifierV2 extends EventEmitter {
    * Verify HMAC-SHA256 signature
    */
   verifyHMAC(payload: string, signature: string): boolean {
-    const computed = createHmac('sha256', this.signingSecret)
-      .update(payload, 'utf8')
-      .digest('hex');
+    const computed = createHmac("sha256", this.signingSecret)
+      .update(payload, "utf8")
+      .digest("hex");
 
     try {
       return timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
@@ -352,9 +366,9 @@ export class SignatureVerifierV2 extends EventEmitter {
     }
 
     const signedContent = `${timestamp}.${payload}`;
-    const computed = createHmac('sha256', this.signingSecret)
-      .update(signedContent, 'utf8')
-      .digest('hex');
+    const computed = createHmac("sha256", this.signingSecret)
+      .update(signedContent, "utf8")
+      .digest("hex");
 
     try {
       return timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
@@ -367,9 +381,9 @@ export class SignatureVerifierV2 extends EventEmitter {
    * Compute signature for payload
    */
   computeSignature(payload: string): string {
-    return createHmac('sha256', this.signingSecret)
-      .update(payload, 'utf8')
-      .digest('hex');
+    return createHmac("sha256", this.signingSecret)
+      .update(payload, "utf8")
+      .digest("hex");
   }
 }
 
@@ -400,7 +414,7 @@ export class ReplayProtector extends EventEmitter {
     }
 
     if (this.nonces.has(nonce)) {
-      this.emit('replay-detected', { nonce, timestamp });
+      this.emit("replay-detected", { nonce, timestamp });
       return false;
     }
 
@@ -438,7 +452,10 @@ export class ReplayProtector extends EventEmitter {
 export class FanOutManager extends EventEmitter {
   private deliveries: Map<string, WebhookDelivery> = new Map();
 
-  constructor(private verifier: SignatureVerifierV2, private httpClient: any) {
+  constructor(
+    private verifier: SignatureVerifierV2,
+    private httpClient: any,
+  ) {
     super();
   }
 
@@ -463,7 +480,7 @@ export class FanOutManager extends EventEmitter {
         id: `dlv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         endpointId: endpoint.id,
         eventId: event.id,
-        status: 'pending',
+        status: "pending",
         attempts: [],
       };
 
@@ -473,11 +490,11 @@ export class FanOutManager extends EventEmitter {
       const deliveryPromise = (async () => {
         try {
           await this.sendDelivery(delivery, endpoint, eventPayload, signature);
-          if (config.failFast && delivery.status === 'failed') {
-            throw new Error('Delivery failed and failFast is enabled');
+          if (config.failFast && delivery.status === "failed") {
+            throw new Error("Delivery failed and failFast is enabled");
           }
         } catch (error) {
-          this.emit('delivery-error', { deliveryId: delivery.id, error });
+          this.emit("delivery-error", { deliveryId: delivery.id, error });
         }
       })();
 
@@ -514,11 +531,11 @@ export class FanOutManager extends EventEmitter {
         const startTime = Date.now();
 
         const response = await this.httpClient.request({
-          method: endpoint.method ?? 'POST',
+          method: endpoint.method ?? "POST",
           url: endpoint.url,
           headers: {
-            'Content-Type': 'application/json',
-            'X-Webhook-Signature': signature,
+            "Content-Type": "application/json",
+            "X-Webhook-Signature": signature,
             ...(endpoint.headers ?? {}),
           },
           body: payload,
@@ -537,20 +554,23 @@ export class FanOutManager extends EventEmitter {
         delivery.attempts.push(attemptRecord);
 
         if (response.status < 400) {
-          delivery.status = 'success';
+          delivery.status = "success";
           delivery.completedAt = new Date();
-          delivery.totalDurationMs = Date.now() - (delivery.completedAt.getTime() - delivery.totalDurationMs!);
-          this.emit('delivery-success', delivery);
+          delivery.totalDurationMs =
+            Date.now() -
+            (delivery.completedAt.getTime() - delivery.totalDurationMs!);
+          this.emit("delivery-success", delivery);
           return;
         } else if (response.status >= 500 && attempt < maxAttempts) {
-          delivery.status = 'retrying';
-          const backoff = Math.pow(2, attempt - 1) * 1000 + Math.random() * 1000;
+          delivery.status = "retrying";
+          const backoff =
+            Math.pow(2, attempt - 1) * 1000 + Math.random() * 1000;
           await new Promise((resolve) => setTimeout(resolve, backoff));
           continue;
         } else {
-          delivery.status = 'failed';
+          delivery.status = "failed";
           delivery.completedAt = new Date();
-          this.emit('delivery-failed', delivery);
+          this.emit("delivery-failed", delivery);
           return;
         }
       } catch (error) {
@@ -558,7 +578,7 @@ export class FanOutManager extends EventEmitter {
 
         const attemptRecord: DeliveryAttempt = {
           attempt,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date(),
           latencyMs,
         };
@@ -566,9 +586,9 @@ export class FanOutManager extends EventEmitter {
         delivery.attempts.push(attemptRecord);
 
         if (attempt === maxAttempts) {
-          delivery.status = 'failed';
+          delivery.status = "failed";
           delivery.completedAt = new Date();
-          this.emit('delivery-failed', delivery);
+          this.emit("delivery-failed", delivery);
           return;
         }
 
@@ -607,7 +627,9 @@ export class DeliveryAnalytics extends EventEmitter {
   /**
    * Get analytics for time window
    */
-  getAnalytics(timeWindowMs: number = this.windowSize): DeliveryAnalyticsShape | null {
+  getAnalytics(
+    timeWindowMs: number = this.windowSize,
+  ): DeliveryAnalyticsShape | null {
     const now = Date.now();
     const startTime = new Date(now - timeWindowMs);
     const endTime = new Date(now);
@@ -626,15 +648,15 @@ export class DeliveryAnalytics extends EventEmitter {
     for (const delivery of this.deliveries.values()) {
       totalDeliveries++;
 
-      if (delivery.status === 'success') {
+      if (delivery.status === "success") {
         successfulDeliveries++;
         if (delivery.totalDurationMs) {
           totalLatency += delivery.totalDurationMs;
           latencies.push(delivery.totalDurationMs);
         }
-      } else if (delivery.status === 'dlq') {
+      } else if (delivery.status === "dlq") {
         dlqEntries++;
-      } else if (delivery.status === 'failed') {
+      } else if (delivery.status === "failed") {
         failedDeliveries++;
       }
 
@@ -643,7 +665,8 @@ export class DeliveryAnalytics extends EventEmitter {
 
     latencies.sort((a, b) => a - b);
 
-    const avgLatencyMs = totalDeliveries > 0 ? totalLatency / totalDeliveries : 0;
+    const avgLatencyMs =
+      totalDeliveries > 0 ? totalLatency / totalDeliveries : 0;
     const p50 = latencies[Math.floor(latencies.length * 0.5)] ?? 0;
     const p95 = latencies[Math.floor(latencies.length * 0.95)] ?? 0;
     const p99 = latencies[Math.floor(latencies.length * 0.99)] ?? 0;
@@ -660,7 +683,10 @@ export class DeliveryAnalytics extends EventEmitter {
       p50LatencyMs: p50,
       p95LatencyMs: p95,
       p99LatencyMs: p99,
-      successRate: totalDeliveries > 0 ? (successfulDeliveries / totalDeliveries) * 100 : 0,
+      successRate:
+        totalDeliveries > 0
+          ? (successfulDeliveries / totalDeliveries) * 100
+          : 0,
       retryRate: totalDeliveries > 0 ? (retryCount / totalDeliveries) * 100 : 0,
       retryCount,
       byEndpoint,
@@ -681,11 +707,11 @@ export class DeliveryAnalytics extends EventEmitter {
 
     if (relevant.length === 0) return;
 
-    const successful = relevant.filter((d) => d.status === 'success').length;
-    const failed = relevant.filter((d) => d.status === 'failed').length;
+    const successful = relevant.filter((d) => d.status === "success").length;
+    const failed = relevant.filter((d) => d.status === "failed").length;
     const failedLastHour = relevant.filter(
       (d) =>
-        d.status === 'failed' &&
+        d.status === "failed" &&
         d.completedAt &&
         d.completedAt.getTime() > Date.now() - 3600000,
     ).length;
@@ -695,7 +721,10 @@ export class DeliveryAnalytics extends EventEmitter {
       .filter((l) => l > 0)
       .sort((a, b) => a - b);
 
-    const avgLatencyMs = latencies.length > 0 ? latencies.reduce((a, b) => a + b) / latencies.length : 0;
+    const avgLatencyMs =
+      latencies.length > 0
+        ? latencies.reduce((a, b) => a + b) / latencies.length
+        : 0;
     const p95 = latencies[Math.floor(latencies.length * 0.95)] ?? 0;
     const p99 = latencies[Math.floor(latencies.length * 0.99)] ?? 0;
 

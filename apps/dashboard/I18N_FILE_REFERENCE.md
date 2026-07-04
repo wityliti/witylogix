@@ -9,6 +9,7 @@ Complete index of all i18n files with descriptions and key functions.
 **Purpose**: Locale configuration, metadata, and detection logic.
 
 **Key Exports**:
+
 - `LocaleKey` - Type union: 'en' | 'es' | 'fr'
 - `defaultLocale` - 'en'
 - `supportedLocales` - ['en', 'es', 'fr']
@@ -19,11 +20,16 @@ Complete index of all i18n files with descriptions and key functions.
 - `getAllLocales()` - Get all locales with metadata
 
 **Usage**:
+
 ```typescript
-import { getLocaleFromRequest, localeMetadata, supportedLocales } from '@/i18n/config';
+import {
+  getLocaleFromRequest,
+  localeMetadata,
+  supportedLocales,
+} from "@/i18n/config";
 
 const locale = getLocaleFromRequest(cookie, header);
-const { name, flag, timeFormat } = localeMetadata['en'];
+const { name, flag, timeFormat } = localeMetadata["en"];
 ```
 
 ---
@@ -33,12 +39,14 @@ const { name, flag, timeFormat } = localeMetadata['en'];
 **Purpose**: Translation namespace definitions.
 
 **Key Exports**:
+
 - `defaultNS` - 'common'
 - `namespaces` - Array of namespace names
 - `Namespace` - Type for namespace names
 - `resources` - Translation resources (for static typing)
 
 **Namespaces**:
+
 - common
 - auth
 - onboarding
@@ -56,9 +64,11 @@ const { name, flag, timeFormat } = localeMetadata['en'];
 **Purpose**: next-intl request configuration for message loading.
 
 **Key Exports**:
+
 - Default export: `getRequestConfig()` - Returns locale, messages, timeZone
 
 **How it works**:
+
 - Called automatically by next-intl in server contexts
 - Detects locale from headers/cookies
 - Validates locale against supported list
@@ -72,6 +82,7 @@ const { name, flag, timeFormat } = localeMetadata['en'];
 **Purpose**: Type-safe localized navigation helpers.
 
 **Key Exports**:
+
 - `Link` - Localized link component (auto-includes locale)
 - `redirect` - Localized redirect function
 - `usePathname` - Hook for pathname without locale
@@ -79,6 +90,7 @@ const { name, flag, timeFormat } = localeMetadata['en'];
 - `useTransitionRouter` - Hook for router with transitions
 
 **Usage**:
+
 ```typescript
 import { Link, useRouter, usePathname } from '@/i18n/navigation';
 
@@ -97,6 +109,7 @@ const pathname = usePathname(); // Returns '/orders', not '/en/orders'
 **Purpose**: Locale-aware formatting utilities.
 
 **Key Exports**:
+
 - `formatCurrency(amount, currency?, locale?)` - Format currency
 - `formatDate(date, style, locale?)` - Format date (relative/absolute/short)
 - `formatNumber(num, locale?)` - Format number with separators
@@ -106,22 +119,23 @@ const pathname = usePathname(); // Returns '/orders', not '/en/orders'
 - `getTimeAgoLabel(date, locale?)` - Get relative time label
 
 **Examples**:
+
 ```typescript
-import { formatCurrency, formatDate, formatDistance } from '@/i18n/formatting';
+import { formatCurrency, formatDate, formatDistance } from "@/i18n/formatting";
 
-formatCurrency(1234.56, 'USD', 'en')  // "$1,234.56"
-formatCurrency(1234.56, 'EUR', 'es')  // "1.234,56 €"
+formatCurrency(1234.56, "USD", "en"); // "$1,234.56"
+formatCurrency(1234.56, "EUR", "es"); // "1.234,56 €"
 
-formatDate(new Date(), 'relative', 'en')  // "2 hours ago"
-formatDate(new Date(), 'absolute', 'en')  // "March 16, 2026, 10:30 AM"
+formatDate(new Date(), "relative", "en"); // "2 hours ago"
+formatDate(new Date(), "absolute", "en"); // "March 16, 2026, 10:30 AM"
 
-formatDistance(5000, 'en')  // "3.11 mi"
-formatDistance(5000, 'es')  // "5 km"
+formatDistance(5000, "en"); // "3.11 mi"
+formatDistance(5000, "es"); // "5 km"
 
-formatWeight(2000, 'en')   // "4.41 lbs"
-formatWeight(2000, 'es')   // "2 kg"
+formatWeight(2000, "en"); // "4.41 lbs"
+formatWeight(2000, "es"); // "2 kg"
 
-getTimeAgoLabel(new Date(Date.now() - 5*60000), 'en')  // "5m ago"
+getTimeAgoLabel(new Date(Date.now() - 5 * 60000), "en"); // "5m ago"
 ```
 
 ---
@@ -131,6 +145,7 @@ getTimeAgoLabel(new Date(Date.now() - 5*60000), 'en')  // "5m ago"
 **Purpose**: RTL (right-to-left) preparation utilities.
 
 **Key Exports**:
+
 - `getDirection(locale)` - Get 'ltr' or 'rtl'
 - `isLocaleRTL(locale)` - Check if locale is RTL
 - `rtlSpacing(locale, config)` - RTL-aware spacing object
@@ -140,6 +155,7 @@ getTimeAgoLabel(new Date(Date.now() - 5*60000), 'en')  // "5m ago"
 - `getLogicalProperties(locale)` - Get CSS logical property helpers
 
 **Usage**:
+
 ```typescript
 import { getDirection, getLogicalProperties } from '@/i18n/rtl-support';
 
@@ -157,10 +173,12 @@ const props = getLogicalProperties('en');
 **Purpose**: Translation key extraction and validation script.
 
 **Key Exports**:
+
 - `extractKeysFromFiles()` - Scan files and extract translation keys
 - `generateReport()` - Generate and save extraction report
 
 **Usage**:
+
 ```bash
 # From apps/dashboard
 node -e "require('./src/i18n/extract-keys.ts').generateReport()"
@@ -181,6 +199,7 @@ node -e "require('./src/i18n/extract-keys.ts').generateReport()"
 **Purpose**: Locale detection, routing, and authentication.
 
 **Key Features**:
+
 - Locale detection (cookie → Accept-Language → default)
 - Locale persistence to cookie (1 year)
 - Protected route authentication check
@@ -188,14 +207,17 @@ node -e "require('./src/i18n/extract-keys.ts').generateReport()"
 - Automatic redirects for unauthorized access
 
 **Protected Routes**:
+
 - /orders, /drivers, /deliveries
 - /settings, /integrations, /admin
 - /profile, /analytics, /support
 
 **Public Routes**:
+
 - /auth/login, /auth/register, /auth/forgot-password
 
 **Config**:
+
 - `localeCookie: 'NEXT_LOCALE'`
 - `localePrefix: 'as-needed'` (no prefix for default locale)
 
@@ -208,15 +230,17 @@ node -e "require('./src/i18n/extract-keys.ts').generateReport()"
 **Purpose**: Language selection UI component.
 
 **Props**:
+
 ```typescript
 interface LanguageSwitcherProps {
   currentLocale: LocaleKey;
   className?: string;
-  variant?: 'dropdown' | 'inline';
+  variant?: "dropdown" | "inline";
 }
 ```
 
 **Features**:
+
 - Flag emoji indicators
 - Smooth locale switching (no full page reload)
 - Cookie persistence
@@ -224,6 +248,7 @@ interface LanguageSwitcherProps {
 - Dropdown and inline variants
 
 **Usage**:
+
 ```typescript
 import { useLocale } from 'next-intl';
 import { LanguageSwitcher } from '@/components/i18n/language-switcher';
@@ -239,6 +264,7 @@ const locale = useLocale();
 **Purpose**: Client-side i18n provider wrapper.
 
 **Props**:
+
 ```typescript
 interface LocaleProviderProps {
   children: ReactNode;
@@ -250,6 +276,7 @@ interface LocaleProviderProps {
 ```
 
 **Usage**:
+
 ```typescript
 import { LocaleProvider } from '@/components/i18n/locale-provider';
 
@@ -265,6 +292,7 @@ import { LocaleProvider } from '@/components/i18n/locale-provider';
 ### `messages/en.json` (450 lines)
 
 **Structure**:
+
 ```json
 {
   "common": {
@@ -287,6 +315,7 @@ import { LocaleProvider } from '@/components/i18n/locale-provider';
 ```
 
 **Key Categories**:
+
 - Navigation (10 keys)
 - Actions (20 keys)
 - Status (12 keys)
@@ -301,6 +330,7 @@ import { LocaleProvider } from '@/components/i18n/locale-provider';
 Complete Spanish translations with professional quality (not machine-translated).
 
 **Language Settings**:
+
 - Format: dd/MM/yyyy
 - Time: 24h
 - Currency: EUR
@@ -313,6 +343,7 @@ Complete Spanish translations with professional quality (not machine-translated)
 Complete French translations with professional quality (not machine-translated).
 
 **Language Settings**:
+
 - Format: dd/MM/yyyy
 - Time: 24h
 - Currency: EUR
@@ -325,6 +356,7 @@ Complete French translations with professional quality (not machine-translated).
 ### `I18N_IMPLEMENTATION.md`
 
 **Sections**:
+
 - Architecture overview
 - File structure
 - Core components documentation
@@ -341,6 +373,7 @@ Complete French translations with professional quality (not machine-translated).
 ### `I18N_QUICK_START.md`
 
 **Sections**:
+
 - 5-step setup guide
 - Common patterns
 - Testing instructions
@@ -354,6 +387,7 @@ Complete French translations with professional quality (not machine-translated).
 ### `I18N_SUMMARY.txt`
 
 **Sections**:
+
 - File inventory
 - Key features
 - Translation coverage
@@ -368,6 +402,7 @@ Complete French translations with professional quality (not machine-translated).
 ## Usage by File Type
 
 ### In Server Components
+
 ```typescript
 import { useTranslations } from 'next-intl';
 
@@ -378,6 +413,7 @@ export default function Page() {
 ```
 
 ### In Client Components
+
 ```typescript
 'use client';
 import { useTranslations } from 'next-intl';
@@ -389,16 +425,18 @@ export function OrderCard() {
 ```
 
 ### Formatting
+
 ```typescript
-import { formatCurrency, formatDate } from '@/i18n/formatting';
-import { useLocale } from 'next-intl';
+import { formatCurrency, formatDate } from "@/i18n/formatting";
+import { useLocale } from "next-intl";
 
 const locale = useLocale() as any;
-const price = formatCurrency(99.99, 'USD', locale);
-const date = formatDate(new Date(), 'relative', locale);
+const price = formatCurrency(99.99, "USD", locale);
+const date = formatDate(new Date(), "relative", locale);
 ```
 
 ### Navigation
+
 ```typescript
 import { Link, useRouter } from '@/i18n/navigation';
 
@@ -408,6 +446,7 @@ router.push('/orders/123');
 ```
 
 ### Language Switching
+
 ```typescript
 import { useLocale } from 'next-intl';
 import { LanguageSwitcher } from '@/components/i18n/language-switcher';
@@ -460,45 +499,45 @@ i18n/extract-keys.ts
 
 ## Quick Reference
 
-| File | Size | Purpose | Key Exports |
-|------|------|---------|------------|
-| config.ts | 2.8K | Locale config | getLocaleFromRequest, isRTL, localeMetadata |
-| namespaces.ts | 533B | Namespaces | defaultNS, namespaces, resources |
-| request.ts | 1.7K | Message loading | getRequestConfig (default) |
-| navigation.ts | 1.2K | Routing | Link, redirect, useRouter |
-| formatting.ts | 5.1K | Formatting | formatCurrency, formatDate, formatNumber |
-| rtl-support.ts | 3.7K | RTL support | getDirection, getLogicalProperties |
-| extract-keys.ts | 4.2K | Validation | extractKeysFromFiles, generateReport |
-| middleware.ts | 2.8K | Auth & routing | Middleware handler |
-| language-switcher.tsx | 4.3K | UI | LanguageSwitcher component |
-| locale-provider.tsx | 711B | Provider | LocaleProvider component |
+| File                  | Size | Purpose         | Key Exports                                 |
+| --------------------- | ---- | --------------- | ------------------------------------------- |
+| config.ts             | 2.8K | Locale config   | getLocaleFromRequest, isRTL, localeMetadata |
+| namespaces.ts         | 533B | Namespaces      | defaultNS, namespaces, resources            |
+| request.ts            | 1.7K | Message loading | getRequestConfig (default)                  |
+| navigation.ts         | 1.2K | Routing         | Link, redirect, useRouter                   |
+| formatting.ts         | 5.1K | Formatting      | formatCurrency, formatDate, formatNumber    |
+| rtl-support.ts        | 3.7K | RTL support     | getDirection, getLogicalProperties          |
+| extract-keys.ts       | 4.2K | Validation      | extractKeysFromFiles, generateReport        |
+| middleware.ts         | 2.8K | Auth & routing  | Middleware handler                          |
+| language-switcher.tsx | 4.3K | UI              | LanguageSwitcher component                  |
+| locale-provider.tsx   | 711B | Provider        | LocaleProvider component                    |
 
 ---
 
 ## Translation Keys Count
 
-| Namespace | Count |
-|-----------|-------|
-| common | 122 |
-| auth | 30 |
-| onboarding | 30 |
-| dashboard | 20 |
-| orders | 20 |
-| drivers | 20 |
-| deliveries | 16 |
-| settings | 72 |
-| integrations | 40 |
-| **TOTAL** | **450+** |
+| Namespace    | Count    |
+| ------------ | -------- |
+| common       | 122      |
+| auth         | 30       |
+| onboarding   | 30       |
+| dashboard    | 20       |
+| orders       | 20       |
+| drivers      | 20       |
+| deliveries   | 16       |
+| settings     | 72       |
+| integrations | 40       |
+| **TOTAL**    | **450+** |
 
 ---
 
 ## Locale Metadata
 
-| Locale | Name | Format | Time | Currency | Timezone |
-|--------|------|--------|------|----------|----------|
-| en | English | MM/dd/yyyy | 12h | USD | America/New_York |
-| es | Spanish | dd/MM/yyyy | 24h | EUR | Europe/Madrid |
-| fr | French | dd/MM/yyyy | 24h | EUR | Europe/Paris |
+| Locale | Name    | Format     | Time | Currency | Timezone         |
+| ------ | ------- | ---------- | ---- | -------- | ---------------- |
+| en     | English | MM/dd/yyyy | 12h  | USD      | America/New_York |
+| es     | Spanish | dd/MM/yyyy | 24h  | EUR      | Europe/Madrid    |
+| fr     | French  | dd/MM/yyyy | 24h  | EUR      | Europe/Paris     |
 
 ---
 

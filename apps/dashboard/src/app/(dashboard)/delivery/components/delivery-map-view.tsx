@@ -1,19 +1,19 @@
-'use client';
+"use client";
 /**
  * DeliveryMapView — WLMap-based delivery locations map.
  * Uses ShipmentMarkerLayer (status-coloured circles) + useFitBounds.
  * Loaded client-side only via dynamic import in delivery/page.tsx.
  */
 
-import { WLMap } from '@/components/map/wl-map';
+import { WLMap } from "@/components/map/wl-map";
 import {
   ShipmentMarkerLayer,
   type ShipmentMarker,
   type ShipmentMarkerStatus,
-} from '@/components/map/shipment-marker-layer';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { MapPin } from 'lucide-react';
+} from "@/components/map/shipment-marker-layer";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { MapPin } from "lucide-react";
 
 export interface DeliveryMapShipment {
   id: string;
@@ -23,7 +23,10 @@ export interface DeliveryMapShipment {
   addressLine1?: string | null;
   city?: string | null;
   deliveryLocation?: { lat: number; lng: number } | null;
-  order?: { customerName?: string | null; externalOrderNumber?: string | null } | null;
+  order?: {
+    customerName?: string | null;
+    externalOrderNumber?: string | null;
+  } | null;
 }
 
 // ── Inner layer component (must be rendered inside <WLMap>) ──
@@ -53,10 +56,10 @@ function MapLayers({
 // ── Legend ────────────────────────────────────────────────────
 
 const LEGEND = [
-  { color: 'var(--wl-info-500)', label: 'Pending' },
-  { color: 'var(--wl-warning-500)', label: 'In Transit' },
-  { color: 'var(--wl-success-500)', label: 'Delivered' },
-  { color: 'var(--wl-danger-500)', label: 'Failed' },
+  { color: "var(--wl-info-500)", label: "Pending" },
+  { color: "var(--wl-warning-500)", label: "In Transit" },
+  { color: "var(--wl-success-500)", label: "Delivered" },
+  { color: "var(--wl-danger-500)", label: "Failed" },
 ];
 
 // ── Main export ───────────────────────────────────────────────
@@ -73,7 +76,9 @@ export default function DeliveryMapView({
   onSelect: (id: string) => void;
 }) {
   const markers: ShipmentMarker[] = shipments
-    .filter((s) => s.deliveryLocation?.lat != null && s.deliveryLocation?.lng != null)
+    .filter(
+      (s) => s.deliveryLocation?.lat != null && s.deliveryLocation?.lng != null,
+    )
     .map((s) => ({
       id: s.id,
       lat: s.deliveryLocation!.lat,

@@ -40,7 +40,10 @@ export class BenchApiError extends Error {
 }
 
 function baseUrl(): string {
-  return (process.env.BENCH_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
+  return (process.env.BENCH_API_BASE_URL ?? "http://localhost:8000").replace(
+    /\/$/,
+    "",
+  );
 }
 
 function token(): string {

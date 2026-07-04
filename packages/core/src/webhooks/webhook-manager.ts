@@ -56,7 +56,7 @@ export class WebhookManager {
    */
   async registerEndpoint(
     tenantId: string,
-    config: WebhookEndpointConfig
+    config: WebhookEndpointConfig,
   ): Promise<WebhookEndpoint> {
     if (!config.url) {
       throw new Error("Webhook URL is required");
@@ -104,7 +104,7 @@ export class WebhookManager {
    */
   async updateEndpoint(
     id: string,
-    config: Partial<WebhookEndpointConfig>
+    config: Partial<WebhookEndpointConfig>,
   ): Promise<WebhookEndpoint> {
     const existing = await db.webhookEndpoint.findUnique({
       where: { id },
@@ -173,7 +173,7 @@ export class WebhookManager {
       active?: boolean;
       events?: string[];
     },
-    pagination?: { page?: number; limit?: number }
+    pagination?: { page?: number; limit?: number },
   ): Promise<{
     data: WebhookEndpoint[];
     total: number;
@@ -335,7 +335,7 @@ export class WebhookManager {
    */
   async getDeliveryHistory(
     endpointId: string,
-    pagination?: { page?: number; limit?: number }
+    pagination?: { page?: number; limit?: number },
   ): Promise<{
     data: WebhookDelivery[];
     total: number;
@@ -463,7 +463,7 @@ export class WebhookManager {
     deliveryId: string,
     statusCode: number,
     durationMs: number,
-    responseBody?: string
+    responseBody?: string,
   ): Promise<WebhookDelivery> {
     const delivery = await db.webhookDelivery.findUnique({
       where: { id: deliveryId },
@@ -519,7 +519,7 @@ export class WebhookManager {
     statusCode?: number,
     error?: string,
     durationMs?: number,
-    responseBody?: string
+    responseBody?: string,
   ): Promise<WebhookDelivery> {
     const delivery = await db.webhookDelivery.findUnique({
       where: { id: deliveryId },
@@ -597,7 +597,7 @@ export class WebhookManager {
    * @returns Test result
    */
   async sendTestWebhook(
-    endpointId: string
+    endpointId: string,
   ): Promise<{ success: boolean; statusCode?: number; error?: string }> {
     const endpoint = await db.webhookEndpoint.findUnique({
       where: { endpointId },

@@ -142,16 +142,19 @@ export class FirebaseFcmClient {
     };
 
     const encodedHeader = Buffer.from(JSON.stringify(header)).toString(
-      "base64url"
+      "base64url",
     );
     const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
-      "base64url"
+      "base64url",
     );
     const message = `${encodedHeader}.${encodedPayload}`;
 
     const signer = createSign("RSA-SHA256");
     signer.update(message);
-    const signature = signer.sign(this.serviceAccountKey.private_key, "base64url");
+    const signature = signer.sign(
+      this.serviceAccountKey.private_key,
+      "base64url",
+    );
 
     return `${message}.${signature}`;
   }
@@ -162,7 +165,7 @@ export class FirebaseFcmClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: object
+    body?: object,
   ): Promise<T> {
     const token = await this.getAccessToken();
     const url = `${this.baseUrl}/${this.projectId}${endpoint}`;
@@ -185,8 +188,9 @@ export class FirebaseFcmClient {
       const error = (await response.json()) as Record<string, unknown>;
       const errorCode = (error.error as Record<string, string> | undefined)
         ?.code;
-      const message = (error.error as Record<string, string> | undefined)
-        ?.message || "Unknown error";
+      const message =
+        (error.error as Record<string, string> | undefined)?.message ||
+        "Unknown error";
 
       throw new FcmError(message, response.status, errorCode);
     }
@@ -199,7 +203,7 @@ export class FirebaseFcmClient {
    */
   async sendToDevice(
     token: string,
-    message: Omit<FcmMessage, "topic" | "condition" | "token">
+    message: Omit<FcmMessage, "topic" | "condition" | "token">,
   ): Promise<FcmSendResponse> {
     try {
       const fcmMessage: FcmMessage = {
@@ -218,7 +222,7 @@ export class FirebaseFcmClient {
       const response = await this.request<SendResponse>(
         "POST",
         "/messages:send",
-        body
+        body,
       );
 
       // Extract message ID from name: projects/{project}/messages/{message}
@@ -238,7 +242,7 @@ export class FirebaseFcmClient {
    */
   async sendToTopic(
     topic: string,
-    message: Omit<FcmMessage, "token" | "condition" | "topic">
+    message: Omit<FcmMessage, "token" | "condition" | "topic">,
   ): Promise<FcmSendResponse> {
     try {
       const fcmMessage: FcmMessage = {
@@ -257,7 +261,7 @@ export class FirebaseFcmClient {
       const response = await this.request<SendResponse>(
         "POST",
         "/messages:send",
-        body
+        body,
       );
 
       const messageId = response.name.split("/").pop() || "unknown";
@@ -276,7 +280,7 @@ export class FirebaseFcmClient {
    */
   async sendWithCondition(
     condition: string,
-    message: Omit<FcmMessage, "token" | "topic" | "condition">
+    message: Omit<FcmMessage, "token" | "topic" | "condition">,
   ): Promise<FcmSendResponse> {
     try {
       const fcmMessage: FcmMessage = {
@@ -295,7 +299,7 @@ export class FirebaseFcmClient {
       const response = await this.request<SendResponse>(
         "POST",
         "/messages:send",
-        body
+        body,
       );
 
       const messageId = response.name.split("/").pop() || "unknown";
@@ -314,7 +318,7 @@ export class FirebaseFcmClient {
    */
   async multicast(
     tokens: string[],
-    message: Omit<FcmMessage, "token" | "topic" | "condition">
+    message: Omit<FcmMessage, "token" | "topic" | "condition">,
   ): Promise<FcmBatchSendResponse> {
     if (tokens.length === 0) {
       return {
@@ -350,16 +354,18 @@ export class FirebaseFcmClient {
       const response = await this.request<MulticastResponse>(
         "POST",
         "/messages:sendMulticast",
-        body
+        body,
       );
 
-      const responses: FcmSendResponse[] = response.results.map((result, idx) => ({
-        messageId: result.messageId || tokens[idx],
-        success: !result.error,
-        error: result.error,
-        errorCode: this.parseErrorCode(result.error),
-        retryable: this.isRetryableError(result.error),
-      }));
+      const responses: FcmSendResponse[] = response.results.map(
+        (result, idx) => ({
+          messageId: result.messageId || tokens[idx],
+          success: !result.error,
+          error: result.error,
+          errorCode: this.parseErrorCode(result.error),
+          retryable: this.isRetryableError(result.error),
+        }),
+      );
 
       return {
         successCount: response.success,
@@ -375,7 +381,7 @@ export class FirebaseFcmClient {
    * Send multiple messages in a batch (up to 500 messages).
    */
   async sendBatch(
-    messages: Array<FcmMessage & { token: string }>
+    messages: Array<FcmMessage & { token: string }>,
   ): Promise<FcmBatchSendResponse> {
     if (messages.length === 0) {
       return {
@@ -415,7 +421,7 @@ export class FirebaseFcmClient {
    */
   async subscribeToTopic(
     tokens: string[],
-    topic: string
+    topic: string,
   ): Promise<{ successCount: number; failureCount: number }> {
     if (tokens.length === 0) {
       return { successCount: 0, failureCount: 0 };
@@ -434,7 +440,7 @@ export class FirebaseFcmClient {
         {
           to: `/topics/${topic}`,
           registration_tokens: tokens,
-        }
+        },
       );
 
       let failures = 0;
@@ -456,7 +462,7 @@ export class FirebaseFcmClient {
    */
   async unsubscribeFromTopic(
     tokens: string[],
-    topic: string
+    topic: string,
   ): Promise<{ successCount: number; failureCount: number }> {
     if (tokens.length === 0) {
       return { successCount: 0, failureCount: 0 };
@@ -475,7 +481,7 @@ export class FirebaseFcmClient {
         {
           to: `/topics/${topic}`,
           registration_tokens: tokens,
-        }
+        },
       );
 
       let failures = 0;
@@ -497,7 +503,7 @@ export class FirebaseFcmClient {
    */
   async createDeviceGroup(
     groupName: string,
-    tokens: string[]
+    tokens: string[],
   ): Promise<{ notificationKey: string }> {
     try {
       const body = {
@@ -513,7 +519,7 @@ export class FirebaseFcmClient {
       const response = await this.request<GroupResponse>(
         "POST",
         `/iid:sendGroupMessage`,
-        body
+        body,
       );
 
       return {
@@ -530,7 +536,7 @@ export class FirebaseFcmClient {
   async addToDeviceGroup(
     notificationKey: string,
     groupName: string,
-    tokens: string[]
+    tokens: string[],
   ): Promise<void> {
     try {
       const body = {
@@ -552,7 +558,7 @@ export class FirebaseFcmClient {
   async removeFromDeviceGroup(
     notificationKey: string,
     groupName: string,
-    tokens: string[]
+    tokens: string[],
   ): Promise<void> {
     try {
       const body = {
@@ -678,10 +684,7 @@ export class FirebaseFcmClient {
   /**
    * Handle send errors and classify as retryable.
    */
-  private handleSendError(
-    error: unknown,
-    target: string
-  ): FcmSendResponse {
+  private handleSendError(error: unknown, target: string): FcmSendResponse {
     if (error instanceof FcmError) {
       return {
         messageId: target,
@@ -731,7 +734,7 @@ export class FcmError extends Error {
   constructor(
     message: string,
     public statusCode?: number,
-    public errorCode?: string
+    public errorCode?: string,
   ) {
     super(message);
     this.name = "FcmError";

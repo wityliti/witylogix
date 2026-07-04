@@ -30,24 +30,24 @@ yarn add @witylogix/checkout-widget
 ## Quick Start
 
 ```tsx
-import React from 'react';
-import { CheckoutWidget, DeliveryMethodType } from '@witylogix/checkout-widget';
+import React from "react";
+import { CheckoutWidget, DeliveryMethodType } from "@witylogix/checkout-widget";
 
 const deliveryMethods = [
   {
     id: DeliveryMethodType.STANDARD,
-    name: 'Standard Delivery',
-    description: 'Delivery in 1-2 business days',
-    estimatedTime: 'Next business day',
+    name: "Standard Delivery",
+    description: "Delivery in 1-2 business days",
+    estimatedTime: "Next business day",
     estimatedMinutes: 1440,
     price: 5.99,
     enabled: true,
   },
   {
     id: DeliveryMethodType.EXPRESS,
-    name: 'Express Delivery',
-    description: 'Delivery today or tomorrow',
-    estimatedTime: 'Today or tomorrow',
+    name: "Express Delivery",
+    description: "Delivery today or tomorrow",
+    estimatedTime: "Today or tomorrow",
     estimatedMinutes: 480,
     price: 12.99,
     enabled: true,
@@ -61,11 +61,11 @@ export function App() {
       deliveryMethods={deliveryMethods}
       defaultOrderValue={100}
       onComplete={(selection) => {
-        console.log('Order completed:', selection);
+        console.log("Order completed:", selection);
         // Send to your backend
       }}
       onError={(error) => {
-        console.error('Error:', error);
+        console.error("Error:", error);
       }}
     />
   );
@@ -81,6 +81,7 @@ The widget requires an API backend with the following endpoints:
 Validate address and detect delivery zone.
 
 **Request:**
+
 ```json
 {
   "address": "123 Main St, New York, NY",
@@ -89,13 +90,14 @@ Validate address and detect delivery zone.
 ```
 
 **Response:**
+
 ```json
 {
   "valid": true,
   "address": "123 Main St, New York, NY 10001",
   "zipcode": "10001",
   "latitude": 40.7128,
-  "longitude": -74.0060,
+  "longitude": -74.006,
   "zoneId": "zone-1",
   "zoneName": "Manhattan",
   "message": "We deliver to your area!"
@@ -107,6 +109,7 @@ Validate address and detect delivery zone.
 Address autocomplete suggestions.
 
 **Request:**
+
 ```json
 {
   "query": "123 main"
@@ -114,6 +117,7 @@ Address autocomplete suggestions.
 ```
 
 **Response:**
+
 ```json
 [
   "123 Main St, New York, NY",
@@ -127,6 +131,7 @@ Address autocomplete suggestions.
 Get address suggestions.
 
 **Request:**
+
 ```json
 {
   "query": "123 main"
@@ -134,11 +139,9 @@ Get address suggestions.
 ```
 
 **Response:**
+
 ```json
-[
-  "123 Main St, New York, NY",
-  "123 Main Ave, Brooklyn, NY"
-]
+["123 Main St, New York, NY", "123 Main Ave, Brooklyn, NY"]
 ```
 
 ### `POST /api/availability`
@@ -146,6 +149,7 @@ Get address suggestions.
 Fetch available delivery slots for a date range.
 
 **Request:**
+
 ```json
 {
   "zoneId": "zone-1",
@@ -156,6 +160,7 @@ Fetch available delivery slots for a date range.
 ```
 
 **Response:**
+
 ```json
 [
   {
@@ -198,6 +203,7 @@ Batch fetch availability for multiple dates (same as above but for optimization)
 Fetch delivery rates for a zone.
 
 **Request:**
+
 ```json
 {
   "zoneId": "zone-1",
@@ -208,13 +214,14 @@ Fetch delivery rates for a zone.
 ```
 
 **Response:**
+
 ```json
 {
   "zoneId": "zone-1",
   "zoneName": "Manhattan",
   "baseRate": 5.99,
-  "distanceFeePerKm": 0.50,
-  "weightSurchargePerKg": 1.00,
+  "distanceFeePerKm": 0.5,
+  "weightSurchargePerKg": 1.0,
   "freeDeliveryThreshold": 50,
   "currency": "USD",
   "enabled": true
@@ -226,6 +233,7 @@ Fetch delivery rates for a zone.
 Batch fetch rates for multiple zones.
 
 **Request:**
+
 ```json
 {
   "zoneIds": ["zone-1", "zone-2"],
@@ -235,6 +243,7 @@ Batch fetch rates for multiple zones.
 ```
 
 **Response:**
+
 ```json
 [
   {
@@ -289,15 +298,16 @@ The widget uses CSS variables for theming. Customize colors by providing `custom
 <CheckoutWidget
   {...props}
   customVariables={{
-    '--wl-accent': '200 100% 50%',
-    '--wl-success': '142 72% 29%',
-    '--wl-warning': '38 92% 50%',
-    '--wl-destructive': '0 84% 60%',
+    "--wl-accent": "200 100% 50%",
+    "--wl-success": "142 72% 29%",
+    "--wl-warning": "38 92% 50%",
+    "--wl-destructive": "0 84% 60%",
   }}
 />
 ```
 
 Available CSS variables:
+
 - `--wl-foreground`
 - `--wl-background`
 - `--wl-muted`
@@ -320,14 +330,14 @@ import {
   AddressInput,
   DeliveryOptions,
   ZoneRateDisplay,
-} from '@witylogix/checkout-widget';
+} from "@witylogix/checkout-widget";
 
 // Use components individually
 <DatePicker
   selectedDate={date}
   onDateSelect={(date) => setDate(date)}
   availableDates={availableDates}
-/>
+/>;
 ```
 
 ## Hooks
@@ -342,20 +352,21 @@ Available hooks for custom integration:
 - `useAddressAutocomplete` - Address autocomplete
 
 ```tsx
-import { useSlotAvailability } from '@witylogix/checkout-widget';
+import { useSlotAvailability } from "@witylogix/checkout-widget";
 
 const { data, isLoading, error, refetch } = useSlotAvailability(
-  'zone-1',
-  '2024-03-15',
-  '2024-03-30',
-  'standard',
-  { apiBaseUrl: 'https://api.example.com', enabled: true }
+  "zone-1",
+  "2024-03-15",
+  "2024-03-30",
+  "standard",
+  { apiBaseUrl: "https://api.example.com", enabled: true },
 );
 ```
 
 ## Accessibility
 
 The widget is fully WCAG 2.1 AA compliant:
+
 - Semantic HTML
 - ARIA labels and roles
 - Keyboard navigation
@@ -376,7 +387,7 @@ The widget is fully WCAG 2.1 AA compliant:
 
 ```tsx
 // Assuming you have a Shopify checkout extension
-import { CheckoutWidget } from '@witylogix/checkout-widget';
+import { CheckoutWidget } from "@witylogix/checkout-widget";
 
 export function MyCheckoutExtension() {
   return (
@@ -398,10 +409,10 @@ export function MyCheckoutExtension() {
 <div id="witylogix-checkout"></div>
 
 <script>
-  import { CheckoutWidget } from '@witylogix/checkout-widget';
+  import { CheckoutWidget } from "@witylogix/checkout-widget";
 
   const root = ReactDOM.createRoot(
-    document.getElementById('witylogix-checkout')
+    document.getElementById("witylogix-checkout"),
   );
 
   root.render(
@@ -410,12 +421,12 @@ export function MyCheckoutExtension() {
       deliveryMethods={window.witylogixMethods}
       onComplete={(selection) => {
         // Save to WooCommerce order
-        fetch('/api/wc-orders/update', {
-          method: 'POST',
+        fetch("/api/wc-orders/update", {
+          method: "POST",
           body: JSON.stringify(selection),
         });
       }}
-    />
+    />,
   );
 </script>
 ```

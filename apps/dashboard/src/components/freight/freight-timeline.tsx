@@ -86,7 +86,7 @@ export function FreightTimeline({
     <div
       className={cn(
         "rounded-lg border border-wl-border-default bg-wl-bg-primary p-4",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -95,7 +95,9 @@ export function FreightTimeline({
           <h3 className="text-sm font-semibold text-wl-text-primary">
             Shipment Timeline
           </h3>
-          <p className="text-xs text-wl-text-secondary mt-1">ID: {shipmentId}</p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            ID: {shipmentId}
+          </p>
         </div>
 
         {/* Delay Indicator */}
@@ -112,7 +114,9 @@ export function FreightTimeline({
       {/* Progress Bar */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs text-wl-text-secondary">Overall Progress</span>
+          <span className="text-xs text-wl-text-secondary">
+            Overall Progress
+          </span>
           <span className="text-xs font-semibold text-wl-text-primary">
             {Math.round(progress)}%
           </span>
@@ -130,9 +134,9 @@ export function FreightTimeline({
         <div className="space-y-3 mb-4">
           {milestones.map((milestone, index) => {
             const isCurrentStatus = milestone.status === currentStatus;
-            const isPastStatus = statusOrder.indexOf(milestone.status) <
-              statusOrder.indexOf(currentStatus) ||
-              milestone.isCompleted;
+            const isPastStatus =
+              statusOrder.indexOf(milestone.status) <
+                statusOrder.indexOf(currentStatus) || milestone.isCompleted;
 
             return (
               <div key={milestone.status} className="flex gap-4 items-start">
@@ -146,10 +150,12 @@ export function FreightTimeline({
                         ? "bg-wl-success-500/20 border-wl-success-400"
                         : isCurrentStatus
                           ? "bg-wl-primary-500/20 border-wl-primary-400 animate-pulse"
-                          : "bg-wl-bg-secondary border-wl-border-default"
+                          : "bg-wl-bg-secondary border-wl-border-default",
                     )}
                   >
-                    {milestone.isCompleted ? "✓" : getMilestoneIcon(milestone.status)}
+                    {milestone.isCompleted
+                      ? "✓"
+                      : getMilestoneIcon(milestone.status)}
                   </div>
 
                   {/* Connector Line */}
@@ -159,7 +165,7 @@ export function FreightTimeline({
                         "w-0.5 h-10 mt-1",
                         isPastStatus
                           ? "bg-wl-success-500"
-                          : "bg-wl-border-default"
+                          : "bg-wl-border-default",
                       )}
                     />
                   )}
@@ -172,7 +178,10 @@ export function FreightTimeline({
                       <p
                         className={cn(
                           "text-sm font-medium",
-                          getStatusColor(milestone.status, milestone.isCompleted)
+                          getStatusColor(
+                            milestone.status,
+                            milestone.isCompleted,
+                          ),
                         )}
                       >
                         {milestone.label}
@@ -227,7 +236,7 @@ export function FreightTimeline({
                     ? "bg-wl-success-500/20 text-wl-success-400"
                     : milestone.status === currentStatus
                       ? "bg-wl-primary-500/20 text-wl-primary-400"
-                      : "bg-wl-bg-secondary text-wl-text-secondary"
+                      : "bg-wl-bg-secondary text-wl-text-secondary",
                 )}
               >
                 {getMilestoneIcon(milestone.status)} {milestone.label}
@@ -258,10 +267,12 @@ export function FreightTimeline({
 
         <div>
           <p className="text-wl-text-secondary mb-1">Actual Delivery</p>
-          <p className={cn(
-            "text-sm font-semibold",
-            actualDelivery ? "text-wl-success-400" : "text-wl-text-secondary"
-          )}>
+          <p
+            className={cn(
+              "text-sm font-semibold",
+              actualDelivery ? "text-wl-success-400" : "text-wl-text-secondary",
+            )}
+          >
             {actualDelivery || "Pending"}
           </p>
         </div>
@@ -278,10 +289,12 @@ export function FreightTimeline({
           </div>
           <div>
             <p className="text-wl-text-secondary mb-1">On-Time Status</p>
-            <p className={cn(
-              "text-lg font-bold",
-              totalDelay === 0 ? "text-wl-success-400" : "text-wl-danger-400"
-            )}>
+            <p
+              className={cn(
+                "text-lg font-bold",
+                totalDelay === 0 ? "text-wl-success-400" : "text-wl-danger-400",
+              )}
+            >
               {totalDelay === 0 ? "On Schedule" : `${totalDelay}h Behind`}
             </p>
           </div>

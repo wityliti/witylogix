@@ -143,7 +143,7 @@ export class RequestLogger {
       headers?: Record<string, string>;
       body?: any;
     },
-    durationMs?: number
+    durationMs?: number,
   ): void {
     const startTime = this.requestTimestamps.get(requestId);
     const duration = durationMs || (startTime ? Date.now() - startTime : 0);
@@ -174,7 +174,7 @@ export class RequestLogger {
   logError(
     requestId: string,
     error: Error,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): void {
     const entry: RequestLogEntry = {
       requestId,
@@ -200,7 +200,7 @@ export class RequestLogger {
     level: LogLevel,
     message: string,
     requestId?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): void {
     const entry: RequestLogEntry = {
       requestId: requestId || "unknown",
@@ -258,8 +258,7 @@ export class RequestLogger {
   private trimBody(body: any): any {
     if (!body) return undefined;
 
-    const str =
-      typeof body === "string" ? body : JSON.stringify(body);
+    const str = typeof body === "string" ? body : JSON.stringify(body);
 
     if (str.length > this.maxBodySize) {
       return str.substring(0, this.maxBodySize) + "...";

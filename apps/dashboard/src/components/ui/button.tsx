@@ -22,28 +22,28 @@ const variantClasses: Record<ButtonVariant, string> = {
     "font-semibold",
     "hover:from-wl-primary-600 hover:to-wl-primary-700",
     "hover:shadow-md",
-    "active:shadow-sm"
+    "active:shadow-sm",
   ),
   secondary: cn(
     "bg-wl-bg-overlay text-wl-text-primary",
     "border border-wl-border-default",
     "font-medium",
     "hover:bg-wl-bg-elevated hover:border-wl-border-strong",
-    "active:bg-wl-bg-elevated"
+    "active:bg-wl-bg-elevated",
   ),
   ghost: cn(
     "bg-transparent text-wl-text-secondary",
     "border border-transparent",
     "font-medium",
     "hover:text-wl-text-primary hover:bg-wl-bg-overlay",
-    "active:bg-wl-bg-surface"
+    "active:bg-wl-bg-surface",
   ),
   danger: cn(
     "bg-wl-danger-bg text-wl-danger-400",
     "border border-wl-danger-400/20",
     "font-semibold",
     "hover:bg-wl-danger-500/20 hover:border-wl-danger-500/30 hover:text-wl-danger-500",
-    "active:bg-wl-danger-500/30"
+    "active:bg-wl-danger-500/30",
   ),
 };
 
@@ -55,15 +55,8 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    {
-      variant = "primary",
-      size = "md",
-      className,
-      disabled,
-      href,
-      ...props
-    },
-    ref
+    { variant = "primary", size = "md", className, disabled, href, ...props },
+    ref,
   ) => {
     const baseClassName = cn(
       "inline-flex items-center justify-center gap-2",
@@ -74,7 +67,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       "disabled:opacity-50 disabled:cursor-not-allowed",
       variantClasses[variant],
       sizeClasses[size],
-      className
+      className,
     );
 
     if (href) {
@@ -93,7 +86,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

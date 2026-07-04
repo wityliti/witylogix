@@ -98,7 +98,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
       request: FastifyRequest<{
         Body: z.infer<typeof completeDeliverySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const body = completeDeliverySchema.parse(request.body);
 
@@ -126,9 +126,13 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError(`Order ${body.orderId} not found`);
       }
 
-      if (!["IN_TRANSIT", "OUT_FOR_DELIVERY", "DRIVER_ARRIVING"].includes(order.status)) {
+      if (
+        !["IN_TRANSIT", "OUT_FOR_DELIVERY", "DRIVER_ARRIVING"].includes(
+          order.status,
+        )
+      ) {
         throw new ConflictError(
-          `Cannot complete delivery for order with status: ${order.status}`
+          `Cannot complete delivery for order with status: ${order.status}`,
         );
       }
 
@@ -160,7 +164,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
       // Validate POD data
       if (!body.podPhotoUrl && !body.signatureBase64) {
         throw new ValidationError(
-          "At least one of podPhotoUrl or signatureBase64 is required"
+          "At least one of podPhotoUrl or signatureBase64 is required",
         );
       }
 
@@ -205,12 +209,12 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         execution = await engine.executeWorkflow(
           "completeDelivery",
           workflowInput,
-          workflowContext
+          workflowContext,
         );
       } catch (error) {
         fastify.log.error("Delivery completion workflow failed", error);
         throw new InternalServerError(
-          `Delivery completion workflow failed: ${error instanceof Error ? error.message : String(error)}`
+          `Delivery completion workflow failed: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -274,7 +278,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           executionId: execution.id,
         },
       };
-    }
+    },
   );
 
   // ── GET /api/workflow/delivery/:orderId/execution ──
@@ -289,7 +293,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         Params: { orderId: string };
         Querystring: z.infer<typeof getExecutionQuerySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { orderId } = request.params;
       const { executionId } = getExecutionQuerySchema.parse(request.query);
@@ -313,7 +317,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (!execution) {
         throw new NotFoundError(
-          `Workflow execution not found for order ${orderId}`
+          `Workflow execution not found for order ${orderId}`,
         );
       }
 
@@ -330,7 +334,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           durationMs: execution.durationMs,
         },
       };
-    }
+    },
   );
 
   // ── POST /api/workflow/delivery/:orderId/retry ──
@@ -345,7 +349,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         Params: { orderId: string };
         Body: z.infer<typeof retrySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { orderId } = request.params;
       const { executionId } = retrySchema.parse(request.body);
@@ -369,7 +373,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (!["failed", "compensated"].includes(previousExecution.status)) {
         throw new ConflictError(
-          `Cannot retry execution with status: ${previousExecution.status}`
+          `Cannot retry execution with status: ${previousExecution.status}`,
         );
       }
 
@@ -406,12 +410,12 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         execution = await engine.executeWorkflow(
           "completeDelivery",
           previousExecution.input,
-          workflowContext
+          workflowContext,
         );
       } catch (error) {
         fastify.log.error("Delivery completion workflow retry failed", error);
         throw new InternalServerError(
-          `Delivery completion retry failed: ${error instanceof Error ? error.message : String(error)}`
+          `Delivery completion retry failed: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -466,7 +470,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           previousExecutionId: executionId,
         },
       };
-    }
+    },
   );
 }
 

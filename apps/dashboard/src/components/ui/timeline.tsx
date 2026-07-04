@@ -18,7 +18,10 @@ interface TimelineProps extends HTMLAttributes<HTMLDivElement> {
   compact?: boolean;
 }
 
-const statusConfig: Record<TimelineStatus, { dot: string; line: string; label: string }> = {
+const statusConfig: Record<
+  TimelineStatus,
+  { dot: string; line: string; label: string }
+> = {
   completed: {
     dot: "bg-wl-success-500 border-wl-success-500",
     line: "bg-wl-success-500",
@@ -61,7 +64,7 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
                       "w-4 h-4 rounded-full border-2 bg-wl-bg-primary",
                       "flex items-center justify-center",
                       "relative z-10",
-                      config.dot
+                      config.dot,
                     )}
                   >
                     {item.icon && (
@@ -73,12 +76,7 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
 
                   {/* Line connecting to next item */}
                   {!isLast && (
-                    <div
-                      className={cn(
-                        "w-0.5 flex-1 min-h-20",
-                        config.line
-                      )}
-                    />
+                    <div className={cn("w-0.5 flex-1 min-h-20", config.line)} />
                   )}
                 </div>
 
@@ -86,14 +84,14 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
                 <div
                   className={cn(
                     "pb-8 flex-1 pt-0.5",
-                    compact ? "space-y-1" : "space-y-2"
+                    compact ? "space-y-1" : "space-y-2",
                   )}
                 >
                   <div>
                     <p
                       className={cn(
                         "font-semibold text-wl-text-primary",
-                        compact ? "text-sm" : "text-base"
+                        compact ? "text-sm" : "text-base",
                       )}
                     >
                       {item.title}
@@ -101,7 +99,7 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
                     <p
                       className={cn(
                         "text-wl-text-secondary",
-                        compact ? "text-xs" : "text-sm"
+                        compact ? "text-xs" : "text-sm",
                       )}
                     >
                       {config.label}
@@ -118,7 +116,7 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
                     <p
                       className={cn(
                         "text-wl-text-tertiary",
-                        compact ? "text-xs" : "text-sm"
+                        compact ? "text-xs" : "text-sm",
                       )}
                     >
                       {item.timestamp}
@@ -131,7 +129,7 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
         })}
       </div>
     );
-  }
+  },
 );
 
 Timeline.displayName = "Timeline";

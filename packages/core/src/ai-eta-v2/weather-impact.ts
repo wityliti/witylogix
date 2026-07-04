@@ -17,12 +17,18 @@
 /**
  * Weather condition type
  */
-export type WeatherCondition = 'clear' | 'rain' | 'snow' | 'fog' | 'extreme_heat' | 'wind';
+export type WeatherCondition =
+  | "clear"
+  | "rain"
+  | "snow"
+  | "fog"
+  | "extreme_heat"
+  | "wind";
 
 /**
  * Weather severity
  */
-export type WeatherSeverity = 'light' | 'moderate' | 'heavy';
+export type WeatherSeverity = "light" | "moderate" | "heavy";
 
 /**
  * Weather input
@@ -59,46 +65,64 @@ export class WeatherImpact {
     this.impactFactors = new Map();
 
     // Rain: +15-25% delay based on severity
-    this.impactFactors.set('rain', new Map([
-      ['light', 1.15],
-      ['moderate', 1.2],
-      ['heavy', 1.25],
-    ]));
+    this.impactFactors.set(
+      "rain",
+      new Map([
+        ["light", 1.15],
+        ["moderate", 1.2],
+        ["heavy", 1.25],
+      ]),
+    );
 
     // Snow: +30-50% delay (much more impact than rain)
-    this.impactFactors.set('snow', new Map([
-      ['light', 1.3],
-      ['moderate', 1.4],
-      ['heavy', 1.5],
-    ]));
+    this.impactFactors.set(
+      "snow",
+      new Map([
+        ["light", 1.3],
+        ["moderate", 1.4],
+        ["heavy", 1.5],
+      ]),
+    );
 
     // Fog: +10-20% delay (reduced visibility)
-    this.impactFactors.set('fog', new Map([
-      ['light', 1.1],
-      ['moderate', 1.15],
-      ['heavy', 1.2],
-    ]));
+    this.impactFactors.set(
+      "fog",
+      new Map([
+        ["light", 1.1],
+        ["moderate", 1.15],
+        ["heavy", 1.2],
+      ]),
+    );
 
     // Extreme heat: +5-10% delay (slower driving, vehicle issues)
-    this.impactFactors.set('extreme_heat', new Map([
-      ['light', 1.05],
-      ['moderate', 1.075],
-      ['heavy', 1.1],
-    ]));
+    this.impactFactors.set(
+      "extreme_heat",
+      new Map([
+        ["light", 1.05],
+        ["moderate", 1.075],
+        ["heavy", 1.1],
+      ]),
+    );
 
     // Wind: +5-15% delay (gusty winds affect driving)
-    this.impactFactors.set('wind', new Map([
-      ['light', 1.05],
-      ['moderate', 1.1],
-      ['heavy', 1.15],
-    ]));
+    this.impactFactors.set(
+      "wind",
+      new Map([
+        ["light", 1.05],
+        ["moderate", 1.1],
+        ["heavy", 1.15],
+      ]),
+    );
 
     // Clear: no impact
-    this.impactFactors.set('clear', new Map([
-      ['light', 1.0],
-      ['moderate', 1.0],
-      ['heavy', 1.0],
-    ]));
+    this.impactFactors.set(
+      "clear",
+      new Map([
+        ["light", 1.0],
+        ["moderate", 1.0],
+        ["heavy", 1.0],
+      ]),
+    );
   }
 
   /**
@@ -113,35 +137,41 @@ export class WeatherImpact {
     }
 
     // Infer from precipitation (for rain/snow)
-    if ((weather.condition === 'rain' || weather.condition === 'snow') && weather.precipitation !== undefined) {
-      if (weather.precipitation < 2.5) return 'light';
-      if (weather.precipitation < 10) return 'moderate';
-      return 'heavy';
+    if (
+      (weather.condition === "rain" || weather.condition === "snow") &&
+      weather.precipitation !== undefined
+    ) {
+      if (weather.precipitation < 2.5) return "light";
+      if (weather.precipitation < 10) return "moderate";
+      return "heavy";
     }
 
     // Infer from visibility (for fog)
-    if (weather.condition === 'fog' && weather.visibility !== undefined) {
-      if (weather.visibility > 500) return 'light';
-      if (weather.visibility > 100) return 'moderate';
-      return 'heavy';
+    if (weather.condition === "fog" && weather.visibility !== undefined) {
+      if (weather.visibility > 500) return "light";
+      if (weather.visibility > 100) return "moderate";
+      return "heavy";
     }
 
     // Infer from wind speed
-    if (weather.condition === 'wind' && weather.windSpeed !== undefined) {
-      if (weather.windSpeed < 20) return 'light';
-      if (weather.windSpeed < 40) return 'moderate';
-      return 'heavy';
+    if (weather.condition === "wind" && weather.windSpeed !== undefined) {
+      if (weather.windSpeed < 20) return "light";
+      if (weather.windSpeed < 40) return "moderate";
+      return "heavy";
     }
 
     // Infer from temperature (for extreme heat)
-    if (weather.condition === 'extreme_heat' && weather.temperature !== undefined) {
-      if (weather.temperature < 35) return 'light';
-      if (weather.temperature < 40) return 'moderate';
-      return 'heavy';
+    if (
+      weather.condition === "extreme_heat" &&
+      weather.temperature !== undefined
+    ) {
+      if (weather.temperature < 35) return "light";
+      if (weather.temperature < 40) return "moderate";
+      return "heavy";
     }
 
     // Default to moderate if condition requires it
-    return weather.condition === 'clear' ? 'light' : 'moderate';
+    return weather.condition === "clear" ? "light" : "moderate";
   }
 
   /**
@@ -151,9 +181,13 @@ export class WeatherImpact {
    * @param weather Weather conditions
    * @returns Weather impact result with delay factor and minutes
    */
-  calculateImpact(baseDurationMin: number, weather: WeatherInput): WeatherImpactResult {
+  calculateImpact(
+    baseDurationMin: number,
+    weather: WeatherInput,
+  ): WeatherImpactResult {
     const severity = this.determineSeverity(weather);
-    const factor = this.impactFactors.get(weather.condition)?.get(severity) || 1.0;
+    const factor =
+      this.impactFactors.get(weather.condition)?.get(severity) || 1.0;
     const delayMinutes = baseDurationMin * (factor - 1.0);
 
     const reasoning = this.generateReasoning(weather, severity, factor);
@@ -188,35 +222,45 @@ export class WeatherImpact {
   /**
    * Generate reasoning for the impact
    */
-  private generateReasoning(weather: WeatherInput, severity: WeatherSeverity, factor: number): string {
+  private generateReasoning(
+    weather: WeatherInput,
+    severity: WeatherSeverity,
+    factor: number,
+  ): string {
     const impactPercent = ((factor - 1.0) * 100).toFixed(0);
 
-    if (weather.condition === 'clear') {
-      return 'Clear weather - no impact on delivery time';
+    if (weather.condition === "clear") {
+      return "Clear weather - no impact on delivery time";
     }
 
-    if (weather.condition === 'rain') {
-      const precipStr = weather.precipitation ? ` (${weather.precipitation.toFixed(1)} mm/h)` : '';
+    if (weather.condition === "rain") {
+      const precipStr = weather.precipitation
+        ? ` (${weather.precipitation.toFixed(1)} mm/h)`
+        : "";
       return `${severity} rain${precipStr} increases delivery time by ${impactPercent}%`;
     }
 
-    if (weather.condition === 'snow') {
-      const precipStr = weather.precipitation ? ` (${weather.precipitation.toFixed(1)} mm/h)` : '';
+    if (weather.condition === "snow") {
+      const precipStr = weather.precipitation
+        ? ` (${weather.precipitation.toFixed(1)} mm/h)`
+        : "";
       return `${severity} snow${precipStr} increases delivery time by ${impactPercent}%`;
     }
 
-    if (weather.condition === 'fog') {
-      const visStr = weather.visibility ? ` (${weather.visibility}m visibility)` : '';
+    if (weather.condition === "fog") {
+      const visStr = weather.visibility
+        ? ` (${weather.visibility}m visibility)`
+        : "";
       return `${severity} fog${visStr} reduces visibility and increases delivery time by ${impactPercent}%`;
     }
 
-    if (weather.condition === 'extreme_heat') {
-      const tempStr = weather.temperature ? ` (${weather.temperature}°C)` : '';
+    if (weather.condition === "extreme_heat") {
+      const tempStr = weather.temperature ? ` (${weather.temperature}°C)` : "";
       return `Extreme heat${tempStr} affects driving and increases delivery time by ${impactPercent}%`;
     }
 
-    if (weather.condition === 'wind') {
-      const windStr = weather.windSpeed ? ` (${weather.windSpeed} km/h)` : '';
+    if (weather.condition === "wind") {
+      const windStr = weather.windSpeed ? ` (${weather.windSpeed} km/h)` : "";
       return `${severity} wind${windStr} affects vehicle handling and increases delivery time by ${impactPercent}%`;
     }
 
@@ -230,7 +274,11 @@ export class WeatherImpact {
    * @param severity Weather severity
    * @param factor Impact factor (1.0 = no impact)
    */
-  setImpactFactor(condition: WeatherCondition, severity: WeatherSeverity, factor: number): void {
+  setImpactFactor(
+    condition: WeatherCondition,
+    severity: WeatherSeverity,
+    factor: number,
+  ): void {
     let conditionMap = this.impactFactors.get(condition);
     if (!conditionMap) {
       conditionMap = new Map();
@@ -242,7 +290,10 @@ export class WeatherImpact {
   /**
    * Get impact factor for a weather condition
    */
-  getImpactFactor(condition: WeatherCondition, severity: WeatherSeverity): number {
+  getImpactFactor(
+    condition: WeatherCondition,
+    severity: WeatherSeverity,
+  ): number {
     return this.impactFactors.get(condition)?.get(severity) ?? 1.0;
   }
 
@@ -253,41 +304,59 @@ export class WeatherImpact {
     this.impactFactors.clear();
 
     // Re-initialize with defaults
-    this.impactFactors.set('rain', new Map([
-      ['light', 1.15],
-      ['moderate', 1.2],
-      ['heavy', 1.25],
-    ]));
+    this.impactFactors.set(
+      "rain",
+      new Map([
+        ["light", 1.15],
+        ["moderate", 1.2],
+        ["heavy", 1.25],
+      ]),
+    );
 
-    this.impactFactors.set('snow', new Map([
-      ['light', 1.3],
-      ['moderate', 1.4],
-      ['heavy', 1.5],
-    ]));
+    this.impactFactors.set(
+      "snow",
+      new Map([
+        ["light", 1.3],
+        ["moderate", 1.4],
+        ["heavy", 1.5],
+      ]),
+    );
 
-    this.impactFactors.set('fog', new Map([
-      ['light', 1.1],
-      ['moderate', 1.15],
-      ['heavy', 1.2],
-    ]));
+    this.impactFactors.set(
+      "fog",
+      new Map([
+        ["light", 1.1],
+        ["moderate", 1.15],
+        ["heavy", 1.2],
+      ]),
+    );
 
-    this.impactFactors.set('extreme_heat', new Map([
-      ['light', 1.05],
-      ['moderate', 1.075],
-      ['heavy', 1.1],
-    ]));
+    this.impactFactors.set(
+      "extreme_heat",
+      new Map([
+        ["light", 1.05],
+        ["moderate", 1.075],
+        ["heavy", 1.1],
+      ]),
+    );
 
-    this.impactFactors.set('wind', new Map([
-      ['light', 1.05],
-      ['moderate', 1.1],
-      ['heavy', 1.15],
-    ]));
+    this.impactFactors.set(
+      "wind",
+      new Map([
+        ["light", 1.05],
+        ["moderate", 1.1],
+        ["heavy", 1.15],
+      ]),
+    );
 
-    this.impactFactors.set('clear', new Map([
-      ['light', 1.0],
-      ['moderate', 1.0],
-      ['heavy', 1.0],
-    ]));
+    this.impactFactors.set(
+      "clear",
+      new Map([
+        ["light", 1.0],
+        ["moderate", 1.0],
+        ["heavy", 1.0],
+      ]),
+    );
   }
 
   /**
@@ -312,7 +381,7 @@ export class WeatherImpact {
       return {
         combinedFactor: 1.0,
         totalDelayMinutes: 0,
-        reasoning: 'No weather impacts',
+        reasoning: "No weather impacts",
       };
     }
 
@@ -325,11 +394,14 @@ export class WeatherImpact {
     }
 
     // Combine factors multiplicatively (rough approximation)
-    const combinedFactor = impacts.reduce((acc, impact) => acc * impact.delayFactor, 1.0);
+    const combinedFactor = impacts.reduce(
+      (acc, impact) => acc * impact.delayFactor,
+      1.0,
+    );
     const baseDuration = impacts[0].delayMinutes / (impacts[0].delayFactor - 1);
     const totalDelayMinutes = baseDuration * (combinedFactor - 1.0);
 
-    const conditions = impacts.map((i) => i.condition).join(', ');
+    const conditions = impacts.map((i) => i.condition).join(", ");
     const reasoning = `Combined impact of ${conditions}: ${((combinedFactor - 1.0) * 100).toFixed(0)}% delay`;
 
     return {

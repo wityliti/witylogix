@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
 /**
  * Zone-specific API hooks for the dashboard
  */
 
-import { useApiMutation, useApiQuery, UseApiQueryResult, UseApiMutationResult } from './use-api';
+import {
+  useApiMutation,
+  useApiQuery,
+  UseApiQueryResult,
+  UseApiMutationResult,
+} from "./use-api";
 
 /**
  * Zone polygon coordinates
  */
 export interface ZonePolygon {
-  type: 'Polygon';
+  type: "Polygon";
   coordinates: Array<Array<[number, number]>>;
 }
 
@@ -22,7 +27,7 @@ export interface Zone {
   name: string;
   description?: string;
   code: string;
-  status: 'active' | 'inactive' | 'archived';
+  status: "active" | "inactive" | "archived";
   polygon: ZonePolygon;
   center: {
     latitude: number;
@@ -40,7 +45,7 @@ export interface Zone {
  * @returns Array of zones
  */
 export function useZones(): UseApiQueryResult<Zone[]> {
-  return useApiQuery<Zone[]>('/api/v4/zones');
+  return useApiQuery<Zone[]>("/api/v4/zones");
 }
 
 /**
@@ -48,9 +53,7 @@ export function useZones(): UseApiQueryResult<Zone[]> {
  * @param id - Zone ID
  * @returns Single zone with polygon
  */
-export function useZone(
-  id: string | null,
-): UseApiQueryResult<Zone> {
+export function useZone(id: string | null): UseApiQueryResult<Zone> {
   return useApiQuery<Zone>(id ? `/zones/${id}` : null);
 }
 
@@ -59,7 +62,7 @@ export function useZone(
  * @returns Mutation to create zone
  */
 export function useCreateZone(): UseApiMutationResult<Zone> {
-  return useApiMutation<Zone>('POST', '/api/v4/zones');
+  return useApiMutation<Zone>("POST", "/api/v4/zones");
 }
 
 /**
@@ -67,8 +70,6 @@ export function useCreateZone(): UseApiMutationResult<Zone> {
  * @param id - Zone ID
  * @returns Mutation to update zone
  */
-export function useUpdateZone(
-  id: string,
-): UseApiMutationResult<Zone> {
-  return useApiMutation<Zone>('PATCH', `/zones/${id}`);
+export function useUpdateZone(id: string): UseApiMutationResult<Zone> {
+  return useApiMutation<Zone>("PATCH", `/zones/${id}`);
 }

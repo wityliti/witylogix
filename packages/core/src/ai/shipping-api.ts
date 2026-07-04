@@ -18,9 +18,14 @@ import {
   PredictionFactors,
   DeliveryOutcome,
   createDeliveryTimePrediction,
-} from './delivery-time-predictor.js';
+} from "./delivery-time-predictor.js";
 
-import { CarrierRecommendation, CarrierRate, SmartCarrierSelector, createSmartCarrierSelector } from './smart-carrier-selector.js';
+import {
+  CarrierRecommendation,
+  CarrierRate,
+  SmartCarrierSelector,
+  createSmartCarrierSelector,
+} from "./smart-carrier-selector.js";
 
 import {
   ShippingAnalytics,
@@ -29,7 +34,7 @@ import {
   createShippingAnalytics,
   CostBreakdown,
   PerformanceMetrics,
-} from './shipping-analytics.js';
+} from "./shipping-analytics.js";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +49,7 @@ export interface PredictDeliveryRequest {
   destinationZip: string;
   shipDate: string; // ISO 8601
   weight: number; // kg
-  weightCategory?: 'light' | 'medium' | 'heavy' | 'oversize';
+  weightCategory?: "light" | "medium" | "heavy" | "oversize";
   weatherOrigin?: string; // 'clear', 'rain', 'snow', 'fog', 'storm', 'extreme'
   weatherDestination?: string;
   weatherRoute?: string;
@@ -235,20 +240,26 @@ export class ShippingAPIHandler {
   /**
    * Handle prediction request
    */
-  public async handlePredictDelivery(request: PredictDeliveryRequest): Promise<PredictDeliveryResponse> {
+  public async handlePredictDelivery(
+    request: PredictDeliveryRequest,
+  ): Promise<PredictDeliveryResponse> {
     try {
       const factors: PredictionFactors = {
         carrier: request.carrier as any,
         serviceLevel: request.serviceLevel as any,
-        distance: this.estimateDistance(request.originZip, request.destinationZip),
+        distance: this.estimateDistance(
+          request.originZip,
+          request.destinationZip,
+        ),
         originZip: request.originZip,
         destinationZip: request.destinationZip,
         shipDate: new Date(request.shipDate),
         weight: request.weight,
-        weightCategory: request.weightCategory || this.classifyWeight(request.weight),
-        weatherOrigin: (request.weatherOrigin || 'clear') as any,
-        weatherDestination: (request.weatherDestination || 'clear') as any,
-        weatherRoute: (request.weatherRoute || 'clear') as any,
+        weightCategory:
+          request.weightCategory || this.classifyWeight(request.weight),
+        weatherOrigin: (request.weatherOrigin || "clear") as any,
+        weatherDestination: (request.weatherDestination || "clear") as any,
+        weatherRoute: (request.weatherRoute || "clear") as any,
         dayOfWeek: new Date(request.shipDate).getDay(),
         isHoliday: request.isHoliday || false,
         isBlackoutDate: request.isBlackoutDate || false,
@@ -271,7 +282,7 @@ export class ShippingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -280,7 +291,9 @@ export class ShippingAPIHandler {
   /**
    * Handle carrier recommendation request
    */
-  public async handleRecommendCarrier(request: RecommendCarrierRequest): Promise<RecommendCarrierResponse> {
+  public async handleRecommendCarrier(
+    request: RecommendCarrierRequest,
+  ): Promise<RecommendCarrierResponse> {
     try {
       const rates: CarrierRate[] = request.rates.map((r) => ({
         carrier: r.carrier as any,
@@ -298,7 +311,7 @@ export class ShippingAPIHandler {
         rates,
         request.originZip,
         request.destinationZip,
-        request.deadlineDays
+        request.deadlineDays,
       );
 
       return {
@@ -309,7 +322,8 @@ export class ShippingAPIHandler {
           recommendedServiceCode: recommendation.recommendedServiceCode,
           estimatedCost: recommendation.estimatedCost,
           currency: recommendation.currency,
-          estimatedDeliveryDate: recommendation.estimatedDeliveryDate.toISOString(),
+          estimatedDeliveryDate:
+            recommendation.estimatedDeliveryDate.toISOString(),
           estimatedDays: recommendation.estimatedDays,
           score: recommendation.score,
           confidence: recommendation.confidence,
@@ -321,7 +335,7 @@ export class ShippingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -330,27 +344,38 @@ export class ShippingAPIHandler {
   /**
    * Handle analytics request
    */
-  public async handleGetAnalytics(request: AnalyticsRequest): Promise<AnalyticsResponse> {
+  public async handleGetAnalytics(
+    request: AnalyticsRequest,
+  ): Promise<AnalyticsResponse> {
     try {
       // Filter shipments by date range
-      let filtered = this.shipmentHistory.filter((s) => s.tenantId === request.tenantId);
+      let filtered = this.shipmentHistory.filter(
+        (s) => s.tenantId === request.tenantId,
+      );
 
       if (request.startDate && request.endDate) {
         const start = new Date(request.startDate);
         const end = new Date(request.endDate);
-        filtered = filtered.filter((s) => s.shipDate >= start && s.shipDate <= end);
+        filtered = filtered.filter(
+          (s) => s.shipDate >= start && s.shipDate <= end,
+        );
       }
 
       if (filtered.length === 0) {
         return {
           success: false,
-          error: 'No shipment data available for the requested period',
+          error: "No shipment data available for the requested period",
           timestamp: new Date().toISOString(),
         };
       }
 
       // Generate report
-      const report = this.analytics.generateReport(request.tenantId, filtered, this.shipmentHistory, request.period || 'custom');
+      const report = this.analytics.generateReport(
+        request.tenantId,
+        filtered,
+        this.shipmentHistory,
+        request.period || "custom",
+      );
 
       return {
         success: true,
@@ -381,7 +406,7 @@ export class ShippingAPIHandler {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -390,20 +415,29 @@ export class ShippingAPIHandler {
   /**
    * Handle feedback submission
    */
-  public async handleSubmitFeedback(request: SubmitFeedbackRequest): Promise<SubmitFeedbackResponse> {
+  public async handleSubmitFeedback(
+    request: SubmitFeedbackRequest,
+  ): Promise<SubmitFeedbackResponse> {
     try {
       const outcome: DeliveryOutcome = {
         carrier: request.carrier as any,
         trackingNumber: request.trackingNumber,
         shipDate: new Date(request.shipDate),
         deliveryDate: new Date(request.deliveryDate),
-        actualDays: Math.ceil((new Date(request.deliveryDate).getTime() - new Date(request.shipDate).getTime()) / (1000 * 60 * 60 * 24)),
+        actualDays: Math.ceil(
+          (new Date(request.deliveryDate).getTime() -
+            new Date(request.shipDate).getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
         predictedDays: 0, // would be set from prior prediction
         originZip: request.originZip,
         destinationZip: request.destinationZip,
         weight: request.weight,
         serviceLevel: request.serviceLevel as any,
-        distance: this.estimateDistance(request.originZip, request.destinationZip),
+        distance: this.estimateDistance(
+          request.originZip,
+          request.destinationZip,
+        ),
         onTime: request.onTime,
       };
 
@@ -421,7 +455,7 @@ export class ShippingAPIHandler {
         weight: request.weight,
         destinationZip: request.destinationZip,
         destinationState: request.destinationZip.substring(0, 2),
-        destinationCountry: 'US',
+        destinationCountry: "US",
         onTime: request.onTime,
         damaged: request.damaged,
         exceptionCount: 0,
@@ -430,13 +464,13 @@ export class ShippingAPIHandler {
 
       return {
         success: true,
-        message: 'Feedback recorded successfully',
+        message: "Feedback recorded successfully",
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -455,11 +489,13 @@ export class ShippingAPIHandler {
   /**
    * Classify package weight
    */
-  private classifyWeight(weight: number): 'light' | 'medium' | 'heavy' | 'oversize' {
-    if (weight < 5) return 'light';
-    if (weight < 50) return 'medium';
-    if (weight < 500) return 'heavy';
-    return 'oversize';
+  private classifyWeight(
+    weight: number,
+  ): "light" | "medium" | "heavy" | "oversize" {
+    if (weight < 5) return "light";
+    if (weight < 50) return "medium";
+    if (weight < 500) return "heavy";
+    return "oversize";
   }
 
   /**

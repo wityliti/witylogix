@@ -17,37 +17,37 @@ export declare function getOptimizationQueue(): Queue;
 export declare function getWebhookQueue(): Queue;
 export declare function getMaintenanceQueue(): Queue;
 export interface NotificationJobData {
-    shopId: string;
-    orderId: string;
-    eventType: string;
-    channels: Array<"EMAIL" | "SMS" | "WHATSAPP" | "PUSH">;
-    recipient: {
-        email?: string;
-        phone?: string;
-        fcmToken?: string;
-    };
-    templateData: Record<string, unknown>;
+  shopId: string;
+  orderId: string;
+  eventType: string;
+  channels: Array<"EMAIL" | "SMS" | "WHATSAPP" | "PUSH">;
+  recipient: {
+    email?: string;
+    phone?: string;
+    fcmToken?: string;
+  };
+  templateData: Record<string, unknown>;
 }
 export interface OptimizationJobData {
-    shopId: string;
-    routeId: string;
-    depot: {
-        lat: number;
-        lng: number;
-        address?: string;
-    };
-    orderIds: string[];
-    vehicleIds: string[];
-    options?: {
-        timeLimit?: number;
-        returnToDepot?: boolean;
-    };
+  shopId: string;
+  routeId: string;
+  depot: {
+    lat: number;
+    lng: number;
+    address?: string;
+  };
+  orderIds: string[];
+  vehicleIds: string[];
+  options?: {
+    timeLimit?: number;
+    returnToDepot?: boolean;
+  };
 }
 export interface WebhookJobData {
-    shopId: string;
-    url: string;
-    topic: string;
-    payload: Record<string, unknown>;
+  shopId: string;
+  url: string;
+  topic: string;
+  payload: Record<string, unknown>;
 }
 export declare function registerWorker(worker: Worker): void;
 export declare function shutdownQueues(): Promise<void>;

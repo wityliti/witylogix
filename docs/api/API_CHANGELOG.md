@@ -7,6 +7,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 ### Added
 
 #### New Authentication Endpoints
+
 - `POST /api/v4/auth/login` — Dashboard user login with email/password
 - `POST /api/v4/auth/driver/login` — Driver app login with phone/password
 - `POST /api/v4/auth/refresh` — Refresh access token using refresh token
@@ -17,6 +18,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `POST /api/v4/auth/password/reset-confirm` — Confirm password reset with token
 
 #### New Onboarding Flow Endpoints
+
 - `POST /api/v4/onboarding/start` — Initiate onboarding process
 - `GET /api/v4/onboarding/progress` — Get current onboarding step progress
 - `POST /api/v4/onboarding/company` — Set company details during onboarding
@@ -24,6 +26,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `POST /api/v4/onboarding/complete` — Complete onboarding and activate account
 
 #### Tenant Management Endpoints
+
 - `GET /api/v4/tenants/resolve` — Resolve tenant from domain/identifier
 - `GET /api/v4/tenants/config` — Get tenant configuration
 - `GET /api/v4/api-keys` — List API keys for tenant
@@ -32,6 +35,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `GET /api/v4/tenants/usage` — Get usage metrics for current plan
 
 #### Core API Endpoints
+
 - `GET /api/v4/orders` — List orders with pagination and filtering
 - `POST /api/v4/orders` — Create new order
 - `GET /api/v4/orders/{orderId}` — Get single order
@@ -41,6 +45,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `GET /api/v4/orders/{orderId}/timeline` — Get order status history
 
 #### Driver Management Endpoints
+
 - `GET /api/v4/drivers` — List drivers
 - `POST /api/v4/drivers` — Create new driver
 - `GET /api/v4/drivers/{driverId}` — Get driver details
@@ -49,6 +54,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `POST /api/v4/drivers/{driverId}/location` — Update driver GPS location
 
 #### Zone Management Endpoints
+
 - `GET /api/v4/zones` — List delivery zones
 - `POST /api/v4/zones` — Create delivery zone
 - `GET /api/v4/zones/{zoneId}` — Get zone details
@@ -56,6 +62,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `GET /api/v4/zones/{zoneId}/rates` — Get delivery rates for zone
 
 #### Route Planning Endpoints
+
 - `GET /api/v4/routes` — List routes
 - `POST /api/v4/routes` — Create new route
 - `GET /api/v4/routes/{routeId}` — Get route with stops
@@ -66,6 +73,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `POST /api/v4/routes/{routeId}/optimize` — Trigger route optimization
 
 #### Integration Management Endpoints
+
 - `GET /api/v4/integrations` — List installed integrations
 - `POST /api/v4/integrations` — Install new integration
 - `PATCH /api/v4/integrations/{integrationId}` — Update integration config
@@ -73,6 +81,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `GET /api/v4/integrations/{integrationId}/health` — Check integration health
 
 #### Webhook Management Endpoints
+
 - `GET /api/v4/webhooks` — List webhook endpoints
 - `POST /api/v4/webhooks` — Create webhook endpoint
 - `PATCH /api/v4/webhooks/{endpointId}` — Update webhook endpoint
@@ -82,6 +91,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 - `GET /api/v4/webhooks/dlq` — Access dead letter queue
 
 #### Admin Endpoints
+
 - `GET /api/v4/admin/users` — List all users
 - `PATCH /api/v4/admin/users/{userId}` — Update user
 - `DELETE /api/v4/admin/users/{userId}` — Deactivate user
@@ -92,23 +102,27 @@ All notable changes to the Witylogix API are documented here. This file follows 
 ### Changed
 
 #### Authentication
+
 - Migrated from session-based to JWT tokens for improved API usability
 - All authenticated endpoints now require `Authorization: Bearer <token>` header
 - Added support for API Key authentication (`X-API-Key` header)
 - Implemented refresh token rotation for enhanced security
 
 #### Response Format
+
 - Standardized all successful responses to use `{ data: {...} }` wrapper
 - Error responses now follow `{ error: { code, message, details } }` format
 - Added `requestId` to all error responses for debugging
 - Added support for cursor-based pagination (legacy offset-based still supported)
 
 #### Rate Limiting
+
 - Moved from per-IP to per-tenant rate limiting
 - Added `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` headers
 - Plan-based rate limits: FREE (100/min), PRO (1000/min), ENTERPRISE (10000/min)
 
 ### Fixed
+
 - Fixed race condition in order status transitions with pessimistic locking
 - Fixed webhook delivery retry logic to use exponential backoff
 - Fixed tenant isolation by ensuring all queries filter by shopId
@@ -116,6 +130,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 ### Security
 
 #### New Security Features
+
 - HMAC-SHA256 signature verification for webhook payloads
 - TOTP-based multi-factor authentication support
 - API key scoping with granular permissions
@@ -134,6 +149,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
 #### From v1.0 to v2.0
 
 1. **Update Authentication**
+
    ```bash
    # Old: POST /auth/login with email/password → sets httpOnly cookie
    curl -X POST https://api.witylogix.com/auth/login \
@@ -151,6 +167,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
    ```
 
 2. **Update Headers**
+
    ```bash
    # Old: Authorization: Token <api-key>
    # New: Authorization: Bearer <jwt-token>
@@ -159,6 +176,7 @@ All notable changes to the Witylogix API are documented here. This file follows 
    ```
 
 3. **Update Response Handling**
+
    ```typescript
    // Old: Direct array/object
    // const orders = await res.json();
@@ -168,14 +186,15 @@ All notable changes to the Witylogix API are documented here. This file follows 
    ```
 
 4. **Implement Token Refresh**
+
    ```typescript
    // Store both access and refresh tokens
    const { accessToken, refreshToken } = await loginResponse.json();
 
    // Use refresh endpoint when access token expires
-   const newTokens = await fetch('/api/v4/auth/refresh', {
-     method: 'POST',
-     body: JSON.stringify({ refreshToken })
+   const newTokens = await fetch("/api/v4/auth/refresh", {
+     method: "POST",
+     body: JSON.stringify({ refreshToken }),
    });
    ```
 

@@ -16,7 +16,7 @@ import type {
   BadgeType,
   TrendDirection,
   DriverScoringWeights,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Default scoring weights
@@ -62,9 +62,10 @@ export interface DriverMetrics {
 /**
  * Simple linear regression for trend analysis
  */
-function linearRegression(
-  points: Array<{ x: number; y: number }>,
-): { slope: number; intercept: number } {
+function linearRegression(points: Array<{ x: number; y: number }>): {
+  slope: number;
+  intercept: number;
+} {
   if (points.length === 0) {
     return { slope: 0, intercept: 0 };
   }
@@ -96,7 +97,7 @@ function analyzeTrend(
   historicalValues: number[],
 ): { direction: TrendDirection; changePercent: number } {
   if (historicalValues.length < 2) {
-    return { direction: 'stable' as TrendDirection, changePercent: 0 };
+    return { direction: "stable" as TrendDirection, changePercent: 0 };
   }
 
   // Use last 4 weeks of data (assuming weekly data points)
@@ -109,11 +110,11 @@ function analyzeTrend(
   // Determine trend direction
   let direction: TrendDirection;
   if (slope > 0.5) {
-    direction = 'improving' as TrendDirection;
+    direction = "improving" as TrendDirection;
   } else if (slope < -0.5) {
-    direction = 'declining' as TrendDirection;
+    direction = "declining" as TrendDirection;
   } else {
-    direction = 'stable' as TrendDirection;
+    direction = "stable" as TrendDirection;
   }
 
   // Calculate percentage change from first to last
@@ -140,23 +141,25 @@ function assignBadges(
 
   // Top Performer: top 10%
   if (percentileRank >= 90) {
-    badges.push('top_performer');
+    badges.push("top_performer");
   }
 
   // Most Improved: improving trend + above average
-  if (trend === 'improving' && score >= 50) {
-    badges.push('most_improved');
+  if (trend === "improving" && score >= 50) {
+    badges.push("most_improved");
   }
 
   // Consistent: all metrics above 80, stable trend
-  const allMetricsHigh = Object.values(compositeBreakdown).every((v) => v >= 80);
-  if (allMetricsHigh && trend === 'stable') {
-    badges.push('consistent');
+  const allMetricsHigh = Object.values(compositeBreakdown).every(
+    (v) => v >= 80,
+  );
+  if (allMetricsHigh && trend === "stable") {
+    badges.push("consistent");
   }
 
   // Needs Coaching: score below 50
   if (score < 50) {
-    badges.push('needs_coaching');
+    badges.push("needs_coaching");
   }
 
   return badges;
@@ -266,8 +269,7 @@ export function calculateDriverScore(
       ? (metrics.deliveries.onTimeCount / metrics.deliveries.totalCount) * 100
       : 0;
 
-  const customerRating =
-    (metrics.ratings.average / 5) * 100; // Convert 0-5 to 0-100
+  const customerRating = (metrics.ratings.average / 5) * 100; // Convert 0-5 to 0-100
 
   const routeEfficiency = metrics.routeEfficiency.average; // already 0-100
 
@@ -297,7 +299,11 @@ export function calculateDriverScore(
   );
 
   // Calculate peer comparison
-  const { rank, totalPeers, percentile: percentileRank } = calculatePercentileRank(
+  const {
+    rank,
+    totalPeers,
+    percentile: percentileRank,
+  } = calculatePercentileRank(
     metrics.driverId,
     compositeScore,
     metrics.zoneId,
@@ -377,12 +383,12 @@ export function calculateDriverScoreBatch(
   );
 
   const topPerformers = scores
-    .filter((s) => s.badges.includes('top_performer'))
+    .filter((s) => s.badges.includes("top_performer"))
     .sort((a, b) => b.compositeScore - a.compositeScore)
     .slice(0, 5);
 
   const needsCoaching = scores
-    .filter((s) => s.badges.includes('needs_coaching'))
+    .filter((s) => s.badges.includes("needs_coaching"))
     .sort((a, b) => a.compositeScore - b.compositeScore);
 
   return {

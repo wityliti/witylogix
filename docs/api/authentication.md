@@ -30,6 +30,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/login \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -72,21 +73,21 @@ curl https://api.witylogix.com/api/v4/orders \
 ### TypeScript/JavaScript Example
 
 ```typescript
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 async function loginAndFetchOrders() {
   // Step 1: Login
   const loginResponse = await fetch(
-    'https://api.witylogix.com/api/v4/auth/login',
+    "https://api.witylogix.com/api/v4/auth/login",
     {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: 'user@example.com',
-        password: 'password',
-        shopDomain: 'mystore.myshopify.com',
+        email: "user@example.com",
+        password: "password",
+        shopDomain: "mystore.myshopify.com",
       }),
-    }
+    },
   );
 
   const { data: auth } = await loginResponse.json();
@@ -94,12 +95,12 @@ async function loginAndFetchOrders() {
 
   // Step 2: Use access token
   const ordersResponse = await fetch(
-    'https://api.witylogix.com/api/v4/orders',
+    "https://api.witylogix.com/api/v4/orders",
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
 
   const { data: orders } = await ordersResponse.json();
@@ -120,6 +121,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/refresh \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -169,6 +171,7 @@ curl -X POST https://api.witylogix.com/api/v4/api-keys \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -197,17 +200,17 @@ curl https://api.witylogix.com/api/v4/orders \
 
 Available scopes:
 
-| Scope | Description |
-|-------|-------------|
-| `orders.read` | Read orders and delivery data |
-| `orders.write` | Create and update orders |
-| `drivers.read` | Read driver information |
-| `drivers.write` | Update driver status and assignments |
-| `routes.read` | View route plans |
-| `routes.write` | Create and optimize routes |
-| `deliveries.read` | View delivery status |
-| `webhooks.manage` | Create and manage webhooks |
-| `admin.read` | Read admin data (users, orgs) |
+| Scope             | Description                          |
+| ----------------- | ------------------------------------ |
+| `orders.read`     | Read orders and delivery data        |
+| `orders.write`    | Create and update orders             |
+| `drivers.read`    | Read driver information              |
+| `drivers.write`   | Update driver status and assignments |
+| `routes.read`     | View route plans                     |
+| `routes.write`    | Create and optimize routes           |
+| `deliveries.read` | View delivery status                 |
+| `webhooks.manage` | Create and manage webhooks           |
+| `admin.read`      | Read admin data (users, orgs)        |
 
 ### Revoking API Keys
 
@@ -228,6 +231,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/setup \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -257,6 +261,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/mfa/verify \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -325,6 +330,7 @@ curl -X POST https://api.witylogix.com/api/v4/auth/password/reset-confirm \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -339,11 +345,11 @@ curl -X POST https://api.witylogix.com/api/v4/auth/password/reset-confirm \
 
 Different rate limits apply based on authentication method and plan:
 
-| Plan | JWT (User) | JWT (Driver) | API Key |
-|------|-----------|-------------|---------|
-| FREE | 100/min | 50/min | 100/min |
-| PRO | 1000/min | 500/min | 1000/min |
-| ENTERPRISE | 10000/min | 5000/min | 10000/min |
+| Plan       | JWT (User) | JWT (Driver) | API Key   |
+| ---------- | ---------- | ------------ | --------- |
+| FREE       | 100/min    | 50/min       | 100/min   |
+| PRO        | 1000/min   | 500/min      | 1000/min  |
+| ENTERPRISE | 10000/min  | 5000/min     | 10000/min |
 
 Rate limit information is returned in response headers:
 
@@ -362,6 +368,7 @@ When rate limit is exceeded, requests return `429 Too Many Requests`.
 For third-party integrations, use OAuth2:
 
 1. **Redirect to authorization endpoint:**
+
    ```
    https://api.witylogix.com/oauth2/authorize?
      client_id=your_client_id&
@@ -374,6 +381,7 @@ For third-party integrations, use OAuth2:
 2. **User grants permission**
 
 3. **Exchange code for token:**
+
    ```bash
    curl -X POST https://api.witylogix.com/oauth2/token \
      -H "Content-Type: application/x-www-form-urlencoded" \
@@ -407,15 +415,15 @@ For third-party integrations, use OAuth2:
 
 Common authentication errors:
 
-| Code | Description | Solution |
-|------|-------------|----------|
-| `AUTH_UNAUTHORIZED` | Invalid credentials | Verify email and password |
-| `AUTH_TOKEN_EXPIRED` | Access token expired | Use refresh token to get new token |
-| `AUTH_INVALID_TOKEN` | Token format invalid | Ensure proper JWT format |
-| `AUTH_MFA_REQUIRED` | MFA challenge required | Complete MFA verification |
-| `AUTH_MFA_INVALID` | Invalid TOTP code | Verify correct code from authenticator |
-| `AUTH_RATE_LIMITED` | Too many login attempts | Wait before retrying |
-| `RESOURCE_NOT_FOUND` | Shop domain not found | Verify shopDomain parameter |
+| Code                 | Description             | Solution                               |
+| -------------------- | ----------------------- | -------------------------------------- |
+| `AUTH_UNAUTHORIZED`  | Invalid credentials     | Verify email and password              |
+| `AUTH_TOKEN_EXPIRED` | Access token expired    | Use refresh token to get new token     |
+| `AUTH_INVALID_TOKEN` | Token format invalid    | Ensure proper JWT format               |
+| `AUTH_MFA_REQUIRED`  | MFA challenge required  | Complete MFA verification              |
+| `AUTH_MFA_INVALID`   | Invalid TOTP code       | Verify correct code from authenticator |
+| `AUTH_RATE_LIMITED`  | Too many login attempts | Wait before retrying                   |
+| `RESOURCE_NOT_FOUND` | Shop domain not found   | Verify shopDomain parameter            |
 
 ## Troubleshooting
 

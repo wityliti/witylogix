@@ -13,7 +13,11 @@
  * Returns percentile-based confidence intervals.
  */
 
-import type { TimeInterval, HistoricalRoute, ModelPrediction } from '../types.js';
+import type {
+  TimeInterval,
+  HistoricalRoute,
+  ModelPrediction,
+} from "../types.js";
 
 export class HistoricalModel {
   /**
@@ -41,7 +45,7 @@ export class HistoricalModel {
     origin: { lat: number; lng: number },
     destination: { lat: number; lng: number },
     distanceKm: number,
-    zoneType: 'urban' | 'suburban' | 'rural',
+    zoneType: "urban" | "suburban" | "rural",
     departureTime: Date,
     dayOfWeek: number,
   ): ModelPrediction {
@@ -60,10 +64,7 @@ export class HistoricalModel {
 
     // Get actual durations for similar routes
     const durations = similarRoutes.map(
-      (r) =>
-        (r.actualArrival.getTime() -
-          r.departureTime.getTime()) /
-        60000,
+      (r) => (r.actualArrival.getTime() - r.departureTime.getTime()) / 60000,
     );
 
     // Sort durations for percentile calculation
@@ -74,13 +75,10 @@ export class HistoricalModel {
     const p10 = this.percentile(durations, 10);
     const p90 = this.percentile(durations, 90);
 
-    const confidence = Math.min(
-      Math.sqrt(similarRoutes.length) / 10,
-      1.0,
-    );
+    const confidence = Math.min(Math.sqrt(similarRoutes.length) / 10, 1.0);
 
     return {
-      modelName: 'HistoricalModel',
+      modelName: "HistoricalModel",
       prediction: {
         low: new Date(departureTime.getTime() + p10 * 60000),
         expected: new Date(departureTime.getTime() + p50 * 60000),
@@ -137,18 +135,14 @@ export class HistoricalModel {
     const stdDev = expectedMinutes * 0.2;
 
     return {
-      modelName: 'HistoricalModel (Fallback)',
+      modelName: "HistoricalModel (Fallback)",
       prediction: {
         low: new Date(
-          departureTime.getTime() +
-            (expectedMinutes - stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes - stdDev * 1.96) * 60000,
         ),
-        expected: new Date(
-          departureTime.getTime() + expectedMinutes * 60000,
-        ),
+        expected: new Date(departureTime.getTime() + expectedMinutes * 60000),
         high: new Date(
-          departureTime.getTime() +
-            (expectedMinutes + stdDev * 1.96) * 60000,
+          departureTime.getTime() + (expectedMinutes + stdDev * 1.96) * 60000,
         ),
       },
       confidence: 0.3,
@@ -236,17 +230,14 @@ export class HistoricalModel {
         ? successful.reduce(
             (sum, r) =>
               sum +
-              (r.actualArrival.getTime() -
-                r.departureTime.getTime()) /
-                60000,
+              (r.actualArrival.getTime() - r.departureTime.getTime()) / 60000,
             0,
           ) / successful.length
         : 0;
 
     const zoneTypeCounts: Record<string, number> = {};
     successful.forEach((r) => {
-      zoneTypeCounts[r.zoneType] =
-        (zoneTypeCounts[r.zoneType] ?? 0) + 1;
+      zoneTypeCounts[r.zoneType] = (zoneTypeCounts[r.zoneType] ?? 0) + 1;
     });
 
     return {

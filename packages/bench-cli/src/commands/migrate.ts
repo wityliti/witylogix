@@ -1,18 +1,22 @@
-import type { Command } from 'commander';
-import pc from 'picocolors';
+import type { Command } from "commander";
+import pc from "picocolors";
 import {
   buildContext,
   migrate as migrateOps,
   BenchApiRequestError,
   NoConfigError,
-} from '@witylogix/bench-core';
+} from "@witylogix/bench-core";
 
 export function registerMigrateCommand(program: Command): void {
   program
-    .command('migrate')
-    .description('Run Prisma migrations (windowed: stop API, migrate, restart)')
-    .option('--skip-backup', 'skip pre-migrate auto-backup (no-op until T13 lands)', false)
-    .option('--force', 'run even if no migrations are pending', false)
+    .command("migrate")
+    .description("Run Prisma migrations (windowed: stop API, migrate, restart)")
+    .option(
+      "--skip-backup",
+      "skip pre-migrate auto-backup (no-op until T13 lands)",
+      false,
+    )
+    .option("--force", "run even if no migrations are pending", false)
     .action(async (opts: { skipBackup: boolean; force: boolean }) => {
       const globals = program.opts<{ json: boolean; dryRun: boolean }>();
       try {

@@ -11,23 +11,28 @@ Quick navigation for all CI/CD related files and documentation.
 ## File Locations
 
 ### Docker Configuration
+
 - **Dockerfile.api** - Fastify backend multi-stage build
 - **Dockerfile.dashboard** - Next.js dashboard multi-stage build
 - **Dockerfile.shopify-app** - Shopify app (React Router + Vite) build
 - **.dockerignore** - Build context optimization
 
 ### Docker Compose
+
 - **docker-compose.yml** - Production services (postgres, redis, api, dashboard, shopify-app)
 - **docker-compose.dev.yml** - Development overrides (hot-reload, debugging)
 
 ### GitHub Actions Workflows
+
 - **.github/workflows/ci.yml** - Continuous Integration (Lint, Type, Test, Build)
 - **.github/workflows/deploy.yml** - Continuous Deployment (Build, Push, Deploy)
 
 ### API Routes
+
 - **apps/api/src/routes/health.ts** - Health check endpoints (/health, /health/ready, /health/deep)
 
 ### Documentation
+
 - **CICD.md** - Comprehensive guide (architecture, setup, deployment)
 - **CICD_QUICK_REFERENCE.md** - Quick lookup guide (commands, troubleshooting)
 - **INTEGRATION_GUIDE.md** - Step-by-step integration (10 steps)
@@ -39,19 +44,23 @@ Quick navigation for all CI/CD related files and documentation.
 ## Quick Start
 
 ### First Time Setup
+
 1. Read: **INTEGRATION_GUIDE.md** (Step 1-3)
 2. Run: `docker compose build`
 3. Test: `docker compose up`
 4. Verify: `curl http://localhost:3001/health`
 
 ### Running CI/CD Locally
+
 1. Push branch: `git push origin branch-name`
 2. Create PR on GitHub
 3. Watch: GitHub Actions > CI workflow
 4. Merge when all checks pass
 
 ### Common Commands
+
 See **CICD_QUICK_REFERENCE.md** for:
+
 - Docker commands
 - Docker Compose commands
 - Testing and building
@@ -147,11 +156,13 @@ GitHub Actions Deploy
 ## Environment Variables
 
 **Required:**
+
 - DATABASE_URL
 - REDIS_URL
 - JWT_SECRET
 
 **Optional:**
+
 - MAPBOX_ACCESS_TOKEN
 - STRIPE_SECRET_KEY
 - SHOPIFY_API_KEY
@@ -179,14 +190,14 @@ See CICD.md "Environment Configuration" section for full list.
 
 ## Performance Expectations
 
-| Task | Time |
-|------|------|
-| Docker build (first) | 5-10 min |
-| Docker build (cached) | 1-2 min |
-| CI pipeline (first) | 15-20 min |
-| CI pipeline (cached) | 8-10 min |
-| Deploy to platform | 2-5 min |
-| Health check response | 1-100 ms |
+| Task                  | Time      |
+| --------------------- | --------- |
+| Docker build (first)  | 5-10 min  |
+| Docker build (cached) | 1-2 min   |
+| CI pipeline (first)   | 15-20 min |
+| CI pipeline (cached)  | 8-10 min  |
+| Deploy to platform    | 2-5 min   |
+| Health check response | 1-100 ms  |
 
 ---
 
@@ -206,11 +217,13 @@ See CICD.md "Environment Configuration" section for full list.
 ## Support
 
 **Questions?**
+
 - Start with CICD_QUICK_REFERENCE.md
 - Check INTEGRATION_GUIDE.md for setup steps
 - Read CICD.md for detailed information
 
 **Issues?**
+
 - See troubleshooting sections
 - Check GitHub Actions logs
 - Review error messages carefully

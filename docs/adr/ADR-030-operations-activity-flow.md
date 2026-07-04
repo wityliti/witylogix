@@ -27,7 +27,7 @@ This is inspired by Fleetbase's FleetOps "activity flow" concept but keeps Wityl
 - **BullMQ-based multi-step workflows** in `packages/workflows/*`:
   - Reusable steps: `validateOrderStep`, `geocodeAddressStep`, `calculateRateStep`, `assignDriverRecordStep`, etc.
   - Workflow definitions: `create-delivery-order`, `assign-driver`, `complete-delivery`.
-  - These execute **job sequences** (run a step, wait, run next). They do not model the canonical state of an order; they *drive transitions* as side effects.
+  - These execute **job sequences** (run a step, wait, run next). They do not model the canonical state of an order; they _drive transitions_ as side effects.
 - **Socket event emission** via `apps/api/src/lib/events.ts` (e.g. `emitShipmentStatusChanged`). This is an in-app real-time channel, not a tenant-configurable business process.
 
 ### The gap
@@ -36,7 +36,7 @@ A tenant today cannot:
 
 1. Add a new stage ("Awaiting Customs Clearance") between existing ones.
 2. Rename, hide, or re-order stages in the dashboard.
-3. Subscribe a third-party app to a *custom stage*.
+3. Subscribe a third-party app to a _custom stage_.
 4. Drive different order types through different flows (e.g. standard delivery vs return).
 
 Every such change requires a platform deploy. Fleetbase's FleetOps demonstrated that a JSON-configurable activity flow covers 90% of these requests without a code change, and the remaining 10% (true side-effect orchestration) is exactly what BullMQ workflows already do.
@@ -61,9 +61,19 @@ A new Prisma model stored in `packages/db/prisma/schema/69-operations.prisma`:
 ```json
 {
   "stages": [
-    { "key": "PENDING", "label": "Pending", "terminal": false, "kind": "start" },
+    {
+      "key": "PENDING",
+      "label": "Pending",
+      "terminal": false,
+      "kind": "start"
+    },
     { "key": "PROCESSING", "label": "Processing", "terminal": false },
-    { "key": "DELIVERED", "label": "Delivered", "terminal": true, "kind": "success" }
+    {
+      "key": "DELIVERED",
+      "label": "Delivered",
+      "terminal": true,
+      "kind": "success"
+    }
   ],
   "transitions": [
     { "from": "PENDING", "to": "PROCESSING", "requires": "operations:write" },
@@ -130,7 +140,7 @@ A new page in `apps/dashboard/src/app/settings/operations/` using React Flow:
 
 ### 6. Relationship to BullMQ workflows
 
-Unchanged. Workflows in `packages/workflows` continue to drive multi-step jobs. They become *consumers* of stage-change events when needed (e.g. `create-delivery-order` workflow reacts to `shipment.stage_changed → PROCESSING` to kick off geocoding). There is no merge, no migration, and no breaking change to existing workflow code.
+Unchanged. Workflows in `packages/workflows` continue to drive multi-step jobs. They become _consumers_ of stage-change events when needed (e.g. `create-delivery-order` workflow reacts to `shipment.stage_changed → PROCESSING` to kick off geocoding). There is no merge, no migration, and no breaking change to existing workflow code.
 
 ---
 
@@ -158,7 +168,7 @@ Unchanged. Workflows in `packages/workflows` continue to drive multi-step jobs. 
 ## Alternatives considered
 
 1. **Keep hard-coded `STATUS_TRANSITIONS`, expose them via config flags.** Rejected: doesn't solve custom stages, still requires a deploy for every tenant-specific change.
-2. **Model everything as BullMQ workflows.** Rejected: workflows are good at *doing* things (jobs), bad at *being* things (state). Editing a workflow to add an intermediate visible state is clunky and not safe to do per-tenant.
+2. **Model everything as BullMQ workflows.** Rejected: workflows are good at _doing_ things (jobs), bad at _being_ things (state). Editing a workflow to add an intermediate visible state is clunky and not safe to do per-tenant.
 3. **Port Fleetbase FleetOps directly.** Rejected: different stack (Laravel + Ember), different data model, AGPL ↔ AGPL is fine but we get zero reuse and inherit their assumptions.
 
 ---

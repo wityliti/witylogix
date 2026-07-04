@@ -82,7 +82,7 @@ function generateId(): string {
 export function useFieldArray(
   form: FormInstance,
   fieldName: string,
-  config: UseFieldArrayConfig = {}
+  config: UseFieldArrayConfig = {},
 ): FieldArrayInstance {
   const { minItems = 0, maxItems = Infinity, validateOnChange = true } = config;
 
@@ -112,7 +112,7 @@ export function useFieldArray(
         form.setFieldError(fieldName, "");
       }
     },
-    [form, fieldName, validateOnChange]
+    [form, fieldName, validateOnChange],
   );
 
   /**
@@ -126,7 +126,7 @@ export function useFieldArray(
         setFieldIds((prev) => [...prev, generateId()]);
       }
     },
-    [getFieldArray, setFieldArray, maxItems]
+    [getFieldArray, setFieldArray, maxItems],
   );
 
   /**
@@ -140,7 +140,7 @@ export function useFieldArray(
         setFieldIds((prev) => [generateId(), ...prev]);
       }
     },
-    [getFieldArray, setFieldArray, maxItems]
+    [getFieldArray, setFieldArray, maxItems],
   );
 
   /**
@@ -149,7 +149,11 @@ export function useFieldArray(
   const insert = useCallback(
     (index: number, value: Record<string, unknown>) => {
       const currentArray = getFieldArray();
-      if (currentArray.length < maxItems && index >= 0 && index <= currentArray.length) {
+      if (
+        currentArray.length < maxItems &&
+        index >= 0 &&
+        index <= currentArray.length
+      ) {
         const newArray = [...currentArray];
         newArray.splice(index, 0, value);
         setFieldArray(newArray);
@@ -160,7 +164,7 @@ export function useFieldArray(
         });
       }
     },
-    [getFieldArray, setFieldArray, maxItems]
+    [getFieldArray, setFieldArray, maxItems],
   );
 
   /**
@@ -169,7 +173,11 @@ export function useFieldArray(
   const remove = useCallback(
     (index: number) => {
       const currentArray = getFieldArray();
-      if (currentArray.length > minItems && index >= 0 && index < currentArray.length) {
+      if (
+        currentArray.length > minItems &&
+        index >= 0 &&
+        index < currentArray.length
+      ) {
         const newArray = [...currentArray];
         newArray.splice(index, 1);
         setFieldArray(newArray);
@@ -180,7 +188,7 @@ export function useFieldArray(
         });
       }
     },
-    [getFieldArray, setFieldArray, minItems]
+    [getFieldArray, setFieldArray, minItems],
   );
 
   /**
@@ -196,7 +204,10 @@ export function useFieldArray(
         indexB < currentArray.length
       ) {
         const newArray = [...currentArray];
-        [newArray[indexA], newArray[indexB]] = [newArray[indexB], newArray[indexA]];
+        [newArray[indexA], newArray[indexB]] = [
+          newArray[indexB],
+          newArray[indexA],
+        ];
         setFieldArray(newArray);
         setFieldIds((prev) => {
           const newIds = [...prev];
@@ -205,7 +216,7 @@ export function useFieldArray(
         });
       }
     },
-    [getFieldArray, setFieldArray]
+    [getFieldArray, setFieldArray],
   );
 
   /**
@@ -214,7 +225,12 @@ export function useFieldArray(
   const move = useCallback(
     (from: number, to: number) => {
       const currentArray = getFieldArray();
-      if (from >= 0 && from < currentArray.length && to >= 0 && to < currentArray.length) {
+      if (
+        from >= 0 &&
+        from < currentArray.length &&
+        to >= 0 &&
+        to < currentArray.length
+      ) {
         const newArray = [...currentArray];
         const [movedItem] = newArray.splice(from, 1);
         newArray.splice(to, 0, movedItem);
@@ -227,7 +243,7 @@ export function useFieldArray(
         });
       }
     },
-    [getFieldArray, setFieldArray]
+    [getFieldArray, setFieldArray],
   );
 
   /**
@@ -252,7 +268,7 @@ export function useFieldArray(
     (index: number) => {
       return getFieldArray().length > minItems;
     },
-    [getFieldArray, minItems]
+    [getFieldArray, minItems],
   );
 
   return {

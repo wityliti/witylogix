@@ -30,7 +30,7 @@ export function EfficiencyHeatmap({
       }
     }
 
-    data.forEach(cell => {
+    data.forEach((cell) => {
       grid[cell.dayOfWeek][cell.hour] = cell;
     });
 
@@ -85,7 +85,10 @@ export function EfficiencyHeatmap({
               <div className="w-12" />
               <div className="flex gap-0.5">
                 {Array.from({ length: 24 }, (_, i) => (
-                  <div key={i} className="w-8 text-center text-xs text-wl-text-secondary">
+                  <div
+                    key={i}
+                    className="w-8 text-center text-xs text-wl-text-secondary"
+                  >
                     {i}
                   </div>
                 ))}
@@ -96,7 +99,9 @@ export function EfficiencyHeatmap({
             <div className="flex flex-col gap-0.5">
               {dayNames.map((dayName, day) => (
                 <div key={day} className="flex items-center gap-2">
-                  <div className="w-12 text-xs font-medium text-wl-text-secondary">{dayName}</div>
+                  <div className="w-12 text-xs font-medium text-wl-text-secondary">
+                    {dayName}
+                  </div>
                   <div className="flex gap-0.5">
                     {Array.from({ length: 24 }, (_, hour) => {
                       const cell = heatmapData[day]?.[hour];
@@ -109,7 +114,7 @@ export function EfficiencyHeatmap({
                           className={cn(
                             "w-8 h-8 rounded-sm transition-all cursor-pointer border border-wl-neutral-700",
                             "hover:scale-110 hover:shadow-lg",
-                            cell ? getColor(efficiency) : "bg-wl-bg-secondary"
+                            cell ? getColor(efficiency) : "bg-wl-bg-secondary",
                           )}
                           title={
                             cell

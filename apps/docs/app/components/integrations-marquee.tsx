@@ -1,14 +1,24 @@
-'use client';
+"use client";
 
-import { integrations } from './integrations-grid';
+import { integrations } from "./integrations-grid";
 
-function LogoTile({ integration, idx }: { integration: typeof integrations[0]; idx: number }) {
+function LogoTile({
+  integration,
+  idx,
+}: {
+  integration: (typeof integrations)[0];
+  idx: number;
+}) {
   return (
     <a
       key={`${integration.name}-${idx}`}
-      href={integration.comingSoon ? undefined : (integration.docsUrl || '/docs/integrations')}
+      href={
+        integration.comingSoon
+          ? undefined
+          : integration.docsUrl || "/docs/integrations"
+      }
       className={`flex-shrink-0 group flex flex-col items-center justify-center gap-2.5 w-[120px] h-[100px] rounded-xl border border-[var(--forge-border)] bg-[var(--forge-surface)] transition-all hover:border-[var(--teal)] hover:shadow-[0_0_0_1px_rgba(42,157,143,0.1),0_4px_16px_rgba(42,157,143,0.08)] ${
-        integration.comingSoon ? 'opacity-40' : ''
+        integration.comingSoon ? "opacity-40" : ""
       }`}
     >
       <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white p-1.5">

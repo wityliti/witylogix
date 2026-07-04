@@ -16,7 +16,10 @@ export interface DriverAvatarProps {
   className?: string;
 }
 
-const sizeClasses: Record<AvatarSize, { container: string; text: string; badge: string }> = {
+const sizeClasses: Record<
+  AvatarSize,
+  { container: string; text: string; badge: string }
+> = {
   sm: {
     container: "w-8 h-8 text-xs",
     text: "text-xs",
@@ -76,7 +79,7 @@ export function DriverAvatar({
           "rounded-full overflow-hidden",
           "bg-gradient-to-br from-wl-primary-600 to-wl-primary-700",
           "border-2 border-wl-bg-primary",
-          sizeConfig.container
+          sizeConfig.container,
         )}
       >
         {photoUrl ? (
@@ -92,7 +95,9 @@ export function DriverAvatar({
 
         {/* Fallback initials */}
         {!photoUrl && (
-          <span className={cn("font-bold text-wl-text-inverse", sizeConfig.text)}>
+          <span
+            className={cn("font-bold text-wl-text-inverse", sizeConfig.text)}
+          >
             {initials}
           </span>
         )}
@@ -106,7 +111,7 @@ export function DriverAvatar({
             "rounded-full border-2 border-wl-bg-primary",
             "animate-pulse",
             sizeConfig.badge,
-            statusColors[status]
+            statusColors[status],
           )}
           aria-label={`Status: ${status}`}
         />
@@ -120,7 +125,7 @@ export function DriverAvatar({
             "bg-wl-bg-primary rounded-full",
             "flex items-center justify-center",
             "border border-wl-border-default",
-            "text-lg leading-none"
+            "text-lg leading-none",
           )}
           style={{
             width: size === "sm" ? "18px" : size === "md" ? "22px" : "28px",

@@ -377,7 +377,12 @@ export interface ExceptionReport {
   };
   exceptions: Array<{
     exceptionId: string;
-    type: "limit_breach" | "location_violation" | "time_violation" | "merchant_violation" | "velocity_exceeded";
+    type:
+      | "limit_breach"
+      | "location_violation"
+      | "time_violation"
+      | "merchant_violation"
+      | "velocity_exceeded";
     cardId: string;
     transactionId?: string;
     severity: "info" | "warning" | "critical";
@@ -419,7 +424,13 @@ export interface IFTAReportingData {
  * Reporting request parameters
  */
 export interface ReportingParams {
-  reportType: "fuel_usage" | "expense_analysis" | "compliance" | "exception" | "driver_behavior" | "vehicle_efficiency";
+  reportType:
+    | "fuel_usage"
+    | "expense_analysis"
+    | "compliance"
+    | "exception"
+    | "driver_behavior"
+    | "vehicle_efficiency";
   startDate: Date;
   endDate: Date;
   groupBy?: "vehicle" | "driver" | "card" | "merchant" | "cost_center";

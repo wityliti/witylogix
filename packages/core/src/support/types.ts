@@ -6,33 +6,43 @@
 /**
  * Support ticket status
  */
-export type TicketStatus = 'open' | 'in_progress' | 'waiting' | 'resolved' | 'closed';
+export type TicketStatus =
+  | "open"
+  | "in_progress"
+  | "waiting"
+  | "resolved"
+  | "closed";
 
 /**
  * Support ticket priority
  */
-export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TicketPriority = "low" | "medium" | "high" | "urgent";
 
 /**
  * Support ticket category
  */
-export type TicketCategory = 'billing' | 'technical' | 'feature' | 'other';
+export type TicketCategory = "billing" | "technical" | "feature" | "other";
 
 /**
  * Feature request status
  */
 export type FeatureRequestStatus =
-  | 'submitted'
-  | 'under_review'
-  | 'planned'
-  | 'in_progress'
-  | 'completed'
-  | 'declined';
+  | "submitted"
+  | "under_review"
+  | "planned"
+  | "in_progress"
+  | "completed"
+  | "declined";
 
 /**
  * Feature request category
  */
-export type FeatureRequestCategory = 'delivery' | 'tracking' | 'billing' | 'integration' | 'other';
+export type FeatureRequestCategory =
+  | "delivery"
+  | "tracking"
+  | "billing"
+  | "integration"
+  | "other";
 
 /**
  * Support ticket interface

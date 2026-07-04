@@ -3,7 +3,11 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export default function OnboardingLayout({ children }: { children: ReactNode }) {
+export default function OnboardingLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <div className={cn("min-h-screen flex relative overflow-hidden")}>
       {/* Background gradient */}
@@ -36,12 +40,13 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
       {/* Left Panel - Illustration */}
       <div
         className={cn(
-          "hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-8 relative z-10"
+          "hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-8 relative z-10",
         )}
       >
         <div className="w-full max-w-md flex flex-col items-center gap-8">
           {/* Witylogix Logo & Branding */}
-          <div className="flex flex-col items-center gap-3 mb-8 animate-in fade-in"
+          <div
+            className="flex flex-col items-center gap-3 mb-8 animate-in fade-in"
             style={{
               animation: "wl-fade-in 600ms var(--wl-ease-default) both",
               animationDelay: "100ms",
@@ -196,7 +201,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
       {/* Right Panel - Form Content */}
       <div
         className={cn(
-          "w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-8 relative z-10"
+          "w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-8 relative z-10",
         )}
       >
         <div className="w-full max-w-xl">{children}</div>

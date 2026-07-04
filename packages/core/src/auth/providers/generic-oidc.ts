@@ -63,13 +63,21 @@ export class GenericOIDCProvider implements BaseAuthProvider {
   /**
    * For OIDC flow, return the authorization URL.
    */
-  async authenticate(request: AuthenticationRequest): Promise<AuthResult | AuthorizationUrl> {
+  async authenticate(
+    request: AuthenticationRequest,
+  ): Promise<AuthResult | AuthorizationUrl> {
     const redirectUri = request.redirectUri;
     if (!redirectUri) {
-      throw new ConfigurationError("generic_oidc", "redirectUri is required for OIDC flow");
+      throw new ConfigurationError(
+        "generic_oidc",
+        "redirectUri is required for OIDC flow",
+      );
     }
 
-    return this.getAuthorizationUrl(redirectUri, request.state || this.generateState());
+    return this.getAuthorizationUrl(
+      redirectUri,
+      request.state || this.generateState(),
+    );
   }
 
   /**
@@ -99,7 +107,9 @@ export class GenericOIDCProvider implements BaseAuthProvider {
 
       // Extract roles from configured claim
       const rolesClaim = this.config.rolesClaim || "roles";
-      const roles = this.mapRolesToWitylogix((idTokenPayload[rolesClaim] as string[]) || []);
+      const roles = this.mapRolesToWitylogix(
+        (idTokenPayload[rolesClaim] as string[]) || [],
+      );
 
       return {
         externalUserId: idTokenPayload.sub as string,
@@ -109,14 +119,19 @@ export class GenericOIDCProvider implements BaseAuthProvider {
         roles,
         accessToken: tokenResponse.access_token,
         refreshToken: tokenResponse.refresh_token,
-        expiresAt: new Date(Date.now() + (tokenResponse.expires_in || 3600) * 1000),
+        expiresAt: new Date(
+          Date.now() + (tokenResponse.expires_in || 3600) * 1000,
+        ),
         metadata: {
           oidc_roles: (idTokenPayload[rolesClaim] as string[]) || [],
           email_verified: idTokenPayload.email_verified,
         },
       };
     } catch (error) {
-      throw new ProviderUnavailableError("generic_oidc", `Token exchange failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "generic_oidc",
+        `Token exchange failed: ${String(error)}`,
+      );
     }
   }
 
@@ -153,7 +168,9 @@ export class GenericOIDCProvider implements BaseAuthProvider {
       }
 
       const rolesClaim = this.config.rolesClaim || "roles";
-      const roles = this.mapRolesToWitylogix((idTokenPayload[rolesClaim] as string[]) || []);
+      const roles = this.mapRolesToWitylogix(
+        (idTokenPayload[rolesClaim] as string[]) || [],
+      );
 
       return {
         externalUserId: idTokenPayload.sub as string,
@@ -163,20 +180,28 @@ export class GenericOIDCProvider implements BaseAuthProvider {
         roles,
         accessToken: tokenResponse.access_token,
         refreshToken: tokenResponse.refresh_token || refreshToken,
-        expiresAt: new Date(Date.now() + (tokenResponse.expires_in || 3600) * 1000),
+        expiresAt: new Date(
+          Date.now() + (tokenResponse.expires_in || 3600) * 1000,
+        ),
         metadata: {
           oidc_roles: (idTokenPayload[rolesClaim] as string[]) || [],
         },
       };
     } catch (error) {
-      throw new ProviderUnavailableError("generic_oidc", `Token refresh failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "generic_oidc",
+        `Token refresh failed: ${String(error)}`,
+      );
     }
   }
 
   /**
    * Revoke an access token (logout).
    */
-  async revokeSession(accessToken: string, refreshToken?: string): Promise<void> {
+  async revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void> {
     try {
       // Try to revoke at the provider's revocation endpoint
       if (refreshToken) {
@@ -207,7 +232,10 @@ export class GenericOIDCProvider implements BaseAuthProvider {
   /**
    * Get authorization URL for OIDC SSO.
    */
-  async getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl> {
+  async getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl> {
     // Discover endpoints
     const discovery = await this.discoverOIDCEndpoints();
 
@@ -232,7 +260,11 @@ export class GenericOIDCProvider implements BaseAuthProvider {
    * Validate OIDC configuration.
    */
   async validateConfiguration(): Promise<void> {
-    if (!this.config.issuer || !this.config.clientId || !this.config.clientSecret) {
+    if (
+      !this.config.issuer ||
+      !this.config.clientId ||
+      !this.config.clientSecret
+    ) {
       throw new ConfigurationError(
         "generic_oidc",
         "OIDC issuer, clientId, and clientSecret are required",
@@ -302,7 +334,10 @@ export class GenericOIDCProvider implements BaseAuthProvider {
       this.discoveryCache = mockDiscovery;
       return mockDiscovery;
     } catch (error) {
-      throw new ProviderUnavailableError("generic_oidc", `Discovery failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "generic_oidc",
+        `Discovery failed: ${String(error)}`,
+      );
     }
   }
 
@@ -417,6 +452,8 @@ export class GenericOIDCProvider implements BaseAuthProvider {
    * Generate random state token.
    */
   private generateState(): string {
-    return Buffer.from(Math.random().toString()).toString("base64").substring(0, 32);
+    return Buffer.from(Math.random().toString())
+      .toString("base64")
+      .substring(0, 32);
   }
 }

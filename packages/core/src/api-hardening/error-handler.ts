@@ -31,7 +31,7 @@ export class AppError extends Error {
     statusCode: number,
     code: string,
     message: string,
-    details?: Record<string, unknown>
+    details?: Record<string, unknown>,
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -47,7 +47,7 @@ export class AppError extends Error {
  */
 export class ValidationError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(400, 'VALIDATION_ERROR', message, details);
+    super(400, "VALIDATION_ERROR", message, details);
   }
 }
 
@@ -56,7 +56,7 @@ export class ValidationError extends AppError {
  */
 export class NotFoundError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(404, 'NOT_FOUND', message, details);
+    super(404, "NOT_FOUND", message, details);
   }
 }
 
@@ -65,7 +65,7 @@ export class NotFoundError extends AppError {
  */
 export class ConflictError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(409, 'CONFLICT', message, details);
+    super(409, "CONFLICT", message, details);
   }
 }
 
@@ -74,7 +74,7 @@ export class ConflictError extends AppError {
  */
 export class ForbiddenError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(403, 'FORBIDDEN', message, details);
+    super(403, "FORBIDDEN", message, details);
   }
 }
 
@@ -83,7 +83,7 @@ export class ForbiddenError extends AppError {
  */
 export class UnauthorizedError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(401, 'UNAUTHORIZED', message, details);
+    super(401, "UNAUTHORIZED", message, details);
   }
 }
 
@@ -92,7 +92,7 @@ export class UnauthorizedError extends AppError {
  */
 export class RateLimitError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(429, 'RATE_LIMIT_EXCEEDED', message, details);
+    super(429, "RATE_LIMIT_EXCEEDED", message, details);
   }
 }
 
@@ -101,7 +101,7 @@ export class RateLimitError extends AppError {
  */
 export class ServiceUnavailableError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(503, 'SERVICE_UNAVAILABLE', message, details);
+    super(503, "SERVICE_UNAVAILABLE", message, details);
   }
 }
 
@@ -112,7 +112,7 @@ export function extractZodErrors(error: any): Record<string, unknown> {
   const fieldErrors: Record<string, unknown> = {};
 
   error.errors.forEach((err: any) => {
-    const path = err.path.join('.');
+    const path = err.path.join(".");
     if (!fieldErrors[path]) {
       fieldErrors[path] = [];
     }
@@ -127,49 +127,48 @@ export function extractZodErrors(error: any): Record<string, unknown> {
  */
 export function handlePrismaError(error: any): AppError {
   // P2002: Unique constraint failed
-  if (error.code === 'P2002') {
-    const fields = error.meta?.target || ['unknown'];
+  if (error.code === "P2002") {
+    const fields = error.meta?.target || ["unknown"];
     return new ConflictError(
-      `Resource with these field values already exists: ${fields.join(', ')}`,
-      { conflictingFields: fields }
+      `Resource with these field values already exists: ${fields.join(", ")}`,
+      { conflictingFields: fields },
     );
   }
 
   // P2025: Record not found
-  if (error.code === 'P2025') {
-    return new NotFoundError(error.meta?.cause || 'Resource not found', {
-      prismaCode: 'P2025',
+  if (error.code === "P2025") {
+    return new NotFoundError(error.meta?.cause || "Resource not found", {
+      prismaCode: "P2025",
     });
   }
 
   // P2003: Foreign key constraint failed
-  if (error.code === 'P2003') {
-    const field = error.meta?.field_name || 'unknown';
+  if (error.code === "P2003") {
+    const field = error.meta?.field_name || "unknown";
     return new ConflictError(
       `Foreign key constraint failed on field: ${field}`,
-      { prismaCode: 'P2003', field }
+      { prismaCode: "P2003", field },
     );
   }
 
   // P2014: Required relation violated
-  if (error.code === 'P2014') {
+  if (error.code === "P2014") {
     return new ConflictError(
-      'Cannot perform operation due to related records',
-      { prismaCode: 'P2014' }
+      "Cannot perform operation due to related records",
+      { prismaCode: "P2014" },
     );
   }
 
   // P2011: Null constraint failed
-  if (error.code === 'P2011') {
-    return new ValidationError(
-      'Required field is missing',
-      { prismaCode: 'P2011' }
-    );
+  if (error.code === "P2011") {
+    return new ValidationError("Required field is missing", {
+      prismaCode: "P2011",
+    });
   }
 
   // Generic Prisma error — treat as service unavailable
   return new ServiceUnavailableError(
-    'An error occurred while processing your request'
+    "An error occurred while processing your request",
   );
 }
 
@@ -177,7 +176,12 @@ export function handlePrismaError(error: any): AppError {
  * Check if error is a Zod validation error
  */
 function isZodError(error: any): boolean {
-  return error && typeof error === 'object' && 'errors' in error && Array.isArray(error.errors);
+  return (
+    error &&
+    typeof error === "object" &&
+    "errors" in error &&
+    Array.isArray(error.errors)
+  );
 }
 
 /**
@@ -187,20 +191,17 @@ function isZodError(error: any): boolean {
  */
 export async function errorHandlerPlugin(fastify: FastifyInstance) {
   fastify.setErrorHandler(async (error: any, request: any, reply: any) => {
-    const requestId = request.id || 'unknown';
+    const requestId = request.id || "unknown";
 
     let appError: AppError;
 
     // Handle Zod validation errors
     if (isZodError(error)) {
       const fieldErrors = extractZodErrors(error);
-      appError = new ValidationError(
-        'Request validation failed',
-        fieldErrors
-      );
+      appError = new ValidationError("Request validation failed", fieldErrors);
     }
     // Handle Prisma errors
-    else if (error.code && error.code.startsWith('P')) {
+    else if (error.code && error.code.startsWith("P")) {
       appError = handlePrismaError(error);
     }
     // Handle our custom AppError
@@ -208,28 +209,28 @@ export async function errorHandlerPlugin(fastify: FastifyInstance) {
       appError = error;
     }
     // Handle native errors with status codes (HTTP errors from other middleware)
-    else if ('statusCode' in error && typeof error.statusCode === 'number') {
+    else if ("statusCode" in error && typeof error.statusCode === "number") {
       appError = new AppError(
         error.statusCode,
-        'HTTP_ERROR',
-        error.message || 'An error occurred',
-        {}
+        "HTTP_ERROR",
+        error.message || "An error occurred",
+        {},
       );
     }
     // Default to 500 Internal Server Error
     else {
       appError = new AppError(
         500,
-        'INTERNAL_SERVER_ERROR',
-        process.env.NODE_ENV === 'production'
-          ? 'An unexpected error occurred'
+        "INTERNAL_SERVER_ERROR",
+        process.env.NODE_ENV === "production"
+          ? "An unexpected error occurred"
           : error.message,
-        {}
+        {},
       );
     }
 
     // Log the error with correlation ID
-    const logLevel = appError.statusCode >= 500 ? 'error' : 'warn';
+    const logLevel = appError.statusCode >= 500 ? "error" : "warn";
     fastify.log[logLevel](
       {
         requestId,
@@ -237,11 +238,11 @@ export async function errorHandlerPlugin(fastify: FastifyInstance) {
         statusCode: appError.statusCode,
         message: appError.message,
         details: appError.details,
-        stack: process.env.NODE_ENV === 'production' ? undefined : error.stack,
+        stack: process.env.NODE_ENV === "production" ? undefined : error.stack,
         path: request.url,
         method: request.method,
       },
-      `${appError.code} - ${appError.message}`
+      `${appError.code} - ${appError.message}`,
     );
 
     // Build error response

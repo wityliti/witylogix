@@ -4,19 +4,19 @@ ERP systems are the source of truth for orders, inventory, and financial data. W
 
 ## Supported ERP Systems
 
-| ERP | Focus | Best For | Complexity |
-|-----|-------|----------|-----------|
-| **SAP** | Enterprise | Large enterprises | High |
-| **NetSuite** | Cloud ERP | Mid-market to enterprise | High |
-| **Dynamics 365** | Microsoft ecosystem | Microsoft-centric enterprises | High |
-| **Sage Intacct** | Financial focus | Mid-market | Medium |
-| **Odoo** | Open-source | SMB + custom needs | Medium |
-| **QuickBooks Online** | SMB accounting | Small businesses | Low |
-| **Infor** | Industry-specific | Manufacturing/distribution | High |
-| **Epicor** | Manufacturing | Makers and distributors | High |
-| **FreshBooks** | Accounting | Freelance/small business | Low |
-| **Wave** | Free accounting | Micro-business | Low |
-| **Xero** | Cloud accounting | SMB | Low |
+| ERP                   | Focus               | Best For                      | Complexity |
+| --------------------- | ------------------- | ----------------------------- | ---------- |
+| **SAP**               | Enterprise          | Large enterprises             | High       |
+| **NetSuite**          | Cloud ERP           | Mid-market to enterprise      | High       |
+| **Dynamics 365**      | Microsoft ecosystem | Microsoft-centric enterprises | High       |
+| **Sage Intacct**      | Financial focus     | Mid-market                    | Medium     |
+| **Odoo**              | Open-source         | SMB + custom needs            | Medium     |
+| **QuickBooks Online** | SMB accounting      | Small businesses              | Low        |
+| **Infor**             | Industry-specific   | Manufacturing/distribution    | High       |
+| **Epicor**            | Manufacturing       | Makers and distributors       | High       |
+| **FreshBooks**        | Accounting          | Freelance/small business      | Low        |
+| **Wave**              | Free accounting     | Micro-business                | Low        |
+| **Xero**              | Cloud accounting    | SMB                           | Low        |
 
 ## Integration Patterns
 
@@ -47,9 +47,11 @@ Replenishment order created
 ## Setup by System
 
 ### SAP
+
 **Best for**: Large enterprises with complex supply chains.
 
 #### 1. Configure Connection
+
 ```javascript
 const erp = await client.integrations.create({
   provider: "sap",
@@ -69,6 +71,7 @@ const erp = await client.integrations.create({
 ```
 
 #### 2. Field Mapping
+
 ```javascript
 const mapping = {
   order: {
@@ -85,24 +88,27 @@ const mapping = {
     sap: "MARD",
     witylogix: "inventory",
     fields: {
-      "MATNR": "sku",
-      "LABST": "availableQuantity",
-      "UMLMC": "inTransitQuantity",
+      MATNR: "sku",
+      LABST: "availableQuantity",
+      UMLMC: "inTransitQuantity",
     },
   },
 };
 ```
 
 ### NetSuite
+
 **Best for**: Mid-market to enterprise cloud-native companies.
 
 #### 1. Create Integration User
+
 - NetSuite → Setup → Integration
 - Create new **Integration Record**
 - Note: ConsumerKey, ConsumerSecret
 - Create **Token ID & Secret**
 
 #### 2. Configure OAuth
+
 ```javascript
 const erp = await client.integrations.create({
   provider: "netsuite",
@@ -122,6 +128,7 @@ const erp = await client.integrations.create({
 ```
 
 #### 3. SuiteQL for Sync
+
 ```javascript
 // Query orders for sync
 const orders = await client.integrations.query({
@@ -137,15 +144,18 @@ const orders = await client.integrations.query({
 ```
 
 ### Dynamics 365
+
 **Best for**: Microsoft ecosystem integrations.
 
 #### 1. Register Azure AD Application
+
 - Azure Portal → App registrations
 - Create new application
 - Copy ClientId & TenantId
 - Create client secret
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const erp = await client.integrations.create({
   provider: "dynamics365",
@@ -164,14 +174,17 @@ const erp = await client.integrations.create({
 ```
 
 ### Sage Intacct
+
 **Best for**: Financial accuracy and compliance-focused orgs.
 
 #### 1. Get API Credentials
+
 - Sage Intacct → Admin → API Approvals
 - Create new API user
 - Generate **SessionID** or use **Sender ID**
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const erp = await client.integrations.create({
   provider: "sage",
@@ -190,14 +203,17 @@ const erp = await client.integrations.create({
 ```
 
 ### Odoo
+
 **Best for**: Open-source flexibility, custom workflows.
 
 #### 1. Create API User
+
 - Odoo → Settings → Users & Companies
 - Create new user with API token
 - Note the token and database name
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const erp = await client.integrations.create({
   provider: "odoo",
@@ -215,14 +231,17 @@ const erp = await client.integrations.create({
 ```
 
 ### QuickBooks Online
+
 **Best for**: Small businesses, accounting-focused.
 
 #### 1. OAuth Setup
+
 - Create app at [developer.intuit.com](https://developer.intuit.com)
 - Get ClientID, ClientSecret
 - Authorize Witylogix
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const erp = await client.integrations.create({
   provider: "quickbooks",
@@ -241,6 +260,7 @@ const erp = await client.integrations.create({
 ```
 
 ### Xero, FreshBooks, Wave
+
 **Similar setup pattern:**
 
 ```javascript
@@ -265,6 +285,7 @@ const erp = await client.integrations.create({
 ### Order Syncing
 
 #### Pull (Polling)
+
 ```javascript
 // Check ERP for new orders every N seconds
 const sync = setInterval(async () => {
@@ -290,6 +311,7 @@ const sync = setInterval(async () => {
 ```
 
 #### Push (Webhooks)
+
 ```javascript
 // ERP sends webhook when order changes
 app.post("/webhooks/erp", async (req, res) => {
@@ -310,6 +332,7 @@ app.post("/webhooks/erp", async (req, res) => {
 ### Inventory Syncing
 
 #### Real-time Updates
+
 ```javascript
 // After delivery, update inventory in ERP
 const webhook = await client.webhooks.create({
@@ -327,6 +350,7 @@ const webhook = await client.webhooks.create({
 ```
 
 #### Scheduled Reconciliation
+
 ```javascript
 // Daily inventory reconciliation
 const job = schedule.scheduleJob("0 2 * * *", async () => {
@@ -343,6 +367,7 @@ const job = schedule.scheduleJob("0 2 * * *", async () => {
 ## Field Mapping
 
 ### Order Mapping Template
+
 ```javascript
 const orderMapping = {
   externalOrderId: "erp.order_number",
@@ -387,6 +412,7 @@ const orderMapping = {
 ```
 
 ### Inventory Mapping Template
+
 ```javascript
 const inventoryMapping = {
   sku: "erp.product_code",
@@ -403,6 +429,7 @@ const inventoryMapping = {
 ## Error Handling
 
 ### Sync Failures
+
 ```javascript
 const syncErrors = [
   {
@@ -424,6 +451,7 @@ const syncErrors = [
 ```
 
 ### Retry Strategy
+
 ```javascript
 const retryConfig = {
   maxRetries: 3,
@@ -482,13 +510,13 @@ const health = await client.integrations.health({
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Orders not syncing | Webhook not configured | Enable webhooks in ERP |
-| Wrong field mapping | Mapping configuration | Review and update field mapping |
-| Duplicate orders | No idempotency key | Add order ID uniqueness check |
-| Missing data | Insufficient ERP permissions | Grant user all required permissions |
-| Slow sync | Large dataset | Implement pagination or delta sync |
+| Issue               | Cause                        | Solution                            |
+| ------------------- | ---------------------------- | ----------------------------------- |
+| Orders not syncing  | Webhook not configured       | Enable webhooks in ERP              |
+| Wrong field mapping | Mapping configuration        | Review and update field mapping     |
+| Duplicate orders    | No idempotency key           | Add order ID uniqueness check       |
+| Missing data        | Insufficient ERP permissions | Grant user all required permissions |
+| Slow sync           | Large dataset                | Implement pagination or delta sync  |
 
 ## Next Steps
 

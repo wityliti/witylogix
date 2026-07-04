@@ -39,7 +39,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -50,7 +50,7 @@ describe("OmnitrocsXrsV2Client", () => {
       const invalidClient = new OmnitrocsXrsV2Client(invalidConfig);
 
       expect(() => invalidClient.initialize()).rejects.toThrow(
-        "Omnitracs XRS API key is required"
+        "Omnitracs XRS API key is required",
       );
     });
   });
@@ -60,7 +60,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -86,7 +86,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLogs), { status: 200 })
+        new Response(JSON.stringify(mockLogs), { status: 200 }),
       );
 
       const startDate = new Date("2026-03-12");
@@ -115,7 +115,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLogs), { status: 200 })
+        new Response(JSON.stringify(mockLogs), { status: 200 }),
       );
 
       const startDate = new Date("2026-03-12");
@@ -131,7 +131,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -151,7 +151,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDriver), { status: 200 })
+        new Response(JSON.stringify(mockDriver), { status: 200 }),
       );
 
       const status = await client.getDutyStatus("driver_1");
@@ -164,7 +164,9 @@ describe("OmnitrocsXrsV2Client", () => {
 
     it("should set driver duty status", async () => {
       vi.spyOn(global, "fetch")
-        .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({}), { status: 200 }),
+        )
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -178,8 +180,8 @@ describe("OmnitrocsXrsV2Client", () => {
                 onDuty: 8,
               },
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         );
 
       const newStatus = await client.setDutyStatus("driver_1", "on-duty");
@@ -193,7 +195,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -213,7 +215,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockViolations), { status: 200 })
+        new Response(JSON.stringify(mockViolations), { status: 200 }),
       );
 
       const violations = await client.getViolations("driver_1", 30);
@@ -229,7 +231,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -251,7 +253,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockVehicle), { status: 200 })
+        new Response(JSON.stringify(mockVehicle), { status: 200 }),
       );
 
       const vehicle = await client.getVehicle("vehicle_1");
@@ -292,10 +294,10 @@ describe("OmnitrocsXrsV2Client", () => {
 
       vi.spyOn(global, "fetch")
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockVehicles1), { status: 200 })
+          new Response(JSON.stringify(mockVehicles1), { status: 200 }),
         )
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockVehicles2), { status: 200 })
+          new Response(JSON.stringify(mockVehicles2), { status: 200 }),
         )
         .mockResolvedValue(
           new Response(
@@ -308,8 +310,8 @@ describe("OmnitrocsXrsV2Client", () => {
               createdAt: "2020-01-01T00:00:00Z",
               updatedAt: "2026-03-12T12:00:00Z",
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         );
 
       const vehicles = await client.getVehicles();
@@ -323,7 +325,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -348,7 +350,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDVIR), { status: 200 })
+        new Response(JSON.stringify(mockDVIR), { status: 200 }),
       );
 
       const dvir = await client.submitDVIR({
@@ -388,7 +390,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDVIRs), { status: 200 })
+        new Response(JSON.stringify(mockDVIRs), { status: 200 }),
       );
 
       const dvirs = await client.getDVIRs("vehicle_1", 30);
@@ -403,7 +405,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -430,7 +432,7 @@ describe("OmnitrocsXrsV2Client", () => {
       ];
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockRoutes), { status: 200 })
+        new Response(JSON.stringify(mockRoutes), { status: 200 }),
       );
 
       const routes = await client.getRoutes("driver_1");
@@ -454,7 +456,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockPerformance), { status: 200 })
+        new Response(JSON.stringify(mockPerformance), { status: 200 }),
       );
 
       const performance = await client.getPerformance("driver_1", "monthly");
@@ -477,7 +479,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockScorecard), { status: 200 })
+        new Response(JSON.stringify(mockScorecard), { status: 200 }),
       );
 
       const scorecard = await client.getScorecard("driver_1", "monthly");
@@ -492,7 +494,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -512,10 +514,13 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockCompliance), { status: 200 })
+        new Response(JSON.stringify(mockCompliance), { status: 200 }),
       );
 
-      const compliance = await client.getComplianceReport("driver_1", "monthly");
+      const compliance = await client.getComplianceReport(
+        "driver_1",
+        "monthly",
+      );
 
       expect(compliance.fmcsaTransferReady).toBe(true);
       expect(compliance.roadsideExportUrl).toBeDefined();
@@ -527,7 +532,7 @@ describe("OmnitrocsXrsV2Client", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockResponse), { status: 200 })
+        new Response(JSON.stringify(mockResponse), { status: 200 }),
       );
 
       const fileUrl = await client.generateFmcsaTransfer("driver_1");
@@ -541,7 +546,7 @@ describe("OmnitrocsXrsV2Client", () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(JSON.stringify({ organization: { id: "org_123" } }), {
           status: 200,
-        })
+        }),
       );
 
       const isHealthy = await client.healthCheck();
@@ -551,7 +556,7 @@ describe("OmnitrocsXrsV2Client", () => {
 
     it("should return false for failed health check", async () => {
       vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Connection timeout")
+        new Error("Connection timeout"),
       );
 
       const isHealthy = await client.healthCheck();

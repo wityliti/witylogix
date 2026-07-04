@@ -9,7 +9,7 @@ The notification engine is already integrated into the Witylogix platform. No ad
 ### 1. Import the Service
 
 ```typescript
-import { NotificationService } from '@witylogix/core/notifications-v2';
+import { NotificationService } from "@witylogix/core/notifications-v2";
 
 const service = new NotificationService({
   rateLimitConfig: {
@@ -23,9 +23,9 @@ const service = new NotificationService({
     maxDelayMs: 10000,
     backoffMultiplier: 2,
   },
-  emailFrom: 'noreply@witylogix.com',
-  smsSender: '+1234567890',
-  trackingBaseUrl: 'https://track.witylogix.com',
+  emailFrom: "noreply@witylogix.com",
+  smsSender: "+1234567890",
+  trackingBaseUrl: "https://track.witylogix.com",
 });
 ```
 
@@ -33,15 +33,15 @@ const service = new NotificationService({
 
 ```typescript
 const result = await service.send({
-  customerId: 'cust_12345',
-  eventType: 'delivery_scheduled',
+  customerId: "cust_12345",
+  eventType: "delivery_scheduled",
   data: {
-    customerName: 'John Doe',
-    customerEmail: 'john@example.com',
-    customerPhone: '+15551234567',
-    deliveryDate: '2026-03-15',
-    timeWindow: '2:00pm - 4:00pm',
-    trackingUrl: 'https://example.com/track/order123',
+    customerName: "John Doe",
+    customerEmail: "john@example.com",
+    customerPhone: "+15551234567",
+    deliveryDate: "2026-03-15",
+    timeWindow: "2:00pm - 4:00pm",
+    trackingUrl: "https://example.com/track/order123",
   },
 });
 
@@ -58,11 +58,11 @@ console.log(result);
 ### Check What Channels a Customer Uses
 
 ```typescript
-import { PreferenceManager } from '@witylogix/core/notifications-v2';
+import { PreferenceManager } from "@witylogix/core/notifications-v2";
 
 const channels = PreferenceManager.getAvailableChannels(
-  'cust_12345',
-  'delivery_scheduled'
+  "cust_12345",
+  "delivery_scheduled",
 );
 console.log(channels); // ['email', 'sms', 'whatsapp']
 ```
@@ -70,14 +70,14 @@ console.log(channels); // ['email', 'sms', 'whatsapp']
 ### Disable SMS for a Customer
 
 ```typescript
-PreferenceManager.disableChannel('cust_12345', 'sms');
+PreferenceManager.disableChannel("cust_12345", "sms");
 ```
 
 ### Get Customer Notification History
 
 ```typescript
-const history = service.getHistory('cust_12345', 50);
-history.forEach(record => {
+const history = service.getHistory("cust_12345", 50);
+history.forEach((record) => {
   console.log(`${record.eventType} via ${record.channel} at ${record.sentAt}`);
 });
 ```
@@ -86,7 +86,7 @@ history.forEach(record => {
 
 ```typescript
 const limiter = service.getRateLimiter();
-const status = limiter.getStatus('cust_12345', 'sms');
+const status = limiter.getStatus("cust_12345", "sms");
 
 console.log(`${status.sentToday}/${status.limit} SMS sent today`);
 console.log(`Reset at: ${status.resetAt}`);
@@ -97,7 +97,7 @@ console.log(`Reset at: ${status.resetAt}`);
 ```typescript
 const shortener = service.getUrlShortener();
 const result = shortener.shortenUrl(
-  'https://example.com/orders/very_long_tracking_id_123456789'
+  "https://example.com/orders/very_long_tracking_id_123456789",
 );
 
 console.log(result.shortUrl); // https://track.witylogix.com/abc123
@@ -106,11 +106,11 @@ console.log(result.shortUrl); // https://track.witylogix.com/abc123
 ### Register a Webhook
 
 ```typescript
-import { WebhookManager } from '@witylogix/core/notifications-v2';
+import { WebhookManager } from "@witylogix/core/notifications-v2";
 
 const webhook = WebhookManager.registerWebhook(
-  'https://myapp.com/webhooks/deliveries',
-  ['delivery.scheduled', 'delivery.delivered']
+  "https://myapp.com/webhooks/deliveries",
+  ["delivery.scheduled", "delivery.delivered"],
 );
 
 console.log(webhook.id); // webhook_xxx
@@ -170,26 +170,54 @@ curl -X POST http://localhost:3000/api/notifications/webhooks \
 
 ## Event Types Cheat Sheet
 
-| Event | When | Best Channels |
-|-------|------|---------------|
-| `order_confirmed` | Order placed | Email, SMS |
-| `delivery_scheduled` | Date assigned | Email, SMS, WhatsApp |
-| `out_for_delivery` | Left warehouse | Email, SMS, Push |
-| `delivery_arriving` | 30 mins away | SMS, Push |
-| `delivered` | Dropped off | Email, Push |
-| `delivery_failed` | Couldn't deliver | Email, SMS, WhatsApp |
-| `rescheduled` | New date set | Email, SMS, WhatsApp |
+| Event                | When             | Best Channels        |
+| -------------------- | ---------------- | -------------------- |
+| `order_confirmed`    | Order placed     | Email, SMS           |
+| `delivery_scheduled` | Date assigned    | Email, SMS, WhatsApp |
+| `out_for_delivery`   | Left warehouse   | Email, SMS, Push     |
+| `delivery_arriving`  | 30 mins away     | SMS, Push            |
+| `delivered`          | Dropped off      | Email, Push          |
+| `delivery_failed`    | Couldn't deliver | Email, SMS, WhatsApp |
+| `rescheduled`        | New date set     | Email, SMS, WhatsApp |
 
 ## Template Variables Cheat Sheet
 
 ```typescript
-{{customerName}}       // "John Doe"
-{{orderId}}           // "ORD-123456"
-{{deliveryDate}}      // "2026-03-15"
-{{timeWindow}}        // "2:00pm - 4:00pm"
-{{deliveryAddress}}   // "123 Main St, City, ST 12345"
-{{driverName}}        // "Bob Smith"
-{{trackingUrl}}       // "https://track.witylogix.com/abc123"
+{
+  {
+    customerName;
+  }
+} // "John Doe"
+{
+  {
+    orderId;
+  }
+} // "ORD-123456"
+{
+  {
+    deliveryDate;
+  }
+} // "2026-03-15"
+{
+  {
+    timeWindow;
+  }
+} // "2:00pm - 4:00pm"
+{
+  {
+    deliveryAddress;
+  }
+} // "123 Main St, City, ST 12345"
+{
+  {
+    driverName;
+  }
+} // "Bob Smith"
+{
+  {
+    trackingUrl;
+  }
+} // "https://track.witylogix.com/abc123"
 ```
 
 ## Default Rate Limits
@@ -208,19 +236,22 @@ Push:     Unlimited
 Check these in order:
 
 1. **Is the channel enabled for this customer?**
+
    ```typescript
-   PreferenceManager.getPreferences(customerId)
+   PreferenceManager.getPreferences(customerId);
    ```
 
 2. **Is the channel enabled for this event type?**
+
    ```typescript
    const prefs = PreferenceManager.getPreferences(customerId);
    console.log(prefs.channels.sms.eventTypes.delivery_scheduled); // true/false
    ```
 
 3. **Did we hit the rate limit?**
+
    ```typescript
-   const status = service.getRateLimiter().getStatus(customerId, 'sms');
+   const status = service.getRateLimiter().getStatus(customerId, "sms");
    console.log(status.canSend); // true/false
    ```
 
@@ -235,7 +266,7 @@ Check these in order:
 SMS is limited to 160 characters. Use:
 
 ```typescript
-import { SMSChannel } from '@witylogix/core/notifications-v2';
+import { SMSChannel } from "@witylogix/core/notifications-v2";
 
 const message = "Your long message...";
 const truncated = SMSChannel.truncateMessage(message, 160);
@@ -244,6 +275,7 @@ const truncated = SMSChannel.truncateMessage(message, 160);
 ### WhatsApp Template Not Found
 
 Use only approved templates:
+
 - `order_confirmation`
 - `delivery_scheduled`
 - `out_for_delivery`
@@ -257,7 +289,7 @@ Use only approved templates:
 Always use E.164 format: `+[country code][number]`
 
 ```typescript
-import { SMSChannel } from '@witylogix/core/notifications-v2';
+import { SMSChannel } from "@witylogix/core/notifications-v2";
 
 const formatted = SMSChannel.formatPhoneNumber(userPhone);
 // "+15551234567"
@@ -289,34 +321,34 @@ const formatted = SMSChannel.formatPhoneNumber(userPhone);
 import {
   NotificationService,
   PreferenceManager,
-  WebhookManager
-} from '@witylogix/core/notifications-v2';
+  WebhookManager,
+} from "@witylogix/core/notifications-v2";
 
 // 1. Initialize
 const service = new NotificationService(config);
 
 // 2. Register webhook to track events
-WebhookManager.registerWebhook(
-  'https://myapp.com/webhooks',
-  ['delivery.scheduled', 'delivery.delivered']
-);
+WebhookManager.registerWebhook("https://myapp.com/webhooks", [
+  "delivery.scheduled",
+  "delivery.delivered",
+]);
 
 // 3. Send notification
 const results = await service.send({
-  customerId: 'cust_123',
-  eventType: 'delivery_scheduled',
+  customerId: "cust_123",
+  eventType: "delivery_scheduled",
   data: {
-    customerName: 'John',
-    customerEmail: 'john@example.com',
-    customerPhone: '+15551234567',
-    deliveryDate: '2026-03-15',
-    timeWindow: '2pm-4pm',
-    trackingUrl: 'https://example.com/track/123',
+    customerName: "John",
+    customerEmail: "john@example.com",
+    customerPhone: "+15551234567",
+    deliveryDate: "2026-03-15",
+    timeWindow: "2pm-4pm",
+    trackingUrl: "https://example.com/track/123",
   },
 });
 
 // 4. Check results
-results.forEach(r => {
+results.forEach((r) => {
   if (r.success) {
     console.log(`Sent via ${r.channel}: ${r.messageId}`);
   } else {
@@ -325,15 +357,11 @@ results.forEach(r => {
 });
 
 // 5. Get history
-const history = service.getHistory('cust_123', 10);
+const history = service.getHistory("cust_123", 10);
 console.log(`Customer has ${history.length} notifications`);
 
 // 6. Update preferences
-PreferenceManager.disableEventType(
-  'cust_123',
-  'sms',
-  'delivery_arriving'
-);
+PreferenceManager.disableEventType("cust_123", "sms", "delivery_arriving");
 ```
 
 ## Next Steps
@@ -347,7 +375,7 @@ PreferenceManager.disableEventType(
 ## Support
 
 - Check README.md for detailed API documentation
-- Review __tests__ for usage examples
+- Review **tests** for usage examples
 - Check IMPLEMENTATION.md for design decisions
 - Look at notification-service.ts for complete API
 

@@ -309,7 +309,9 @@ describe("Accessorial Charge Validation Against Tariff", () => {
       ],
     });
 
-    const lumperCharge = invoice.lines.find((l) => l.description.includes("Lumper"));
+    const lumperCharge = invoice.lines.find((l) =>
+      l.description.includes("Lumper"),
+    );
     expect(lumperCharge?.amount).toBeGreaterThanOrEqual(tariff.lumper.min);
     expect(lumperCharge?.amount).toBeLessThanOrEqual(tariff.lumper.max);
   });
@@ -398,7 +400,10 @@ describe("Dispute Generation With Evidence", () => {
       contractedRate: contractRate,
       invoicedRate: invoiceRate,
       variance: Math.abs(variance),
-      evidence: [`Contract rate: $${contractRate}`, `Invoiced rate: $${invoiceRate}`],
+      evidence: [
+        `Contract rate: $${contractRate}`,
+        `Invoiced rate: $${invoiceRate}`,
+      ],
       recommendedAction: "REQUEST_CORRECTION",
     };
 
@@ -503,7 +508,9 @@ describe("Audit Report Accuracy (Savings, Dispute Rate)", () => {
     };
 
     expect(auditSummary.invoicesReviewed).toBe(100);
-    expect(auditSummary.invoicesApproved + auditSummary.invoicesFlagged).toBe(97);
+    expect(auditSummary.invoicesApproved + auditSummary.invoicesFlagged).toBe(
+      97,
+    );
     expect(auditSummary.disputeRate).toBe(3);
   });
 
@@ -560,7 +567,9 @@ describe("Bulk Audit Processing Performance", () => {
 
   it("should handle concurrent invoice audits", async () => {
     const invoiceCount = 50;
-    const invoices = Array.from({ length: invoiceCount }, () => createMockInvoice());
+    const invoices = Array.from({ length: invoiceCount }, () =>
+      createMockInvoice(),
+    );
 
     const audits = invoices.map((inv) => {
       return {

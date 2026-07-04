@@ -52,7 +52,10 @@ export class CustomerSyncService {
     wlCustomer: Record<string, unknown>,
   ): Partial<WCCustomer> {
     const billingAddress = wlCustomer.billingAddress as Record<string, unknown>;
-    const shippingAddress = wlCustomer.shippingAddress as Record<string, unknown>;
+    const shippingAddress = wlCustomer.shippingAddress as Record<
+      string,
+      unknown
+    >;
 
     return {
       email: (wlCustomer.email as string) || "",
@@ -109,9 +112,7 @@ export class CustomerSyncService {
   /**
    * Unmap WL address to WC address
    */
-  static unmapAddress(
-    address: Record<string, unknown>,
-  ): WCAddress {
+  static unmapAddress(address: Record<string, unknown>): WCAddress {
     return {
       first_name: (address.firstName as string) || "",
       last_name: (address.lastName as string) || "",
@@ -231,9 +232,7 @@ export class CustomerSyncService {
   /**
    * Detect potential duplicates by email
    */
-  static detectDuplicates(
-    customers: WCCustomer[],
-  ): Array<{
+  static detectDuplicates(customers: WCCustomer[]): Array<{
     emails: string;
     customerIds: number[];
   }> {

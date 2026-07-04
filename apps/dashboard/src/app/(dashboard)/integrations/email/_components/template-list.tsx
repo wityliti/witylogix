@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface EmailTemplate {
   id: string;
@@ -26,15 +26,15 @@ export function TemplateList({
           key={template.id}
           onClick={() => onSelect(template.id)}
           className={cn(
-            'w-full text-left p-4 rounded-lg border transition-all',
+            "w-full text-left p-4 rounded-lg border transition-all",
             selectedId === template.id
-              ? 'bg-blue-500/10 border-blue-500'
-              : 'bg-wl-bg-elevated border-wl-border-default hover:border-blue-500/50'
+              ? "bg-blue-500/10 border-blue-500"
+              : "bg-wl-bg-elevated border-wl-border-default hover:border-blue-500/50",
           )}
         >
           <div className="font-medium text-white">{template.name}</div>
           <div className="text-xs text-wl-text-tertiary mt-1">
-            {template.type.replace(/_/g, ' ')}
+            {template.type.replace(/_/g, " ")}
           </div>
         </button>
       ))}

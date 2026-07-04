@@ -66,7 +66,7 @@ function HealthGauge({ score, size = "lg" }: GaugeProps) {
       className={cn(
         "rounded-full bg-gradient-to-br flex items-center justify-center",
         sizeClass,
-        getBgColor(score)
+        getBgColor(score),
       )}
     >
       <div className="text-center">
@@ -99,7 +99,8 @@ export default function IntegrationsPage() {
         provider.category.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory =
         !selectedCategory || provider.category === selectedCategory;
-      const matchesStatus = !selectedStatus || provider.status === selectedStatus;
+      const matchesStatus =
+        !selectedStatus || provider.status === selectedStatus;
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -125,7 +126,7 @@ export default function IntegrationsPage() {
       info: 2,
     };
     return [...alerts].sort(
-      (a, b) => severityOrder[a.severity] - severityOrder[b.severity]
+      (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
     );
   }, [alerts]);
 
@@ -168,7 +169,9 @@ export default function IntegrationsPage() {
                 size="md"
               />
               <div className="text-center">
-                <p className="text-sm text-wl-text-secondary">Aggregate Health</p>
+                <p className="text-sm text-wl-text-secondary">
+                  Aggregate Health
+                </p>
               </div>
             </div>
           </CardContent>
@@ -208,7 +211,8 @@ export default function IntegrationsPage() {
                 Degraded / Down
               </p>
               <p className="text-3xl font-bold text-amber-500">
-                {(health?.degradedProviders ?? 0) + (health?.downProviders ?? 0)}
+                {(health?.degradedProviders ?? 0) +
+                  (health?.downProviders ?? 0)}
               </p>
             </div>
           </CardContent>
@@ -311,7 +315,7 @@ export default function IntegrationsPage() {
             <div className="h-64 flex items-end gap-2 px-4">
               {health.errorTrend.map((point, idx) => {
                 const maxErrors = Math.max(
-                  ...health.errorTrend.map((p) => p.errorCount)
+                  ...health.errorTrend.map((p) => p.errorCount),
                 );
                 const height =
                   maxErrors > 0 ? (point.errorCount / maxErrors) * 100 : 0;
@@ -357,9 +361,7 @@ export default function IntegrationsPage() {
             <Filter className="w-4 h-4 text-wl-text-secondary" />
             <select
               value={selectedCategory ?? ""}
-              onChange={(e) =>
-                setSelectedCategory(e.target.value || null)
-              }
+              onChange={(e) => setSelectedCategory(e.target.value || null)}
               className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-blue-500"
             >
               <option value="">All Categories</option>
@@ -424,7 +426,9 @@ export default function IntegrationsPage() {
 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-wl-text-secondary">Uptime</span>
+                    <span className="text-xs text-wl-text-secondary">
+                      Uptime
+                    </span>
                     <span className="text-sm font-medium text-white">
                       {provider.uptime.toFixed(1)}%
                     </span>
@@ -437,7 +441,7 @@ export default function IntegrationsPage() {
                           ? "bg-emerald-500"
                           : provider.uptime >= 95
                             ? "bg-amber-500"
-                            : "bg-red-500"
+                            : "bg-red-500",
                       )}
                       style={{ width: `${provider.uptime}%` }}
                     />
@@ -460,7 +464,8 @@ export default function IntegrationsPage() {
                 </div>
 
                 <div className="mt-4 text-xs text-wl-text-secondary">
-                  Last check: {new Date(provider.lastCheckTime).toLocaleString()}
+                  Last check:{" "}
+                  {new Date(provider.lastCheckTime).toLocaleString()}
                 </div>
               </CardContent>
             </Card>

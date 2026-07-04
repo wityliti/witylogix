@@ -47,7 +47,10 @@ class RateLimiter {
   private tokens: number;
   private lastRefillAt: number = Date.now();
 
-  constructor(private capacity: number, private refillRatePerSecond: number) {
+  constructor(
+    private capacity: number,
+    private refillRatePerSecond: number,
+  ) {
     this.tokens = capacity;
   }
 
@@ -93,7 +96,10 @@ export class AdobeSignV2SDKClient {
 
   constructor(config: SDKConfig) {
     if (config.provider !== "adobe_sign") {
-      throw new ValidationError("Config must be for Adobe Sign provider", "adobe_sign");
+      throw new ValidationError(
+        "Config must be for Adobe Sign provider",
+        "adobe_sign",
+      );
     }
     this.config = config;
     this.accessToken = config.credentials.accessToken;
@@ -121,7 +127,8 @@ export class AdobeSignV2SDKClient {
    * Refresh OAuth2 token.
    */
   async refreshToken(): Promise<void> {
-    const { clientId, clientSecret, refreshToken, apiUrl } = this.config.credentials;
+    const { clientId, clientSecret, refreshToken, apiUrl } =
+      this.config.credentials;
 
     if (!refreshToken) {
       throw new AuthenticationError("No refresh token available", "adobe_sign");
@@ -146,7 +153,9 @@ export class AdobeSignV2SDKClient {
 
     const data = (await response.json()) as Record<string, unknown>;
     this.accessToken = data.access_token as string;
-    this.tokenExpiresAt = new Date(Date.now() + ((data.expires_in as number) || 3600) * 1000);
+    this.tokenExpiresAt = new Date(
+      Date.now() + ((data.expires_in as number) || 3600) * 1000,
+    );
   }
 
   /**
@@ -163,7 +172,7 @@ export class AdobeSignV2SDKClient {
   private async request(
     method: string,
     path: string,
-    body?: Record<string, unknown> | string
+    body?: Record<string, unknown> | string,
   ): Promise<Response> {
     await this.ensureValidToken();
     await this.rateLimiter.acquire();
@@ -172,7 +181,7 @@ export class AdobeSignV2SDKClient {
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
       "Content-Type": "application/json",
-      "Accept": "application/json",
+      Accept: "application/json",
       ...this.config.headers,
     };
 
@@ -184,13 +193,24 @@ export class AdobeSignV2SDKClient {
         const response = await fetch(url, {
           method,
           headers,
-          body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
+          body: body
+            ? typeof body === "string"
+              ? body
+              : JSON.stringify(body)
+            : undefined,
           signal: AbortSignal.timeout(this.config.requestTimeout || 30000),
         });
 
         if (response.status === 429) {
-          const resetAt = new Date(Date.parse(response.headers.get("Retry-After") || ""));
-          throw new RateLimitError("Rate limit exceeded", "adobe_sign", resetAt, 0);
+          const resetAt = new Date(
+            Date.parse(response.headers.get("Retry-After") || ""),
+          );
+          throw new RateLimitError(
+            "Rate limit exceeded",
+            "adobe_sign",
+            resetAt,
+            0,
+          );
         }
 
         if (response.ok) {
@@ -210,7 +230,7 @@ export class AdobeSignV2SDKClient {
           throw new ESignatureSDKError(
             "Circuit breaker open - too many failures",
             "adobe_sign",
-            "CIRCUIT_BREAKER_OPEN"
+            "CIRCUIT_BREAKER_OPEN",
           );
         }
 
@@ -232,13 +252,21 @@ export class AdobeSignV2SDKClient {
   /**
    * Create an agreement.
    */
-  async createEnvelope(envelope: NormalizedEnvelope): Promise<EnvelopeOperationResult> {
+  async createEnvelope(
+    envelope: NormalizedEnvelope,
+  ): Promise<EnvelopeOperationResult> {
     const payload = this.normalizeEnvelopeForCreate(envelope);
     const response = await this.request("POST", "/agreements", payload);
 
     if (!response.ok) {
       const error = (await response.json()) as Record<string, unknown>;
-      throw new ESignatureSDKError("Failed to create agreement", "adobe_sign", undefined, response.status, error);
+      throw new ESignatureSDKError(
+        "Failed to create agreement",
+        "adobe_sign",
+        undefined,
+        response.status,
+        error,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -255,10 +283,17 @@ export class AdobeSignV2SDKClient {
    */
   async sendEnvelope(envelopeId: string): Promise<EnvelopeOperationResult> {
     const payload = { agreementId: envelopeId };
-    const response = await this.request("PUT", `/agreements/${envelopeId}`, { state: "OUT_FOR_SIGNATURE" });
+    const response = await this.request("PUT", `/agreements/${envelopeId}`, {
+      state: "OUT_FOR_SIGNATURE",
+    });
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to send agreement", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to send agreement",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     return {
@@ -273,10 +308,19 @@ export class AdobeSignV2SDKClient {
    */
   async voidEnvelope(envelopeId: string, reason?: string): Promise<void> {
     const payload = { notificationMessage: reason };
-    const response = await this.request("PUT", `/agreements/${envelopeId}/cancel`, payload);
+    const response = await this.request(
+      "PUT",
+      `/agreements/${envelopeId}/cancel`,
+      payload,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to cancel agreement", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to cancel agreement",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
   }
 
@@ -287,7 +331,12 @@ export class AdobeSignV2SDKClient {
     const response = await this.request("GET", `/agreements/${envelopeId}`);
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get agreement", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get agreement",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -301,24 +350,40 @@ export class AdobeSignV2SDKClient {
     const response = await this.request("GET", `/agreements/${envelopeId}`);
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get agreement status", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get agreement status",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const participants = data.participantSetsInfo as Array<Record<string, unknown>>;
+    const participants = data.participantSetsInfo as Array<
+      Record<string, unknown>
+    >;
 
     const signerStatuses = (participants || [])
-      .flatMap((pset: Record<string, unknown>) => pset.participantSet as Array<Record<string, unknown>>)
+      .flatMap(
+        (pset: Record<string, unknown>) =>
+          pset.participantSet as Array<Record<string, unknown>>,
+      )
       .map((participant: Record<string, unknown>) => ({
         email: participant.email as string,
         name: participant.name as string,
         status: this.normalizeStatus((participant.status as string) || "SENT"),
-        signedAt: participant.signedDate ? new Date(participant.signedDate as string) : undefined,
+        signedAt: participant.signedDate
+          ? new Date(participant.signedDate as string)
+          : undefined,
         declinedAt: undefined,
       }));
 
-    const completionPercentage = signerStatuses.filter((s) => s.status === "signed").length
-      ? (signerStatuses.filter((s) => s.status === "signed").length / signerStatuses.length) * 100
+    const completionPercentage = signerStatuses.filter(
+      (s) => s.status === "signed",
+    ).length
+      ? (signerStatuses.filter((s) => s.status === "signed").length /
+          signerStatuses.length) *
+        100
       : 0;
 
     return {
@@ -347,23 +412,34 @@ export class AdobeSignV2SDKClient {
     });
 
     if (options?.status) params.append("agreementStatus", options.status);
-    if (options?.fromDate) params.append("created[from]", options.fromDate.toISOString());
-    if (options?.toDate) params.append("created[to]", options.toDate.toISOString());
+    if (options?.fromDate)
+      params.append("created[from]", options.fromDate.toISOString());
+    if (options?.toDate)
+      params.append("created[to]", options.toDate.toISOString());
 
-    const response = await this.request("GET", `/agreements?${params.toString()}`);
+    const response = await this.request(
+      "GET",
+      `/agreements?${params.toString()}`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to list agreements", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to list agreements",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const agreements = ((data.userAgreementList as Array<Record<string, unknown>>) || []).map((agr) =>
-      this.normalizeEnvelopeFromProvider(agr)
-    );
+    const agreements = (
+      (data.userAgreementList as Array<Record<string, unknown>>) || []
+    ).map((agr) => this.normalizeEnvelopeFromProvider(agr));
 
     return {
       items: agreements,
-      total: ((data.page as Record<string, unknown>)?.totalResults as number) ?? 0,
+      total:
+        ((data.page as Record<string, unknown>)?.totalResults as number) ?? 0,
       offset: options?.offset || 0,
       limit: options?.limit || 25,
       hasMore: agreements.length === (options?.limit || 25),
@@ -374,12 +450,21 @@ export class AdobeSignV2SDKClient {
    * Resend agreement to signers.
    */
   async resendEnvelope(envelopeId: string): Promise<void> {
-    const response = await this.request("PUT", `/agreements/${envelopeId}/reminders`, {
-      recipientParticipationLevel: "SIGNER",
-    });
+    const response = await this.request(
+      "PUT",
+      `/agreements/${envelopeId}/reminders`,
+      {
+        recipientParticipationLevel: "SIGNER",
+      },
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to resend agreement", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to resend agreement",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
   }
 
@@ -388,7 +473,11 @@ export class AdobeSignV2SDKClient {
   /**
    * Upload transient document for use in agreements.
    */
-  async uploadDocument(fileName: string, content: string, mimeType: string): Promise<{ documentId: string }> {
+  async uploadDocument(
+    fileName: string,
+    content: string,
+    mimeType: string,
+  ): Promise<{ documentId: string }> {
     const buffer = Buffer.from(content, "base64");
     const formData = new FormData();
     formData.append("File", new Blob([buffer], { type: mimeType }), fileName);
@@ -396,17 +485,25 @@ export class AdobeSignV2SDKClient {
     await this.ensureValidToken();
     await this.rateLimiter.acquire();
 
-    const response = await fetch(`${this.config.credentials.apiUrl}/transientDocuments`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        ...this.config.headers,
+    const response = await fetch(
+      `${this.config.credentials.apiUrl}/transientDocuments`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          ...this.config.headers,
+        },
+        body: formData,
       },
-      body: formData,
-    });
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to upload document", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to upload document",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -416,11 +513,22 @@ export class AdobeSignV2SDKClient {
   /**
    * Download signed document.
    */
-  async downloadDocument(envelopeId: string, documentId: string): Promise<DocumentDownloadResult> {
-    const response = await this.request("GET", `/agreements/${envelopeId}/documents/${documentId}`);
+  async downloadDocument(
+    envelopeId: string,
+    documentId: string,
+  ): Promise<DocumentDownloadResult> {
+    const response = await this.request(
+      "GET",
+      `/agreements/${envelopeId}/documents/${documentId}`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to download document", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to download document",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const buffer = await response.arrayBuffer();
@@ -440,12 +548,20 @@ export class AdobeSignV2SDKClient {
    * Download all agreement documents as ZIP.
    */
   async downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
-    const response = await this.request("GET", `/agreements/${envelopeId}/documents`);
+    const response = await this.request(
+      "GET",
+      `/agreements/${envelopeId}/documents`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to download agreement documents", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to download agreement documents",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const buffer = await response.arrayBuffer();
@@ -472,20 +588,29 @@ export class AdobeSignV2SDKClient {
       pageIndex: String(options?.offset || 0),
     });
 
-    const response = await this.request("GET", `/libraryDocuments?${params.toString()}`);
+    const response = await this.request(
+      "GET",
+      `/libraryDocuments?${params.toString()}`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to list templates", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to list templates",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const templates = ((data.libraryDocumentList as Array<Record<string, unknown>>) || []).map((lib) =>
-      this.normalizeTemplateFromProvider(lib)
-    );
+    const templates = (
+      (data.libraryDocumentList as Array<Record<string, unknown>>) || []
+    ).map((lib) => this.normalizeTemplateFromProvider(lib));
 
     return {
       items: templates,
-      total: ((data.page as Record<string, unknown>)?.totalResults as number) ?? 0,
+      total:
+        ((data.page as Record<string, unknown>)?.totalResults as number) ?? 0,
       offset: options?.offset || 0,
       limit: options?.limit || 25,
       hasMore: templates.length === (options?.limit || 25),
@@ -496,10 +621,18 @@ export class AdobeSignV2SDKClient {
    * Get library document details.
    */
   async getTemplate(templateId: string): Promise<NormalizedTemplate> {
-    const response = await this.request("GET", `/libraryDocuments/${templateId}`);
+    const response = await this.request(
+      "GET",
+      `/libraryDocuments/${templateId}`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get template", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get template",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -511,7 +644,7 @@ export class AdobeSignV2SDKClient {
    */
   async createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<NormalizedEnvelope>
+    envelope: Partial<NormalizedEnvelope>,
   ): Promise<EnvelopeOperationResult> {
     const payload = {
       fileInfos: [
@@ -535,7 +668,12 @@ export class AdobeSignV2SDKClient {
     const response = await this.request("POST", "/agreements", payload);
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to create agreement from template", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to create agreement from template",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -555,22 +693,33 @@ export class AdobeSignV2SDKClient {
   async getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult> {
     const payload = {
       recipientEmail: signerEmail,
       redirectUrl: returnUrl,
     };
 
-    const response = await this.request("GET", `/agreements/${envelopeId}/signingUrls`, payload);
+    const response = await this.request(
+      "GET",
+      `/agreements/${envelopeId}/signingUrls`,
+      payload,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get signing URL", "adobe_sign", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get signing URL",
+        "adobe_sign",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const signingUrl = ((data.signingUrlSetList as Array<Record<string, unknown>>)?.[0]
-      ?.signingUrls as Array<Record<string, unknown>>)?.[0]?.url as string;
+    const signingUrl = (
+      (data.signingUrlSetList as Array<Record<string, unknown>>)?.[0]
+        ?.signingUrls as Array<Record<string, unknown>>
+    )?.[0]?.url as string;
 
     return {
       signingUrl,
@@ -584,12 +733,19 @@ export class AdobeSignV2SDKClient {
   /**
    * Verify and parse webhook event.
    */
-  async parseWebhookEvent(payload: Record<string, unknown>, headers: Record<string, string>): Promise<WebhookEvent> {
-    const signature = headers["X-Adobe-Sign-Signature"] || headers["x-adobe-sign-signature"];
+  async parseWebhookEvent(
+    payload: Record<string, unknown>,
+    headers: Record<string, string>,
+  ): Promise<WebhookEvent> {
+    const signature =
+      headers["X-Adobe-Sign-Signature"] || headers["x-adobe-sign-signature"];
 
     let isValid = true;
     if (signature && this.config.credentials.webhookSecret) {
-      isValid = this.verifyWebhookSignature(JSON.stringify(payload), signature as string);
+      isValid = this.verifyWebhookSignature(
+        JSON.stringify(payload),
+        signature as string,
+      );
     }
 
     const event = payload.event as Record<string, unknown>;
@@ -653,7 +809,9 @@ export class AdobeSignV2SDKClient {
 
   // ─── Helper Methods ────────────────────────────────────────────────
 
-  private normalizeEnvelopeForCreate(envelope: NormalizedEnvelope): Record<string, unknown> {
+  private normalizeEnvelopeForCreate(
+    envelope: NormalizedEnvelope,
+  ): Record<string, unknown> {
     return {
       fileInfos: envelope.documents.map((doc) => ({
         transientDocumentId: doc.documentId,
@@ -675,7 +833,9 @@ export class AdobeSignV2SDKClient {
     };
   }
 
-  private normalizeEnvelopeFromProvider(data: Record<string, unknown>): NormalizedEnvelope {
+  private normalizeEnvelopeFromProvider(
+    data: Record<string, unknown>,
+  ): NormalizedEnvelope {
     return {
       envelopeId: data.id as string,
       name: data.name as string,
@@ -693,7 +853,9 @@ export class AdobeSignV2SDKClient {
     };
   }
 
-  private normalizeTemplateFromProvider(data: Record<string, unknown>): NormalizedTemplate {
+  private normalizeTemplateFromProvider(
+    data: Record<string, unknown>,
+  ): NormalizedTemplate {
     return {
       templateId: data.id as string,
       name: data.name as string,

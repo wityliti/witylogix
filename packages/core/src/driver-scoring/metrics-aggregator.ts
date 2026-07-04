@@ -3,10 +3,15 @@
  * Queries and aggregates driver performance data from database
  */
 
-import { prisma } from '@witylogix/db';
-import { DriverMetrics, DriverScore, DriverLeaderboardEntry, ScoringPeriod } from './types';
-import { calculateDriverScore, updateScoreWithTrend } from './scoring-engine';
-import { applyDecay } from './decay';
+import { prisma } from "@witylogix/db";
+import {
+  DriverMetrics,
+  DriverScore,
+  DriverLeaderboardEntry,
+  ScoringPeriod,
+} from "./types";
+import { calculateDriverScore, updateScoreWithTrend } from "./scoring-engine";
+import { applyDecay } from "./decay";
 
 /**
  * Get date range for a scoring period
@@ -16,16 +21,16 @@ function getPeriodDateRange(period: ScoringPeriod): { start: Date; end: Date } {
   const start = new Date();
 
   switch (period) {
-    case 'daily':
+    case "daily":
       start.setDate(start.getDate() - 1);
       break;
-    case 'weekly':
+    case "weekly":
       start.setDate(start.getDate() - 7);
       break;
-    case 'monthly':
+    case "monthly":
       start.setMonth(start.getMonth() - 1);
       break;
-    case 'all_time':
+    case "all_time":
       start.setFullYear(1900); // arbitrary old date
       break;
   }
@@ -40,7 +45,7 @@ export async function aggregateDriverMetrics(
   driverId: string,
   tenantId: string,
   period: ScoringPeriod,
-  prisma: any
+  prisma: any,
 ): Promise<DriverMetrics> {
   const { start, end } = getPeriodDateRange(period);
 
@@ -69,7 +74,10 @@ export async function aggregateDriverMetrics(
   // Calculate average delivery time
   const avgDeliveryMinutes =
     totalDeliveries > 0
-      ? deliveries.reduce((sum, d) => sum + (d.deliveryDurationMinutes || 0), 0) / totalDeliveries
+      ? deliveries.reduce(
+          (sum, d) => sum + (d.deliveryDurationMinutes || 0),
+          0,
+        ) / totalDeliveries
       : 0;
 
   // Aggregate customer ratings
@@ -77,12 +85,15 @@ export async function aggregateDriverMetrics(
     .flatMap((d) => d.customerRatings || [])
     .filter((r) => r.rating != null);
 
-  const customerRatingSum = customerRatings.reduce((sum, r) => sum + r.rating, 0);
+  const customerRatingSum = customerRatings.reduce(
+    (sum, r) => sum + r.rating,
+    0,
+  );
   const customerRatingCount = customerRatings.length;
 
   // Count POD compliance
   const podComplianceCount = deliveries.filter(
-    (d) => d.proofOfDelivery && d.proofOfDelivery.length > 0
+    (d) => d.proofOfDelivery && d.proofOfDelivery.length > 0,
   ).length;
   const podMissedCount = totalDeliveries - podComplianceCount;
 
@@ -128,13 +139,13 @@ export async function aggregateDriverMetrics(
 export async function aggregateAllDrivers(
   tenantId: string,
   period: ScoringPeriod,
-  prisma: any
+  prisma: any,
 ): Promise<DriverMetrics[]> {
   // Get all active drivers for tenant
   const drivers = await db.driver.findMany({
     where: {
       tenantId,
-      status: 'active', // or whatever your status field is called
+      status: "active", // or whatever your status field is called
     },
     select: {
       id: true,
@@ -144,7 +155,12 @@ export async function aggregateAllDrivers(
   const allMetrics: DriverMetrics[] = [];
 
   for (const driver of drivers) {
-    const metrics = await aggregateDriverMetrics(driver.id, tenantId, period, prisma);
+    const metrics = await aggregateDriverMetrics(
+      driver.id,
+      tenantId,
+      period,
+      prisma,
+    );
     allMetrics.push(metrics);
   }
 
@@ -158,7 +174,7 @@ export async function getLeaderboard(
   tenantId: string,
   period: ScoringPeriod,
   limit: number = 50,
-  prisma: any
+  prisma: any,
 ): Promise<DriverLeaderboardEntry[]> {
   // Aggregate metrics for all drivers
   const allMetrics = await aggregateAllDrivers(tenantId, period, prisma);
@@ -179,7 +195,7 @@ export async function getLeaderboard(
         tenantId: metrics.tenantId,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       select: {
         createdAt: true,
@@ -187,10 +203,16 @@ export async function getLeaderboard(
     });
 
     const daysSinceLastDelivery = lastDeliveryDate
-      ? Math.floor((Date.now() - lastDeliveryDate.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+      ? Math.floor(
+          (Date.now() - lastDeliveryDate.createdAt.getTime()) /
+            (1000 * 60 * 60 * 24),
+        )
       : 0;
 
-    const finalScore = applyDecay(baseScore.compositeScore, daysSinceLastDelivery);
+    const finalScore = applyDecay(
+      baseScore.compositeScore,
+      daysSinceLastDelivery,
+    );
 
     // Fetch driver details
     const driver = await db.driver.findUnique({
@@ -208,13 +230,13 @@ export async function getLeaderboard(
         ...baseScore,
         compositeScore: finalScore,
       },
-      null // Previous score would be fetched from history if available
+      null, // Previous score would be fetched from history if available
     );
 
     scoresWithDetails.push({
       ...scoreWithTrend,
       rank: i + 1, // Will be reranked after sorting
-      driverName: driver?.name || 'Unknown',
+      driverName: driver?.name || "Unknown",
       avatar: driver?.avatar || null,
       deliveriesThisPeriod: metrics.totalDeliveries,
     });

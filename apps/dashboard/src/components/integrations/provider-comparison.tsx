@@ -2,7 +2,10 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import type { ProviderComparisonProps, IntegrationConnection as Provider } from "./types";
+import type {
+  ProviderComparisonProps,
+  IntegrationConnection as Provider,
+} from "./types";
 
 /**
  * Provider comparison component
@@ -73,7 +76,9 @@ export function ProviderComparison({
 
   // Determine best value
   const getBestValue = () => {
-    const values = comparisonProviders.map((p) => getMetricValue(p, selectedMetrics));
+    const values = comparisonProviders.map((p) =>
+      getMetricValue(p, selectedMetrics),
+    );
     if (selectedMetrics === "cost" || selectedMetrics === "latency") {
       return Math.min(...values);
     }
@@ -85,38 +90,42 @@ export function ProviderComparison({
     return value === best;
   };
 
-  const features = useMemo(() => [
-    {
-      name: "Webhook Support",
-      available: comparisonProviders.map((p) => !!p.webhookConfig),
-    },
-    {
-      name: "OAuth 2.0",
-      available: comparisonProviders.map(
-        (p) => p.credentialConfig?.authType === "oauth2"
-      ),
-    },
-    {
-      name: "API Key Auth",
-      available: comparisonProviders.map(
-        (p) => !p.credentialConfig || p.credentialConfig.authType === "api-key"
-      ),
-    },
-    {
-      name: "Rate Limiting",
-      available: comparisonProviders.map((p) => !!p.rateLimit),
-    },
-    {
-      name: "Active",
-      available: comparisonProviders.map((p) => p.isActive),
-    },
-    {
-      name: "Has Errors",
-      available: comparisonProviders.map(
-        (p) => !p.errors || p.errors.length === 0
-      ),
-    },
-  ], [comparisonProviders]);
+  const features = useMemo(
+    () => [
+      {
+        name: "Webhook Support",
+        available: comparisonProviders.map((p) => !!p.webhookConfig),
+      },
+      {
+        name: "OAuth 2.0",
+        available: comparisonProviders.map(
+          (p) => p.credentialConfig?.authType === "oauth2",
+        ),
+      },
+      {
+        name: "API Key Auth",
+        available: comparisonProviders.map(
+          (p) =>
+            !p.credentialConfig || p.credentialConfig.authType === "api-key",
+        ),
+      },
+      {
+        name: "Rate Limiting",
+        available: comparisonProviders.map((p) => !!p.rateLimit),
+      },
+      {
+        name: "Active",
+        available: comparisonProviders.map((p) => p.isActive),
+      },
+      {
+        name: "Has Errors",
+        available: comparisonProviders.map(
+          (p) => !p.errors || p.errors.length === 0,
+        ),
+      },
+    ],
+    [comparisonProviders],
+  );
 
   return (
     <div className={cn("w-full overflow-x-auto", className)}>
@@ -160,7 +169,9 @@ export function ProviderComparison({
                   ? 100 - percentage
                   : percentage;
 
-              const barColor = isBest ? "var(--wl-success-500)" : "var(--wl-primary-500)";
+              const barColor = isBest
+                ? "var(--wl-success-500)"
+                : "var(--wl-primary-500)";
 
               return (
                 <div key={provider.id}>
@@ -203,7 +214,9 @@ export function ProviderComparison({
 
         {/* Feature support matrix */}
         <div>
-          <h4 className="text-sm font-semibold text-wl-text-primary mb-4">Feature Support</h4>
+          <h4 className="text-sm font-semibold text-wl-text-primary mb-4">
+            Feature Support
+          </h4>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -228,10 +241,12 @@ export function ProviderComparison({
                     key={feature.name}
                     className={cn(
                       "border-b border-wl-border-subtle",
-                      featureIdx % 2 === 1 && "bg-wl-surface-hover"
+                      featureIdx % 2 === 1 && "bg-wl-surface-hover",
                     )}
                   >
-                    <td className="py-3 px-3 text-wl-text-primary">{feature.name}</td>
+                    <td className="py-3 px-3 text-wl-text-primary">
+                      {feature.name}
+                    </td>
                     {comparisonProviders.map((provider, providerIdx) => (
                       <td
                         key={`${feature.name}-${provider.id}`}
@@ -255,7 +270,7 @@ export function ProviderComparison({
         <div className="mt-8 pt-8 border-t border-wl-border-subtle grid grid-cols-1 lg:grid-cols-2 gap-4">
           {comparisonProviders.map((provider) => {
             const featureCount = features.filter(
-              (f) => f.available[comparisonProviders.indexOf(provider)]
+              (f) => f.available[comparisonProviders.indexOf(provider)],
             ).length;
 
             return (
@@ -263,7 +278,9 @@ export function ProviderComparison({
                 key={provider.id}
                 className="p-4 rounded-lg border border-wl-border-subtle bg-wl-surface-hover"
               >
-                <div className="font-semibold text-wl-text-primary mb-2">{provider.name}</div>
+                <div className="font-semibold text-wl-text-primary mb-2">
+                  {provider.name}
+                </div>
                 <div className="text-sm text-wl-text-secondary space-y-1">
                   <div>Status: {provider.status}</div>
                   <div>Category: {provider.category}</div>

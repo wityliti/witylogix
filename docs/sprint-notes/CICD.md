@@ -53,11 +53,12 @@ This document describes the complete CI/CD pipeline and Docker configuration for
 ### Docker Files
 
 #### 1. `Dockerfile.api` (70 lines)
+
 **Multi-stage build for Fastify 5 backend**
 
 - **Stage 1 (base):** Node 20 Alpine + pnpm 9.15.0
 - **Stage 2 (deps):** Install all workspace dependencies
-- **Stage 3 (build):** 
+- **Stage 3 (build):**
   - Generate Prisma Client
   - Build shared packages (db, types, validators, core)
   - Build API with TypeScript
@@ -68,12 +69,14 @@ This document describes the complete CI/CD pipeline and Docker configuration for
   - Command: `node apps/api/dist/server.js`
 
 **Key Features:**
+
 - Prisma client generation before compilation
 - Only copies relevant workspace packages
 - Includes health check for Kubernetes integration
 - Optimized layer caching
 
 #### 2. `Dockerfile.dashboard` (63 lines)
+
 **Multi-stage build for Next.js 15 dashboard**
 
 - **Stage 1 (deps):** Dependencies installation
@@ -86,11 +89,13 @@ This document describes the complete CI/CD pipeline and Docker configuration for
   - Command: `node server.js`
 
 **Key Features:**
+
 - Standalone output mode (minimal image size)
 - Health check integrated
 - No additional runtime dependencies needed
 
 #### 3. `Dockerfile.shopify-app` (63 lines)
+
 **Multi-stage build for Shopify integration (React Router + Vite)**
 
 - **Stage 1 (deps):** Dependencies installation
@@ -102,14 +107,17 @@ This document describes the complete CI/CD pipeline and Docker configuration for
   - Health check for availability
 
 **Key Features:**
+
 - Optimized for static site serving
 - Lightweight footprint
 - Ready for Shopify API integration
 
 #### 4. `.dockerignore` (21 lines)
+
 **Excludes unnecessary files from Docker build context**
 
 Excludes:
+
 - `node_modules`, `pnpm-lock.yaml`
 - Build outputs: `dist`, `.next`, `.turbo`
 - Version control: `.git`, `.gitignore`
@@ -122,19 +130,20 @@ Excludes:
 ### Docker Compose Files
 
 #### 5. `docker-compose.yml` (215 lines)
+
 **Production-ready orchestration for all services**
 
 **Services:**
 
-| Service | Image | Port | Purpose |
-|---------|-------|------|---------|
-| `postgres` | postgis:16-3.4-alpine | 5432 | Database with geospatial support |
-| `redis` | redis:7-alpine | 6379 | Cache, sessions, job queue |
-| `api` | Built from Dockerfile.api | 3001 | Fastify backend |
-| `dashboard` | Built from Dockerfile.dashboard | 3000 | Next.js admin UI |
-| `shopify-app` | Built from Dockerfile.shopify-app | 3002 | Shopify integration |
-| `bull-board` | deadly0/bull-board:latest | 3100 | Job queue dashboard (optional) |
-| `osrm` | osrm/osrm-backend:latest | 5000 | Route optimization (Phase 2) |
+| Service       | Image                             | Port | Purpose                          |
+| ------------- | --------------------------------- | ---- | -------------------------------- |
+| `postgres`    | postgis:16-3.4-alpine             | 5432 | Database with geospatial support |
+| `redis`       | redis:7-alpine                    | 6379 | Cache, sessions, job queue       |
+| `api`         | Built from Dockerfile.api         | 3001 | Fastify backend                  |
+| `dashboard`   | Built from Dockerfile.dashboard   | 3000 | Next.js admin UI                 |
+| `shopify-app` | Built from Dockerfile.shopify-app | 3002 | Shopify integration              |
+| `bull-board`  | deadly0/bull-board:latest         | 3100 | Job queue dashboard (optional)   |
+| `osrm`        | osrm/osrm-backend:latest          | 5000 | Route optimization (Phase 2)     |
 
 **Features:**
 
@@ -177,9 +186,11 @@ SHOPIFY_API_SECRET=...
 ```
 
 #### 6. `docker-compose.dev.yml` (72 lines)
+
 **Development overrides for hot-reload and debugging**
 
 **Usage:**
+
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
@@ -205,9 +216,11 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ### GitHub Actions Workflows
 
 #### 7. `.github/workflows/ci.yml` (248 lines)
+
 **Continuous Integration Pipeline**
 
 **Triggers:**
+
 - Push to `main` branch
 - All pull requests
 - Concurrency: Cancels in-progress workflows for same PR
@@ -243,6 +256,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 **Total CI Runtime:** ~15-20 minutes
 
 **Caching Strategy:**
+
 - pnpm store (dependencies)
 - Turbo build artifacts
 - Next.js build cache
@@ -250,9 +264,11 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ---
 
 #### 8. `.github/workflows/deploy.yml` (195 lines)
+
 **Continuous Deployment Pipeline**
 
 **Triggers:**
+
 - Push to `main` (after CI passes)
 - Can also trigger via `workflow_run` for workflow dependencies
 
@@ -273,30 +289,35 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
    - Docker BuildX: Uses GitHub Actions cache layer
 
 2. **Deploy to Environment** (Commented options)
-   
+
    **Option 1: Kubernetes**
+
    ```bash
    kubectl set image deployment/witylogix-api \
      api=ghcr.io/.../api:latest \
      --namespace=production --record
    ```
-   
+
    **Option 2: Fly.io**
+
    ```bash
    flyctl deploy
    ```
-   
+
    **Option 3: Railway**
+
    ```bash
    railway deploy --force
    ```
-   
+
    **Option 4: Custom Script**
+
    ```bash
    bash scripts/deploy.sh
    ```
 
 **Permissions:**
+
 - `contents: read` (checkout)
 - `packages: write` (push to ghcr.io)
 
@@ -305,6 +326,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ### API Health Routes
 
 #### 9. `apps/api/src/routes/health.ts` (217 lines)
+
 **Production-grade health check endpoints**
 
 **Endpoints:**
@@ -313,7 +335,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
    - Response time: ~1ms (no external calls)
    - Status: 200 OK always (if process is running)
    - Use case: Kubernetes livenessProbe
-   
+
    ```json
    {
      "status": "ok",
@@ -327,7 +349,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
    - Checks: Database, Redis connectivity
    - Status: 200 OK (ready) or 503 Service Unavailable
    - Use case: Kubernetes readinessProbe, load balancer decisions
-   
+
    ```json
    {
      "ready": true,
@@ -343,7 +365,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
    - Includes: Memory stats, dependency latency
    - Status: 200 (healthy), 503 (degraded)
    - Use case: Monitoring dashboards, alerting
-   
+
    ```json
    {
      "status": "ok" | "degraded",
@@ -372,28 +394,28 @@ spec:
   template:
     spec:
       containers:
-      - name: api
-        image: ghcr.io/witylogix/api:latest
-        ports:
-        - containerPort: 3001
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-            scheme: HTTP
-          initialDelaySeconds: 40
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /health/ready
-            port: 3001
-            scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 2
+        - name: api
+          image: ghcr.io/witylogix/api:latest
+          ports:
+            - containerPort: 3001
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+              scheme: HTTP
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3001
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
 ```
 
 ---
@@ -477,6 +499,7 @@ STRIPE_SECRET_KEY=sk_...
 ### Production (GitHub Secrets)
 
 Set in repository settings:
+
 - `POSTGRES_PASSWORD`
 - `JWT_SECRET`
 - `MAPBOX_ACCESS_TOKEN`
@@ -616,4 +639,3 @@ kubectl scale deployment witylogix-api --replicas=3 -n production
 - [Next.js Standalone Output](https://nextjs.org/docs/app/deployment)
 - [Kubernetes Probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
 - [GitHub Actions Caching](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows)
-

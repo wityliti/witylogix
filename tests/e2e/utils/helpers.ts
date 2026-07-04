@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Page, expect } from "@playwright/test";
 
 /**
  * Utility helper functions for E2E tests
@@ -16,7 +16,7 @@ export function generateTrackingId(): string {
 /**
  * Generate a unique email for testing
  */
-export function generateTestEmail(prefix: string = 'test'): string {
+export function generateTestEmail(prefix: string = "test"): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
   return `${prefix}-${timestamp}-${random}@test.com`;
@@ -38,7 +38,11 @@ export async function waitForElementInViewport(
 /**
  * Click with retry on failure
  */
-export async function clickWithRetry(page: Page, selector: string, maxRetries: number = 3): Promise<void> {
+export async function clickWithRetry(
+  page: Page,
+  selector: string,
+  maxRetries: number = 3,
+): Promise<void> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       const element = page.locator(selector);
@@ -56,10 +60,14 @@ export async function clickWithRetry(page: Page, selector: string, maxRetries: n
 /**
  * Fill input with clear and paste
  */
-export async function fillInputField(page: Page, selector: string, value: string): Promise<void> {
+export async function fillInputField(
+  page: Page,
+  selector: string,
+  value: string,
+): Promise<void> {
   const input = page.locator(selector);
   await input.click();
-  await input.fill('');
+  await input.fill("");
   await input.type(value);
 }
 
@@ -82,11 +90,11 @@ export async function getTableData(
 
   for (let i = 0; i < rowCount; i++) {
     const row = rowLocators.nth(i);
-    const cells = await row.locator('td').allTextContents();
+    const cells = await row.locator("td").allTextContents();
 
     const rowData: Record<string, string> = {};
     headers.forEach((header, index) => {
-      rowData[header.trim()] = cells[index]?.trim() || '';
+      rowData[header.trim()] = cells[index]?.trim() || "";
     });
 
     rows.push(rowData);
@@ -98,7 +106,11 @@ export async function getTableData(
 /**
  * Handle modal confirmation
  */
-export async function confirmModal(page: Page, confirmText: string = 'Confirm', timeout: number = 5000): Promise<void> {
+export async function confirmModal(
+  page: Page,
+  confirmText: string = "Confirm",
+  timeout: number = 5000,
+): Promise<void> {
   const confirmButton = page.locator(`button:has-text("${confirmText}")`);
   await expect(confirmButton).toBeVisible({ timeout });
   await confirmButton.click();
@@ -107,9 +119,14 @@ export async function confirmModal(page: Page, confirmText: string = 'Confirm', 
 /**
  * Handle error messages
  */
-export async function getErrorMessage(page: Page, timeout: number = 5000): Promise<string | null> {
+export async function getErrorMessage(
+  page: Page,
+  timeout: number = 5000,
+): Promise<string | null> {
   try {
-    const errorElement = page.locator('[data-testid="error-message"], [role="alert"], .error');
+    const errorElement = page.locator(
+      '[data-testid="error-message"], [role="alert"], .error',
+    );
     await expect(errorElement).toBeVisible({ timeout });
     return await errorElement.textContent();
   } catch {
@@ -121,7 +138,7 @@ export async function getErrorMessage(page: Page, timeout: number = 5000): Promi
  * Take screenshot with timestamp
  */
 export async function takeScreenshot(page: Page, name: string): Promise<void> {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filename = `${name}-${timestamp}.png`;
   await page.screenshot({ path: `tests/e2e/screenshots/${filename}` });
 }
@@ -129,14 +146,20 @@ export async function takeScreenshot(page: Page, name: string): Promise<void> {
 /**
  * Wait for network to be idle
  */
-export async function waitForNetworkIdle(page: Page, timeout: number = 10000): Promise<void> {
-  await page.waitForLoadState('networkidle', { timeout });
+export async function waitForNetworkIdle(
+  page: Page,
+  timeout: number = 10000,
+): Promise<void> {
+  await page.waitForLoadState("networkidle", { timeout });
 }
 
 /**
  * Check if element is disabled
  */
-export async function isElementDisabled(page: Page, selector: string): Promise<boolean> {
+export async function isElementDisabled(
+  page: Page,
+  selector: string,
+): Promise<boolean> {
   const element = page.locator(selector);
   return await element.isDisabled();
 }
@@ -144,10 +167,13 @@ export async function isElementDisabled(page: Page, selector: string): Promise<b
 /**
  * Get all text from element
  */
-export async function getElementText(page: Page, selector: string): Promise<string> {
+export async function getElementText(
+  page: Page,
+  selector: string,
+): Promise<string> {
   const element = page.locator(selector);
   const text = await element.textContent();
-  return text?.trim() || '';
+  return text?.trim() || "";
 }
 
 /**
@@ -165,14 +191,21 @@ export async function textExists(page: Page, text: string): Promise<boolean> {
 /**
  * Wait for text to appear
  */
-export async function waitForText(page: Page, text: string, timeout: number = 5000): Promise<void> {
+export async function waitForText(
+  page: Page,
+  text: string,
+  timeout: number = 5000,
+): Promise<void> {
   await expect(page.locator(`text=${text}`)).toBeVisible({ timeout });
 }
 
 /**
  * Get all elements matching selector
  */
-export async function getElements(page: Page, selector: string): Promise<number> {
+export async function getElements(
+  page: Page,
+  selector: string,
+): Promise<number> {
   return await page.locator(selector).count();
 }
 
@@ -181,8 +214,8 @@ export async function getElements(page: Page, selector: string): Promise<number>
  */
 export function formatTestDate(date: Date = new Date()): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -200,10 +233,10 @@ export function generatePhoneNumber(): string {
  * Generate random address
  */
 export function generateAddress(): string {
-  const streets = ['Main', 'Oak', 'Elm', 'Pine', 'Maple', 'Cedar'];
-  const types = ['St', 'Ave', 'Rd', 'Blvd', 'Lane', 'Drive'];
-  const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'];
-  const states = ['NY', 'CA', 'IL', 'TX', 'AZ'];
+  const streets = ["Main", "Oak", "Elm", "Pine", "Maple", "Cedar"];
+  const types = ["St", "Ave", "Rd", "Blvd", "Lane", "Drive"];
+  const cities = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"];
+  const states = ["NY", "CA", "IL", "TX", "AZ"];
 
   const streetNum = Math.floor(Math.random() * 999) + 1;
   const street = streets[Math.floor(Math.random() * streets.length)];

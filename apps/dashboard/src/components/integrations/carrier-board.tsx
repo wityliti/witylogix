@@ -16,7 +16,13 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-type EquipmentType = "53ft Dry Van" | "48ft Dry Van" | "Flatbed" | "Reefer" | "Power Only" | "Tanker";
+type EquipmentType =
+  | "53ft Dry Van"
+  | "48ft Dry Van"
+  | "Flatbed"
+  | "Reefer"
+  | "Power Only"
+  | "Tanker";
 
 interface FreightLoad {
   id: string;
@@ -40,7 +46,6 @@ interface CarrierBoardProps {
   className?: string;
 }
 
-
 type FilterKey = "equipment" | "rateRange";
 
 export function CarrierBoard({
@@ -48,18 +53,21 @@ export function CarrierBoard({
   onQuickMatch,
   className,
 }: CarrierBoardProps) {
-  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
+  const [selectedFilters, setSelectedFilters] = useState<
+    Record<string, string[]>
+  >({});
 
   const equipmentTypes = useMemo(
     () => [...new Set(loads.map((l) => l.equipmentType))],
-    [loads]
+    [loads],
   );
 
   const filteredLoads = useMemo(() => {
     return loads.filter((load) => {
       // Equipment filter
       if (selectedFilters.equipment && selectedFilters.equipment.length > 0) {
-        if (!selectedFilters.equipment.includes(load.equipmentType)) return false;
+        if (!selectedFilters.equipment.includes(load.equipmentType))
+          return false;
       }
 
       // Rate range filter
@@ -99,12 +107,15 @@ export function CarrierBoard({
   const activeFilterCount = Object.values(selectedFilters).flat().length;
 
   const getExpiresSoon = (expiresAt: Date): boolean => {
-    const hoursUntilExpire = (expiresAt.getTime() - new Date().getTime()) / (1000 * 60 * 60);
+    const hoursUntilExpire =
+      (expiresAt.getTime() - new Date().getTime()) / (1000 * 60 * 60);
     return hoursUntilExpire < 4;
   };
 
   const getTimeAgo = (date: Date): string => {
-    const minutes = Math.floor((new Date().getTime() - date.getTime()) / (1000 * 60));
+    const minutes = Math.floor(
+      (new Date().getTime() - date.getTime()) / (1000 * 60),
+    );
     if (minutes < 1) return "Just now";
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
@@ -117,7 +128,7 @@ export function CarrierBoard({
     <div
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -163,7 +174,7 @@ export function CarrierBoard({
                     "px-3 py-1 rounded-full text-xs font-medium transition-all",
                     (selectedFilters.equipment || []).includes(type)
                       ? "bg-wl-primary-500 text-white border border-wl-primary-600"
-                      : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default"
+                      : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default",
                   )}
                 >
                   {type}
@@ -191,7 +202,7 @@ export function CarrierBoard({
                     "px-3 py-1 rounded-full text-xs font-medium transition-all",
                     (selectedFilters.rateRange || []).includes(key)
                       ? "bg-wl-primary-500 text-white border border-wl-primary-600"
-                      : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default"
+                      : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default",
                   )}
                 >
                   {label}
@@ -226,13 +237,19 @@ export function CarrierBoard({
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-wl-text-secondary">{load.companyName}</p>
+                      <p className="text-xs text-wl-text-secondary">
+                        {load.companyName}
+                      </p>
                     </div>
                   </div>
 
                   <div className="text-right flex-shrink-0">
-                    <p className="text-xl font-bold text-wl-primary-500">${load.rate}</p>
-                    <p className="text-xs text-wl-text-secondary">Posted {getTimeAgo(load.postedTime)}</p>
+                    <p className="text-xl font-bold text-wl-primary-500">
+                      ${load.rate}
+                    </p>
+                    <p className="text-xs text-wl-text-secondary">
+                      Posted {getTimeAgo(load.postedTime)}
+                    </p>
                   </div>
                 </div>
 
@@ -251,21 +268,27 @@ export function CarrierBoard({
                 {/* Details grid */}
                 <div className="grid grid-cols-3 gap-3 py-3 border-t border-b border-wl-border-subtle">
                   <div>
-                    <p className="text-xs text-wl-text-secondary mb-1">Equipment</p>
+                    <p className="text-xs text-wl-text-secondary mb-1">
+                      Equipment
+                    </p>
                     <Badge variant="default" className="text-xs">
                       {load.equipmentType}
                     </Badge>
                   </div>
 
                   <div>
-                    <p className="text-xs text-wl-text-secondary mb-1">Weight</p>
+                    <p className="text-xs text-wl-text-secondary mb-1">
+                      Weight
+                    </p>
                     <p className="text-sm font-semibold text-wl-text-primary">
                       {(load.weight / 1000).toFixed(1)}K {load.weightUnit}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-wl-text-secondary mb-1">Rate/Mile</p>
+                    <p className="text-xs text-wl-text-secondary mb-1">
+                      Rate/Mile
+                    </p>
                     <p className="text-sm font-semibold text-wl-text-primary">
                       ${(load.rate / load.distance).toFixed(2)}/mi
                     </p>
@@ -276,13 +299,21 @@ export function CarrierBoard({
                 <div className="flex items-center justify-between pt-2">
                   <div className="flex items-center gap-2">
                     {getExpiresSoon(load.expiresAt) && (
-                      <Badge variant="warning" className="text-xs flex items-center gap-1">
+                      <Badge
+                        variant="warning"
+                        className="text-xs flex items-center gap-1"
+                      >
                         <TrendingUp className="w-3 h-3" />
                         Expires soon
                       </Badge>
                     )}
                     <p className="text-xs text-wl-text-secondary">
-                      Expires in {Math.floor((load.expiresAt.getTime() - new Date().getTime()) / (1000 * 60))} min
+                      Expires in{" "}
+                      {Math.floor(
+                        (load.expiresAt.getTime() - new Date().getTime()) /
+                          (1000 * 60),
+                      )}{" "}
+                      min
                     </p>
                   </div>
 

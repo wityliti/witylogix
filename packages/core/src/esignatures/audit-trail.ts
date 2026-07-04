@@ -10,7 +10,7 @@ import {
   TamperDetectionResult,
   RetentionPolicy,
   Envelope,
-} from './esignature-types';
+} from "./esignature-types";
 
 /**
  * Audit Logger
@@ -64,7 +64,7 @@ export class AuditLogger {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       envelopeId,
       signerId,
-      eventType: 'field_signed',
+      eventType: "field_signed",
       description: `Field ${fieldId} signed by signer ${signerId}`,
       ipAddress,
       userAgent,
@@ -88,7 +88,7 @@ export class AuditLogger {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       envelopeId,
       signerId,
-      eventType: 'document_viewed',
+      eventType: "document_viewed",
       description: `Document ${documentId} viewed`,
       ipAddress,
       userAgent,
@@ -110,7 +110,7 @@ export class AuditLogger {
     const event: AuditEvent = {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       envelopeId,
-      eventType: 'envelope_sent',
+      eventType: "envelope_sent",
       description: `Envelope sent to ${recipientCount} recipients`,
       ipAddress,
       userAgent,
@@ -133,7 +133,7 @@ export class AuditLogger {
     const event: AuditEvent = {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       envelopeId,
-      eventType: 'envelope_completed',
+      eventType: "envelope_completed",
       description: `Envelope completed with ${signatureCount} signatures`,
       ipAddress,
       userAgent,
@@ -168,23 +168,25 @@ export class AuditLogger {
     let events = this.auditEvents.get(envelopeId) || [];
 
     if (filters?.eventType) {
-      events = events.filter(e => e.eventType === filters.eventType);
+      events = events.filter((e) => e.eventType === filters.eventType);
     }
 
     if (filters?.signerId) {
-      events = events.filter(e => e.signerId === filters.signerId);
+      events = events.filter((e) => e.signerId === filters.signerId);
     }
 
     if (filters?.startDate) {
-      events = events.filter(e => e.timestamp >= filters.startDate!);
+      events = events.filter((e) => e.timestamp >= filters.startDate!);
     }
 
     if (filters?.endDate) {
-      events = events.filter(e => e.timestamp <= filters.endDate!);
+      events = events.filter((e) => e.timestamp <= filters.endDate!);
     }
 
     // Sort by timestamp descending
-    events = events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    events = events.sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+    );
 
     const total = events.length;
     const limit = filters?.limit || 50;
@@ -206,7 +208,7 @@ export class AuditLogger {
       this.eventQueue = [];
       this.lastFlushTime = Date.now();
     } catch (error) {
-      console.error('Failed to flush audit events:', error);
+      console.error("Failed to flush audit events:", error);
     }
   }
 
@@ -216,7 +218,10 @@ export class AuditLogger {
   private startAutoFlush(): void {
     setInterval(async () => {
       const timeSinceLastFlush = Date.now() - this.lastFlushTime;
-      if (timeSinceLastFlush >= this.flushIntervalMs && this.eventQueue.length > 0) {
+      if (
+        timeSinceLastFlush >= this.flushIntervalMs &&
+        this.eventQueue.length > 0
+      ) {
         await this.flush();
       }
     }, this.flushIntervalMs);
@@ -227,21 +232,25 @@ export class AuditLogger {
    */
   private maskSensitiveData(event: AuditEvent): AuditEvent {
     const sensitiveFields = [
-      'password',
-      'token',
-      'accessToken',
-      'secret',
-      'apiKey',
-      'creditCard',
-      'ssn',
+      "password",
+      "token",
+      "accessToken",
+      "secret",
+      "apiKey",
+      "creditCard",
+      "ssn",
     ];
 
     const masked = { ...event };
     if (masked.additionalData) {
       masked.additionalData = { ...masked.additionalData };
-      Object.keys(masked.additionalData).forEach(key => {
-        if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
-          masked.additionalData![key] = '***REDACTED***';
+      Object.keys(masked.additionalData).forEach((key) => {
+        if (
+          sensitiveFields.some((field) =>
+            key.toLowerCase().includes(field.toLowerCase()),
+          )
+        ) {
+          masked.additionalData![key] = "***REDACTED***";
         }
       });
     }
@@ -272,7 +281,7 @@ export class CertificateGenerator {
       timestamp: signingTimestamp.toISOString(),
       documentHash,
       documentHashChain: hashChain,
-      signatories: envelope.signers.map(signer => ({
+      signatories: envelope.signers.map((signer) => ({
         signerId: signer.id,
         email: signer.email,
         name: signer.name,
@@ -297,7 +306,7 @@ export class CertificateGenerator {
 
     // Check certificate expiration
     if (new Date() > certificate.expiresAt) {
-      errors.push('Certificate has expired');
+      errors.push("Certificate has expired");
     }
 
     // Verify hash chain integrity
@@ -314,7 +323,7 @@ export class CertificateGenerator {
 
     // Verify signature count
     if (certificate.signatories.length === 0) {
-      errors.push('No signatories in certificate');
+      errors.push("No signatories in certificate");
     }
 
     return { valid: errors.length === 0, errors };
@@ -325,18 +334,18 @@ export class CertificateGenerator {
    */
   async exportCertificate(
     certificate: SigningCertificate,
-    format: 'pem' | 'json' | 'pdf',
+    format: "pem" | "json" | "pdf",
   ): Promise<string> {
     switch (format) {
-      case 'pem':
+      case "pem":
         return certificate.certificateChain;
 
-      case 'json':
+      case "json":
         return JSON.stringify(certificate, null, 2);
 
-      case 'pdf':
+      case "pdf":
         // TODO: Generate PDF representation
-        return Buffer.from(JSON.stringify(certificate)).toString('base64');
+        return Buffer.from(JSON.stringify(certificate)).toString("base64");
 
       default:
         throw new Error(`Unsupported certificate format: ${format}`);
@@ -347,23 +356,20 @@ export class CertificateGenerator {
    * Private: Calculate envelope hash
    */
   private calculateEnvelopeHash(envelope: Envelope): string {
-    const crypto = require('crypto');
+    const crypto = require("crypto");
     const documentHashes = envelope.documents
-      .map(d => d.documentHash)
-      .join('|');
-    return crypto
-      .createHash('sha256')
-      .update(documentHashes)
-      .digest('hex');
+      .map((d) => d.documentHash)
+      .join("|");
+    return crypto.createHash("sha256").update(documentHashes).digest("hex");
   }
 
   /**
    * Private: Calculate signer hash
    */
   private calculateSignerHash(signer: any): string {
-    const crypto = require('crypto');
-    const data = `${signer.id}|${signer.email}|${signer.signedAt || ''}`;
-    return crypto.createHash('sha256').update(data).digest('hex');
+    const crypto = require("crypto");
+    const data = `${signer.id}|${signer.email}|${signer.signedAt || ""}`;
+    return crypto.createHash("sha256").update(data).digest("hex");
   }
 
   /**
@@ -388,10 +394,10 @@ export class CertificateGenerator {
 ${Buffer.from(
   JSON.stringify({
     envelopeId: envelope.id,
-    signers: envelope.signers.map(s => ({ id: s.id, email: s.email })),
+    signers: envelope.signers.map((s) => ({ id: s.id, email: s.email })),
     issuedAt: new Date().toISOString(),
   }),
-).toString('base64')}
+).toString("base64")}
 -----END CERTIFICATE-----`;
 
     return cert;
@@ -421,7 +427,9 @@ export class ComplianceReporter {
       hasRetainedCopy: this.hasRetainedCopy(envelope),
       hasAuditTrail: envelope.auditTrail.length > 0,
       hasCertificate: !!certificate,
-      allSignersAuthenticated: envelope.signers.every(s => s.status === 'signed'),
+      allSignersAuthenticated: envelope.signers.every(
+        (s) => s.status === "signed",
+      ),
       timestamped: !!certificate.timestamp,
       findings: [],
     };
@@ -429,33 +437,33 @@ export class ComplianceReporter {
     // Generate findings
     if (!report.esignActCompliant) {
       report.findings.push({
-        category: 'ESIGN Act',
-        severity: 'error',
-        message: 'Document does not meet ESIGN Act requirements',
+        category: "ESIGN Act",
+        severity: "error",
+        message: "Document does not meet ESIGN Act requirements",
       });
     }
 
     if (!report.uetaCompliant) {
       report.findings.push({
-        category: 'UETA',
-        severity: 'warning',
-        message: 'Document may not meet UETA requirements',
+        category: "UETA",
+        severity: "warning",
+        message: "Document may not meet UETA requirements",
       });
     }
 
     if (!report.eidasCompliant) {
       report.findings.push({
-        category: 'eIDAS',
-        severity: 'warning',
-        message: 'Document does not meet eIDAS requirements',
+        category: "eIDAS",
+        severity: "warning",
+        message: "Document does not meet eIDAS requirements",
       });
     }
 
     if (!report.hasAuditTrail) {
       report.findings.push({
-        category: 'Audit',
-        severity: 'error',
-        message: 'No audit trail available',
+        category: "Audit",
+        severity: "error",
+        message: "No audit trail available",
       });
     }
 
@@ -465,7 +473,10 @@ export class ComplianceReporter {
   /**
    * Check ESIGN Act compliance
    */
-  private checkEsignActCompliance(envelope: Envelope, certificate: SigningCertificate): boolean {
+  private checkEsignActCompliance(
+    envelope: Envelope,
+    certificate: SigningCertificate,
+  ): boolean {
     // ESIGN Act requirements:
     // 1. Intent to sign
     // 2. Consent to use electronic signatures
@@ -473,30 +484,36 @@ export class ComplianceReporter {
     // 4. Record retention
 
     return (
-      envelope.signers.every(s => s.status === 'signed') &&
+      envelope.signers.every((s) => s.status === "signed") &&
       !!certificate &&
       envelope.auditTrail.length > 0 &&
-      !envelope.documents.some(d => !d.documentHash)
+      !envelope.documents.some((d) => !d.documentHash)
     );
   }
 
   /**
    * Check UETA compliance
    */
-  private checkUetaCompliance(envelope: Envelope, certificate: SigningCertificate): boolean {
+  private checkUetaCompliance(
+    envelope: Envelope,
+    certificate: SigningCertificate,
+  ): boolean {
     // UETA (Uniform Electronic Transactions Act) requirements
     // Similar to ESIGN but with state-specific requirements
 
     return (
       this.checkEsignActCompliance(envelope, certificate) &&
-      envelope.signers.every(s => s.email && s.email.includes('@'))
+      envelope.signers.every((s) => s.email && s.email.includes("@"))
     );
   }
 
   /**
    * Check eIDAS compliance
    */
-  private checkEidasCompliance(envelope: Envelope, certificate: SigningCertificate): boolean {
+  private checkEidasCompliance(
+    envelope: Envelope,
+    certificate: SigningCertificate,
+  ): boolean {
     // eIDAS (EU Electronic Identification, Authentication and Trust Services)
     // Requirements:
     // 1. RFC 3161 timestamp
@@ -531,18 +548,18 @@ export class ComplianceReporter {
    */
   async exportReport(
     report: ComplianceReport,
-    format: 'json' | 'html' | 'pdf',
+    format: "json" | "html" | "pdf",
   ): Promise<string> {
     switch (format) {
-      case 'json':
+      case "json":
         return JSON.stringify(report, null, 2);
 
-      case 'html':
+      case "html":
         return this.generateHtmlReport(report);
 
-      case 'pdf':
+      case "pdf":
         // TODO: Generate PDF report
-        return Buffer.from(JSON.stringify(report)).toString('base64');
+        return Buffer.from(JSON.stringify(report)).toString("base64");
 
       default:
         throw new Error(`Unsupported report format: ${format}`);
@@ -579,20 +596,20 @@ export class ComplianceReporter {
           </tr>
           <tr>
             <td>ESIGN Act</td>
-            <td class="${report.esignActCompliant ? 'compliant' : 'non-compliant'}">
-              ${report.esignActCompliant ? 'Compliant' : 'Non-Compliant'}
+            <td class="${report.esignActCompliant ? "compliant" : "non-compliant"}">
+              ${report.esignActCompliant ? "Compliant" : "Non-Compliant"}
             </td>
           </tr>
           <tr>
             <td>UETA</td>
-            <td class="${report.uetaCompliant ? 'compliant' : 'non-compliant'}">
-              ${report.uetaCompliant ? 'Compliant' : 'Non-Compliant'}
+            <td class="${report.uetaCompliant ? "compliant" : "non-compliant"}">
+              ${report.uetaCompliant ? "Compliant" : "Non-Compliant"}
             </td>
           </tr>
           <tr>
             <td>eIDAS</td>
-            <td class="${report.eidasCompliant ? 'compliant' : 'non-compliant'}">
-              ${report.eidasCompliant ? 'Compliant' : 'Non-Compliant'}
+            <td class="${report.eidasCompliant ? "compliant" : "non-compliant"}">
+              ${report.eidasCompliant ? "Compliant" : "Non-Compliant"}
             </td>
           </tr>
         </table>
@@ -627,14 +644,14 @@ export class TamperDetector {
         {
           timestamp: new Date(),
           hash: originalHash,
-          verifiedBy: 'system',
+          verifiedBy: "system",
         },
       ],
     };
 
     if (!result.verified) {
       result.tamperedAt = new Date();
-      result.tamperedByIp = 'unknown'; // Would be captured from context
+      result.tamperedByIp = "unknown"; // Would be captured from context
     }
 
     return result;
@@ -643,7 +660,9 @@ export class TamperDetector {
   /**
    * Verify complete hash chain
    */
-  async verifyHashChain(hashChain: Array<{ timestamp: Date; hash: string }>): Promise<{
+  async verifyHashChain(
+    hashChain: Array<{ timestamp: Date; hash: string }>,
+  ): Promise<{
     valid: boolean;
     tamperedAt?: Date;
   }> {
@@ -671,7 +690,9 @@ export class TamperDetector {
    * Report tampering
    */
   async reportTampering(result: TamperDetectionResult): Promise<void> {
-    console.error(`TAMPERING DETECTED: Envelope ${result.envelopeId}, Document ${result.documentId}`);
+    console.error(
+      `TAMPERING DETECTED: Envelope ${result.envelopeId}, Document ${result.documentId}`,
+    );
     console.error(`Original hash: ${result.originalHash}`);
     console.error(`Current hash: ${result.currentHash}`);
     console.error(`Tampered at: ${result.tamperedAt}`);
@@ -692,11 +713,13 @@ export class RetentionManager {
   /**
    * Create retention policy
    */
-  async createPolicy(policy: Partial<RetentionPolicy>): Promise<RetentionPolicy> {
+  async createPolicy(
+    policy: Partial<RetentionPolicy>,
+  ): Promise<RetentionPolicy> {
     const newPolicy: RetentionPolicy = {
       id: `policy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      tenantId: policy.tenantId || '',
-      name: policy.name || 'Default Policy',
+      tenantId: policy.tenantId || "",
+      name: policy.name || "Default Policy",
       description: policy.description,
       retentionDays: policy.retentionDays || 365,
       retentionFromCompletion: policy.retentionFromCompletion ?? true,
@@ -708,7 +731,7 @@ export class RetentionManager {
       retainCertificate: policy.retainCertificate ?? true,
       retainAuditTrail: policy.retainAuditTrail ?? true,
       retainFullDocuments: policy.retainFullDocuments ?? false,
-      purgeSchedule: policy.purgeSchedule || '0 2 * * 0', // Sunday 2am
+      purgeSchedule: policy.purgeSchedule || "0 2 * * 0", // Sunday 2am
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -771,7 +794,10 @@ export class RetentionManager {
   /**
    * Archive envelope
    */
-  async archiveEnvelope(envelopeId: string, policy: RetentionPolicy): Promise<void> {
+  async archiveEnvelope(
+    envelopeId: string,
+    policy: RetentionPolicy,
+  ): Promise<void> {
     // TODO: Move documents to archive storage
     // TODO: Update envelope status
     console.log(`Archiving envelope ${envelopeId} per policy ${policy.id}`);
@@ -780,7 +806,10 @@ export class RetentionManager {
   /**
    * Purge envelope
    */
-  async purgeEnvelope(envelopeId: string, policy: RetentionPolicy): Promise<void> {
+  async purgeEnvelope(
+    envelopeId: string,
+    policy: RetentionPolicy,
+  ): Promise<void> {
     // TODO: Delete envelope documents
     // TODO: Keep certificate and audit trail if policy specifies
     // TODO: Update envelope status
@@ -793,6 +822,8 @@ export class RetentionManager {
   async schedulePurgeJob(policy: RetentionPolicy): Promise<void> {
     // TODO: Parse cron expression
     // TODO: Schedule cleanup job
-    console.log(`Scheduled purge job for policy ${policy.id} at ${policy.purgeSchedule}`);
+    console.log(
+      `Scheduled purge job for policy ${policy.id} at ${policy.purgeSchedule}`,
+    );
   }
 }

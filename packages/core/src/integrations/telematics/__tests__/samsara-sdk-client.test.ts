@@ -72,7 +72,10 @@ describe("SamsaraSdkClient", () => {
   describe("healthCheck", () => {
     it("should return true on successful connection", async () => {
       const client = createTestClient();
-      global.fetch = mockFetch({ data: [], pagination: { hasNextPage: false } });
+      global.fetch = mockFetch({
+        data: [],
+        pagination: { hasNextPage: false },
+      });
 
       const result = await client.healthCheck();
       expect(result).toBe(true);
@@ -80,10 +83,7 @@ describe("SamsaraSdkClient", () => {
 
     it("should return false on connection failure", async () => {
       const client = createTestClient();
-      global.fetch = mockFetch(
-        { error: "Unauthorized" },
-        401,
-      );
+      global.fetch = mockFetch({ error: "Unauthorized" }, 401);
 
       const result = await client.healthCheck();
       expect(result).toBe(false);
@@ -93,7 +93,10 @@ describe("SamsaraSdkClient", () => {
   describe("testConnection", () => {
     it("should return success message", async () => {
       const client = createTestClient();
-      global.fetch = mockFetch({ data: [], pagination: { hasNextPage: false } });
+      global.fetch = mockFetch({
+        data: [],
+        pagination: { hasNextPage: false },
+      });
 
       const result = await client.testConnection();
       expect(result.success).toBe(true);
@@ -270,7 +273,10 @@ describe("SamsaraSdkClient", () => {
         ],
       });
 
-      const positions = await client.getBatchVehiclePositions(["vehicle-1", "vehicle-2"]);
+      const positions = await client.getBatchVehiclePositions([
+        "vehicle-1",
+        "vehicle-2",
+      ]);
 
       expect(positions).toHaveLength(2);
       expect(positions[0].vehicleId).toBe("vehicle-1");
@@ -479,10 +485,7 @@ describe("SamsaraSdkClient", () => {
       global.fetch = mockFetch({ data: [] });
 
       const start = Date.now();
-      await Promise.all([
-        client.healthCheck(),
-        client.healthCheck(),
-      ]);
+      await Promise.all([client.healthCheck(), client.healthCheck()]);
       const duration = Date.now() - start;
 
       // Should have rate limiting in place
@@ -526,9 +529,7 @@ describe("SamsaraSdkClient", () => {
 
     it("should handle network timeout", async () => {
       const client = createTestClient();
-      global.fetch = vi
-        .fn()
-        .mockRejectedValue(new Error("Network timeout"));
+      global.fetch = vi.fn().mockRejectedValue(new Error("Network timeout"));
 
       await expect(client.getVehicles()).rejects.toThrow();
     });

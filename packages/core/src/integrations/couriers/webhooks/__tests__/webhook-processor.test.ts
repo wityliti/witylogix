@@ -51,7 +51,7 @@ const PARTNER_ID = "partner_test_123";
 function createSignature(
   payload: string,
   secret: string,
-  algorithm: "sha512" | "sha256"
+  algorithm: "sha512" | "sha256",
 ): string {
   return createHmac(algorithm, secret).update(payload).digest("hex");
 }
@@ -71,16 +71,28 @@ describe("Onfleet Signature Verification", () => {
     const payload = JSON.stringify({ id: "test", action: "task_update" });
     const wrongSignature = createSignature(payload, "wrong_secret", "sha512");
 
-    const result = verifyOnfleetSignature(payload, wrongSignature, ONFLEET_SECRET);
+    const result = verifyOnfleetSignature(
+      payload,
+      wrongSignature,
+      ONFLEET_SECRET,
+    );
     expect(result).toBe(false);
   });
 
   it("should reject signature for modified payload", () => {
     const payload = JSON.stringify({ id: "test", action: "task_update" });
     const signature = createSignature(payload, ONFLEET_SECRET, "sha512");
-    const modifiedPayload = JSON.stringify({ id: "test", action: "task_update", modified: true });
+    const modifiedPayload = JSON.stringify({
+      id: "test",
+      action: "task_update",
+      modified: true,
+    });
 
-    const result = verifyOnfleetSignature(modifiedPayload, signature, ONFLEET_SECRET);
+    const result = verifyOnfleetSignature(
+      modifiedPayload,
+      signature,
+      ONFLEET_SECRET,
+    );
     expect(result).toBe(false);
   });
 
@@ -92,7 +104,11 @@ describe("Onfleet Signature Verification", () => {
 
   it("should handle malformed signature gracefully", () => {
     const payload = JSON.stringify({ id: "test" });
-    const result = verifyOnfleetSignature(payload, "not-hex-format", ONFLEET_SECRET);
+    const result = verifyOnfleetSignature(
+      payload,
+      "not-hex-format",
+      ONFLEET_SECRET,
+    );
     expect(result).toBe(false);
   });
 });
@@ -120,7 +136,11 @@ describe("Stuart Signature Verification", () => {
     });
     const wrongSignature = createSignature(payload, "wrong_secret", "sha256");
 
-    const result = verifyStuartSignature(payload, wrongSignature, STUART_SECRET);
+    const result = verifyStuartSignature(
+      payload,
+      wrongSignature,
+      STUART_SECRET,
+    );
     expect(result).toBe(false);
   });
 
@@ -129,7 +149,11 @@ describe("Stuart Signature Verification", () => {
     const payloadCaseChange = JSON.stringify({ Event: "job.delivered" });
     const signature = createSignature(payload, STUART_SECRET, "sha256");
 
-    const result = verifyStuartSignature(payloadCaseChange, signature, STUART_SECRET);
+    const result = verifyStuartSignature(
+      payloadCaseChange,
+      signature,
+      STUART_SECRET,
+    );
     expect(result).toBe(false);
   });
 });
@@ -154,7 +178,11 @@ describe("Uber Direct Signature Verification", () => {
     const payload = JSON.stringify({ delivery_id: "test" });
     const wrongSignature = createSignature(payload, "wrong_secret", "sha256");
 
-    const result = verifyUberDirectSignature(payload, wrongSignature, UBER_SECRET);
+    const result = verifyUberDirectSignature(
+      payload,
+      wrongSignature,
+      UBER_SECRET,
+    );
     expect(result).toBe(false);
   });
 });
@@ -183,7 +211,7 @@ describe("Webhook Normalization", () => {
     const signature = createSignature(
       JSON.stringify(payload),
       ONFLEET_SECRET,
-      "sha512"
+      "sha512",
     );
 
     // Test normalization happens correctly
@@ -251,7 +279,7 @@ describe("Webhook Processing", () => {
       wrongSignature,
       ONFLEET_SECRET,
       PARTNER_ID,
-      payloadString
+      payloadString,
     );
 
     expect(result.success).toBe(false);
@@ -270,7 +298,7 @@ describe("Webhook Processing", () => {
       signature,
       ONFLEET_SECRET,
       PARTNER_ID,
-      invalidJson
+      invalidJson,
     );
 
     expect(result.success).toBe(false);
@@ -297,7 +325,7 @@ describe("Webhook Processing", () => {
       signature,
       ONFLEET_SECRET,
       PARTNER_ID,
-      payloadString
+      payloadString,
     );
 
     // Second call with same event ID should be detected as duplicate
@@ -307,7 +335,7 @@ describe("Webhook Processing", () => {
       signature,
       ONFLEET_SECRET,
       PARTNER_ID,
-      payloadString
+      payloadString,
     );
 
     // Either both succeed but second is marked as duplicate, or we properly handle it
@@ -324,7 +352,7 @@ describe("Webhook Processing", () => {
       signature,
       "secret",
       PARTNER_ID,
-      payload
+      payload,
     );
 
     expect(result.success).toBe(false);
@@ -483,7 +511,7 @@ describe("Error Handling", () => {
     const signature = createSignature(
       malformedPayload,
       ONFLEET_SECRET,
-      "sha512"
+      "sha512",
     );
 
     const result = await processWebhook(
@@ -492,7 +520,7 @@ describe("Error Handling", () => {
       signature,
       ONFLEET_SECRET,
       PARTNER_ID,
-      malformedPayload
+      malformedPayload,
     );
 
     // Should not crash, just fail gracefully
@@ -518,7 +546,7 @@ describe("Error Handling", () => {
       signature,
       ONFLEET_SECRET,
       "nonexistent_partner",
-      payloadString
+      payloadString,
     );
 
     // Should handle gracefully
@@ -587,11 +615,7 @@ describe("Edge Cases", () => {
     const stringified = JSON.stringify(payload);
     expect(stringified.length).toBeGreaterThan(10000);
 
-    const signature = createSignature(
-      stringified,
-      ONFLEET_SECRET,
-      "sha512"
-    );
+    const signature = createSignature(stringified, ONFLEET_SECRET, "sha512");
     expect(signature).toBeDefined();
   });
 });

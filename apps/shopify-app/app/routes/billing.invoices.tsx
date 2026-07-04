@@ -349,7 +349,8 @@ export function ErrorBoundary() {
                 Error Loading Invoices
               </Text>
               <Text as="p" variant="bodySm">
-                We encountered an error while loading your invoice data. Please try refreshing the page.
+                We encountered an error while loading your invoice data. Please
+                try refreshing the page.
               </Text>
             </BlockStack>
           </Card>

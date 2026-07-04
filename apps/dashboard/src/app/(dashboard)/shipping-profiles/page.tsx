@@ -94,9 +94,9 @@ const rateTypeLabel = (r: RateType): string => {
 };
 
 export default function ShippingProfilesPage() {
-  const [deliveryFilter, setDeliveryFilter] = useState<
-    DeliveryMethod | "ALL"
-  >("ALL");
+  const [deliveryFilter, setDeliveryFilter] = useState<DeliveryMethod | "ALL">(
+    "ALL",
+  );
   const [search, setSearch] = useState("");
 
   const {
@@ -110,17 +110,13 @@ export default function ShippingProfilesPage() {
 
   const filtered = useMemo(() => {
     return profiles.filter((profile) => {
-      if (
-        deliveryFilter !== "ALL" &&
-        profile.deliveryMethod !== deliveryFilter
-      )
+      if (deliveryFilter !== "ALL" && profile.deliveryMethod !== deliveryFilter)
         return false;
       if (search) {
         const q = search.toLowerCase();
         return (
           profile.name.toLowerCase().includes(q) ||
-          (profile.description &&
-            profile.description.toLowerCase().includes(q))
+          (profile.description && profile.description.toLowerCase().includes(q))
         );
       }
       return true;
@@ -281,7 +277,9 @@ export default function ShippingProfilesPage() {
                 {/* Description */}
                 {profile.description && (
                   <div
-                    className={cn("text-xs text-wl-neutral-300 mb-3 leading-relaxed")}
+                    className={cn(
+                      "text-xs text-wl-neutral-300 mb-3 leading-relaxed",
+                    )}
                   >
                     {profile.description}
                   </div>
@@ -308,7 +306,9 @@ export default function ShippingProfilesPage() {
                   )}
                 >
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
+                    <div
+                      className={cn("text-[10px] text-wl-text-secondary mb-1")}
+                    >
                       Flat Rate
                     </div>
                     <div
@@ -328,7 +328,9 @@ export default function ShippingProfilesPage() {
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
+                    <div
+                      className={cn("text-[10px] text-wl-text-secondary mb-1")}
+                    >
                       Free Above
                     </div>
                     <div
@@ -346,22 +348,30 @@ export default function ShippingProfilesPage() {
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
+                    <div
+                      className={cn("text-[10px] text-wl-text-secondary mb-1")}
+                    >
                       Processing Time
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-wl-neutral-300")}
+                      className={cn(
+                        "text-base font-bold font-mono text-wl-neutral-300",
+                      )}
                     >
                       {profile.processingTimeHours}h
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-secondary mb-1")}>
+                    <div
+                      className={cn("text-[10px] text-wl-text-secondary mb-1")}
+                    >
                       Min Order
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-wl-neutral-300")}
+                      className={cn(
+                        "text-base font-bold font-mono text-wl-neutral-300",
+                      )}
                     >
                       {profile.minOrderAmount
                         ? formatCurrency(Number(profile.minOrderAmount))

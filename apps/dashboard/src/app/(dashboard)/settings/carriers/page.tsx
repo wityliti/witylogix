@@ -8,7 +8,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ChevronLeft, Package, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import {
+  ChevronLeft,
+  Package,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+} from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────
 
@@ -32,12 +38,22 @@ const CARRIER_META: Record<
 > = {
   USPS: {
     coverage: "Domestic US (all states)",
-    services: ["Priority Mail Express", "Priority Mail", "Ground Advantage", "First Class"],
+    services: [
+      "Priority Mail Express",
+      "Priority Mail",
+      "Ground Advantage",
+      "First Class",
+    ],
     configVars: ["USPS_CONSUMER_KEY", "USPS_CONSUMER_SECRET"],
   },
   ONTRAC: {
     coverage: "Western US (CA, OR, WA, AZ, CO, ID, NV, UT)",
-    services: ["Sunrise (Next Day AM)", "C10 (Next Day 10AM)", "H2 (Next Day Noon)", "Ground"],
+    services: [
+      "Sunrise (Next Day AM)",
+      "C10 (Next Day 10AM)",
+      "H2 (Next Day Noon)",
+      "Ground",
+    ],
     configVars: ["ONTRAC_ACCOUNT", "ONTRAC_PASSWORD"],
   },
 };
@@ -84,7 +100,11 @@ export default function CarriersSettingsPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back */}
         <Link href="/settings">
-          <Button variant="ghost" size="sm" className="mb-6 text-wl-text-secondary hover:text-white gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-6 text-wl-text-secondary hover:text-white gap-2"
+          >
             <ChevronLeft className="w-4 h-4" />
             Back to Settings
           </Button>
@@ -139,7 +159,9 @@ export default function CarriersSettingsPage() {
                       <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-1">
                         Coverage
                       </p>
-                      <p className="text-sm text-wl-neutral-300">{carrier.meta.coverage}</p>
+                      <p className="text-sm text-wl-neutral-300">
+                        {carrier.meta.coverage}
+                      </p>
                     </div>
 
                     <div>
@@ -169,7 +191,10 @@ export default function CarriersSettingsPage() {
                             </p>
                             <ul className="space-y-0.5">
                               {carrier.meta.configVars.map((v) => (
-                                <li key={v} className="text-xs font-mono text-wl-text-secondary">
+                                <li
+                                  key={v}
+                                  className="text-xs font-mono text-wl-text-secondary"
+                                >
                                   {v}
                                 </li>
                               ))}
@@ -187,8 +212,8 @@ export default function CarriersSettingsPage() {
 
         {/* Footer note */}
         <p className="mt-6 text-xs text-wl-text-tertiary text-center">
-          Carrier adapters are configured via environment variables.
-          Restart the API server after updating env vars.
+          Carrier adapters are configured via environment variables. Restart the
+          API server after updating env vars.
         </p>
       </div>
     </div>

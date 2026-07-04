@@ -122,7 +122,9 @@ export class OrderSyncService {
         (wlOrder.status as WLOrderStatus) || "pending",
       ),
       customer_note: (wlOrder.notes as string) || "",
-      meta_data: this.buildMetaData(wlOrder.metaFields as Record<string, unknown> || {}),
+      meta_data: this.buildMetaData(
+        (wlOrder.metaFields as Record<string, unknown>) || {},
+      ),
     };
   }
 
@@ -198,13 +200,16 @@ export class OrderSyncService {
   /**
    * Build WC meta_data array from Witylogix meta fields
    */
-  static buildMetaData(
-    metaFields: Record<string, unknown>,
-  ): Array<{ id: number; key: string; value: string | Record<string, unknown> }> {
+  static buildMetaData(metaFields: Record<string, unknown>): Array<{
+    id: number;
+    key: string;
+    value: string | Record<string, unknown>;
+  }> {
     return Object.entries(metaFields).map(([key, value], index) => ({
       id: index,
       key,
-      value: typeof value === "string" ? value : (value as Record<string, unknown>),
+      value:
+        typeof value === "string" ? value : (value as Record<string, unknown>),
     }));
   }
 
@@ -221,7 +226,10 @@ export class OrderSyncService {
       errors.push("Order ID is required");
     }
 
-    if (!wcOrder.billing || (!wcOrder.billing.email && !wcOrder.billing.phone)) {
+    if (
+      !wcOrder.billing ||
+      (!wcOrder.billing.email && !wcOrder.billing.phone)
+    ) {
       errors.push("Email or phone is required");
     }
 
@@ -246,8 +254,14 @@ export class OrderSyncService {
     total: number;
   } {
     return {
-      itemCount: wcOrder.line_items.reduce((sum, item) => sum + item.quantity, 0),
-      subtotal: parseFloat(wcOrder.total.toString()) - parseFloat(wcOrder.shipping_total.toString()) - parseFloat(wcOrder.total_tax.toString()),
+      itemCount: wcOrder.line_items.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      ),
+      subtotal:
+        parseFloat(wcOrder.total.toString()) -
+        parseFloat(wcOrder.shipping_total.toString()) -
+        parseFloat(wcOrder.total_tax.toString()),
       shipping: parseFloat(wcOrder.shipping_total.toString()),
       tax: parseFloat(wcOrder.total_tax.toString()),
       total: parseFloat(wcOrder.total.toString()),

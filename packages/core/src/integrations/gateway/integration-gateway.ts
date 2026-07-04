@@ -24,7 +24,7 @@
  * HTTP request options
  */
 export interface HttpRequestOptions {
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   url: string;
   headers?: Record<string, string>;
   body?: unknown;
@@ -149,7 +149,7 @@ interface RateLimitState {
 /**
  * Circuit breaker state
  */
-type CircuitBreakerState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+type CircuitBreakerState = "CLOSED" | "OPEN" | "HALF_OPEN";
 
 interface CircuitBreakerData {
   state: CircuitBreakerState;
@@ -193,7 +193,7 @@ export class IntegrationGateway {
     // Initialize circuit breaker
     if (config.circuitBreaker) {
       this.circuitBreakers.set(config.providerId, {
-        state: 'CLOSED',
+        state: "CLOSED",
         failureCount: 0,
         successCount: 0,
         lastFailureTime: 0,
@@ -215,7 +215,7 @@ export class IntegrationGateway {
     }
 
     const fullOptions: HttpRequestOptions = {
-      method: options.method || 'GET',
+      method: options.method || "GET",
       url: `${provider.baseUrl}${options.url}`,
       headers: options.headers,
       body: options.body,
@@ -229,10 +229,14 @@ export class IntegrationGateway {
   /**
    * Make GET request
    */
-  async get<T>(providerId: string, path: string, options?: Partial<HttpRequestOptions>): Promise<T> {
+  async get<T>(
+    providerId: string,
+    path: string,
+    options?: Partial<HttpRequestOptions>,
+  ): Promise<T> {
     const response = await this.request<T>(providerId, {
       ...options,
-      method: 'GET',
+      method: "GET",
       url: path,
     });
     return response.data;
@@ -241,10 +245,15 @@ export class IntegrationGateway {
   /**
    * Make POST request
    */
-  async post<T>(providerId: string, path: string, body?: unknown, options?: Partial<HttpRequestOptions>): Promise<T> {
+  async post<T>(
+    providerId: string,
+    path: string,
+    body?: unknown,
+    options?: Partial<HttpRequestOptions>,
+  ): Promise<T> {
     const response = await this.request<T>(providerId, {
       ...options,
-      method: 'POST',
+      method: "POST",
       url: path,
       body,
     });
@@ -254,10 +263,15 @@ export class IntegrationGateway {
   /**
    * Make PUT request
    */
-  async put<T>(providerId: string, path: string, body?: unknown, options?: Partial<HttpRequestOptions>): Promise<T> {
+  async put<T>(
+    providerId: string,
+    path: string,
+    body?: unknown,
+    options?: Partial<HttpRequestOptions>,
+  ): Promise<T> {
     const response = await this.request<T>(providerId, {
       ...options,
-      method: 'PUT',
+      method: "PUT",
       url: path,
       body,
     });
@@ -267,10 +281,15 @@ export class IntegrationGateway {
   /**
    * Make PATCH request
    */
-  async patch<T>(providerId: string, path: string, body?: unknown, options?: Partial<HttpRequestOptions>): Promise<T> {
+  async patch<T>(
+    providerId: string,
+    path: string,
+    body?: unknown,
+    options?: Partial<HttpRequestOptions>,
+  ): Promise<T> {
     const response = await this.request<T>(providerId, {
       ...options,
-      method: 'PATCH',
+      method: "PATCH",
       url: path,
       body,
     });
@@ -280,10 +299,14 @@ export class IntegrationGateway {
   /**
    * Make DELETE request
    */
-  async delete<T>(providerId: string, path: string, options?: Partial<HttpRequestOptions>): Promise<T> {
+  async delete<T>(
+    providerId: string,
+    path: string,
+    options?: Partial<HttpRequestOptions>,
+  ): Promise<T> {
     const response = await this.request<T>(providerId, {
       ...options,
-      method: 'DELETE',
+      method: "DELETE",
       url: path,
     });
     return response.data;
@@ -292,7 +315,9 @@ export class IntegrationGateway {
   /**
    * Get rate limit status for provider
    */
-  getRateLimitStatus(providerId: string): { remaining: number; resetAt: Date } | null {
+  getRateLimitStatus(
+    providerId: string,
+  ): { remaining: number; resetAt: Date } | null {
     const provider = this.providers.get(providerId);
     if (!provider?.rateLimit) return null;
 
@@ -308,10 +333,15 @@ export class IntegrationGateway {
     }
 
     // Clean old requests outside window
-    const validRequests = state.requests.filter((time) => time > now - windowMs);
+    const validRequests = state.requests.filter(
+      (time) => time > now - windowMs,
+    );
 
     return {
-      remaining: Math.max(0, provider.rateLimit.requestsPerWindow - validRequests.length),
+      remaining: Math.max(
+        0,
+        provider.rateLimit.requestsPerWindow - validRequests.length,
+      ),
       resetAt: new Date(state.lastResetTime + windowMs),
     };
   }
@@ -349,14 +379,16 @@ export class IntegrationGateway {
         ...options,
         headers: {
           ...options.headers,
-          'X-Request-ID': correlationId,
+          "X-Request-ID": correlationId,
         },
       };
 
       // Run request interceptors
       for (const interceptor of this.interceptors) {
         if (interceptor.onRequest) {
-          requestOptions.headers = (await interceptor.onRequest(requestOptions)).headers ?? requestOptions.headers;
+          requestOptions.headers =
+            (await interceptor.onRequest(requestOptions)).headers ??
+            requestOptions.headers;
         }
       }
 
@@ -364,7 +396,10 @@ export class IntegrationGateway {
       this.recordRateLimit(providerId);
 
       // Perform request with retries
-      const response = await this.requestWithRetries<T>(provider, requestOptions);
+      const response = await this.requestWithRetries<T>(
+        provider,
+        requestOptions,
+      );
 
       // Run response interceptors
       let finalResponse = response;
@@ -378,7 +413,12 @@ export class IntegrationGateway {
       this.recordCircuitBreakerSuccess(providerId);
 
       const duration = Date.now() - startTime;
-      await this.recordMetrics(providerId, options.method, response.status, duration);
+      await this.recordMetrics(
+        providerId,
+        options.method,
+        response.status,
+        duration,
+      );
 
       return finalResponse;
     } catch (error) {
@@ -386,7 +426,13 @@ export class IntegrationGateway {
       this.recordCircuitBreakerFailure(providerId);
 
       const duration = Date.now() - startTime;
-      await this.recordMetrics(providerId, options.method, 0, duration, String(error));
+      await this.recordMetrics(
+        providerId,
+        options.method,
+        0,
+        duration,
+        String(error),
+      );
 
       // Run error interceptors
       for (const interceptor of this.interceptors) {
@@ -425,7 +471,10 @@ export class IntegrationGateway {
 
         // Wait before retrying
         await this.delay(backoffMs);
-        backoffMs = Math.min(backoffMs * retryConfig.multiplier, retryConfig.maxBackoffMs);
+        backoffMs = Math.min(
+          backoffMs * retryConfig.multiplier,
+          retryConfig.maxBackoffMs,
+        );
       }
     }
 
@@ -438,14 +487,14 @@ export class IntegrationGateway {
 
     const now = Date.now();
 
-    if (breaker.state === 'CLOSED') {
+    if (breaker.state === "CLOSED") {
       return true;
     }
 
-    if (breaker.state === 'OPEN') {
+    if (breaker.state === "OPEN") {
       // Check if we should attempt recovery
       if (now >= breaker.nextAttemptTime) {
-        breaker.state = 'HALF_OPEN';
+        breaker.state = "HALF_OPEN";
         breaker.successCount = 0;
         return true;
       }
@@ -460,11 +509,11 @@ export class IntegrationGateway {
     const breaker = this.circuitBreakers.get(providerId);
     if (!breaker) return;
 
-    if (breaker.state === 'HALF_OPEN') {
+    if (breaker.state === "HALF_OPEN") {
       breaker.successCount++;
       const config = this.providers.get(providerId)?.circuitBreaker;
       if (config && breaker.successCount >= config.successThreshold) {
-        breaker.state = 'CLOSED';
+        breaker.state = "CLOSED";
         breaker.failureCount = 0;
         breaker.successCount = 0;
       }
@@ -480,12 +529,15 @@ export class IntegrationGateway {
     const config = this.providers.get(providerId)?.circuitBreaker;
 
     if (config && breaker.failureCount >= config.failureThreshold) {
-      breaker.state = 'OPEN';
+      breaker.state = "OPEN";
       breaker.nextAttemptTime = Date.now() + config.resetTimeoutMs;
     }
   }
 
-  private checkRateLimit(providerId: string, provider: ProviderGatewayConfig): boolean {
+  private checkRateLimit(
+    providerId: string,
+    provider: ProviderGatewayConfig,
+  ): boolean {
     if (!provider.rateLimit) return true;
 
     const status = this.getRateLimitStatus(providerId);
@@ -526,7 +578,13 @@ export class IntegrationGateway {
   ): Promise<void> {
     if (!this.metricsCollector) return;
 
-    await this.metricsCollector.recordRequest(providerId, method, status, durationMs, error);
+    await this.metricsCollector.recordRequest(
+      providerId,
+      method,
+      status,
+      durationMs,
+      error,
+    );
   }
 
   private generateCorrelationId(): string {
@@ -534,7 +592,7 @@ export class IntegrationGateway {
   }
 
   private extractStatusCode(error: unknown): number {
-    if (error instanceof Error && 'statusCode' in error) {
+    if (error instanceof Error && "statusCode" in error) {
       return (error as any).statusCode ?? 500;
     }
     return 500;

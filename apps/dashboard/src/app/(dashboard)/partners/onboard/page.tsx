@@ -16,8 +16,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { useApiMutation } from '@/hooks/use-api';
-import { useToast } from '@/components/ui/toast';
+import { useApiMutation } from "@/hooks/use-api";
+import { useToast } from "@/components/ui/toast";
 
 type PartnerType = "onfleet" | "stuart" | "uber-direct" | "custom";
 
@@ -70,7 +70,10 @@ const STEP_CONFIG = [
 
 export default function OnboardPage() {
   const router = useRouter();
-  const { execute: saveOnboarding } = useApiMutation('POST', '/api/v4/couriers/partners');
+  const { execute: saveOnboarding } = useApiMutation(
+    "POST",
+    "/api/v4/couriers/partners",
+  );
   const { addToast } = useToast();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -139,10 +142,15 @@ export default function OnboardPage() {
   const handleComplete = useCallback(async () => {
     if (validateStep()) {
       try {
-        const provider = formData.partnerType === "uber-direct" ? "uber_direct" : formData.partnerType;
+        const provider =
+          formData.partnerType === "uber-direct"
+            ? "uber_direct"
+            : formData.partnerType;
         await saveOnboarding({
           provider,
-          name: PARTNER_TYPES.find((p) => p.id === formData.partnerType)?.name ?? formData.partnerType,
+          name:
+            PARTNER_TYPES.find((p) => p.id === formData.partnerType)?.name ??
+            formData.partnerType,
           credentials: {
             apiKey: formData.apiKey,
             apiSecret: formData.apiSecret,
@@ -156,7 +164,11 @@ export default function OnboardPage() {
         });
         router.push("/dashboard/partners");
       } catch {
-        addToast({ type: 'error', title: 'Onboarding failed', message: 'Could not save partner data. Please try again.' });
+        addToast({
+          type: "error",
+          title: "Onboarding failed",
+          message: "Could not save partner data. Please try again.",
+        });
       }
     }
   }, [formData, validateStep, router, saveOnboarding, addToast]);
@@ -215,7 +227,10 @@ export default function OnboardPage() {
               const Icon = config.icon;
 
               return (
-                <div key={config.number} className="flex flex-col items-center gap-2 flex-1">
+                <div
+                  key={config.number}
+                  className="flex flex-col items-center gap-2 flex-1"
+                >
                   <div
                     className={cn(
                       "w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all",
@@ -223,7 +238,7 @@ export default function OnboardPage() {
                         ? "bg-emerald-500/20 text-emerald-400"
                         : isActive
                           ? "bg-blue-500/20 text-blue-400 ring-2 ring-blue-400"
-                          : "bg-wl-bg-surface text-wl-neutral-300"
+                          : "bg-wl-bg-surface text-wl-neutral-300",
                     )}
                   >
                     {isCompleted ? (
@@ -267,7 +282,7 @@ export default function OnboardPage() {
                         "p-4 rounded-lg border-2 transition-all flex gap-4 items-start",
                         isSelected
                           ? "border-blue-400 bg-blue-500/10"
-                          : "border-wl-border-default hover:border-wl-border-default"
+                          : "border-wl-border-default hover:border-wl-border-default",
                       )}
                     >
                       <div
@@ -275,7 +290,7 @@ export default function OnboardPage() {
                           "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
                           isSelected
                             ? "bg-blue-500/20 text-blue-400"
-                            : "bg-wl-bg-surface text-wl-neutral-300"
+                            : "bg-wl-bg-surface text-wl-neutral-300",
                         )}
                       >
                         <Icon className="w-5 h-5" />
@@ -481,7 +496,7 @@ export default function OnboardPage() {
                   }
                   className={cn(
                     "w-full px-4 py-2 rounded-md bg-wl-bg-surface text-white",
-                    "border border-wl-border-default focus:border-blue-400 outline-none"
+                    "border border-wl-border-default focus:border-blue-400 outline-none",
                   )}
                 >
                   <option value="no">No</option>
@@ -495,7 +510,12 @@ export default function OnboardPage() {
         {/* Navigation Buttons */}
         <div className="flex gap-3 mt-8">
           {step > 1 && (
-            <Button variant="secondary" size="lg" onClick={handleBack} className="gap-2">
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={handleBack}
+              className="gap-2"
+            >
               <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
@@ -504,12 +524,22 @@ export default function OnboardPage() {
           <div className="flex-1" />
 
           {step < STEP_CONFIG.length ? (
-            <Button variant="primary" size="lg" onClick={handleNext} className="gap-2">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleNext}
+              className="gap-2"
+            >
               Next
               <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
-            <Button variant="primary" size="lg" onClick={handleComplete} className="gap-2">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleComplete}
+              className="gap-2"
+            >
               <CheckCircle className="w-4 h-4" />
               Complete Onboarding
             </Button>

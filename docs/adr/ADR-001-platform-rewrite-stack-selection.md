@@ -18,41 +18,43 @@ The existing Witylogix Last Mile Delivery OMS (lmd-oms-v3) is a monolithic Node.
 
 Rewrite the platform as a **Turborepo monorepo** with the following technology choices:
 
-| Layer | Current (v3) | New (v4) |
-|-------|-------------|----------|
-| **Monorepo** | None (2 separate repos) | Turborepo + pnpm workspaces |
-| **Backend Framework** | Express 5 | Fastify 5 |
-| **Database** | MongoDB (Mongoose) | PostgreSQL 16 + PostGIS + Prisma |
-| **Tenant Isolation** | App-layer query filters | PostgreSQL Row-Level Security (RLS) |
-| **Cache / Pub-Sub** | Redis 4 | Redis 7 (Streams + GEO + Pub/Sub) |
-| **Job Queue** | Bull | BullMQ (with tenant-aware groups) |
-| **Shopify App Framework** | Custom Express + App Bridge v3 | React Router v7 + `@shopify/shopify-app-react-router` |
-| **UI Components** | Polaris React v12 | Polaris Web Components (`s-*`) |
-| **Extensions** | None | Preact checkout/POS extensions |
-| **Route Optimization** | Google Maps API | Phase 1: Mapbox → Phase 2: OSRM + OR-Tools (behind provider abstraction) |
-| **Real-time Tracking** | Firebase | Socket.io + Redis Adapter |
-| **Mobile (Driver)** | React Native (basic) | React Native + background geolocation |
-| **Deployment** | PM2 on Azure VM | Docker Compose (self-hosted) / K8s (cloud) |
-| **License** | Proprietary | AGPL-3.0 open-core |
+| Layer                     | Current (v3)                   | New (v4)                                                                 |
+| ------------------------- | ------------------------------ | ------------------------------------------------------------------------ |
+| **Monorepo**              | None (2 separate repos)        | Turborepo + pnpm workspaces                                              |
+| **Backend Framework**     | Express 5                      | Fastify 5                                                                |
+| **Database**              | MongoDB (Mongoose)             | PostgreSQL 16 + PostGIS + Prisma                                         |
+| **Tenant Isolation**      | App-layer query filters        | PostgreSQL Row-Level Security (RLS)                                      |
+| **Cache / Pub-Sub**       | Redis 4                        | Redis 7 (Streams + GEO + Pub/Sub)                                        |
+| **Job Queue**             | Bull                           | BullMQ (with tenant-aware groups)                                        |
+| **Shopify App Framework** | Custom Express + App Bridge v3 | React Router v7 + `@shopify/shopify-app-react-router`                    |
+| **UI Components**         | Polaris React v12              | Polaris Web Components (`s-*`)                                           |
+| **Extensions**            | None                           | Preact checkout/POS extensions                                           |
+| **Route Optimization**    | Google Maps API                | Phase 1: Mapbox → Phase 2: OSRM + OR-Tools (behind provider abstraction) |
+| **Real-time Tracking**    | Firebase                       | Socket.io + Redis Adapter                                                |
+| **Mobile (Driver)**       | React Native (basic)           | React Native + background geolocation                                    |
+| **Deployment**            | PM2 on Azure VM                | Docker Compose (self-hosted) / K8s (cloud)                               |
+| **License**               | Proprietary                    | AGPL-3.0 open-core                                                       |
 
 ## Options Considered
 
 ### Option A: Incremental Migration (Evolve v3 in place)
 
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Medium |
-| Cost | Low initial, high ongoing |
-| Scalability | Limited by MongoDB schema |
-| Team familiarity | High |
-| Time to market | 2-3 months per module |
+| Dimension        | Assessment                |
+| ---------------- | ------------------------- |
+| Complexity       | Medium                    |
+| Cost             | Low initial, high ongoing |
+| Scalability      | Limited by MongoDB schema |
+| Team familiarity | High                      |
+| Time to market   | 2-3 months per module     |
 
 **Pros:**
+
 - No big-bang rewrite risk
 - Existing features stay live during migration
 - Team already knows the codebase
 
 **Cons:**
+
 - MongoDB cannot enforce row-level security; tenant isolation remains app-layer only
 - Shopify's framework shift (RR v7, Polaris WC, Preact) requires rewriting the frontend anyway
 - Two-repo structure prevents code sharing between backend services
@@ -61,15 +63,16 @@ Rewrite the platform as a **Turborepo monorepo** with the following technology c
 
 ### Option B: Full Rewrite with Modern Stack (Selected)
 
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | High |
-| Cost | High initial, low ongoing |
-| Scalability | Excellent (RLS, horizontal scaling, OSRM) |
-| Team familiarity | Medium (Prisma, Fastify, RR v7 are new) |
-| Time to market | 4-6 months for MVP |
+| Dimension        | Assessment                                |
+| ---------------- | ----------------------------------------- |
+| Complexity       | High                                      |
+| Cost             | High initial, low ongoing                 |
+| Scalability      | Excellent (RLS, horizontal scaling, OSRM) |
+| Team familiarity | Medium (Prisma, Fastify, RR v7 are new)   |
+| Time to market   | 4-6 months for MVP                        |
 
 **Pros:**
+
 - PostgreSQL RLS provides database-enforced tenant isolation — eliminates an entire category of data leakage bugs
 - PostGIS enables native spatial queries for delivery zones, driver proximity, and geofencing
 - Turborepo monorepo shares types, validators, and business logic across all apps
@@ -79,6 +82,7 @@ Rewrite the platform as a **Turborepo monorepo** with the following technology c
 - AGPL-3.0 attracts contributors while protecting against SaaS free-riders
 
 **Cons:**
+
 - 4-6 month development investment before feature parity
 - Team needs to learn Prisma, Fastify, PostgreSQL RLS, and OR-Tools
 - Migration of existing MongoDB data to PostgreSQL requires careful planning
@@ -86,19 +90,21 @@ Rewrite the platform as a **Turborepo monorepo** with the following technology c
 
 ### Option C: Managed Platform (Shopify Flow + third-party logistics)
 
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Low |
-| Cost | High per-transaction fees |
-| Scalability | Vendor-dependent |
-| Team familiarity | Low |
-| Time to market | 1-2 months |
+| Dimension        | Assessment                |
+| ---------------- | ------------------------- |
+| Complexity       | Low                       |
+| Cost             | High per-transaction fees |
+| Scalability      | Vendor-dependent          |
+| Team familiarity | Low                       |
+| Time to market   | 1-2 months                |
 
 **Pros:**
+
 - Fastest time to market
 - No infrastructure to manage
 
 **Cons:**
+
 - Vendor lock-in; no differentiation
 - Per-transaction pricing destroys margins at scale
 - Cannot customize route optimization or driver workflows
@@ -116,6 +122,7 @@ The routing provider strategy uses a **phased approach**: Phase 1 retains Mapbox
 ## Consequences
 
 **What becomes easier:**
+
 - Adding new tenant-scoped features (RLS enforces isolation automatically)
 - Spatial queries for zones, proximity, and geofencing (PostGIS)
 - Sharing code between apps (Turborepo workspaces)
@@ -124,12 +131,14 @@ The routing provider strategy uses a **phased approach**: Phase 1 retains Mapbox
 - Scaling horizontally (stateless API + stateless workers)
 
 **What becomes harder:**
+
 - Onboarding new developers (larger technology surface area)
 - Debugging cross-package issues in the monorepo
 - Managing PostgreSQL migrations vs. MongoDB's schema flexibility
 - Running OSRM (memory-intensive for large regions)
 
 **What we'll need to revisit:**
+
 - Data migration strategy from MongoDB to PostgreSQL (separate ADR)
 - OSRM region selection and memory requirements per deployment size
 - BullMQ Pro licensing if free-tier tenant fairness proves insufficient

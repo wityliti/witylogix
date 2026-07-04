@@ -37,18 +37,21 @@ export type {
   RateLimitState,
   CircuitBreakerState,
   AdapterMetrics,
-} from './types.js';
+} from "./types.js";
 
 // Adapters
-export { RoutingAdapter } from './routing-adapter.js';
-export { ValhallaClient } from './valhalla-client.js';
-export { VroomClient } from './vroom-client.js';
-export { RoutificClient } from './routific-client.js';
-export { OptimocourteClient } from './optimoroute-client.js';
+export { RoutingAdapter } from "./routing-adapter.js";
+export { ValhallaClient } from "./valhalla-client.js";
+export { VroomClient } from "./vroom-client.js";
+export { RoutificClient } from "./routific-client.js";
+export { OptimocourteClient } from "./optimoroute-client.js";
 
 // New Google Routes and Mapbox SDKs
-export { GoogleRoutesSDK, createGoogleRoutesSDK } from './google-routes-sdk.js';
-export { MapboxDirectionsSDK, createMapboxDirectionsSDK } from './mapbox-directions-sdk.js';
+export { GoogleRoutesSDK, createGoogleRoutesSDK } from "./google-routes-sdk.js";
+export {
+  MapboxDirectionsSDK,
+  createMapboxDirectionsSDK,
+} from "./mapbox-directions-sdk.js";
 
 // Unified Routing Types
 export type {
@@ -68,8 +71,8 @@ export type {
   IsochronePolygon,
   RoutingProvider as UnifiedRoutingProvider,
   RateLimitInfo,
-} from './unified-routing-types.js';
-export { WitylogixRoutingError } from './unified-routing-types.js';
+} from "./unified-routing-types.js";
+export { WitylogixRoutingError } from "./unified-routing-types.js";
 
 // Polyline Utilities
 export {
@@ -82,7 +85,7 @@ export {
   polylineToGeoJSON,
   geoJsonToPolyline,
   getPolylineBounds,
-} from './polyline-utils.js';
+} from "./polyline-utils.js";
 
 // Orchestration
-export { RoutingEngine } from './routing-engine.js';
+export { RoutingEngine } from "./routing-engine.js";

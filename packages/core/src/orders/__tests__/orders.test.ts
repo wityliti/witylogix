@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 /**
  * Orders Core Module Tests
@@ -37,16 +37,16 @@ interface Order {
   externalOrderNumber?: string;
   source: string;
   status:
-    | 'PENDING'
-    | 'ACCEPTED'
-    | 'ASSIGNED'
-    | 'PICKED_UP'
-    | 'OUT_FOR_DELIVERY'
-    | 'ARRIVED'
-    | 'DELIVERED'
-    | 'FAILED'
-    | 'RETURNED'
-    | 'CANCELLED';
+    | "PENDING"
+    | "ACCEPTED"
+    | "ASSIGNED"
+    | "PICKED_UP"
+    | "OUT_FOR_DELIVERY"
+    | "ARRIVED"
+    | "DELIVERED"
+    | "FAILED"
+    | "RETURNED"
+    | "CANCELLED";
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
@@ -75,39 +75,39 @@ interface Order {
 
 const createMockOrder = (overrides?: Partial<Order>): Order => ({
   id: `order-${Math.random().toString(36).substring(7)}`,
-  shopId: 'shop-123',
+  shopId: "shop-123",
   externalOrderId: `ext-${Math.random().toString(36).substring(7)}`,
-  externalOrderNumber: '#1234',
-  source: 'SHOPIFY',
-  status: 'PENDING',
-  customerName: 'Jane Doe',
-  customerEmail: 'jane@example.com',
-  customerPhone: '+12025551234',
-  addressLine1: '123 Main St',
-  addressLine2: 'Apt 4B',
-  city: 'New York',
-  province: 'NY',
-  postalCode: '10001',
-  country: 'USA',
+  externalOrderNumber: "#1234",
+  source: "SHOPIFY",
+  status: "PENDING",
+  customerName: "Jane Doe",
+  customerEmail: "jane@example.com",
+  customerPhone: "+12025551234",
+  addressLine1: "123 Main St",
+  addressLine2: "Apt 4B",
+  city: "New York",
+  province: "NY",
+  postalCode: "10001",
+  country: "USA",
   deliveryLocation: { latitude: 40.7128, longitude: -74.006 },
-  deliveryDate: new Date('2025-03-15'),
-  timeSlotId: 'slot-123',
+  deliveryDate: new Date("2025-03-15"),
+  timeSlotId: "slot-123",
   driverId: null,
   estimatedArrival: null,
   actualDelivery: null,
   totalPrice: 99.99,
   totalWeight: 2.5,
   itemCount: 3,
-  trackingToken: 'tracking123abc',
-  tags: ['fragile', 'express'],
-  notes: 'Ring doorbell on arrival',
-  metadata: { customField: 'customValue' },
-  createdAt: new Date('2025-03-08T10:00:00Z'),
-  updatedAt: new Date('2025-03-08T10:00:00Z'),
+  trackingToken: "tracking123abc",
+  tags: ["fragile", "express"],
+  notes: "Ring doorbell on arrival",
+  metadata: { customField: "customValue" },
+  createdAt: new Date("2025-03-08T10:00:00Z"),
+  updatedAt: new Date("2025-03-08T10:00:00Z"),
   ...overrides,
 });
 
-describe('Orders Core Module', () => {
+describe("Orders Core Module", () => {
   let prisma: any;
   let db: any;
 
@@ -134,13 +134,13 @@ describe('Orders Core Module', () => {
 
   // ─── CRUD OPERATIONS ───────────────────────────────────
 
-  describe('Create Order', () => {
-    it('should create a new order with required fields', async () => {
+  describe("Create Order", () => {
+    it("should create a new order with required fields", async () => {
       const orderData = {
-        shopId: 'shop-123',
-        externalOrderId: 'ext-abc123',
-        customerName: 'John Smith',
-        customerPhone: '+12025559876',
+        shopId: "shop-123",
+        externalOrderId: "ext-abc123",
+        customerName: "John Smith",
+        customerPhone: "+12025559876",
         totalPrice: 50.0,
         itemCount: 1,
       };
@@ -150,26 +150,26 @@ describe('Orders Core Module', () => {
 
       const result = await db.order.create({ data: orderData });
 
-      expect(result.shopId).toBe('shop-123');
-      expect(result.status).toBe('PENDING');
-      expect(result.externalOrderId).toBe('ext-abc123');
+      expect(result.shopId).toBe("shop-123");
+      expect(result.status).toBe("PENDING");
+      expect(result.externalOrderId).toBe("ext-abc123");
     });
 
-    it('should include optional fields when provided', async () => {
+    it("should include optional fields when provided", async () => {
       const orderData = {
-        shopId: 'shop-123',
-        externalOrderId: 'ext-xyz789',
-        customerName: 'Jane Doe',
-        customerEmail: 'jane@example.com',
-        customerPhone: '+12025554567',
-        addressLine1: '456 Oak Ave',
-        city: 'Los Angeles',
-        deliveryDate: new Date('2025-03-20'),
+        shopId: "shop-123",
+        externalOrderId: "ext-xyz789",
+        customerName: "Jane Doe",
+        customerEmail: "jane@example.com",
+        customerPhone: "+12025554567",
+        addressLine1: "456 Oak Ave",
+        city: "Los Angeles",
+        deliveryDate: new Date("2025-03-20"),
         totalPrice: 150.0,
         totalWeight: 5.0,
-        notes: 'Handle with care',
-        tags: ['urgent', 'gift'],
-        metadata: { gift: true, wrapping: 'gold' },
+        notes: "Handle with care",
+        tags: ["urgent", "gift"],
+        metadata: { gift: true, wrapping: "gold" },
       };
 
       const expected = createMockOrder(orderData);
@@ -177,44 +177,44 @@ describe('Orders Core Module', () => {
 
       const result = await db.order.create({ data: orderData });
 
-      expect(result.customerEmail).toBe('jane@example.com');
-      expect(result.tags).toContain('urgent');
-      expect(result.notes).toBe('Handle with care');
+      expect(result.customerEmail).toBe("jane@example.com");
+      expect(result.tags).toContain("urgent");
+      expect(result.notes).toBe("Handle with care");
     });
 
-    it('should generate unique tracking token', async () => {
-      const order1 = createMockOrder({ trackingToken: 'token1' });
-      const order2 = createMockOrder({ trackingToken: 'token2' });
+    it("should generate unique tracking token", async () => {
+      const order1 = createMockOrder({ trackingToken: "token1" });
+      const order2 = createMockOrder({ trackingToken: "token2" });
 
       (prisma.order.create as any)
         .mockResolvedValueOnce(order1)
         .mockResolvedValueOnce(order2);
 
       const result1 = await db.order.create({
-        data: { shopId: 'shop-123', externalOrderId: 'ext-1' },
+        data: { shopId: "shop-123", externalOrderId: "ext-1" },
       });
       const result2 = await db.order.create({
-        data: { shopId: 'shop-123', externalOrderId: 'ext-2' },
+        data: { shopId: "shop-123", externalOrderId: "ext-2" },
       });
 
       expect(result1.trackingToken).not.toBe(result2.trackingToken);
     });
 
-    it('should set status to PENDING on creation', async () => {
+    it("should set status to PENDING on creation", async () => {
       const orderData = {
-        shopId: 'shop-123',
-        externalOrderId: 'ext-new',
+        shopId: "shop-123",
+        externalOrderId: "ext-new",
       };
 
-      const expected = createMockOrder({ ...orderData, status: 'PENDING' });
+      const expected = createMockOrder({ ...orderData, status: "PENDING" });
       (prisma.order.create as any).mockResolvedValueOnce(expected);
 
       const result = await db.order.create({ data: orderData });
 
-      expect(result.status).toBe('PENDING');
+      expect(result.status).toBe("PENDING");
     });
 
-    it('should set delivery location via PostGIS when coordinates provided', async () => {
+    it("should set delivery location via PostGIS when coordinates provided", async () => {
       const lat = 40.7128;
       const lng = -74.006;
 
@@ -224,7 +224,7 @@ describe('Orders Core Module', () => {
             create: vi.fn().mockResolvedValueOnce(
               createMockOrder({
                 deliveryLocation: { latitude: lat, longitude: lng },
-              })
+              }),
             ),
           },
           $executeRaw: vi.fn().mockResolvedValueOnce({}),
@@ -234,7 +234,7 @@ describe('Orders Core Module', () => {
 
       const result = await (prisma as any).$transaction(async (tx: any) => {
         const order = await tx.order.create({
-          data: { shopId: 'shop-123', externalOrderId: 'ext-geo' },
+          data: { shopId: "shop-123", externalOrderId: "ext-geo" },
         });
         await tx.$executeRaw`UPDATE orders SET delivery_location = ST_MakePoint(${lng}, ${lat})`;
         return order;
@@ -243,30 +243,34 @@ describe('Orders Core Module', () => {
       expect(result.deliveryLocation).toBeDefined();
     });
 
-    it('should enforce unique constraint per shop', async () => {
-      const error = new Error('Unique constraint violation');
+    it("should enforce unique constraint per shop", async () => {
+      const error = new Error("Unique constraint violation");
       (prisma.order.create as any).mockRejectedValueOnce(error);
 
       await expect(
         db.order.create({
           data: {
-            shopId: 'shop-123',
-            externalOrderId: 'ext-dup',
-            source: 'SHOPIFY',
+            shopId: "shop-123",
+            externalOrderId: "ext-dup",
+            source: "SHOPIFY",
           },
-        })
+        }),
       ).rejects.toThrow();
     });
 
-    it('should support multiple order sources', async () => {
-      const sources = ['SHOPIFY', 'WIX', 'ETSY', 'CUSTOM'];
+    it("should support multiple order sources", async () => {
+      const sources = ["SHOPIFY", "WIX", "ETSY", "CUSTOM"];
 
       for (const source of sources) {
         const order = createMockOrder({ source });
         (prisma.order.create as any).mockResolvedValueOnce(order);
 
         const result = await db.order.create({
-          data: { shopId: 'shop-123', externalOrderId: `ext-${source}`, source },
+          data: {
+            shopId: "shop-123",
+            externalOrderId: `ext-${source}`,
+            source,
+          },
         });
 
         expect(result.source).toBe(source);
@@ -274,86 +278,86 @@ describe('Orders Core Module', () => {
     });
   });
 
-  describe('Get Order', () => {
-    it('should fetch order by ID with all details', async () => {
-      const order = createMockOrder({ id: 'order-001' });
+  describe("Get Order", () => {
+    it("should fetch order by ID with all details", async () => {
+      const order = createMockOrder({ id: "order-001" });
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
       });
 
-      expect(result.id).toBe('order-001');
-      expect(result.customerName).toBe('Jane Doe');
+      expect(result.id).toBe("order-001");
+      expect(result.customerName).toBe("Jane Doe");
     });
 
-    it('should return null for non-existent order', async () => {
+    it("should return null for non-existent order", async () => {
       (prisma.order.findUnique as any).mockResolvedValueOnce(null);
 
       const result = await db.order.findUnique({
-        where: { id: 'nonexistent' },
+        where: { id: "nonexistent" },
       });
 
       expect(result).toBeNull();
     });
 
-    it('should include driver information when assigned', async () => {
+    it("should include driver information when assigned", async () => {
       const order = createMockOrder({
-        driverId: 'driver-123',
+        driverId: "driver-123",
       });
       order.driver = {
-        id: 'driver-123',
-        name: 'Bob Driver',
-        phone: '+12025551234',
-        vehicleType: 'CAR',
+        id: "driver-123",
+        name: "Bob Driver",
+        phone: "+12025551234",
+        vehicleType: "CAR",
       };
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         include: { driver: true },
       });
 
       expect(result.driver).toBeDefined();
-      expect(result.driver.id).toBe('driver-123');
+      expect(result.driver.id).toBe("driver-123");
     });
 
-    it('should include time slot information if scheduled', async () => {
+    it("should include time slot information if scheduled", async () => {
       const order = createMockOrder({
-        timeSlotId: 'slot-123',
+        timeSlotId: "slot-123",
       });
       order.timeSlot = {
-        id: 'slot-123',
-        name: 'Morning',
-        startTime: '08:00',
-        endTime: '12:00',
+        id: "slot-123",
+        name: "Morning",
+        startTime: "08:00",
+        endTime: "12:00",
       };
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         include: { timeSlot: true },
       });
 
       expect(result.timeSlot).toBeDefined();
     });
 
-    it('should include proof of delivery when available', async () => {
+    it("should include proof of delivery when available", async () => {
       const order = createMockOrder();
       order.proofOfDelivery = {
-        id: 'pod-123',
-        photoUrls: ['https://example.com/photo1.jpg'],
-        signatureUrl: 'https://example.com/sig.jpg',
-        recipientName: 'Jane Doe',
-        deliveredAt: new Date('2025-03-15T14:30:00Z'),
+        id: "pod-123",
+        photoUrls: ["https://example.com/photo1.jpg"],
+        signatureUrl: "https://example.com/sig.jpg",
+        recipientName: "Jane Doe",
+        deliveredAt: new Date("2025-03-15T14:30:00Z"),
       };
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         include: { proofOfDelivery: true },
       });
 
@@ -361,17 +365,17 @@ describe('Orders Core Module', () => {
       expect(result.proofOfDelivery.photoUrls).toHaveLength(1);
     });
 
-    it('should include recent notification logs (timeline)', async () => {
+    it("should include recent notification logs (timeline)", async () => {
       const order = createMockOrder();
       order.notificationLogs = [
-        { id: '1', type: 'created', createdAt: new Date() },
-        { id: '2', type: 'assigned', createdAt: new Date() },
+        { id: "1", type: "created", createdAt: new Date() },
+        { id: "2", type: "assigned", createdAt: new Date() },
       ];
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         include: { notificationLogs: true },
       });
 
@@ -379,12 +383,12 @@ describe('Orders Core Module', () => {
     });
   });
 
-  describe('List Orders', () => {
-    it('should list orders with pagination', async () => {
+  describe("List Orders", () => {
+    it("should list orders with pagination", async () => {
       const orders = [
-        createMockOrder({ id: 'order-1' }),
-        createMockOrder({ id: 'order-2' }),
-        createMockOrder({ id: 'order-3' }),
+        createMockOrder({ id: "order-1" }),
+        createMockOrder({ id: "order-2" }),
+        createMockOrder({ id: "order-3" }),
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(orders);
       (prisma.order.count as any).mockResolvedValueOnce(100);
@@ -399,36 +403,36 @@ describe('Orders Core Module', () => {
       expect(total).toBe(100);
     });
 
-    it('should filter by order status', async () => {
+    it("should filter by order status", async () => {
       const pending = [
-        createMockOrder({ status: 'PENDING' }),
-        createMockOrder({ status: 'PENDING' }),
+        createMockOrder({ status: "PENDING" }),
+        createMockOrder({ status: "PENDING" }),
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(pending);
 
       const result = await db.order.findMany({
-        where: { status: 'PENDING' },
+        where: { status: "PENDING" },
       });
 
-      expect(result.every((o: any) => o.status === 'PENDING')).toBe(true);
+      expect(result.every((o: any) => o.status === "PENDING")).toBe(true);
     });
 
-    it('should filter by driver assignment', async () => {
+    it("should filter by driver assignment", async () => {
       const assigned = [
-        createMockOrder({ driverId: 'driver-123' }),
-        createMockOrder({ driverId: 'driver-123' }),
+        createMockOrder({ driverId: "driver-123" }),
+        createMockOrder({ driverId: "driver-123" }),
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(assigned);
 
       const result = await db.order.findMany({
-        where: { driverId: 'driver-123' },
+        where: { driverId: "driver-123" },
       });
 
-      expect(result.every((o: any) => o.driverId === 'driver-123')).toBe(true);
+      expect(result.every((o: any) => o.driverId === "driver-123")).toBe(true);
     });
 
-    it('should filter by delivery date', async () => {
-      const date = new Date('2025-03-15');
+    it("should filter by delivery date", async () => {
+      const date = new Date("2025-03-15");
       const orders = [createMockOrder({ deliveryDate: date })];
       (prisma.order.findMany as any).mockResolvedValueOnce(orders);
 
@@ -444,17 +448,17 @@ describe('Orders Core Module', () => {
       expect(result[0].deliveryDate).toEqual(date);
     });
 
-    it('should search by customer name, email, order number, or address', async () => {
-      const results = [createMockOrder({ customerName: 'Jane Doe' })];
+    it("should search by customer name, email, order number, or address", async () => {
+      const results = [createMockOrder({ customerName: "Jane Doe" })];
       (prisma.order.findMany as any).mockResolvedValueOnce(results);
 
       const result = await db.order.findMany({
         where: {
           OR: [
-            { customerName: { contains: 'Jane', mode: 'insensitive' } },
-            { customerEmail: { contains: 'Jane', mode: 'insensitive' } },
-            { externalOrderNumber: { contains: 'Jane', mode: 'insensitive' } },
-            { addressLine1: { contains: 'Jane', mode: 'insensitive' } },
+            { customerName: { contains: "Jane", mode: "insensitive" } },
+            { customerEmail: { contains: "Jane", mode: "insensitive" } },
+            { externalOrderNumber: { contains: "Jane", mode: "insensitive" } },
+            { addressLine1: { contains: "Jane", mode: "insensitive" } },
           ],
         },
       });
@@ -462,162 +466,175 @@ describe('Orders Core Module', () => {
       expect(result).toHaveLength(1);
     });
 
-    it('should sort by creation date descending', async () => {
+    it("should sort by creation date descending", async () => {
       const orders = [
-        createMockOrder({ createdAt: new Date('2025-03-08') }),
-        createMockOrder({ createdAt: new Date('2025-03-07') }),
-        createMockOrder({ createdAt: new Date('2025-03-06') }),
+        createMockOrder({ createdAt: new Date("2025-03-08") }),
+        createMockOrder({ createdAt: new Date("2025-03-07") }),
+        createMockOrder({ createdAt: new Date("2025-03-06") }),
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(orders);
 
       const result = await db.order.findMany({
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
 
       expect(result[0].createdAt > result[1].createdAt).toBe(true);
     });
 
-    it('should support multiple sort options', async () => {
+    it("should support multiple sort options", async () => {
       const orders = [createMockOrder()];
       (prisma.order.findMany as any).mockResolvedValueOnce(orders);
 
-      const sortOptions = ['createdAt', 'deliveryDate', 'status', 'customerName'];
+      const sortOptions = [
+        "createdAt",
+        "deliveryDate",
+        "status",
+        "customerName",
+      ];
 
       for (const sortBy of sortOptions) {
         await db.order.findMany({
-          orderBy: { [sortBy]: 'asc' },
+          orderBy: { [sortBy]: "asc" },
         });
         expect(prisma.order.findMany).toHaveBeenCalled();
       }
     });
   });
 
-  describe('Update Order', () => {
-    it('should update customer contact information', async () => {
+  describe("Update Order", () => {
+    it("should update customer contact information", async () => {
       const updated = createMockOrder({
-        customerName: 'Updated Name',
-        customerEmail: 'updated@example.com',
-        customerPhone: '+12025555555',
+        customerName: "Updated Name",
+        customerEmail: "updated@example.com",
+        customerPhone: "+12025555555",
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
-          customerName: 'Updated Name',
-          customerEmail: 'updated@example.com',
-          customerPhone: '+12025555555',
+          customerName: "Updated Name",
+          customerEmail: "updated@example.com",
+          customerPhone: "+12025555555",
         },
       });
 
-      expect(result.customerName).toBe('Updated Name');
+      expect(result.customerName).toBe("Updated Name");
     });
 
-    it('should update delivery address', async () => {
+    it("should update delivery address", async () => {
       const updated = createMockOrder({
-        addressLine1: 'New Address',
-        city: 'New City',
+        addressLine1: "New Address",
+        city: "New City",
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
-          addressLine1: 'New Address',
-          city: 'New City',
+          addressLine1: "New Address",
+          city: "New City",
         },
       });
 
-      expect(result.addressLine1).toBe('New Address');
+      expect(result.addressLine1).toBe("New Address");
     });
 
-    it('should update delivery date and time slot', async () => {
-      const newDate = new Date('2025-03-20');
+    it("should update delivery date and time slot", async () => {
+      const newDate = new Date("2025-03-20");
       const updated = createMockOrder({
         deliveryDate: newDate,
-        timeSlotId: 'slot-456',
+        timeSlotId: "slot-456",
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
           deliveryDate: newDate,
-          timeSlotId: 'slot-456',
+          timeSlotId: "slot-456",
         },
       });
 
       expect(result.deliveryDate).toEqual(newDate);
-      expect(result.timeSlotId).toBe('slot-456');
+      expect(result.timeSlotId).toBe("slot-456");
     });
 
-    it('should update notes and metadata', async () => {
+    it("should update notes and metadata", async () => {
       const updated = createMockOrder({
-        notes: 'Updated notes',
+        notes: "Updated notes",
         metadata: { updated: true },
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
-          notes: 'Updated notes',
+          notes: "Updated notes",
           metadata: { updated: true },
         },
       });
 
-      expect(result.notes).toBe('Updated notes');
+      expect(result.notes).toBe("Updated notes");
       expect(result.metadata.updated).toBe(true);
     });
 
-    it('should allow partial updates without affecting other fields', async () => {
+    it("should allow partial updates without affecting other fields", async () => {
       const original = createMockOrder({
-        customerName: 'Original',
-        notes: 'Original notes',
+        customerName: "Original",
+        notes: "Original notes",
       });
-      const updated = { ...original, notes: 'Updated notes' };
+      const updated = { ...original, notes: "Updated notes" };
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
-        data: { notes: 'Updated notes' },
+        where: { id: "order-001" },
+        data: { notes: "Updated notes" },
       });
 
-      expect(result.notes).toBe('Updated notes');
-      expect(result.customerName).toBe('Original');
+      expect(result.notes).toBe("Updated notes");
+      expect(result.customerName).toBe("Original");
     });
   });
 
   // ─── STATUS TRANSITIONS ──────────────────────────────
 
-  describe('Order Status State Machine', () => {
+  describe("Order Status State Machine", () => {
     const validTransitions: Record<string, string[]> = {
-      PENDING: ['ACCEPTED', 'CANCELLED'],
-      ACCEPTED: ['ASSIGNED', 'CANCELLED'],
-      ASSIGNED: ['PICKED_UP', 'CANCELLED'],
-      PICKED_UP: ['OUT_FOR_DELIVERY'],
-      OUT_FOR_DELIVERY: ['ARRIVED', 'FAILED'],
-      ARRIVED: ['DELIVERED', 'FAILED'],
+      PENDING: ["ACCEPTED", "CANCELLED"],
+      ACCEPTED: ["ASSIGNED", "CANCELLED"],
+      ASSIGNED: ["PICKED_UP", "CANCELLED"],
+      PICKED_UP: ["OUT_FOR_DELIVERY"],
+      OUT_FOR_DELIVERY: ["ARRIVED", "FAILED"],
+      ARRIVED: ["DELIVERED", "FAILED"],
       DELIVERED: [],
-      FAILED: ['RETURNED', 'OUT_FOR_DELIVERY'],
+      FAILED: ["RETURNED", "OUT_FOR_DELIVERY"],
       RETURNED: [],
       CANCELLED: [],
     };
 
-    it('should transition from PENDING to ACCEPTED', async () => {
-      const updated = createMockOrder({ status: 'ACCEPTED' });
+    it("should transition from PENDING to ACCEPTED", async () => {
+      const updated = createMockOrder({ status: "ACCEPTED" });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
-        data: { status: 'ACCEPTED' },
+        where: { id: "order-001" },
+        data: { status: "ACCEPTED" },
       });
 
-      expect(result.status).toBe('ACCEPTED');
+      expect(result.status).toBe("ACCEPTED");
     });
 
-    it('should transition through complete delivery flow', async () => {
-      const flow = ['PENDING', 'ACCEPTED', 'ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'ARRIVED', 'DELIVERED'];
+    it("should transition through complete delivery flow", async () => {
+      const flow = [
+        "PENDING",
+        "ACCEPTED",
+        "ASSIGNED",
+        "PICKED_UP",
+        "OUT_FOR_DELIVERY",
+        "ARRIVED",
+        "DELIVERED",
+      ];
 
       for (let i = 1; i < flow.length; i++) {
         const from = flow[i - 1];
@@ -627,43 +644,43 @@ describe('Orders Core Module', () => {
       }
     });
 
-    it('should allow cancellation from most states', async () => {
-      const cancellableStates = ['PENDING', 'ACCEPTED', 'ASSIGNED'];
+    it("should allow cancellation from most states", async () => {
+      const cancellableStates = ["PENDING", "ACCEPTED", "ASSIGNED"];
 
-      cancellableStates.forEach(state => {
-        expect(validTransitions[state]).toContain('CANCELLED');
+      cancellableStates.forEach((state) => {
+        expect(validTransitions[state]).toContain("CANCELLED");
       });
     });
 
-    it('should not allow invalid state transitions', async () => {
+    it("should not allow invalid state transitions", async () => {
       // DELIVERED cannot transition anywhere
-      expect(validTransitions['DELIVERED']).toHaveLength(0);
+      expect(validTransitions["DELIVERED"]).toHaveLength(0);
 
       // Cannot go from DELIVERED to any other state
-      const invalidTransitions = ['ASSIGNED', 'CANCELLED', 'FAILED'];
-      invalidTransitions.forEach(status => {
-        expect(validTransitions['DELIVERED']).not.toContain(status);
+      const invalidTransitions = ["ASSIGNED", "CANCELLED", "FAILED"];
+      invalidTransitions.forEach((status) => {
+        expect(validTransitions["DELIVERED"]).not.toContain(status);
       });
     });
 
-    it('should allow FAILED orders to be returned or retried', async () => {
-      const failedTransitions = validTransitions['FAILED'];
-      expect(failedTransitions).toContain('RETURNED');
-      expect(failedTransitions).toContain('OUT_FOR_DELIVERY');
+    it("should allow FAILED orders to be returned or retried", async () => {
+      const failedTransitions = validTransitions["FAILED"];
+      expect(failedTransitions).toContain("RETURNED");
+      expect(failedTransitions).toContain("OUT_FOR_DELIVERY");
     });
 
-    it('should track estimated arrival when transitioning to PICKED_UP', async () => {
-      const estArrival = new Date('2025-03-15T14:00:00Z');
+    it("should track estimated arrival when transitioning to PICKED_UP", async () => {
+      const estArrival = new Date("2025-03-15T14:00:00Z");
       const updated = createMockOrder({
-        status: 'PICKED_UP',
+        status: "PICKED_UP",
         estimatedArrival: estArrival,
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
-          status: 'PICKED_UP',
+          status: "PICKED_UP",
           estimatedArrival: estArrival,
         },
       });
@@ -671,18 +688,18 @@ describe('Orders Core Module', () => {
       expect(result.estimatedArrival).toEqual(estArrival);
     });
 
-    it('should track actual delivery time when delivered', async () => {
+    it("should track actual delivery time when delivered", async () => {
       const now = new Date();
       const updated = createMockOrder({
-        status: 'DELIVERED',
+        status: "DELIVERED",
         actualDelivery: now,
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
-          status: 'DELIVERED',
+          status: "DELIVERED",
           actualDelivery: now,
         },
       });
@@ -693,62 +710,62 @@ describe('Orders Core Module', () => {
 
   // ─── ASSIGNMENT ──────────────────────────────────────
 
-  describe('Order Driver Assignment', () => {
-    it('should assign order to a driver', async () => {
+  describe("Order Driver Assignment", () => {
+    it("should assign order to a driver", async () => {
       const assigned = createMockOrder({
-        driverId: 'driver-123',
-        status: 'ASSIGNED',
+        driverId: "driver-123",
+        status: "ASSIGNED",
       });
       (prisma.order.update as any).mockResolvedValueOnce(assigned);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
-          driverId: 'driver-123',
-          status: 'ASSIGNED',
+          driverId: "driver-123",
+          status: "ASSIGNED",
         },
       });
 
-      expect(result.driverId).toBe('driver-123');
-      expect(result.status).toBe('ASSIGNED');
+      expect(result.driverId).toBe("driver-123");
+      expect(result.status).toBe("ASSIGNED");
     });
 
-    it('should unassign order from driver', async () => {
+    it("should unassign order from driver", async () => {
       const unassigned = createMockOrder({
         driverId: null,
-        status: 'ACCEPTED',
+        status: "ACCEPTED",
       });
       (prisma.order.update as any).mockResolvedValueOnce(unassigned);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
           driverId: null,
-          status: 'ACCEPTED',
+          status: "ACCEPTED",
         },
       });
 
       expect(result.driverId).toBeNull();
     });
 
-    it('should reassign order to different driver', async () => {
+    it("should reassign order to different driver", async () => {
       const reassigned = createMockOrder({
-        driverId: 'driver-456',
+        driverId: "driver-456",
       });
       (prisma.order.update as any).mockResolvedValueOnce(reassigned);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
-        data: { driverId: 'driver-456' },
+        where: { id: "order-001" },
+        data: { driverId: "driver-456" },
       });
 
-      expect(result.driverId).toBe('driver-456');
+      expect(result.driverId).toBe("driver-456");
     });
 
-    it('should validate driver exists before assignment', async () => {
+    it("should validate driver exists before assignment", async () => {
       // In real implementation, would check driver exists
-      const driverId = 'driver-invalid';
-      const drivers = ['driver-123', 'driver-456'];
+      const driverId = "driver-invalid";
+      const drivers = ["driver-123", "driver-456"];
 
       const isValid = drivers.includes(driverId);
       expect(isValid).toBe(false);
@@ -757,41 +774,41 @@ describe('Orders Core Module', () => {
 
   // ─── VALIDATION & CONSTRAINTS ──────────────────────────
 
-  describe('Order Validation', () => {
-    it('should reject negative total price', async () => {
+  describe("Order Validation", () => {
+    it("should reject negative total price", async () => {
       expect(() => {
         const price = -50;
-        if (price < 0) throw new Error('Price cannot be negative');
-      }).toThrow('Price cannot be negative');
+        if (price < 0) throw new Error("Price cannot be negative");
+      }).toThrow("Price cannot be negative");
     });
 
-    it('should reject invalid email format', async () => {
-      const validEmails = ['jane@example.com', 'john.doe@company.co.uk'];
-      const invalidEmails = ['notanemail', 'missing@domain', '@nodomain.com'];
+    it("should reject invalid email format", async () => {
+      const validEmails = ["jane@example.com", "john.doe@company.co.uk"];
+      const invalidEmails = ["notanemail", "missing@domain", "@nodomain.com"];
 
-      validEmails.forEach(email => {
+      validEmails.forEach((email) => {
         expect(email).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
       });
 
-      invalidEmails.forEach(email => {
+      invalidEmails.forEach((email) => {
         expect(email).not.toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
       });
     });
 
-    it('should reject delivery date in the past', async () => {
+    it("should reject delivery date in the past", async () => {
       const now = new Date();
       const past = new Date(now.getTime() - 86400000);
 
       expect(() => {
-        if (past < now) throw new Error('Delivery date cannot be in past');
-      }).toThrow('Delivery date cannot be in past');
+        if (past < now) throw new Error("Delivery date cannot be in past");
+      }).toThrow("Delivery date cannot be in past");
     });
 
-    it('should validate address completeness', async () => {
+    it("should validate address completeness", async () => {
       const completeAddress = {
-        addressLine1: '123 Main St',
-        city: 'NYC',
-        postalCode: '10001',
+        addressLine1: "123 Main St",
+        city: "NYC",
+        postalCode: "10001",
       };
 
       const hasRequiredFields =
@@ -802,151 +819,170 @@ describe('Orders Core Module', () => {
       expect(hasRequiredFields).toBe(true);
     });
 
-    it('should validate item count is positive', async () => {
+    it("should validate item count is positive", async () => {
       expect(() => {
-        if (0 <= 0) throw new Error('Item count must be positive');
-      }).toThrow('Item count must be positive');
+        if (0 <= 0) throw new Error("Item count must be positive");
+      }).toThrow("Item count must be positive");
     });
   });
 
   // ─── TAGS & METADATA ───────────────────────────────────
 
-  describe('Order Tags and Metadata', () => {
-    it('should add tags to order', async () => {
+  describe("Order Tags and Metadata", () => {
+    it("should add tags to order", async () => {
       const updated = createMockOrder({
-        tags: ['express', 'fragile', 'signature-required'],
+        tags: ["express", "fragile", "signature-required"],
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
-          tags: ['express', 'fragile', 'signature-required'],
+          tags: ["express", "fragile", "signature-required"],
         },
       });
 
-      expect(result.tags).toContain('express');
+      expect(result.tags).toContain("express");
       expect(result.tags).toHaveLength(3);
     });
 
-    it('should update metadata with custom fields', async () => {
+    it("should update metadata with custom fields", async () => {
       const updated = createMockOrder({
         metadata: {
           giftWrap: true,
-          giftMessage: 'Happy Birthday!',
-          specialInstructions: 'Call on arrival',
+          giftMessage: "Happy Birthday!",
+          specialInstructions: "Call on arrival",
         },
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         data: {
           metadata: {
             giftWrap: true,
-            giftMessage: 'Happy Birthday!',
-            specialInstructions: 'Call on arrival',
+            giftMessage: "Happy Birthday!",
+            specialInstructions: "Call on arrival",
           },
         },
       });
 
       expect(result.metadata.giftWrap).toBe(true);
-      expect(result.metadata.giftMessage).toBe('Happy Birthday!');
+      expect(result.metadata.giftMessage).toBe("Happy Birthday!");
     });
 
-    it('should support filtering by tags', async () => {
+    it("should support filtering by tags", async () => {
       const expressOrders = [
-        createMockOrder({ tags: ['express'] }),
-        createMockOrder({ tags: ['express'] }),
+        createMockOrder({ tags: ["express"] }),
+        createMockOrder({ tags: ["express"] }),
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(expressOrders);
 
       const result = await db.order.findMany({
-        where: { tags: { has: 'express' } },
+        where: { tags: { has: "express" } },
       });
 
-      expect(result.every((o: any) => o.tags.includes('express'))).toBe(true);
+      expect(result.every((o: any) => o.tags.includes("express"))).toBe(true);
     });
   });
 
   // ─── SOFT CANCELLATION ──────────────────────────────────
 
-  describe('Order Cancellation', () => {
-    it('should cancel order from PENDING status', async () => {
+  describe("Order Cancellation", () => {
+    it("should cancel order from PENDING status", async () => {
       const cancelled = createMockOrder({
-        status: 'CANCELLED',
+        status: "CANCELLED",
       });
       (prisma.order.update as any).mockResolvedValueOnce(cancelled);
 
       const result = await db.order.update({
-        where: { id: 'order-001' },
-        data: { status: 'CANCELLED' },
+        where: { id: "order-001" },
+        data: { status: "CANCELLED" },
       });
 
-      expect(result.status).toBe('CANCELLED');
+      expect(result.status).toBe("CANCELLED");
     });
 
-    it('should not allow cancellation of delivered orders', async () => {
-      const delivered = createMockOrder({ status: 'DELIVERED' });
+    it("should not allow cancellation of delivered orders", async () => {
+      const delivered = createMockOrder({ status: "DELIVERED" });
 
       expect(() => {
         const validTransitions: Record<string, string[]> = {
           DELIVERED: [],
         };
-        if (!validTransitions[delivered.status].includes('CANCELLED')) {
-          throw new Error('Cannot cancel delivered order');
+        if (!validTransitions[delivered.status].includes("CANCELLED")) {
+          throw new Error("Cannot cancel delivered order");
         }
-      }).toThrow('Cannot cancel delivered order');
+      }).toThrow("Cannot cancel delivered order");
     });
 
-    it('should preserve order data when cancelling', async () => {
+    it("should preserve order data when cancelling", async () => {
       const cancelled = createMockOrder({
-        id: 'order-001',
-        status: 'CANCELLED',
-        customerName: 'Jane Doe',
+        id: "order-001",
+        status: "CANCELLED",
+        customerName: "Jane Doe",
         totalPrice: 99.99,
       });
       (prisma.order.findUnique as any).mockResolvedValueOnce(cancelled);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
       });
 
-      expect(result.customerName).toBe('Jane Doe');
+      expect(result.customerName).toBe("Jane Doe");
       expect(result.totalPrice).toBe(99.99);
     });
   });
 
   // ─── TIMELINE & HISTORY ────────────────────────────────
 
-  describe('Order Timeline', () => {
-    it('should track status change history', async () => {
-      const order = createMockOrder({ id: 'order-001' });
+  describe("Order Timeline", () => {
+    it("should track status change history", async () => {
+      const order = createMockOrder({ id: "order-001" });
       order.notificationLogs = [
-        { id: 'log-4', type: 'order.picked_up', createdAt: new Date('2025-03-08T12:00:00Z') },
-        { id: 'log-3', type: 'order.assigned', createdAt: new Date('2025-03-08T11:00:00Z') },
-        { id: 'log-2', type: 'order.accepted', createdAt: new Date('2025-03-08T10:30:00Z') },
-        { id: 'log-1', type: 'order.created', createdAt: new Date('2025-03-08T10:00:00Z') },
+        {
+          id: "log-4",
+          type: "order.picked_up",
+          createdAt: new Date("2025-03-08T12:00:00Z"),
+        },
+        {
+          id: "log-3",
+          type: "order.assigned",
+          createdAt: new Date("2025-03-08T11:00:00Z"),
+        },
+        {
+          id: "log-2",
+          type: "order.accepted",
+          createdAt: new Date("2025-03-08T10:30:00Z"),
+        },
+        {
+          id: "log-1",
+          type: "order.created",
+          createdAt: new Date("2025-03-08T10:00:00Z"),
+        },
       ];
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
-        include: { notificationLogs: { orderBy: { createdAt: 'desc' }, take: 20 } },
+        where: { id: "order-001" },
+        include: {
+          notificationLogs: { orderBy: { createdAt: "desc" }, take: 20 },
+        },
       });
 
       expect(result.notificationLogs).toHaveLength(4);
-      expect(result.notificationLogs[0].createdAt > result.notificationLogs[1].createdAt).toBe(
-        true
-      );
+      expect(
+        result.notificationLogs[0].createdAt >
+          result.notificationLogs[1].createdAt,
+      ).toBe(true);
     });
 
-    it('should limit timeline to recent events', async () => {
+    it("should limit timeline to recent events", async () => {
       const order = createMockOrder();
       order.notificationLogs = Array.from({ length: 50 }, (_, i) => ({
         id: `log-${i}`,
-        type: 'event',
+        type: "event",
         createdAt: new Date(),
       }));
 
@@ -956,7 +992,7 @@ describe('Orders Core Module', () => {
       });
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
         include: { notificationLogs: { take: 20 } },
       });
 
@@ -966,8 +1002,8 @@ describe('Orders Core Module', () => {
 
   // ─── EDGE CASES ─────────────────────────────────────────
 
-  describe('Edge Cases', () => {
-    it('should handle order with no delivery date', async () => {
+  describe("Edge Cases", () => {
+    it("should handle order with no delivery date", async () => {
       const order = createMockOrder({
         deliveryDate: null,
         timeSlotId: null,
@@ -975,14 +1011,14 @@ describe('Orders Core Module', () => {
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
       });
 
       expect(result.deliveryDate).toBeNull();
       expect(result.timeSlotId).toBeNull();
     });
 
-    it('should handle order with minimal information', async () => {
+    it("should handle order with minimal information", async () => {
       const minimal = createMockOrder({
         customerEmail: undefined,
         addressLine1: undefined,
@@ -991,13 +1027,13 @@ describe('Orders Core Module', () => {
       (prisma.order.findUnique as any).mockResolvedValueOnce(minimal);
 
       const result = await db.order.findUnique({
-        where: { id: 'order-001' },
+        where: { id: "order-001" },
       });
 
       expect(result).toBeDefined();
     });
 
-    it('should handle zero-value total price', async () => {
+    it("should handle zero-value total price", async () => {
       const freeOrder = createMockOrder({
         totalPrice: 0,
       });
@@ -1010,9 +1046,11 @@ describe('Orders Core Module', () => {
       expect(result.totalPrice).toBe(0);
     });
 
-    it('should handle very large order metadata', async () => {
+    it("should handle very large order metadata", async () => {
       const largeMetadata = {
-        ...Object.fromEntries(Array.from({ length: 100 }, (_, i) => [`key${i}`, `value${i}`])),
+        ...Object.fromEntries(
+          Array.from({ length: 100 }, (_, i) => [`key${i}`, `value${i}`]),
+        ),
       };
 
       const order = createMockOrder({ metadata: largeMetadata });
@@ -1025,7 +1063,7 @@ describe('Orders Core Module', () => {
       expect(Object.keys(result.metadata).length).toBe(100);
     });
 
-    it('should handle order with many line items', async () => {
+    it("should handle order with many line items", async () => {
       const order = createMockOrder({
         itemCount: 100,
         lineItems: Array.from({ length: 100 }, (_, i) => ({
@@ -1038,24 +1076,24 @@ describe('Orders Core Module', () => {
       expect((order.lineItems as any[]).length).toBe(100);
     });
 
-    it('should handle concurrent status updates', async () => {
+    it("should handle concurrent status updates", async () => {
       const updates = [
-        { status: 'ACCEPTED' },
-        { status: 'ASSIGNED' },
-        { status: 'PICKED_UP' },
+        { status: "ACCEPTED" },
+        { status: "ASSIGNED" },
+        { status: "PICKED_UP" },
       ];
 
       (prisma.order.update as any).mockResolvedValue(
-        createMockOrder({ status: 'PICKED_UP' })
+        createMockOrder({ status: "PICKED_UP" }),
       );
 
       const results = await Promise.all(
-        updates.map(update =>
+        updates.map((update) =>
           db.order.update({
-            where: { id: 'order-001' },
+            where: { id: "order-001" },
             data: update,
-          })
-        )
+          }),
+        ),
       );
 
       expect(results).toHaveLength(3);

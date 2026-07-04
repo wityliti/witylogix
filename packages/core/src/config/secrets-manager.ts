@@ -60,7 +60,7 @@ export class EnvironmentSecretsProvider implements SecretsProvider {
 
   async listSecrets(): Promise<string[]> {
     return Object.keys(process.env).filter((key) =>
-      /^(JWT|STRIPE|TWILIO|DATABASE|REDIS)/.test(key)
+      /^(JWT|STRIPE|TWILIO|DATABASE|REDIS)/.test(key),
     );
   }
 }
@@ -137,7 +137,7 @@ export class VaultSecretsProvider implements SecretsProvider {
 
   constructor(
     vaultUrl: string = process.env.VAULT_ADDR || "http://localhost:8200",
-    vaultToken: string = process.env.VAULT_TOKEN || ""
+    vaultToken: string = process.env.VAULT_TOKEN || "",
   ) {
     this.vaultUrl = vaultUrl;
     this.vaultToken = vaultToken;
@@ -196,7 +196,9 @@ export class VaultSecretsProvider implements SecretsProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete secret from Vault: ${response.statusText}`);
+      throw new Error(
+        `Failed to delete secret from Vault: ${response.statusText}`,
+      );
     }
   }
 
@@ -260,7 +262,7 @@ export class SecretsManager {
       vaultToken?: string;
       filePath?: string;
       awsRegion?: string;
-    }
+    },
   ) {
     this.cacheTtlMs = options?.cacheTtlMs ?? 60 * 1000; // 1 minute default
 
@@ -274,7 +276,7 @@ export class SecretsManager {
       case "vault":
         this.provider = new VaultSecretsProvider(
           options?.vaultUrl,
-          options?.vaultToken
+          options?.vaultToken,
         );
         break;
       case "aws":

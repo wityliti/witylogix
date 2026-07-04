@@ -34,9 +34,12 @@ const getPlatformIcon = (platformId: string): React.ReactNode => {
 };
 
 const getPlatformColor = (
-  platformId: string
+  platformId: string,
 ): "primary" | "success" | "warning" | "danger" | "info" => {
-  const colors: Record<string, "primary" | "success" | "warning" | "danger" | "info"> = {
+  const colors: Record<
+    string,
+    "primary" | "success" | "warning" | "danger" | "info"
+  > = {
     salesforce: "primary",
     hubspot: "info",
     zoho: "warning",
@@ -62,7 +65,8 @@ const CrmPlatformCard = memo(function CrmPlatformCard({
       className={cn(
         "flex flex-col p-6",
         "transition-all duration-base ease-default",
-        isSelected && "border-wl-primary-400 shadow-lg shadow-wl-primary-500/20"
+        isSelected &&
+          "border-wl-primary-400 shadow-lg shadow-wl-primary-500/20",
       )}
       onClick={handleClick}
     >
@@ -74,7 +78,7 @@ const CrmPlatformCard = memo(function CrmPlatformCard({
             className={cn(
               "w-5 h-5 rounded-full",
               "bg-wl-primary-500 flex items-center justify-center",
-              "flex-shrink-0"
+              "flex-shrink-0",
             )}
           >
             <svg
@@ -100,7 +104,11 @@ const CrmPlatformCard = memo(function CrmPlatformCard({
       </h3>
 
       {/* Description */}
-      <p className={cn("text-sm text-wl-text-tertiary mb-4 flex-1 leading-relaxed")}>
+      <p
+        className={cn(
+          "text-sm text-wl-text-tertiary mb-4 flex-1 leading-relaxed",
+        )}
+      >
         {platform.description}
       </p>
 

@@ -39,7 +39,13 @@ interface WorkOrderCardProps extends HTMLAttributes<HTMLDivElement> {
   address: string;
   type: string;
   priority: "low" | "medium" | "high" | "urgent";
-  status: "created" | "scheduled" | "dispatched" | "in-progress" | "completed" | "cancelled";
+  status:
+    | "created"
+    | "scheduled"
+    | "dispatched"
+    | "in-progress"
+    | "completed"
+    | "cancelled";
   assignedTechnicianId?: string;
   assignedTechnicianName?: string;
   scheduledDate: string;
@@ -105,15 +111,19 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const priorityInfo = priorityConfig[priority];
     const statusIndex = statusStages.indexOf(status);
-    const progress = statusIndex >= 0 ? ((statusIndex + 1) / statusStages.length) * 100 : 0;
+    const progress =
+      statusIndex >= 0 ? ((statusIndex + 1) / statusStages.length) * 100 : 0;
 
-    const totalPartsCost = parts.reduce((sum, p) => sum + p.cost * p.quantity, 0);
+    const totalPartsCost = parts.reduce(
+      (sum, p) => sum + p.cost * p.quantity,
+      0,
+    );
     const totalTimeMinutes = timeLog.reduce((sum, t) => sum + t.duration, 0);
 
     return (
@@ -123,7 +133,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
           "space-y-4 transition-all",
           status === "completed" && "opacity-75",
           status === "cancelled" && "opacity-50 line-through",
-          className
+          className,
         )}
         {...props}
       >
@@ -136,9 +146,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
             <p className="text-xs text-wl-text-secondary font-medium mt-1">
               {customer}
             </p>
-            <p className="text-xs text-wl-text-secondary">
-              {type}
-            </p>
+            <p className="text-xs text-wl-text-secondary">{type}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <Badge variant={priorityInfo.badge as any}>
@@ -177,7 +185,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
                   ? "bg-wl-success-400"
                   : progress >= 75
                     ? "bg-wl-warning-400"
-                    : "bg-wl-primary-400"
+                    : "bg-wl-primary-400",
               )}
               style={{ width: `${progress}%` }}
             />
@@ -190,7 +198,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
                 key={stage}
                 className={cn(
                   "flex items-center gap-1",
-                  idx <= statusIndex && "text-wl-primary-400 font-medium"
+                  idx <= statusIndex && "text-wl-primary-400 font-medium",
                 )}
               >
                 {idx <= statusIndex ? (
@@ -261,7 +269,10 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
         </div>
 
         {/* Expandable section */}
-        {(parts.length > 0 || timeLog.length > 0 || photosCount > 0 || notes) && (
+        {(parts.length > 0 ||
+          timeLog.length > 0 ||
+          photosCount > 0 ||
+          notes) && (
           <>
             <button
               onClick={() => setIsExpanded(!isExpanded)}
@@ -271,7 +282,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
               <ChevronDown
                 className={cn(
                   "w-4 h-4 transition-transform",
-                  isExpanded && "transform rotate-180"
+                  isExpanded && "transform rotate-180",
                 )}
               />
             </button>
@@ -293,7 +304,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
                           key={part.id}
                           className={cn(
                             "flex items-center justify-between text-xs p-2 rounded bg-wl-bg-surface",
-                            part.used && "opacity-60 line-through"
+                            part.used && "opacity-60 line-through",
                           )}
                         >
                           <div>
@@ -337,7 +348,8 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
                       ))}
                     </div>
                     <p className="text-xs text-wl-text-secondary text-right">
-                      Total: {totalTimeMinutes} min ({(totalTimeMinutes / 60).toFixed(1)}h)
+                      Total: {totalTimeMinutes} min (
+                      {(totalTimeMinutes / 60).toFixed(1)}h)
                     </p>
                   </div>
                 )}
@@ -360,7 +372,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
                           >
                             {idx + 1}
                           </div>
-                        )
+                        ),
                       )}
                       {photosCount > 4 && (
                         <div className="aspect-square rounded bg-wl-bg-surface flex items-center justify-center text-xs font-medium text-wl-text-primary">
@@ -388,7 +400,7 @@ const WorkOrderCard = forwardRef<HTMLDivElement, WorkOrderCardProps>(
         )}
       </Card>
     );
-  }
+  },
 );
 
 WorkOrderCard.displayName = "WorkOrderCard";

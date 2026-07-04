@@ -4,11 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  Span,
-  RequestTracer,
-  getRequestTracer,
-} from "../request-tracer";
+import { Span, RequestTracer, getRequestTracer } from "../request-tracer";
 
 describe("Request Tracer", () => {
   let tracer: RequestTracer;
@@ -148,7 +144,8 @@ describe("Request Tracer", () => {
     it("should include trace ID and span ID in header", () => {
       const span = tracer.startTrace("test");
       const context = span.getTraceContext();
-      const [version, traceId, spanId, traceFlags] = context.traceparent!.split("-");
+      const [version, traceId, spanId, traceFlags] =
+        context.traceparent!.split("-");
       expect(version).toBe("00");
       expect(traceId).toHaveLength(32);
       expect(spanId).toHaveLength(16);
@@ -243,7 +240,7 @@ describe("Request Tracer", () => {
     it("should sample probabilistically", () => {
       const sampler = new RequestTracer({ sampleRate: 0.5 });
       const samples = Array.from({ length: 100 }).map(() =>
-        sampler.shouldSample()
+        sampler.shouldSample(),
       );
       const trueCount = samples.filter((s) => s).length;
       expect(trueCount).toBeGreaterThan(30);

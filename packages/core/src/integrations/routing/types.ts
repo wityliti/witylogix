@@ -25,12 +25,24 @@ export type Coordinate = LatLng | [number, number];
 /**
  * Costing models for routing
  */
-export type RoutingCosting = 'auto' | 'bicycle' | 'pedestrian' | 'truck' | 'motorcycle' | 'taxi';
+export type RoutingCosting =
+  | "auto"
+  | "bicycle"
+  | "pedestrian"
+  | "truck"
+  | "motorcycle"
+  | "taxi";
 
 /**
  * Vehicle type for optimization
  */
-export type VehicleType = 'car' | 'truck' | 'bike' | 'pedestrian' | 'van' | 'bus';
+export type VehicleType =
+  | "car"
+  | "truck"
+  | "bike"
+  | "pedestrian"
+  | "van"
+  | "bus";
 
 /**
  * Route step instruction
@@ -138,7 +150,7 @@ export interface OptimizationRequest {
   vehicles: VehicleConstraints[];
   jobs: OptimizationJob[];
   options?: {
-    format?: 'json' | 'geojson';
+    format?: "json" | "geojson";
     geometry?: boolean;
     steps?: boolean;
     annotations?: boolean;
@@ -151,7 +163,7 @@ export interface OptimizationRequest {
 export interface OptimizedRoute {
   vehicle: number; // Vehicle index
   steps: Array<{
-    type: 'start' | 'job' | 'end';
+    type: "start" | "job" | "end";
     location: Coordinate;
     arrival_time: number;
     departure_time: number;
@@ -168,7 +180,7 @@ export interface OptimizedRoute {
  * Optimization response
  */
 export interface OptimizationResponse {
-  code: 'OK' | 'ERROR';
+  code: "OK" | "ERROR";
   summary: {
     distance_m: number;
     duration_s: number;
@@ -199,7 +211,7 @@ export interface MatrixRequest {
 export interface MatrixElement {
   distance_m: number;
   duration_s: number;
-  status: 'OK' | 'UNREACHABLE' | 'NO_ROUTE';
+  status: "OK" | "UNREACHABLE" | "NO_ROUTE";
 }
 
 /**
@@ -240,9 +252,9 @@ export interface IsochroneResponse {
  * Simple GeoJSON feature
  */
 export interface GeoJSONFeature {
-  type: 'Feature';
+  type: "Feature";
   geometry: {
-    type: 'Polygon';
+    type: "Polygon";
     coordinates: Array<Array<[number, number]>>;
   };
   properties: Record<string, unknown>;
@@ -255,7 +267,7 @@ export interface MapMatchingRequest {
   shape: Coordinate[];
   costing?: RoutingCosting;
   filters?: {
-    action?: 'include' | 'exclude';
+    action?: "include" | "exclude";
     attributes?: string[];
   };
 }
@@ -283,7 +295,7 @@ export interface MapMatchingResponse {
     edge_index: number;
     lat: number;
     lng: number;
-    type: 'matched' | 'interpolated' | 'unmatched';
+    type: "matched" | "interpolated" | "unmatched";
   }>;
   edges: MatchedEdge[];
   raw_shape: string;
@@ -349,7 +361,7 @@ export interface RoutingAdapterConfig extends RoutingOptions {
  * Health status
  */
 export interface RoutingHealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   timestamp: Date;
   lastCheck: Date;
   responseTime?: number; // milliseconds
@@ -377,7 +389,7 @@ export interface RateLimiter {
 /**
  * Circuit breaker state
  */
-export type CircuitBreakerState = 'closed' | 'open' | 'half_open';
+export type CircuitBreakerState = "closed" | "open" | "half_open";
 
 /**
  * Circuit breaker

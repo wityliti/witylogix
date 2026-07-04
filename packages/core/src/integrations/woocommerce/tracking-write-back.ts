@@ -38,7 +38,10 @@ export interface TrackingWritebackParams {
 }
 
 /** Enqueue function signature for BullMQ (injected, not imported directly) */
-export type EnqueueFn = (queueName: string, data: Record<string, unknown>) => Promise<void> | void;
+export type EnqueueFn = (
+  queueName: string,
+  data: Record<string, unknown>,
+) => Promise<void> | void;
 
 const MAX_RETRIES = 3;
 
@@ -92,7 +95,10 @@ export class WCTrackingWritebackService {
     // Attempt Shipment Tracking plugin endpoint first
     let pluginError: Error | null = null;
     try {
-      await this.client.post(`/orders/${wcOrderId}/shipment-tracking`, pluginPayload as unknown as Record<string, unknown>);
+      await this.client.post(
+        `/orders/${wcOrderId}/shipment-tracking`,
+        pluginPayload as unknown as Record<string, unknown>,
+      );
       return;
     } catch (err) {
       pluginError = err instanceof Error ? err : new Error(String(err));
@@ -131,7 +137,11 @@ export class WCTrackingWritebackService {
 
     // Transient error — retry plugin endpoint up to MAX_RETRIES total (already used 1 attempt)
     const retryResult = await withRetry(
-      () => this.client.post(`/orders/${wcOrderId}/shipment-tracking`, pluginPayload as unknown as Record<string, unknown>),
+      () =>
+        this.client.post(
+          `/orders/${wcOrderId}/shipment-tracking`,
+          pluginPayload as unknown as Record<string, unknown>,
+        ),
       MAX_RETRIES - 1,
     );
 

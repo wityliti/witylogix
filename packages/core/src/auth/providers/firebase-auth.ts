@@ -73,7 +73,10 @@ export class FirebaseAuthProvider implements BaseAuthProvider {
    */
   async handleCallback(callbackData: CallbackData): Promise<AuthResult> {
     if (!callbackData.code) {
-      throw new InvalidCredentialsError("firebase_auth", "Firebase ID token is required");
+      throw new InvalidCredentialsError(
+        "firebase_auth",
+        "Firebase ID token is required",
+      );
     }
 
     try {
@@ -116,7 +119,10 @@ export class FirebaseAuthProvider implements BaseAuthProvider {
       const payload = await this.validateFirebaseToken(accessToken);
       return payload;
     } catch (error) {
-      throw new TokenExpiredError("firebase_auth", "Invalid or expired Firebase token");
+      throw new TokenExpiredError(
+        "firebase_auth",
+        "Invalid or expired Firebase token",
+      );
     }
   }
 
@@ -134,7 +140,10 @@ export class FirebaseAuthProvider implements BaseAuthProvider {
    * Revoke a Firebase session (logout).
    * Disables the user account or revokes tokens server-side.
    */
-  async revokeSession(accessToken: string, refreshToken?: string): Promise<void> {
+  async revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void> {
     try {
       // In production: use Firebase Admin SDK to revoke refresh tokens
       // admin.auth().revokeRefreshTokens(uid);
@@ -173,15 +182,25 @@ export class FirebaseAuthProvider implements BaseAuthProvider {
    * Get authorization URL — not applicable for Firebase.
    * Firebase uses SDK on frontend.
    */
-  async getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl> {
-    throw new ConfigurationError("firebase_auth", "Firebase uses SDK-based authentication");
+  async getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl> {
+    throw new ConfigurationError(
+      "firebase_auth",
+      "Firebase uses SDK-based authentication",
+    );
   }
 
   /**
    * Validate Firebase configuration.
    */
   async validateConfiguration(): Promise<void> {
-    if (!this.config.projectId || !this.config.apiKey || !this.config.authDomain) {
+    if (
+      !this.config.projectId ||
+      !this.config.apiKey ||
+      !this.config.authDomain
+    ) {
       throw new ConfigurationError(
         "firebase_auth",
         "Firebase projectId, apiKey, and authDomain are required",
@@ -192,7 +211,10 @@ export class FirebaseAuthProvider implements BaseAuthProvider {
       // In production: verify projectId and apiKey by making a test request
       // Check that authDomain is accessible
     } catch (error) {
-      throw new ConfigurationError("firebase_auth", `Invalid Firebase configuration: ${String(error)}`);
+      throw new ConfigurationError(
+        "firebase_auth",
+        `Invalid Firebase configuration: ${String(error)}`,
+      );
     }
   }
 
@@ -226,7 +248,9 @@ export class FirebaseAuthProvider implements BaseAuthProvider {
    * In production: verify JWT signature using Firebase's public key from JWKS.
    * Also check exp claim.
    */
-  private async validateFirebaseToken(token: string): Promise<Record<string, any>> {
+  private async validateFirebaseToken(
+    token: string,
+  ): Promise<Record<string, any>> {
     try {
       // Decode JWT
       const parts = token.split(".");

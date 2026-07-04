@@ -3,15 +3,20 @@
  * Supports token management, topic-based targeting, and data/notification payloads.
  */
 
-import type { Message, MessageTemplate, SendResult, DeliveryStatus } from '../types.js';
+import type {
+  Message,
+  MessageTemplate,
+  SendResult,
+  DeliveryStatus,
+} from "../types.js";
 import {
   MessageChannel,
   DeliveryStatus as DeliveryStatusEnum,
   InvalidRecipientError,
   AuthenticationError,
   ConfigurationError,
-} from '../types.js';
-import { MessageProvider } from './base.js';
+} from "../types.js";
+import { MessageProvider } from "./base.js";
 
 /**
  * Type stubs for Firebase Cloud Messaging client.
@@ -57,7 +62,7 @@ interface FcmMessage {
  * Push provider for Firebase Cloud Messaging.
  */
 export class PushProvider extends MessageProvider {
-  readonly providerId = 'push_fcm';
+  readonly providerId = "push_fcm";
 
   private client?: FcmClient;
   private deviceTokens: Map<string, string[]> = new Map(); // userId -> tokens
@@ -74,7 +79,7 @@ export class PushProvider extends MessageProvider {
     if (!config.projectId || !config.privateKey || !config.clientEmail) {
       throw new ConfigurationError(
         MessageChannel.PUSH,
-        'Missing Firebase configuration: projectId, privateKey, or clientEmail',
+        "Missing Firebase configuration: projectId, privateKey, or clientEmail",
       );
     }
 
@@ -96,7 +101,7 @@ export class PushProvider extends MessageProvider {
       send: async (message) => {
         // Mock implementation
         if (!message.token && !message.topic && !message.condition) {
-          throw new Error('Must specify token, topic, or condition');
+          throw new Error("Must specify token, topic, or condition");
         }
 
         return `projects/${this.config.projectId}/messages/${Date.now()}`;
@@ -109,19 +114,26 @@ export class PushProvider extends MessageProvider {
    */
   async send(message: Message): Promise<SendResult> {
     if (!this.client) {
-      throw new ConfigurationError(MessageChannel.PUSH, 'FCM client not initialized');
+      throw new ConfigurationError(
+        MessageChannel.PUSH,
+        "FCM client not initialized",
+      );
     }
 
     // Validate recipient (device token format)
     if (!message.to || message.to.length === 0) {
-      throw new InvalidRecipientError(MessageChannel.PUSH, '', 'Device token required');
+      throw new InvalidRecipientError(
+        MessageChannel.PUSH,
+        "",
+        "Device token required",
+      );
     }
 
     if (!isValidDeviceToken(message.to)) {
       throw new InvalidRecipientError(
         MessageChannel.PUSH,
         message.to,
-        'Invalid device token format',
+        "Invalid device token format",
       );
     }
 
@@ -130,13 +142,13 @@ export class PushProvider extends MessageProvider {
       throw new InvalidRecipientError(
         MessageChannel.PUSH,
         message.to,
-        'Notification body required',
+        "Notification body required",
       );
     }
 
     try {
       // Parse title from subject or metadata
-      const title = message.subject || 'Notification';
+      const title = message.subject || "Notification";
 
       const fcmMessage: FcmMessage = {
         token: message.to,
@@ -165,7 +177,7 @@ export class PushProvider extends MessageProvider {
                 title,
                 body: message.body,
               },
-              sound: 'default',
+              sound: "default",
             },
           },
         },
@@ -179,13 +191,17 @@ export class PushProvider extends MessageProvider {
         status: DeliveryStatusEnum.SENT,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
-      if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+      if (
+        errorMessage.includes("401") ||
+        errorMessage.includes("unauthorized")
+      ) {
         throw new AuthenticationError(
           MessageChannel.PUSH,
-          'firebase',
-          'Invalid Firebase credentials',
+          "firebase",
+          "Invalid Firebase credentials",
         );
       }
 
@@ -252,7 +268,9 @@ export class PushProvider extends MessageProvider {
    * Test push provider connection.
    */
   async testConnection(): Promise<boolean> {
-    return Boolean(this.client && this.config.projectId && this.config.privateKey);
+    return Boolean(
+      this.client && this.config.projectId && this.config.privateKey,
+    );
   }
 
   /**
@@ -261,7 +279,11 @@ export class PushProvider extends MessageProvider {
    */
   registerToken(userId: string, token: string): void {
     if (!isValidDeviceToken(token)) {
-      throw new InvalidRecipientError(MessageChannel.PUSH, token, 'Invalid device token format');
+      throw new InvalidRecipientError(
+        MessageChannel.PUSH,
+        token,
+        "Invalid device token format",
+      );
     }
 
     const tokens = this.deviceTokens.get(userId) || [];
@@ -317,15 +339,17 @@ function isValidDeviceToken(token: string): boolean {
  * Sanitize metadata for use as FCM data payload.
  * FCM data must be flat string key-value pairs.
  */
-function sanitizeMetadata(metadata: Record<string, unknown>): Record<string, string> {
+function sanitizeMetadata(
+  metadata: Record<string, unknown>,
+): Record<string, string> {
   const sanitized: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(metadata)) {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       sanitized[key] = value.substring(0, 1024); // FCM limit per value
-    } else if (typeof value === 'number' || typeof value === 'boolean') {
+    } else if (typeof value === "number" || typeof value === "boolean") {
       sanitized[key] = String(value);
-    } else if (value && typeof value === 'object') {
+    } else if (value && typeof value === "object") {
       sanitized[key] = JSON.stringify(value).substring(0, 1024);
     }
   }

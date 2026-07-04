@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, {
   createContext,
@@ -8,8 +8,14 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import { api, ApiError, setAuthToken, clearAuthToken, setUnauthorizedHandler } from './api';
+} from "react";
+import {
+  api,
+  ApiError,
+  setAuthToken,
+  clearAuthToken,
+  setUnauthorizedHandler,
+} from "./api";
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -30,7 +36,11 @@ export interface AuthState {
 }
 
 export interface AuthActions {
-  login: (email: string, password: string, shopDomain?: string) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    shopDomain?: string,
+  ) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
 }
@@ -71,11 +81,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ── Refresh ────────────────────────────────────────────────
   const refreshToken = useCallback(async () => {
-    const stored = localStorage.getItem('portal-refresh-token');
-    if (!stored) throw new Error('No refresh token stored');
+    const stored = localStorage.getItem("portal-refresh-token");
+    if (!stored) throw new Error("No refresh token stored");
 
     try {
-      const raw = await api.post<LoginPayload>('/api/v4/auth/refresh', {
+      const raw = await api.post<LoginPayload>("/api/v4/auth/refresh", {
         refreshToken: stored,
       });
       const payload = raw.data ?? raw;
@@ -87,19 +97,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthToken(newAccess);
       }
       if (newRefresh) {
-        localStorage.setItem('portal-refresh-token', newRefresh);
+        localStorage.setItem("portal-refresh-token", newRefresh);
       }
       if (payload.user) {
         setUser(payload.user);
-        localStorage.setItem('portal-user', JSON.stringify(payload.user));
+        localStorage.setItem("portal-user", JSON.stringify(payload.user));
       }
     } catch {
       // Refresh failed — clear state
       setUser(null);
       setTokenState(null);
       clearAuthToken();
-      localStorage.removeItem('portal-user');
-      localStorage.removeItem('portal-refresh-token');
+      localStorage.removeItem("portal-user");
+      localStorage.removeItem("portal-refresh-token");
     }
   }, []);
 
@@ -109,17 +119,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const cookieToken =
           document.cookie
-            .split('; ')
-            .find((c) => c.startsWith('portal-auth-token='))
-            ?.split('=')[1] ?? null;
+            .split("; ")
+            .find((c) => c.startsWith("portal-auth-token="))
+            ?.split("=")[1] ?? null;
 
-        const storedUser = localStorage.getItem('portal-user');
+        const storedUser = localStorage.getItem("portal-user");
 
         if (cookieToken && storedUser) {
           setTokenState(cookieToken);
           setUser(JSON.parse(storedUser) as PortalUser);
 
-          const storedRefresh = localStorage.getItem('portal-refresh-token');
+          const storedRefresh = localStorage.getItem("portal-refresh-token");
           if (storedRefresh) {
             await refreshToken().catch(() => {
               /* silent — access token may still be valid */
@@ -140,8 +150,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setTokenState(null);
       clearAuthToken();
-      localStorage.removeItem('portal-user');
-      localStorage.removeItem('portal-refresh-token');
+      localStorage.removeItem("portal-user");
+      localStorage.removeItem("portal-refresh-token");
     });
   }, []);
 
@@ -150,9 +160,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (
       email: string,
       password: string,
-      shopDomain = process.env.NEXT_PUBLIC_SHOP_DOMAIN ?? 'demo.witylogix.io',
+      shopDomain = process.env.NEXT_PUBLIC_SHOP_DOMAIN ?? "demo.witylogix.io",
     ) => {
-      const raw = await api.post<LoginPayload>('/api/v4/auth/login', {
+      const raw = await api.post<LoginPayload>("/api/v4/auth/login", {
         email,
         password,
         shopDomain,
@@ -162,16 +172,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const refresh = payload.refreshToken;
       const userData = payload.user;
 
-      if (!accessToken) throw new ApiError(500, 'No access token in login response');
+      if (!accessToken)
+        throw new ApiError(500, "No access token in login response");
 
       setTokenState(accessToken);
       setAuthToken(accessToken);
       if (userData) {
         setUser(userData);
-        localStorage.setItem('portal-user', JSON.stringify(userData));
+        localStorage.setItem("portal-user", JSON.stringify(userData));
       }
       if (refresh) {
-        localStorage.setItem('portal-refresh-token', refresh);
+        localStorage.setItem("portal-refresh-token", refresh);
       }
     },
     [],
@@ -183,15 +194,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setTokenState(null);
     clearAuthToken();
-    localStorage.removeItem('portal-user');
-    localStorage.removeItem('portal-refresh-token');
+    localStorage.removeItem("portal-user");
+    localStorage.removeItem("portal-refresh-token");
 
     if (current) {
       api
-        .post('/api/v4/auth/logout', undefined, {
+        .post("/api/v4/auth/logout", undefined, {
           headers: { Authorization: `Bearer ${current}` },
         })
-        .catch(() => {/* ignore logout notification errors */});
+        .catch(() => {
+          /* ignore logout notification errors */
+        });
     }
   }, []);
 

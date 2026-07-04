@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import crypto from 'crypto';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import crypto from "crypto";
 
 /**
  * Magento Webhooks Route Tests
@@ -71,14 +71,14 @@ interface MockWebhookDelivery {
 }
 
 const createMockMagentoWebhook = (
-  overrides?: Partial<MockMagentoWebhook>
+  overrides?: Partial<MockMagentoWebhook>,
 ): MockMagentoWebhook => ({
-  id: 'mgwebhook-' + Math.random().toString(36).substring(7),
-  storeId: 'store-123',
-  topic: 'orders/create',
-  deliveryUrl: 'https://api.example.com/webhooks/magento/orders/create',
-  apiKey: 'mg_key_abc123',
-  apiSecret: 'mg_secret_xyz789',
+  id: "mgwebhook-" + Math.random().toString(36).substring(7),
+  storeId: "store-123",
+  topic: "orders/create",
+  deliveryUrl: "https://api.example.com/webhooks/magento/orders/create",
+  apiKey: "mg_key_abc123",
+  apiSecret: "mg_secret_xyz789",
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -86,28 +86,28 @@ const createMockMagentoWebhook = (
 });
 
 const createMockMagentoOrder = (
-  overrides?: Partial<MockMagentoOrder>
+  overrides?: Partial<MockMagentoOrder>,
 ): MockMagentoOrder => ({
   entity_id: 54321,
-  increment_id: 'MG-001',
-  customer_email: 'customer@example.com',
-  customer_firstname: 'John',
-  customer_lastname: 'Smith',
+  increment_id: "MG-001",
+  customer_email: "customer@example.com",
+  customer_firstname: "John",
+  customer_lastname: "Smith",
   billing_address: {
-    street: '456 Oak Ave',
-    city: 'Los Angeles',
-    region: 'CA',
-    postcode: '90001',
+    street: "456 Oak Ave",
+    city: "Los Angeles",
+    region: "CA",
+    postcode: "90001",
   },
-  grand_total: '149.99',
-  status: 'pending',
+  grand_total: "149.99",
+  status: "pending",
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   items: [],
   ...overrides,
 });
 
-describe('Magento Webhooks', () => {
+describe("Magento Webhooks", () => {
   let mockTenantDb: any;
   let mockRequest: any;
   let mockReply: any;
@@ -143,15 +143,15 @@ describe('Magento Webhooks', () => {
     };
 
     mockSyncQueue = {
-      add: vi.fn().mockResolvedValue({ id: 'job-123' }),
+      add: vi.fn().mockResolvedValue({ id: "job-123" }),
     };
 
     mockRequest = {
       params: {},
       body: {},
       headers: {},
-      shopId: 'shop-123',
-      auth: { role: 'ADMIN' },
+      shopId: "shop-123",
+      auth: { role: "ADMIN" },
       tenantDb: mockTenantDb,
       log: {
         info: vi.fn(),
@@ -170,16 +170,16 @@ describe('Magento Webhooks', () => {
     vi.clearAllMocks();
   });
 
-  describe('Webhook Registration', () => {
-    it('should register new Magento webhook', async () => {
+  describe("Webhook Registration", () => {
+    it("should register new Magento webhook", async () => {
       const mockWebhook = createMockMagentoWebhook();
       mockTenantDb.magentoWebhook.create.mockResolvedValue(mockWebhook);
 
       mockRequest.body = {
-        topic: 'orders/create',
-        deliveryUrl: 'https://api.example.com/webhooks/magento/orders/create',
-        apiKey: 'mg_key_abc123',
-        apiSecret: 'mg_secret_xyz789',
+        topic: "orders/create",
+        deliveryUrl: "https://api.example.com/webhooks/magento/orders/create",
+        apiKey: "mg_key_abc123",
+        apiSecret: "mg_secret_xyz789",
       };
 
       await mockTenantDb.magentoWebhook.create({ data: mockRequest.body });
@@ -188,30 +188,31 @@ describe('Magento Webhooks', () => {
 
       const result = { data: mockWebhook };
 
-      expect(result.data.topic).toBe('orders/create');
+      expect(result.data.topic).toBe("orders/create");
       expect(result.data.isActive).toBe(true);
       expect(mockTenantDb.magentoWebhook.create).toHaveBeenCalled();
     });
 
-    it('should require API key and secret', async () => {
+    it("should require API key and secret", async () => {
       mockRequest.body = {
-        topic: 'orders/create',
-        deliveryUrl: 'https://api.example.com/webhooks/magento/orders/create',
-        apiKey: '',
-        apiSecret: '',
+        topic: "orders/create",
+        deliveryUrl: "https://api.example.com/webhooks/magento/orders/create",
+        apiKey: "",
+        apiSecret: "",
       };
 
-      const hasRequiredFields = mockRequest.body.apiKey && mockRequest.body.apiSecret;
+      const hasRequiredFields =
+        mockRequest.body.apiKey && mockRequest.body.apiSecret;
       expect(hasRequiredFields).toBeFalsy();
     });
 
-    it('should support multiple webhook topics', async () => {
+    it("should support multiple webhook topics", async () => {
       const topics = [
-        'orders/create',
-        'orders/update',
-        'orders/delete',
-        'inventory/update',
-        'customers/create',
+        "orders/create",
+        "orders/update",
+        "orders/delete",
+        "inventory/update",
+        "customers/create",
       ];
 
       for (const topic of topics) {
@@ -221,18 +222,18 @@ describe('Magento Webhooks', () => {
         mockRequest.body = {
           topic,
           deliveryUrl: `https://api.example.com/webhooks/magento/${topic}`,
-          apiKey: 'mg_key_abc123',
-          apiSecret: 'mg_secret_xyz789',
+          apiKey: "mg_key_abc123",
+          apiSecret: "mg_secret_xyz789",
         };
 
         expect(webhook.topic).toBe(topic);
       }
     });
 
-    it('should list registered webhooks for store', async () => {
+    it("should list registered webhooks for store", async () => {
       const mockWebhooks = [
-        createMockMagentoWebhook({ topic: 'orders/create' }),
-        createMockMagentoWebhook({ topic: 'inventory/update' }),
+        createMockMagentoWebhook({ topic: "orders/create" }),
+        createMockMagentoWebhook({ topic: "inventory/update" }),
       ];
 
       mockTenantDb.magentoWebhook.findMany.mockResolvedValue(mockWebhooks);
@@ -242,7 +243,7 @@ describe('Magento Webhooks', () => {
       expect(result.data).toHaveLength(2);
     });
 
-    it('should disable webhook', async () => {
+    it("should disable webhook", async () => {
       const webhook = createMockMagentoWebhook({ isActive: true });
       const disabledWebhook = { ...webhook, isActive: false };
 
@@ -256,74 +257,78 @@ describe('Magento Webhooks', () => {
       expect(result.data.isActive).toBe(false);
     });
 
-    it('should track last delivery status', async () => {
+    it("should track last delivery status", async () => {
       const webhook = createMockMagentoWebhook({
         lastDeliveryAt: new Date(),
-        lastDeliveryStatus: '200',
+        lastDeliveryStatus: "200",
       });
 
       mockTenantDb.magentoWebhook.findUnique.mockResolvedValue(webhook);
 
       const result = { data: webhook };
 
-      expect(result.data.lastDeliveryStatus).toBe('200');
+      expect(result.data.lastDeliveryStatus).toBe("200");
       expect(result.data.lastDeliveryAt).toBeDefined();
     });
   });
 
-  describe('Authentication Validation', () => {
-    it('should validate API key presence', async () => {
+  describe("Authentication Validation", () => {
+    it("should validate API key presence", async () => {
       mockRequest.headers = {
-        'x-magento-api-key': 'mg_key_abc123',
+        "x-magento-api-key": "mg_key_abc123",
       };
 
-      const hasApiKey = mockRequest.headers['x-magento-api-key'];
+      const hasApiKey = mockRequest.headers["x-magento-api-key"];
       expect(hasApiKey).toBeTruthy();
     });
 
-    it('should reject invalid API key', async () => {
+    it("should reject invalid API key", async () => {
       mockRequest.headers = {
-        'x-magento-api-key': 'invalid_key',
+        "x-magento-api-key": "invalid_key",
       };
 
       mockTenantDb.magentoWebhook.findUnique.mockResolvedValue(null);
 
-      mockRequest.params = { id: 'webhook-123' };
+      mockRequest.params = { id: "webhook-123" };
 
-      await mockTenantDb.magentoWebhook.findUnique({ where: { id: 'webhook-123' } });
+      await mockTenantDb.magentoWebhook.findUnique({
+        where: { id: "webhook-123" },
+      });
 
       expect(mockTenantDb.magentoWebhook.findUnique).toHaveBeenCalled();
     });
 
-    it('should validate API secret for webhook signature', async () => {
-      const secret = 'mg_secret_xyz789';
+    it("should validate API secret for webhook signature", async () => {
+      const secret = "mg_secret_xyz789";
       const payload = JSON.stringify({ entity_id: 123 });
 
       const signature = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf8')
-        .digest('hex');
+        .createHmac("sha256", secret)
+        .update(payload, "utf8")
+        .digest("hex");
 
       mockRequest.headers = {
-        'x-magento-webhook-signature': signature,
+        "x-magento-webhook-signature": signature,
       };
 
-      expect(mockRequest.headers['x-magento-webhook-signature']).toBe(signature);
+      expect(mockRequest.headers["x-magento-webhook-signature"]).toBe(
+        signature,
+      );
     });
 
-    it('should reject expired OAuth token', async () => {
+    it("should reject expired OAuth token", async () => {
       mockRequest.headers = {
-        'authorization': 'Bearer expired_token_xyz',
+        authorization: "Bearer expired_token_xyz",
       };
 
-      const token = mockRequest.headers['authorization'];
-      const isExpired = token && token.startsWith('Bearer');
+      const token = mockRequest.headers["authorization"];
+      const isExpired = token && token.startsWith("Bearer");
 
       expect(isExpired).toBe(true);
     });
 
-    it('should support token refresh flow', async () => {
-      const refreshToken = 'refresh_token_abc123';
+    it("should support token refresh flow", async () => {
+      const refreshToken = "refresh_token_abc123";
 
       mockRequest.body = {
         refreshToken,
@@ -333,44 +338,54 @@ describe('Magento Webhooks', () => {
     });
   });
 
-  describe('Order Event Processing', () => {
-    it('should process orders/create event', async () => {
+  describe("Order Event Processing", () => {
+    it("should process orders/create event", async () => {
       const mockOrder = createMockMagentoOrder();
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(mockOrder);
 
-      mockRequest.params = { topic: 'orders/create' };
+      mockRequest.params = { topic: "orders/create" };
       mockRequest.body = mockOrder;
 
-      await mockTenantDb.order.upsert({ where: { externalId: String(mockOrder.entity_id) }, create: mockOrder, update: mockOrder });
+      await mockTenantDb.order.upsert({
+        where: { externalId: String(mockOrder.entity_id) },
+        create: mockOrder,
+        update: mockOrder,
+      });
 
       const result = { data: mockOrder };
 
-      expect(result.data.increment_id).toBe('MG-001');
+      expect(result.data.increment_id).toBe("MG-001");
       expect(mockTenantDb.order.upsert).toHaveBeenCalled();
     });
 
-    it('should process orders/update event', async () => {
-      const mockOrder = createMockMagentoOrder({ status: 'processing' });
+    it("should process orders/update event", async () => {
+      const mockOrder = createMockMagentoOrder({ status: "processing" });
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(mockOrder);
 
-      mockRequest.params = { topic: 'orders/update' };
+      mockRequest.params = { topic: "orders/update" };
       mockRequest.body = mockOrder;
 
       const result = { data: mockOrder };
 
-      expect(result.data.status).toBe('processing');
+      expect(result.data.status).toBe("processing");
     });
 
-    it('should process orders/delete event', async () => {
+    it("should process orders/delete event", async () => {
       const mockOrder = createMockMagentoOrder();
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
 
-      mockRequest.params = { topic: 'orders/delete' };
+      mockRequest.params = { topic: "orders/delete" };
       mockRequest.body = { entity_id: mockOrder.entity_id };
 
       await mockTenantDb.$transaction(async () => {});
@@ -378,7 +393,7 @@ describe('Magento Webhooks', () => {
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
     });
 
-    it('should map Magento order fields to internal format', async () => {
+    it("should map Magento order fields to internal format", async () => {
       const mockOrder = createMockMagentoOrder();
 
       const mappedOrder = {
@@ -394,15 +409,15 @@ describe('Magento Webhooks', () => {
         status: mockOrder.status,
       };
 
-      expect(mappedOrder.customerName).toBe('John Smith');
+      expect(mappedOrder.customerName).toBe("John Smith");
       expect(mappedOrder.totalPrice).toBe(149.99);
     });
 
-    it('should handle status transition events', async () => {
+    it("should handle status transition events", async () => {
       const statusTransitions = [
-        { from: 'pending', to: 'processing' },
-        { from: 'processing', to: 'complete' },
-        { from: 'complete', to: 'closed' },
+        { from: "pending", to: "processing" },
+        { from: "processing", to: "complete" },
+        { from: "complete", to: "closed" },
       ];
 
       for (const transition of statusTransitions) {
@@ -416,49 +431,51 @@ describe('Magento Webhooks', () => {
       }
     });
 
-    it('should enqueue async processing job', async () => {
+    it("should enqueue async processing job", async () => {
       const mockOrder = createMockMagentoOrder();
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
 
-      mockRequest.params = { topic: 'orders/create' };
+      mockRequest.params = { topic: "orders/create" };
       mockRequest.body = mockOrder;
 
-      await mockSyncQueue.add('magento-order-sync', {
-        type: 'order.created',
+      await mockSyncQueue.add("magento-order-sync", {
+        type: "order.created",
         orderId: mockOrder.entity_id,
-        topic: 'orders/create',
+        topic: "orders/create",
       });
 
       expect(mockSyncQueue.add).toHaveBeenCalledWith(
-        'magento-order-sync',
-        expect.objectContaining({ type: 'order.created' })
+        "magento-order-sync",
+        expect.objectContaining({ type: "order.created" }),
       );
     });
   });
 
-  describe('Inventory Sync Triggers', () => {
-    it('should process inventory/update event', async () => {
+  describe("Inventory Sync Triggers", () => {
+    it("should process inventory/update event", async () => {
       const mockInventory = {
-        sku: 'TEST-SKU-001',
+        sku: "TEST-SKU-001",
         qty: 100,
         is_in_stock: true,
       };
 
       mockTenantDb.inventory.upsert.mockResolvedValue(mockInventory);
 
-      mockRequest.params = { topic: 'inventory/update' };
+      mockRequest.params = { topic: "inventory/update" };
       mockRequest.body = mockInventory;
 
       const result = { data: mockInventory };
 
-      expect(result.data.sku).toBe('TEST-SKU-001');
+      expect(result.data.sku).toBe("TEST-SKU-001");
       expect(result.data.qty).toBe(100);
     });
 
-    it('should handle out-of-stock status', async () => {
+    it("should handle out-of-stock status", async () => {
       const mockInventory: MockInventoryItem = {
-        sku: 'TEST-SKU-002',
+        sku: "TEST-SKU-002",
         qty: 0,
         is_in_stock: false,
       };
@@ -472,19 +489,19 @@ describe('Magento Webhooks', () => {
       expect(result.data.is_in_stock).toBe(false);
     });
 
-    it('should trigger warehouse sync on inventory change', async () => {
+    it("should trigger warehouse sync on inventory change", async () => {
       const mockInventory = {
-        sku: 'TEST-SKU-001',
+        sku: "TEST-SKU-001",
         qty: 50,
         is_in_stock: true,
-        warehouse_id: 'warehouse-1',
+        warehouse_id: "warehouse-1",
       };
 
       mockTenantDb.inventory.upsert.mockResolvedValue(mockInventory);
 
       mockRequest.body = mockInventory;
 
-      await mockSyncQueue.add('magento-inventory-sync', {
+      await mockSyncQueue.add("magento-inventory-sync", {
         sku: mockInventory.sku,
         warehouseId: mockInventory.warehouse_id,
       });
@@ -492,14 +509,16 @@ describe('Magento Webhooks', () => {
       expect(mockSyncQueue.add).toHaveBeenCalled();
     });
 
-    it('should batch update multiple inventory items', async () => {
+    it("should batch update multiple inventory items", async () => {
       const inventoryItems = [
-        { sku: 'SKU-001', qty: 100, is_in_stock: true },
-        { sku: 'SKU-002', qty: 50, is_in_stock: true },
-        { sku: 'SKU-003', qty: 0, is_in_stock: false },
+        { sku: "SKU-001", qty: 100, is_in_stock: true },
+        { sku: "SKU-002", qty: 50, is_in_stock: true },
+        { sku: "SKU-003", qty: 0, is_in_stock: false },
       ];
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.inventory.upsert.mockResolvedValue(null);
 
       const promises = inventoryItems.map((item) =>
@@ -507,7 +526,7 @@ describe('Magento Webhooks', () => {
           where: { sku: item.sku },
           update: { qty: item.qty, is_in_stock: item.is_in_stock },
           create: item,
-        })
+        }),
       );
 
       await Promise.all(promises);
@@ -515,20 +534,22 @@ describe('Magento Webhooks', () => {
       expect(mockTenantDb.inventory.upsert).toHaveBeenCalledTimes(3);
     });
 
-    it('should preserve historical inventory data', async () => {
+    it("should preserve historical inventory data", async () => {
       const inventoryHistory = [
-        { sku: 'SKU-001', qty: 100, timestamp: new Date('2026-03-08') },
-        { sku: 'SKU-001', qty: 75, timestamp: new Date('2026-03-09') },
+        { sku: "SKU-001", qty: 100, timestamp: new Date("2026-03-08") },
+        { sku: "SKU-001", qty: 75, timestamp: new Date("2026-03-09") },
       ];
 
       expect(inventoryHistory[0].qty).toBe(100);
       expect(inventoryHistory[1].qty).toBe(75);
-      expect(inventoryHistory[0].timestamp < inventoryHistory[1].timestamp).toBe(true);
+      expect(
+        inventoryHistory[0].timestamp < inventoryHistory[1].timestamp,
+      ).toBe(true);
     });
   });
 
-  describe('Customer Data Mapping', () => {
-    it('should sync customer from order webhook', async () => {
+  describe("Customer Data Mapping", () => {
+    it("should sync customer from order webhook", async () => {
       const mockOrder = createMockMagentoOrder();
 
       const customerData = {
@@ -543,34 +564,42 @@ describe('Magento Webhooks', () => {
 
       mockRequest.body = mockOrder;
 
-      await mockTenantDb.customer.upsert({ where: { email: mockOrder.customer_email }, create: customerData, update: customerData });
+      await mockTenantDb.customer.upsert({
+        where: { email: mockOrder.customer_email },
+        create: customerData,
+        update: customerData,
+      });
 
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
 
-    it('should handle customers/create event', async () => {
+    it("should handle customers/create event", async () => {
       const mockCustomer = {
         entity_id: 999,
-        email: 'newcustomer@example.com',
-        firstname: 'Jane',
-        lastname: 'Doe',
+        email: "newcustomer@example.com",
+        firstname: "Jane",
+        lastname: "Doe",
       };
 
       mockTenantDb.customer.upsert.mockResolvedValue(mockCustomer);
 
-      mockRequest.params = { topic: 'customers/create' };
+      mockRequest.params = { topic: "customers/create" };
       mockRequest.body = mockCustomer;
 
-      await mockTenantDb.customer.upsert({ where: { email: mockCustomer.email }, create: mockCustomer, update: mockCustomer });
+      await mockTenantDb.customer.upsert({
+        where: { email: mockCustomer.email },
+        create: mockCustomer,
+        update: mockCustomer,
+      });
 
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
 
-    it('should update customer on repeat orders', async () => {
+    it("should update customer on repeat orders", async () => {
       const customerId = 999;
       const mockCustomer = {
         entity_id: customerId,
-        email: 'customer@example.com',
+        email: "customer@example.com",
       };
 
       mockTenantDb.customer.upsert.mockResolvedValue(mockCustomer);
@@ -592,16 +621,16 @@ describe('Magento Webhooks', () => {
     });
   });
 
-  describe('Retry Handling', () => {
-    it('should retry failed webhook delivery', async () => {
+  describe("Retry Handling", () => {
+    it("should retry failed webhook delivery", async () => {
       const mockDelivery: MockWebhookDelivery = {
-        id: 'delivery-123',
-        webhookId: 'webhook-123',
-        topic: 'orders/create',
-        eventId: 'event-123',
+        id: "delivery-123",
+        webhookId: "webhook-123",
+        topic: "orders/create",
+        eventId: "event-123",
         payload: createMockMagentoOrder(),
         statusCode: 500,
-        errorMessage: 'Internal Server Error',
+        errorMessage: "Internal Server Error",
         retryCount: 0,
         nextRetryAt: new Date(),
         createdAt: new Date(),
@@ -621,7 +650,7 @@ describe('Magento Webhooks', () => {
       expect(mockTenantDb.webhookDelivery.create).toHaveBeenCalled();
     });
 
-    it('should implement exponential backoff on retry', async () => {
+    it("should implement exponential backoff on retry", async () => {
       const now = new Date();
       const retryAttempt = 3;
       const baseDelayMs = 1000;
@@ -633,12 +662,12 @@ describe('Magento Webhooks', () => {
       expect(backoffMs).toBe(8000); // 1000 * 2^3
     });
 
-    it('should mark delivery as successful after retry', async () => {
+    it("should mark delivery as successful after retry", async () => {
       const mockDelivery: MockWebhookDelivery = {
-        id: 'delivery-123',
-        webhookId: 'webhook-123',
-        topic: 'orders/create',
-        eventId: 'event-123',
+        id: "delivery-123",
+        webhookId: "webhook-123",
+        topic: "orders/create",
+        eventId: "event-123",
         payload: createMockMagentoOrder(),
         statusCode: 200,
         retryCount: 2,
@@ -654,7 +683,7 @@ describe('Magento Webhooks', () => {
       expect(result.data.deliveredAt).toBeDefined();
     });
 
-    it('should stop retrying after max attempts', async () => {
+    it("should stop retrying after max attempts", async () => {
       const maxRetries = 5;
       const currentRetry = 5;
 
@@ -663,22 +692,22 @@ describe('Magento Webhooks', () => {
       expect(shouldRetry).toBe(false);
     });
 
-    it('should log all retry attempts', async () => {
+    it("should log all retry attempts", async () => {
       const deliveries = [
         {
-          id: 'delivery-1',
+          id: "delivery-1",
           retryCount: 0,
           statusCode: 500,
           createdAt: new Date(),
         },
         {
-          id: 'delivery-2',
+          id: "delivery-2",
           retryCount: 1,
           statusCode: 500,
           createdAt: new Date(),
         },
         {
-          id: 'delivery-3',
+          id: "delivery-3",
           retryCount: 2,
           statusCode: 200,
           createdAt: new Date(),
@@ -690,10 +719,10 @@ describe('Magento Webhooks', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should return 401 for invalid API key', async () => {
+  describe("Error Handling", () => {
+    it("should return 401 for invalid API key", async () => {
       mockRequest.headers = {
-        'x-magento-api-key': 'invalid_key',
+        "x-magento-api-key": "invalid_key",
       };
 
       mockTenantDb.magentoWebhook.findUnique.mockResolvedValue(null);
@@ -703,32 +732,34 @@ describe('Magento Webhooks', () => {
       expect(mockReply.status).toHaveBeenCalledWith(401);
     });
 
-    it('should handle malformed JSON payload', async () => {
-      mockRequest.params = { topic: 'orders/create' };
+    it("should handle malformed JSON payload", async () => {
+      mockRequest.params = { topic: "orders/create" };
       mockRequest.body = null;
 
       const willThrow = () => {
-        if (!mockRequest.body) throw new Error('Invalid payload');
+        if (!mockRequest.body) throw new Error("Invalid payload");
       };
 
-      expect(willThrow).toThrow('Invalid payload');
+      expect(willThrow).toThrow("Invalid payload");
     });
 
-    it('should log webhook delivery error', async () => {
+    it("should log webhook delivery error", async () => {
       mockRequest.log.error = vi.fn();
 
-      mockRequest.params = { topic: 'orders/create' };
+      mockRequest.params = { topic: "orders/create" };
 
-      await mockRequest.log.error('Webhook delivery failed', {
-        topic: 'orders/create',
-        error: 'Database error',
+      await mockRequest.log.error("Webhook delivery failed", {
+        topic: "orders/create",
+        error: "Database error",
       });
 
       expect(mockRequest.log.error).toHaveBeenCalled();
     });
 
-    it('should handle database transaction failure', async () => {
-      mockTenantDb.$transaction.mockRejectedValue(new Error('Transaction failed'));
+    it("should handle database transaction failure", async () => {
+      mockTenantDb.$transaction.mockRejectedValue(
+        new Error("Transaction failed"),
+      );
 
       mockRequest.body = createMockMagentoOrder();
 
@@ -736,27 +767,29 @@ describe('Magento Webhooks', () => {
         try {
           await mockTenantDb.$transaction(async () => {});
         } catch (e) {
-          throw new Error('Webhook processing failed');
+          throw new Error("Webhook processing failed");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Webhook processing failed');
+      await expect(willThrow()).rejects.toThrow("Webhook processing failed");
     });
 
-    it('should handle missing topic parameter', async () => {
+    it("should handle missing topic parameter", async () => {
       mockRequest.params = {};
 
       const hasTopic = mockRequest.params.topic;
       expect(hasTopic).toBeUndefined();
     });
 
-    it('should return 200 OK for successful webhook', async () => {
+    it("should return 200 OK for successful webhook", async () => {
       const mockOrder = createMockMagentoOrder();
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(mockOrder);
 
-      mockRequest.params = { topic: 'orders/create' };
+      mockRequest.params = { topic: "orders/create" };
       mockRequest.body = mockOrder;
 
       mockReply.status(200);
@@ -764,14 +797,16 @@ describe('Magento Webhooks', () => {
       expect(mockReply.status).toHaveBeenCalledWith(200);
     });
 
-    it('should handle concurrent webhook deliveries', async () => {
+    it("should handle concurrent webhook deliveries", async () => {
       const orders = [
         createMockMagentoOrder({ entity_id: 1 }),
         createMockMagentoOrder({ entity_id: 2 }),
         createMockMagentoOrder({ entity_id: 3 }),
       ];
 
-      mockTenantDb.$transaction.mockImplementation(async (fn) => fn(mockTenantDb));
+      mockTenantDb.$transaction.mockImplementation(async (fn) =>
+        fn(mockTenantDb),
+      );
       mockTenantDb.order.upsert.mockResolvedValue(null);
 
       const promises = orders.map((order) =>
@@ -779,7 +814,7 @@ describe('Magento Webhooks', () => {
           where: { externalId: order.entity_id.toString() },
           update: {},
           create: order,
-        })
+        }),
       );
 
       await Promise.all(promises);
@@ -787,7 +822,7 @@ describe('Magento Webhooks', () => {
       expect(mockTenantDb.order.upsert).toHaveBeenCalledTimes(3);
     });
 
-    it('should skip disabled webhooks', async () => {
+    it("should skip disabled webhooks", async () => {
       const disabledWebhook = createMockMagentoWebhook({ isActive: false });
 
       mockTenantDb.magentoWebhook.findUnique.mockResolvedValue(disabledWebhook);
@@ -800,24 +835,24 @@ describe('Magento Webhooks', () => {
     });
   });
 
-  describe('Webhook Delivery Status', () => {
-    it('should track last successful delivery', async () => {
+  describe("Webhook Delivery Status", () => {
+    it("should track last successful delivery", async () => {
       const webhook = createMockMagentoWebhook({
         lastDeliveryAt: new Date(),
-        lastDeliveryStatus: '200',
+        lastDeliveryStatus: "200",
       });
 
       mockTenantDb.magentoWebhook.findUnique.mockResolvedValue(webhook);
 
       const result = { data: webhook };
 
-      expect(result.data.lastDeliveryStatus).toBe('200');
+      expect(result.data.lastDeliveryStatus).toBe("200");
       expect(result.data.lastDeliveryAt).toBeDefined();
     });
 
-    it('should update delivery status after failed attempt', async () => {
+    it("should update delivery status after failed attempt", async () => {
       const webhook = createMockMagentoWebhook({
-        lastDeliveryStatus: '500',
+        lastDeliveryStatus: "500",
       });
 
       mockTenantDb.magentoWebhook.update.mockResolvedValue(webhook);
@@ -826,7 +861,7 @@ describe('Magento Webhooks', () => {
 
       const result = { data: webhook };
 
-      expect(result.data.lastDeliveryStatus).toBe('500');
+      expect(result.data.lastDeliveryStatus).toBe("500");
     });
   });
 });

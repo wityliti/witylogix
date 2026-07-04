@@ -116,6 +116,7 @@ JWT_REFRESH_EXPIRY=7d
 - **JWT_REFRESH_EXPIRY**: Refresh token lifetime
 
 **Generate a secure secret**:
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
@@ -171,6 +172,7 @@ docker compose up -d
 ```
 
 This starts:
+
 - **PostgreSQL**: Port 5432 with PostGIS extension
 - **Redis**: Port 6379
 - **mailhog**: Port 8025 (email testing)
@@ -182,6 +184,7 @@ docker compose ps
 ```
 
 Expected output:
+
 ```
 NAME                COMMAND                  STATUS
 witylogix-postgres  postgres                 Up 2 minutes
@@ -212,6 +215,7 @@ pnpm db:seed
 ```
 
 Populates the database with sample data:
+
 - Test users and organizations
 - Sample delivery zones
 - Demo carriers and drivers
@@ -372,6 +376,7 @@ psql postgresql://witylogix:witylogix_dev@localhost:5432/witylogix
 ### View Email Locally
 
 Mail sent during development goes to mailhog:
+
 - Web UI: http://localhost:8025
 - SMTP: localhost:1025
 
@@ -380,6 +385,7 @@ Mail sent during development goes to mailhog:
 ### Issue: `pnpm install` fails with permission errors
 
 **Solution**:
+
 ```bash
 # Check pnpm store location
 pnpm store path
@@ -392,6 +398,7 @@ pnpm install
 ### Issue: Port already in use (3000, 3001, 8000, etc.)
 
 **Find and kill process**:
+
 ```bash
 # macOS/Linux
 lsof -i :3000
@@ -403,6 +410,7 @@ taskkill /PID <PID> /F
 ```
 
 Or change the port in `.env.local`:
+
 ```env
 PORT=8001
 DASHBOARD_URL=http://localhost:3001
@@ -423,6 +431,7 @@ docker compose up -d
 ### Issue: Database connection fails
 
 **Verify connection string**:
+
 ```bash
 # Check PostgreSQL is running
 docker compose ps
@@ -432,6 +441,7 @@ psql postgresql://witylogix:witylogix_dev@localhost:5432/witylogix
 ```
 
 **Reset database**:
+
 ```bash
 pnpm db:reset
 ```
@@ -467,12 +477,14 @@ pnpm install
 ### VS Code Extensions
 
 **Essential**:
+
 - TypeScript Vue Plugin
 - ESLint
 - Prettier - Code formatter
 - Tailwind CSS IntelliSense
 
 **Recommended**:
+
 - Thunder Client (API testing)
 - SQLTools (database management)
 - GitLens
@@ -480,6 +492,7 @@ pnpm install
 - Debugger for Chrome
 
 Install with:
+
 ```bash
 code --install-extension ms-vscode.vscode-typescript-next
 code --install-extension dbaeumer.vscode-eslint
@@ -506,6 +519,7 @@ Add to `.vscode/settings.json`:
 ### WebStorm / IntelliJ
 
 Enable:
+
 - Settings → Languages & Frameworks → TypeScript
 - Settings → Languages & Frameworks → JavaScript → Prettier
 - Settings → Tools → Run Configurations → Enable "Run with" for pnpm

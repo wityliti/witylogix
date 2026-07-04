@@ -4,8 +4,14 @@
 
 // Services
 export { OnboardingService, onboardingService } from "./onboarding-service.js";
-export { WorkspaceProvisioner, workspaceProvisioner } from "./workspace-provisioner.js";
-export { EmailVerificationService, emailVerificationService } from "./email-verification-service.js";
+export {
+  WorkspaceProvisioner,
+  workspaceProvisioner,
+} from "./workspace-provisioner.js";
+export {
+  EmailVerificationService,
+  emailVerificationService,
+} from "./email-verification-service.js";
 export { InvitationService, invitationService } from "./invitation-service.js";
 export {
   TenantProvisioner,

@@ -61,14 +61,18 @@ export interface AuthContext {
 export class MockHTTPServer {
   private routes: Map<string, MockResponse> = new Map();
   private requests: HTTPRequest[] = [];
-  private requestHandlers: Array<(req: HTTPRequest) => MockResponse | undefined> = [];
+  private requestHandlers: Array<
+    (req: HTTPRequest) => MockResponse | undefined
+  > = [];
 
   registerRoute(method: string, path: string, response: MockResponse): void {
     const key = `${method.toUpperCase()} ${path}`;
     this.routes.set(key, response);
   }
 
-  registerHandler(handler: (req: HTTPRequest) => MockResponse | undefined): void {
+  registerHandler(
+    handler: (req: HTTPRequest) => MockResponse | undefined,
+  ): void {
     this.requestHandlers.push(handler);
   }
 
@@ -99,7 +103,7 @@ export class MockHTTPServer {
     // Default 404
     return {
       status: 404,
-      body: { error: 'Not found' },
+      body: { error: "Not found" },
     };
   }
 
@@ -108,7 +112,9 @@ export class MockHTTPServer {
   }
 
   getRequestsByMethod(method: string): HTTPRequest[] {
-    return this.requests.filter((r) => r.method.toUpperCase() === method.toUpperCase());
+    return this.requests.filter(
+      (r) => r.method.toUpperCase() === method.toUpperCase(),
+    );
   }
 
   getRequestsByPath(path: string): HTTPRequest[] {
@@ -166,7 +172,7 @@ export class RequestRecorder {
       (r) =>
         r.request.method === request.method &&
         r.request.url === request.url &&
-        JSON.stringify(r.request.body) === JSON.stringify(request.body)
+        JSON.stringify(r.request.body) === JSON.stringify(request.body),
     );
     return matching?.response;
   }
@@ -200,7 +206,9 @@ export class FixturesLoader {
   }
 
   getFixturesByEndpoint(endpoint: string): APIFixture[] {
-    return Array.from(this.fixtures.values()).filter((f) => f.endpoint.includes(endpoint));
+    return Array.from(this.fixtures.values()).filter((f) =>
+      f.endpoint.includes(endpoint),
+    );
   }
 
   getAllFixtures(): APIFixture[] {
@@ -224,8 +232,11 @@ export class AuthenticationHelper {
       accessToken: overrides.accessToken || `token_${Date.now()}`,
       refreshToken: overrides.refreshToken || `refresh_${Date.now()}`,
       expiresAt: overrides.expiresAt || Date.now() + 3600000,
-      userId: overrides.userId || `user_${Math.random().toString(36).substring(7)}`,
-      organizationId: overrides.organizationId || `org_${Math.random().toString(36).substring(7)}`,
+      userId:
+        overrides.userId || `user_${Math.random().toString(36).substring(7)}`,
+      organizationId:
+        overrides.organizationId ||
+        `org_${Math.random().toString(36).substring(7)}`,
     };
     return this.context;
   }
@@ -280,7 +291,10 @@ export class DatabaseTestHelper {
     this.seedData.push({ table: tableName, records });
   }
 
-  async createTable(tableName: string, schema: Record<string, string>): Promise<void> {
+  async createTable(
+    tableName: string,
+    schema: Record<string, string>,
+  ): Promise<void> {
     this.createdTables.push(tableName);
   }
 
@@ -298,7 +312,10 @@ export class DatabaseTestHelper {
     return [...this.createdTables];
   }
 
-  async insertRecord(tableName: string, record: Record<string, any>): Promise<void> {
+  async insertRecord(
+    tableName: string,
+    record: Record<string, any>,
+  ): Promise<void> {
     const table = this.seedData.find((s) => s.table === tableName);
     if (table) {
       table.records.push(record);
@@ -307,7 +324,10 @@ export class DatabaseTestHelper {
     }
   }
 
-  async deleteRecords(tableName: string, where: Record<string, any>): Promise<number> {
+  async deleteRecords(
+    tableName: string,
+    where: Record<string, any>,
+  ): Promise<number> {
     const table = this.seedData.find((s) => s.table === tableName);
     if (!table) return 0;
 
@@ -335,25 +355,39 @@ export class DatabaseTestHelper {
 // ============================================================================
 
 export class ResponseValidator {
-  static validateStatus(response: MockResponse, expectedStatus: number): boolean {
+  static validateStatus(
+    response: MockResponse,
+    expectedStatus: number,
+  ): boolean {
     return response.status === expectedStatus;
   }
 
-  static validateHeader(response: MockResponse, headerName: string, expectedValue: string): boolean {
+  static validateHeader(
+    response: MockResponse,
+    headerName: string,
+    expectedValue: string,
+  ): boolean {
     const headers = response.headers || {};
     return headers[headerName.toLowerCase()] === expectedValue;
   }
 
-  static validateBodyStructure(body: any, schema: Record<string, string>): boolean {
+  static validateBodyStructure(
+    body: any,
+    schema: Record<string, string>,
+  ): boolean {
     for (const [key, type] of Object.entries(schema)) {
       if (!(key in body)) return false;
-      if (typeof body[key] !== type && type !== 'any') return false;
+      if (typeof body[key] !== type && type !== "any") return false;
     }
     return true;
   }
 
-  static validateBodyField(body: any, fieldPath: string, expectedValue: any): boolean {
-    const parts = fieldPath.split('.');
+  static validateBodyField(
+    body: any,
+    fieldPath: string,
+    expectedValue: any,
+  ): boolean {
+    const parts = fieldPath.split(".");
     let current = body;
 
     for (const part of parts) {
@@ -364,8 +398,12 @@ export class ResponseValidator {
     return current === expectedValue;
   }
 
-  static validateArrayLength(body: any, arrayPath: string, expectedLength: number): boolean {
-    const parts = arrayPath.split('.');
+  static validateArrayLength(
+    body: any,
+    arrayPath: string,
+    expectedLength: number,
+  ): boolean {
+    const parts = arrayPath.split(".");
     let current = body;
 
     for (const part of parts) {
@@ -387,32 +425,52 @@ export function assertResponseSuccess(response: MockResponse): void {
   }
 }
 
-export function assertResponseError(response: MockResponse, expectedStatus: number = 400): void {
+export function assertResponseError(
+  response: MockResponse,
+  expectedStatus: number = 400,
+): void {
   if (response.status !== expectedStatus) {
     throw new Error(`Expected ${expectedStatus}, got ${response.status}`);
   }
 }
 
-export function assertResponseContains(response: MockResponse, text: string): void {
+export function assertResponseContains(
+  response: MockResponse,
+  text: string,
+): void {
   const bodyStr = JSON.stringify(response.body);
   if (!bodyStr.includes(text)) {
     throw new Error(`Response does not contain "${text}"`);
   }
 }
 
-export function assertRequestWasMade(server: MockHTTPServer, method: string, path: string): void {
-  const found = server.getRecordedRequests().some(
-    (r) => r.method.toUpperCase() === method.toUpperCase() && r.url.includes(path)
-  );
+export function assertRequestWasMade(
+  server: MockHTTPServer,
+  method: string,
+  path: string,
+): void {
+  const found = server
+    .getRecordedRequests()
+    .some(
+      (r) =>
+        r.method.toUpperCase() === method.toUpperCase() && r.url.includes(path),
+    );
   if (!found) {
     throw new Error(`Expected request ${method} ${path} was not made`);
   }
 }
 
-export function assertRequestNotMade(server: MockHTTPServer, method: string, path: string): void {
-  const found = server.getRecordedRequests().some(
-    (r) => r.method.toUpperCase() === method.toUpperCase() && r.url.includes(path)
-  );
+export function assertRequestNotMade(
+  server: MockHTTPServer,
+  method: string,
+  path: string,
+): void {
+  const found = server
+    .getRecordedRequests()
+    .some(
+      (r) =>
+        r.method.toUpperCase() === method.toUpperCase() && r.url.includes(path),
+    );
   if (found) {
     throw new Error(`Unexpected request ${method} ${path} was made`);
   }
@@ -425,49 +483,49 @@ export function assertRequestNotMade(server: MockHTTPServer, method: string, pat
 export function createFixtures(): APIFixture[] {
   return [
     {
-      endpoint: '/api/users',
-      method: 'GET',
+      endpoint: "/api/users",
+      method: "GET",
       response: {
         status: 200,
         body: {
           users: [
-            { id: '1', name: 'John Doe', email: 'john@example.com' },
-            { id: '2', name: 'Jane Smith', email: 'jane@example.com' },
+            { id: "1", name: "John Doe", email: "john@example.com" },
+            { id: "2", name: "Jane Smith", email: "jane@example.com" },
           ],
         },
       },
     },
     {
-      endpoint: '/api/users',
-      method: 'POST',
-      request: { name: 'New User', email: 'new@example.com' },
+      endpoint: "/api/users",
+      method: "POST",
+      request: { name: "New User", email: "new@example.com" },
       response: {
         status: 201,
-        body: { id: '3', name: 'New User', email: 'new@example.com' },
+        body: { id: "3", name: "New User", email: "new@example.com" },
       },
     },
     {
-      endpoint: '/api/orders',
-      method: 'GET',
+      endpoint: "/api/orders",
+      method: "GET",
       response: {
         status: 200,
         body: {
           orders: [
-            { id: 'ord_1', status: 'PENDING', amount: 100 },
-            { id: 'ord_2', status: 'COMPLETED', amount: 250 },
+            { id: "ord_1", status: "PENDING", amount: 100 },
+            { id: "ord_2", status: "COMPLETED", amount: 250 },
           ],
         },
       },
     },
     {
-      endpoint: '/api/auth/login',
-      method: 'POST',
-      request: { email: 'user@example.com', password: 'password' },
+      endpoint: "/api/auth/login",
+      method: "POST",
+      request: { email: "user@example.com", password: "password" },
       response: {
         status: 200,
         body: {
-          accessToken: 'token_abc123',
-          refreshToken: 'refresh_xyz789',
+          accessToken: "token_abc123",
+          refreshToken: "refresh_xyz789",
           expiresIn: 3600,
         },
       },

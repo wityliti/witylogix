@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { CardSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CardSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   useProviderDetail,
   type ProviderMetrics,
-} from '@/hooks/use-integration-health';
+} from "@/hooks/use-integration-health";
 import {
   ArrowUp,
   ArrowDown,
@@ -18,7 +18,7 @@ import {
   AlertTriangle,
   Clock,
   Zap,
-} from 'lucide-react';
+} from "lucide-react";
 
 /**
  * Provider Detail Page
@@ -43,7 +43,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
   const maxLatency = Math.max(
     metrics.latencyP50,
     metrics.latencyP95,
-    metrics.latencyP99
+    metrics.latencyP99,
   );
   const scale = maxLatency > 0 ? 200 / maxLatency : 1;
 
@@ -58,9 +58,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-wl-text-secondary">P50</p>
-            <p className="font-medium text-white">
-              {metrics.latencyP50}ms
-            </p>
+            <p className="font-medium text-white">{metrics.latencyP50}ms</p>
           </div>
         </div>
 
@@ -72,9 +70,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-wl-text-secondary">P95</p>
-            <p className="font-medium text-white">
-              {metrics.latencyP95}ms
-            </p>
+            <p className="font-medium text-white">{metrics.latencyP95}ms</p>
           </div>
         </div>
 
@@ -86,9 +82,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-wl-text-secondary">P99</p>
-            <p className="font-medium text-white">
-              {metrics.latencyP99}ms
-            </p>
+            <p className="font-medium text-white">{metrics.latencyP99}ms</p>
           </div>
         </div>
       </div>
@@ -116,18 +110,13 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
 
   const total = Object.values(metrics.errorBreakdown).reduce(
     (sum, val) => sum + val,
-    0
+    0,
   );
   const entries = Object.entries(metrics.errorBreakdown).sort(
-    (a, b) => b[1] - a[1]
+    (a, b) => b[1] - a[1],
   );
 
-  const colors = [
-    "bg-red-500",
-    "bg-amber-500",
-    "bg-blue-500",
-    "bg-blue-500",
-  ];
+  const colors = ["bg-red-500", "bg-amber-500", "bg-blue-500", "bg-blue-500"];
 
   return (
     <div className="space-y-4">
@@ -135,15 +124,16 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
         {/* Pie Chart */}
         <div className="flex items-center justify-center">
           <div className="relative w-40 h-40">
-            <div className="absolute inset-0 rounded-full border-8 flex items-center justify-center" style={{
-              borderColor: `conic-gradient(${entries.map((e, i) => `${colors[i % colors.length].replace('bg-', '')} ${(e[1] / total) * 360}deg`).join(', ')}`
-            }}>
+            <div
+              className="absolute inset-0 rounded-full border-8 flex items-center justify-center"
+              style={{
+                borderColor: `conic-gradient(${entries.map((e, i) => `${colors[i % colors.length].replace("bg-", "")} ${(e[1] / total) * 360}deg`).join(", ")}`,
+              }}
+            >
               <div className="text-center bg-wl-bg-surface rounded-full w-24 h-24 flex items-center justify-center">
                 <div>
                   <p className="text-sm text-wl-text-secondary">Total</p>
-                  <p className="text-2xl font-bold text-white">
-                    {total}
-                  </p>
+                  <p className="text-2xl font-bold text-white">{total}</p>
                 </div>
               </div>
             </div>
@@ -158,9 +148,7 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
                 className={cn("w-3 h-3 rounded", colors[idx % colors.length])}
               />
               <div className="flex-1">
-                <p className="text-sm font-medium text-white">
-                  {entry[0]}
-                </p>
+                <p className="text-sm font-medium text-white">{entry[0]}</p>
                 <p className="text-xs text-wl-text-secondary">
                   {entry[1]} ({((entry[1] / total) * 100).toFixed(1)}%)
                 </p>
@@ -183,19 +171,14 @@ export default function ProvidersPage() {
 
   const circuitBreakerColor = useMemo(() => {
     if (!metrics) return "text-wl-text-secondary";
-    if (metrics.currentCircuitBreaker === "closed")
-      return "text-emerald-500";
-    if (metrics.currentCircuitBreaker === "half-open")
-      return "text-amber-500";
+    if (metrics.currentCircuitBreaker === "closed") return "text-emerald-500";
+    if (metrics.currentCircuitBreaker === "half-open") return "text-amber-500";
     return "text-red-500";
   }, [metrics?.currentCircuitBreaker]);
 
   if (error) {
     return (
-      <ErrorState
-        title="Failed to load provider metrics"
-        message={error}
-      />
+      <ErrorState title="Failed to load provider metrics" message={error} />
     );
   }
 
@@ -204,7 +187,9 @@ export default function ProvidersPage() {
       <div className="space-y-6 p-6">
         <div className="h-10 w-80 rounded-lg bg-wl-bg-elevated animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <CardSkeleton />
@@ -272,8 +257,15 @@ export default function ProvidersPage() {
 
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
-              <p className="text-sm text-wl-text-secondary mb-2">Circuit Breaker</p>
-              <p className={cn("text-lg font-bold capitalize", circuitBreakerColor)}>
+              <p className="text-sm text-wl-text-secondary mb-2">
+                Circuit Breaker
+              </p>
+              <p
+                className={cn(
+                  "text-lg font-bold capitalize",
+                  circuitBreakerColor,
+                )}
+              >
                 {metrics.currentCircuitBreaker}
               </p>
             </CardContent>
@@ -371,9 +363,7 @@ export default function ProvidersPage() {
                       <td className="py-2 px-3 text-white font-mono text-xs">
                         {req.endpoint}
                       </td>
-                      <td className="py-2 px-3 text-white">
-                        {req.latency}ms
-                      </td>
+                      <td className="py-2 px-3 text-white">{req.latency}ms</td>
                       <td className="py-2 px-3 text-wl-text-secondary text-xs">
                         {new Date(req.timestamp).toLocaleTimeString()}
                       </td>
@@ -403,9 +393,7 @@ export default function ProvidersPage() {
                     <div
                       className={cn(
                         "w-3 h-3 rounded-full",
-                        incident.resolved
-                          ? "bg-emerald-500"
-                          : "bg-amber-500"
+                        incident.resolved ? "bg-emerald-500" : "bg-amber-500",
                       )}
                     />
                     {idx < metrics.incidents.length - 1 && (
@@ -413,9 +401,7 @@ export default function ProvidersPage() {
                     )}
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="font-medium text-white">
-                      {incident.title}
-                    </p>
+                    <p className="font-medium text-white">{incident.title}</p>
                     <p className="text-xs text-wl-text-secondary mt-1">
                       {new Date(incident.timestamp).toLocaleString()}
                     </p>

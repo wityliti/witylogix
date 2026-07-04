@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { CarrierRegistry, carrierRegistry } from "../registry";
-import { CarrierAdapter, RateRequest, RateResponse, CarrierError } from "../types";
+import {
+  CarrierAdapter,
+  RateRequest,
+  RateResponse,
+  CarrierError,
+} from "../types";
 import { UpsAdapter } from "../adapters/ups";
 import { FedExAdapter } from "../adapters/fedex";
 import { DhlAdapter } from "../adapters/dhl";
@@ -300,7 +305,7 @@ describe("CarrierRegistry", () => {
     it("should handle error from one carrier without failing others", async () => {
       const errorAdapter = createMockAdapter("usps");
       vi.mocked(errorAdapter.getRates).mockRejectedValue(
-        new Error("API unavailable")
+        new Error("API unavailable"),
       );
       registry.register(errorAdapter);
 
@@ -317,7 +322,7 @@ describe("CarrierRegistry", () => {
       const request = createMockRateRequest();
 
       await expect(registry.shopRates(request)).rejects.toThrow(
-        /No carriers available/
+        /No carriers available/,
       );
     });
 
@@ -465,13 +470,16 @@ describe("CarrierRegistry", () => {
       const request = createMockRateRequest();
 
       await expect(registry.getCheapestRate(request)).rejects.toThrow(
-        /No carriers available/
+        /No carriers available/,
       );
     });
 
     it("should respect carrier filter", async () => {
       const request = createMockRateRequest();
-      const cheapest = await registry.getCheapestRate(request, ["fedex", "dhl"]);
+      const cheapest = await registry.getCheapestRate(request, [
+        "fedex",
+        "dhl",
+      ]);
 
       // FedEx is cheaper than DHL
       expect(cheapest.carrier).toBe("FedEx");
@@ -530,10 +538,10 @@ describe("CarrierRegistry", () => {
       const fastest = await registry.getFastestRates(request);
 
       expect(fastest[0].estimatedTransitDays).toBeLessThanOrEqual(
-        fastest[1].estimatedTransitDays!
+        fastest[1].estimatedTransitDays!,
       );
       expect(fastest[0].estimatedTransitDays).toBeLessThanOrEqual(
-        fastest[2].estimatedTransitDays!
+        fastest[2].estimatedTransitDays!,
       );
     });
 
@@ -585,7 +593,9 @@ describe("CarrierRegistry", () => {
 
       const stats = registry.getStats();
       expect(stats.totalAdapters).toBe(3);
-      expect(stats.carriers).toEqual(expect.arrayContaining(["ups", "fedex", "dhl"]));
+      expect(stats.carriers).toEqual(
+        expect.arrayContaining(["ups", "fedex", "dhl"]),
+      );
     });
   });
 
@@ -663,7 +673,7 @@ describe("CarrierRegistry", () => {
       ]);
 
       vi.mocked(fedex.getRates).mockRejectedValue(
-        new CarrierError("fedex", "RATE_LOOKUP_FAILED", "FedEx API down")
+        new CarrierError("fedex", "RATE_LOOKUP_FAILED", "FedEx API down"),
       );
 
       vi.mocked(dhl.getRates).mockResolvedValue([
@@ -705,7 +715,7 @@ describe("CarrierRegistry", () => {
       const authError = new CarrierError(
         "ups",
         "AUTH_FAILED",
-        "Invalid API credentials"
+        "Invalid API credentials",
       );
       vi.mocked(adapter.getRates).mockRejectedValue(authError);
 
@@ -720,7 +730,7 @@ describe("CarrierRegistry", () => {
     it("should handle malformed response gracefully", async () => {
       const adapter = createMockAdapter("ups");
       vi.mocked(adapter.getRates).mockRejectedValue(
-        new Error("Invalid JSON response")
+        new Error("Invalid JSON response"),
       );
 
       registry.register(adapter);

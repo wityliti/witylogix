@@ -27,12 +27,14 @@ Production deployment guide for Witylogix on Docker Compose (single-server) or K
 ### Hardware Requirements
 
 **Development (Single server)**
+
 - CPU: 4 cores (x86_64 or ARM64)
 - Memory: 8 GB RAM
 - Disk: 50 GB SSD (20GB OS, 30GB data)
 - Network: 1 Gbps connection
 
 **Production (Recommended)**
+
 - API Servers: 2-3 instances (2 vCPU, 4 GB RAM each)
 - Database: Dedicated instance (4+ vCPU, 16 GB RAM, 100 GB SSD)
 - Cache (Redis): Dedicated instance (2 vCPU, 4 GB RAM)
@@ -51,6 +53,7 @@ Production deployment guide for Witylogix on Docker Compose (single-server) or K
 ```
 
 **Installation:**
+
 ```bash
 # macOS
 brew install docker docker-compose node@20 pnpm postgresql
@@ -69,11 +72,13 @@ pnpm --version        # 9.15.0+
 ### DNS & SSL Prerequisites
 
 **Domain Setup**
+
 - A DNS domain (e.g., `delivery.acme.com`)
 - DNS A record pointing to your server/load balancer
 - MX records for email (if using SMTP)
 
 **SSL Certificates**
+
 - Let's Encrypt (free, auto-renew with Caddy)
 - Self-signed (development only)
 - Commercial CA (production recommended)
@@ -81,12 +86,14 @@ pnpm --version        # 9.15.0+
 ### Network Requirements
 
 **Ports**
+
 - 80/tcp: HTTP (redirects to HTTPS)
 - 443/tcp: HTTPS (API, dashboard, webhooks)
 - 5432/tcp: PostgreSQL (only if exposing DB externally, not recommended)
 - 6379/tcp: Redis (only for internal cluster, not exposed)
 
 **Firewall Rules (Cloud)**
+
 ```bash
 # Example: AWS Security Group
 Inbound:
@@ -215,6 +222,7 @@ docker-compose -f infra/docker-compose.yml exec postgres psql -U witylogix -d wi
 **Option A: Caddy (Automatic SSL)**
 
 Create `Caddyfile`:
+
 ```caddyfile
 delivery.acme.com {
   reverse_proxy localhost:3000 {
@@ -230,6 +238,7 @@ delivery.acme.com {
 ```
 
 Start Caddy:
+
 ```bash
 docker run -d \
   -p 80:80 -p 443:443 \
@@ -241,6 +250,7 @@ docker run -d \
 **Option B: Nginx (Manual SSL)**
 
 Create `nginx.conf`:
+
 ```nginx
 upstream api {
   server localhost:3000;
@@ -625,12 +635,14 @@ FEATURE_WEBHOOKS=true                  # Outbound webhooks
 ### 1. PostgreSQL with PostGIS
 
 **Docker:**
+
 ```bash
 # Already included in docker-compose.yml
 # Image: postgis/postgis:16-3.4-alpine
 ```
 
 **Manual Installation (Ubuntu/Debian):**
+
 ```bash
 # Install PostgreSQL 16
 sudo apt-get install postgresql-16 postgresql-16-postgis-3
@@ -717,12 +729,14 @@ fi
 ```
 
 Schedule with cron:
+
 ```bash
 # Run daily at 2 AM
 0 2 * * * /root/backup-postgres.sh >> /var/log/backups.log 2>&1
 ```
 
 **Restore from Backup:**
+
 ```bash
 # Decompress and restore
 gunzip -c /backups/postgres/witylogix_20260316_020000.sql.gz | \
@@ -829,21 +843,22 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'witylogix-api'
+  - job_name: "witylogix-api"
     static_configs:
-      - targets: ['localhost:3000']
-    metrics_path: '/metrics'
+      - targets: ["localhost:3000"]
+    metrics_path: "/metrics"
 
-  - job_name: 'postgresql'
+  - job_name: "postgresql"
     static_configs:
-      - targets: ['localhost:5432']
+      - targets: ["localhost:5432"]
 
-  - job_name: 'redis'
+  - job_name: "redis"
     static_configs:
-      - targets: ['localhost:6379']
+      - targets: ["localhost:6379"]
 ```
 
 Start Prometheus:
+
 ```bash
 docker run -d \
   -p 9090:9090 \
@@ -865,6 +880,7 @@ docker run -d \
 ```
 
 **Import dashboards:**
+
 1. Add Prometheus data source (http://prometheus:9090)
 2. Import dashboard JSONs from `/infra/monitoring/dashboards/`
 3. Configure alerts
@@ -935,6 +951,7 @@ kubectl get pods -n witylogix | grep witylogix-api
 ### 2. Database Read Replicas
 
 **AWS RDS:**
+
 ```bash
 # Create read replica
 aws rds create-db-instance-read-replica \
@@ -946,6 +963,7 @@ export READ_REPLICA_URL="postgresql://user:pass@replica-endpoint:5432/witylogix"
 ```
 
 **Prisma Configuration:**
+
 ```typescript
 // For read-only queries, use replica connection
 const readOnlyClient = new PrismaClient({
@@ -979,6 +997,7 @@ REDIS_URL=redis-cluster://redis-1:6379,redis-2:6379,redis-3:6379
 ```
 
 **Docker Compose for Redis Cluster:**
+
 ```yaml
 services:
   redis-1:
@@ -1025,11 +1044,13 @@ curl http://localhost:3000/admin/queues
 ### 1. Backup Strategy
 
 **Backup Schedule:**
+
 - **Database:** Daily at 2 AM (via PostgreSQL backup script)
 - **Redis:** Hourly (RDB dumps)
 - **Files:** Continuous sync to S3
 
 **Retention:**
+
 - Daily: 7 days
 - Weekly: 4 weeks
 - Monthly: 12 months
@@ -1063,36 +1084,37 @@ echo "Backups completed at ${BACKUP_DIR}"
 ```
 
 **Kubernetes CronJob:**
+
 ```yaml
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: witylogix-backup
 spec:
-  schedule: "0 2 * * *"  # 2 AM daily
+  schedule: "0 2 * * *" # 2 AM daily
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: backup
-            image: witylogix/backup:latest
-            env:
-            - name: POSTGRES_URL
-              valueFrom:
-                secretKeyRef:
-                  name: witylogix-db
-                  key: url
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: access-key
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: aws-credentials
-                  key: secret-key
+            - name: backup
+              image: witylogix/backup:latest
+              env:
+                - name: POSTGRES_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: witylogix-db
+                      key: url
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-credentials
+                      key: access-key
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: aws-credentials
+                      key: secret-key
           restartPolicy: OnFailure
 ```
 
@@ -1173,28 +1195,28 @@ spec:
   template:
     spec:
       containers:
-      - name: api
-        image: witylogix/api:4.0.0
+        - name: api
+          image: witylogix/api:4.0.0
 
-        # Liveness probe (restart if unhealthy)
-        livenessProbe:
-          httpGet:
-            path: /health/live
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
+          # Liveness probe (restart if unhealthy)
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-        # Readiness probe (accept traffic if ready)
-        readinessProbe:
-          httpGet:
-            path: /health/ready
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 2
+          # Readiness probe (accept traffic if ready)
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
 ```
 
 ---

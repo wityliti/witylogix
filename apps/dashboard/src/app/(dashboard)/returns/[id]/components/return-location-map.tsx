@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { WLMap } from '@/components/map/wl-map';
-import { PinLayer, type Pin } from '@/components/map/pin-layer';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { MapPin } from 'lucide-react';
+import { WLMap } from "@/components/map/wl-map";
+import { PinLayer, type Pin } from "@/components/map/pin-layer";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { MapPin } from "lucide-react";
 
 // ── Auto-fit to the single pin ────────────────────────────────────────────────
 
@@ -25,12 +25,22 @@ interface ReturnLocationMapProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function ReturnLocationMap({ lat, lng, label, status }: ReturnLocationMapProps) {
+export default function ReturnLocationMap({
+  lat,
+  lng,
+  label,
+  status,
+}: ReturnLocationMapProps) {
   const pin: Pin = {
-    id: 'return-location',
+    id: "return-location",
     lat,
     lng,
-    status: status === 'refunded' ? 'in_transit' : status === 'rejected' ? 'delayed' : 'open',
+    status:
+      status === "refunded"
+        ? "in_transit"
+        : status === "rejected"
+          ? "delayed"
+          : "open",
     label,
   };
 

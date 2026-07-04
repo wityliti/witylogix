@@ -8,10 +8,20 @@ export { IndustryPicker } from "./industry-picker";
 export type { IndustryPickerProps } from "./industry-picker";
 
 export { IntegrationChipGrid } from "./integration-chip-grid";
-export type { IntegrationChipGridProps, Integration } from "./integration-chip-grid";
+export type {
+  IntegrationChipGridProps,
+  Integration,
+} from "./integration-chip-grid";
 
-export { DashboardPreviewCard, DashboardPreviewGrid, DASHBOARD_PRESETS } from "./dashboard-preview-card";
-export type { DashboardPreviewCardProps, DashboardPresetLayout } from "./dashboard-preview-card";
+export {
+  DashboardPreviewCard,
+  DashboardPreviewGrid,
+  DASHBOARD_PRESETS,
+} from "./dashboard-preview-card";
+export type {
+  DashboardPreviewCardProps,
+  DashboardPresetLayout,
+} from "./dashboard-preview-card";
 
 export { DataImportWizard } from "./data-import-wizard";
 export type { DataImportWizardProps } from "./data-import-wizard";

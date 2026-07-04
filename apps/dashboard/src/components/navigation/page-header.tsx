@@ -24,7 +24,7 @@ export function PageHeader({
       className={cn(
         "bg-wl-bg-surface/60 border-b border-wl-border-subtle",
         "px-6 py-5",
-        className
+        className,
       )}
     >
       {breadcrumb && <Breadcrumb className="mb-4" />}
@@ -34,7 +34,7 @@ export function PageHeader({
           <h1
             className={cn(
               "text-2xl font-bold text-wl-text-primary",
-              "tracking-tight leading-tight"
+              "tracking-tight leading-tight",
             )}
           >
             {title}

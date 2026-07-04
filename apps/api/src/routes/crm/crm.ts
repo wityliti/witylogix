@@ -13,29 +13,29 @@
  *   PUT    /crm/field-mappings             — Update field mappings
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
 import {
   SalesforceAdapter,
   HubSpotAdapter,
   CRMSyncEngine,
-} from '@witylogix/core/integrations/crm';
+} from "@witylogix/core/integrations/crm";
 import type {
   CRMConnection,
   CRMFieldMapping,
   CRMContact,
   CRMPagedResult,
   CRMProvider,
-} from '@witylogix/core/integrations/crm';
-import { prisma } from '@witylogix/db';
-import { requireAuth } from '../../middleware/auth.js';
-import { tenantContext } from '../../middleware/tenant.js';
-import { NotFoundError, ValidationError } from '../../lib/errors.js';
+} from "@witylogix/core/integrations/crm";
+import { prisma } from "@witylogix/db";
+import { requireAuth } from "../../middleware/auth.js";
+import { tenantContext } from "../../middleware/tenant.js";
+import { NotFoundError, ValidationError } from "../../lib/errors.js";
 
 // ─── SCHEMAS ─────────────────────────────────────────────────────
 
 const connectSchema = z.object({
-  provider: z.enum(['salesforce', 'hubspot']),
+  provider: z.enum(["salesforce", "hubspot"]),
   redirectUri: z.string().url().optional(),
 });
 
@@ -53,7 +53,7 @@ const contactFilterSchema = z.object({
 });
 
 const syncSchema = z.object({
-  recordType: z.enum(['contact', 'account', 'opportunity']).optional(),
+  recordType: z.enum(["contact", "account", "opportunity"]).optional(),
   incremental: z.boolean().optional().default(true),
 });
 
@@ -65,9 +65,11 @@ const webhookSchema = z.object({
 const fieldMappingCreateSchema = z.object({
   witylogixField: z.string(),
   crmField: z.string(),
-  recordType: z.enum(['contact', 'account', 'opportunity', 'deal', 'activity']),
-  direction: z.enum(['bidirectional', 'to_crm', 'from_crm']),
-  transformation: z.enum(['none', 'uppercase', 'lowercase', 'phone_format', 'custom']).optional(),
+  recordType: z.enum(["contact", "account", "opportunity", "deal", "activity"]),
+  direction: z.enum(["bidirectional", "to_crm", "from_crm"]),
+  transformation: z
+    .enum(["none", "uppercase", "lowercase", "phone_format", "custom"])
+    .optional(),
   transformationScript: z.string().optional(),
   isRequired: z.boolean().optional().default(false),
 });
@@ -85,7 +87,10 @@ interface StoredCRMConnection extends CRMConnection {
 }
 
 interface CRMService {
-  getConnection(tenantId: string, provider: CRMProvider): Promise<StoredCRMConnection | null>;
+  getConnection(
+    tenantId: string,
+    provider: CRMProvider,
+  ): Promise<StoredCRMConnection | null>;
   saveConnection(connection: StoredCRMConnection): Promise<void>;
   getFieldMappings(connectionId: string): Promise<CRMFieldMapping[]>;
   saveFieldMapping(mapping: CRMFieldMapping): Promise<void>;
@@ -95,7 +100,10 @@ interface CRMService {
 // ─── PRISMA CRM SERVICE ──────────────────────────────────────────
 
 class PrismaCRMService implements CRMService {
-  async getConnection(tenantId: string, provider: CRMProvider): Promise<StoredCRMConnection | null> {
+  async getConnection(
+    tenantId: string,
+    provider: CRMProvider,
+  ): Promise<StoredCRMConnection | null> {
     const conn = await prisma.cRMConnection.findFirst({
       where: { tenantId, provider, isActive: true },
     });
@@ -114,8 +122,8 @@ class PrismaCRMService implements CRMService {
       lastSyncAt: conn.lastSyncAt ?? undefined,
       createdAt: conn.createdAt,
       updatedAt: conn.updatedAt,
-      clientId: conn.clientId ?? '',
-      clientSecret: conn.clientSecret ?? '',
+      clientId: conn.clientId ?? "",
+      clientSecret: conn.clientSecret ?? "",
     };
   }
 
@@ -159,16 +167,27 @@ class PrismaCRMService implements CRMService {
   async getFieldMappings(connectionId: string): Promise<CRMFieldMapping[]> {
     const rows = await prisma.cRMFieldMapping.findMany({
       where: { connectionId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
     return rows.map((r) => ({
       id: r.id,
       connectionId: r.connectionId,
       witylogixField: r.witylogixField,
       crmField: r.crmField,
-      recordType: r.recordType as 'contact' | 'account' | 'opportunity' | 'deal' | 'activity',
-      direction: r.direction as 'bidirectional' | 'to_crm' | 'from_crm',
-      transformation: (r.transformation as 'none' | 'uppercase' | 'lowercase' | 'phone_format' | 'custom') ?? undefined,
+      recordType: r.recordType as
+        | "contact"
+        | "account"
+        | "opportunity"
+        | "deal"
+        | "activity",
+      direction: r.direction as "bidirectional" | "to_crm" | "from_crm",
+      transformation:
+        (r.transformation as
+          | "none"
+          | "uppercase"
+          | "lowercase"
+          | "phone_format"
+          | "custom") ?? undefined,
       transformationScript: r.transformationScript ?? undefined,
       isRequired: r.isRequired,
       createdAt: r.createdAt,
@@ -203,7 +222,7 @@ class PrismaCRMService implements CRMService {
   }
 
   async logWebhookEvent(event: unknown): Promise<void> {
-    console.log('[CRM Webhook]', JSON.stringify(event));
+    console.log("[CRM Webhook]", JSON.stringify(event));
   }
 }
 
@@ -219,18 +238,21 @@ async function handleConnect(
   request: FastifyRequest<{ Params: { provider: string } }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
   const provider: CRMProvider = request.params.provider as CRMProvider;
   const body = connectSchema.parse(request.body);
 
-  if (!['salesforce', 'hubspot'].includes(provider)) {
-    throw new ValidationError('Invalid CRM provider');
+  if (!["salesforce", "hubspot"].includes(provider)) {
+    throw new ValidationError("Invalid CRM provider");
   }
 
   // Get OAuth credentials from env/config
-  const clientId: string = process.env[`CRM_${provider.toUpperCase()}_CLIENT_ID`] || '';
-  const clientSecret: string = process.env[`CRM_${provider.toUpperCase()}_CLIENT_SECRET`] || '';
-  const redirectUri: string = body.redirectUri || `${process.env.API_BASE_URL}/crm/callback/${provider}`;
+  const clientId: string =
+    process.env[`CRM_${provider.toUpperCase()}_CLIENT_ID`] || "";
+  const clientSecret: string =
+    process.env[`CRM_${provider.toUpperCase()}_CLIENT_SECRET`] || "";
+  const redirectUri: string =
+    body.redirectUri || `${process.env.API_BASE_URL}/crm/callback/${provider}`;
 
   if (!clientId || !clientSecret) {
     throw new ValidationError(`${provider} OAuth credentials not configured`);
@@ -241,24 +263,27 @@ async function handleConnect(
     id: `temp_${Date.now()}`,
     tenantId,
     provider,
-    accessToken: '',
+    accessToken: "",
     isActive: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  let authUrl: string = '';
+  let authUrl: string = "";
 
   try {
-    if (provider === 'salesforce') {
+    if (provider === "salesforce") {
       const adapter: SalesforceAdapter = new SalesforceAdapter(tempConnection, {
         clientId,
         clientSecret,
         redirectUri,
-        environment: process.env.SALESFORCE_ENV as 'sandbox' | 'production' | undefined,
+        environment: process.env.SALESFORCE_ENV as
+          | "sandbox"
+          | "production"
+          | undefined,
       });
       authUrl = adapter.getAuthorizationUrl();
-    } else if (provider === 'hubspot') {
+    } else if (provider === "hubspot") {
       const adapter: HubSpotAdapter = new HubSpotAdapter(tempConnection, {
         clientId,
         clientSecret,
@@ -268,7 +293,7 @@ async function handleConnect(
     }
   } catch (error: unknown) {
     throw new ValidationError(
-      `Failed to initiate OAuth: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to initiate OAuth: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 
@@ -284,26 +309,31 @@ async function handleConnect(
  * OAuth callback handler
  */
 async function handleCallback(
-  request: FastifyRequest<{ Params: { provider: string }; Querystring: { code?: string; state?: string } }>,
+  request: FastifyRequest<{
+    Params: { provider: string };
+    Querystring: { code?: string; state?: string };
+  }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
   const provider: CRMProvider = request.params.provider as CRMProvider;
   const { code, state } = callbackSchema.parse(request.query);
 
   if (!code) {
-    throw new ValidationError('Authorization code is required');
+    throw new ValidationError("Authorization code is required");
   }
 
-  const clientId: string = process.env[`CRM_${provider.toUpperCase()}_CLIENT_ID`] || '';
-  const clientSecret: string = process.env[`CRM_${provider.toUpperCase()}_CLIENT_SECRET`] || '';
+  const clientId: string =
+    process.env[`CRM_${provider.toUpperCase()}_CLIENT_ID`] || "";
+  const clientSecret: string =
+    process.env[`CRM_${provider.toUpperCase()}_CLIENT_SECRET`] || "";
   const redirectUri: string = `${process.env.API_BASE_URL}/crm/callback/${provider}`;
 
   const tempConnection: CRMConnection = {
     id: `temp_${Date.now()}`,
     tenantId,
     provider,
-    accessToken: '',
+    accessToken: "",
     isActive: false,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -312,15 +342,18 @@ async function handleCallback(
   try {
     let connection: CRMConnection | null = null;
 
-    if (provider === 'salesforce') {
+    if (provider === "salesforce") {
       const adapter: SalesforceAdapter = new SalesforceAdapter(tempConnection, {
         clientId,
         clientSecret,
         redirectUri,
-        environment: process.env.SALESFORCE_ENV as 'sandbox' | 'production' | undefined,
+        environment: process.env.SALESFORCE_ENV as
+          | "sandbox"
+          | "production"
+          | undefined,
       });
       connection = await adapter.authenticate(code);
-    } else if (provider === 'hubspot') {
+    } else if (provider === "hubspot") {
       const adapter: HubSpotAdapter = new HubSpotAdapter(tempConnection, {
         clientId,
         clientSecret,
@@ -330,7 +363,7 @@ async function handleCallback(
     }
 
     if (!connection) {
-      throw new Error('Failed to authenticate');
+      throw new Error("Failed to authenticate");
     }
 
     connection.tenantId = tenantId;
@@ -348,7 +381,7 @@ async function handleCallback(
 
     await reply.redirect(frontendRedirect);
   } catch (error: unknown) {
-    const frontendRedirect: string = `${process.env.FRONTEND_URL}/crm/error?provider=${provider}&error=${encodeURIComponent(error instanceof Error ? error.message : 'Unknown error')}`;
+    const frontendRedirect: string = `${process.env.FRONTEND_URL}/crm/error?provider=${provider}&error=${encodeURIComponent(error instanceof Error ? error.message : "Unknown error")}`;
     await reply.redirect(frontendRedirect);
   }
 }
@@ -361,24 +394,26 @@ async function handleGetContacts(
   request: FastifyRequest<{ Querystring: Record<string, unknown> }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
   const body = contactFilterSchema.parse(request.query);
 
   // Get active CRM connection (for now, assume Salesforce)
   const connection: StoredCRMConnection | null = await crmService.getConnection(
     tenantId,
-    'salesforce',
+    "salesforce",
   );
 
   if (!connection) {
-    throw new NotFoundError('No Salesforce connection found. Please connect Salesforce first.');
+    throw new NotFoundError(
+      "No Salesforce connection found. Please connect Salesforce first.",
+    );
   }
 
   try {
     const adapter: SalesforceAdapter = new SalesforceAdapter(connection, {
       clientId: connection.clientId,
       clientSecret: connection.clientSecret,
-      redirectUri: '',
+      redirectUri: "",
     });
 
     const result: CRMPagedResult<CRMContact> = await adapter.getContacts(
@@ -402,7 +437,7 @@ async function handleGetContacts(
     });
   } catch (error: unknown) {
     throw new ValidationError(
-      `Failed to fetch contacts: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to fetch contacts: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -415,29 +450,40 @@ async function handleSync(
   request: FastifyRequest<{ Body: Record<string, unknown> }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
   const body = syncSchema.parse(request.body);
 
   const connection: StoredCRMConnection | null = await crmService.getConnection(
     tenantId,
-    'salesforce',
+    "salesforce",
   );
 
   if (!connection) {
-    throw new NotFoundError('No CRM connection found');
+    throw new NotFoundError("No CRM connection found");
   }
 
   try {
-    const fieldMappings: CRMFieldMapping[] = await crmService.getFieldMappings(connection.id);
-    const adapter: SalesforceAdapter = new SalesforceAdapter(connection, {
-      clientId: connection.clientId,
-      clientSecret: connection.clientSecret,
-      redirectUri: '',
-    }, fieldMappings);
+    const fieldMappings: CRMFieldMapping[] = await crmService.getFieldMappings(
+      connection.id,
+    );
+    const adapter: SalesforceAdapter = new SalesforceAdapter(
+      connection,
+      {
+        clientId: connection.clientId,
+        clientSecret: connection.clientSecret,
+        redirectUri: "",
+      },
+      fieldMappings,
+    );
 
-    const syncEngine: CRMSyncEngine = new CRMSyncEngine(connection, adapter, fieldMappings);
+    const syncEngine: CRMSyncEngine = new CRMSyncEngine(
+      connection,
+      adapter,
+      fieldMappings,
+    );
 
-    const recordType: 'contact' | 'account' | 'opportunity' = (body.recordType as 'contact' | 'account' | 'opportunity') || 'contact';
+    const recordType: "contact" | "account" | "opportunity" =
+      (body.recordType as "contact" | "account" | "opportunity") || "contact";
     const results = body.incremental
       ? await syncEngine.performIncrementalSync(recordType)
       : await syncEngine.performBidirectionalSync([], recordType);
@@ -452,7 +498,7 @@ async function handleSync(
     });
   } catch (error: unknown) {
     throw new ValidationError(
-      `Sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -465,26 +511,36 @@ async function handleSyncStatus(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
 
   const connection: StoredCRMConnection | null = await crmService.getConnection(
     tenantId,
-    'salesforce',
+    "salesforce",
   );
 
   if (!connection) {
-    throw new NotFoundError('No CRM connection found');
+    throw new NotFoundError("No CRM connection found");
   }
 
   try {
-    const fieldMappings: CRMFieldMapping[] = await crmService.getFieldMappings(connection.id);
-    const adapter: SalesforceAdapter = new SalesforceAdapter(connection, {
-      clientId: connection.clientId,
-      clientSecret: connection.clientSecret,
-      redirectUri: '',
-    }, fieldMappings);
+    const fieldMappings: CRMFieldMapping[] = await crmService.getFieldMappings(
+      connection.id,
+    );
+    const adapter: SalesforceAdapter = new SalesforceAdapter(
+      connection,
+      {
+        clientId: connection.clientId,
+        clientSecret: connection.clientSecret,
+        redirectUri: "",
+      },
+      fieldMappings,
+    );
 
-    const syncEngine: CRMSyncEngine = new CRMSyncEngine(connection, adapter, fieldMappings);
+    const syncEngine: CRMSyncEngine = new CRMSyncEngine(
+      connection,
+      adapter,
+      fieldMappings,
+    );
     const stats = syncEngine.getSyncStats();
     const rateLimitInfo = adapter.getRateLimitInfo();
 
@@ -496,7 +552,7 @@ async function handleSyncStatus(
     });
   } catch (error: unknown) {
     throw new ValidationError(
-      `Failed to get sync status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to get sync status: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -506,10 +562,13 @@ async function handleSyncStatus(
  * Webhook receiver
  */
 async function handleWebhook(
-  request: FastifyRequest<{ Params: { provider: string }; Body: Record<string, unknown> }>,
+  request: FastifyRequest<{
+    Params: { provider: string };
+    Body: Record<string, unknown>;
+  }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
   const provider: CRMProvider = request.params.provider as CRMProvider;
   const body = webhookSchema.parse(request.body);
 
@@ -527,10 +586,10 @@ async function handleWebhook(
       received: true,
     });
   } catch (error: unknown) {
-    console.error('Webhook error:', error);
+    console.error("Webhook error:", error);
     await reply.code(500).send({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -543,19 +602,21 @@ async function handleGetFieldMappings(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
 
   const connection: StoredCRMConnection | null = await crmService.getConnection(
     tenantId,
-    'salesforce',
+    "salesforce",
   );
 
   if (!connection) {
-    throw new NotFoundError('No CRM connection found');
+    throw new NotFoundError("No CRM connection found");
   }
 
   try {
-    const mappings: CRMFieldMapping[] = await crmService.getFieldMappings(connection.id);
+    const mappings: CRMFieldMapping[] = await crmService.getFieldMappings(
+      connection.id,
+    );
 
     await reply.code(200).send({
       success: true,
@@ -564,7 +625,7 @@ async function handleGetFieldMappings(
     });
   } catch (error: unknown) {
     throw new ValidationError(
-      `Failed to get field mappings: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to get field mappings: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -577,16 +638,16 @@ async function handleUpsertFieldMapping(
   request: FastifyRequest<{ Body: Record<string, unknown> }>,
   reply: FastifyReply,
 ): Promise<void> {
-  const tenantId: string = request.tenantId || '';
+  const tenantId: string = request.tenantId || "";
   const body = fieldMappingCreateSchema.parse(request.body);
 
   const connection: StoredCRMConnection | null = await crmService.getConnection(
     tenantId,
-    'salesforce',
+    "salesforce",
   );
 
   if (!connection) {
-    throw new NotFoundError('No CRM connection found');
+    throw new NotFoundError("No CRM connection found");
   }
 
   try {
@@ -595,7 +656,12 @@ async function handleUpsertFieldMapping(
       connectionId: connection.id,
       witylogixField: body.witylogixField,
       crmField: body.crmField,
-      recordType: body.recordType as 'contact' | 'account' | 'opportunity' | 'deal' | 'activity',
+      recordType: body.recordType as
+        | "contact"
+        | "account"
+        | "opportunity"
+        | "deal"
+        | "activity",
       direction: body.direction,
       transformation: body.transformation,
       transformationScript: body.transformationScript,
@@ -612,56 +678,58 @@ async function handleUpsertFieldMapping(
     });
   } catch (error: unknown) {
     throw new ValidationError(
-      `Failed to save field mapping: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to save field mapping: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
 
 // ─── ROUTE REGISTRATION ─────────────────────────────────────────
 
-export async function registerCRMRoutes(fastify: FastifyInstance): Promise<void> {
+export async function registerCRMRoutes(
+  fastify: FastifyInstance,
+): Promise<void> {
   fastify.post<{ Params: { provider: string } }>(
-    '/crm/connect/:provider',
+    "/crm/connect/:provider",
     { preHandler: [requireAuth, tenantContext] },
     handleConnect,
   );
 
   fastify.get<{ Params: { provider: string } }>(
-    '/crm/callback/:provider',
+    "/crm/callback/:provider",
     handleCallback,
   );
 
   fastify.get(
-    '/crm/contacts',
+    "/crm/contacts",
     { preHandler: [requireAuth, tenantContext] },
     handleGetContacts,
   );
 
   fastify.post(
-    '/crm/sync',
+    "/crm/sync",
     { preHandler: [requireAuth, tenantContext] },
     handleSync,
   );
 
   fastify.get(
-    '/crm/sync/status',
+    "/crm/sync/status",
     { preHandler: [requireAuth, tenantContext] },
     handleSyncStatus,
   );
 
   fastify.post<{ Params: { provider: string } }>(
-    '/crm/webhooks/:provider',
+    "/crm/webhooks/:provider",
     handleWebhook,
   );
 
   fastify.get(
-    '/crm/field-mappings',
+    "/crm/field-mappings",
     { preHandler: [requireAuth, tenantContext] },
     handleGetFieldMappings,
   );
 
   fastify.put(
-    '/crm/field-mappings',
+    "/crm/field-mappings",
     { preHandler: [requireAuth, tenantContext] },
     handleUpsertFieldMapping,
   );

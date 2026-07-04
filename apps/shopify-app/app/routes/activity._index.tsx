@@ -35,7 +35,10 @@ import {
   Collapsible,
   InlineGrid,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -50,7 +53,13 @@ interface Change {
 interface ActivityLogEntry {
   id: string;
   action: "created" | "updated" | "deleted" | "status_changed";
-  entityType: "order" | "shipment" | "driver" | "location" | "route" | "setting";
+  entityType:
+    | "order"
+    | "shipment"
+    | "driver"
+    | "location"
+    | "route"
+    | "setting";
   entityId: string;
   entityName?: string;
   actor: {
@@ -89,7 +98,11 @@ const ACTOR_TYPES = ["user", "system", "api"];
 
 const ACTION_CONFIG: Record<
   string,
-  { icon: string; label: string; tone: "success" | "info" | "critical" | "warning" }
+  {
+    icon: string;
+    label: string;
+    tone: "success" | "info" | "critical" | "warning";
+  }
 > = {
   created: { icon: "+", label: "Created", tone: "success" },
   updated: { icon: "~", label: "Updated", tone: "info" },
@@ -373,24 +386,39 @@ function ActivityLogRow({
               onClick={() => setShowChanges(!showChanges)}
               size="slim"
             >
-              {showChanges ? "Hide" : "Show"} changes ({Object.keys(log.changes).length} field
+              {showChanges ? "Hide" : "Show"} changes (
+              {Object.keys(log.changes).length} field
               {Object.keys(log.changes).length !== 1 ? "s" : ""})
             </Button>
             <Collapsible open={showChanges} id={`changes-${log.id}`}>
               <BlockStack gap="200">
                 {Object.entries(log.changes).map(([field, values]) => (
-                  <Box key={field} padding="200" background="bg-surface-secondary" borderRadius="100">
+                  <Box
+                    key={field}
+                    padding="200"
+                    background="bg-surface-secondary"
+                    borderRadius="100"
+                  >
                     <BlockStack gap="100">
-                      <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                      <Text
+                        as="span"
+                        variant="bodySm"
+                        fontWeight="semibold"
+                        tone="subdued"
+                      >
                         {field}
                       </Text>
                       {values.before !== undefined && (
                         <InlineStack gap="200" blockAlign="center">
-                          <Badge tone="critical">{formatValue(values.before)}</Badge>
+                          <Badge tone="critical">
+                            {formatValue(values.before)}
+                          </Badge>
                           <Text as="span" variant="bodySm">
                             {" -> "}
                           </Text>
-                          <Badge tone="success">{formatValue(values.after)}</Badge>
+                          <Badge tone="success">
+                            {formatValue(values.after)}
+                          </Badge>
                         </InlineStack>
                       )}
                     </BlockStack>

@@ -19,24 +19,36 @@ import {
   AddressValidationResponse,
   CarrierError,
   Package,
-} from '../types';
+} from "../types";
 
 /**
  * DHL service code mappings
  * DHL Express service codes for various delivery options
  */
 const DHL_SERVICE_CODES = {
-  P: { name: 'DHL PARCEL', level: 'ground', deliveryDays: 5 },
-  N: { name: 'DHL Next Day 10:30 AM', level: 'overnight', deliveryDays: 1 },
-  Y: { name: 'DHL Express 12:00 PM', level: 'express', deliveryDays: 1 },
-  D: { name: 'DHL Express Worldwide Day', level: 'express', deliveryDays: 1 },
-  C: { name: 'DHL Express Worldwide Cash', level: 'express', deliveryDays: 1 },
-  A: { name: 'DHL Express Worldwide Account', level: 'express', deliveryDays: 1 },
-  B: { name: 'DHL Express Worldwide Non-Document', level: 'express', deliveryDays: 1 },
-  H: { name: 'DHL Express Worldwide 12:00', level: 'international', deliveryDays: 2 },
-  K: { name: 'DHL Express 10:30 AM', level: 'international', deliveryDays: 2 },
-  M: { name: 'DHL Express 9:00 AM', level: 'international', deliveryDays: 1 },
-  X: { name: 'DHL Express Envelope', level: 'international', deliveryDays: 2 },
+  P: { name: "DHL PARCEL", level: "ground", deliveryDays: 5 },
+  N: { name: "DHL Next Day 10:30 AM", level: "overnight", deliveryDays: 1 },
+  Y: { name: "DHL Express 12:00 PM", level: "express", deliveryDays: 1 },
+  D: { name: "DHL Express Worldwide Day", level: "express", deliveryDays: 1 },
+  C: { name: "DHL Express Worldwide Cash", level: "express", deliveryDays: 1 },
+  A: {
+    name: "DHL Express Worldwide Account",
+    level: "express",
+    deliveryDays: 1,
+  },
+  B: {
+    name: "DHL Express Worldwide Non-Document",
+    level: "express",
+    deliveryDays: 1,
+  },
+  H: {
+    name: "DHL Express Worldwide 12:00",
+    level: "international",
+    deliveryDays: 2,
+  },
+  K: { name: "DHL Express 10:30 AM", level: "international", deliveryDays: 2 },
+  M: { name: "DHL Express 9:00 AM", level: "international", deliveryDays: 1 },
+  X: { name: "DHL Express Envelope", level: "international", deliveryDays: 2 },
 } as const;
 
 /**
@@ -45,8 +57,8 @@ const DHL_SERVICE_CODES = {
  * Supports customs documentation for international shipments
  */
 export class DhlAdapter implements CarrierAdapter {
-  readonly name = 'DHL Express';
-  readonly code = 'dhl';
+  readonly name = "DHL Express";
+  readonly code = "dhl";
 
   /** Cached API access key */
   private apiKey: string;
@@ -64,7 +76,7 @@ export class DhlAdapter implements CarrierAdapter {
     private clientId: string,
     private password?: string,
     private accountNumber?: string,
-    private apiBaseUrl = 'https://express.api.dhl.com',
+    private apiBaseUrl = "https://express.api.dhl.com",
   ) {
     this.apiKey = apiKey;
   }
@@ -87,19 +99,20 @@ export class DhlAdapter implements CarrierAdapter {
       const headers = this.getAuthHeaders();
 
       const response = await fetch(rateUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...headers,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as Record<string, any>;
-        const errorMsg = errorData.message || `Rate lookup failed: ${response.status}`;
+        const errorData = (await response.json()) as Record<string, any>;
+        const errorMsg =
+          errorData.message || `Rate lookup failed: ${response.status}`;
         throw new CarrierError(
-          'dhl',
+          "dhl",
           this.mapDhlErrorCode(response.status, errorData.code),
           errorMsg,
           undefined,
@@ -107,46 +120,51 @@ export class DhlAdapter implements CarrierAdapter {
         );
       }
 
-      const data = await response.json() as DhlRateResponse;
+      const data = (await response.json()) as DhlRateResponse;
 
       // Parse response and build RateResponse array
       const rates: RateResponse[] = [];
 
       if (data.products && Array.isArray(data.products)) {
         for (const product of data.products) {
-          const serviceCode = product.productCode || 'P';
-          const serviceInfo = DHL_SERVICE_CODES[serviceCode as keyof typeof DHL_SERVICE_CODES];
+          const serviceCode = product.productCode || "P";
+          const serviceInfo =
+            DHL_SERVICE_CODES[serviceCode as keyof typeof DHL_SERVICE_CODES];
 
           const totalCharge = product.totalPrice || 0;
           const deliveryDays = serviceInfo?.deliveryDays || 5;
           const estimatedDeliveryDate = new Date(request.shipDate);
-          estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + deliveryDays);
+          estimatedDeliveryDate.setDate(
+            estimatedDeliveryDate.getDate() + deliveryDays,
+          );
 
           const breakdown: Array<{ description: string; amount: number }> = [];
           if (product.basePrice) {
             breakdown.push({
-              description: 'Base Rate',
+              description: "Base Rate",
               amount: product.basePrice,
             });
           }
           if (product.surcharges && Array.isArray(product.surcharges)) {
             for (const surcharge of product.surcharges) {
               breakdown.push({
-                description: surcharge.type || 'Surcharge',
+                description: surcharge.type || "Surcharge",
                 amount: surcharge.amount || 0,
               });
             }
           }
 
           rates.push({
-            carrier: 'DHL Express',
+            carrier: "DHL Express",
             service: serviceInfo?.name || serviceCode,
             serviceCode,
             totalCharge,
-            currency: data.currency || request.currency || 'USD',
+            currency: data.currency || request.currency || "USD",
             estimatedDeliveryDate,
             estimatedTransitDays: deliveryDays,
-            guaranteedDelivery: serviceInfo?.level === 'overnight' || serviceInfo?.level === 'express',
+            guaranteedDelivery:
+              serviceInfo?.level === "overnight" ||
+              serviceInfo?.level === "express",
             breakdown,
           });
         }
@@ -155,21 +173,21 @@ export class DhlAdapter implements CarrierAdapter {
       return rates.length > 0
         ? rates
         : (() => {
-          throw new CarrierError(
-            'dhl',
-            'RATE_ERROR',
-            'No rates returned from DHL API',
-          );
-        })();
+            throw new CarrierError(
+              "dhl",
+              "RATE_ERROR",
+              "No rates returned from DHL API",
+            );
+          })();
     } catch (error) {
       if (error instanceof CarrierError) {
         throw error;
       }
 
       throw new CarrierError(
-        'dhl',
-        'RATE_LOOKUP_FAILED',
-        'Failed to retrieve DHL shipping rates',
+        "dhl",
+        "RATE_LOOKUP_FAILED",
+        "Failed to retrieve DHL shipping rates",
         error instanceof Error ? error : undefined,
       );
     }
@@ -193,19 +211,20 @@ export class DhlAdapter implements CarrierAdapter {
       const headers = this.getAuthHeaders();
 
       const response = await fetch(shipUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...headers,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as Record<string, any>;
-        const errorMsg = errorData.message || `Label creation failed: ${response.status}`;
+        const errorData = (await response.json()) as Record<string, any>;
+        const errorMsg =
+          errorData.message || `Label creation failed: ${response.status}`;
         throw new CarrierError(
-          'dhl',
+          "dhl",
           this.mapDhlErrorCode(response.status, errorData.code),
           errorMsg,
           undefined,
@@ -213,11 +232,11 @@ export class DhlAdapter implements CarrierAdapter {
         );
       }
 
-      const data = await response.json() as DhlShipmentResponse;
+      const data = (await response.json()) as DhlShipmentResponse;
 
       // Extract tracking number and label from response
-      let trackingNumber = '';
-      let labelData = '';
+      let trackingNumber = "";
+      let labelData = "";
       let cost = 0;
 
       if (data.shipmentIdentificationNumber) {
@@ -233,25 +252,34 @@ export class DhlAdapter implements CarrierAdapter {
       }
 
       if (!trackingNumber) {
-        throw new CarrierError('dhl', 'SHIP_ERROR', 'No tracking number received from DHL');
+        throw new CarrierError(
+          "dhl",
+          "SHIP_ERROR",
+          "No tracking number received from DHL",
+        );
       }
 
-      const serviceInfo = DHL_SERVICE_CODES[request.serviceCode as keyof typeof DHL_SERVICE_CODES];
+      const serviceInfo =
+        DHL_SERVICE_CODES[
+          request.serviceCode as keyof typeof DHL_SERVICE_CODES
+        ];
       const deliveryDays = serviceInfo?.deliveryDays || 5;
       const shipDate = new Date();
       const estimatedDeliveryDate = new Date(shipDate);
-      estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + deliveryDays);
+      estimatedDeliveryDate.setDate(
+        estimatedDeliveryDate.getDate() + deliveryDays,
+      );
 
       return {
         trackingNumber,
         labelUrl: `https://mydhl.express.dhl.com/mydhl-label-view?barcode=${trackingNumber}`,
         labelData: labelData || this.generateMockLabelData(trackingNumber),
-        labelFormat: request.labelFormat || 'PDF',
-        carrier: 'DHL Express',
-        service: serviceInfo?.name || 'DHL Express',
+        labelFormat: request.labelFormat || "PDF",
+        carrier: "DHL Express",
+        service: serviceInfo?.name || "DHL Express",
         estimatedDeliveryDate,
         cost: cost || 28.99,
-        currency: request.currency || 'USD',
+        currency: request.currency || "USD",
         barcode: trackingNumber,
       };
     } catch (error) {
@@ -260,9 +288,9 @@ export class DhlAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'dhl',
-        'LABEL_CREATION_FAILED',
-        'Failed to create DHL shipping label',
+        "dhl",
+        "LABEL_CREATION_FAILED",
+        "Failed to create DHL shipping label",
         error instanceof Error ? error : undefined,
       );
     }
@@ -276,7 +304,11 @@ export class DhlAdapter implements CarrierAdapter {
   async voidLabel(trackingNumber: string): Promise<VoidResponse> {
     try {
       if (!trackingNumber || trackingNumber.length < 10) {
-        throw new CarrierError('dhl', 'INVALID_TRACKING', 'Invalid DHL tracking number');
+        throw new CarrierError(
+          "dhl",
+          "INVALID_TRACKING",
+          "Invalid DHL tracking number",
+        );
       }
 
       // Make HTTP request to DHL Cancellation API
@@ -284,15 +316,16 @@ export class DhlAdapter implements CarrierAdapter {
       const headers = this.getAuthHeaders();
 
       const response = await fetch(voidUrl, {
-        method: 'DELETE',
+        method: "DELETE",
         headers,
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as Record<string, any>;
-        const errorMsg = errorData.message || `Void operation failed: ${response.status}`;
+        const errorData = (await response.json()) as Record<string, any>;
+        const errorMsg =
+          errorData.message || `Void operation failed: ${response.status}`;
         throw new CarrierError(
-          'dhl',
+          "dhl",
           this.mapDhlErrorCode(response.status, errorData.code),
           errorMsg,
           undefined,
@@ -302,16 +335,16 @@ export class DhlAdapter implements CarrierAdapter {
 
       // If the shipment had a cost, return an estimated refund
       // In production, this would be obtained from the cancellation response
-      const refundData = await response.json() as Record<string, any>;
+      const refundData = (await response.json()) as Record<string, any>;
       const refund = refundData?.refundAmount || 28.99;
 
       return {
         success: true,
         trackingNumber,
         refund,
-        currency: 'USD',
+        currency: "USD",
         voidedAt: new Date(),
-        message: 'DHL shipment successfully cancelled',
+        message: "DHL shipment successfully cancelled",
       };
     } catch (error) {
       if (error instanceof CarrierError) {
@@ -319,9 +352,9 @@ export class DhlAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'dhl',
-        'VOID_FAILED',
-        'Failed to void DHL shipping label',
+        "dhl",
+        "VOID_FAILED",
+        "Failed to void DHL shipping label",
         error instanceof Error ? error : undefined,
       );
     }
@@ -335,7 +368,11 @@ export class DhlAdapter implements CarrierAdapter {
   async getTracking(trackingNumber: string): Promise<TrackingResponse> {
     try {
       if (!trackingNumber || trackingNumber.length < 10) {
-        throw new CarrierError('dhl', 'INVALID_TRACKING', 'Invalid DHL tracking number');
+        throw new CarrierError(
+          "dhl",
+          "INVALID_TRACKING",
+          "Invalid DHL tracking number",
+        );
       }
 
       // Make HTTP request to DHL Track API
@@ -343,15 +380,16 @@ export class DhlAdapter implements CarrierAdapter {
       const headers = this.getAuthHeaders();
 
       const response = await fetch(trackUrl, {
-        method: 'GET',
+        method: "GET",
         headers,
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as Record<string, any>;
-        const errorMsg = errorData.message || `Tracking lookup failed: ${response.status}`;
+        const errorData = (await response.json()) as Record<string, any>;
+        const errorMsg =
+          errorData.message || `Tracking lookup failed: ${response.status}`;
         throw new CarrierError(
-          'dhl',
+          "dhl",
           this.mapDhlErrorCode(response.status, errorData.code),
           errorMsg,
           undefined,
@@ -359,11 +397,11 @@ export class DhlAdapter implements CarrierAdapter {
         );
       }
 
-      const data = await response.json() as DhlTrackingResponse;
+      const data = (await response.json()) as DhlTrackingResponse;
 
       // Parse tracking events from response
-      const events: TrackingResponse['events'] = [];
-      let status: TrackingResponse['status'] = 'unknown';
+      const events: TrackingResponse["events"] = [];
+      let status: TrackingResponse["status"] = "unknown";
       let delivered = false;
       let estimatedDeliveryDate: Date | undefined;
 
@@ -372,7 +410,7 @@ export class DhlAdapter implements CarrierAdapter {
 
         if (shipment.status) {
           status = this.mapDhlStatus(shipment.status);
-          delivered = shipment.status === 'DELIVERED';
+          delivered = shipment.status === "DELIVERED";
         }
 
         if (shipment.estimatedDeliveryDate) {
@@ -387,19 +425,22 @@ export class DhlAdapter implements CarrierAdapter {
             events.push({
               timestamp: new Date(event.timestamp),
               status: eventStatus,
-              description: event.description || event.eventType || 'Package event',
-              location: event.location ? {
-                city: event.location.city,
-                state: event.location.state,
-                country: event.location.country,
-              } : undefined,
+              description:
+                event.description || event.eventType || "Package event",
+              location: event.location
+                ? {
+                    city: event.location.city,
+                    state: event.location.state,
+                    country: event.location.country,
+                  }
+                : undefined,
             });
           }
         }
       }
 
       return {
-        carrier: 'DHL Express',
+        carrier: "DHL Express",
         trackingNumber,
         status,
         delivered,
@@ -412,9 +453,9 @@ export class DhlAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'dhl',
-        'TRACKING_FAILED',
-        'Failed to retrieve DHL tracking information',
+        "dhl",
+        "TRACKING_FAILED",
+        "Failed to retrieve DHL tracking information",
         error instanceof Error ? error : undefined,
       );
     }
@@ -438,19 +479,20 @@ export class DhlAdapter implements CarrierAdapter {
       const headers = this.getAuthHeaders();
 
       const response = await fetch(pickupUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...headers,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as Record<string, any>;
-        const errorMsg = errorData.message || `Pickup request failed: ${response.status}`;
+        const errorData = (await response.json()) as Record<string, any>;
+        const errorMsg =
+          errorData.message || `Pickup request failed: ${response.status}`;
         throw new CarrierError(
-          'dhl',
+          "dhl",
           this.mapDhlErrorCode(response.status, errorData.code),
           errorMsg,
           undefined,
@@ -458,7 +500,7 @@ export class DhlAdapter implements CarrierAdapter {
         );
       }
 
-      const data = await response.json() as DhlPickupResponse;
+      const data = (await response.json()) as DhlPickupResponse;
       const pickupId = data.pickupConfirmationNumber || this.generatePickupId();
 
       return {
@@ -468,7 +510,7 @@ export class DhlAdapter implements CarrierAdapter {
         confirmedAt: new Date(),
         estimatedArrivalWindow: request.timeWindow,
         confirmationCode: `DHL-${pickupId}`,
-        message: 'DHL pickup scheduled successfully',
+        message: "DHL pickup scheduled successfully",
       };
     } catch (error) {
       if (error instanceof CarrierError) {
@@ -476,9 +518,9 @@ export class DhlAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'dhl',
-        'PICKUP_FAILED',
-        'Failed to schedule DHL pickup',
+        "dhl",
+        "PICKUP_FAILED",
+        "Failed to schedule DHL pickup",
         error instanceof Error ? error : undefined,
       );
     }
@@ -491,7 +533,11 @@ export class DhlAdapter implements CarrierAdapter {
   async cancelPickup(pickupId: string): Promise<void> {
     try {
       if (!pickupId) {
-        throw new CarrierError('dhl', 'INVALID_PICKUP_ID', 'Pickup ID is required');
+        throw new CarrierError(
+          "dhl",
+          "INVALID_PICKUP_ID",
+          "Pickup ID is required",
+        );
       }
 
       // Make HTTP request to DHL Pickup Cancellation API
@@ -499,15 +545,16 @@ export class DhlAdapter implements CarrierAdapter {
       const headers = this.getAuthHeaders();
 
       const response = await fetch(cancelUrl, {
-        method: 'DELETE',
+        method: "DELETE",
         headers,
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as Record<string, any>;
-        const errorMsg = errorData.message || `Pickup cancellation failed: ${response.status}`;
+        const errorData = (await response.json()) as Record<string, any>;
+        const errorMsg =
+          errorData.message || `Pickup cancellation failed: ${response.status}`;
         throw new CarrierError(
-          'dhl',
+          "dhl",
           this.mapDhlErrorCode(response.status, errorData.code),
           errorMsg,
           undefined,
@@ -520,9 +567,9 @@ export class DhlAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'dhl',
-        'PICKUP_CANCELLATION_FAILED',
-        'Failed to cancel DHL pickup',
+        "dhl",
+        "PICKUP_CANCELLATION_FAILED",
+        "Failed to cancel DHL pickup",
         error instanceof Error ? error : undefined,
       );
     }
@@ -539,7 +586,8 @@ export class DhlAdapter implements CarrierAdapter {
       this.validateAddress_(address);
 
       // Make HTTP request to DHL Address Validation API
-      const validateUrl = `${this.apiBaseUrl}/mydhlapi/address-validate?` +
+      const validateUrl =
+        `${this.apiBaseUrl}/mydhlapi/address-validate?` +
         `countryCode=${encodeURIComponent(address.country)}&` +
         `postalCode=${encodeURIComponent(address.postalCode)}&` +
         `city=${encodeURIComponent(address.city)}&` +
@@ -548,15 +596,16 @@ export class DhlAdapter implements CarrierAdapter {
       const headers = this.getAuthHeaders();
 
       const response = await fetch(validateUrl, {
-        method: 'GET',
+        method: "GET",
         headers,
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as Record<string, any>;
-        const errorMsg = errorData.message || `Address validation failed: ${response.status}`;
+        const errorData = (await response.json()) as Record<string, any>;
+        const errorMsg =
+          errorData.message || `Address validation failed: ${response.status}`;
         throw new CarrierError(
-          'dhl',
+          "dhl",
           this.mapDhlErrorCode(response.status, errorData.code),
           errorMsg,
           undefined,
@@ -564,7 +613,7 @@ export class DhlAdapter implements CarrierAdapter {
         );
       }
 
-      const data = await response.json() as DhlAddressValidationResponse;
+      const data = (await response.json()) as DhlAddressValidationResponse;
 
       return {
         valid: data.validationResults?.valid ?? true,
@@ -577,9 +626,9 @@ export class DhlAdapter implements CarrierAdapter {
       }
 
       throw new CarrierError(
-        'dhl',
-        'ADDRESS_VALIDATION_FAILED',
-        'Failed to validate address with DHL',
+        "dhl",
+        "ADDRESS_VALIDATION_FAILED",
+        "Failed to validate address with DHL",
         error instanceof Error ? error : undefined,
       );
     }
@@ -594,15 +643,23 @@ export class DhlAdapter implements CarrierAdapter {
    */
   private validateRateRequest(request: RateRequest): void {
     if (!request.origin?.street1 || !request.origin?.city) {
-      throw new CarrierError('dhl', 'INVALID_ORIGIN', 'Invalid origin address');
+      throw new CarrierError("dhl", "INVALID_ORIGIN", "Invalid origin address");
     }
 
     if (!request.destination?.street1 || !request.destination?.city) {
-      throw new CarrierError('dhl', 'INVALID_DESTINATION', 'Invalid destination address');
+      throw new CarrierError(
+        "dhl",
+        "INVALID_DESTINATION",
+        "Invalid destination address",
+      );
     }
 
     if (!request.packages || request.packages.length === 0) {
-      throw new CarrierError('dhl', 'NO_PACKAGES', 'At least one package is required');
+      throw new CarrierError(
+        "dhl",
+        "NO_PACKAGES",
+        "At least one package is required",
+      );
     }
   }
 
@@ -612,19 +669,31 @@ export class DhlAdapter implements CarrierAdapter {
   private validateLabelRequest(request: LabelRequest): void {
     // Validate required rate fields
     if (!request.origin?.street1 || !request.origin?.city) {
-      throw new CarrierError('dhl', 'INVALID_ORIGIN', 'Invalid origin address');
+      throw new CarrierError("dhl", "INVALID_ORIGIN", "Invalid origin address");
     }
 
     if (!request.destination?.street1 || !request.destination?.city) {
-      throw new CarrierError('dhl', 'INVALID_DESTINATION', 'Invalid destination address');
+      throw new CarrierError(
+        "dhl",
+        "INVALID_DESTINATION",
+        "Invalid destination address",
+      );
     }
 
     if (!request.packages || request.packages.length === 0) {
-      throw new CarrierError('dhl', 'NO_PACKAGES', 'At least one package is required');
+      throw new CarrierError(
+        "dhl",
+        "NO_PACKAGES",
+        "At least one package is required",
+      );
     }
 
     if (!request.serviceCode) {
-      throw new CarrierError('dhl', 'NO_SERVICE_CODE', 'Service code is required');
+      throw new CarrierError(
+        "dhl",
+        "NO_SERVICE_CODE",
+        "Service code is required",
+      );
     }
   }
 
@@ -633,11 +702,19 @@ export class DhlAdapter implements CarrierAdapter {
    */
   private validatePickupRequest(request: PickupRequest): void {
     if (!request.location?.street1 || !request.location?.city) {
-      throw new CarrierError('dhl', 'INVALID_LOCATION', 'Invalid pickup location');
+      throw new CarrierError(
+        "dhl",
+        "INVALID_LOCATION",
+        "Invalid pickup location",
+      );
     }
 
     if (request.packageCount <= 0) {
-      throw new CarrierError('dhl', 'INVALID_PACKAGE_COUNT', 'Package count must be positive');
+      throw new CarrierError(
+        "dhl",
+        "INVALID_PACKAGE_COUNT",
+        "Package count must be positive",
+      );
     }
   }
 
@@ -646,7 +723,11 @@ export class DhlAdapter implements CarrierAdapter {
    */
   private validateAddress_(address: Address): void {
     if (!address.street1 || !address.city || !address.postalCode) {
-      throw new CarrierError('dhl', 'INVALID_ADDRESS', 'Address is missing required fields');
+      throw new CarrierError(
+        "dhl",
+        "INVALID_ADDRESS",
+        "Address is missing required fields",
+      );
     }
   }
 
@@ -659,14 +740,20 @@ export class DhlAdapter implements CarrierAdapter {
         shipmentRequest: {
           ShipmentDetail: {
             Shipment: {
-              ShipmentType: this.isDocument(request.packages) ? 'DOCUMENTS' : 'NON_DOCUMENTS',
-              CurrencyCode: request.currency || 'USD',
-              UnitOfMeasurement: 'SI',
+              ShipmentType: this.isDocument(request.packages)
+                ? "DOCUMENTS"
+                : "NON_DOCUMENTS",
+              CurrencyCode: request.currency || "USD",
+              UnitOfMeasurement: "SI",
               OriginServiceArea: {
-                ServiceAreaCode: this.getServiceAreaCode(request.origin.country),
+                ServiceAreaCode: this.getServiceAreaCode(
+                  request.origin.country,
+                ),
               },
               DestinationServiceArea: {
-                ServiceAreaCode: this.getServiceAreaCode(request.destination.country),
+                ServiceAreaCode: this.getServiceAreaCode(
+                  request.destination.country,
+                ),
               },
               Pieces: this.buildPiecesPayload(request.packages),
             },
@@ -682,16 +769,18 @@ export class DhlAdapter implements CarrierAdapter {
   private buildShippingPayload(request: LabelRequest): Record<string, unknown> {
     return {
       planForPickupRequestIndicator: true,
-      requestBarcodeType: 'IMG',
+      requestBarcodeType: "IMG",
       shipmentRequest: {
         ShipmentDetail: {
           Shipment: {
             ServiceType: request.serviceCode,
-            Currency: request.currency || 'USD',
-            UnitOfMeasurement: 'SI',
+            Currency: request.currency || "USD",
+            UnitOfMeasurement: "SI",
             Shipper: this.addressToDhlFormat(request.origin),
             Recipient: this.addressToDhlFormat(request.destination),
-            ShipmentType: this.isDocument(request.packages) ? 'DOCUMENTS' : 'NON_DOCUMENTS',
+            ShipmentType: this.isDocument(request.packages)
+              ? "DOCUMENTS"
+              : "NON_DOCUMENTS",
             InternationalDetail: this.buildInternationalDetail(request),
             Pieces: this.buildPiecesPayload(request.packages),
           },
@@ -708,14 +797,14 @@ export class DhlAdapter implements CarrierAdapter {
       pickupRequest: {
         Schedule: {
           PickupDate: this.formatDate(request.pickupDate),
-          ReadyByTime: request.timeWindow?.start || '08:00',
-          DeadlineTime: request.timeWindow?.end || '17:00',
+          ReadyByTime: request.timeWindow?.start || "08:00",
+          DeadlineTime: request.timeWindow?.end || "17:00",
         },
         PickupLocation: this.addressToDhlFormat(request.location),
         PickupDetails: {
           PackageCount: String(request.packageCount),
           TotalWeight: request.totalWeight || 1,
-          WeightUnit: request.weightUnit?.toUpperCase() || 'KG',
+          WeightUnit: request.weightUnit?.toUpperCase() || "KG",
         },
         SpecialInstructions: request.instructions,
       },
@@ -725,7 +814,9 @@ export class DhlAdapter implements CarrierAdapter {
   /**
    * Build international shipping details for customs
    */
-  private buildInternationalDetail(request: LabelRequest): Record<string, unknown> | undefined {
+  private buildInternationalDetail(
+    request: LabelRequest,
+  ): Record<string, unknown> | undefined {
     // Only include for international shipments
     if (request.origin.country === request.destination.country) {
       return undefined;
@@ -733,7 +824,7 @@ export class DhlAdapter implements CarrierAdapter {
 
     return {
       Commodities: request.packages.map((pkg) => ({
-        Description: pkg.description || 'Merchandise',
+        Description: pkg.description || "Merchandise",
         Quantity: 1,
         UnitPrice: String(pkg.declaredValue || 0),
         NetWeight: String(this.convertToKg(pkg.weight, pkg.weightUnit)),
@@ -742,7 +833,7 @@ export class DhlAdapter implements CarrierAdapter {
         ExportLicenseStatus: undefined,
       })),
       CustomerInvoiceNumber: request.reference,
-      TermsOfTrade: 'DDP', // Delivered Duty Paid
+      TermsOfTrade: "DDP", // Delivered Duty Paid
     };
   }
 
@@ -757,7 +848,7 @@ export class DhlAdapter implements CarrierAdapter {
         Width: String(Math.ceil(pkg.width || 0)),
         Height: String(Math.ceil(pkg.height || 0)),
         Weight: String(this.convertToKg(pkg.weight, pkg.weightUnit)),
-        PieceContents: pkg.description || 'Package',
+        PieceContents: pkg.description || "Package",
       })),
     };
   }
@@ -785,8 +876,8 @@ export class DhlAdapter implements CarrierAdapter {
    */
   private isDocument(packages: Package[]): boolean {
     return packages.every((pkg) => {
-      const desc = (pkg.description || '').toLowerCase();
-      return desc.includes('document') || desc.includes('letter');
+      const desc = (pkg.description || "").toLowerCase();
+      return desc.includes("document") || desc.includes("letter");
     });
   }
 
@@ -796,16 +887,16 @@ export class DhlAdapter implements CarrierAdapter {
   private getServiceAreaCode(countryCode: string): string {
     // Simplified mapping - in production this would be comprehensive
     const areaMap: Record<string, string> = {
-      US: 'USA',
-      CA: 'CAN',
-      GB: 'GBR',
-      DE: 'DEU',
-      FR: 'FRA',
-      JP: 'JPN',
-      SG: 'SGP',
-      AU: 'AUS',
-      CN: 'CHN',
-      IN: 'IND',
+      US: "USA",
+      CA: "CAN",
+      GB: "GBR",
+      DE: "DEU",
+      FR: "FRA",
+      JP: "JPN",
+      SG: "SGP",
+      AU: "AUS",
+      CN: "CHN",
+      IN: "IND",
     };
 
     return areaMap[countryCode] || countryCode;
@@ -816,13 +907,13 @@ export class DhlAdapter implements CarrierAdapter {
    */
   private convertToKg(weight: number, unit: string): number {
     switch (unit) {
-      case 'kg':
+      case "kg":
         return weight;
-      case 'g':
+      case "g":
         return weight / 1000;
-      case 'lb':
+      case "lb":
         return weight * 0.453592;
-      case 'oz':
+      case "oz":
         return weight * 0.0283495;
       default:
         return weight;
@@ -833,21 +924,25 @@ export class DhlAdapter implements CarrierAdapter {
    * Format date for DHL API (YYYY-MM-DD)
    */
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   }
 
   /**
    * Generate mock DHL tracking number (11 digits)
    */
   private generateTrackingNumber(): string {
-    return Math.floor(Math.random() * 100000000000).toString().padStart(11, '0');
+    return Math.floor(Math.random() * 100000000000)
+      .toString()
+      .padStart(11, "0");
   }
 
   /**
    * Generate mock DHL pickup ID
    */
   private generatePickupId(): string {
-    return Math.floor(Math.random() * 1000000).toString().padStart(8, '0');
+    return Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(8, "0");
   }
 
   /**
@@ -855,7 +950,7 @@ export class DhlAdapter implements CarrierAdapter {
    */
   private generateMockLabelData(trackingNumber: string): string {
     const labelContent = `DHL EXPRESS LABEL\nTracking: ${trackingNumber}\n\nInternational shipment`;
-    return Buffer.from(labelContent).toString('base64');
+    return Buffer.from(labelContent).toString("base64");
   }
 
   /**
@@ -865,19 +960,25 @@ export class DhlAdapter implements CarrierAdapter {
     // Use API key if available, otherwise fall back to Basic Auth
     if (this.apiKey) {
       return {
-        'DHL-API-Key': this.apiKey,
+        "DHL-API-Key": this.apiKey,
       };
     }
 
     // Fall back to Basic Auth with clientId and password
     if (this.clientId && this.password) {
-      const credentials = Buffer.from(`${this.clientId}:${this.password}`).toString('base64');
+      const credentials = Buffer.from(
+        `${this.clientId}:${this.password}`,
+      ).toString("base64");
       return {
-        'Authorization': `Basic ${credentials}`,
+        Authorization: `Basic ${credentials}`,
       };
     }
 
-    throw new CarrierError('dhl', 'AUTH_ERROR', 'DHL API credentials not configured');
+    throw new CarrierError(
+      "dhl",
+      "AUTH_ERROR",
+      "DHL API credentials not configured",
+    );
   }
 
   /**
@@ -885,12 +986,12 @@ export class DhlAdapter implements CarrierAdapter {
    */
   private mapDhlErrorCode(statusCode: number, errorCode?: string): string {
     const codeMap: Record<string, string> = {
-      'INVALID_ADDRESS': 'INVALID_ADDRESS',
-      'INVALID_SHIPMENT': 'INVALID_SHIPMENT',
-      'RATE_ERROR': 'RATE_ERROR',
-      'TRACKING_ERROR': 'TRACKING_ERROR',
-      'AUTH_ERROR': 'AUTH_ERROR',
-      'NOT_FOUND': 'NOT_FOUND',
+      INVALID_ADDRESS: "INVALID_ADDRESS",
+      INVALID_SHIPMENT: "INVALID_SHIPMENT",
+      RATE_ERROR: "RATE_ERROR",
+      TRACKING_ERROR: "TRACKING_ERROR",
+      AUTH_ERROR: "AUTH_ERROR",
+      NOT_FOUND: "NOT_FOUND",
     };
 
     if (errorCode && codeMap[errorCode]) {
@@ -899,49 +1000,51 @@ export class DhlAdapter implements CarrierAdapter {
 
     switch (statusCode) {
       case 400:
-        return 'INVALID_REQUEST';
+        return "INVALID_REQUEST";
       case 401:
-        return 'AUTH_ERROR';
+        return "AUTH_ERROR";
       case 403:
-        return 'FORBIDDEN';
+        return "FORBIDDEN";
       case 404:
-        return 'NOT_FOUND';
+        return "NOT_FOUND";
       case 429:
-        return 'RATE_LIMIT';
+        return "RATE_LIMIT";
       case 500:
-        return 'SERVER_ERROR';
+        return "SERVER_ERROR";
       default:
-        return 'API_ERROR';
+        return "API_ERROR";
     }
   }
 
   /**
    * Map DHL shipment status to standard status
    */
-  private mapDhlStatus(dhlStatus: string): TrackingResponse['status'] {
-    const statusMap: Record<string, TrackingResponse['status']> = {
-      'DELIVERED': 'delivered',
-      'DELIVERED_WITH_EXCEPTION': 'delivered',
-      'TRANSIT': 'in_transit',
-      'PICK_UP_NOTIFICATION_SENT': 'pending',
-      'PENDING': 'pending',
-      'RETURNED': 'returned',
-      'EXCEPTION': 'exception',
+  private mapDhlStatus(dhlStatus: string): TrackingResponse["status"] {
+    const statusMap: Record<string, TrackingResponse["status"]> = {
+      DELIVERED: "delivered",
+      DELIVERED_WITH_EXCEPTION: "delivered",
+      TRANSIT: "in_transit",
+      PICK_UP_NOTIFICATION_SENT: "pending",
+      PENDING: "pending",
+      RETURNED: "returned",
+      EXCEPTION: "exception",
     };
 
-    return statusMap[dhlStatus] || 'unknown';
+    return statusMap[dhlStatus] || "unknown";
   }
 
   /**
    * Map DHL event type to standard event status
    */
-  private mapDhlEventStatus(eventType: string): TrackingResponse['events'][0]['status'] {
-    if (eventType.includes('DELIVERY')) return 'delivered';
-    if (eventType.includes('PICK_UP')) return 'picked_up';
-    if (eventType.includes('EXCEPTION')) return 'exception';
-    if (eventType.includes('CUSTOMS')) return 'customs_clearance';
-    if (eventType.includes('RETURNED')) return 'returned';
-    return 'in_transit';
+  private mapDhlEventStatus(
+    eventType: string,
+  ): TrackingResponse["events"][0]["status"] {
+    if (eventType.includes("DELIVERY")) return "delivered";
+    if (eventType.includes("PICK_UP")) return "picked_up";
+    if (eventType.includes("EXCEPTION")) return "exception";
+    if (eventType.includes("CUSTOMS")) return "customs_clearance";
+    if (eventType.includes("RETURNED")) return "returned";
+    return "in_transit";
   }
 }
 

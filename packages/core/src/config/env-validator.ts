@@ -22,9 +22,10 @@ import { z } from "zod";
  * Database configuration schema
  */
 const DatabaseSchema = z.object({
-  DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL").describe(
-    "PostgreSQL connection string"
-  ),
+  DATABASE_URL: z
+    .string()
+    .url("DATABASE_URL must be a valid URL")
+    .describe("PostgreSQL connection string"),
   DATABASE_POOL_SIZE: z.coerce
     .number()
     .int()
@@ -45,7 +46,10 @@ const RedisSchema = z.object({
     .string()
     .url("REDIS_URL must be a valid URL")
     .describe("Redis connection string"),
-  REDIS_PASSWORD: z.string().optional().describe("Redis password (if not in URL)"),
+  REDIS_PASSWORD: z
+    .string()
+    .optional()
+    .describe("Redis password (if not in URL)"),
 });
 
 /**
@@ -80,28 +84,16 @@ const SmtpSchema = z.object({
  * Twilio SMS configuration schema
  */
 const TwilioSchema = z.object({
-  TWILIO_SID: z
-    .string()
-    .optional()
-    .describe("Twilio Account SID"),
-  TWILIO_AUTH_TOKEN: z
-    .string()
-    .optional()
-    .describe("Twilio Auth Token"),
-  TWILIO_PHONE: z
-    .string()
-    .optional()
-    .describe("Twilio phone number"),
+  TWILIO_SID: z.string().optional().describe("Twilio Account SID"),
+  TWILIO_AUTH_TOKEN: z.string().optional().describe("Twilio Auth Token"),
+  TWILIO_PHONE: z.string().optional().describe("Twilio phone number"),
 });
 
 /**
  * Stripe payment configuration schema
  */
 const StripeSchema = z.object({
-  STRIPE_SECRET_KEY: z
-    .string()
-    .optional()
-    .describe("Stripe secret API key"),
+  STRIPE_SECRET_KEY: z.string().optional().describe("Stripe secret API key"),
   STRIPE_WEBHOOK_SECRET: z
     .string()
     .optional()
@@ -112,11 +104,7 @@ const StripeSchema = z.object({
  * Sentry error tracking schema
  */
 const SentrySchema = z.object({
-  SENTRY_DSN: z
-    .string()
-    .url()
-    .optional()
-    .describe("Sentry project DSN"),
+  SENTRY_DSN: z.string().url().optional().describe("Sentry project DSN"),
   SENTRY_ENVIRONMENT: z
     .enum(["development", "staging", "production"])
     .optional()
@@ -127,50 +115,26 @@ const SentrySchema = z.object({
  * Geolocation provider schemas
  */
 const GeoSchema = z.object({
-  MAPBOX_TOKEN: z
-    .string()
-    .optional()
-    .describe("Mapbox API token"),
-  GOOGLE_MAPS_KEY: z
-    .string()
-    .optional()
-    .describe("Google Maps API key"),
+  MAPBOX_TOKEN: z.string().optional().describe("Mapbox API token"),
+  GOOGLE_MAPS_KEY: z.string().optional().describe("Google Maps API key"),
 });
 
 /**
  * Shopify integration schema
  */
 const ShopifySchema = z.object({
-  SHOPIFY_API_KEY: z
-    .string()
-    .optional()
-    .describe("Shopify API key"),
-  SHOPIFY_API_SECRET: z
-    .string()
-    .optional()
-    .describe("Shopify API secret"),
+  SHOPIFY_API_KEY: z.string().optional().describe("Shopify API key"),
+  SHOPIFY_API_SECRET: z.string().optional().describe("Shopify API secret"),
 });
 
 /**
  * AWS S3 storage schema
  */
 const S3Schema = z.object({
-  S3_BUCKET: z
-    .string()
-    .optional()
-    .describe("S3 bucket name"),
-  S3_REGION: z
-    .string()
-    .optional()
-    .describe("AWS region"),
-  S3_ACCESS_KEY: z
-    .string()
-    .optional()
-    .describe("AWS access key ID"),
-  S3_SECRET_KEY: z
-    .string()
-    .optional()
-    .describe("AWS secret access key"),
+  S3_BUCKET: z.string().optional().describe("S3 bucket name"),
+  S3_REGION: z.string().optional().describe("AWS region"),
+  S3_ACCESS_KEY: z.string().optional().describe("AWS access key ID"),
+  S3_SECRET_KEY: z.string().optional().describe("AWS secret access key"),
 });
 
 /**
@@ -182,16 +146,8 @@ const UrlSchema = z.object({
     .url("APP_URL must be a valid URL")
     .default("http://localhost:3000")
     .describe("Public app URL"),
-  API_URL: z
-    .string()
-    .url()
-    .optional()
-    .describe("API base URL"),
-  DASHBOARD_URL: z
-    .string()
-    .url()
-    .optional()
-    .describe("Dashboard URL"),
+  API_URL: z.string().url().optional().describe("API base URL"),
+  DASHBOARD_URL: z.string().url().optional().describe("Dashboard URL"),
 });
 
 /**
@@ -206,11 +162,7 @@ const ServerSchema = z.object({
     .enum(["debug", "info", "warn", "error"])
     .default("info")
     .describe("Logging level"),
-  PORT: z.coerce
-    .number()
-    .int()
-    .default(8000)
-    .describe("Server port"),
+  PORT: z.coerce.number().int().default(8000).describe("Server port"),
 });
 
 /**

@@ -18,13 +18,26 @@
  * - Rate limiting: 30 msg/sec per channel
  */
 
-import { createHmac, createSign } from 'crypto';
+import { createHmac, createSign } from "crypto";
 
 // ─── Types ───────────────────────────────────────────────────────
 
-export type VonageChannel = 'sms' | 'mms' | 'whatsapp' | 'viber' | 'messenger' | 'rcs';
+export type VonageChannel =
+  | "sms"
+  | "mms"
+  | "whatsapp"
+  | "viber"
+  | "messenger"
+  | "rcs";
 
-export type VonageMessageType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'template' | 'custom';
+export type VonageMessageType =
+  | "text"
+  | "image"
+  | "video"
+  | "audio"
+  | "file"
+  | "template"
+  | "custom";
 
 export interface VonageMessage {
   to: string;
@@ -36,7 +49,11 @@ export interface VonageMessage {
   video?: { url: string; caption?: string };
   audio?: { url: string };
   file?: { url: string; name?: string };
-  template?: { name: string; language: string; parameters?: Record<string, string> };
+  template?: {
+    name: string;
+    language: string;
+    parameters?: Record<string, string>;
+  };
   custom?: Record<string, unknown>;
   clientRef?: string;
   metadata?: Record<string, unknown>;
@@ -56,7 +73,7 @@ export interface VonageSmsStatus {
   messageId: string;
   to: string;
   from: string;
-  status: 'submitted' | 'delivered' | 'failed' | 'rejected' | 'undeliverable';
+  status: "submitted" | "delivered" | "failed" | "rejected" | "undeliverable";
   timestamp: Date;
   errorCode?: string;
   errorText?: string;
@@ -81,13 +98,13 @@ export interface VonageInboundMessage {
 export interface VonageVerifyRequest {
   requestId: string;
   to: string;
-  status: 'pending' | 'expired' | 'verified' | 'failed';
+  status: "pending" | "expired" | "verified" | "failed";
   timestamp: Date;
   expiresIn?: number;
 }
 
 export interface VonageWebhookPayload {
-  eventType: 'delivery' | 'inbound' | 'status';
+  eventType: "delivery" | "inbound" | "status";
   messageId: string;
   timestamp: number;
   status?: string;
@@ -122,7 +139,10 @@ export class VonageSDKClient {
   private readonly baseUrl: string;
   private readonly webhookSecret?: string;
   private readonly timeout: number;
-  private readonly rateLimit: { messagesPerSecond: number; maxConcurrent: number };
+  private readonly rateLimit: {
+    messagesPerSecond: number;
+    maxConcurrent: number;
+  };
   private jwtToken?: string;
   private jwtExpiry?: number;
   private requestQueue: Promise<unknown>[] = [];
@@ -130,17 +150,17 @@ export class VonageSDKClient {
 
   constructor(config: VonageSDKConfig) {
     if (!config.applicationId) {
-      throw new Error('Vonage applicationId is required');
+      throw new Error("Vonage applicationId is required");
     }
     if (!config.privateKey) {
-      throw new Error('Vonage privateKey is required');
+      throw new Error("Vonage privateKey is required");
     }
 
     this.applicationId = config.applicationId;
     this.privateKey = config.privateKey;
     this.apiKey = config.apiKey;
     this.apiSecret = config.apiSecret;
-    this.baseUrl = config.baseUrl || 'https://api.vonage.com';
+    this.baseUrl = config.baseUrl || "https://api.vonage.com";
     this.webhookSecret = config.webhookSecret;
     this.timeout = config.timeout || 30000;
     this.rateLimit = {
@@ -157,8 +177,8 @@ export class VonageSDKClient {
     const exp = now + 3600; // 1 hour expiry
 
     const header = {
-      typ: 'JWT',
-      alg: 'RS256',
+      typ: "JWT",
+      alg: "RS256",
     };
 
     const payload = {
@@ -172,9 +192,11 @@ export class VonageSDKClient {
     const payloadEncoded = this.base64UrlEncode(JSON.stringify(payload));
     const signatureInput = `${headerEncoded}.${payloadEncoded}`;
 
-    const sign = createSign('RSA-SHA256');
+    const sign = createSign("RSA-SHA256");
     sign.update(signatureInput);
-    const signature = this.base64UrlEncode(sign.sign(this.privateKey, 'base64'));
+    const signature = this.base64UrlEncode(
+      sign.sign(this.privateKey, "base64"),
+    );
 
     return `${signatureInput}.${signature}`;
   }
@@ -197,35 +219,46 @@ export class VonageSDKClient {
   /**
    * Send SMS message.
    */
-  async sendSMS(to: string, from: string, text: string, clientRef?: string): Promise<VonageSmsStatus> {
-    return this.withRateLimit('sms', async () => {
+  async sendSMS(
+    to: string,
+    from: string,
+    text: string,
+    clientRef?: string,
+  ): Promise<VonageSmsStatus> {
+    return this.withRateLimit("sms", async () => {
       const payload = {
         to,
         from,
         text,
-        type: 'text',
+        type: "text",
         ...(clientRef && { client_ref: clientRef }),
       };
 
-      const response = await this.makeRequest('POST', '/sms/json', payload);
-      const messages = response.messages as Array<Record<string, unknown>> | undefined;
+      const response = await this.makeRequest("POST", "/sms/json", payload);
+      const messages = response.messages as
+        | Array<Record<string, unknown>>
+        | undefined;
 
       if (messages && messages.length > 0) {
         const msg = messages[0];
-        if (msg.status === '0') {
+        if (msg.status === "0") {
           return {
-            messageId: msg['message-id'] as string,
+            messageId: msg["message-id"] as string,
             to,
             from,
-            status: 'submitted',
+            status: "submitted",
             timestamp: new Date(),
-            networkCode: msg['network-code'] as string | undefined,
-            price: msg['message-price'] ? parseFloat(msg['message-price'] as string) : undefined,
+            networkCode: msg["network-code"] as string | undefined,
+            price: msg["message-price"]
+              ? parseFloat(msg["message-price"] as string)
+              : undefined,
           };
         }
       }
 
-      throw new Error(`SMS send failed: ${(messages?.[0]?.['error-text'] as string | undefined) || 'Unknown error'}`);
+      throw new Error(
+        `SMS send failed: ${(messages?.[0]?.["error-text"] as string | undefined) || "Unknown error"}`,
+      );
     });
   }
 
@@ -236,13 +269,13 @@ export class VonageSDKClient {
     to: string,
     from: string,
     mediaUrl: string,
-    mediaType: 'image' | 'video' | 'audio' | 'file',
-    caption?: string
+    mediaType: "image" | "video" | "audio" | "file",
+    caption?: string,
   ): Promise<VonageSmsStatus> {
-    return this.withRateLimit('mms', async () => {
+    return this.withRateLimit("mms", async () => {
       const payload = {
-        to: { type: 'phone_number', number: to },
-        from: { type: 'phone_number', number: from },
+        to: { type: "phone_number", number: to },
+        from: { type: "phone_number", number: from },
         message_type: mediaType,
         [mediaType]: {
           url: mediaUrl,
@@ -250,142 +283,160 @@ export class VonageSDKClient {
         },
       };
 
-      const response = await this.makeRequest('POST', '/v2/messages', payload);
+      const response = await this.makeRequest("POST", "/v2/messages", payload);
 
       if (response.message_uuid) {
         return {
           messageId: response.message_uuid as string,
           to,
           from,
-          status: 'submitted',
+          status: "submitted",
           timestamp: new Date(),
         };
       }
 
-      throw new Error(`MMS send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
+      throw new Error(
+        `MMS send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? "Unknown error"}`,
+      );
     });
   }
 
   /**
    * Send WhatsApp message (text, image, video, audio, file, or template).
    */
-  async sendWhatsApp(to: string, message: Partial<VonageMessage>): Promise<VonageSmsStatus> {
-    return this.withRateLimit('whatsapp', async () => {
+  async sendWhatsApp(
+    to: string,
+    message: Partial<VonageMessage>,
+  ): Promise<VonageSmsStatus> {
+    return this.withRateLimit("whatsapp", async () => {
       const from = message.from || this.applicationId;
 
       let payload: Record<string, unknown>;
 
       if (message.template) {
         payload = {
-          to: { type: 'whatsapp', number: to },
-          from: { type: 'whatsapp', number: from },
-          message_type: 'template',
+          to: { type: "whatsapp", number: to },
+          from: { type: "whatsapp", number: from },
+          message_type: "template",
           template: {
             name: message.template.name,
-            language: { policy: 'deterministic', code: message.template.language },
+            language: {
+              policy: "deterministic",
+              code: message.template.language,
+            },
             parameters: message.template.parameters,
           },
         };
       } else if (message.text) {
         payload = {
-          to: { type: 'whatsapp', number: to },
-          from: { type: 'whatsapp', number: from },
-          message_type: 'text',
+          to: { type: "whatsapp", number: to },
+          from: { type: "whatsapp", number: from },
+          message_type: "text",
           text: { body: message.text },
         };
       } else if (message.image) {
         payload = {
-          to: { type: 'whatsapp', number: to },
-          from: { type: 'whatsapp', number: from },
-          message_type: 'image',
+          to: { type: "whatsapp", number: to },
+          from: { type: "whatsapp", number: from },
+          message_type: "image",
           image: { url: message.image.url, caption: message.image.caption },
         };
       } else if (message.video) {
         payload = {
-          to: { type: 'whatsapp', number: to },
-          from: { type: 'whatsapp', number: from },
-          message_type: 'video',
+          to: { type: "whatsapp", number: to },
+          from: { type: "whatsapp", number: from },
+          message_type: "video",
           video: { url: message.video.url, caption: message.video.caption },
         };
       } else if (message.audio) {
         payload = {
-          to: { type: 'whatsapp', number: to },
-          from: { type: 'whatsapp', number: from },
-          message_type: 'audio',
+          to: { type: "whatsapp", number: to },
+          from: { type: "whatsapp", number: from },
+          message_type: "audio",
           audio: { url: message.audio.url },
         };
       } else if (message.file) {
         payload = {
-          to: { type: 'whatsapp', number: to },
-          from: { type: 'whatsapp', number: from },
-          message_type: 'file',
+          to: { type: "whatsapp", number: to },
+          from: { type: "whatsapp", number: from },
+          message_type: "file",
           file: { url: message.file.url, name: message.file.name },
         };
       } else {
-        throw new Error('WhatsApp message must include text, image, video, audio, file, or template');
+        throw new Error(
+          "WhatsApp message must include text, image, video, audio, file, or template",
+        );
       }
 
-      const response = await this.makeRequest('POST', '/v2/messages', payload);
+      const response = await this.makeRequest("POST", "/v2/messages", payload);
 
       if (response.message_uuid) {
         return {
           messageId: response.message_uuid as string,
           to,
           from,
-          status: 'submitted',
+          status: "submitted",
           timestamp: new Date(),
         };
       }
 
-      throw new Error(`WhatsApp send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
+      throw new Error(
+        `WhatsApp send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? "Unknown error"}`,
+      );
     });
   }
 
   /**
    * Send Viber message (text, image, or file).
    */
-  async sendViber(to: string, from: string, message: Partial<VonageMessage>): Promise<VonageSmsStatus> {
-    return this.withRateLimit('viber', async () => {
+  async sendViber(
+    to: string,
+    from: string,
+    message: Partial<VonageMessage>,
+  ): Promise<VonageSmsStatus> {
+    return this.withRateLimit("viber", async () => {
       let payload: Record<string, unknown>;
 
       if (message.text) {
         payload = {
-          to: { type: 'viber', number: to },
-          from: { type: 'viber', number: from },
-          message_type: 'text',
+          to: { type: "viber", number: to },
+          from: { type: "viber", number: from },
+          message_type: "text",
           text: { body: message.text },
         };
       } else if (message.image) {
         payload = {
-          to: { type: 'viber', number: to },
-          from: { type: 'viber', number: from },
-          message_type: 'image',
+          to: { type: "viber", number: to },
+          from: { type: "viber", number: from },
+          message_type: "image",
           image: { url: message.image.url },
         };
       } else if (message.file) {
         payload = {
-          to: { type: 'viber', number: to },
-          from: { type: 'viber', number: from },
-          message_type: 'file',
+          to: { type: "viber", number: to },
+          from: { type: "viber", number: from },
+          message_type: "file",
           file: { url: message.file.url, name: message.file.name },
         };
       } else {
-        throw new Error('Viber message must include text, image, or file');
+        throw new Error("Viber message must include text, image, or file");
       }
 
-      const response = await this.makeRequest('POST', '/v2/messages', payload);
+      const response = await this.makeRequest("POST", "/v2/messages", payload);
 
       if (response.message_uuid) {
         return {
           messageId: response.message_uuid as string,
           to,
           from,
-          status: 'submitted',
+          status: "submitted",
           timestamp: new Date(),
         };
       }
 
-      throw new Error(`Viber send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
+      throw new Error(
+        `Viber send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? "Unknown error"}`,
+      );
     });
   }
 
@@ -395,71 +446,78 @@ export class VonageSDKClient {
   async sendFacebookMessenger(
     to: string,
     from: string,
-    message: Partial<VonageMessage>
+    message: Partial<VonageMessage>,
   ): Promise<VonageSmsStatus> {
-    return this.withRateLimit('messenger', async () => {
+    return this.withRateLimit("messenger", async () => {
       let payload: Record<string, unknown>;
 
       if (message.text) {
         payload = {
-          to: { type: 'messenger', id: to },
-          from: { type: 'messenger', id: from },
-          message_type: 'text',
+          to: { type: "messenger", id: to },
+          from: { type: "messenger", id: from },
+          message_type: "text",
           text: { body: message.text },
         };
       } else if (message.image) {
         payload = {
-          to: { type: 'messenger', id: to },
-          from: { type: 'messenger', id: from },
-          message_type: 'image',
+          to: { type: "messenger", id: to },
+          from: { type: "messenger", id: from },
+          message_type: "image",
           image: { url: message.image.url },
         };
       } else if (message.video) {
         payload = {
-          to: { type: 'messenger', id: to },
-          from: { type: 'messenger', id: from },
-          message_type: 'video',
+          to: { type: "messenger", id: to },
+          from: { type: "messenger", id: from },
+          message_type: "video",
           video: { url: message.video.url },
         };
       } else if (message.audio) {
         payload = {
-          to: { type: 'messenger', id: to },
-          from: { type: 'messenger', id: from },
-          message_type: 'audio',
+          to: { type: "messenger", id: to },
+          from: { type: "messenger", id: from },
+          message_type: "audio",
           audio: { url: message.audio.url },
         };
       } else if (message.file) {
         payload = {
-          to: { type: 'messenger', id: to },
-          from: { type: 'messenger', id: from },
-          message_type: 'file',
+          to: { type: "messenger", id: to },
+          from: { type: "messenger", id: from },
+          message_type: "file",
           file: { url: message.file.url },
         };
       } else {
-        throw new Error('Messenger message must include text, image, video, audio, or file');
+        throw new Error(
+          "Messenger message must include text, image, video, audio, or file",
+        );
       }
 
-      const response = await this.makeRequest('POST', '/v2/messages', payload);
+      const response = await this.makeRequest("POST", "/v2/messages", payload);
 
       if (response.message_uuid) {
         return {
           messageId: response.message_uuid as string,
           to,
           from,
-          status: 'submitted',
+          status: "submitted",
           timestamp: new Date(),
         };
       }
 
-      throw new Error(`Messenger send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
+      throw new Error(
+        `Messenger send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? "Unknown error"}`,
+      );
     });
   }
 
   /**
    * Send message via Dispatch API with failover chain.
    */
-  async sendDispatch(to: string, config: VonageDispatchConfig): Promise<VonageSmsStatus> {
-    return this.withRateLimit('dispatch', async () => {
+  async sendDispatch(
+    to: string,
+    config: VonageDispatchConfig,
+  ): Promise<VonageSmsStatus> {
+    return this.withRateLimit("dispatch", async () => {
       const workflow = config.workflow.map((step) => ({
         channel: step.channel,
         to: step.to || to,
@@ -473,61 +531,76 @@ export class VonageSDKClient {
         ...(config.failover && { failover: true }),
       };
 
-      const response = await this.makeRequest('POST', '/v2/dispatch', payload);
+      const response = await this.makeRequest("POST", "/v2/dispatch", payload);
 
       if (response.dispatch_uuid) {
         return {
           messageId: response.dispatch_uuid as string,
           to,
           from: this.applicationId,
-          status: 'submitted',
+          status: "submitted",
           timestamp: new Date(),
         };
       }
 
-      throw new Error(`Dispatch send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
+      throw new Error(
+        `Dispatch send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? "Unknown error"}`,
+      );
     });
   }
 
   /**
    * Send verification code (Verify API v2).
    */
-  async sendVerificationCode(to: string, brand: string, length: number = 4): Promise<VonageVerifyRequest> {
-    return this.withRateLimit('verify', async () => {
+  async sendVerificationCode(
+    to: string,
+    brand: string,
+    length: number = 4,
+  ): Promise<VonageVerifyRequest> {
+    return this.withRateLimit("verify", async () => {
       const payload = {
         number: to,
         brand,
         code_length: length,
       };
 
-      const response = await this.makeRequest('POST', '/v2/verify', payload);
+      const response = await this.makeRequest("POST", "/v2/verify", payload);
 
-      if (response.request_id && response.status === '0') {
+      if (response.request_id && response.status === "0") {
         return {
           requestId: response.request_id as string,
           to,
-          status: 'pending',
+          status: "pending",
           timestamp: new Date(),
           expiresIn: 900, // 15 minutes default
         };
       }
 
-      throw new Error(`Verify send failed: ${(response.error_text as string | undefined) || 'Unknown error'}`);
+      throw new Error(
+        `Verify send failed: ${(response.error_text as string | undefined) || "Unknown error"}`,
+      );
     });
   }
 
   /**
    * Check verification code.
    */
-  async checkVerificationCode(requestId: string, code: string): Promise<boolean> {
+  async checkVerificationCode(
+    requestId: string,
+    code: string,
+  ): Promise<boolean> {
     try {
       const payload = {
         request_id: requestId,
         code,
       };
 
-      const response = await this.makeRequest('POST', '/v2/verify/check', payload);
-      return response.status === '0';
+      const response = await this.makeRequest(
+        "POST",
+        "/v2/verify/check",
+        payload,
+      );
+      return response.status === "0";
     } catch {
       return false;
     }
@@ -537,7 +610,9 @@ export class VonageSDKClient {
    * Cancel verification request.
    */
   async cancelVerification(requestId: string): Promise<void> {
-    await this.makeRequest('POST', '/v2/verify/cancel', { request_id: requestId });
+    await this.makeRequest("POST", "/v2/verify/cancel", {
+      request_id: requestId,
+    });
   }
 
   /**
@@ -545,9 +620,9 @@ export class VonageSDKClient {
    */
   async lookupNumber(
     number: string,
-    level: 'basic' | 'standard' | 'advanced' = 'standard'
+    level: "basic" | "standard" | "advanced" = "standard",
   ): Promise<Record<string, unknown>> {
-    return this.makeRequest('GET', `/ni/${level}/json`, undefined, {
+    return this.makeRequest("GET", `/ni/${level}/json`, undefined, {
       number: encodeURIComponent(number),
     });
   }
@@ -555,15 +630,18 @@ export class VonageSDKClient {
   /**
    * Verify webhook signature using HMAC-SHA256.
    */
-  verifyWebhookSignature(payload: VonageWebhookPayload, signature: string): boolean {
+  verifyWebhookSignature(
+    payload: VonageWebhookPayload,
+    signature: string,
+  ): boolean {
     if (!this.webhookSecret) {
       return false;
     }
 
     const data = JSON.stringify(payload);
-    const hmac = createHmac('sha256', this.webhookSecret);
+    const hmac = createHmac("sha256", this.webhookSecret);
     hmac.update(data);
-    const expectedSignature = hmac.digest('hex');
+    const expectedSignature = hmac.digest("hex");
 
     // Timing-safe comparison
     return this.timingSafeEqual(expectedSignature, signature);
@@ -579,7 +657,7 @@ export class VonageSDKClient {
       to: (payload.to || payload.to) as string,
       timestamp: new Date((payload.timestamp || Date.now()) as number),
       text: (payload.text || payload.body) as string | undefined,
-      type: (payload.type || 'sms') as VonageChannel,
+      type: (payload.type || "sms") as VonageChannel,
     };
   }
 
@@ -590,7 +668,7 @@ export class VonageSDKClient {
     method: string,
     path: string,
     body?: Record<string, unknown>,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const url = new URL(path, this.baseUrl);
 
@@ -602,19 +680,19 @@ export class VonageSDKClient {
     }
 
     // Add API key/secret for some endpoints (legacy)
-    if (this.apiKey && this.apiSecret && path.includes('/sms/')) {
-      url.searchParams.append('api_key', this.apiKey);
-      url.searchParams.append('api_secret', this.apiSecret);
+    if (this.apiKey && this.apiSecret && path.includes("/sms/")) {
+      url.searchParams.append("api_key", this.apiKey);
+      url.searchParams.append("api_secret", this.apiSecret);
     }
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     // Add JWT auth for v2 endpoints
-    if (path.includes('/v2/') || path.includes('/verify')) {
-      headers['Authorization'] = `Bearer ${this.getJWT()}`;
+    if (path.includes("/v2/") || path.includes("/verify")) {
+      headers["Authorization"] = `Bearer ${this.getJWT()}`;
     }
 
     const options: RequestInit = {
@@ -622,18 +700,20 @@ export class VonageSDKClient {
       headers,
     };
 
-    if (body && method !== 'GET') {
+    if (body && method !== "GET") {
       options.body = JSON.stringify(body);
     }
 
     const response = await fetch(url.toString(), options);
 
     if (!response.ok) {
-      throw new Error(`Vonage API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Vonage API error: ${response.status} ${response.statusText}`,
+      );
     }
 
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
       return (await response.json()) as Record<string, unknown>;
     }
 
@@ -643,7 +723,10 @@ export class VonageSDKClient {
   /**
    * Apply rate limiting to requests.
    */
-  private async withRateLimit<T>(channel: string, fn: () => Promise<T>): Promise<T> {
+  private async withRateLimit<T>(
+    channel: string,
+    fn: () => Promise<T>,
+  ): Promise<T> {
     // Wait for concurrent limit
     while (this.requestQueue.length >= this.rateLimit.maxConcurrent) {
       await Promise.race(this.requestQueue);
@@ -662,7 +745,10 @@ export class VonageSDKClient {
     }
 
     recentRequests.push(now);
-    this.rateLimitBucket.set(channel, recentRequests.slice(-this.rateLimit.messagesPerSecond));
+    this.rateLimitBucket.set(
+      channel,
+      recentRequests.slice(-this.rateLimit.messagesPerSecond),
+    );
 
     const promise = fn();
     this.requestQueue.push(promise);
@@ -694,7 +780,11 @@ export class VonageSDKClient {
    * Base64 URL encode (used for JWT).
    */
   private base64UrlEncode(data: string): string {
-    return Buffer.from(data, 'utf-8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    return Buffer.from(data, "utf-8")
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
   }
 }
 

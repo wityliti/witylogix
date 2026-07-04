@@ -35,7 +35,7 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     // Calculate visible page numbers
     const getPageNumbers = (): (number | string)[] => {
@@ -73,7 +73,10 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
 
     // Calculate item range
     const startItem = (currentPage - 1) * pageSize + 1;
-    const endItem = Math.min(currentPage * pageSize, totalItems || currentPage * pageSize);
+    const endItem = Math.min(
+      currentPage * pageSize,
+      totalItems || currentPage * pageSize,
+    );
 
     const pageNumbers = getPageNumbers();
 
@@ -83,7 +86,7 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
         className={cn(
           "flex flex-col gap-4 items-center justify-between",
           "py-4 px-4",
-          className
+          className,
         )}
         {...props}
       >
@@ -91,7 +94,10 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
         <div className="flex items-center justify-between w-full gap-4">
           {showPageSizeSelector && (
             <div className="flex items-center gap-2">
-              <label htmlFor="page-size" className="text-sm text-wl-text-secondary">
+              <label
+                htmlFor="page-size"
+                className="text-sm text-wl-text-secondary"
+              >
                 Show
               </label>
               <select
@@ -104,7 +110,7 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
                   "px-3 py-1.5 text-sm",
                   "transition-all duration-fast ease-default",
                   "focus:border-wl-primary-500 outline-none",
-                  "cursor-pointer"
+                  "cursor-pointer",
                 )}
               >
                 {pageSizeOptions.map((size) => (
@@ -178,7 +184,7 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
                     isActive
                       ? "bg-wl-primary-500 text-wl-text-inverse font-semibold"
                       : "text-wl-text-primary hover:bg-wl-bg-surface border border-transparent hover:border-wl-border-default",
-                    !isActive && "cursor-pointer"
+                    !isActive && "cursor-pointer",
                   )}
                   aria-label={`Page ${pageNum}`}
                   aria-current={isActive ? "page" : undefined}
@@ -215,7 +221,7 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 Pagination.displayName = "Pagination";

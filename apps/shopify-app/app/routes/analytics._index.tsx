@@ -30,7 +30,10 @@ import {
   ProgressBar,
   Divider,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -76,9 +79,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (intent === "export") {
     let overview: AnalyticsOverview;
     try {
-      overview = await api.get<AnalyticsOverview>("/api/v4/analytics/overview", {
-        days: parseInt(days),
-      });
+      overview = await api.get<AnalyticsOverview>(
+        "/api/v4/analytics/overview",
+        {
+          days: parseInt(days),
+        },
+      );
     } catch {
       overview = {
         dateRange: `Last ${days} days`,
@@ -109,7 +115,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       "Zone Performance",
       "Zone,Deliveries,On-Time Rate,Avg Time",
       ...overview.zonePerformance.map(
-        (z) => `${z.zoneName},${z.deliveries},${z.onTimeRate}%,${z.averageTime} min`,
+        (z) =>
+          `${z.zoneName},${z.deliveries},${z.onTimeRate}%,${z.averageTime} min`,
       ),
     ];
 
@@ -207,7 +214,10 @@ export default function Analytics() {
   const maxTrendValue = Math.max(...overview.trend.map((t) => t.count), 100);
 
   const statusBadgeTone = (status: string) => {
-    const tones: Record<string, "success" | "info" | "critical" | "warning" | undefined> = {
+    const tones: Record<
+      string,
+      "success" | "info" | "critical" | "warning" | undefined
+    > = {
       DELIVERED: "success",
       OUT_FOR_DELIVERY: "info",
       FAILED: "critical",
@@ -233,7 +243,15 @@ export default function Analytics() {
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Box minWidth="200px">
-          <ProgressBar progress={item.percentage} tone={statusBadgeTone(item.status) === "critical" ? "critical" : "primary"} size="small" />
+          <ProgressBar
+            progress={item.percentage}
+            tone={
+              statusBadgeTone(item.status) === "critical"
+                ? "critical"
+                : "primary"
+            }
+            size="small"
+          />
         </Box>
       </IndexTable.Cell>
     </IndexTable.Row>
@@ -280,7 +298,8 @@ export default function Analytics() {
                 {overview.totalDeliveries}
               </Text>
               <Text as="span" variant="bodySm" tone="subdued">
-                {Math.round(overview.totalDeliveries / parseInt(currentDays))} per day
+                {Math.round(overview.totalDeliveries / parseInt(currentDays))}{" "}
+                per day
               </Text>
             </BlockStack>
           </Card>
@@ -322,7 +341,8 @@ export default function Analytics() {
                 ${(overview.totalRevenue / 1000).toFixed(1)}k
               </Text>
               <Text as="span" variant="bodySm" tone="subdued">
-                ${Math.round(overview.totalRevenue / parseInt(currentDays))} per day
+                ${Math.round(overview.totalRevenue / parseInt(currentDays))} per
+                day
               </Text>
             </BlockStack>
           </Card>
@@ -336,7 +356,12 @@ export default function Analytics() {
                 <Text as="h2" variant="headingMd">
                   Delivery Trend
                 </Text>
-                <InlineStack gap="100" align="end" blockAlign="end" wrap={false}>
+                <InlineStack
+                  gap="100"
+                  align="end"
+                  blockAlign="end"
+                  wrap={false}
+                >
                   {overview.trend.map((point, idx) => (
                     <Box key={idx} minWidth="2px">
                       <BlockStack gap="100" inlineAlign="center">
@@ -406,7 +431,11 @@ export default function Analytics() {
                           <Text as="span" variant="bodySm" tone="subdued">
                             Deliveries
                           </Text>
-                          <Text as="span" variant="bodyMd" fontWeight="semibold">
+                          <Text
+                            as="span"
+                            variant="bodyMd"
+                            fontWeight="semibold"
+                          >
                             {zone.deliveries}
                           </Text>
                         </InlineStack>
@@ -414,7 +443,9 @@ export default function Analytics() {
                           <Text as="span" variant="bodySm" tone="subdued">
                             On-Time
                           </Text>
-                          <Badge tone={zone.onTimeRate >= 95 ? "success" : "warning"}>
+                          <Badge
+                            tone={zone.onTimeRate >= 95 ? "success" : "warning"}
+                          >
                             {zone.onTimeRate}%
                           </Badge>
                         </InlineStack>
@@ -422,7 +453,11 @@ export default function Analytics() {
                           <Text as="span" variant="bodySm" tone="subdued">
                             Avg Time
                           </Text>
-                          <Text as="span" variant="bodyMd" fontWeight="semibold">
+                          <Text
+                            as="span"
+                            variant="bodyMd"
+                            fontWeight="semibold"
+                          >
                             {zone.averageTime} min
                           </Text>
                         </InlineStack>

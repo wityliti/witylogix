@@ -24,8 +24,8 @@ import {
   RedisStreamConfig,
   PublishedEvent,
   PatternMatcher,
-} from './types.js';
-import { RedisStreamAdapter } from './redis-stream-adapter.js';
+} from "./types.js";
+import { RedisStreamAdapter } from "./redis-stream-adapter.js";
 
 /**
  * Wildcard pattern matcher for event types
@@ -41,9 +41,7 @@ class WildcardMatcher implements PatternMatcher {
     // "order.*" -> "^order\..*$"
     // "*.created" -> "^.*\.created$"
     // "*" -> "^.*$"
-    const regexPattern = pattern
-      .replace(/\./g, '\\.')
-      .replace(/\*/g, '.*');
+    const regexPattern = pattern.replace(/\./g, "\\.").replace(/\*/g, ".*");
     this.regex = new RegExp(`^${regexPattern}$`);
   }
 
@@ -72,7 +70,7 @@ export class EventBus {
     this.config = {
       enableFallback: true,
       maxInMemoryEvents: 1000,
-      source: 'event-bus',
+      source: "event-bus",
       enableEventStore: true,
       eventStoreRetentionDays: 30,
       ...config,
@@ -96,7 +94,7 @@ export class EventBus {
     } catch (error) {
       if (!this.config.enableFallback) {
         throw new EventBusError(
-          'INITIALIZATION_FAILED',
+          "INITIALIZATION_FAILED",
           `Failed to initialize event bus: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
@@ -154,7 +152,7 @@ export class EventBus {
         throw error;
       }
       throw new EventBusError(
-        'PUBLISH_FAILED',
+        "PUBLISH_FAILED",
         `Failed to publish event: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
@@ -220,9 +218,7 @@ export class EventBus {
     if (filter.type) {
       const types = Array.isArray(filter.type) ? filter.type : [filter.type];
       const matchers = types.map((t) => new WildcardMatcher(t));
-      results = results.filter((e) =>
-        matchers.some((m) => m.matches(e.type)),
-      );
+      results = results.filter((e) => matchers.some((m) => m.matches(e.type)));
     }
 
     // Filter by source
@@ -232,9 +228,7 @@ export class EventBus {
 
     // Filter by correlation ID
     if (filter.correlationId) {
-      results = results.filter(
-        (e) => e.correlationId === filter.correlationId,
-      );
+      results = results.filter((e) => e.correlationId === filter.correlationId);
     }
 
     // Filter by time range
@@ -291,7 +285,7 @@ export class EventBus {
    * Get current correlation ID
    */
   getCorrelationId(): string {
-    return this.correlationId || '';
+    return this.correlationId || "";
   }
 
   /**
@@ -341,8 +335,8 @@ export class EventBus {
 
     return {
       id: event.id || this.generateId(),
-      type: event.type || '',
-      source: event.source || this.config.source || 'unknown',
+      type: event.type || "",
+      source: event.source || this.config.source || "unknown",
       timestamp: event.timestamp || now,
       correlationId:
         event.correlationId || this.correlationId || this.generateId(),
@@ -412,15 +406,12 @@ export class EventBus {
 
       if (attempt < maxRetries) {
         // Exponential backoff: 1s, 2s, 4s, ...
-        const backoff = (subscription.retryBackoff || 1000) * Math.pow(2, attempt - 1);
+        const backoff =
+          (subscription.retryBackoff || 1000) * Math.pow(2, attempt - 1);
         await new Promise((resolve) => setTimeout(resolve, backoff));
 
         // Retry
-        return this.executeHandlerWithRetry(
-          subscription,
-          event,
-          attempt + 1,
-        );
+        return this.executeHandlerWithRetry(subscription, event, attempt + 1);
       }
 
       // Max retries exceeded

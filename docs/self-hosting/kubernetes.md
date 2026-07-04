@@ -6,16 +6,16 @@ This guide covers deploying WityLogix to a Kubernetes cluster from scratch using
 
 ## Prerequisites
 
-| Requirement | Version | Notes |
-|---|---|---|
-| Kubernetes cluster | ≥ 1.27 | Any distribution (EKS, GKE, k3s, Talos, etc.) |
-| `kubectl` | matching cluster | Configured with cluster access |
-| `helm` | ≥ 3.14 | For values-based install |
-| PostgreSQL with PostGIS | ≥ 15 | **External managed** — do not run inside k8s for production |
-| Redis | ≥ 7 | External managed or in-cluster |
-| Container registry access | — | `ghcr.io/wityliti/witylogix` (public) |
-| Ingress controller | nginx or Traefik | Must support `kubernetes.io/ingress.class` |
-| TLS certificates | cert-manager ≥ 1.14 | Or manually provisioned secrets |
+| Requirement               | Version             | Notes                                                       |
+| ------------------------- | ------------------- | ----------------------------------------------------------- |
+| Kubernetes cluster        | ≥ 1.27              | Any distribution (EKS, GKE, k3s, Talos, etc.)               |
+| `kubectl`                 | matching cluster    | Configured with cluster access                              |
+| `helm`                    | ≥ 3.14              | For values-based install                                    |
+| PostgreSQL with PostGIS   | ≥ 15                | **External managed** — do not run inside k8s for production |
+| Redis                     | ≥ 7                 | External managed or in-cluster                              |
+| Container registry access | —                   | `ghcr.io/wityliti/witylogix` (public)                       |
+| Ingress controller        | nginx or Traefik    | Must support `kubernetes.io/ingress.class`                  |
+| TLS certificates          | cert-manager ≥ 1.14 | Or manually provisioned secrets                             |
 
 ---
 
@@ -32,6 +32,7 @@ ghcr.io/wityliti/witylogix/shopify-app:<tag>
 ```
 
 Available tags:
+
 - `latest` — latest stable release
 - `v1.2.3` / `v1.2` / `v1` — pinned semver tags
 - `staging` — latest staging build
@@ -96,7 +97,7 @@ Key values to configure:
 # values.prod.yaml
 
 global:
-  imageTag: "v1.2.3"           # Pin to a release tag
+  imageTag: "v1.2.3" # Pin to a release tag
   imagePullPolicy: IfNotPresent
 
 ingress:
@@ -105,7 +106,7 @@ ingress:
   host: witylogix.example.com
   tls:
     enabled: true
-    secretName: witylogix-tls  # Created by cert-manager or manually
+    secretName: witylogix-tls # Created by cert-manager or manually
 
 api:
   replicaCount: 2
@@ -132,7 +133,7 @@ trackingPage:
   replicaCount: 1
 
 shopifyApp:
-  enabled: false   # Set true only if using the Shopify integration
+  enabled: false # Set true only if using the Shopify integration
 ```
 
 ### 3. Apply database migrations
@@ -206,43 +207,47 @@ helm rollback witylogix --namespace witylogix-prod
 
 ## Values Reference
 
-| Key | Default | Description |
-|---|---|---|
-| `global.imageTag` | `latest` | Image tag for all apps |
-| `global.imagePullPolicy` | `IfNotPresent` | Kubernetes pull policy |
-| `ingress.enabled` | `true` | Whether to create Ingress resources |
-| `ingress.className` | `nginx` | Ingress controller class |
-| `ingress.host` | *(required)* | Public hostname |
-| `ingress.tls.enabled` | `true` | Enable TLS on the Ingress |
-| `ingress.tls.secretName` | `witylogix-tls` | Kubernetes TLS secret name |
-| `api.replicaCount` | `2` | Initial replicas for the API |
-| `api.hpa.enabled` | `true` | Enable HPA for the API |
-| `api.hpa.minReplicas` | `2` | HPA minimum replicas |
-| `api.hpa.maxReplicas` | `10` | HPA maximum replicas |
-| `api.hpa.targetCPUUtilizationPercentage` | `70` | CPU target for HPA |
-| `dashboard.replicaCount` | `2` | Replicas for the dashboard app |
-| `customerPortal.replicaCount` | `2` | Replicas for the customer portal |
-| `trackingPage.replicaCount` | `1` | Replicas for the tracking page |
-| `shopifyApp.enabled` | `false` | Deploy the Shopify app |
-| `shopifyApp.replicaCount` | `1` | Shopify app replicas |
+| Key                                      | Default         | Description                         |
+| ---------------------------------------- | --------------- | ----------------------------------- |
+| `global.imageTag`                        | `latest`        | Image tag for all apps              |
+| `global.imagePullPolicy`                 | `IfNotPresent`  | Kubernetes pull policy              |
+| `ingress.enabled`                        | `true`          | Whether to create Ingress resources |
+| `ingress.className`                      | `nginx`         | Ingress controller class            |
+| `ingress.host`                           | _(required)_    | Public hostname                     |
+| `ingress.tls.enabled`                    | `true`          | Enable TLS on the Ingress           |
+| `ingress.tls.secretName`                 | `witylogix-tls` | Kubernetes TLS secret name          |
+| `api.replicaCount`                       | `2`             | Initial replicas for the API        |
+| `api.hpa.enabled`                        | `true`          | Enable HPA for the API              |
+| `api.hpa.minReplicas`                    | `2`             | HPA minimum replicas                |
+| `api.hpa.maxReplicas`                    | `10`            | HPA maximum replicas                |
+| `api.hpa.targetCPUUtilizationPercentage` | `70`            | CPU target for HPA                  |
+| `dashboard.replicaCount`                 | `2`             | Replicas for the dashboard app      |
+| `customerPortal.replicaCount`            | `2`             | Replicas for the customer portal    |
+| `trackingPage.replicaCount`              | `1`             | Replicas for the tracking page      |
+| `shopifyApp.enabled`                     | `false`         | Deploy the Shopify app              |
+| `shopifyApp.replicaCount`                | `1`             | Shopify app replicas                |
 
 ---
 
 ## Troubleshooting
 
 **Pods stuck in `ImagePullBackOff`**
+
 - Check that the image tag exists: `docker manifest inspect ghcr.io/wityliti/witylogix/api:<tag>`
 - Ensure the namespace has pull access (GHCR public images don't require credentials)
 
 **API fails to start with `DATABASE_URL` error**
+
 - Verify the secret exists: `kubectl get secret witylogix-api-secrets -n witylogix-prod`
 - Check connection from inside the cluster: `kubectl run pg-test --image postgres:15 --rm -it --restart Never -- psql "$DATABASE_URL" -c '\l'`
 
 **Ingress not getting an address**
+
 - Confirm ingress controller is running: `kubectl get pods -n ingress-nginx`
 - Check ingress class annotation matches your controller
 
 **Migration job fails**
+
 - Inspect logs: `kubectl logs pod/witylogix-migrate -n witylogix-prod`
 - Common causes: wrong DATABASE_URL, PostGIS extension not installed, network policy blocking DB access
 

@@ -10,11 +10,7 @@ import { Gauge, Clock, CheckSquare } from "lucide-react";
    ELD LAYOUT — Tab navigation for Overview, HOS, DVIR
    ═══════════════════════════════════════════════════════════ */
 
-export default function ELDLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ELDLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const tabs = [
@@ -54,7 +50,9 @@ export default function ELDLayout({
         <div className="flex flex-col gap-4 border-b border-[var(--wl-border)] pb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-wl-text-primary">Electronic Logging Device</h1>
+              <h1 className="text-3xl font-bold text-wl-text-primary">
+                Electronic Logging Device
+              </h1>
               <p className="text-sm text-wl-text-secondary mt-1">
                 Fleet compliance monitoring and hours of service tracking
               </p>
@@ -74,7 +72,7 @@ export default function ELDLayout({
                     "text-sm font-medium border",
                     isActive
                       ? "bg-wl-primary-500/10 border-wl-primary-500/30 text-wl-primary-400"
-                      : "border-[var(--wl-border)] text-wl-text-secondary hover:bg-[var(--wl-bg-secondary)] hover:text-wl-text-primary"
+                      : "border-[var(--wl-border)] text-wl-text-secondary hover:bg-[var(--wl-bg-secondary)] hover:text-wl-text-primary",
                   )}
                 >
                   {tab.icon}
@@ -87,9 +85,7 @@ export default function ELDLayout({
       </div>
 
       {/* Main content */}
-      <main className="flex-1 px-6 pb-6">
-        {children}
-      </main>
+      <main className="flex-1 px-6 pb-6">{children}</main>
     </div>
   );
 }

@@ -19,8 +19,8 @@
  * Reference: https://developer.here.com/documentation
  */
 
-import type { Coordinate, LatLng } from './types.js';
-import { RoutingAdapter } from './routing-adapter.js';
+import type { Coordinate, LatLng } from "./types.js";
+import { RoutingAdapter } from "./routing-adapter.js";
 import type {
   RouteRequest,
   RouteResponse,
@@ -30,7 +30,7 @@ import type {
   MatrixResponse,
   MatrixElement,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 
 /**
  * HERE-specific configuration
@@ -254,19 +254,24 @@ export class HERESDKClient extends RoutingAdapter {
   constructor(config: HEREConfig) {
     super(config);
     this.apiKey = config.apiKey;
-    this.baseUrlGeocoding = config.baseUrlGeocoding || 'https://geocode.search.hereapi.com';
-    this.baseUrlRouting = config.baseUrlRouting || 'https://router.hereapi.com/v8';
-    this.version = config.version || '8';
+    this.baseUrlGeocoding =
+      config.baseUrlGeocoding || "https://geocode.search.hereapi.com";
+    this.baseUrlRouting =
+      config.baseUrlRouting || "https://router.hereapi.com/v8";
+    this.version = config.version || "8";
 
     if (!this.apiKey) {
-      throw new Error('HERE API key is required');
+      throw new Error("HERE API key is required");
     }
   }
 
   /**
    * Autosuggest: partial text → suggestions with placeId
    */
-  async autosuggest(query: string, options?: { limit?: number }): Promise<
+  async autosuggest(
+    query: string,
+    options?: { limit?: number },
+  ): Promise<
     Array<{
       title: string;
       placeId: string;
@@ -274,7 +279,7 @@ export class HERESDKClient extends RoutingAdapter {
       address?: string;
     }>
   > {
-    return this.executeRequest('autosuggest', async () => {
+    return this.executeRequest("autosuggest", async () => {
       const limit = options?.limit || 5;
       const params = new URLSearchParams({
         q: query,
@@ -283,7 +288,10 @@ export class HERESDKClient extends RoutingAdapter {
       });
 
       const controller1 = new AbortController();
-      const tid1 = setTimeout(() => controller1.abort(), this.config.timeout ?? 30000);
+      const tid1 = setTimeout(
+        () => controller1.abort(),
+        this.config.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(
@@ -295,7 +303,7 @@ export class HERESDKClient extends RoutingAdapter {
       }
 
       if (!response.ok) {
-        const error = await response.json() as { message?: string };
+        const error = (await response.json()) as { message?: string };
         throw new Error(
           `HERE autosuggest error: ${error.message || response.statusText}`,
         );
@@ -306,7 +314,9 @@ export class HERESDKClient extends RoutingAdapter {
       return data.items.map((item) => ({
         title: item.title,
         placeId: item.id || item.title,
-        position: item.position ? { lat: item.position.lat, lng: item.position.lng } : undefined,
+        position: item.position
+          ? { lat: item.position.lat, lng: item.position.lng }
+          : undefined,
         address: item.address?.label,
       }));
     });
@@ -324,15 +334,18 @@ export class HERESDKClient extends RoutingAdapter {
       placeId?: string;
     }>
   > {
-    return this.executeRequest('geocode', async () => {
+    return this.executeRequest("geocode", async () => {
       const params = new URLSearchParams({
         q: address,
         apiKey: this.apiKey,
-        limit: '5',
+        limit: "5",
       });
 
       const controller2 = new AbortController();
-      const tid2 = setTimeout(() => controller2.abort(), this.config.timeout ?? 30000);
+      const tid2 = setTimeout(
+        () => controller2.abort(),
+        this.config.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(
@@ -344,14 +357,16 @@ export class HERESDKClient extends RoutingAdapter {
       }
 
       if (!response.ok) {
-        const error = await response.json() as { message?: string };
-        throw new Error(`HERE geocode error: ${error.message || response.statusText}`);
+        const error = (await response.json()) as { message?: string };
+        throw new Error(
+          `HERE geocode error: ${error.message || response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as HEREGeocodeResponse;
 
       return data.items.map((item) => {
-        const confidence = item.localityType === 'address' ? 0.95 : 0.75;
+        const confidence = item.localityType === "address" ? 0.95 : 0.75;
         return {
           lat: item.position?.lat || 0,
           lng: item.position?.lng || 0,
@@ -366,7 +381,10 @@ export class HERESDKClient extends RoutingAdapter {
   /**
    * Reverse geocode: lat/lng → address
    */
-  async reverseGeocode(lat: number, lng: number): Promise<{
+  async reverseGeocode(
+    lat: number,
+    lng: number,
+  ): Promise<{
     address: string;
     components?: {
       country?: string;
@@ -375,14 +393,17 @@ export class HERESDKClient extends RoutingAdapter {
       street?: string;
     };
   }> {
-    return this.executeRequest('reverseGeocode', async () => {
+    return this.executeRequest("reverseGeocode", async () => {
       const params = new URLSearchParams({
         at: `${lat},${lng}`,
         apiKey: this.apiKey,
       });
 
       const controller3 = new AbortController();
-      const tid3 = setTimeout(() => controller3.abort(), this.config.timeout ?? 30000);
+      const tid3 = setTimeout(
+        () => controller3.abort(),
+        this.config.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(
@@ -394,8 +415,10 @@ export class HERESDKClient extends RoutingAdapter {
       }
 
       if (!response.ok) {
-        const error = await response.json() as { message?: string };
-        throw new Error(`HERE reverse geocode error: ${error.message || response.statusText}`);
+        const error = (await response.json()) as { message?: string };
+        throw new Error(
+          `HERE reverse geocode error: ${error.message || response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as HEREGeocodeResponse;
@@ -424,7 +447,7 @@ export class HERESDKClient extends RoutingAdapter {
    * Calculate single route: origin/destination → route with polyline, distance, duration
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    return this.executeRequest('route', async () => {
+    return this.executeRequest("route", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
 
@@ -435,36 +458,39 @@ export class HERESDKClient extends RoutingAdapter {
           const normalized = this.normalizeCoordinate(wp);
           return `${normalized.lat},${normalized.lng}`;
         });
-        vias = `${origin.lat},${origin.lng};${waypointStrs.join(';')};${destination.lat},${destination.lng}`;
+        vias = `${origin.lat},${origin.lng};${waypointStrs.join(";")};${destination.lat},${destination.lng}`;
       }
 
       // Build request parameters
       const params = new URLSearchParams({
         apiKey: this.apiKey,
-        routeType: 'fast',
-        transportMode: 'car',
-        return: 'polyline,summary,steps,passThrough',
-        alternatives: request.options?.alternatives ? '2' : '0',
+        routeType: "fast",
+        transportMode: "car",
+        return: "polyline,summary,steps,passThrough",
+        alternatives: request.options?.alternatives ? "2" : "0",
       });
 
       if (request.options?.exclude_toll) {
-        params.append('avoid[tollRoad]', 'true');
+        params.append("avoid[tollRoad]", "true");
       }
       if (request.options?.exclude_motorway) {
-        params.append('avoid[motorway]', 'true');
+        params.append("avoid[motorway]", "true");
       }
       if (request.options?.exclude_ferry) {
-        params.append('avoid[ferry]', 'true');
+        params.append("avoid[ferry]", "true");
       }
 
       const url = `${this.baseUrlRouting}/routes?${params.toString()}`;
       const controller4 = new AbortController();
-      const tid4 = setTimeout(() => controller4.abort(), this.config.timeout ?? 30000);
+      const tid4 = setTimeout(
+        () => controller4.abort(),
+        this.config.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: `waypoint0=${origin.lat},${origin.lng}&waypoint${request.waypoints?.length || 1}=${destination.lat},${destination.lng}`,
           signal: controller4.signal,
         });
@@ -473,21 +499,23 @@ export class HERESDKClient extends RoutingAdapter {
       }
 
       if (!response.ok) {
-        const error = await response.json() as { message?: string };
-        throw new Error(`HERE routing error: ${error.message || response.statusText}`);
+        const error = (await response.json()) as { message?: string };
+        throw new Error(
+          `HERE routing error: ${error.message || response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as HERERoutingResponse;
 
       if (!data.routes || data.routes.length === 0) {
-        throw new Error('No route found');
+        throw new Error("No route found");
       }
 
       const primaryRoute = data.routes[0];
 
       // Decode polyline
       const polylinePoints = decodeHEREPolyline(
-        primaryRoute.sections[0]?.polyline || '',
+        primaryRoute.sections[0]?.polyline || "",
       );
 
       // Build route response
@@ -500,7 +528,7 @@ export class HERESDKClient extends RoutingAdapter {
         steps: (section.steps || []).map((step) => ({
           distance_m: step.length,
           duration_s: step.duration,
-          instruction: step.instruction || step.action || '',
+          instruction: step.instruction || step.action || "",
           way_name: step.roadName,
           maneuver: step.turnType,
           start_location: {
@@ -526,7 +554,7 @@ export class HERESDKClient extends RoutingAdapter {
         distance_m: primaryRoute.summary.length,
         duration_s: primaryRoute.summary.duration,
         legs,
-        polyline: primaryRoute.sections[0]?.polyline || '',
+        polyline: primaryRoute.sections[0]?.polyline || "",
         bounds,
         warnings: data.warnings?.map((w) => w.message),
       };
@@ -547,35 +575,47 @@ export class HERESDKClient extends RoutingAdapter {
     vehicleWeight?: number; // kg
     hazmatRestrictions?: string[]; // e.g., ['explosive', 'flammable']
   }): Promise<RouteResponse> {
-    return this.executeRequest('truckRoute', async () => {
+    return this.executeRequest("truckRoute", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
 
       const params = new URLSearchParams({
         apiKey: this.apiKey,
-        routeType: 'fast',
-        transportMode: 'truck',
-        return: 'polyline,summary,steps',
+        routeType: "fast",
+        transportMode: "truck",
+        return: "polyline,summary,steps",
       });
 
       if (request.vehicleDimensions) {
-        params.append('vehicle[width]', String(request.vehicleDimensions.width));
-        params.append('vehicle[height]', String(request.vehicleDimensions.height));
-        params.append('vehicle[length]', String(request.vehicleDimensions.length));
+        params.append(
+          "vehicle[width]",
+          String(request.vehicleDimensions.width),
+        );
+        params.append(
+          "vehicle[height]",
+          String(request.vehicleDimensions.height),
+        );
+        params.append(
+          "vehicle[length]",
+          String(request.vehicleDimensions.length),
+        );
       }
 
       if (request.vehicleWeight) {
-        params.append('vehicle[limitedWeight]', String(request.vehicleWeight));
+        params.append("vehicle[limitedWeight]", String(request.vehicleWeight));
       }
 
       const url = `${this.baseUrlRouting}/routes?${params.toString()}`;
       const controller5 = new AbortController();
-      const tid5 = setTimeout(() => controller5.abort(), this.config.timeout ?? 30000);
+      const tid5 = setTimeout(
+        () => controller5.abort(),
+        this.config.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: `waypoint0=${origin.lat},${origin.lng}&waypoint1=${destination.lat},${destination.lng}`,
           signal: controller5.signal,
         });
@@ -590,7 +630,9 @@ export class HERESDKClient extends RoutingAdapter {
       const data = (await response.json()) as HERERoutingResponse;
       const primaryRoute = data.routes[0];
 
-      const polylinePoints = decodeHEREPolyline(primaryRoute.sections[0]?.polyline || '');
+      const polylinePoints = decodeHEREPolyline(
+        primaryRoute.sections[0]?.polyline || "",
+      );
       const bounds = this.calculateBounds(polylinePoints);
 
       return {
@@ -609,7 +651,7 @@ export class HERESDKClient extends RoutingAdapter {
             lng: section.arrival.place.location.lng,
           },
         })),
-        polyline: primaryRoute.sections[0]?.polyline || '',
+        polyline: primaryRoute.sections[0]?.polyline || "",
         bounds,
       };
     });
@@ -625,31 +667,40 @@ export class HERESDKClient extends RoutingAdapter {
     currentCharge?: number; // kWh
     consumptionModel?: string; // e.g., 'electric'
   }): Promise<RouteResponse> {
-    return this.executeRequest('evRoute', async () => {
+    return this.executeRequest("evRoute", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
 
       const params = new URLSearchParams({
         apiKey: this.apiKey,
-        routeType: 'fast',
-        transportMode: 'car',
-        return: 'polyline,summary,steps',
-        'vehicle[engineType]': 'electric',
+        routeType: "fast",
+        transportMode: "car",
+        return: "polyline,summary,steps",
+        "vehicle[engineType]": "electric",
       });
 
-      params.append('vehicle[batteryCapacity]', String(request.batteryCapacity));
+      params.append(
+        "vehicle[batteryCapacity]",
+        String(request.batteryCapacity),
+      );
       if (request.currentCharge) {
-        params.append('vehicle[currentBatteryCharge]', String(request.currentCharge));
+        params.append(
+          "vehicle[currentBatteryCharge]",
+          String(request.currentCharge),
+        );
       }
 
       const url = `${this.baseUrlRouting}/routes?${params.toString()}`;
       const controller6 = new AbortController();
-      const tid6 = setTimeout(() => controller6.abort(), this.config.timeout ?? 30000);
+      const tid6 = setTimeout(
+        () => controller6.abort(),
+        this.config.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: `waypoint0=${origin.lat},${origin.lng}&waypoint1=${destination.lat},${destination.lng}`,
           signal: controller6.signal,
         });
@@ -664,7 +715,9 @@ export class HERESDKClient extends RoutingAdapter {
       const data = (await response.json()) as HERERoutingResponse;
       const primaryRoute = data.routes[0];
 
-      const polylinePoints = decodeHEREPolyline(primaryRoute.sections[0]?.polyline || '');
+      const polylinePoints = decodeHEREPolyline(
+        primaryRoute.sections[0]?.polyline || "",
+      );
       const bounds = this.calculateBounds(polylinePoints);
 
       return {
@@ -683,7 +736,7 @@ export class HERESDKClient extends RoutingAdapter {
             lng: section.arrival.place.location.lng,
           },
         })),
-        polyline: primaryRoute.sections[0]?.polyline || '',
+        polyline: primaryRoute.sections[0]?.polyline || "",
         bounds,
       };
     });
@@ -693,11 +746,11 @@ export class HERESDKClient extends RoutingAdapter {
    * Matrix routing: origins × destinations
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    return this.executeRequest('matrix', async () => {
+    return this.executeRequest("matrix", async () => {
       const params = new URLSearchParams({
         apiKey: this.apiKey,
-        transportMode: 'car',
-        return: 'summary',
+        transportMode: "car",
+        return: "summary",
       });
 
       // Build waypoints: origins;destinations
@@ -714,13 +767,16 @@ export class HERESDKClient extends RoutingAdapter {
 
       const url = `${this.baseUrlRouting}/matrix?${params.toString()}`;
       const controller7 = new AbortController();
-      const tid7 = setTimeout(() => controller7.abort(), this.config.timeout ?? 30000);
+      const tid7 = setTimeout(
+        () => controller7.abort(),
+        this.config.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: waypointStrings.map((w, i) => `waypoint${i}=${w}`).join('&'),
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: waypointStrings.map((w, i) => `waypoint${i}=${w}`).join("&"),
           signal: controller7.signal,
         });
       } finally {
@@ -740,26 +796,27 @@ export class HERESDKClient extends RoutingAdapter {
         matrix[i] = [];
         for (let j = 0; j < request.destinations.length; j++) {
           const matrixItem = data.matrix.find(
-            (m) => m.startIndex === i && m.endIndex === request.origins.length + j,
+            (m) =>
+              m.startIndex === i && m.endIndex === request.origins.length + j,
           );
 
           if (matrixItem?.error) {
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,
-              status: 'NO_ROUTE',
+              status: "NO_ROUTE",
             };
           } else if (matrixItem) {
             matrix[i][j] = {
               distance_m: matrixItem.summary.distance,
               duration_s: matrixItem.summary.duration,
-              status: 'OK',
+              status: "OK",
             };
           } else {
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,
-              status: 'UNREACHABLE',
+              status: "UNREACHABLE",
             };
           }
         }
@@ -776,8 +833,10 @@ export class HERESDKClient extends RoutingAdapter {
   /**
    * Not implemented (HERE doesn't have native optimization)
    */
-  async optimize(_request: import('./types.js').OptimizationRequest): Promise<import('./types.js').OptimizationResponse> {
-    throw new Error('Optimization not implemented in HERE SDK client');
+  async optimize(
+    _request: import("./types.js").OptimizationRequest,
+  ): Promise<import("./types.js").OptimizationResponse> {
+    throw new Error("Optimization not implemented in HERE SDK client");
   }
 
   /**

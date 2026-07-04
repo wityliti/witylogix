@@ -14,7 +14,7 @@ import type {
   RefundRequest,
   PaymentGatewayConfig,
   PaymentWebhookPayload,
-} from './types.js';
+} from "./types.js";
 
 // ─── PAYMENT GATEWAY BASE CLASS ────────────────────────────────────────
 
@@ -23,7 +23,16 @@ export abstract class PaymentGatewayBase {
   abstract readonly code: string;
 
   protected supportedCurrencies: Set<string> = new Set([
-    'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CNY', 'INR', 'AED', 'SGD',
+    "USD",
+    "EUR",
+    "GBP",
+    "CAD",
+    "AUD",
+    "JPY",
+    "CNY",
+    "INR",
+    "AED",
+    "SGD",
   ]);
 
   protected minAmount: number = 50; // In smallest currency unit (e.g., cents)
@@ -38,7 +47,7 @@ export abstract class PaymentGatewayBase {
    */
   protected validateConfig(): void {
     if (!this.config.name) {
-      throw new Error('Payment gateway config requires name');
+      throw new Error("Payment gateway config requires name");
     }
     if (!this.config.isEnabled) {
       throw new Error(`Payment gateway ${this.config.name} is not enabled`);
@@ -86,7 +95,9 @@ export abstract class PaymentGatewayBase {
   /**
    * Get payment status from provider
    */
-  abstract getPaymentStatus(providerTransactionId: string): Promise<Transaction>;
+  abstract getPaymentStatus(
+    providerTransactionId: string,
+  ): Promise<Transaction>;
 
   /**
    * Validate payment amount
@@ -126,11 +137,11 @@ export abstract class PaymentGatewayBase {
     const parts = [
       this.code,
       shopId,
-      customerId || 'no-customer',
+      customerId || "no-customer",
       amount,
       timestamp,
     ];
-    return parts.join('-');
+    return parts.join("-");
   }
 
   /**
@@ -171,13 +182,13 @@ export abstract class PaymentGatewayBase {
     payload: string,
     signature: string,
     secret: string,
-    algorithm: string = 'sha256',
+    algorithm: string = "sha256",
   ): boolean {
-    const crypto = require('crypto');
+    const crypto = require("crypto");
     const expectedSignature = crypto
       .createHmac(algorithm, secret)
       .update(payload)
-      .digest('hex');
+      .digest("hex");
 
     return signature === expectedSignature;
   }
@@ -194,43 +205,50 @@ export abstract class PaymentGatewayBase {
    */
   protected normalizePaymentMethod(
     method: string,
-  ): 'card' | 'paypal' | 'bank_transfer' | 'apple_pay' | 'google_pay' | 'cash' {
+  ): "card" | "paypal" | "bank_transfer" | "apple_pay" | "google_pay" | "cash" {
     const normalized = method.toLowerCase();
 
-    if (normalized.includes('card') || normalized.includes('visa') ||
-        normalized.includes('mastercard') || normalized.includes('amex')) {
-      return 'card';
+    if (
+      normalized.includes("card") ||
+      normalized.includes("visa") ||
+      normalized.includes("mastercard") ||
+      normalized.includes("amex")
+    ) {
+      return "card";
     }
 
-    if (normalized.includes('paypal')) {
-      return 'paypal';
+    if (normalized.includes("paypal")) {
+      return "paypal";
     }
 
-    if (normalized.includes('bank') || normalized.includes('transfer') ||
-        normalized.includes('ach')) {
-      return 'bank_transfer';
+    if (
+      normalized.includes("bank") ||
+      normalized.includes("transfer") ||
+      normalized.includes("ach")
+    ) {
+      return "bank_transfer";
     }
 
-    if (normalized.includes('apple')) {
-      return 'apple_pay';
+    if (normalized.includes("apple")) {
+      return "apple_pay";
     }
 
-    if (normalized.includes('google')) {
-      return 'google_pay';
+    if (normalized.includes("google")) {
+      return "google_pay";
     }
 
-    return 'card';
+    return "card";
   }
 
   /**
    * Build request headers with proper authentication
    */
   protected buildAuthHeaders(
-    contentType: string = 'application/json',
+    contentType: string = "application/json",
   ): Record<string, string> {
     const headers: Record<string, string> = {
-      'Content-Type': contentType,
-      'User-Agent': `Witylogix-Payment-Gateway/${this.code}/1.0`,
+      "Content-Type": contentType,
+      "User-Agent": `Witylogix-Payment-Gateway/${this.code}/1.0`,
     };
 
     return headers;
@@ -239,48 +257,46 @@ export abstract class PaymentGatewayBase {
   /**
    * Handle common payment errors
    */
-  protected handlePaymentError(
-    error: any,
-  ): {
+  protected handlePaymentError(error: any): {
     code: string;
     message: string;
     retryable: boolean;
   } {
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+    if (error.code === "ECONNREFUSED" || error.code === "ENOTFOUND") {
       return {
-        code: 'GATEWAY_UNAVAILABLE',
-        message: 'Payment gateway temporarily unavailable',
+        code: "GATEWAY_UNAVAILABLE",
+        message: "Payment gateway temporarily unavailable",
         retryable: true,
       };
     }
 
     if (error.response?.status >= 500) {
       return {
-        code: 'GATEWAY_ERROR',
-        message: 'Payment gateway server error',
+        code: "GATEWAY_ERROR",
+        message: "Payment gateway server error",
         retryable: true,
       };
     }
 
     if (error.response?.status === 429) {
       return {
-        code: 'RATE_LIMITED',
-        message: 'Too many requests to payment gateway',
+        code: "RATE_LIMITED",
+        message: "Too many requests to payment gateway",
         retryable: true,
       };
     }
 
     if (error.response?.status === 401 || error.response?.status === 403) {
       return {
-        code: 'AUTHENTICATION_ERROR',
-        message: 'Payment gateway authentication failed',
+        code: "AUTHENTICATION_ERROR",
+        message: "Payment gateway authentication failed",
         retryable: false,
       };
     }
 
     return {
-      code: error.code || 'PAYMENT_ERROR',
-      message: error.message || 'Payment processing failed',
+      code: error.code || "PAYMENT_ERROR",
+      message: error.message || "Payment processing failed",
       retryable: false,
     };
   }

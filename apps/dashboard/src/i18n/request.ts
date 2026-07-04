@@ -1,6 +1,10 @@
-import { getRequestConfig } from 'next-intl/server';
-import { defaultLocale, getLocaleFromRequest, supportedLocales } from './config';
-import { defaultNS } from './namespaces';
+import { getRequestConfig } from "next-intl/server";
+import {
+  defaultLocale,
+  getLocaleFromRequest,
+  supportedLocales,
+} from "./config";
+import { defaultNS } from "./namespaces";
 
 /**
  * Unified request-based configuration
@@ -14,15 +18,21 @@ export default getRequestConfig(async () => {
   // In a server component or API route context, headers would be available
   // For now, we use the default locale and it gets overridden by middleware
   try {
-    const { headers } = await import('next/headers');
+    const { headers } = await import("next/headers");
     const headersList = await headers();
-    const localeFromCookie = headersList.get('x-locale') ||
-                           (typeof document !== 'undefined'
-                             ? document.cookie.split('; ').find(row => row.startsWith('NEXT_LOCALE='))?.split('=')[1]
-                             : undefined);
-    const acceptLanguage = headersList.get('accept-language');
+    const localeFromCookie =
+      headersList.get("x-locale") ||
+      (typeof document !== "undefined"
+        ? document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("NEXT_LOCALE="))
+            ?.split("=")[1]
+        : undefined);
+    const acceptLanguage = headersList.get("accept-language");
 
-    locale = getLocaleFromRequest(localeFromCookie, acceptLanguage || undefined) || defaultLocale;
+    locale =
+      getLocaleFromRequest(localeFromCookie, acceptLanguage || undefined) ||
+      defaultLocale;
   } catch {
     // Fallback to default locale
     locale = defaultLocale;
@@ -34,14 +44,14 @@ export default getRequestConfig(async () => {
   }
 
   // Load messages dynamically based on locale
-  const messages = await import(`../../messages/${locale}.json`).catch(() =>
-    import(`../../messages/${defaultLocale}.json`)
+  const messages = await import(`../../messages/${locale}.json`).catch(
+    () => import(`../../messages/${defaultLocale}.json`),
   );
 
   return {
     locale,
     messages: messages.default,
     defaultNS,
-    timeZone: 'UTC',
+    timeZone: "UTC",
   };
 });

@@ -60,7 +60,12 @@ vi.mock("../../middleware/auth.js", () => ({
   requireRole: vi.fn((...roles: string[]) => async (req: any) => {
     const role = (req.auth && req.auth.role) || req.userRole;
     if (!role || !roles.includes(role)) {
-      const err = new Error("Role '" + role + "' does not have access. Required: " + roles.join(", "));
+      const err = new Error(
+        "Role '" +
+          role +
+          "' does not have access. Required: " +
+          roles.join(", "),
+      );
       err.name = "ForbiddenError";
       throw err;
     }
@@ -129,11 +134,16 @@ const mockRegistry = mockRegistryHoisted;
 // Wrap handler to invoke preHandlers before the actual handler
 function wrapWithPreHandlers(opts: any, handler?: Function): Function {
   const h = handler || opts;
-  const rawPreHandlers = (typeof opts === "object" && opts.preHandler)
-    ? (Array.isArray(opts.preHandler) ? opts.preHandler : [opts.preHandler])
-    : [];
+  const rawPreHandlers =
+    typeof opts === "object" && opts.preHandler
+      ? Array.isArray(opts.preHandler)
+        ? opts.preHandler
+        : [opts.preHandler]
+      : [];
   // Filter to only valid functions (mocks may return undefined after clearAllMocks)
-  const preHandlers: Function[] = rawPreHandlers.filter((p: any) => typeof p === "function");
+  const preHandlers: Function[] = rawPreHandlers.filter(
+    (p: any) => typeof p === "function",
+  );
   return async (request: any, reply: any) => {
     for (const pre of preHandlers) {
       await pre(request, reply);
@@ -254,7 +264,7 @@ describe("Integrations Routes", () => {
       const result = await handler(request, reply);
 
       expect(result.integrations[0].credentials.apiKey).not.toBe(
-        "sk_live_123456"
+        "sk_live_123456",
       );
     });
 
@@ -283,7 +293,7 @@ describe("Integrations Routes", () => {
       expect(mockPrisma.integration.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { installedAt: "desc" },
-        })
+        }),
       );
     });
   });
@@ -352,7 +362,7 @@ describe("Integrations Routes", () => {
       expect(mockRegistry.getAvailableIntegrations).toHaveBeenCalledWith(
         expect.objectContaining({
           category: "PAYMENT",
-        })
+        }),
       );
     });
 
@@ -371,7 +381,7 @@ describe("Integrations Routes", () => {
       expect(mockRegistry.getAvailableIntegrations).toHaveBeenCalledWith(
         expect.objectContaining({
           status: "BETA",
-        })
+        }),
       );
     });
 
@@ -706,7 +716,7 @@ describe("Integrations Routes", () => {
           data: expect.objectContaining({
             eventType: "UNINSTALL",
           }),
-        })
+        }),
       );
     });
 
@@ -877,7 +887,7 @@ describe("Integrations Routes", () => {
               publishableKey: "pk_new",
             }),
           }),
-        })
+        }),
       );
     });
 
@@ -907,9 +917,7 @@ describe("Integrations Routes", () => {
 
       const mockApp = {
         slug: "stripe",
-        credentialFields: [
-          { key: "apiKey", required: true },
-        ],
+        credentialFields: [{ key: "apiKey", required: true }],
       };
 
       mockPrisma.integration.findUnique.mockResolvedValue({
@@ -939,9 +947,7 @@ describe("Integrations Routes", () => {
 
       const mockApp = {
         slug: "stripe",
-        credentialFields: [
-          { key: "apiKey", required: true },
-        ],
+        credentialFields: [{ key: "apiKey", required: true }],
       };
 
       mockPrisma.integration.findUnique.mockResolvedValue({
@@ -995,7 +1001,7 @@ describe("Integrations Routes", () => {
           data: expect.objectContaining({
             lastHealthCheckAt: expect.any(Date),
           }),
-        })
+        }),
       );
     });
 
@@ -1099,7 +1105,7 @@ describe("Integrations Routes", () => {
         expect.objectContaining({
           take: 25,
           skip: 50,
-        })
+        }),
       );
       expect(result.offset).toBe(50);
     });
@@ -1120,7 +1126,7 @@ describe("Integrations Routes", () => {
       expect(mockPrisma.integrationEvent.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { timestamp: "desc" },
-        })
+        }),
       );
     });
   });
@@ -1186,7 +1192,7 @@ describe("Integrations Routes", () => {
       const callArgs = mockPrisma.integrationEvent.findMany.mock.calls[0][0];
       expect(callArgs.where.timestamp).toBeDefined();
       expect(callArgs.where.timestamp.gte).toEqual(
-        new Date("2026-03-01T00:00:00Z")
+        new Date("2026-03-01T00:00:00Z"),
       );
     });
 
@@ -1216,7 +1222,7 @@ describe("Integrations Routes", () => {
       const reply = createMockReply();
 
       mockPrisma.integration.findMany.mockRejectedValue(
-        new Error("Database connection failed")
+        new Error("Database connection failed"),
       );
 
       const handler = handlers["GET"]["/"];
@@ -1342,7 +1348,7 @@ describe("Integrations Routes", () => {
           data: expect.objectContaining({
             eventType: "HEALTH_CHECK",
           }),
-        })
+        }),
       );
     });
 
@@ -1377,7 +1383,7 @@ describe("Integrations Routes", () => {
           data: expect.objectContaining({
             eventType: "CONFIG_UPDATE",
           }),
-        })
+        }),
       );
     });
   });

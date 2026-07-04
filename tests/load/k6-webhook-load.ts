@@ -22,30 +22,40 @@ import encoding from "k6/encoding";
 
 // ─── CONFIGURATION ──────────────────────────────────────────────────────────
 
-const WEBHOOK_URL: string = __ENV.WEBHOOK_URL || "http://localhost:3000/webhooks";
+const WEBHOOK_URL: string =
+  __ENV.WEBHOOK_URL || "http://localhost:3000/webhooks";
 const RAMP_UP_DURATION: string = "1m";
 const SUSTAINED_DURATION: string = "10m";
 const WEBHOOK_SECRET: string = __ENV.WEBHOOK_SECRET || "test_secret";
-const TARGET_WEBHOOKS_PER_MIN: number = parseInt(__ENV.TARGET_WEBHOOKS_PER_MIN || "1000", 10);
+const TARGET_WEBHOOKS_PER_MIN: number = parseInt(
+  __ENV.TARGET_WEBHOOKS_PER_MIN || "1000",
+  10,
+);
 
 export const options = {
   stages: [
     // Ramp up to target webhook rate
-    { duration: RAMP_UP_DURATION, target: Math.ceil(TARGET_WEBHOOKS_PER_MIN / 60) },
+    {
+      duration: RAMP_UP_DURATION,
+      target: Math.ceil(TARGET_WEBHOOKS_PER_MIN / 60),
+    },
     // Sustained load
-    { duration: SUSTAINED_DURATION, target: Math.ceil(TARGET_WEBHOOKS_PER_MIN / 60) },
+    {
+      duration: SUSTAINED_DURATION,
+      target: Math.ceil(TARGET_WEBHOOKS_PER_MIN / 60),
+    },
     // Cool down
     { duration: "1m", target: 0 },
   ],
   thresholds: {
     // Webhook processing latency thresholds
-    "webhook_processing_time": ["p(95)<5000", "p(99)<10000", "avg<2000"],
+    webhook_processing_time: ["p(95)<5000", "p(99)<10000", "avg<2000"],
     // Webhook delivery success rate
-    "webhook_delivery_rate": ["rate>0.98"], // 98%+ success
+    webhook_delivery_rate: ["rate>0.98"], // 98%+ success
     // Queue depth (should stay low)
-    "webhook_queue_depth": ["value<100"],
+    webhook_queue_depth: ["value<100"],
     // Deduplication rate (how many duplicates prevented)
-    "webhook_deduplication_rate": ["rate>0.95"],
+    webhook_deduplication_rate: ["rate>0.95"],
   },
 };
 
@@ -253,7 +263,8 @@ function sendWooCommerceWebhook(): void {
     webhookProcessingTime.add(duration);
 
     const success: boolean = check(response, {
-      "WooCommerce webhook accepted": (r) => r.status === 200 || r.status === 202,
+      "WooCommerce webhook accepted": (r) =>
+        r.status === 200 || r.status === 202,
     });
 
     webhookDeliveryRate.add(success ? 1 : 0);
@@ -369,7 +380,8 @@ function testWebhookDeduplication(): void {
     });
 
     // First should succeed, second should be deduplicated
-    const success: boolean = response1.status === 200 || response1.status === 202;
+    const success: boolean =
+      response1.status === 200 || response1.status === 202;
     const deduplicated: boolean = response2.status === 409; // Conflict = duplicate detected
 
     webhookDeduplicationRate.add(deduplicated ? 1 : 0);

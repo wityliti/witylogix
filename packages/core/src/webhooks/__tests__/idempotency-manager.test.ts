@@ -23,10 +23,7 @@ describe("IdempotencyManager", () => {
     });
 
     it("should sanitize event type and resource ID", () => {
-      const key = manager.generateKey(
-        "order.created!@#",
-        "order-123/abc"
-      );
+      const key = manager.generateKey("order.created!@#", "order-123/abc");
 
       // Should only contain safe characters
       expect(key).toMatch(/^wh_[a-zA-Z0-9._-]+$/);
@@ -49,7 +46,9 @@ describe("IdempotencyManager", () => {
 
   describe("checkDuplicate", () => {
     it("should return null for new key", async () => {
-      const duplicate = await manager.checkDuplicate("wh_order_created_order_123_1000");
+      const duplicate = await manager.checkDuplicate(
+        "wh_order_created_order_123_1000",
+      );
 
       expect(duplicate).toBeNull();
     });
@@ -99,7 +98,7 @@ describe("IdempotencyManager", () => {
         key,
         201,
         JSON.stringify({ id: "123" }),
-        headers
+        headers,
       );
 
       const cached = await manager.getCachedResponse(key);
@@ -163,7 +162,7 @@ describe("IdempotencyManager", () => {
   describe("validateKeyFormat", () => {
     it("should validate correct format", () => {
       const valid = IdempotencyManager.validateKeyFormat(
-        "wh_order_created_order_123_1704110400000"
+        "wh_order_created_order_123_1704110400000",
       );
       expect(valid).toBe(true);
     });
@@ -172,7 +171,7 @@ describe("IdempotencyManager", () => {
       expect(IdempotencyManager.validateKeyFormat("invalid_key")).toBe(false);
       expect(IdempotencyManager.validateKeyFormat("wh_invalid")).toBe(false);
       expect(
-        IdempotencyManager.validateKeyFormat("wh_order_created_order_abc")
+        IdempotencyManager.validateKeyFormat("wh_order_created_order_abc"),
       ).toBe(false);
     });
   });

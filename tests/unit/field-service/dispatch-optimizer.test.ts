@@ -26,7 +26,10 @@ import type {
 
 // ─── FIXTURES ───────────────────────────────────────────────────
 
-function createMockTechnician(id: string = "tech_1", overrides?: Partial<Technician>): Technician {
+function createMockTechnician(
+  id: string = "tech_1",
+  overrides?: Partial<Technician>,
+): Technician {
   return {
     id,
     name: `Technician ${id}`,
@@ -78,7 +81,10 @@ function createMockTechnician(id: string = "tech_1", overrides?: Partial<Technic
   };
 }
 
-function createMockWorkOrder(id: string = "wo_1", overrides?: Partial<WorkOrder>): WorkOrder {
+function createMockWorkOrder(
+  id: string = "wo_1",
+  overrides?: Partial<WorkOrder>,
+): WorkOrder {
   return {
     id,
     customerId: "cust_1",
@@ -119,9 +125,15 @@ describe("NearestAvailableDispatcher", () => {
   beforeEach(() => {
     job = createMockWorkOrder();
     techs = [
-      createMockTechnician("tech_1", { currentLocation: { latitude: 47.6062, longitude: -122.3321 } }),
-      createMockTechnician("tech_2", { currentLocation: { latitude: 47.5, longitude: -122.25 } }),
-      createMockTechnician("tech_3", { currentLocation: { latitude: 47.7, longitude: -122.4 } }),
+      createMockTechnician("tech_1", {
+        currentLocation: { latitude: 47.6062, longitude: -122.3321 },
+      }),
+      createMockTechnician("tech_2", {
+        currentLocation: { latitude: 47.5, longitude: -122.25 },
+      }),
+      createMockTechnician("tech_3", {
+        currentLocation: { latitude: 47.7, longitude: -122.4 },
+      }),
     ];
   });
 
@@ -139,7 +151,9 @@ describe("NearestAvailableDispatcher", () => {
 
       expect(result?.candidates?.[0].rank).toBe(1);
       if (result?.candidates && result.candidates.length > 1) {
-        expect(result.candidates[0].distance).toBeLessThanOrEqual(result.candidates[1].distance);
+        expect(result.candidates[0].distance).toBeLessThanOrEqual(
+          result.candidates[1].distance,
+        );
       }
     });
 
@@ -198,8 +212,14 @@ describe("WorkloadBalancer", () => {
   describe("getWorkload", () => {
     it("should calculate workload metrics", () => {
       const assignedToTech1 = [
-        createMockWorkOrder("wo_1", { technicianId: "tech_1", estimatedDuration: 120 }),
-        createMockWorkOrder("wo_2", { technicianId: "tech_1", estimatedDuration: 240 }),
+        createMockWorkOrder("wo_1", {
+          technicianId: "tech_1",
+          estimatedDuration: 120,
+        }),
+        createMockWorkOrder("wo_2", {
+          technicianId: "tech_1",
+          estimatedDuration: 240,
+        }),
       ];
 
       const workload = WorkloadBalancer.getWorkload(techs[0], assignedToTech1);
@@ -222,7 +242,10 @@ describe("WorkloadBalancer", () => {
     it("should dispatch to tech with lowest utilization", () => {
       // Assign some jobs to tech_1
       assignedJobs = [
-        createMockWorkOrder("wo_1", { technicianId: "tech_1", estimatedDuration: 300 }),
+        createMockWorkOrder("wo_1", {
+          technicianId: "tech_1",
+          estimatedDuration: 300,
+        }),
       ];
 
       const result = WorkloadBalancer.dispatch(job, techs, assignedJobs);
@@ -235,7 +258,10 @@ describe("WorkloadBalancer", () => {
     it("should reject if technician at capacity", () => {
       const techs2 = [
         createMockTechnician("tech_1", {
-          performanceMetrics: { ...createMockTechnician().performanceMetrics, utilizationRate30d: 95 },
+          performanceMetrics: {
+            ...createMockTechnician().performanceMetrics,
+            utilizationRate30d: 95,
+          },
         }),
       ];
 
@@ -263,29 +289,41 @@ describe("PriorityDispatcher", () => {
   let assignedJobs: WorkOrder[];
 
   beforeEach(() => {
-    emergencyJob = createMockWorkOrder("wo_emergency", { priority: "EMERGENCY" });
-    techs = [
-      createMockTechnician("tech_1"),
-      createMockTechnician("tech_2"),
-    ];
+    emergencyJob = createMockWorkOrder("wo_emergency", {
+      priority: "EMERGENCY",
+    });
+    techs = [createMockTechnician("tech_1"), createMockTechnician("tech_2")];
     availableTechs = techs;
     assignedJobs = [];
   });
 
   describe("dispatch", () => {
     it("should dispatch emergency job immediately if tech available", () => {
-      const result = PriorityDispatcher.dispatch(emergencyJob, availableTechs, techs, assignedJobs);
+      const result = PriorityDispatcher.dispatch(
+        emergencyJob,
+        availableTechs,
+        techs,
+        assignedJobs,
+      );
 
       expect(result.result).not.toBeNull();
       expect(result.result?.jobId).toBe("wo_emergency");
     });
 
     it("should preempt lower priority job if needed", () => {
-      const lowPriorityJob = createMockWorkOrder("wo_low", { priority: "LOW", technicianId: "tech_1" });
+      const lowPriorityJob = createMockWorkOrder("wo_low", {
+        priority: "LOW",
+        technicianId: "tech_1",
+      });
       assignedJobs = [lowPriorityJob];
       availableTechs = [];
 
-      const result = PriorityDispatcher.dispatch(emergencyJob, availableTechs, techs, assignedJobs);
+      const result = PriorityDispatcher.dispatch(
+        emergencyJob,
+        availableTechs,
+        techs,
+        assignedJobs,
+      );
 
       if (result.result) {
         expect(result.reassignments.length).toBeGreaterThan(0);
@@ -294,7 +332,12 @@ describe("PriorityDispatcher", () => {
     });
 
     it("should return reassignment info", () => {
-      const result = PriorityDispatcher.dispatch(emergencyJob, availableTechs, techs, assignedJobs);
+      const result = PriorityDispatcher.dispatch(
+        emergencyJob,
+        availableTechs,
+        techs,
+        assignedJobs,
+      );
 
       expect(result.reassignments).toBeDefined();
       expect(Array.isArray(result.reassignments)).toBe(true);
@@ -314,13 +357,22 @@ describe("RouteOptimizer", () => {
     });
     jobs = [
       createMockWorkOrder("wo_1", {
-        address: { ...createMockWorkOrder().address, coordinates: { latitude: 47.61, longitude: -122.33 } },
+        address: {
+          ...createMockWorkOrder().address,
+          coordinates: { latitude: 47.61, longitude: -122.33 },
+        },
       }),
       createMockWorkOrder("wo_2", {
-        address: { ...createMockWorkOrder().address, coordinates: { latitude: 47.62, longitude: -122.32 } },
+        address: {
+          ...createMockWorkOrder().address,
+          coordinates: { latitude: 47.62, longitude: -122.32 },
+        },
       }),
       createMockWorkOrder("wo_3", {
-        address: { ...createMockWorkOrder().address, coordinates: { latitude: 47.60, longitude: -122.34 } },
+        address: {
+          ...createMockWorkOrder().address,
+          coordinates: { latitude: 47.6, longitude: -122.34 },
+        },
       }),
     ];
   });
@@ -356,7 +408,9 @@ describe("RouteOptimizer", () => {
       const route = RouteOptimizer.optimize(tech.id, jobs, tech, "2026-03-20");
 
       for (let i = 0; i < route.stops.length - 1; i++) {
-        expect(route.stops[i].eta.getTime()).toBeLessThanOrEqual(route.stops[i + 1].eta.getTime());
+        expect(route.stops[i].eta.getTime()).toBeLessThanOrEqual(
+          route.stops[i + 1].eta.getTime(),
+        );
       }
     });
 
@@ -381,7 +435,7 @@ describe("ETACalculator", () => {
     tech = createMockTechnician("tech_1", {
       currentLocation: { latitude: 47.6062, longitude: -122.3321 },
     });
-    target = { latitude: 47.65, longitude: -122.30 };
+    target = { latitude: 47.65, longitude: -122.3 };
   });
 
   describe("calculate", () => {
@@ -396,10 +450,22 @@ describe("ETACalculator", () => {
     });
 
     it("should respect traffic factor", () => {
-      const resultNoTraffic = ETACalculator.calculate(tech, target, undefined, 1.0);
-      const resultWithTraffic = ETACalculator.calculate(tech, target, undefined, 1.5);
+      const resultNoTraffic = ETACalculator.calculate(
+        tech,
+        target,
+        undefined,
+        1.0,
+      );
+      const resultWithTraffic = ETACalculator.calculate(
+        tech,
+        target,
+        undefined,
+        1.5,
+      );
 
-      expect(resultWithTraffic.travelMinutes).toBeGreaterThan(resultNoTraffic.travelMinutes);
+      expect(resultWithTraffic.travelMinutes).toBeGreaterThan(
+        resultNoTraffic.travelMinutes,
+      );
     });
 
     it("should add to current job end time if provided", () => {
@@ -414,11 +480,17 @@ describe("ETACalculator", () => {
     it("should calculate ETA through job queue", () => {
       const queuedJobs = [
         createMockWorkOrder("wo_1", {
-          address: { ...createMockWorkOrder().address, coordinates: { latitude: 47.62, longitude: -122.32 } },
+          address: {
+            ...createMockWorkOrder().address,
+            coordinates: { latitude: 47.62, longitude: -122.32 },
+          },
           estimatedDuration: 60,
         }),
         createMockWorkOrder("wo_2", {
-          address: { ...createMockWorkOrder().address, coordinates: { latitude: 47.63, longitude: -122.31 } },
+          address: {
+            ...createMockWorkOrder().address,
+            coordinates: { latitude: 47.63, longitude: -122.31 },
+          },
           estimatedDuration: 90,
         }),
       ];
@@ -461,22 +533,39 @@ describe("AutoDispatcher", () => {
 
   describe("dispatch", () => {
     it("should dispatch using nearest strategy", () => {
-      const result = AutoDispatcher.dispatch(job, techs, assignedJobs, "nearest");
+      const result = AutoDispatcher.dispatch(
+        job,
+        techs,
+        assignedJobs,
+        "nearest",
+      );
 
       expect(result).not.toBeNull();
       expect(result?.technicianId).toBeDefined();
     });
 
     it("should dispatch using balanced strategy", () => {
-      const result = AutoDispatcher.dispatch(job, techs, assignedJobs, "balanced");
+      const result = AutoDispatcher.dispatch(
+        job,
+        techs,
+        assignedJobs,
+        "balanced",
+      );
 
       expect(result).not.toBeNull();
       expect(result?.technicianId).toBeDefined();
     });
 
     it("should handle priority strategy for emergency", () => {
-      const emergencyJob = createMockWorkOrder("wo_emergency", { priority: "EMERGENCY" });
-      const result = AutoDispatcher.dispatch(emergencyJob, techs, assignedJobs, "priority");
+      const emergencyJob = createMockWorkOrder("wo_emergency", {
+        priority: "EMERGENCY",
+      });
+      const result = AutoDispatcher.dispatch(
+        emergencyJob,
+        techs,
+        assignedJobs,
+        "priority",
+      );
 
       expect(result).not.toBeNull();
     });
@@ -509,7 +598,12 @@ describe("AutoDispatcher", () => {
         createMockWorkOrder("wo_3", { priority: "MEDIUM" }),
       ];
 
-      const results = AutoDispatcher.batchDispatch(jobs, techs, assignedJobs, "balanced");
+      const results = AutoDispatcher.batchDispatch(
+        jobs,
+        techs,
+        assignedJobs,
+        "balanced",
+      );
 
       // Emergency job should be dispatched (if any dispatches happen)
       if (results.length > 0) {
@@ -519,10 +613,7 @@ describe("AutoDispatcher", () => {
     });
 
     it("should update assigned jobs for next iteration", () => {
-      const jobs = [
-        createMockWorkOrder("wo_1"),
-        createMockWorkOrder("wo_2"),
-      ];
+      const jobs = [createMockWorkOrder("wo_1"), createMockWorkOrder("wo_2")];
 
       const initialCount = assignedJobs.length;
       AutoDispatcher.batchDispatch(jobs, techs, assignedJobs);

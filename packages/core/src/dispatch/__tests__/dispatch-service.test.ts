@@ -144,7 +144,9 @@ describe("DispatchService", () => {
     it("should accept stop ID and optional reason", async () => {
       const result = await service.skipStop("stop-1", "Customer not home");
       // Should handle gracefully (returns null since not implemented)
-      expect(result === null || result === undefined || typeof result === "object").toBe(true);
+      expect(
+        result === null || result === undefined || typeof result === "object",
+      ).toBe(true);
     });
   });
 

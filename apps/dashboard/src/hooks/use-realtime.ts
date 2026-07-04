@@ -1,7 +1,7 @@
-'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+"use client";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 
 interface RealtimeMessage {
   channel: string;
@@ -17,8 +17,8 @@ interface UseRealtimeOptions {
 }
 
 export function useRealtime(options: UseRealtimeOptions = {}) {
-  const { channels = ['notifications'], onMessage, enabled = true } = options;
-  const [status, setStatus] = useState<ConnectionStatus>('disconnected');
+  const { channels = ["notifications"], onMessage, enabled = true } = options;
+  const [status, setStatus] = useState<ConnectionStatus>("disconnected");
   const [lastMessage, setLastMessage] = useState<RealtimeMessage | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef<NodeJS.Timeout>();
@@ -26,18 +26,18 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
   const connect = useCallback(() => {
     if (!enabled) return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/api/v4/ws`;
 
     try {
-      setStatus('connecting');
+      setStatus("connecting");
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        setStatus('connected');
+        setStatus("connected");
         // Subscribe to channels
-        ws.send(JSON.stringify({ type: 'subscribe', channels }));
+        ws.send(JSON.stringify({ type: "subscribe", channels }));
       };
 
       ws.onmessage = (event) => {
@@ -49,22 +49,22 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
       };
 
       ws.onclose = () => {
-        setStatus('disconnected');
+        setStatus("disconnected");
         // Auto-reconnect after 3s
         reconnectRef.current = setTimeout(connect, 3000);
       };
 
-      ws.onerror = () => setStatus('error');
+      ws.onerror = () => setStatus("error");
     } catch {
-      setStatus('error');
+      setStatus("error");
       // Fallback to SSE
       connectSSE();
     }
   }, [enabled, channels, onMessage]);
 
   const connectSSE = useCallback(() => {
-    const eventSource = new EventSource('/api/v4/events');
-    eventSource.onopen = () => setStatus('connected');
+    const eventSource = new EventSource("/api/v4/events");
+    eventSource.onopen = () => setStatus("connected");
     eventSource.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
@@ -72,13 +72,13 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
         onMessage?.(msg);
       } catch {}
     };
-    eventSource.onerror = () => setStatus('error');
+    eventSource.onerror = () => setStatus("error");
   }, [onMessage]);
 
   const disconnect = useCallback(() => {
     wsRef.current?.close();
     clearTimeout(reconnectRef.current);
-    setStatus('disconnected');
+    setStatus("disconnected");
   }, []);
 
   const send = useCallback((data: any) => {
@@ -98,9 +98,9 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
 // Channel-specific hooks
 export function useOrderUpdates(onUpdate?: (order: any) => void) {
   return useRealtime({
-    channels: ['orders'],
+    channels: ["orders"],
     onMessage: (msg) => {
-      if (msg.event === 'order:updated' || msg.event === 'order:created') {
+      if (msg.event === "order:updated" || msg.event === "order:created") {
         onUpdate?.(msg.data);
       }
     },
@@ -109,20 +109,22 @@ export function useOrderUpdates(onUpdate?: (order: any) => void) {
 
 export function useDriverLocations(onUpdate?: (location: any) => void) {
   return useRealtime({
-    channels: ['drivers'],
+    channels: ["drivers"],
     onMessage: (msg) => {
-      if (msg.event === 'driver:location') {
+      if (msg.event === "driver:location") {
         onUpdate?.(msg.data);
       }
     },
   });
 }
 
-export function useNotificationStream(onNotification?: (notification: any) => void) {
+export function useNotificationStream(
+  onNotification?: (notification: any) => void,
+) {
   return useRealtime({
-    channels: ['notifications'],
+    channels: ["notifications"],
     onMessage: (msg) => {
-      if (msg.channel === 'notifications') {
+      if (msg.channel === "notifications") {
         onNotification?.(msg.data);
       }
     },

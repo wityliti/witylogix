@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import crypto from 'crypto';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import crypto from "crypto";
 
 /**
  * Mock test utilities
@@ -14,16 +14,16 @@ interface MockRequest extends Partial<FastifyRequest> {
 }
 
 interface MockReply extends Partial<FastifyReply> {
-  code: ReturnType<FastifyReply['code']>;
-  send: ReturnType<FastifyReply['send']>;
+  code: ReturnType<FastifyReply["code"]>;
+  send: ReturnType<FastifyReply["send"]>;
 }
 
 const createMockRequest = (overrides: MockRequest = {}): MockRequest => {
   return {
-    shopId: 'shop_123',
+    shopId: "shop_123",
     body: {},
     params: {},
-    headers: { authorization: 'Bearer token' },
+    headers: { authorization: "Bearer token" },
     tenantDb: {
       settings: {
         findUnique: vi.fn(),
@@ -56,7 +56,7 @@ const createMockReply = (): MockReply => {
   return reply;
 };
 
-describe('Settings Routes', () => {
+describe("Settings Routes", () => {
   let mockFastify: Partial<FastifyInstance>;
 
   beforeEach(() => {
@@ -72,13 +72,13 @@ describe('Settings Routes', () => {
   });
 
   // ==================== GET / Tests ====================
-  describe('GET /', () => {
-    it('should return all settings for current shop', async () => {
+  describe("GET /", () => {
+    it("should return all settings for current shop", async () => {
       const settings = {
-        id: 'settings_1',
-        shopId: 'shop_123',
-        general: { timezone: 'UTC' },
-        branding: { logoUrl: 'https://example.com/logo.png' },
+        id: "settings_1",
+        shopId: "shop_123",
+        general: { timezone: "UTC" },
+        branding: { logoUrl: "https://example.com/logo.png" },
         notifications: { email: true },
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -88,7 +88,7 @@ describe('Settings Routes', () => {
       const reply = createMockReply();
 
       (request.tenantDb!.settings.findUnique as any).mockResolvedValue(
-        settings
+        settings,
       );
 
       // Simulate endpoint behavior
@@ -104,7 +104,7 @@ describe('Settings Routes', () => {
       }
     });
 
-    it('should throw NotFoundError when settings not found', async () => {
+    it("should throw NotFoundError when settings not found", async () => {
       const request = createMockRequest();
 
       (request.tenantDb!.settings.findUnique as any).mockResolvedValue(null);
@@ -116,17 +116,17 @@ describe('Settings Routes', () => {
       expect(foundSettings).toBeNull();
     });
 
-    it('should require authentication', async () => {
+    it("should require authentication", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});
     });
 
-    it('should filter sensitive fields from response', async () => {
+    it("should filter sensitive fields from response", async () => {
       const settings = {
-        id: 'settings_1',
-        shopId: 'shop_123',
-        general: { timezone: 'UTC' },
+        id: "settings_1",
+        shopId: "shop_123",
+        general: { timezone: "UTC" },
         branding: {},
         notifications: {},
         createdAt: new Date(),
@@ -136,32 +136,32 @@ describe('Settings Routes', () => {
       const request = createMockRequest();
 
       (request.tenantDb!.settings.findUnique as any).mockResolvedValue(
-        settings
+        settings,
       );
 
       const foundSettings = await request.tenantDb!.settings.findUnique({
         where: { shopId: request.shopId },
       });
 
-      expect(foundSettings).toHaveProperty('id');
-      expect(foundSettings).toHaveProperty('shopId');
+      expect(foundSettings).toHaveProperty("id");
+      expect(foundSettings).toHaveProperty("shopId");
     });
   });
 
   // ==================== PUT /general Tests ====================
-  describe('PUT /general', () => {
-    it('should update general settings', async () => {
+  describe("PUT /general", () => {
+    it("should update general settings", async () => {
       const updateData = {
-        timezone: 'America/New_York',
-        currency: 'USD',
-        weightUnit: 'lb',
+        timezone: "America/New_York",
+        currency: "USD",
+        weightUnit: "lb",
       };
 
       const request = createMockRequest({ body: updateData });
-      const updatedSettings = { ...updateData, shopId: 'shop_123' };
+      const updatedSettings = { ...updateData, shopId: "shop_123" };
 
       (request.tenantDb!.settings.update as any).mockResolvedValue(
-        updatedSettings
+        updatedSettings,
       );
 
       const result = await request.tenantDb!.settings.update({
@@ -169,43 +169,43 @@ describe('Settings Routes', () => {
         data: updateData,
       });
 
-      expect(result.timezone).toBe('America/New_York');
-      expect(result.currency).toBe('USD');
+      expect(result.timezone).toBe("America/New_York");
+      expect(result.currency).toBe("USD");
     });
 
-    it('should validate timezone format', async () => {
+    it("should validate timezone format", async () => {
       const request = createMockRequest({
-        body: { timezone: 'Invalid/Timezone' },
+        body: { timezone: "Invalid/Timezone" },
       });
 
       // Validation would be performed by the endpoint
-      expect(request.body.timezone).toBe('Invalid/Timezone');
+      expect(request.body.timezone).toBe("Invalid/Timezone");
     });
 
-    it('should validate currency code', async () => {
-      const request = createMockRequest({ body: { currency: 'INVALID' } });
+    it("should validate currency code", async () => {
+      const request = createMockRequest({ body: { currency: "INVALID" } });
 
-      expect(request.body.currency).toBe('INVALID');
+      expect(request.body.currency).toBe("INVALID");
     });
 
-    it('should validate weight unit enum', async () => {
-      const validUnits = ['kg', 'lb'];
-      const request = createMockRequest({ body: { weightUnit: 'kg' } });
+    it("should validate weight unit enum", async () => {
+      const validUnits = ["kg", "lb"];
+      const request = createMockRequest({ body: { weightUnit: "kg" } });
 
       expect(validUnits).toContain(request.body.weightUnit);
     });
 
-    it('should validate distance unit enum', async () => {
-      const validUnits = ['km', 'mi'];
-      const request = createMockRequest({ body: { distanceUnit: 'km' } });
+    it("should validate distance unit enum", async () => {
+      const validUnits = ["km", "mi"];
+      const request = createMockRequest({ body: { distanceUnit: "km" } });
 
       expect(validUnits).toContain(request.body.distanceUnit);
     });
 
-    it('should accept business hours configuration', async () => {
+    it("should accept business hours configuration", async () => {
       const businessHours = {
-        monday: { open: '09:00', close: '17:00', closed: false },
-        tuesday: { open: '09:00', close: '17:00', closed: false },
+        monday: { open: "09:00", close: "17:00", closed: false },
+        tuesday: { open: "09:00", close: "17:00", closed: false },
         saturday: { closed: true },
       };
 
@@ -216,24 +216,24 @@ describe('Settings Routes', () => {
       expect(request.body.businessHours).toEqual(businessHours);
     });
 
-    it('should require tenant isolation', async () => {
-      const request = createMockRequest({ shopId: 'shop_456' });
+    it("should require tenant isolation", async () => {
+      const request = createMockRequest({ shopId: "shop_456" });
 
-      expect(request.shopId).toBe('shop_456');
+      expect(request.shopId).toBe("shop_456");
     });
   });
 
   // ==================== PUT /branding Tests ====================
-  describe('PUT /branding', () => {
-    it('should update branding settings', async () => {
+  describe("PUT /branding", () => {
+    it("should update branding settings", async () => {
       const brandingData = {
-        logoUrl: 'https://example.com/logo.png',
-        primaryColor: '#FF0000',
-        secondaryColor: '#00FF00',
+        logoUrl: "https://example.com/logo.png",
+        primaryColor: "#FF0000",
+        secondaryColor: "#00FF00",
       };
 
       const request = createMockRequest({ body: brandingData });
-      const updated = { ...brandingData, shopId: 'shop_123' };
+      const updated = { ...brandingData, shopId: "shop_123" };
 
       (request.tenantDb!.settings.update as any).mockResolvedValue(updated);
 
@@ -241,28 +241,28 @@ describe('Settings Routes', () => {
         data: brandingData,
       });
 
-      expect(result.primaryColor).toBe('#FF0000');
+      expect(result.primaryColor).toBe("#FF0000");
     });
 
-    it('should validate logo URL', async () => {
+    it("should validate logo URL", async () => {
       const request = createMockRequest({
-        body: { logoUrl: 'https://example.com/logo.png' },
+        body: { logoUrl: "https://example.com/logo.png" },
       });
 
       expect(request.body.logoUrl).toMatch(/^https?:\/\//);
     });
 
-    it('should validate color format', async () => {
-      const validColors = ['#FF0000', '#00FF00', '#0000FF'];
+    it("should validate color format", async () => {
+      const validColors = ["#FF0000", "#00FF00", "#0000FF"];
       const request = createMockRequest({
-        body: { primaryColor: '#FF0000' },
+        body: { primaryColor: "#FF0000" },
       });
 
       expect(validColors).toContain(request.body.primaryColor);
     });
 
-    it('should reject invalid color format', async () => {
-      const invalidColor = 'FF0000'; // Missing #
+    it("should reject invalid color format", async () => {
+      const invalidColor = "FF0000"; // Missing #
       const request = createMockRequest({
         body: { primaryColor: invalidColor },
       });
@@ -270,10 +270,10 @@ describe('Settings Routes', () => {
       expect(request.body.primaryColor).not.toMatch(/^#[0-9A-F]{6}$/i);
     });
 
-    it('should accept tracking page configuration', async () => {
+    it("should accept tracking page configuration", async () => {
       const trackingConfig = {
-        brandName: 'My Store',
-        customMessage: 'Thank you for your purchase!',
+        brandName: "My Store",
+        customMessage: "Thank you for your purchase!",
         showEstimatedDelivery: true,
         showTrackingMap: true,
       };
@@ -287,20 +287,23 @@ describe('Settings Routes', () => {
   });
 
   // ==================== API Key Creation Tests ====================
-  describe('POST /api-keys', () => {
-    it('should create API key and return plaintext once', async () => {
-      const keyName = 'Production API Key';
-      const scopes = ['orders:read', 'shipments:read'];
+  describe("POST /api-keys", () => {
+    it("should create API key and return plaintext once", async () => {
+      const keyName = "Production API Key";
+      const scopes = ["orders:read", "shipments:read"];
 
       const request = createMockRequest({
         body: { name: keyName, scopes },
       });
 
-      const rawKey = crypto.randomBytes(32).toString('base64url');
-      const hashedKey = crypto.createHash('sha256').update(rawKey).digest('hex');
+      const rawKey = crypto.randomBytes(32).toString("base64url");
+      const hashedKey = crypto
+        .createHash("sha256")
+        .update(rawKey)
+        .digest("hex");
 
       (request.tenantDb!.apiKey.create as any).mockResolvedValue({
-        id: 'key_123',
+        id: "key_123",
         name: keyName,
         scopes,
         createdAt: new Date(),
@@ -320,13 +323,13 @@ describe('Settings Routes', () => {
       expect(created.scopes).toEqual(scopes);
     });
 
-    it('should set expiration if expiresIn provided', async () => {
+    it("should set expiration if expiresIn provided", async () => {
       const expiresInSeconds = 2592000; // 30 days
 
       const request = createMockRequest({
         body: {
-          name: 'Temp Key',
-          scopes: ['orders:read'],
+          name: "Temp Key",
+          scopes: ["orders:read"],
           expiresIn: expiresInSeconds,
         },
       });
@@ -334,7 +337,7 @@ describe('Settings Routes', () => {
       const expiryDate = new Date(Date.now() + expiresInSeconds * 1000);
 
       (request.tenantDb!.apiKey.create as any).mockResolvedValue({
-        id: 'key_temp',
+        id: "key_temp",
         expiresAt: expiryDate,
       });
 
@@ -347,55 +350,55 @@ describe('Settings Routes', () => {
       expect(created.expiresAt).toBeInstanceOf(Date);
     });
 
-    it('should validate scopes array is not empty', async () => {
+    it("should validate scopes array is not empty", async () => {
       const request = createMockRequest({
-        body: { name: 'Bad Key', scopes: [] },
+        body: { name: "Bad Key", scopes: [] },
       });
 
       expect(request.body.scopes.length).toBe(0);
     });
 
-    it('should require authentication', async () => {
+    it("should require authentication", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});
     });
 
-    it('should associate key with tenant', async () => {
+    it("should associate key with tenant", async () => {
       const request = createMockRequest({
-        shopId: 'shop_456',
-        body: { name: 'API Key', scopes: ['read'] },
+        shopId: "shop_456",
+        body: { name: "API Key", scopes: ["read"] },
       });
 
       (request.tenantDb!.apiKey.create as any).mockResolvedValue({
-        shopId: 'shop_456',
+        shopId: "shop_456",
       });
 
       const created = await request.tenantDb!.apiKey.create({
         data: { shopId: request.shopId },
       });
 
-      expect(created.shopId).toBe('shop_456');
+      expect(created.shopId).toBe("shop_456");
     });
   });
 
   // ==================== API Key Listing Tests ====================
-  describe('GET /api-keys', () => {
-    it('should list API keys with masked values', async () => {
+  describe("GET /api-keys", () => {
+    it("should list API keys with masked values", async () => {
       const keys = [
         {
-          id: 'key_1',
-          name: 'Production Key',
-          key: 'masked_****',
-          scopes: ['orders:read'],
+          id: "key_1",
+          name: "Production Key",
+          key: "masked_****",
+          scopes: ["orders:read"],
           createdAt: new Date(),
           expiresAt: null,
         },
         {
-          id: 'key_2',
-          name: 'Test Key',
-          key: 'masked_****',
-          scopes: ['orders:write'],
+          id: "key_2",
+          name: "Test Key",
+          key: "masked_****",
+          scopes: ["orders:write"],
           createdAt: new Date(),
           expiresAt: new Date(),
         },
@@ -410,12 +413,12 @@ describe('Settings Routes', () => {
       });
 
       expect(result).toHaveLength(2);
-      expect(result[0].key).toBe('masked_****');
-      expect(result[1].key).toBe('masked_****');
+      expect(result[0].key).toBe("masked_****");
+      expect(result[1].key).toBe("masked_****");
     });
 
-    it('should only return keys for current tenant', async () => {
-      const request = createMockRequest({ shopId: 'shop_789' });
+    it("should only return keys for current tenant", async () => {
+      const request = createMockRequest({ shopId: "shop_789" });
 
       (request.tenantDb!.apiKey.findMany as any).mockResolvedValue([]);
 
@@ -426,13 +429,13 @@ describe('Settings Routes', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should show expiration dates', async () => {
+    it("should show expiration dates", async () => {
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
 
       const keys = [
         {
-          id: 'key_expiring',
+          id: "key_expiring",
           expiresAt: expiryDate,
         },
       ];
@@ -448,59 +451,59 @@ describe('Settings Routes', () => {
   });
 
   // ==================== API Key Revocation Tests ====================
-  describe('DELETE /api-keys/:id', () => {
-    it('should revoke API key', async () => {
+  describe("DELETE /api-keys/:id", () => {
+    it("should revoke API key", async () => {
       const request = createMockRequest({
-        params: { id: 'key_to_revoke' },
+        params: { id: "key_to_revoke" },
       });
 
       (request.tenantDb!.apiKey.findUnique as any).mockResolvedValue({
-        id: 'key_to_revoke',
-        shopId: 'shop_123',
+        id: "key_to_revoke",
+        shopId: "shop_123",
       });
 
       (request.tenantDb!.apiKey.update as any).mockResolvedValue({});
 
       const key = await request.tenantDb!.apiKey.findUnique({
-        where: { id: 'key_to_revoke' },
+        where: { id: "key_to_revoke" },
       });
 
-      expect(key.shopId).toBe('shop_123');
+      expect(key.shopId).toBe("shop_123");
     });
 
-    it('should verify API key belongs to current tenant', async () => {
+    it("should verify API key belongs to current tenant", async () => {
       const request = createMockRequest({
-        shopId: 'shop_123',
-        params: { id: 'key_other_shop' },
+        shopId: "shop_123",
+        params: { id: "key_other_shop" },
       });
 
       (request.tenantDb!.apiKey.findUnique as any).mockResolvedValue({
-        id: 'key_other_shop',
-        shopId: 'shop_456',
+        id: "key_other_shop",
+        shopId: "shop_456",
       });
 
       const key = await request.tenantDb!.apiKey.findUnique({
-        where: { id: 'key_other_shop' },
+        where: { id: "key_other_shop" },
       });
 
       expect(key.shopId).not.toBe(request.shopId);
     });
 
-    it('should return 404 for non-existent key', async () => {
+    it("should return 404 for non-existent key", async () => {
       const request = createMockRequest({
-        params: { id: 'nonexistent_key' },
+        params: { id: "nonexistent_key" },
       });
 
       (request.tenantDb!.apiKey.findUnique as any).mockResolvedValue(null);
 
       const key = await request.tenantDb!.apiKey.findUnique({
-        where: { id: 'nonexistent_key' },
+        where: { id: "nonexistent_key" },
       });
 
       expect(key).toBeNull();
     });
 
-    it('should use soft delete', async () => {
+    it("should use soft delete", async () => {
       const request = createMockRequest();
 
       (request.tenantDb!.apiKey.update as any).mockResolvedValue({
@@ -508,7 +511,7 @@ describe('Settings Routes', () => {
       });
 
       const updated = await request.tenantDb!.apiKey.update({
-        where: { id: 'key_id' },
+        where: { id: "key_id" },
         data: { deletedAt: new Date() },
       });
 
@@ -517,22 +520,22 @@ describe('Settings Routes', () => {
   });
 
   // ==================== Team Member Tests ====================
-  describe('GET /team', () => {
-    it('should list team members with roles', async () => {
+  describe("GET /team", () => {
+    it("should list team members with roles", async () => {
       const teamMembers = [
         {
-          id: 'member_1',
-          userId: 'user_1',
-          email: 'admin@example.com',
-          role: 'admin',
+          id: "member_1",
+          userId: "user_1",
+          email: "admin@example.com",
+          role: "admin",
           joinedAt: new Date(),
           createdAt: new Date(),
         },
         {
-          id: 'member_2',
-          userId: 'user_2',
-          email: 'manager@example.com',
-          role: 'manager',
+          id: "member_2",
+          userId: "user_2",
+          email: "manager@example.com",
+          role: "manager",
           joinedAt: new Date(),
           createdAt: new Date(),
         },
@@ -541,7 +544,7 @@ describe('Settings Routes', () => {
       const request = createMockRequest();
 
       (request.tenantDb!.teamMember.findMany as any).mockResolvedValue(
-        teamMembers
+        teamMembers,
       );
 
       const result = await request.tenantDb!.teamMember.findMany({
@@ -549,11 +552,11 @@ describe('Settings Routes', () => {
       });
 
       expect(result).toHaveLength(2);
-      expect(result[0].role).toBe('admin');
-      expect(result[1].role).toBe('manager');
+      expect(result[0].role).toBe("admin");
+      expect(result[1].role).toBe("manager");
     });
 
-    it('should exclude deleted members', async () => {
+    it("should exclude deleted members", async () => {
       const request = createMockRequest();
 
       (request.tenantDb!.teamMember.findMany as any).mockResolvedValue([]);
@@ -565,43 +568,40 @@ describe('Settings Routes', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should order by join date', async () => {
-      const date1 = new Date('2024-01-01');
-      const date2 = new Date('2024-02-01');
+    it("should order by join date", async () => {
+      const date1 = new Date("2024-01-01");
+      const date2 = new Date("2024-02-01");
 
-      const teamMembers = [
-        { joinedAt: date2 },
-        { joinedAt: date1 },
-      ];
+      const teamMembers = [{ joinedAt: date2 }, { joinedAt: date1 }];
 
       const request = createMockRequest();
 
       // Endpoints would handle ordering
       expect(teamMembers[0].joinedAt.getTime()).toBeGreaterThan(
-        teamMembers[1].joinedAt.getTime()
+        teamMembers[1].joinedAt.getTime(),
       );
     });
   });
 
   // ==================== Team Invitation Tests ====================
-  describe('POST /team/invite', () => {
-    it('should send team invitation', async () => {
+  describe("POST /team/invite", () => {
+    it("should send team invitation", async () => {
       const request = createMockRequest({
         body: {
-          email: 'newmember@example.com',
-          role: 'manager',
+          email: "newmember@example.com",
+          role: "manager",
         },
       });
 
-      const invitationToken = crypto.randomBytes(32).toString('hex');
+      const invitationToken = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
       (request.tenantDb!.teamMember.findFirst as any).mockResolvedValue(null);
 
       (request.tenantDb!.teamInvitation.create as any).mockResolvedValue({
-        id: 'inv_123',
-        email: 'newmember@example.com',
-        role: 'manager',
+        id: "inv_123",
+        email: "newmember@example.com",
+        role: "manager",
         expiresAt,
       });
 
@@ -615,20 +615,20 @@ describe('Settings Routes', () => {
         },
       });
 
-      expect(invitation.email).toBe('newmember@example.com');
-      expect(invitation.role).toBe('manager');
+      expect(invitation.email).toBe("newmember@example.com");
+      expect(invitation.role).toBe("manager");
     });
 
-    it('should reject if user already member', async () => {
+    it("should reject if user already member", async () => {
       const request = createMockRequest({
         body: {
-          email: 'existing@example.com',
-          role: 'viewer',
+          email: "existing@example.com",
+          role: "viewer",
         },
       });
 
       (request.tenantDb!.teamMember.findFirst as any).mockResolvedValue({
-        id: 'member_existing',
+        id: "member_existing",
       });
 
       const existing = await request.tenantDb!.teamMember.findFirst({
@@ -638,26 +638,26 @@ describe('Settings Routes', () => {
       expect(existing).not.toBeNull();
     });
 
-    it('should validate email format', async () => {
+    it("should validate email format", async () => {
       const request = createMockRequest({
-        body: { email: 'invalid-email', role: 'viewer' },
+        body: { email: "invalid-email", role: "viewer" },
       });
 
       expect(request.body.email).not.toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
     });
 
-    it('should validate role enum', async () => {
-      const validRoles = ['admin', 'manager', 'viewer'];
+    it("should validate role enum", async () => {
+      const validRoles = ["admin", "manager", "viewer"];
       const request = createMockRequest({
-        body: { email: 'test@example.com', role: 'admin' },
+        body: { email: "test@example.com", role: "admin" },
       });
 
       expect(validRoles).toContain(request.body.role);
     });
 
-    it('should set invitation expiry to 7 days', async () => {
+    it("should set invitation expiry to 7 days", async () => {
       const request = createMockRequest({
-        body: { email: 'invite@example.com', role: 'manager' },
+        body: { email: "invite@example.com", role: "manager" },
       });
 
       const before = new Date();
@@ -668,7 +668,7 @@ describe('Settings Routes', () => {
       expect(expiresAt.getTime() - Date.now()).toBeCloseTo(sevenDaysInMs, -3);
     });
 
-    it('should require authentication', async () => {
+    it("should require authentication", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});
@@ -676,38 +676,38 @@ describe('Settings Routes', () => {
   });
 
   // ==================== Tenant Isolation Tests ====================
-  describe('Tenant Isolation', () => {
-    it('should not allow accessing other tenant settings', async () => {
+  describe("Tenant Isolation", () => {
+    it("should not allow accessing other tenant settings", async () => {
       const request = createMockRequest({
-        shopId: 'shop_123',
+        shopId: "shop_123",
       });
 
-      expect(request.shopId).toBe('shop_123');
+      expect(request.shopId).toBe("shop_123");
     });
 
-    it('should not allow accessing other tenant API keys', async () => {
-      const request1 = createMockRequest({ shopId: 'shop_123' });
-      const request2 = createMockRequest({ shopId: 'shop_456' });
+    it("should not allow accessing other tenant API keys", async () => {
+      const request1 = createMockRequest({ shopId: "shop_123" });
+      const request2 = createMockRequest({ shopId: "shop_456" });
 
       expect(request1.shopId).not.toBe(request2.shopId);
     });
 
-    it('should not allow accessing other tenant team members', async () => {
-      const request1 = createMockRequest({ shopId: 'shop_123' });
-      const request2 = createMockRequest({ shopId: 'shop_456' });
+    it("should not allow accessing other tenant team members", async () => {
+      const request1 = createMockRequest({ shopId: "shop_123" });
+      const request2 = createMockRequest({ shopId: "shop_456" });
 
       (request1.tenantDb!.teamMember.findMany as any).mockResolvedValue([
-        { shopId: 'shop_123' },
+        { shopId: "shop_123" },
       ]);
       (request2.tenantDb!.teamMember.findMany as any).mockResolvedValue([
-        { shopId: 'shop_456' },
+        { shopId: "shop_456" },
       ]);
 
       const members1 = await request1.tenantDb!.teamMember.findMany({
-        where: { shopId: 'shop_123' },
+        where: { shopId: "shop_123" },
       });
       const members2 = await request2.tenantDb!.teamMember.findMany({
-        where: { shopId: 'shop_456' },
+        where: { shopId: "shop_456" },
       });
 
       expect(members1[0].shopId).not.toBe(members2[0].shopId);
@@ -715,32 +715,32 @@ describe('Settings Routes', () => {
   });
 
   // ==================== Authentication Tests ====================
-  describe('Authentication', () => {
-    it('should require auth for GET /', async () => {
+  describe("Authentication", () => {
+    it("should require auth for GET /", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});
     });
 
-    it('should require auth for PUT /general', async () => {
+    it("should require auth for PUT /general", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});
     });
 
-    it('should require auth for POST /api-keys', async () => {
+    it("should require auth for POST /api-keys", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});
     });
 
-    it('should require auth for GET /team', async () => {
+    it("should require auth for GET /team", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});
     });
 
-    it('should require auth for POST /team/invite', async () => {
+    it("should require auth for POST /team/invite", async () => {
       const request = createMockRequest({ headers: {} });
 
       expect(request.headers).toEqual({});

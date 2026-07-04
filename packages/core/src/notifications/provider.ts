@@ -26,7 +26,11 @@ export interface SendResult {
 }
 
 /** How authentication works for a notification provider. */
-export type NotifAuthType = "api_key" | "api_key_secret" | "credentials" | "none";
+export type NotifAuthType =
+  | "api_key"
+  | "api_key_secret"
+  | "credentials"
+  | "none";
 
 // ─── Email ─────────────────────────────────────────────────
 
@@ -118,10 +122,7 @@ export interface WhatsAppProviderMeta {
 
 // ─── Push ──────────────────────────────────────────────────
 
-export type PushProviderSlug =
-  | "firebase"
-  | "onesignal"
-  | "expo_push";
+export type PushProviderSlug = "firebase" | "onesignal" | "expo_push";
 
 export interface PushProvider {
   readonly name: string;

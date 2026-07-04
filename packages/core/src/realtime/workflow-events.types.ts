@@ -31,7 +31,8 @@ export const WORKFLOW_EVENTS = {
   COMPENSATION_COMPLETED: "workflow:compensation:completed",
 } as const;
 
-export type WorkflowEventName = (typeof WORKFLOW_EVENTS)[keyof typeof WORKFLOW_EVENTS];
+export type WorkflowEventName =
+  (typeof WORKFLOW_EVENTS)[keyof typeof WORKFLOW_EVENTS];
 
 // ─── Base Payload Type ──────────────────────────────────────
 
@@ -236,11 +237,29 @@ export interface CompensationCompletedPayload extends WorkflowEventBase {
  * Use `event` to discriminate and get typed payload.
  */
 export type WorkflowSocketEvent =
-  | { event: typeof WORKFLOW_EVENTS.WORKFLOW_STARTED; payload: WorkflowStartedPayload }
-  | { event: typeof WORKFLOW_EVENTS.WORKFLOW_COMPLETED; payload: WorkflowCompletedPayload }
-  | { event: typeof WORKFLOW_EVENTS.WORKFLOW_FAILED; payload: WorkflowFailedPayload }
+  | {
+      event: typeof WORKFLOW_EVENTS.WORKFLOW_STARTED;
+      payload: WorkflowStartedPayload;
+    }
+  | {
+      event: typeof WORKFLOW_EVENTS.WORKFLOW_COMPLETED;
+      payload: WorkflowCompletedPayload;
+    }
+  | {
+      event: typeof WORKFLOW_EVENTS.WORKFLOW_FAILED;
+      payload: WorkflowFailedPayload;
+    }
   | { event: typeof WORKFLOW_EVENTS.STEP_STARTED; payload: StepStartedPayload }
-  | { event: typeof WORKFLOW_EVENTS.STEP_COMPLETED; payload: StepCompletedPayload }
+  | {
+      event: typeof WORKFLOW_EVENTS.STEP_COMPLETED;
+      payload: StepCompletedPayload;
+    }
   | { event: typeof WORKFLOW_EVENTS.STEP_FAILED; payload: StepFailedPayload }
-  | { event: typeof WORKFLOW_EVENTS.COMPENSATION_STARTED; payload: CompensationStartedPayload }
-  | { event: typeof WORKFLOW_EVENTS.COMPENSATION_COMPLETED; payload: CompensationCompletedPayload };
+  | {
+      event: typeof WORKFLOW_EVENTS.COMPENSATION_STARTED;
+      payload: CompensationStartedPayload;
+    }
+  | {
+      event: typeof WORKFLOW_EVENTS.COMPENSATION_COMPLETED;
+      payload: CompensationCompletedPayload;
+    };

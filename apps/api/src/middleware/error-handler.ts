@@ -21,7 +21,12 @@
  * - P2025 (Record not found) → 404 Not Found
  */
 
-import type { FastifyInstance, FastifyError, FastifyReply, FastifyRequest } from "fastify";
+import type {
+  FastifyInstance,
+  FastifyError,
+  FastifyReply,
+  FastifyRequest,
+} from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import {
   AppError,
@@ -56,7 +61,9 @@ function mapPrismaError(error: any): AppError {
   if (code === "P2002") {
     const field = error.meta?.target?.[0];
     return new ConflictError(
-      field ? `Resource with this ${field} already exists` : "Duplicate resource",
+      field
+        ? `Resource with this ${field} already exists`
+        : "Duplicate resource",
     );
   }
 
@@ -76,19 +83,11 @@ function mapPrismaError(error: any): AppError {
 
   // P2014 - Required relation violation
   if (code === "P2014") {
-    return new AppError(
-      "Required relation missing",
-      422,
-      "RELATION_ERROR",
-    );
+    return new AppError("Required relation missing", 422, "RELATION_ERROR");
   }
 
   // Default Prisma error
-  return new AppError(
-    "Database operation failed",
-    500,
-    "DATABASE_ERROR",
-  );
+  return new AppError("Database operation failed", 500, "DATABASE_ERROR");
 }
 
 /**
@@ -186,7 +185,11 @@ function buildErrorResponse(
 const errorHandlerPlugin = fastifyPlugin(
   async (fastify: FastifyInstance): Promise<void> => {
     fastify.setErrorHandler(
-      async (error: Error, request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+      async (
+        error: Error,
+        request: FastifyRequest,
+        reply: FastifyReply,
+      ): Promise<void> => {
         const requestId = request.requestId || "unknown";
         const statusCode = getStatusCode(error);
 

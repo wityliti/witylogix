@@ -9,21 +9,25 @@
  * - SLA monitoring: 80% warning, 100% breach escalation
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createMockWorkOrder,
   createMockTechnician,
   createMockPart,
   createMockInvoice,
-} from '../fixtures/field-service-fixtures.js';
-import type { MockWorkOrder, MockPart, MockInvoice } from '../fixtures/field-service-fixtures.js';
+} from "../fixtures/field-service-fixtures.js";
+import type {
+  MockWorkOrder,
+  MockPart,
+  MockInvoice,
+} from "../fixtures/field-service-fixtures.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // SETUP & HELPERS
 // ─────────────────────────────────────────────────────────────────────────
 
 interface TimeEntry {
-  type: 'work' | 'travel' | 'break';
+  type: "work" | "travel" | "break";
   startTime: Date;
   endTime: Date;
   durationMinutes: number;
@@ -54,39 +58,47 @@ class WorkOrderService {
   // STATE TRANSITIONS
   // ─────────────────────────────────────────────────────────────────
 
-  transitionState(workOrderId: string, newStatus: MockWorkOrder['status']): MockWorkOrder {
+  transitionState(
+    workOrderId: string,
+    newStatus: MockWorkOrder["status"],
+  ): MockWorkOrder {
     const workOrder = this.workOrders.get(workOrderId);
-    if (!workOrder) throw new Error('Work order not found');
+    if (!workOrder) throw new Error("Work order not found");
 
-    const validTransitions: Record<MockWorkOrder['status'], MockWorkOrder['status'][]> = {
-      created: ['scheduled', 'cancelled'],
-      scheduled: ['assigned', 'cancelled'],
-      assigned: ['in_progress', 'cancelled'],
-      in_progress: ['completed', 'cancelled'],
+    const validTransitions: Record<
+      MockWorkOrder["status"],
+      MockWorkOrder["status"][]
+    > = {
+      created: ["scheduled", "cancelled"],
+      scheduled: ["assigned", "cancelled"],
+      assigned: ["in_progress", "cancelled"],
+      in_progress: ["completed", "cancelled"],
       completed: [],
       cancelled: [],
     };
 
     const allowedTransitions = validTransitions[workOrder.status];
     if (!allowedTransitions.includes(newStatus)) {
-      throw new Error(`Cannot transition from ${workOrder.status} to ${newStatus}`);
+      throw new Error(
+        `Cannot transition from ${workOrder.status} to ${newStatus}`,
+      );
     }
 
     workOrder.status = newStatus;
     workOrder.updatedAt = new Date();
 
-    if (newStatus === 'in_progress' && !workOrder.actualStart) {
+    if (newStatus === "in_progress" && !workOrder.actualStart) {
       workOrder.actualStart = new Date();
     }
 
-    if (newStatus === 'completed' && !workOrder.actualEnd) {
+    if (newStatus === "completed" && !workOrder.actualEnd) {
       workOrder.actualEnd = new Date();
     }
 
     return workOrder;
   }
 
-  getWorkOrderStatus(workOrderId: string): MockWorkOrder['status'] | null {
+  getWorkOrderStatus(workOrderId: string): MockWorkOrder["status"] | null {
     const workOrder = this.workOrders.get(workOrderId);
     return workOrder?.status || null;
   }
@@ -145,14 +157,14 @@ class WorkOrderService {
 
   clockIn(workOrderId: string): void {
     const workOrder = this.workOrders.get(workOrderId);
-    if (!workOrder) throw new Error('Work order not found');
+    if (!workOrder) throw new Error("Work order not found");
 
-    this.transitionState(workOrderId, 'in_progress');
+    this.transitionState(workOrderId, "in_progress");
   }
 
   clockOut(workOrderId: string): void {
     const workOrder = this.workOrders.get(workOrderId);
-    if (!workOrder) throw new Error('Work order not found');
+    if (!workOrder) throw new Error("Work order not found");
 
     if (workOrder.actualEnd) return; // Already clocked out
 
@@ -164,7 +176,7 @@ class WorkOrderService {
     const now = new Date();
 
     entries.push({
-      type: 'travel',
+      type: "travel",
       startTime: new Date(now.getTime() - durationMinutes * 60 * 1000),
       endTime: now,
       durationMinutes,
@@ -178,7 +190,7 @@ class WorkOrderService {
     const now = new Date();
 
     entries.push({
-      type: 'break',
+      type: "break",
       startTime: new Date(now.getTime() - durationMinutes * 60 * 1000),
       endTime: now,
       durationMinutes,
@@ -189,15 +201,18 @@ class WorkOrderService {
 
   calculateBillableHours(workOrderId: string): number {
     const entries = this.timeEntries.get(workOrderId) || [];
-    const workEntries = entries.filter((e) => e.type === 'work');
+    const workEntries = entries.filter((e) => e.type === "work");
 
-    const totalMinutes = workEntries.reduce((sum, e) => sum + e.durationMinutes, 0);
+    const totalMinutes = workEntries.reduce(
+      (sum, e) => sum + e.durationMinutes,
+      0,
+    );
     return Math.round((totalMinutes / 60) * 100) / 100;
   }
 
   calculateTravelTime(workOrderId: string): number {
     const entries = this.timeEntries.get(workOrderId) || [];
-    const travelEntries = entries.filter((e) => e.type === 'travel');
+    const travelEntries = entries.filter((e) => e.type === "travel");
 
     return travelEntries.reduce((sum, e) => sum + e.durationMinutes, 0);
   }
@@ -217,9 +232,12 @@ class WorkOrderService {
   // INVOICE GENERATION
   // ─────────────────────────────────────────────────────────────────
 
-  generateInvoice(workOrderId: string, laborRatePerHour: number = 85): MockInvoice {
+  generateInvoice(
+    workOrderId: string,
+    laborRatePerHour: number = 85,
+  ): MockInvoice {
     const workOrder = this.workOrders.get(workOrderId);
-    if (!workOrder) throw new Error('Work order not found');
+    if (!workOrder) throw new Error("Work order not found");
 
     const billableHours = this.calculateBillableHours(workOrderId);
     const laborCost = billableHours * laborRatePerHour;
@@ -233,12 +251,16 @@ class WorkOrderService {
     const total = subtotal + taxAmount;
 
     const invoice: MockInvoice = {
-      id: 'inv_' + workOrderId,
-      invoiceNumber: 'INV' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
+      id: "inv_" + workOrderId,
+      invoiceNumber:
+        "INV" +
+        Math.floor(Math.random() * 1000000)
+          .toString()
+          .padStart(6, "0"),
       workOrderId,
       customerId: workOrder.customerId,
-      technicianId: workOrder.assignedTechnicianIds[0] || 'tech_unknown',
-      status: 'draft',
+      technicianId: workOrder.assignedTechnicianIds[0] || "tech_unknown",
+      status: "draft",
       issuedDate: new Date(),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       laborCost,
@@ -279,7 +301,11 @@ class WorkOrderService {
     return new Date(workOrder.createdAt.getTime() + minutes * 60 * 1000);
   }
 
-  checkSLAStatus(workOrderId: string): { breached: boolean; percentageUsed: number; hoursRemaining: number } {
+  checkSLAStatus(workOrderId: string): {
+    breached: boolean;
+    percentageUsed: number;
+    hoursRemaining: number;
+  } {
     const workOrder = this.workOrders.get(workOrderId);
     if (!workOrder) {
       return { breached: false, percentageUsed: 0, hoursRemaining: 0 };
@@ -294,7 +320,10 @@ class WorkOrderService {
     const totalTime = deadline.getTime() - workOrder.createdAt.getTime();
     const timeUsed = now.getTime() - workOrder.createdAt.getTime();
     const percentageUsed = Math.round((timeUsed / totalTime) * 100);
-    const hoursRemaining = Math.max(0, (deadline.getTime() - now.getTime()) / (1000 * 60 * 60));
+    const hoursRemaining = Math.max(
+      0,
+      (deadline.getTime() - now.getTime()) / (1000 * 60 * 60),
+    );
 
     return {
       breached: now > deadline,
@@ -314,13 +343,13 @@ class WorkOrderService {
 // TESTS
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('Work Order Lifecycle', () => {
+describe("Work Order Lifecycle", () => {
   let service: WorkOrderService;
   let workOrder: MockWorkOrder;
 
   beforeEach(() => {
     service = new WorkOrderService();
-    workOrder = createMockWorkOrder({ id: 'wo_0', priority: 'high' });
+    workOrder = createMockWorkOrder({ id: "wo_0", priority: "high" });
     service.registerWorkOrder(workOrder);
   });
 
@@ -328,54 +357,56 @@ describe('Work Order Lifecycle', () => {
   // STATE TRANSITIONS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('State Transitions', () => {
-    it('should transition from created to scheduled', () => {
-      const updated = service.transitionState(workOrder.id, 'scheduled');
-      expect(updated.status).toBe('scheduled');
+  describe("State Transitions", () => {
+    it("should transition from created to scheduled", () => {
+      const updated = service.transitionState(workOrder.id, "scheduled");
+      expect(updated.status).toBe("scheduled");
     });
 
-    it('should transition through full lifecycle', () => {
-      service.transitionState(workOrder.id, 'scheduled');
-      expect(service.getWorkOrderStatus(workOrder.id)).toBe('scheduled');
+    it("should transition through full lifecycle", () => {
+      service.transitionState(workOrder.id, "scheduled");
+      expect(service.getWorkOrderStatus(workOrder.id)).toBe("scheduled");
 
-      service.transitionState(workOrder.id, 'assigned');
-      expect(service.getWorkOrderStatus(workOrder.id)).toBe('assigned');
+      service.transitionState(workOrder.id, "assigned");
+      expect(service.getWorkOrderStatus(workOrder.id)).toBe("assigned");
 
-      service.transitionState(workOrder.id, 'in_progress');
-      expect(service.getWorkOrderStatus(workOrder.id)).toBe('in_progress');
+      service.transitionState(workOrder.id, "in_progress");
+      expect(service.getWorkOrderStatus(workOrder.id)).toBe("in_progress");
 
-      service.transitionState(workOrder.id, 'completed');
-      expect(service.getWorkOrderStatus(workOrder.id)).toBe('completed');
+      service.transitionState(workOrder.id, "completed");
+      expect(service.getWorkOrderStatus(workOrder.id)).toBe("completed");
     });
 
-    it('should set actual start on in_progress', () => {
-      service.transitionState(workOrder.id, 'scheduled');
-      service.transitionState(workOrder.id, 'assigned');
-      service.transitionState(workOrder.id, 'in_progress');
+    it("should set actual start on in_progress", () => {
+      service.transitionState(workOrder.id, "scheduled");
+      service.transitionState(workOrder.id, "assigned");
+      service.transitionState(workOrder.id, "in_progress");
 
       const updated = service.workOrders.get(workOrder.id);
       expect(updated?.actualStart).toBeDefined();
     });
 
-    it('should set actual end on completed', () => {
-      service.transitionState(workOrder.id, 'scheduled');
-      service.transitionState(workOrder.id, 'assigned');
-      service.transitionState(workOrder.id, 'in_progress');
-      service.transitionState(workOrder.id, 'completed');
+    it("should set actual end on completed", () => {
+      service.transitionState(workOrder.id, "scheduled");
+      service.transitionState(workOrder.id, "assigned");
+      service.transitionState(workOrder.id, "in_progress");
+      service.transitionState(workOrder.id, "completed");
 
       const updated = service.workOrders.get(workOrder.id);
       expect(updated?.actualEnd).toBeDefined();
     });
 
-    it('should allow cancellation from any state', () => {
-      service.transitionState(workOrder.id, 'scheduled');
-      service.transitionState(workOrder.id, 'cancelled');
+    it("should allow cancellation from any state", () => {
+      service.transitionState(workOrder.id, "scheduled");
+      service.transitionState(workOrder.id, "cancelled");
 
-      expect(service.getWorkOrderStatus(workOrder.id)).toBe('cancelled');
+      expect(service.getWorkOrderStatus(workOrder.id)).toBe("cancelled");
     });
 
-    it('should reject invalid transitions', () => {
-      expect(() => service.transitionState(workOrder.id, 'in_progress')).toThrow();
+    it("should reject invalid transitions", () => {
+      expect(() =>
+        service.transitionState(workOrder.id, "in_progress"),
+      ).toThrow();
     });
   });
 
@@ -383,8 +414,8 @@ describe('Work Order Lifecycle', () => {
   // PARTS TRACKING
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Parts Tracking', () => {
-    it('should track used parts', () => {
+  describe("Parts Tracking", () => {
+    it("should track used parts", () => {
       const part = createMockPart({ quantity: 2, unitPrice: 45.99 });
       service.useParts(workOrder.id, [part]);
 
@@ -392,7 +423,7 @@ describe('Work Order Lifecycle', () => {
       expect(usedParts).toContainEqual(part);
     });
 
-    it('should calculate total parts cost', () => {
+    it("should calculate total parts cost", () => {
       const part1 = createMockPart({ quantity: 2, unitPrice: 50 });
       const part2 = createMockPart({ quantity: 1, unitPrice: 100 });
 
@@ -402,24 +433,24 @@ describe('Work Order Lifecycle', () => {
       expect(totalCost).toBe(200); // (2 * 50) + (1 * 100)
     });
 
-    it('should deduct inventory on parts usage', () => {
-      service.initializeInventory('part_1', 'Capacitor', 50);
+    it("should deduct inventory on parts usage", () => {
+      service.initializeInventory("part_1", "Capacitor", 50);
 
-      const part = createMockPart({ id: 'part_1', quantity: 10 });
+      const part = createMockPart({ id: "part_1", quantity: 10 });
       service.useParts(workOrder.id, [part]);
 
       // Inventory should be deducted
-      expect(service.inventory.get('part_1')?.quantity).toBe(40);
+      expect(service.inventory.get("part_1")?.quantity).toBe(40);
     });
 
-    it('should trigger reorder when inventory low', () => {
-      service.initializeInventory('part_2', 'Bearing', 20);
+    it("should trigger reorder when inventory low", () => {
+      service.initializeInventory("part_2", "Bearing", 20);
 
-      const part = createMockPart({ id: 'part_2', quantity: 18 });
+      const part = createMockPart({ id: "part_2", quantity: 18 });
       service.useParts(workOrder.id, [part]);
 
       const reorderList = service.checkReorderNeeded();
-      expect(reorderList).toContain('part_2');
+      expect(reorderList).toContain("part_2");
     });
   });
 
@@ -427,13 +458,13 @@ describe('Work Order Lifecycle', () => {
   // TIME TRACKING
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Time Tracking', () => {
-    it('should clock in', () => {
+  describe("Time Tracking", () => {
+    it("should clock in", () => {
       service.clockIn(workOrder.id);
-      expect(service.getWorkOrderStatus(workOrder.id)).toBe('in_progress');
+      expect(service.getWorkOrderStatus(workOrder.id)).toBe("in_progress");
     });
 
-    it('should clock out', () => {
+    it("should clock out", () => {
       service.clockIn(workOrder.id);
       service.clockOut(workOrder.id);
 
@@ -441,28 +472,28 @@ describe('Work Order Lifecycle', () => {
       expect(updated?.actualEnd).toBeDefined();
     });
 
-    it('should record travel time', () => {
+    it("should record travel time", () => {
       service.recordTravel(workOrder.id, 45);
 
       const travelTime = service.calculateTravelTime(workOrder.id);
       expect(travelTime).toBe(45);
     });
 
-    it('should record breaks', () => {
+    it("should record breaks", () => {
       service.recordBreak(workOrder.id, 30);
 
       const entries = service.timeEntries.get(workOrder.id) || [];
-      const breakEntry = entries.find((e) => e.type === 'break');
+      const breakEntry = entries.find((e) => e.type === "break");
 
       expect(breakEntry).toBeDefined();
       expect(breakEntry?.durationMinutes).toBe(30);
     });
 
-    it('should calculate billable hours', () => {
+    it("should calculate billable hours", () => {
       // Simulate work entry
       const entries: TimeEntry[] = [
         {
-          type: 'work',
+          type: "work",
           startTime: new Date(),
           endTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
           durationMinutes: 120,
@@ -475,10 +506,10 @@ describe('Work Order Lifecycle', () => {
       expect(billableHours).toBe(2);
     });
 
-    it('should detect overtime', () => {
+    it("should detect overtime", () => {
       const entries: TimeEntry[] = [
         {
-          type: 'work',
+          type: "work",
           startTime: new Date(),
           endTime: new Date(Date.now() + 10 * 60 * 60 * 1000),
           durationMinutes: 600,
@@ -496,19 +527,19 @@ describe('Work Order Lifecycle', () => {
   // INVOICE GENERATION
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Invoice Generation', () => {
-    it('should generate invoice', () => {
+  describe("Invoice Generation", () => {
+    it("should generate invoice", () => {
       const invoice = service.generateInvoice(workOrder.id);
 
       expect(invoice).toBeDefined();
       expect(invoice.workOrderId).toBe(workOrder.id);
-      expect(invoice.status).toBe('draft');
+      expect(invoice.status).toBe("draft");
     });
 
-    it('should include labor costs in invoice', () => {
+    it("should include labor costs in invoice", () => {
       const entries: TimeEntry[] = [
         {
-          type: 'work',
+          type: "work",
           startTime: new Date(),
           endTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
           durationMinutes: 120,
@@ -522,7 +553,7 @@ describe('Work Order Lifecycle', () => {
       expect(invoice.laborCost).toBe(200); // 2 hours * $100/hour
     });
 
-    it('should include parts costs in invoice', () => {
+    it("should include parts costs in invoice", () => {
       const part = createMockPart({ quantity: 1, unitPrice: 150 });
       service.useParts(workOrder.id, [part]);
 
@@ -531,7 +562,7 @@ describe('Work Order Lifecycle', () => {
       expect(invoice.partsCost).toBeGreaterThan(0);
     });
 
-    it('should include travel costs in invoice', () => {
+    it("should include travel costs in invoice", () => {
       service.recordTravel(workOrder.id, 60);
 
       const invoice = service.generateInvoice(workOrder.id);
@@ -539,14 +570,14 @@ describe('Work Order Lifecycle', () => {
       expect(invoice.travelCost).toBeGreaterThan(0);
     });
 
-    it('should apply tax to invoice', () => {
+    it("should apply tax to invoice", () => {
       const invoice = service.generateInvoice(workOrder.id);
 
       expect(invoice.taxAmount).toBeGreaterThan(0);
       expect(invoice.total).toBe(invoice.subtotal + invoice.taxAmount);
     });
 
-    it('should retrieve generated invoice', () => {
+    it("should retrieve generated invoice", () => {
       service.generateInvoice(workOrder.id);
 
       const retrieved = service.getInvoice(workOrder.id);
@@ -558,24 +589,26 @@ describe('Work Order Lifecycle', () => {
   // SLA MONITORING
   // ─────────────────────────────────────────────────────────────────
 
-  describe('SLA Monitoring', () => {
-    it('should calculate SLA deadline', () => {
+  describe("SLA Monitoring", () => {
+    it("should calculate SLA deadline", () => {
       const deadline = service.getSLADeadline(workOrder.id);
 
       expect(deadline).toBeInstanceOf(Date);
-      expect(deadline!.getTime()).toBeGreaterThan(workOrder.createdAt.getTime());
+      expect(deadline!.getTime()).toBeGreaterThan(
+        workOrder.createdAt.getTime(),
+      );
     });
 
-    it('should track SLA percentage used', () => {
+    it("should track SLA percentage used", () => {
       const status = service.checkSLAStatus(workOrder.id);
 
       expect(status.percentageUsed).toBeGreaterThanOrEqual(0);
       expect(status.percentageUsed).toBeLessThanOrEqual(100);
     });
 
-    it('should alert at 80% SLA usage', () => {
+    it("should alert at 80% SLA usage", () => {
       // Create work order from past to be near 80%
-      const pastWo = createMockWorkOrder({ id: 'wo_old' });
+      const pastWo = createMockWorkOrder({ id: "wo_old" });
       pastWo.createdAt = new Date(Date.now() - 192 * 60 * 1000); // 80% of 240 min (high priority)
       service.registerWorkOrder(pastWo);
 
@@ -584,8 +617,8 @@ describe('Work Order Lifecycle', () => {
       expect(shouldAlert).toBe(true);
     });
 
-    it('should detect SLA breach', () => {
-      const pastWo = createMockWorkOrder({ id: 'wo_breach' });
+    it("should detect SLA breach", () => {
+      const pastWo = createMockWorkOrder({ id: "wo_breach" });
       pastWo.createdAt = new Date(Date.now() - 300 * 60 * 1000); // After 240 min deadline
       service.registerWorkOrder(pastWo);
 
@@ -594,7 +627,7 @@ describe('Work Order Lifecycle', () => {
       expect(status.breached).toBe(true);
     });
 
-    it('should calculate hours remaining', () => {
+    it("should calculate hours remaining", () => {
       const status = service.checkSLAStatus(workOrder.id);
 
       expect(status.hoursRemaining).toBeGreaterThan(0);
@@ -605,17 +638,17 @@ describe('Work Order Lifecycle', () => {
   // COMPLEX SCENARIOS
   // ─────────────────────────────────────────────────────────────────
 
-  describe('Complex Work Order Scenarios', () => {
-    it('should complete full work order lifecycle with all components', () => {
+  describe("Complex Work Order Scenarios", () => {
+    it("should complete full work order lifecycle with all components", () => {
       // Start work order
-      service.transitionState(workOrder.id, 'scheduled');
-      service.transitionState(workOrder.id, 'assigned');
-      service.transitionState(workOrder.id, 'in_progress');
+      service.transitionState(workOrder.id, "scheduled");
+      service.transitionState(workOrder.id, "assigned");
+      service.transitionState(workOrder.id, "in_progress");
 
       // Record time
       const entries: TimeEntry[] = [
         {
-          type: 'work',
+          type: "work",
           startTime: new Date(),
           endTime: new Date(Date.now() + 2.5 * 60 * 60 * 1000),
           durationMinutes: 150,
@@ -631,7 +664,7 @@ describe('Work Order Lifecycle', () => {
       service.recordTravel(workOrder.id, 30);
 
       // Complete work order
-      service.transitionState(workOrder.id, 'completed');
+      service.transitionState(workOrder.id, "completed");
 
       // Generate invoice
       const invoice = service.generateInvoice(workOrder.id);

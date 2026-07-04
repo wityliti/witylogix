@@ -83,13 +83,7 @@ const ADMIN_PERMS = [
   "users:read",
 ];
 
-const OWNER_PERMS = [
-  "*:*",
-  "org:*",
-  "users:*",
-  "billing:*",
-  "settings:*",
-];
+const OWNER_PERMS = ["*:*", "org:*", "users:*", "billing:*", "settings:*"];
 
 const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   VIEWER: VIEWER_PERMS,
@@ -125,7 +119,11 @@ export class RbacEngine {
    * @returns true if permission granted
    * @throws PermissionDeniedError if denied
    */
-  checkPermission(context: PermissionContext, resource: string, action: string): boolean {
+  checkPermission(
+    context: PermissionContext,
+    resource: string,
+    action: string,
+  ): boolean {
     const permission = `${resource}:${action}`;
 
     // Check against user's permission set (hasPermission handles audit logging)

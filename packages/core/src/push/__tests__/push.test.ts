@@ -238,19 +238,19 @@ describe("FCMProvider", () => {
   describe("topic subscription", () => {
     it("should subscribe device to topic", async () => {
       await expect(
-        provider.subscribeTopic("device_token_123", "order_updates")
+        provider.subscribeTopic("device_token_123", "order_updates"),
       ).resolves.not.toThrow();
     });
 
     it("should unsubscribe device from topic", async () => {
       await expect(
-        provider.unsubscribeTopic("device_token_123", "order_updates")
+        provider.unsubscribeTopic("device_token_123", "order_updates"),
       ).resolves.not.toThrow();
     });
 
     it("should handle topic names with special characters", async () => {
       await expect(
-        provider.subscribeTopic("device_token_123", "order-updates-v2")
+        provider.subscribeTopic("device_token_123", "order-updates-v2"),
       ).resolves.not.toThrow();
     });
   });
@@ -340,7 +340,10 @@ describe("ExpoProvider", () => {
         body: "Test message",
       };
 
-      const result = await provider.sendPush("ExponentPushToken[abc123]", payload);
+      const result = await provider.sendPush(
+        "ExponentPushToken[abc123]",
+        payload,
+      );
       expect(result.success).toBe(true);
       expect(result.messageId).toBeDefined();
     });
@@ -353,7 +356,7 @@ describe("ExpoProvider", () => {
 
       const result = await provider.sendPush(
         "ExponentPushToken[xyz789def456ghi123]",
-        payload
+        payload,
       );
       expect(result.success).toBe(true);
     });
@@ -368,7 +371,10 @@ describe("ExpoProvider", () => {
         },
       };
 
-      const result = await provider.sendPush("ExponentPushToken[abc123]", payload);
+      const result = await provider.sendPush(
+        "ExponentPushToken[abc123]",
+        payload,
+      );
       expect(result.success).toBe(true);
     });
 
@@ -382,7 +388,10 @@ describe("ExpoProvider", () => {
         },
       };
 
-      const result = await provider.sendPush("ExponentPushToken[abc123]", payload);
+      const result = await provider.sendPush(
+        "ExponentPushToken[abc123]",
+        payload,
+      );
       expect(result.success).toBe(true);
     });
 
@@ -427,7 +436,7 @@ describe("ExpoProvider", () => {
     it("should handle large Expo token batch", async () => {
       const tokens = Array.from(
         { length: 100 },
-        (_, i) => `ExponentPushToken[token_${i}]`
+        (_, i) => `ExponentPushToken[token_${i}]`,
       );
 
       const payload: PushPayload = {
@@ -455,13 +464,13 @@ describe("ExpoProvider", () => {
   describe("topic subscription", () => {
     it("should handle topic subscription (application-managed)", async () => {
       await expect(
-        provider.subscribeTopic("ExponentPushToken[abc123]", "shipments")
+        provider.subscribeTopic("ExponentPushToken[abc123]", "shipments"),
       ).resolves.not.toThrow();
     });
 
     it("should handle topic unsubscription (application-managed)", async () => {
       await expect(
-        provider.unsubscribeTopic("ExponentPushToken[abc123]", "shipments")
+        provider.unsubscribeTopic("ExponentPushToken[abc123]", "shipments"),
       ).resolves.not.toThrow();
     });
   });
@@ -474,7 +483,7 @@ describe("ExpoProvider", () => {
       };
 
       await expect(provider.sendToTopic("shipments", payload)).rejects.toThrow(
-        /topic delivery requires application-level/i
+        /topic delivery requires application-level/i,
       );
     });
   });
@@ -499,11 +508,11 @@ describe("ExpoProvider", () => {
 
   describe("token validation", () => {
     it("should validate Expo token format", () => {
+      expect(ExpoProvider.isValidExpoToken("ExponentPushToken[abc123]")).toBe(
+        true,
+      );
       expect(
-        ExpoProvider.isValidExpoToken("ExponentPushToken[abc123]")
-      ).toBe(true);
-      expect(
-        ExpoProvider.isValidExpoToken("ExponentPushToken[test-token-123]")
+        ExpoProvider.isValidExpoToken("ExponentPushToken[test-token-123]"),
       ).toBe(true);
     });
 
@@ -522,7 +531,8 @@ describe("Push Service", () => {
         fcm: {
           projectId: "test-project",
           clientEmail: "test@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
       };
 
@@ -566,7 +576,8 @@ describe("Push Service", () => {
         fcm: {
           projectId: "test-project",
           clientEmail: "test@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
       };
 
@@ -590,7 +601,8 @@ describe("Push Service", () => {
         fcm: {
           projectId: "test-project",
           clientEmail: "test@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
         expo: {
           accessToken: "expo_token_123",
@@ -617,7 +629,8 @@ describe("Push Service", () => {
         fcm: {
           projectId: "deployer-project",
           clientEmail: "deployer@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
       };
 
@@ -632,19 +645,19 @@ describe("Push Service", () => {
 
     beforeEach(() => {
       mockProvider = {
-        sendPush: vi.fn().mockResolvedValue({ success: true, messageId: "msg_1" }),
+        sendPush: vi
+          .fn()
+          .mockResolvedValue({ success: true, messageId: "msg_1" }),
         sendMulticast: vi.fn().mockResolvedValue({
           successCount: 3,
           failureCount: 0,
-          results: [
-            { success: true },
-            { success: true },
-            { success: true },
-          ],
+          results: [{ success: true }, { success: true }, { success: true }],
         }),
         subscribeTopic: vi.fn().mockResolvedValue(undefined),
         unsubscribeTopic: vi.fn().mockResolvedValue(undefined),
-        sendToTopic: vi.fn().mockResolvedValue({ success: true, messageId: "msg_2" }),
+        sendToTopic: vi
+          .fn()
+          .mockResolvedValue({ success: true, messageId: "msg_2" }),
       };
 
       service = new PushNotificationService(mockProvider);
@@ -673,14 +686,17 @@ describe("Push Service", () => {
 
     it("should delegate subscribeTopic to provider", async () => {
       await service.subscribeTopic("token_123", "orders");
-      expect(mockProvider.subscribeTopic).toHaveBeenCalledWith("token_123", "orders");
+      expect(mockProvider.subscribeTopic).toHaveBeenCalledWith(
+        "token_123",
+        "orders",
+      );
     });
 
     it("should delegate unsubscribeTopic to provider", async () => {
       await service.unsubscribeTopic("token_123", "orders");
       expect(mockProvider.unsubscribeTopic).toHaveBeenCalledWith(
         "token_123",
-        "orders"
+        "orders",
       );
     });
 
@@ -703,7 +719,8 @@ describe("Credential Resolution", () => {
         fcm: {
           projectId: "tenant-project",
           clientEmail: "tenant@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
       };
 
@@ -717,7 +734,8 @@ describe("Credential Resolution", () => {
         fcm: {
           projectId: "tenant-project",
           clientEmail: "tenant@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
       };
 
@@ -726,7 +744,8 @@ describe("Credential Resolution", () => {
         fcm: {
           projectId: "deployer-project",
           clientEmail: "deployer@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
       };
 
@@ -740,7 +759,8 @@ describe("Credential Resolution", () => {
         fcm: {
           projectId: "deployer-project",
           clientEmail: "deployer@test.iam.gserviceaccount.com",
-          privateKey: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+          privateKey:
+            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
         },
       };
 

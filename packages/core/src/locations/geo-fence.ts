@@ -1,11 +1,16 @@
 /**
  * Geo-Fence Operations Module
- * 
+ *
  * Implements geo-fence boundary checking, distance calculations, and polygon operations.
  * Uses Haversine formula for distance and ray casting for polygon containment.
  */
 
-import type { Coordinates, GeoFence, GeoFenceCheck, BoundingBox } from './types';
+import type {
+  Coordinates,
+  GeoFence,
+  GeoFenceCheck,
+  BoundingBox,
+} from "./types";
 
 /**
  * Earth's radius in meters
@@ -29,12 +34,15 @@ function radiansToDegrees(radians: number): number {
 /**
  * Calculate distance between two points using Haversine formula
  * Returns distance in meters
- * 
+ *
  * @param pointA First coordinate
  * @param pointB Second coordinate
  * @returns Distance in meters
  */
-export function calculateDistance(pointA: Coordinates, pointB: Coordinates): number {
+export function calculateDistance(
+  pointA: Coordinates,
+  pointB: Coordinates,
+): number {
   const lat1 = degreesToRadians(pointA.lat);
   const lat2 = degreesToRadians(pointB.lat);
   const deltaLat = degreesToRadians(pointB.lat - pointA.lat);
@@ -42,7 +50,10 @@ export function calculateDistance(pointA: Coordinates, pointB: Coordinates): num
 
   const a =
     Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+    Math.cos(lat1) *
+      Math.cos(lat2) *
+      Math.sin(deltaLng / 2) *
+      Math.sin(deltaLng / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -51,30 +62,37 @@ export function calculateDistance(pointA: Coordinates, pointB: Coordinates): num
 
 /**
  * Check if a point is inside a circle
- * 
+ *
  * @param point Point to check
  * @param center Center of circle
  * @param radiusMeters Radius in meters
  * @returns True if point is inside the circle
  */
-export function isPointInCircle(point: Coordinates, center: Coordinates, radiusMeters: number): boolean {
+export function isPointInCircle(
+  point: Coordinates,
+  center: Coordinates,
+  radiusMeters: number,
+): boolean {
   const distance = calculateDistance(point, center);
   return distance <= radiusMeters;
 }
 
 /**
  * Check if a point is inside a polygon using ray casting algorithm
- * 
+ *
  * The ray casting algorithm works by:
  * 1. Drawing a ray from the point to infinity (typically horizontal)
  * 2. Counting how many polygon edges the ray crosses
  * 3. If the count is odd, the point is inside; if even, it's outside
- * 
+ *
  * @param point Point to check
  * @param polygon Array of polygon vertices
  * @returns True if point is inside the polygon
  */
-export function isPointInPolygon(point: Coordinates, polygon: Coordinates[]): boolean {
+export function isPointInPolygon(
+  point: Coordinates,
+  polygon: Coordinates[],
+): boolean {
   if (polygon.length < 3) {
     return false;
   }
@@ -101,12 +119,15 @@ export function isPointInPolygon(point: Coordinates, polygon: Coordinates[]): bo
 
 /**
  * Find the nearest point on a polygon's edge to a given point
- * 
+ *
  * @param point Point to find nearest to
  * @param polygon Array of polygon vertices
  * @returns Nearest point on the polygon boundary
  */
-export function findNearestPoint(point: Coordinates, polygon: Coordinates[]): Coordinates {
+export function findNearestPoint(
+  point: Coordinates,
+  polygon: Coordinates[],
+): Coordinates {
   let nearestPoint: Coordinates = polygon[0];
   let minDistance = calculateDistance(point, polygon[0]);
 
@@ -131,7 +152,7 @@ export function findNearestPoint(point: Coordinates, polygon: Coordinates[]): Co
 /**
  * Find the nearest point on a line segment to a given point
  * Uses parametric line equation and projection
- * 
+ *
  * @param point Point to project
  * @param segmentStart Start of line segment
  * @param segmentEnd End of line segment
@@ -140,7 +161,7 @@ export function findNearestPoint(point: Coordinates, polygon: Coordinates[]): Co
 function findNearestPointOnSegment(
   point: Coordinates,
   segmentStart: Coordinates,
-  segmentEnd: Coordinates
+  segmentEnd: Coordinates,
 ): Coordinates {
   // Convert to a simple 2D projection for calculation
   // This is an approximation valid for small distances
@@ -155,9 +176,10 @@ function findNearestPointOnSegment(
     0,
     Math.min(
       1,
-      ((point.lng - segmentStart.lng) * dx + (point.lat - segmentStart.lat) * dy) /
-        (dx * dx + dy * dy)
-    )
+      ((point.lng - segmentStart.lng) * dx +
+        (point.lat - segmentStart.lat) * dy) /
+        (dx * dx + dy * dy),
+    ),
   );
 
   return {
@@ -168,13 +190,13 @@ function findNearestPointOnSegment(
 
 /**
  * Check if a polygon is valid
- * 
+ *
  * Validation rules:
  * - At least 3 points (forms a triangle)
  * - All points are valid coordinates
  * - No self-intersections
  * - Points are not collinear
- * 
+ *
  * @param points Array of polygon vertices
  * @returns True if polygon is valid
  */
@@ -215,31 +237,43 @@ export function isValidPolygon(points: Coordinates[]): boolean {
 
 /**
  * Check if two line segments intersect
- * 
+ *
  * @param p1 Start of first segment
  * @param p2 End of first segment
  * @param p3 Start of second segment
  * @param p4 End of second segment
  * @returns True if segments intersect
  */
-function segmentsIntersect(p1: Coordinates, p2: Coordinates, p3: Coordinates, p4: Coordinates): boolean {
+function segmentsIntersect(
+  p1: Coordinates,
+  p2: Coordinates,
+  p3: Coordinates,
+  p4: Coordinates,
+): boolean {
   const ccw = (a: Coordinates, b: Coordinates, c: Coordinates): boolean => {
-    return (c.lat - a.lat) * (b.lng - a.lng) > (b.lat - a.lat) * (c.lng - a.lng);
+    return (
+      (c.lat - a.lat) * (b.lng - a.lng) > (b.lat - a.lat) * (c.lng - a.lng)
+    );
   };
 
-  return ccw(p1, p3, p4) !== ccw(p2, p3, p4) && ccw(p1, p2, p3) !== ccw(p1, p2, p4);
+  return (
+    ccw(p1, p3, p4) !== ccw(p2, p3, p4) && ccw(p1, p2, p3) !== ccw(p1, p2, p4)
+  );
 }
 
 /**
  * Create a circular geo-fence
- * 
+ *
  * @param center Center coordinates
  * @param radiusMeters Radius in meters
  * @returns GeoFence object
  */
-export function createCircleFence(center: Coordinates, radiusMeters: number): GeoFence {
+export function createCircleFence(
+  center: Coordinates,
+  radiusMeters: number,
+): GeoFence {
   return {
-    type: 'circle',
+    type: "circle",
     center,
     radius: radiusMeters,
   };
@@ -247,7 +281,7 @@ export function createCircleFence(center: Coordinates, radiusMeters: number): Ge
 
 /**
  * Create a polygon geo-fence
- * 
+ *
  * @param points Array of polygon vertices
  * @returns GeoFence object or null if invalid
  */
@@ -257,7 +291,7 @@ export function createPolygonFence(points: Coordinates[]): GeoFence | null {
   }
 
   return {
-    type: 'polygon',
+    type: "polygon",
     points,
   };
 }
@@ -265,15 +299,18 @@ export function createPolygonFence(points: Coordinates[]): GeoFence | null {
 /**
  * Check if a point is within a geo-fence
  * Returns detailed information about containment and distance
- * 
+ *
  * @param point Point to check
  * @param fence Geo-fence definition
  * @returns GeoFenceCheck result with distance and nearest point
  */
-export function checkGeoFence(point: Coordinates, fence: GeoFence): GeoFenceCheck {
-  if (fence.type === 'circle') {
+export function checkGeoFence(
+  point: Coordinates,
+  fence: GeoFence,
+): GeoFenceCheck {
+  if (fence.type === "circle") {
     if (!fence.center || fence.radius === undefined) {
-      throw new Error('Circle fence must have center and radius');
+      throw new Error("Circle fence must have center and radius");
     }
 
     const distance = calculateDistance(point, fence.center);
@@ -285,9 +322,9 @@ export function checkGeoFence(point: Coordinates, fence: GeoFence): GeoFenceChec
       distance: signedDistance,
       nearestPoint: fence.center,
     };
-  } else if (fence.type === 'polygon') {
+  } else if (fence.type === "polygon") {
     if (!fence.points || fence.points.length < 3) {
-      throw new Error('Polygon fence must have at least 3 points');
+      throw new Error("Polygon fence must have at least 3 points");
     }
 
     const isInside = isPointInPolygon(point, fence.points);
@@ -308,14 +345,14 @@ export function checkGeoFence(point: Coordinates, fence: GeoFence): GeoFenceChec
 /**
  * Get bounding box for a geo-fence
  * Returns the four cardinal corners of the boundary
- * 
+ *
  * @param fence Geo-fence definition
  * @returns Bounding box with NW, NE, SW, SE corners
  */
 export function getBoundingBox(fence: GeoFence): BoundingBox {
-  if (fence.type === 'circle') {
+  if (fence.type === "circle") {
     if (!fence.center || fence.radius === undefined) {
-      throw new Error('Circle fence must have center and radius');
+      throw new Error("Circle fence must have center and radius");
     }
 
     // Convert radius from meters to degrees (approximate)
@@ -339,9 +376,9 @@ export function getBoundingBox(fence: GeoFence): BoundingBox {
         lng: fence.center.lng + radiusDegrees,
       },
     };
-  } else if (fence.type === 'polygon') {
+  } else if (fence.type === "polygon") {
     if (!fence.points || fence.points.length < 3) {
-      throw new Error('Polygon fence must have at least 3 points');
+      throw new Error("Polygon fence must have at least 3 points");
     }
 
     let maxLat = fence.points[0].lat;

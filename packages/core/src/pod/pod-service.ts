@@ -9,7 +9,7 @@
  * - Support offline queuing and retry
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 import type {
   PODMethod,
   PODRecord,
@@ -22,18 +22,24 @@ import type {
   ManualConfirmationPOD,
   StorageAdapter,
   StorageConfig,
-} from './types.js';
-import { photoCaptureService } from './photo-capture.js';
-import { signatureCaptureService } from './signature-capture.js';
-import { qrScannerService } from './qr-scanner.js';
-import { deliveryTimelineService } from './delivery-timeline.js';
-import { createStorageAdapter } from './storage-adapter.js';
+} from "./types.js";
+import { photoCaptureService } from "./photo-capture.js";
+import { signatureCaptureService } from "./signature-capture.js";
+import { qrScannerService } from "./qr-scanner.js";
+import { deliveryTimelineService } from "./delivery-timeline.js";
+import { createStorageAdapter } from "./storage-adapter.js";
 
 // ─── VALIDATION SCHEMAS ─────────────────────────────────────────
 
 const capturePODSchema = z.object({
   deliveryId: z.string().uuid(),
-  method: z.enum(['photo', 'signature', 'qr_scan', 'barcode', 'manual_confirm']),
+  method: z.enum([
+    "photo",
+    "signature",
+    "qr_scan",
+    "barcode",
+    "manual_confirm",
+  ]),
   data: z.any(), // Flexible data based on method
   options: z.record(z.any()).optional(),
 });
@@ -63,7 +69,7 @@ export class PODService {
     deliveryId: string,
     method: PODMethod,
     data: any,
-    options?: Record<string, any>
+    options?: Record<string, any>,
   ): Promise<PODResult> {
     try {
       // Validate inputs
@@ -73,41 +79,41 @@ export class PODService {
 
       // Process based on method
       switch (method) {
-        case 'photo':
+        case "photo":
           podRecord = await this.capturePhoto(deliveryId, data);
           break;
 
-        case 'signature':
+        case "signature":
           podRecord = await this.captureSignature(
             deliveryId,
             data,
-            options?.signerName ?? 'Unknown'
+            options?.signerName ?? "Unknown",
           );
           break;
 
-        case 'qr_scan':
+        case "qr_scan":
           podRecord = await this.captureQRCode(
             deliveryId,
             data,
             options?.expectedData,
-            options
+            options,
           );
           break;
 
-        case 'barcode':
+        case "barcode":
           podRecord = await this.captureBarcode(
             deliveryId,
             data,
             options?.expectedBarcode,
-            options
+            options,
           );
           break;
 
-        case 'manual_confirm':
+        case "manual_confirm":
           podRecord = this.captureManualConfirmation(
             deliveryId,
-            options?.confirmedBy || 'Unknown',
-            options?.notes
+            options?.confirmedBy || "Unknown",
+            options?.notes,
           );
           break;
 
@@ -122,7 +128,7 @@ export class PODService {
         // Record timeline event
         await deliveryTimelineService.recordEvent({
           deliveryId,
-          event: 'DELIVERED',
+          event: "DELIVERED",
           description: `Delivery verified via ${method}`,
           metadata: {
             podId: podRecord.id,
@@ -138,7 +144,7 @@ export class PODService {
 
       return {
         success: false,
-        error: 'Failed to capture POD',
+        error: "Failed to capture POD",
       };
     } catch (error) {
       return {
@@ -179,9 +185,9 @@ export class PODService {
     if (!podRecords || podRecords.length === 0) {
       return {
         isVerified: false,
-        method: 'photo',
+        method: "photo",
         verifiedAt: new Date(),
-        issues: ['No POD records found for delivery'],
+        issues: ["No POD records found for delivery"],
       };
     }
 
@@ -190,24 +196,27 @@ export class PODService {
     // Verify each POD record
     for (const pod of podRecords) {
       switch (pod.method) {
-        case 'photo':
+        case "photo":
           await this.verifyPhotoPOD(pod as PhotoPOD, issues);
           break;
 
-        case 'signature':
+        case "signature":
           this.verifySignaturePOD(pod as SignaturePOD, issues);
           break;
 
-        case 'qr_scan':
+        case "qr_scan":
           this.verifyQRCodePOD(pod as QRCodePOD, issues);
           break;
 
-        case 'barcode':
+        case "barcode":
           this.verifyBarcodePOD(pod as BarcodePOD, issues);
           break;
 
-        case 'manual_confirm':
-          this.verifyManualConfirmationPOD(pod as ManualConfirmationPOD, issues);
+        case "manual_confirm":
+          this.verifyManualConfirmationPOD(
+            pod as ManualConfirmationPOD,
+            issues,
+          );
           break;
       }
     }
@@ -237,15 +246,23 @@ export class PODService {
   /**
    * Capture photo POD
    */
-  private async capturePhoto(deliveryId: string, imageBuffer: Buffer): Promise<PhotoPOD | null> {
+  private async capturePhoto(
+    deliveryId: string,
+    imageBuffer: Buffer,
+  ): Promise<PhotoPOD | null> {
     // Validate photo
     const validation = await photoCaptureService.validatePhoto(imageBuffer);
     if (!validation.valid) {
-      throw new Error(`Photo validation failed: ${validation.issues.join(', ')}`);
+      throw new Error(
+        `Photo validation failed: ${validation.issues.join(", ")}`,
+      );
     }
 
     // Process photo
-    const photoPOD = await photoCaptureService.processPhoto(imageBuffer, deliveryId);
+    const photoPOD = await photoCaptureService.processPhoto(
+      imageBuffer,
+      deliveryId,
+    );
 
     if (!photoPOD) {
       return null;
@@ -258,16 +275,20 @@ export class PODService {
     const uploadResult = await this.storage.upload(
       photoPOD.imageKey,
       imageBuffer,
-      'image/jpeg'
+      "image/jpeg",
     );
 
-    const thumbnailKey = photoPOD.imageKey.replace(/\.[^.]+$/, '-thumb.jpg');
-    const thumbnailResult = await this.storage.upload(thumbnailKey, thumbnail, 'image/jpeg');
+    const thumbnailKey = photoPOD.imageKey.replace(/\.[^.]+$/, "-thumb.jpg");
+    const thumbnailResult = await this.storage.upload(
+      thumbnailKey,
+      thumbnail,
+      "image/jpeg",
+    );
 
     // Update POD with URLs
     photoPOD.imageUrl = uploadResult.url;
     photoPOD.thumbnailUrl = thumbnailResult.url;
-    photoPOD.status = 'verified';
+    photoPOD.status = "verified";
     photoPOD.verifiedAt = new Date();
 
     return photoPOD;
@@ -279,34 +300,37 @@ export class PODService {
   private async captureSignature(
     deliveryId: string,
     signatureData: any,
-    signerName: string
+    signerName: string,
   ): Promise<SignaturePOD | null> {
     // Validate signature
     const validation = signatureCaptureService.validateSignature(signatureData);
     if (!validation.valid) {
-      throw new Error(`Signature validation failed: ${validation.issues.join(', ')}`);
+      throw new Error(
+        `Signature validation failed: ${validation.issues.join(", ")}`,
+      );
     }
 
     // Process signature
     const signaturePOD = await signatureCaptureService.processSignature(
       signatureData,
       signerName,
-      deliveryId
+      deliveryId,
     );
 
     // Render signature to PNG
-    const signatureImage = await signatureCaptureService.renderSignaturePNG(signatureData);
+    const signatureImage =
+      await signatureCaptureService.renderSignaturePNG(signatureData);
 
     // Upload signature image
     const uploadResult = await this.storage.upload(
       signaturePOD.signatureKey,
       signatureImage,
-      'image/png'
+      "image/png",
     );
 
     // Update POD with URL
     signaturePOD.signatureDataUrl = uploadResult.url;
-    signaturePOD.status = 'verified';
+    signaturePOD.status = "verified";
     signaturePOD.verifiedAt = new Date();
 
     return signaturePOD;
@@ -319,7 +343,7 @@ export class PODService {
     deliveryId: string,
     scannedData: string,
     expectedData?: string,
-    options?: any
+    options?: any,
   ): Promise<QRCodePOD | null> {
     const expectedValue = expectedData || deliveryId;
 
@@ -327,10 +351,10 @@ export class PODService {
       scannedData,
       expectedValue,
       deliveryId,
-      options
+      options,
     );
 
-    podRecord.status = podRecord.verification.valid ? 'verified' : 'rejected';
+    podRecord.status = podRecord.verification.valid ? "verified" : "rejected";
     if (podRecord.verification.valid) {
       podRecord.verifiedAt = new Date();
     }
@@ -345,7 +369,7 @@ export class PODService {
     deliveryId: string,
     scannedBarcode: string,
     expectedBarcode?: string,
-    options?: any
+    options?: any,
   ): BarcodePOD | null {
     const expectedValue = expectedBarcode || deliveryId;
 
@@ -353,10 +377,10 @@ export class PODService {
       scannedBarcode,
       expectedValue,
       deliveryId,
-      options
+      options,
     );
 
-    podRecord.status = podRecord.verification.valid ? 'verified' : 'rejected';
+    podRecord.status = podRecord.verification.valid ? "verified" : "rejected";
     if (podRecord.verification.valid) {
       podRecord.verifiedAt = new Date();
     }
@@ -370,17 +394,17 @@ export class PODService {
   private captureManualConfirmation(
     deliveryId: string,
     confirmedBy: string,
-    notes?: string
+    notes?: string,
   ): ManualConfirmationPOD {
     return {
       id: `pod-manual-${deliveryId}-${Date.now()}`,
       deliveryId,
-      method: 'manual_confirm',
+      method: "manual_confirm",
       confirmedBy,
       notes,
       confirmedAt: new Date(),
       verifiedAt: new Date(),
-      status: 'verified',
+      status: "verified",
     };
   }
 
@@ -389,25 +413,25 @@ export class PODService {
    */
   private async verifyPhotoPOD(pod: PhotoPOD, issues: string[]): Promise<void> {
     if (!pod.imageUrl) {
-      issues.push('Photo URL missing');
+      issues.push("Photo URL missing");
     }
 
     if (!pod.metadata) {
-      issues.push('Photo metadata missing');
+      issues.push("Photo metadata missing");
     } else {
       if (pod.metadata.size > 5 * 1024 * 1024) {
-        issues.push('Photo exceeds 5MB limit');
+        issues.push("Photo exceeds 5MB limit");
       }
 
       if (pod.metadata.width && pod.metadata.height) {
         if (pod.metadata.width < 320 || pod.metadata.height < 320) {
-          issues.push('Photo dimensions too small');
+          issues.push("Photo dimensions too small");
         }
       }
     }
 
     if (!pod.verifiedAt) {
-      issues.push('Photo not verified');
+      issues.push("Photo not verified");
     }
   }
 
@@ -416,15 +440,15 @@ export class PODService {
    */
   private verifySignaturePOD(pod: SignaturePOD, issues: string[]): void {
     if (!pod.signerName || pod.signerName.length === 0) {
-      issues.push('Signer name missing');
+      issues.push("Signer name missing");
     }
 
     if (!pod.signatureDataUrl) {
-      issues.push('Signature URL missing');
+      issues.push("Signature URL missing");
     }
 
     if (!pod.verifiedAt) {
-      issues.push('Signature not verified');
+      issues.push("Signature not verified");
     }
   }
 
@@ -433,11 +457,13 @@ export class PODService {
    */
   private verifyQRCodePOD(pod: QRCodePOD, issues: string[]): void {
     if (!pod.verification.valid) {
-      issues.push(`QR code verification failed: ${pod.scannedData} != ${pod.verification.expectedData}`);
+      issues.push(
+        `QR code verification failed: ${pod.scannedData} != ${pod.verification.expectedData}`,
+      );
     }
 
     if (!pod.verifiedAt) {
-      issues.push('QR code not verified');
+      issues.push("QR code not verified");
     }
   }
 
@@ -447,12 +473,12 @@ export class PODService {
   private verifyBarcodePOD(pod: BarcodePOD, issues: string[]): void {
     if (!pod.verification.valid) {
       issues.push(
-        `Barcode verification failed: ${pod.scannedBarcode} != ${pod.verification.expectedBarcode}`
+        `Barcode verification failed: ${pod.scannedBarcode} != ${pod.verification.expectedBarcode}`,
       );
     }
 
     if (!pod.verifiedAt) {
-      issues.push('Barcode not verified');
+      issues.push("Barcode not verified");
     }
   }
 
@@ -461,14 +487,14 @@ export class PODService {
    */
   private verifyManualConfirmationPOD(
     pod: ManualConfirmationPOD,
-    issues: string[]
+    issues: string[],
   ): void {
     if (!pod.confirmedBy || pod.confirmedBy.length === 0) {
-      issues.push('Confirmation person missing');
+      issues.push("Confirmation person missing");
     }
 
     if (!pod.verifiedAt) {
-      issues.push('Confirmation not verified');
+      issues.push("Confirmation not verified");
     }
   }
 
@@ -484,7 +510,10 @@ export class PODService {
   /**
    * Store verification result
    */
-  private storeVerification(deliveryId: string, result: VerificationResult): void {
+  private storeVerification(
+    deliveryId: string,
+    result: VerificationResult,
+  ): void {
     const verifications = this.verifications.get(deliveryId) || [];
     verifications.push(result);
     this.verifications.set(deliveryId, verifications);
@@ -505,7 +534,9 @@ export function getPODService(storageConfig?: StorageConfig): PODService {
   }
 
   if (!podServiceInstance) {
-    throw new Error('POD service not initialized. Call createPODService first.');
+    throw new Error(
+      "POD service not initialized. Call createPODService first.",
+    );
   }
 
   return podServiceInstance;

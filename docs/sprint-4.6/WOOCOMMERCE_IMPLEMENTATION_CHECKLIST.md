@@ -5,6 +5,7 @@
 ### 1. Core Client Library (2,897 lines of code)
 
 #### WooCommerce Client (`wc-client.ts` - 527 lines)
+
 - [x] OAuth 1.0a signature generation (HMAC-SHA256)
 - [x] HTTP client with GET, POST, PUT, DELETE methods
 - [x] Rate limiting (sliding window, configurable)
@@ -20,6 +21,7 @@
 - [x] Error handling with typed responses
 
 #### Type Definitions (`types.ts` - 562 lines)
+
 - [x] WCOrder interface with all nested types
 - [x] WCProduct interface with images and variations
 - [x] WCCustomer interface with addresses
@@ -36,6 +38,7 @@
 ### 2. Sync Services
 
 #### Order Sync Service (`order-sync.ts` - 262 lines)
+
 - [x] Bidirectional order field mapping
 - [x] WC → WL status mapping (7 mappings)
 - [x] WL → WC status mapping (7 mappings)
@@ -47,6 +50,7 @@
 - [x] Status change handler
 
 #### Product Sync Service (`product-sync.ts` - 337 lines)
+
 - [x] Product mapping WC → WL
 - [x] Product mapping WL → WC
 - [x] Product variation sync
@@ -62,6 +66,7 @@
 - [x] Update detection
 
 #### Customer Sync Service (`customer-sync.ts` - 273 lines)
+
 - [x] Customer mapping WC → WL
 - [x] Customer mapping WL → WC
 - [x] Guest customer merge by email
@@ -74,6 +79,7 @@
 - [x] Customer summary with address status
 
 #### Webhook Consumer (`webhook-consumer.ts` - 215 lines)
+
 - [x] HMAC-SHA256 webhook signature verification
 - [x] Constant-time comparison (timing attack prevention)
 - [x] Delivery ID-based idempotency
@@ -86,6 +92,7 @@
 ### 3. Database Schema
 
 #### Prisma Schema (`45-woocommerce.prisma`)
+
 - [x] WooCommerceConnection model
   - [x] OAuth credentials (encrypted)
   - [x] Sync configuration per entity type
@@ -122,6 +129,7 @@
 ### 4. API Routes
 
 #### Fastify Routes (`integrations/woocommerce.ts`)
+
 - [x] POST `/connect` - Store credentials and verify
   - [x] Validation of credentials
   - [x] Test API call for verification
@@ -162,6 +170,7 @@
 ### 5. Tests
 
 #### WC Client Tests (`wc-client.test.ts` - 280 lines)
+
 - [x] Client creation with valid config
 - [x] Default value application
 - [x] URL normalization
@@ -179,6 +188,7 @@
 - [x] Timeout configuration
 
 #### Order Sync Tests (`order-sync.test.ts` - 379 lines)
+
 - [x] Complete WC → WL status mapping (7 cases)
 - [x] Complete WL → WC status mapping (7 cases)
 - [x] Order field mapping with nested structures
@@ -194,6 +204,7 @@
 ### 6. Export/Barrel Files
 
 #### Main Integration Export (`index.ts` - 62 lines)
+
 - [x] Service class exports
 - [x] Factory function exports
 - [x] Type exports (25+ types)
@@ -202,6 +213,7 @@
 ## Integration Points
 
 ### Following Patterns
+
 - [x] Follows Google/Shopify integration structure
 - [x] Named imports only (no default imports)
 - [x] TypeScript strict mode compliance
@@ -211,6 +223,7 @@
 - [x] Zod validation for requests
 
 ### Dependency Management
+
 - [x] Uses node:crypto for OAuth signatures
 - [x] Uses Zod for validation
 - [x] Uses Prisma for database
@@ -231,18 +244,18 @@
 
 ## Code Metrics
 
-| Component | Lines | Tests | Coverage |
-|-----------|-------|-------|----------|
-| types.ts | 562 | - | N/A |
-| wc-client.ts | 527 | 280 | Partial |
-| order-sync.ts | 262 | 379 | Complete |
-| product-sync.ts | 337 | - | - |
-| customer-sync.ts | 273 | - | - |
-| webhook-consumer.ts | 215 | - | - |
-| index.ts | 62 | - | N/A |
-| Integration Routes | 550+ | - | - |
-| DB Schema | 150+ | - | N/A |
-| **TOTAL** | **2,897+** | **659** | **Extensive** |
+| Component           | Lines      | Tests   | Coverage      |
+| ------------------- | ---------- | ------- | ------------- |
+| types.ts            | 562        | -       | N/A           |
+| wc-client.ts        | 527        | 280     | Partial       |
+| order-sync.ts       | 262        | 379     | Complete      |
+| product-sync.ts     | 337        | -       | -             |
+| customer-sync.ts    | 273        | -       | -             |
+| webhook-consumer.ts | 215        | -       | -             |
+| index.ts            | 62         | -       | N/A           |
+| Integration Routes  | 550+       | -       | -             |
+| DB Schema           | 150+       | -       | N/A           |
+| **TOTAL**           | **2,897+** | **659** | **Extensive** |
 
 ## Pre-Integration Checklist
 
@@ -297,6 +310,7 @@ After merging:
 ## Known Limitations & Future Enhancements
 
 ### Current Scope (Implemented)
+
 - Bidirectional order, product, customer sync
 - Webhook receiver with verification
 - Status mapping between systems
@@ -305,6 +319,7 @@ After merging:
 - Field mapping configuration
 
 ### Out of Scope (Future)
+
 - Custom field mapping UI
 - Scheduled recurring syncs
 - Inventory reservation system

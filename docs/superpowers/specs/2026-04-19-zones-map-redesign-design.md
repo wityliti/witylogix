@@ -52,17 +52,17 @@ The design keeps both on one page. A **mode toggle** (`Monitor` / `Configure`) i
 
 **In scope (this spec, A + B):**
 
-| Area | Deliverable |
-| --- | --- |
-| Dependencies | Add `maplibre-gl`, `@mapbox/mapbox-gl-draw`, `@turf/turf` to `apps/dashboard` |
-| Component | New `<WLMap>` React component package (tokens-styled, controlled, headless-friendly) |
-| Pages | Rebuild `/zones`, `/zones/new`, `/zones/[id]` in the dashboard |
-| API | Add overlay read endpoints + extend `createDeliveryZoneSchema` to support `circle` shape |
-| Design system | Document map tokens in `docs/DESIGN_SYSTEM.md`; fix hard-coded colors on touched pages |
+| Area          | Deliverable                                                                              |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Dependencies  | Add `maplibre-gl`, `@mapbox/mapbox-gl-draw`, `@turf/turf` to `apps/dashboard`            |
+| Component     | New `<WLMap>` React component package (tokens-styled, controlled, headless-friendly)     |
+| Pages         | Rebuild `/zones`, `/zones/new`, `/zones/[id]` in the dashboard                           |
+| API           | Add overlay read endpoints + extend `createDeliveryZoneSchema` to support `circle` shape |
+| Design system | Document map tokens in `docs/DESIGN_SYSTEM.md`; fix hard-coded colors on touched pages   |
 
 **Deferred:**
 
-- **C · Zone geometry persistence ergonomics** — Prisma cannot describe `geometry(Polygon, 4326)`, so the schema still carries a `TODO` comment. A follow-on spec will switch the Prisma schema to `Unsupported("geometry(...)")?`, generate GeoJSON directly from Postgres, and remove the raw-SQL round trip in `apps/api/src/routes/zones.ts`. **Important:** the database *already* stores real PostGIS geometry; the API reads/writes it via `ST_GeomFromText` and `ST_Contains`. A + B depends on no changes here.
+- **C · Zone geometry persistence ergonomics** — Prisma cannot describe `geometry(Polygon, 4326)`, so the schema still carries a `TODO` comment. A follow-on spec will switch the Prisma schema to `Unsupported("geometry(...)")?`, generate GeoJSON directly from Postgres, and remove the raw-SQL round trip in `apps/api/src/routes/zones.ts`. **Important:** the database _already_ stores real PostGIS geometry; the API reads/writes it via `ST_GeomFromText` and `ST_Contains`. A + B depends on no changes here.
 - **D · Live ops upgrade on `/map`** — Replace the SVG pseudo-map with `<WLMap>` plus driver pins, route lines, and clustering. Uses this spec's foundation unchanged.
 - **E · Map embeds** — Order, shipment, route, driver, and location-settings pages render a small `<WLMap>` with relevant context (origin/destination pin, delivery polygon, driver route). Uses this spec's foundation unchanged.
 
@@ -74,12 +74,12 @@ The design keeps both on one page. A **mode toggle** (`Monitor` / `Configure`) i
 
 **MapLibre GL JS + `@mapbox/mapbox-gl-draw`**.
 
-| Option | Verdict |
-| --- | --- |
+| Option                      | Verdict                                                                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **MapLibre GL JS** (chosen) | Open-source fork of Mapbox GL JS v1. No token. Vector tiles. Smooth drawing. Compatible with `mapbox-gl-draw` via shim. Widely used in logistics tooling (HERE, Grab, Stuart). |
-| Mapbox GL JS v3 | Polished, but locked behind token + per-session usage pricing. Unnecessary for v1. |
-| Leaflet | Simple and lightweight but weaker for polygon drawing, no vector tiles, poor clustering at scale. The tracking-page (Vite app) already uses Leaflet — we leave it alone. |
-| Google Maps | Heavy license, opinionated styling, poor fit for a dark ops console. |
+| Mapbox GL JS v3             | Polished, but locked behind token + per-session usage pricing. Unnecessary for v1.                                                                                             |
+| Leaflet                     | Simple and lightweight but weaker for polygon drawing, no vector tiles, poor clustering at scale. The tracking-page (Vite app) already uses Leaflet — we leave it alone.       |
+| Google Maps                 | Heavy license, opinionated styling, poor fit for a dark ops console.                                                                                                           |
 
 ### 4.2 Tile source
 
@@ -149,18 +149,22 @@ model DeliveryZone {
 
    ```ts
    const polygonShape = z.object({
-     type: z.literal('polygon'),
+     type: z.literal("polygon"),
      ring: z.array(coordinatesSchema).min(3),
-   })
+   });
    const circleShape = z.object({
-     type: z.literal('circle'),
+     type: z.literal("circle"),
      center: coordinatesSchema,
      radiusMeters: z.number().positive().max(100_000),
-   })
-   export const zoneShapeSchema = z.discriminatedUnion('type', [polygonShape, circleShape])
+   });
+   export const zoneShapeSchema = z.discriminatedUnion("type", [
+     polygonShape,
+     circleShape,
+   ]);
    ```
 
    A circle is persisted by buffering `center` by `radiusMeters` into a polygon via PostGIS `ST_Buffer(ST_GeomFromText('POINT(...)', 4326)::geography, r)::geometry`. The UI round-trips the circle by reading `metadata.shape = { type: 'circle', center, radiusMeters }` so subsequent edits stay a circle. Losing the original descriptor is acceptable as a v1 edge case (user re-draws).
+
 2. **Add a `GET /v4/zones/overlays` endpoint** returning, per zone, precomputed overlay data for the dashboard:
 
    ```json
@@ -174,16 +178,21 @@ model DeliveryZone {
          "health": "good"
        }
      ],
-     "heatmap": [
-       { "lng": 77.12, "lat": 28.65, "count": 17 }
-     ],
+     "heatmap": [{ "lng": 77.12, "lat": 28.65, "count": 17 }],
      "hubs": [
-       { "id": "uuid", "name": "South DC", "lng": 77.08, "lat": 28.57, "type": "warehouse" }
+       {
+         "id": "uuid",
+         "name": "South DC",
+         "lng": 77.08,
+         "lat": 28.57,
+         "type": "warehouse"
+       }
      ]
    }
    ```
 
    Backed by aggregations over `Order`, `Shipment`, and `Driver` tables, scoped by org/shop. Cached with a 30 s in-memory TTL per org to keep the page cheap. Refresh is manual (button) or on window focus; no websockets in v1.
+
 3. **Add `GET /v4/zones` GeoJSON mode** — the existing endpoint returns an internal shape. Add an `Accept: application/geo+json` branch (or `?format=geojson` query) that emits a `FeatureCollection` the `<ZoneLayer>` consumes directly. No schema change, just a formatter.
 4. **No Prisma migration.** We stay on the current `Json?` column; polygons are already persisted correctly via raw SQL. Sub-project C is free to tidy the Prisma typing later.
 
@@ -246,19 +255,19 @@ Full-bleed map with a permanent inspector (right side) and a prominent tool tool
 
 All live under `apps/dashboard/src/components/map/` in v1. If/when a second app needs them we promote to `packages/wl-map`.
 
-| Component | Responsibility | Props shape (abbreviated) |
-| --- | --- | --- |
-| `<WLMap>` | Create and tear down the MapLibre instance. Own no data. | `center`, `zoom`, `styleUrl`, `interactive`, `cursor`, `onViewportChange`, `children` |
-| `<ZoneLayer>` | Render zone polygons as a MapLibre source+layer. Handle click → `onSelect`. | `zones: GeoJsonFeatureCollection`, `selectedId`, `onSelect` |
-| `<HeatmapLayer>` | Weighted heatmap layer. | `points: WeightedPoint[]`, `radius`, `intensity` |
-| `<PinLayer>` | Generic pin renderer with optional popover component prop. | `pins: Pin[]`, `popover?: ReactComponent` |
-| `<HubLayer>` | Hubs (warehouses, stores). Fixed iconography, tooltip. | `hubs: Hub[]` |
-| `<DrawLayer>` | Wraps `@mapbox/mapbox-gl-draw`. Emits GeoJSON on change. | `mode: 'polygon' \| 'circle' \| null`, `value`, `onChange` |
-| `<OverlayControls>` | Top-left floating checklist; reads/writes localStorage. | `value`, `onChange` |
-| `<ModeToggle>` | Monitor / Configure pill. | `value`, `onChange` |
-| `<ZoneInspector>` | Right panel. Variant-switches on mode. | `zone`, `mode`, `overlays`, `onSave`, `onDelete` |
-| `<ZoneSearch>` | Top-right fuzzy search. | `zones`, `onSelect` |
-| `<KpiStrip>` | Bottom KPI pill row. | `stats` |
+| Component           | Responsibility                                                              | Props shape (abbreviated)                                                             |
+| ------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `<WLMap>`           | Create and tear down the MapLibre instance. Own no data.                    | `center`, `zoom`, `styleUrl`, `interactive`, `cursor`, `onViewportChange`, `children` |
+| `<ZoneLayer>`       | Render zone polygons as a MapLibre source+layer. Handle click → `onSelect`. | `zones: GeoJsonFeatureCollection`, `selectedId`, `onSelect`                           |
+| `<HeatmapLayer>`    | Weighted heatmap layer.                                                     | `points: WeightedPoint[]`, `radius`, `intensity`                                      |
+| `<PinLayer>`        | Generic pin renderer with optional popover component prop.                  | `pins: Pin[]`, `popover?: ReactComponent`                                             |
+| `<HubLayer>`        | Hubs (warehouses, stores). Fixed iconography, tooltip.                      | `hubs: Hub[]`                                                                         |
+| `<DrawLayer>`       | Wraps `@mapbox/mapbox-gl-draw`. Emits GeoJSON on change.                    | `mode: 'polygon' \| 'circle' \| null`, `value`, `onChange`                            |
+| `<OverlayControls>` | Top-left floating checklist; reads/writes localStorage.                     | `value`, `onChange`                                                                   |
+| `<ModeToggle>`      | Monitor / Configure pill.                                                   | `value`, `onChange`                                                                   |
+| `<ZoneInspector>`   | Right panel. Variant-switches on mode.                                      | `zone`, `mode`, `overlays`, `onSave`, `onDelete`                                      |
+| `<ZoneSearch>`      | Top-right fuzzy search.                                                     | `zones`, `onSelect`                                                                   |
+| `<KpiStrip>`        | Bottom KPI pill row.                                                        | `stats`                                                                               |
 
 Each component is ≤ ~150 LOC. Anything growing past that gets split.
 
@@ -352,17 +361,17 @@ Fire three events (existing analytics pipeline):
 
 ## 11. Out of scope (with rationale)
 
-| Item | Why deferred |
-| --- | --- |
-| **C · Prisma `Unsupported("geometry(...)")` migration** | Database is already correct; this is an ergonomic cleanup, not a blocker. Spin its own spec. |
-| **C · Removing raw-SQL PostGIS round-trips** | Same reason. Works correctly today. |
-| **D · `/map` live ops redesign** | Depends on this spec's `<WLMap>` but has its own UX concerns (driver clustering, route lines, incident overlays). Separate spec. |
-| **E · Map embeds on detail pages** | Each embed (order, shipment, route, driver, location) has specific content and is best specced with its owning page. |
-| **Fleetbase zone sync** | Fleetbase carries its own zone concept. Integration is an interoperability project, not a UI one. |
-| **Tracking-page parity** | Customer tracking uses Leaflet; we don't pay the UX cost of converging it now. |
-| **Postcode / admin-region zones** | Requires per-market boundary data. Revisit once two markets demand it. |
-| **Multi-polygon zones** | Rare. Supported server-side via PostGIS already; UI is deferred. |
-| **Real-time push of overlay updates** | 30 s poll is enough for "healthy / slipping" glance-value. Realtime belongs to D. |
+| Item                                                    | Why deferred                                                                                                                     |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **C · Prisma `Unsupported("geometry(...)")` migration** | Database is already correct; this is an ergonomic cleanup, not a blocker. Spin its own spec.                                     |
+| **C · Removing raw-SQL PostGIS round-trips**            | Same reason. Works correctly today.                                                                                              |
+| **D · `/map` live ops redesign**                        | Depends on this spec's `<WLMap>` but has its own UX concerns (driver clustering, route lines, incident overlays). Separate spec. |
+| **E · Map embeds on detail pages**                      | Each embed (order, shipment, route, driver, location) has specific content and is best specced with its owning page.             |
+| **Fleetbase zone sync**                                 | Fleetbase carries its own zone concept. Integration is an interoperability project, not a UI one.                                |
+| **Tracking-page parity**                                | Customer tracking uses Leaflet; we don't pay the UX cost of converging it now.                                                   |
+| **Postcode / admin-region zones**                       | Requires per-market boundary data. Revisit once two markets demand it.                                                           |
+| **Multi-polygon zones**                                 | Rare. Supported server-side via PostGIS already; UI is deferred.                                                                 |
+| **Real-time push of overlay updates**                   | 30 s poll is enough for "healthy / slipping" glance-value. Realtime belongs to D.                                                |
 
 ---
 

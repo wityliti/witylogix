@@ -11,13 +11,13 @@
  * - GatewayOrchestrator: compose all middleware, health-aware routing
  */
 
-import { createHash } from 'crypto';
-import { EventEmitter } from 'events';
+import { createHash } from "crypto";
+import { EventEmitter } from "events";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
 export interface HttpRequestOptions {
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   url: string;
   headers?: Record<string, string>;
   body?: unknown;
@@ -38,8 +38,8 @@ export interface HttpResponse<T = unknown> {
 
 export interface CircuitBreakerStateChangeEvent {
   providerId: string;
-  previousState: 'closed' | 'open' | 'half-open';
-  currentState: 'closed' | 'open' | 'half-open';
+  previousState: "closed" | "open" | "half-open";
+  currentState: "closed" | "open" | "half-open";
   timestamp: Date;
   reason: string;
 }
@@ -66,7 +66,7 @@ interface DedupeRequest<T> {
 }
 
 interface CircuitBreakerMetrics {
-  state: 'closed' | 'open' | 'half-open';
+  state: "closed" | "open" | "half-open";
   failureCount: number;
   successCount: number;
   lastFailureTime?: number;
@@ -81,7 +81,7 @@ interface CircuitBreakerMetrics {
  * AdvancedCircuitBreaker with sliding window and half-open probing
  */
 export class AdvancedCircuitBreaker extends EventEmitter {
-  private state: 'closed' | 'open' | 'half-open' = 'closed';
+  private state: "closed" | "open" | "half-open" = "closed";
   private failureWindow: number[] = [];
   private successWindow: number[] = [];
   private stateChangedAt: Date = new Date();
@@ -111,11 +111,11 @@ export class AdvancedCircuitBreaker extends EventEmitter {
   canProceed(): boolean {
     const now = Date.now();
 
-    if (this.state === 'closed') {
+    if (this.state === "closed") {
       return true;
     }
 
-    if (this.state === 'open') {
+    if (this.state === "open") {
       const timeSinceOpen = now - this.stateChangedAt.getTime();
       if (timeSinceOpen >= this.halfOpenTimeoutMs) {
         this.transitionToHalfOpen();
@@ -125,7 +125,7 @@ export class AdvancedCircuitBreaker extends EventEmitter {
     }
 
     // half-open: allow one probe
-    if (this.state === 'half-open' && !this.probeRequestInFlight) {
+    if (this.state === "half-open" && !this.probeRequestInFlight) {
       this.probeRequestInFlight = true;
       return true;
     }
@@ -139,13 +139,15 @@ export class AdvancedCircuitBreaker extends EventEmitter {
     this.probeRequestInFlight = false;
 
     // Clean old entries
-    this.successWindow = this.successWindow.filter((t) => t > now - this.windowSizeMs);
+    this.successWindow = this.successWindow.filter(
+      (t) => t > now - this.windowSizeMs,
+    );
 
-    if (this.state === 'half-open') {
+    if (this.state === "half-open") {
       if (this.successWindow.length >= this.successThreshold) {
         this.transitionToClosed();
       }
-    } else if (this.state === 'closed') {
+    } else if (this.state === "closed") {
       // Reset failure count on success
       this.failureWindow = [];
     }
@@ -157,11 +159,13 @@ export class AdvancedCircuitBreaker extends EventEmitter {
     this.probeRequestInFlight = false;
 
     // Clean old entries
-    this.failureWindow = this.failureWindow.filter((t) => t > now - this.windowSizeMs);
+    this.failureWindow = this.failureWindow.filter(
+      (t) => t > now - this.windowSizeMs,
+    );
 
-    if (this.state === 'half-open') {
+    if (this.state === "half-open") {
       this.transitionToOpen();
-    } else if (this.state === 'closed') {
+    } else if (this.state === "closed") {
       if (this.failureWindow.length >= this.failureThreshold) {
         this.transitionToOpen();
       }
@@ -185,55 +189,55 @@ export class AdvancedCircuitBreaker extends EventEmitter {
   }
 
   private transitionToOpen(): void {
-    if (this.state === 'open') return;
+    if (this.state === "open") return;
     const previousState = this.state;
-    this.state = 'open';
+    this.state = "open";
     this.stateChangedAt = new Date();
     this.totalStateChanges++;
     this.probeRequestInFlight = false;
 
-    this.emit('state-change', {
+    this.emit("state-change", {
       providerId: this.providerId,
       previousState,
-      currentState: 'open',
+      currentState: "open",
       timestamp: this.stateChangedAt,
-      reason: 'Failure threshold exceeded',
+      reason: "Failure threshold exceeded",
     } as CircuitBreakerStateChangeEvent);
   }
 
   private transitionToHalfOpen(): void {
     const previousState = this.state;
-    this.state = 'half-open';
+    this.state = "half-open";
     this.stateChangedAt = new Date();
     this.totalStateChanges++;
     this.successWindow = [];
     this.probeRequestInFlight = false;
 
-    this.emit('state-change', {
+    this.emit("state-change", {
       providerId: this.providerId,
       previousState,
-      currentState: 'half-open',
+      currentState: "half-open",
       timestamp: this.stateChangedAt,
-      reason: 'Half-open timeout elapsed, testing recovery',
+      reason: "Half-open timeout elapsed, testing recovery",
     } as CircuitBreakerStateChangeEvent);
   }
 
   private transitionToClosed(): void {
-    if (this.state === 'closed') return;
+    if (this.state === "closed") return;
     const previousState = this.state;
-    this.state = 'closed';
+    this.state = "closed";
     this.stateChangedAt = new Date();
     this.totalStateChanges++;
     this.failureWindow = [];
     this.successWindow = [];
     this.probeRequestInFlight = false;
 
-    this.emit('state-change', {
+    this.emit("state-change", {
       providerId: this.providerId,
       previousState,
-      currentState: 'closed',
+      currentState: "closed",
       timestamp: this.stateChangedAt,
-      reason: 'Service recovered',
+      reason: "Service recovered",
     } as CircuitBreakerStateChangeEvent);
   }
 }
@@ -265,11 +269,14 @@ export class BulkheadIsolator extends EventEmitter {
     return new Promise((resolve) => {
       const queue = this.queues.get(providerId) ?? [];
       queue.push(async () => {
-        this.semaphores.set(providerId, (this.semaphores.get(providerId) ?? 0) + 1);
+        this.semaphores.set(
+          providerId,
+          (this.semaphores.get(providerId) ?? 0) + 1,
+        );
         resolve(() => this.release(providerId));
       });
       this.queues.set(providerId, queue);
-      this.emit('queued', { providerId, queueLength: queue.length });
+      this.emit("queued", { providerId, queueLength: queue.length });
     });
   }
 
@@ -340,7 +347,10 @@ export class RetryEngine {
     // Reset budget every minute
     if (now > resetTime) {
       this.budgetResetTime.set(providerId, now + 60000);
-      this.retryBudget.set(providerId, Math.floor((100 / this.retryBudgetPercent) * 100));
+      this.retryBudget.set(
+        providerId,
+        Math.floor((100 / this.retryBudgetPercent) * 100),
+      );
       return true;
     }
 
@@ -406,8 +416,8 @@ export class RequestDeduplicator {
   }
 
   getContentHash(body: unknown): string {
-    const content = typeof body === 'string' ? body : JSON.stringify(body);
-    return createHash('sha256').update(content).digest('hex');
+    const content = typeof body === "string" ? body : JSON.stringify(body);
+    return createHash("sha256").update(content).digest("hex");
   }
 }
 
@@ -521,22 +531,25 @@ export class CorrelationTracker {
   }
 
   toW3CHeader(context: TraceContext): string {
-    return `${context.traceId}-${context.spanId}-${context.sampled ? '1' : '0'}`;
+    return `${context.traceId}-${context.spanId}-${context.sampled ? "1" : "0"}`;
   }
 
   fromW3CHeader(header: string): TraceContext | null {
-    const parts = header.split('-');
+    const parts = header.split("-");
     if (parts.length < 3) return null;
 
     return {
       traceId: parts[0],
       spanId: parts[1],
-      sampled: parts[2] === '1',
+      sampled: parts[2] === "1",
     };
   }
 
   private generateId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return (
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15)
+    );
   }
 }
 
@@ -565,7 +578,10 @@ export class GatewayOrchestrator {
     this.correlationTracker = new CorrelationTracker();
   }
 
-  async request<T>(providerId: string, options: HttpRequestOptions): Promise<HttpResponse<T>> {
+  async request<T>(
+    providerId: string,
+    options: HttpRequestOptions,
+  ): Promise<HttpResponse<T>> {
     // Get or create circuit breaker
     if (!this.breakers.has(providerId)) {
       this.breakers.set(providerId, new AdvancedCircuitBreaker(providerId));
@@ -580,7 +596,7 @@ export class GatewayOrchestrator {
 
     // Try cache first
     const cacheKey = options.cacheKey ?? `${options.method}:${options.url}`;
-    if (options.method === 'GET') {
+    if (options.method === "GET") {
       const cached = this.cache.get<T>(cacheKey);
       if (cached) {
         return {
@@ -602,7 +618,7 @@ export class GatewayOrchestrator {
       // Prepare headers with trace
       const headers = {
         ...(options.headers ?? {}),
-        'traceparent': this.correlationTracker.toW3CHeader(trace),
+        traceparent: this.correlationTracker.toW3CHeader(trace),
       };
 
       // Prepare request with deduplication
@@ -611,7 +627,7 @@ export class GatewayOrchestrator {
         let attempt = 0;
         let lastError: Error | null = null;
 
-        while (attempt <= this.retryEngine['maxRetries']) {
+        while (attempt <= this.retryEngine["maxRetries"]) {
           try {
             const response = await this.httpClient.request<T>({
               ...options,
@@ -630,7 +646,7 @@ export class GatewayOrchestrator {
             lastError = error as Error;
             const statusCode = this.extractStatusCode(error);
 
-            const isIdempotent = ['GET', 'DELETE'].includes(options.method);
+            const isIdempotent = ["GET", "DELETE"].includes(options.method);
             if (
               this.retryEngine.shouldRetry(
                 providerId,
@@ -650,10 +666,13 @@ export class GatewayOrchestrator {
           }
         }
 
-        throw lastError ?? new Error('Max retries exceeded');
+        throw lastError ?? new Error("Max retries exceeded");
       };
 
-      return await this.deduplicator.deduplicate<HttpResponse<T>>(dedupeKey, request);
+      return await this.deduplicator.deduplicate<HttpResponse<T>>(
+        dedupeKey,
+        request,
+      );
     } finally {
       release();
     }
@@ -680,7 +699,7 @@ export class GatewayOrchestrator {
   }
 
   private extractStatusCode(error: unknown): number {
-    if (error instanceof Error && 'statusCode' in error) {
+    if (error instanceof Error && "statusCode" in error) {
       return (error as any).statusCode ?? 500;
     }
     return 500;

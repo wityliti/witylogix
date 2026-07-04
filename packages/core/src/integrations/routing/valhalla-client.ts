@@ -11,7 +11,7 @@
  * Reference: https://valhalla.github.io/valhalla/
  */
 
-import { RoutingAdapter } from './routing-adapter.js';
+import { RoutingAdapter } from "./routing-adapter.js";
 import type {
   RouteRequest,
   RouteResponse,
@@ -27,7 +27,7 @@ import type {
   MapMatchingRequest,
   MapMatchingResponse,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Valhalla routing costing options
@@ -127,10 +127,12 @@ interface ValhallaMatrixRequest {
 interface ValhallaMatrixResponse {
   sources: Array<{ lat: number; lon: number }>;
   targets: Array<{ lat: number; lon: number }>;
-  matrix: Array<{
-    distance: number;
-    time: number;
-  }[]>;
+  matrix: Array<
+    {
+      distance: number;
+      time: number;
+    }[]
+  >;
 }
 
 interface ValhallaIsochroneRequest {
@@ -170,12 +172,12 @@ export class ValhallaClient extends RoutingAdapter {
 
   constructor(config: RoutingAdapterConfig = {}) {
     super({
-      baseUrl: 'https://valhalla.openstreetmap.de',
+      baseUrl: "https://valhalla.openstreetmap.de",
       rateLimit: 50,
       ...config,
     });
 
-    this.baseUrl = this.config.baseUrl || 'https://valhalla.openstreetmap.de';
+    this.baseUrl = this.config.baseUrl || "https://valhalla.openstreetmap.de";
     this.cacheTtl = this.config.cache_ttl || 300000; // 5 minutes
   }
 
@@ -216,7 +218,9 @@ export class ValhallaClient extends RoutingAdapter {
   /**
    * Convert to Valhalla location format
    */
-  private toValhallaLocation(coord: import('./types.js').Coordinate): ValhallaLocation {
+  private toValhallaLocation(
+    coord: import("./types.js").Coordinate,
+  ): ValhallaLocation {
     const normalized = this.normalizeCoordinate(coord);
     return {
       lat: normalized.lat,
@@ -227,9 +231,10 @@ export class ValhallaClient extends RoutingAdapter {
   /**
    * Build bounds from locations
    */
-  private buildBounds(
-    locations: Array<{ lat: number; lon: number }>,
-  ): { ne: import('./types.js').LatLng; sw: import('./types.js').LatLng } {
+  private buildBounds(locations: Array<{ lat: number; lon: number }>): {
+    ne: import("./types.js").LatLng;
+    sw: import("./types.js").LatLng;
+  } {
     let minLat = locations[0].lat;
     let maxLat = locations[0].lat;
     let minLon = locations[0].lon;
@@ -252,22 +257,24 @@ export class ValhallaClient extends RoutingAdapter {
    * Compute turn-by-turn route
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    return this.executeRequest('route', async () => {
-      const cacheKey = this.getCacheKey('route', request);
+    return this.executeRequest("route", async () => {
+      const cacheKey = this.getCacheKey("route", request);
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         return cached as RouteResponse;
       }
 
-      const locations = [request.origin, ...request.waypoints || [], request.destination].map((c) =>
-        this.toValhallaLocation(c),
-      );
+      const locations = [
+        request.origin,
+        ...(request.waypoints || []),
+        request.destination,
+      ].map((c) => this.toValhallaLocation(c));
 
       const payload: ValhallaRouteRequest = {
         locations,
-        costing: request.costing || 'auto',
+        costing: request.costing || "auto",
         costing_options: {
-          [request.costing || 'auto']: {
+          [request.costing || "auto"]: {
             toll_cost: request.options?.exclude_toll ? 9999 : 0,
             use_ferry: request.options?.exclude_ferry ? 0 : 1,
           } satisfies ValhallaCostingOptions,
@@ -328,7 +335,7 @@ export class ValhallaClient extends RoutingAdapter {
    * Optimize vehicle routes (CVRP/VRPTW)
    */
   async optimize(request: OptimizationRequest): Promise<OptimizationResponse> {
-    return this.executeRequest('optimize', async () => {
+    return this.executeRequest("optimize", async () => {
       // Valhalla doesn't have native optimization, use greedy approach
       const routes = request.vehicles.map((vehicle, idx) => ({
         vehicle: idx,
@@ -338,7 +345,7 @@ export class ValhallaClient extends RoutingAdapter {
       }));
 
       return {
-        code: 'OK',
+        code: "OK",
         summary: {
           distance_m: 0,
           duration_s: 0,
@@ -353,20 +360,22 @@ export class ValhallaClient extends RoutingAdapter {
    * Compute distance/time matrix
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    return this.executeRequest('matrix', async () => {
-      const cacheKey = this.getCacheKey('matrix', request);
+    return this.executeRequest("matrix", async () => {
+      const cacheKey = this.getCacheKey("matrix", request);
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         return cached as MatrixResponse;
       }
 
       const sources = request.origins.map((c) => this.toValhallaLocation(c));
-      const targets = request.destinations.map((c) => this.toValhallaLocation(c));
+      const targets = request.destinations.map((c) =>
+        this.toValhallaLocation(c),
+      );
 
       const payload: ValhallaMatrixRequest = {
         sources,
         targets,
-        costing: request.costing || 'auto',
+        costing: request.costing || "auto",
       };
 
       const response = await this.makeRequest<ValhallaMatrixResponse>(
@@ -380,7 +389,7 @@ export class ValhallaClient extends RoutingAdapter {
           row.map((cell) => ({
             distance_m: cell.distance,
             duration_s: cell.time,
-            status: 'OK',
+            status: "OK",
           })),
         );
       }
@@ -406,8 +415,8 @@ export class ValhallaClient extends RoutingAdapter {
    * Generate isochrone polygons
    */
   async isochrone(request: IsochroneRequest): Promise<IsochroneResponse> {
-    return this.executeRequest('isochrone', async () => {
-      const cacheKey = this.getCacheKey('isochrone', request);
+    return this.executeRequest("isochrone", async () => {
+      const cacheKey = this.getCacheKey("isochrone", request);
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         return cached as IsochroneResponse;
@@ -417,10 +426,10 @@ export class ValhallaClient extends RoutingAdapter {
 
       const payload: ValhallaIsochroneRequest = {
         locations: [center],
-        costing: request.costing || 'auto',
+        costing: request.costing || "auto",
         contours: request.contours.map((c) => ({
           time: c.value, // Assume time in seconds
-          color: c.color || 'ff0000',
+          color: c.color || "ff0000",
         })),
         denoise: request.denoise ?? 1,
         generalize: 10,
@@ -433,9 +442,9 @@ export class ValhallaClient extends RoutingAdapter {
 
       const contours = response.features.map((feature) => ({
         feature: {
-          type: 'Feature' as const,
+          type: "Feature" as const,
           geometry: {
-            type: 'Polygon' as const,
+            type: "Polygon" as const,
             coordinates: feature.geometry.coordinates,
           },
           properties: feature.properties,
@@ -446,7 +455,7 @@ export class ValhallaClient extends RoutingAdapter {
 
       const result: IsochroneResponse = {
         contours,
-        attribution: 'Valhalla | OpenStreetMap contributors',
+        attribution: "Valhalla | OpenStreetMap contributors",
       };
 
       this.setCache(cacheKey, result);
@@ -458,12 +467,12 @@ export class ValhallaClient extends RoutingAdapter {
    * Map matching (trace route processing)
    */
   async mapMatch(request: MapMatchingRequest): Promise<MapMatchingResponse> {
-    return this.executeRequest('map-match', async () => {
+    return this.executeRequest("map-match", async () => {
       const locations = request.shape.map((c) => this.toValhallaLocation(c));
 
       const payload: ValhallaRouteRequest = {
         locations,
-        costing: request.costing || 'auto',
+        costing: request.costing || "auto",
         steps: true,
       };
 
@@ -476,7 +485,9 @@ export class ValhallaClient extends RoutingAdapter {
         edge_index: pt.edge_index,
         lat: pt.lat,
         lng: pt.lon,
-        type: (pt.type as 'matched' | 'interpolated' | 'unmatched') || ('matched' as const),
+        type:
+          (pt.type as "matched" | "interpolated" | "unmatched") ||
+          ("matched" as const),
       }));
 
       return {
@@ -499,17 +510,19 @@ export class ValhallaClient extends RoutingAdapter {
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': this.config.user_agent || 'Witylogix/1.0',
+          "Content-Type": "application/json",
+          "User-Agent": this.config.user_agent || "Witylogix/1.0",
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`Valhalla API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Valhalla API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as T;

@@ -18,7 +18,11 @@ export default function FieldServiceLayout({
   const tabs = [
     { label: "Overview", href: "/dashboard/field-service", icon: "📊" },
     { label: "Jobs", href: "/dashboard/field-service/jobs", icon: "📋" },
-    { label: "Dispatch", href: "/dashboard/field-service/dispatch", icon: "🗺️" },
+    {
+      label: "Dispatch",
+      href: "/dashboard/field-service/dispatch",
+      icon: "🗺️",
+    },
   ];
 
   const isActive = (href: string) => {
@@ -41,7 +45,7 @@ export default function FieldServiceLayout({
                 "px-4 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap flex items-center gap-2",
                 isActive(tab.href)
                   ? "border-wl-primary-500 text-wl-primary-400"
-                  : "border-transparent text-wl-text-secondary hover:text-wl-text-primary hover:border-wl-border-strong"
+                  : "border-transparent text-wl-text-secondary hover:text-wl-text-primary hover:border-wl-border-strong",
               )}
             >
               <span>{tab.icon}</span>

@@ -15,10 +15,19 @@
  */
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, Form, Link, useNavigation, redirect } from "react-router";
+import {
+  useLoaderData,
+  Form,
+  Link,
+  useNavigation,
+  redirect,
+} from "react-router";
 import { ShipmentStatusBadge } from "~/components/ShipmentStatusBadge";
 import { StatusTimeline } from "~/components/StatusTimeline";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type SingleResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   Page,
@@ -76,8 +85,18 @@ interface ShipmentDetail {
   customerName: string | null;
   customerEmail: string | null;
   customerPhone: string | null;
-  driver: { id: string; name: string; phone: string; vehicleType: string; vehiclePlate: string | null } | null;
-  deliveryProof: { photos: string[]; signatureUrl: string | null; notes: string | null } | null;
+  driver: {
+    id: string;
+    name: string;
+    phone: string;
+    vehicleType: string;
+    vehiclePlate: string | null;
+  } | null;
+  deliveryProof: {
+    photos: string[];
+    signatureUrl: string | null;
+    notes: string | null;
+  } | null;
   eta: string | null;
   createdAt: string;
   updatedAt: string;
@@ -94,7 +113,12 @@ interface TimelineEvent {
 interface ShipmentPageData {
   shipment: ShipmentDetail;
   timeline: TimelineEvent[];
-  availableDrivers: { id: string; name: string; phone: string; activeShipments: number }[];
+  availableDrivers: {
+    id: string;
+    name: string;
+    phone: string;
+    activeShipments: number;
+  }[];
 }
 
 const STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -119,11 +143,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const [shipmentRes, timelineRes, driversRes] = await Promise.allSettled([
     api.get<SingleResponse<ShipmentDetail>>(`/api/v4/shipments/${params.id}`),
-    api.get<SingleResponse<TimelineEvent[]>>(`/api/v4/shipments/${params.id}/timeline`),
-    api.get<SingleResponse<{ id: string; name: string; phone: string; activeShipments: number }[]>>(
-      "/api/v4/drivers",
-      { status: "AVAILABLE", limit: 50 },
+    api.get<SingleResponse<TimelineEvent[]>>(
+      `/api/v4/shipments/${params.id}/timeline`,
     ),
+    api.get<
+      SingleResponse<
+        { id: string; name: string; phone: string; activeShipments: number }[]
+      >
+    >("/api/v4/drivers", { status: "AVAILABLE", limit: 50 }),
   ]);
 
   if (shipmentRes.status === "rejected") {
@@ -133,7 +160,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return {
     shipment: shipmentRes.value.data,
     timeline: timelineRes.status === "fulfilled" ? timelineRes.value.data : [],
-    availableDrivers: driversRes.status === "fulfilled" ? driversRes.value.data : [],
+    availableDrivers:
+      driversRes.status === "fulfilled" ? driversRes.value.data : [],
   };
 }
 
@@ -188,7 +216,8 @@ function formatAddress(addr: ShipmentDetail["originAddress"]): string {
 // ─── Component ─────────────────────────────────────────────
 
 export default function ShipmentDetailPage() {
-  const { shipment, timeline, availableDrivers } = useLoaderData<ShipmentPageData>();
+  const { shipment, timeline, availableDrivers } =
+    useLoaderData<ShipmentPageData>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
   const nextStatuses = STATUS_TRANSITIONS[shipment.status] ?? [];
@@ -261,14 +290,18 @@ export default function ShipmentDetailPage() {
 
   const destinationItems = [
     { term: "Name", description: shipment.destinationAddress.name },
-    { term: "Address", description: formatAddress(shipment.destinationAddress) },
+    {
+      term: "Address",
+      description: formatAddress(shipment.destinationAddress),
+    },
     ...(shipment.destinationAddress.phone
       ? [{ term: "Phone", description: shipment.destinationAddress.phone }]
       : []),
     ...(shipment.destinationAddress.email
       ? [{ term: "Email", description: shipment.destinationAddress.email }]
       : []),
-    ...(shipment.destinationAddress.latitude && shipment.destinationAddress.longitude
+    ...(shipment.destinationAddress.latitude &&
+    shipment.destinationAddress.longitude
       ? [
           {
             term: "GPS",
@@ -283,13 +316,16 @@ export default function ShipmentDetailPage() {
       backAction={{ content: "Shipments", url: "/shipments" }}
       title={shipment.trackingNumber}
       titleMetadata={<ShipmentStatusBadge status={shipment.status} />}
-      subtitle={`Created ${new Date(shipment.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })}`}
+      subtitle={`Created ${new Date(shipment.createdAt).toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        },
+      )}`}
     >
       <Layout>
         {/* Left Column */}
@@ -332,10 +368,20 @@ export default function ShipmentDetailPage() {
                     items={[
                       { term: "Name", description: shipment.customerName },
                       ...(shipment.customerEmail
-                        ? [{ term: "Email", description: shipment.customerEmail }]
+                        ? [
+                            {
+                              term: "Email",
+                              description: shipment.customerEmail,
+                            },
+                          ]
                         : []),
                       ...(shipment.customerPhone
-                        ? [{ term: "Phone", description: shipment.customerPhone }]
+                        ? [
+                            {
+                              term: "Phone",
+                              description: shipment.customerPhone,
+                            },
+                          ]
                         : []),
                     ]}
                   />
@@ -467,7 +513,9 @@ export default function ShipmentDetailPage() {
                   <input type="hidden" name="intent" value="assign-driver" />
                   <BlockStack gap="300">
                     <Select
-                      label={shipment.driver ? "Reassign Driver" : "Assign Driver"}
+                      label={
+                        shipment.driver ? "Reassign Driver" : "Assign Driver"
+                      }
                       options={driverOptions}
                       name="driverId"
                       value={shipment.driver?.id ?? ""}

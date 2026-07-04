@@ -4,7 +4,7 @@
  * Implements GDPR principle of storage limitation
  */
 
-import { RetentionPolicy } from './types';
+import { RetentionPolicy } from "./types";
 
 /**
  * Retention record for tracking deletion/anonymization status
@@ -16,7 +16,12 @@ interface RetentionRecord {
   expiresAt: Date;
   anonymizeAt?: Date;
   deleteAt: Date;
-  status: 'active' | 'anonymize_scheduled' | 'delete_scheduled' | 'deleted' | 'exempt';
+  status:
+    | "active"
+    | "anonymize_scheduled"
+    | "delete_scheduled"
+    | "deleted"
+    | "exempt";
   exemptionReason?: string;
 }
 
@@ -41,10 +46,10 @@ export class RetentionManager {
     entityType: string,
     retentionDays: number,
     anonymizeAfterDays?: number,
-    deleteAfterDays?: number
+    deleteAfterDays?: number,
   ): RetentionPolicy {
     if (retentionDays < 0) {
-      throw new Error('retentionDays must be non-negative');
+      throw new Error("retentionDays must be non-negative");
     }
 
     const policy: RetentionPolicy = {
@@ -71,19 +76,19 @@ export class RetentionManager {
   applyRetentionPolicy(
     recordId: string,
     entityType: string,
-    createdAt: Date
+    createdAt: Date,
   ): {
-    action: 'none' | 'anonymize' | 'delete';
+    action: "none" | "anonymize" | "delete";
     daysUntilAction: number;
   } {
     // Check if exempt from retention
     if (this.exemptions.has(recordId)) {
-      return { action: 'none', daysUntilAction: -1 };
+      return { action: "none", daysUntilAction: -1 };
     }
 
     const policy = this.policies.get(entityType);
     if (!policy) {
-      return { action: 'none', daysUntilAction: -1 };
+      return { action: "none", daysUntilAction: -1 };
     }
 
     const now = new Date();
@@ -92,15 +97,15 @@ export class RetentionManager {
 
     // Check delete threshold
     if (ageDays >= policy.deleteAfterDays) {
-      this.updateRetentionRecord(recordId, entityType, 'delete_scheduled');
-      return { action: 'delete', daysUntilAction: 0 };
+      this.updateRetentionRecord(recordId, entityType, "delete_scheduled");
+      return { action: "delete", daysUntilAction: 0 };
     }
 
     // Check anonymize threshold
     if (policy.anonymizeAfterDays && ageDays >= policy.anonymizeAfterDays) {
-      this.updateRetentionRecord(recordId, entityType, 'anonymize_scheduled');
+      this.updateRetentionRecord(recordId, entityType, "anonymize_scheduled");
       return {
-        action: 'anonymize',
+        action: "anonymize",
         daysUntilAction: 0,
       };
     }
@@ -111,7 +116,7 @@ export class RetentionManager {
       : Math.max(0, policy.deleteAfterDays - ageDays);
 
     return {
-      action: 'none',
+      action: "none",
       daysUntilAction: nextActionDays,
     };
   }
@@ -127,17 +132,24 @@ export class RetentionManager {
   scheduleAnonymization(
     recordId: string,
     entityType: string,
-    retentionDays: number
+    retentionDays: number,
   ): {
     recordId: string;
     scheduledAt: Date;
     anonymizeAt: Date;
   } {
     const now = new Date();
-    const anonymizeAt = new Date(now.getTime() + retentionDays * 24 * 60 * 60 * 1000);
+    const anonymizeAt = new Date(
+      now.getTime() + retentionDays * 24 * 60 * 60 * 1000,
+    );
 
-    const record = this.getOrCreateRetentionRecord(recordId, entityType, now, anonymizeAt);
-    record.status = 'anonymize_scheduled';
+    const record = this.getOrCreateRetentionRecord(
+      recordId,
+      entityType,
+      now,
+      anonymizeAt,
+    );
+    record.status = "anonymize_scheduled";
     record.anonymizeAt = anonymizeAt;
 
     this.retentionRecords.set(recordId, record);
@@ -160,17 +172,24 @@ export class RetentionManager {
   scheduleForDeletion(
     recordId: string,
     entityType: string,
-    retentionDays: number
+    retentionDays: number,
   ): {
     recordId: string;
     scheduledAt: Date;
     deleteAt: Date;
   } {
     const now = new Date();
-    const deleteAt = new Date(now.getTime() + retentionDays * 24 * 60 * 60 * 1000);
+    const deleteAt = new Date(
+      now.getTime() + retentionDays * 24 * 60 * 60 * 1000,
+    );
 
-    const record = this.getOrCreateRetentionRecord(recordId, entityType, now, undefined);
-    record.status = 'delete_scheduled';
+    const record = this.getOrCreateRetentionRecord(
+      recordId,
+      entityType,
+      now,
+      undefined,
+    );
+    record.status = "delete_scheduled";
     record.deleteAt = deleteAt;
 
     this.retentionRecords.set(recordId, record);
@@ -193,7 +212,10 @@ export class RetentionManager {
     deleteScheduled: number;
     deleted: number;
     exempt: number;
-    byEntityType: Record<string, { active: number; scheduled: number; deleted: number }>;
+    byEntityType: Record<
+      string,
+      { active: number; scheduled: number; deleted: number }
+    >;
   } {
     const report = {
       active: 0,
@@ -201,24 +223,27 @@ export class RetentionManager {
       deleteScheduled: 0,
       deleted: 0,
       exempt: 0,
-      byEntityType: {} as Record<string, { active: number; scheduled: number; deleted: number }>,
+      byEntityType: {} as Record<
+        string,
+        { active: number; scheduled: number; deleted: number }
+      >,
     };
 
     for (const record of this.retentionRecords.values()) {
       switch (record.status) {
-        case 'active':
+        case "active":
           report.active++;
           break;
-        case 'anonymize_scheduled':
+        case "anonymize_scheduled":
           report.anonymizeScheduled++;
           break;
-        case 'delete_scheduled':
+        case "delete_scheduled":
           report.deleteScheduled++;
           break;
-        case 'deleted':
+        case "deleted":
           report.deleted++;
           break;
-        case 'exempt':
+        case "exempt":
           report.exempt++;
           break;
       }
@@ -231,11 +256,14 @@ export class RetentionManager {
         };
       }
 
-      if (record.status === 'active') {
+      if (record.status === "active") {
         report.byEntityType[record.entityType].active++;
-      } else if (record.status === 'anonymize_scheduled' || record.status === 'delete_scheduled') {
+      } else if (
+        record.status === "anonymize_scheduled" ||
+        record.status === "delete_scheduled"
+      ) {
         report.byEntityType[record.entityType].scheduled++;
-      } else if (record.status === 'deleted') {
+      } else if (record.status === "deleted") {
         report.byEntityType[record.entityType].deleted++;
       }
     }
@@ -252,14 +280,14 @@ export class RetentionManager {
    */
   exemptFromRetention(recordId: string, reason: string): void {
     if (!reason || reason.trim().length === 0) {
-      throw new Error('Exemption reason is required');
+      throw new Error("Exemption reason is required");
     }
 
     this.exemptions.set(recordId, reason);
 
     const record = this.retentionRecords.get(recordId);
     if (record) {
-      record.status = 'exempt';
+      record.status = "exempt";
       record.exemptionReason = reason;
     }
   }
@@ -273,8 +301,8 @@ export class RetentionManager {
     this.exemptions.delete(recordId);
 
     const record = this.retentionRecords.get(recordId);
-    if (record && record.status === 'exempt') {
-      record.status = 'active';
+    if (record && record.status === "exempt") {
+      record.status = "active";
       record.exemptionReason = undefined;
     }
   }
@@ -299,7 +327,7 @@ export class RetentionManager {
 
     for (const [recordId, record] of this.retentionRecords.entries()) {
       if (
-        record.status === 'anonymize_scheduled' &&
+        record.status === "anonymize_scheduled" &&
         record.anonymizeAt &&
         record.anonymizeAt <= now
       ) {
@@ -320,7 +348,7 @@ export class RetentionManager {
     const dueRecords: string[] = [];
 
     for (const [recordId, record] of this.retentionRecords.entries()) {
-      if (record.status === 'delete_scheduled' && record.deleteAt <= now) {
+      if (record.status === "delete_scheduled" && record.deleteAt <= now) {
         dueRecords.push(recordId);
       }
     }
@@ -335,7 +363,7 @@ export class RetentionManager {
   markAsDeleted(recordId: string): void {
     const record = this.retentionRecords.get(recordId);
     if (record) {
-      record.status = 'deleted';
+      record.status = "deleted";
     }
   }
 
@@ -343,7 +371,11 @@ export class RetentionManager {
    * Update retention record status
    * @private
    */
-  private updateRetentionRecord(recordId: string, entityType: string, status: RetentionRecord['status']): void {
+  private updateRetentionRecord(
+    recordId: string,
+    entityType: string,
+    status: RetentionRecord["status"],
+  ): void {
     const record = this.retentionRecords.get(recordId);
     if (record) {
       record.status = status;
@@ -358,14 +390,15 @@ export class RetentionManager {
     recordId: string,
     entityType: string,
     createdAt: Date,
-    anonymizeAt?: Date
+    anonymizeAt?: Date,
   ): RetentionRecord {
     let record = this.retentionRecords.get(recordId);
 
     if (!record) {
       const policy = this.policies.get(entityType);
       const deleteAt = new Date(
-        createdAt.getTime() + (policy?.deleteAfterDays || 365) * 24 * 60 * 60 * 1000
+        createdAt.getTime() +
+          (policy?.deleteAfterDays || 365) * 24 * 60 * 60 * 1000,
       );
 
       record = {
@@ -375,7 +408,7 @@ export class RetentionManager {
         expiresAt: deleteAt,
         anonymizeAt,
         deleteAt,
-        status: 'active',
+        status: "active",
       };
     }
 

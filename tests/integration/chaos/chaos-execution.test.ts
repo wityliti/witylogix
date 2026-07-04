@@ -43,7 +43,7 @@ class ChaosExecutionSystem {
     targetProvider: string,
     faultType: "latency" | "error" | "timeout",
     config: any,
-    durationMs: number = 60000
+    durationMs: number = 60000,
   ): ChaosScenario {
     const scenario: ChaosScenario = {
       id: `chaos-${Date.now()}`,
@@ -95,7 +95,7 @@ class ChaosExecutionSystem {
 
   injectFault(
     scenarioId: string,
-    requestCount: number = 100
+    requestCount: number = 100,
   ): FaultInjectionResult {
     const scenario = this.scenarios.get(scenarioId);
 
@@ -111,7 +111,7 @@ class ChaosExecutionSystem {
     }
 
     const affectedRequests = Math.ceil(
-      requestCount * (scenario.faultConfig.percentile || 1)
+      requestCount * (scenario.faultConfig.percentile || 1),
     );
 
     const result: FaultInjectionResult = {
@@ -133,9 +133,7 @@ class ChaosExecutionSystem {
     }
 
     // Check circuit breaker
-    const cbState = this.circuitBreakerState.get(
-      scenario.targetProvider
-    );
+    const cbState = this.circuitBreakerState.get(scenario.targetProvider);
     if (cbState === "open") {
       result.failoverTriggered = true;
     }
@@ -143,9 +141,7 @@ class ChaosExecutionSystem {
     this.results.push(result);
 
     // Update metrics
-    const metrics = this.failoverMetrics.get(
-      scenario.targetProvider
-    );
+    const metrics = this.failoverMetrics.get(scenario.targetProvider);
     if (metrics) {
       metrics.totalRequests += requestCount;
       if (result.failoverTriggered) {
@@ -167,7 +163,7 @@ class ChaosExecutionSystem {
   applyLatencyFault(
     scenarioId: string,
     latencyMs: number,
-    percentile: number = 1
+    percentile: number = 1,
   ): boolean {
     const scenario = this.scenarios.get(scenarioId);
 
@@ -184,7 +180,7 @@ class ChaosExecutionSystem {
   applyErrorFault(
     scenarioId: string,
     errorRate: number,
-    statusCode: number = 500
+    statusCode: number = 500,
   ): boolean {
     const scenario = this.scenarios.get(scenarioId);
 
@@ -201,7 +197,7 @@ class ChaosExecutionSystem {
   applyTimeoutFault(
     scenarioId: string,
     timeoutMs: number,
-    percentile: number = 1
+    percentile: number = 1,
   ): boolean {
     const scenario = this.scenarios.get(scenarioId);
 
@@ -215,18 +211,14 @@ class ChaosExecutionSystem {
     return true;
   }
 
-  applyRateLimit(
-    scenarioId: string,
-    requestsPerSecond: number
-  ): boolean {
+  applyRateLimit(scenarioId: string, requestsPerSecond: number): boolean {
     const scenario = this.scenarios.get(scenarioId);
 
     if (!scenario) {
       return false;
     }
 
-    scenario.faultConfig.rateLimit =
-      requestsPerSecond;
+    scenario.faultConfig.rateLimit = requestsPerSecond;
 
     return true;
   }
@@ -235,15 +227,12 @@ class ChaosExecutionSystem {
     state: string;
     shouldBeOpen: boolean;
   } {
-    const cbState =
-      this.circuitBreakerState.get(provider) ||
-      "closed";
+    const cbState = this.circuitBreakerState.get(provider) || "closed";
     const metrics = this.failoverMetrics.get(provider);
 
     let shouldBeOpen = false;
     if (metrics) {
-      const failoverRate =
-        metrics.failoverCount / metrics.totalRequests;
+      const failoverRate = metrics.failoverCount / metrics.totalRequests;
       shouldBeOpen = failoverRate > 0.5;
     }
 
@@ -253,10 +242,7 @@ class ChaosExecutionSystem {
     };
   }
 
-  private scheduleAutoStop(
-    scenarioId: string,
-    durationMs: number
-  ): void {
+  private scheduleAutoStop(scenarioId: string, durationMs: number): void {
     setTimeout(() => {
       this.stopScenario(scenarioId);
     }, durationMs);
@@ -274,7 +260,7 @@ class ChaosExecutionSystem {
 
     // Remove injection rule
     this.injectionRules = this.injectionRules.filter(
-      (r) => r.scenarioId !== scenarioId
+      (r) => r.scenarioId !== scenarioId,
     );
 
     return true;
@@ -291,7 +277,7 @@ class ChaosExecutionSystem {
     scenario.endTime = new Date();
 
     this.injectionRules = this.injectionRules.filter(
-      (r) => r.scenarioId !== scenarioId
+      (r) => r.scenarioId !== scenarioId,
     );
 
     return true;
@@ -301,20 +287,16 @@ class ChaosExecutionSystem {
     return this.scenarios.get(scenarioId);
   }
 
-  getResults(
-    scenarioId?: string
-  ): FaultInjectionResult[] {
+  getResults(scenarioId?: string): FaultInjectionResult[] {
     if (scenarioId) {
-      return this.results.filter(
-        (r) => r.scenarioId === scenarioId
-      );
+      return this.results.filter((r) => r.scenarioId === scenarioId);
     }
     return [...this.results];
   }
 
   getRunningScenarios(): ChaosScenario[] {
     return Array.from(this.scenarios.values()).filter(
-      (s) => s.status === "running"
+      (s) => s.status === "running",
     );
   }
 
@@ -341,7 +323,7 @@ describe("Chaos Execution", () => {
         "stripe",
         "latency",
         { latencyMs: 5000, percentile: 0.1 },
-        60000
+        60000,
       );
 
       expect(scenario.id).toBeDefined();
@@ -355,7 +337,7 @@ describe("Chaos Execution", () => {
         "paypal",
         "error",
         { errorRate: 0.5, statusCode: 500 },
-        60000
+        60000,
       );
 
       expect(scenario.faultType).toBe("error");
@@ -368,7 +350,7 @@ describe("Chaos Execution", () => {
         "square",
         "timeout",
         { timeoutMs: 30000, percentile: 0.2 },
-        60000
+        60000,
       );
 
       expect(scenario.faultType).toBe("timeout");
@@ -382,15 +364,11 @@ describe("Chaos Execution", () => {
         "Latency Test",
         "stripe",
         "latency",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario.id);
-      const success = chaos.applyLatencyFault(
-        scenario.id,
-        5000,
-        0.1
-      );
+      const success = chaos.applyLatencyFault(scenario.id, 5000, 0.1);
 
       expect(success).toBe(true);
 
@@ -405,15 +383,11 @@ describe("Chaos Execution", () => {
         "Error Test",
         "paypal",
         "error",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario.id);
-      chaos.applyErrorFault(
-        scenario.id,
-        0.5,
-        500
-      );
+      chaos.applyErrorFault(scenario.id, 0.5, 500);
 
       const result = chaos.injectFault(scenario.id);
 
@@ -425,7 +399,7 @@ describe("Chaos Execution", () => {
         "Timeout Test",
         "square",
         "timeout",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario.id);
@@ -441,15 +415,12 @@ describe("Chaos Execution", () => {
         "Percentage Test",
         "stripe",
         "latency",
-        { percentile: 0.25 }
+        { percentile: 0.25 },
       );
 
       chaos.executeScenario(scenario.id);
 
-      const result = chaos.injectFault(
-        scenario.id,
-        1000
-      );
+      const result = chaos.injectFault(scenario.id, 1000);
 
       expect(result.affectedRequests).toBeLessThanOrEqual(250);
       expect(result.affectedRequests).toBeGreaterThan(0);
@@ -462,7 +433,7 @@ describe("Chaos Execution", () => {
         "Failover Test",
         "paypal",
         "error",
-        { errorRate: 0.75 }
+        { errorRate: 0.75 },
       );
 
       chaos.executeScenario(scenario.id);
@@ -477,7 +448,7 @@ describe("Chaos Execution", () => {
         "Failover Tracking",
         "stripe",
         "error",
-        { errorRate: 0.75 }
+        { errorRate: 0.75 },
       );
 
       chaos.executeScenario(scenario.id);
@@ -494,9 +465,7 @@ describe("Chaos Execution", () => {
     it("should validate circuit breaker state", () => {
       const validation = chaos.validateCircuitBreaker("stripe");
 
-      expect(
-        ["open", "closed", "half-open"]
-      ).toContain(validation.state);
+      expect(["open", "closed", "half-open"]).toContain(validation.state);
     });
 
     it("should detect when circuit breaker should open", () => {
@@ -504,7 +473,7 @@ describe("Chaos Execution", () => {
         "CB Validation",
         "stripe",
         "error",
-        { errorRate: 0.75 }
+        { errorRate: 0.75 },
       );
 
       chaos.executeScenario(scenario.id);
@@ -514,9 +483,7 @@ describe("Chaos Execution", () => {
         chaos.injectFault(scenario.id, 100);
       }
 
-      const validation = chaos.validateCircuitBreaker(
-        "stripe"
-      );
+      const validation = chaos.validateCircuitBreaker("stripe");
 
       expect(validation.shouldBeOpen).toBeDefined();
     });
@@ -528,13 +495,10 @@ describe("Chaos Execution", () => {
         "Rate Limit Test",
         "square",
         "latency",
-        {}
+        {},
       );
 
-      const success = chaos.applyRateLimit(
-        scenario.id,
-        100
-      );
+      const success = chaos.applyRateLimit(scenario.id, 100);
 
       expect(success).toBe(true);
 
@@ -549,7 +513,7 @@ describe("Chaos Execution", () => {
         "Execution Test",
         "stripe",
         "latency",
-        { latencyMs: 5000 }
+        { latencyMs: 5000 },
       );
 
       const success = chaos.executeScenario(scenario.id);
@@ -566,13 +530,13 @@ describe("Chaos Execution", () => {
         "Scenario 1",
         "stripe",
         "latency",
-        {}
+        {},
       );
       const scenario2 = chaos.createScenario(
         "Scenario 2",
         "paypal",
         "error",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario1.id);
@@ -590,7 +554,7 @@ describe("Chaos Execution", () => {
         "Stop Test",
         "stripe",
         "latency",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario.id);
@@ -608,14 +572,11 @@ describe("Chaos Execution", () => {
         "Fail Test",
         "square",
         "timeout",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario.id);
-      const success = chaos.failScenario(
-        scenario.id,
-        "Manual failure"
-      );
+      const success = chaos.failScenario(scenario.id, "Manual failure");
 
       expect(success).toBe(true);
 
@@ -628,7 +589,7 @@ describe("Chaos Execution", () => {
         "Cleanup Test",
         "stripe",
         "latency",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario.id);
@@ -636,9 +597,7 @@ describe("Chaos Execution", () => {
 
       const running = chaos.getRunningScenarios();
 
-      expect(
-        running.find((s) => s.id === scenario.id)
-      ).toBeUndefined();
+      expect(running.find((s) => s.id === scenario.id)).toBeUndefined();
     });
   });
 
@@ -648,7 +607,7 @@ describe("Chaos Execution", () => {
         "Results Test",
         "stripe",
         "latency",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario.id);
@@ -665,13 +624,13 @@ describe("Chaos Execution", () => {
         "Scenario 1",
         "stripe",
         "latency",
-        {}
+        {},
       );
       const scenario2 = chaos.createScenario(
         "Scenario 2",
         "paypal",
         "error",
-        {}
+        {},
       );
 
       chaos.executeScenario(scenario1.id);

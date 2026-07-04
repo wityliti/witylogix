@@ -2,22 +2,28 @@
 
 import type { GetInfo, GetAnnotations } from "react-router/internal";
 
-type Module = typeof import("../auth.callback.js")
+type Module = typeof import("../auth.callback.js");
 
 type Info = GetInfo<{
-  file: "routes/auth.callback.tsx",
-  module: Module
-}>
+  file: "routes/auth.callback.tsx";
+  module: Module;
+}>;
 
-type Matches = [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "routes/auth.callback";
-  module: typeof import("../auth.callback.js");
-}];
+type Matches = [
+  {
+    id: "root";
+    module: typeof import("../../root.js");
+  },
+  {
+    id: "routes/auth.callback";
+    module: typeof import("../auth.callback.js");
+  },
+];
 
-type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;
+type Annotations = GetAnnotations<
+  Info & { module: Module; matches: Matches },
+  false
+>;
 
 export namespace Route {
   // links
@@ -37,7 +43,8 @@ export namespace Route {
   export type MiddlewareFunction = Annotations["MiddlewareFunction"];
 
   // clientMiddleware
-  export type ClientMiddlewareFunction = Annotations["ClientMiddlewareFunction"];
+  export type ClientMiddlewareFunction =
+    Annotations["ClientMiddlewareFunction"];
 
   // loader
   export type LoaderArgs = Annotations["LoaderArgs"];

@@ -147,7 +147,9 @@ export async function run(
   const provider = await resolveProvider(ctx.config.provider.type);
   const services = configuredAppServices(ctx);
   await stopAppServices(ctx, provider, services);
-  ctx.logger.info(`stopped ${services.length} app service(s): ${services.join(", ")}`);
+  ctx.logger.info(
+    `stopped ${services.length} app service(s): ${services.join(", ")}`,
+  );
 
   // ── 5. Run migrations ──────────────────────────────────────────────────
 

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Settings,
   Power,
@@ -12,13 +12,13 @@ import {
   CheckCircle2,
   Clock,
   Copy,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface Provider {
   id: string;
   name: string;
   icon: React.ReactNode;
-  status: 'connected' | 'disconnected' | 'error';
+  status: "connected" | "disconnected" | "error";
   lastSync?: string;
   connectedAt?: string;
   config: {
@@ -45,12 +45,13 @@ export function ProviderList({
         <Card
           key={provider.id}
           className={cn(
-            'cursor-pointer transition-all hover:border-blue-500/50',
-            selectedProvider === provider.id && 'border-blue-500/80 bg-wl-bg-elevated'
+            "cursor-pointer transition-all hover:border-blue-500/50",
+            selectedProvider === provider.id &&
+              "border-blue-500/80 bg-wl-bg-elevated",
           )}
           onClick={() =>
             onSelectProvider(
-              selectedProvider === provider.id ? null : provider.id
+              selectedProvider === provider.id ? null : provider.id,
             )
           }
         >
@@ -64,38 +65,38 @@ export function ProviderList({
                     {provider.name}
                   </h3>
                   <p className="text-xs text-wl-text-tertiary mt-1">
-                    {provider.status === 'connected' &&
+                    {provider.status === "connected" &&
                       `Connected on ${provider.connectedAt}`}
-                    {provider.status === 'disconnected' && 'Not connected'}
-                    {provider.status === 'error' && 'Connection error'}
+                    {provider.status === "disconnected" && "Not connected"}
+                    {provider.status === "error" && "Connection error"}
                   </p>
                 </div>
               </div>
               <Badge
                 variant={
-                  provider.status === 'connected'
-                    ? 'success'
-                    : provider.status === 'error'
-                      ? 'danger'
-                      : 'default'
+                  provider.status === "connected"
+                    ? "success"
+                    : provider.status === "error"
+                      ? "danger"
+                      : "default"
                 }
                 className={cn(
-                  provider.status === 'connected' &&
-                    'bg-green-500/20 text-green-400 border border-green-500/50',
-                  provider.status === 'error' &&
-                    'bg-red-500/20 text-red-400 border border-red-500/50',
-                  provider.status === 'disconnected' &&
-                    'bg-wl-neutral-500/20 text-wl-text-secondary'
+                  provider.status === "connected" &&
+                    "bg-green-500/20 text-green-400 border border-green-500/50",
+                  provider.status === "error" &&
+                    "bg-red-500/20 text-red-400 border border-red-500/50",
+                  provider.status === "disconnected" &&
+                    "bg-wl-neutral-500/20 text-wl-text-secondary",
                 )}
               >
-                {provider.status === 'connected' && (
+                {provider.status === "connected" && (
                   <>
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     Connected
                   </>
                 )}
-                {provider.status === 'disconnected' && 'Disconnected'}
-                {provider.status === 'error' && (
+                {provider.status === "disconnected" && "Disconnected"}
+                {provider.status === "error" && (
                   <>
                     <AlertCircle className="w-3 h-3 mr-1" />
                     Error
@@ -105,7 +106,7 @@ export function ProviderList({
             </div>
 
             {/* Status & Sync Info */}
-            {provider.status === 'connected' && (
+            {provider.status === "connected" && (
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-wl-border-default">
                 <div className="flex-1">
                   <p className="text-xs font-medium text-wl-text-tertiary uppercase">
@@ -128,52 +129,54 @@ export function ProviderList({
             )}
 
             {/* Config Details (Expanded) */}
-            {selectedProvider === provider.id && provider.status === 'connected' && (
-              <div className="space-y-4 mb-6 pb-6 border-b border-wl-border-default">
-                {provider.config.channels && provider.config.channels.length > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-2">
-                      Connected Channels
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {provider.config.channels.map((channel) => (
-                        <Badge
-                          key={channel}
-                          variant="default"
-                          className="bg-wl-bg-surface text-white"
-                        >
-                          {channel}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            {selectedProvider === provider.id &&
+              provider.status === "connected" && (
+                <div className="space-y-4 mb-6 pb-6 border-b border-wl-border-default">
+                  {provider.config.channels &&
+                    provider.config.channels.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-2">
+                          Connected Channels
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {provider.config.channels.map((channel) => (
+                            <Badge
+                              key={channel}
+                              variant="default"
+                              className="bg-wl-bg-surface text-white"
+                            >
+                              {channel}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                {provider.config.webhookUrl && (
-                  <div>
-                    <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-2">
-                      Webhook URL
-                    </p>
-                    <div className="bg-wl-bg-surface rounded-lg p-3 flex items-center justify-between font-mono text-xs">
-                      <span className="text-wl-text-tertiary truncate">
-                        {provider.config.webhookUrl.substring(0, 50)}...
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-500 hover:bg-wl-bg-elevated"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
+                  {provider.config.webhookUrl && (
+                    <div>
+                      <p className="text-xs font-medium text-wl-text-tertiary uppercase mb-2">
+                        Webhook URL
+                      </p>
+                      <div className="bg-wl-bg-surface rounded-lg p-3 flex items-center justify-between font-mono text-xs">
+                        <span className="text-wl-text-tertiary truncate">
+                          {provider.config.webhookUrl.substring(0, 50)}...
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-blue-500 hover:bg-wl-bg-elevated"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
 
             {/* Actions */}
             <div className="flex gap-2">
-              {provider.status === 'connected' ? (
+              {provider.status === "connected" ? (
                 <>
                   <Button
                     variant="ghost"
@@ -192,7 +195,7 @@ export function ProviderList({
                     Disconnect
                   </Button>
                 </>
-              ) : provider.status === 'error' ? (
+              ) : provider.status === "error" ? (
                 <Button
                   variant="primary"
                   size="sm"

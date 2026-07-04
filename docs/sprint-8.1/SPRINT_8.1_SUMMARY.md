@@ -15,6 +15,7 @@
 ## Agent Contributions
 
 ### AR (CTO) — Routing Orchestrator
+
 - `packages/core/src/routing/routing-orchestrator.ts` — Multi-provider failover, health-weighted selection, automatic degradation
 - `packages/core/src/routing/geocoding-service.ts` — Multi-provider geocoding with caching and fuzzy matching
 - `packages/core/src/routing/route-cache.ts` — TTL-based route caching with LRU eviction
@@ -22,6 +23,7 @@
 - Unit tests for orchestrator and geocoding service
 
 ### DM (Frontend) — Live Delivery Map
+
 - `apps/dashboard/src/app/(dashboard)/tracking/page.tsx` — Full-page tracking view with map + sidebar
 - `apps/dashboard/src/components/maps/delivery-map.tsx` — Mapbox GL JS map with driver markers, route polylines, clustering
 - `apps/dashboard/src/components/maps/driver-popover.tsx` — Driver detail popup on marker click
@@ -31,6 +33,7 @@
 - `apps/dashboard/src/hooks/use-map-tracking.ts` — Real-time WebSocket tracking hook
 
 ### NK (Frontend Lead) — Route Planning Wizard
+
 - `apps/dashboard/src/app/(dashboard)/routes/plan/page.tsx` — 5-step wizard (stops, constraints, optimize, review, dispatch)
 - `apps/dashboard/src/app/(dashboard)/routes/page.tsx` — Routes list view with status filters
 - `apps/dashboard/src/components/routes/stop-list-editor.tsx` — Drag-and-drop stop management
@@ -39,6 +42,7 @@
 - `apps/dashboard/src/hooks/use-route-planner.ts` — Route planning state management hook
 
 ### RG (Backend Lead) — Routing SDKs
+
 - `packages/core/src/integrations/routing/google-routes-sdk.ts` — Google Routes API v2 client
 - `packages/core/src/integrations/routing/mapbox-directions-sdk.ts` — Mapbox Directions API client
 - `packages/core/src/integrations/routing/unified-routing-types.ts` — Shared types across providers
@@ -46,6 +50,7 @@
 - Unit tests for both SDKs and polyline utils
 
 ### SP (Full-stack) — Samsara Telematics
+
 - `packages/core/src/integrations/telematics/samsara-sdk-client.ts` — Full Samsara API client (vehicles, drivers, locations, alerts)
 - `packages/core/src/integrations/telematics/vehicle-feed-service.ts` — Real-time vehicle position feed with WebSocket push
 - `packages/core/src/integrations/telematics/telematics-types.ts` — Shared telematics types
@@ -53,6 +58,7 @@
 - Unit tests for Samsara SDK and vehicle feed
 
 ### VS (Component Dev) — Map UI Components
+
 - `apps/dashboard/src/components/maps/route-timeline.tsx` — Visual delivery timeline
 - `apps/dashboard/src/components/maps/driver-info-card.tsx` — Driver detail card
 - `apps/dashboard/src/components/maps/eta-countdown.tsx` — Live ETA countdown timer
@@ -61,6 +67,7 @@
 - `apps/dashboard/src/components/ui/animated-counter.tsx` — Smooth number animation
 
 ### PK (Sr. Backend) — Geotab Telematics
+
 - `packages/core/src/integrations/telematics/geotab-sdk-client.ts` — Geotab MyGeotab API client
 - `packages/core/src/integrations/telematics/telematics-normalizer-v2.ts` — Unified normalizer for Samsara + Geotab data
 - `packages/core/src/integrations/telematics/geofence-manager.ts` — Geofence CRUD + entry/exit detection
@@ -68,6 +75,7 @@
 - Unit tests for Geotab SDK, normalizer, and geofence manager
 
 ### KS (QA Lead) — Integration & E2E Tests
+
 - `tests/integration/routing/routing-accuracy.test.ts` — Cross-provider route comparison
 - `tests/integration/routing/geocoding-accuracy.test.ts` — Geocoding precision tests
 - `tests/integration/routing/failover-behavior.test.ts` — Provider failover simulation
@@ -75,12 +83,14 @@
 - `tests/e2e/tracking/map-rendering.spec.ts` — Playwright E2E for map rendering
 
 ### AM (Integration) — HERE & TomTom SDKs
+
 - `packages/core/src/integrations/routing/here-sdk-client.ts` — HERE Routing API v8 client
 - `packages/core/src/integrations/routing/tomtom-sdk-client.ts` — TomTom Routing API v1 client
 - `packages/core/src/integrations/routing/provider-comparison.ts` — Multi-provider comparison engine with scoring
 - Unit tests for HERE, TomTom, and comparison engine
 
 ### ZR (AI Engineer) — AI Route Optimization
+
 - `packages/core/src/ai/route-optimizer.ts` — Nearest-neighbor + 2-opt/3-opt local search
 - `packages/core/src/ai/eta-predictor.ts` — ML-based ETA prediction with traffic, weather, driver history
 - `packages/core/src/ai/delivery-zone-analyzer.ts` — Zone clustering and workload balancing
@@ -107,9 +117,9 @@
 
 ## Risks & Mitigations
 
-| Risk | Mitigation |
-|------|-----------|
-| Mapbox API rate limits on free tier | Route caching with TTL, request deduplication |
-| Telematics data staleness | Vehicle feed service with configurable polling intervals |
-| Route optimization latency | Background optimization with progress callbacks |
-| Provider API changes | Unified types layer isolates consumers from provider SDKs |
+| Risk                                | Mitigation                                                |
+| ----------------------------------- | --------------------------------------------------------- |
+| Mapbox API rate limits on free tier | Route caching with TTL, request deduplication             |
+| Telematics data staleness           | Vehicle feed service with configurable polling intervals  |
+| Route optimization latency          | Background optimization with progress callbacks           |
+| Provider API changes                | Unified types layer isolates consumers from provider SDKs |

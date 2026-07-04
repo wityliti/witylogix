@@ -1,76 +1,122 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   useChaosScenarios,
   useChaosExecution,
   useChaosHistory,
   type ChaosScenario,
   type ChaosExecution,
-} from '@/hooks/use-chaos-testing';
+} from "@/hooks/use-chaos-testing";
 
-const PROVIDERS = ['Stripe', 'PayPal', 'Square', 'Adyen', 'AWS S3'];
+const PROVIDERS = ["Stripe", "PayPal", "Square", "Adyen", "AWS S3"];
 const FAULT_TYPES = [
-  { value: 'latency', label: 'Latency Injection' },
-  { value: 'error', label: 'Error Responses' },
-  { value: 'timeout', label: 'Timeout' },
-  { value: 'partial_failure', label: 'Partial Failure' },
+  { value: "latency", label: "Latency Injection" },
+  { value: "error", label: "Error Responses" },
+  { value: "timeout", label: "Timeout" },
+  { value: "partial_failure", label: "Partial Failure" },
 ];
 const SEVERITIES = [
-  { value: 'low', label: 'Low', color: 'info' },
-  { value: 'medium', label: 'Medium', color: 'warning' },
-  { value: 'high', label: 'High', color: 'danger' },
+  { value: "low", label: "Low", color: "info" },
+  { value: "medium", label: "Medium", color: "warning" },
+  { value: "high", label: "High", color: "danger" },
 ];
 
 const PREDEFINED_SCENARIOS = [
-  { id: 'provider-down', name: 'Provider Down', faultType: 'timeout', severity: 'high' },
-  { id: 'degraded', name: 'Degraded Response', faultType: 'latency', severity: 'medium' },
-  { id: 'rate-limit', name: 'Rate Limit Exceeded', faultType: 'error', severity: 'high' },
-  { id: 'auth-failure', name: 'Auth Failure', faultType: 'error', severity: 'high' },
-  { id: 'partial-data', name: 'Partial Data Loss', faultType: 'partial_failure', severity: 'medium' },
+  {
+    id: "provider-down",
+    name: "Provider Down",
+    faultType: "timeout",
+    severity: "high",
+  },
+  {
+    id: "degraded",
+    name: "Degraded Response",
+    faultType: "latency",
+    severity: "medium",
+  },
+  {
+    id: "rate-limit",
+    name: "Rate Limit Exceeded",
+    faultType: "error",
+    severity: "high",
+  },
+  {
+    id: "auth-failure",
+    name: "Auth Failure",
+    faultType: "error",
+    severity: "high",
+  },
+  {
+    id: "partial-data",
+    name: "Partial Data Loss",
+    faultType: "partial_failure",
+    severity: "medium",
+  },
 ];
 
 export default function ChaosDashboard() {
-  const [activeTab, setActiveTab] = useState<'builder' | 'execution' | 'results' | 'history'>('builder');
-  const [selectedExecution, setSelectedExecution] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    "builder" | "execution" | "results" | "history"
+  >("builder");
+  const [selectedExecution, setSelectedExecution] = useState<string | null>(
+    null,
+  );
 
   // Builder form state
   const [builderForm, setBuilderForm] = useState({
-    name: '',
-    provider: '',
-    faultType: '',
-    severity: '',
+    name: "",
+    provider: "",
+    faultType: "",
+    severity: "",
     duration: 60,
-    endpoints: '',
+    endpoints: "",
   });
 
   const [recurringForm, setRecurringForm] = useState({
-    frequency: 'weekly' as const,
-    time: '02:00',
+    frequency: "weekly" as const,
+    time: "02:00",
   });
 
-  const { scenarios, executeScenario, createScenario, isLoading: scenariosLoading, error: scenariosError, fetchScenarios } = useChaosScenarios();
-  const { execution: currentExecution } = useChaosExecution(selectedExecution || '');
+  const {
+    scenarios,
+    executeScenario,
+    createScenario,
+    isLoading: scenariosLoading,
+    error: scenariosError,
+    fetchScenarios,
+  } = useChaosScenarios();
+  const { execution: currentExecution } = useChaosExecution(
+    selectedExecution || "",
+  );
   const { fetchHistory, error: historyError } = useChaosHistory();
 
   const handleCreateScenario = async (useTemplate?: string) => {
-    const payload: Omit<ChaosScenario, 'id' | 'createdAt'> = useTemplate
+    const payload: Omit<ChaosScenario, "id" | "createdAt"> = useTemplate
       ? {
-          name: PREDEFINED_SCENARIOS.find((p) => p.id === useTemplate)?.name || 'Scenario',
+          name:
+            PREDEFINED_SCENARIOS.find((p) => p.id === useTemplate)?.name ||
+            "Scenario",
           provider: PROVIDERS[0],
-          faultType: (PREDEFINED_SCENARIOS.find((p) => p.id === useTemplate)?.faultType ||
-            'latency') as any,
-          severity: (PREDEFINED_SCENARIOS.find((p) => p.id === useTemplate)?.severity ||
-            'medium') as any,
+          faultType: (PREDEFINED_SCENARIOS.find((p) => p.id === useTemplate)
+            ?.faultType || "latency") as any,
+          severity: (PREDEFINED_SCENARIOS.find((p) => p.id === useTemplate)
+            ?.severity || "medium") as any,
           duration: 60,
           targetEndpoints: [],
         }
@@ -80,14 +126,21 @@ export default function ChaosDashboard() {
           faultType: builderForm.faultType as any,
           severity: builderForm.severity as any,
           duration: builderForm.duration,
-          targetEndpoints: builderForm.endpoints.split(',').filter(Boolean),
+          targetEndpoints: builderForm.endpoints.split(",").filter(Boolean),
         };
 
     try {
       await createScenario(payload);
-      setBuilderForm({ name: '', provider: '', faultType: '', severity: '', duration: 60, endpoints: '' });
+      setBuilderForm({
+        name: "",
+        provider: "",
+        faultType: "",
+        severity: "",
+        duration: 60,
+        endpoints: "",
+      });
     } catch (error) {
-      console.error('Failed to create scenario:', error);
+      console.error("Failed to create scenario:", error);
     }
   };
 
@@ -95,20 +148,23 @@ export default function ChaosDashboard() {
     try {
       const execution = await executeScenario(scenarioId);
       setSelectedExecution(execution.id);
-      setActiveTab('execution');
+      setActiveTab("execution");
     } catch (error) {
-      console.error('Failed to execute scenario:', error);
+      console.error("Failed to execute scenario:", error);
     }
   };
 
   if (scenariosLoading) return <LoadingSkeleton />;
-  if (scenariosError) return <ErrorState message={scenariosError} onRetry={fetchScenarios} />;
+  if (scenariosError)
+    return <ErrorState message={scenariosError} onRetry={fetchScenarios} />;
 
   return (
     <div className="flex h-screen flex-col bg-wl-bg-root">
       {/* Header */}
       <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
-        <h1 className="text-3xl font-bold text-white">Chaos Testing Dashboard</h1>
+        <h1 className="text-3xl font-bold text-white">
+          Chaos Testing Dashboard
+        </h1>
         <p className="mt-2 text-wl-text-secondary">
           Test provider resilience with controlled fault injection
         </p>
@@ -117,26 +173,28 @@ export default function ChaosDashboard() {
       {/* Tabs */}
       <div className="border-b border-wl-border-default px-8">
         <div className="flex gap-8">
-          {(['builder', 'execution', 'results', 'history'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'border-blue-500 text-blue-500'
-                  : 'border-transparent text-wl-text-secondary hover:text-white'
-              )}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+          {(["builder", "execution", "results", "history"] as const).map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "border-b-2 px-1 py-4 text-sm font-medium transition-colors",
+                  activeTab === tab
+                    ? "border-blue-500 text-blue-500"
+                    : "border-transparent text-wl-text-secondary hover:text-white",
+                )}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ),
+          )}
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto px-8 py-6">
-        {activeTab === 'builder' && (
+        {activeTab === "builder" && (
           <div className="space-y-6">
             {/* Predefined Scenarios */}
             <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
@@ -152,10 +210,16 @@ export default function ChaosDashboard() {
                     className="h-auto justify-between p-4 text-left"
                   >
                     <div>
-                      <div className="font-medium text-white">{scenario.name}</div>
-                      <div className="text-xs text-wl-text-tertiary">{scenario.faultType}</div>
+                      <div className="font-medium text-white">
+                        {scenario.name}
+                      </div>
+                      <div className="text-xs text-wl-text-tertiary">
+                        {scenario.faultType}
+                      </div>
                     </div>
-                    <Badge variant={scenario.severity as any}>{scenario.severity}</Badge>
+                    <Badge variant={scenario.severity as any}>
+                      {scenario.severity}
+                    </Badge>
                   </Button>
                 ))}
               </div>
@@ -172,7 +236,9 @@ export default function ChaosDashboard() {
                     <Label className="text-white">Scenario Name</Label>
                     <Input
                       value={builderForm.name}
-                      onChange={(e) => setBuilderForm({ ...builderForm, name: e.target.value })}
+                      onChange={(e) =>
+                        setBuilderForm({ ...builderForm, name: e.target.value })
+                      }
                       placeholder="e.g., Black Friday Load Test"
                       className="mt-2 bg-wl-bg-root text-white"
                     />
@@ -181,7 +247,9 @@ export default function ChaosDashboard() {
                     <Label className="text-white">Provider</Label>
                     <Select
                       value={builderForm.provider}
-                      onValueChange={(value) => setBuilderForm({ ...builderForm, provider: value })}
+                      onValueChange={(value) =>
+                        setBuilderForm({ ...builderForm, provider: value })
+                      }
                     >
                       <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
                         <SelectValue placeholder="Select provider" />
@@ -202,7 +270,9 @@ export default function ChaosDashboard() {
                     <Label className="text-white">Fault Type</Label>
                     <Select
                       value={builderForm.faultType}
-                      onValueChange={(value) => setBuilderForm({ ...builderForm, faultType: value })}
+                      onValueChange={(value) =>
+                        setBuilderForm({ ...builderForm, faultType: value })
+                      }
                     >
                       <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
                         <SelectValue placeholder="Select fault type" />
@@ -220,14 +290,19 @@ export default function ChaosDashboard() {
                     <Label className="text-white">Severity</Label>
                     <Select
                       value={builderForm.severity}
-                      onValueChange={(value) => setBuilderForm({ ...builderForm, severity: value })}
+                      onValueChange={(value) =>
+                        setBuilderForm({ ...builderForm, severity: value })
+                      }
                     >
                       <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
                         <SelectValue placeholder="Select severity" />
                       </SelectTrigger>
                       <SelectContent>
                         {SEVERITIES.map((severity) => (
-                          <SelectItem key={severity.value} value={severity.value}>
+                          <SelectItem
+                            key={severity.value}
+                            value={severity.value}
+                          >
                             {severity.label}
                           </SelectItem>
                         ))}
@@ -240,7 +315,10 @@ export default function ChaosDashboard() {
                       type="number"
                       value={builderForm.duration}
                       onChange={(e) =>
-                        setBuilderForm({ ...builderForm, duration: parseInt(e.target.value) })
+                        setBuilderForm({
+                          ...builderForm,
+                          duration: parseInt(e.target.value),
+                        })
                       }
                       min="10"
                       max="3600"
@@ -250,16 +328,26 @@ export default function ChaosDashboard() {
                 </div>
 
                 <div>
-                  <Label className="text-white">Target Endpoints (comma-separated)</Label>
+                  <Label className="text-white">
+                    Target Endpoints (comma-separated)
+                  </Label>
                   <Input
                     value={builderForm.endpoints}
-                    onChange={(e) => setBuilderForm({ ...builderForm, endpoints: e.target.value })}
+                    onChange={(e) =>
+                      setBuilderForm({
+                        ...builderForm,
+                        endpoints: e.target.value,
+                      })
+                    }
                     placeholder="/api/checkout, /api/payment"
                     className="mt-2 bg-wl-bg-root text-white"
                   />
                 </div>
 
-                <Button variant="primary" onClick={() => handleCreateScenario()}>
+                <Button
+                  variant="primary"
+                  onClick={() => handleCreateScenario()}
+                >
                   Create Scenario
                 </Button>
               </div>
@@ -290,7 +378,12 @@ export default function ChaosDashboard() {
                     <Input
                       type="time"
                       value={recurringForm.time}
-                      onChange={(e) => setRecurringForm({ ...recurringForm, time: e.target.value })}
+                      onChange={(e) =>
+                        setRecurringForm({
+                          ...recurringForm,
+                          time: e.target.value,
+                        })
+                      }
                       className="mt-2 bg-wl-bg-root text-white"
                     />
                   </div>
@@ -301,19 +394,23 @@ export default function ChaosDashboard() {
           </div>
         )}
 
-        {activeTab === 'execution' && currentExecution && (
+        {activeTab === "execution" && currentExecution && (
           <ExecutionMonitor execution={currentExecution} />
         )}
 
-        {activeTab === 'results' && selectedExecution && (
+        {activeTab === "results" && selectedExecution && (
           <ResultsViewer executionId={selectedExecution} />
         )}
 
-        {activeTab === 'history' && (
-          historyError
-            ? <ErrorState message={historyError} onRetry={fetchHistory} />
-            : <HistoryTable scenarios={scenarios} onExecute={handleExecuteScenario} />
-        )}
+        {activeTab === "history" &&
+          (historyError ? (
+            <ErrorState message={historyError} onRetry={fetchHistory} />
+          ) : (
+            <HistoryTable
+              scenarios={scenarios}
+              onExecute={handleExecuteScenario}
+            />
+          ))}
       </div>
     </div>
   );
@@ -325,7 +422,9 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Execution Progress</h2>
+            <h2 className="text-lg font-semibold text-white">
+              Execution Progress
+            </h2>
             <Badge variant={execution.status as any}>{execution.status}</Badge>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
@@ -334,14 +433,28 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
               style={{ width: `${execution.progress}%` }}
             />
           </div>
-          <div className="mt-2 text-sm text-wl-text-tertiary">{execution.progress}% complete</div>
+          <div className="mt-2 text-sm text-wl-text-tertiary">
+            {execution.progress}% complete
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <MetricCard label="Requests Impacted" value={execution.metrics.requestsImpacted} />
-          <MetricCard label="Error Rate" value={`${(execution.metrics.errorRate * 100).toFixed(1)}%`} />
-          <MetricCard label="Latency" value={`${execution.metrics.latencyMs}ms`} />
-          <MetricCard label="Circuit Breaker Trips" value={execution.metrics.circuitBreakerTrips} />
+          <MetricCard
+            label="Requests Impacted"
+            value={execution.metrics.requestsImpacted}
+          />
+          <MetricCard
+            label="Error Rate"
+            value={`${(execution.metrics.errorRate * 100).toFixed(1)}%`}
+          />
+          <MetricCard
+            label="Latency"
+            value={`${execution.metrics.latencyMs}ms`}
+          />
+          <MetricCard
+            label="Circuit Breaker Trips"
+            value={execution.metrics.circuitBreakerTrips}
+          />
         </div>
 
         <div>
@@ -353,8 +466,8 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
                 className="flex items-center justify-between rounded border border-wl-border-default bg-wl-bg-root p-3"
               >
                 <div className="text-sm text-white">{assertion.name}</div>
-                <Badge variant={assertion.passed ? 'success' : 'danger'}>
-                  {assertion.passed ? 'Passed' : 'Failed'}
+                <Badge variant={assertion.passed ? "success" : "danger"}>
+                  {assertion.passed ? "Passed" : "Failed"}
                 </Badge>
               </div>
             ))}
@@ -370,7 +483,9 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
 function ResultsViewer({ executionId }: { executionId: string }) {
   return (
     <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-      <div className="text-center text-wl-text-tertiary">Results for execution {executionId}</div>
+      <div className="text-center text-wl-text-tertiary">
+        Results for execution {executionId}
+      </div>
     </Card>
   );
 }
@@ -384,7 +499,9 @@ function HistoryTable({
 }) {
   return (
     <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-      <h2 className="mb-4 text-lg font-semibold text-white">Scenario History</h2>
+      <h2 className="mb-4 text-lg font-semibold text-white">
+        Scenario History
+      </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -398,12 +515,21 @@ function HistoryTable({
           </thead>
           <tbody>
             {scenarios.map((scenario) => (
-              <tr key={scenario.id} className="border-b border-wl-border-default">
+              <tr
+                key={scenario.id}
+                className="border-b border-wl-border-default"
+              >
                 <td className="px-4 py-2 text-white">{scenario.name}</td>
-                <td className="px-4 py-2 text-wl-text-tertiary">{scenario.provider}</td>
-                <td className="px-4 py-2 text-wl-text-tertiary">{scenario.faultType}</td>
+                <td className="px-4 py-2 text-wl-text-tertiary">
+                  {scenario.provider}
+                </td>
+                <td className="px-4 py-2 text-wl-text-tertiary">
+                  {scenario.faultType}
+                </td>
                 <td className="px-4 py-2">
-                  <Badge variant={scenario.severity as any}>{scenario.severity}</Badge>
+                  <Badge variant={scenario.severity as any}>
+                    {scenario.severity}
+                  </Badge>
                 </td>
                 <td className="px-4 py-2">
                   <Button
@@ -423,7 +549,13 @@ function HistoryTable({
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string | number }) {
+function MetricCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
   return (
     <div className="rounded border border-wl-border-default bg-wl-bg-root p-4">
       <div className="text-xs text-wl-text-tertiary">{label}</div>

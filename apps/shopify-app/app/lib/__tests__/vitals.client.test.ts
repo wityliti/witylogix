@@ -19,9 +19,15 @@ const capturedCallbacks: {
 } = { lcp: null, cls: null, inp: null };
 
 vi.mock("web-vitals", () => ({
-  onLCP: vi.fn((cb: (m: Metric) => void) => { capturedCallbacks.lcp = cb; }),
-  onCLS: vi.fn((cb: (m: Metric) => void) => { capturedCallbacks.cls = cb; }),
-  onINP: vi.fn((cb: (m: Metric) => void) => { capturedCallbacks.inp = cb; }),
+  onLCP: vi.fn((cb: (m: Metric) => void) => {
+    capturedCallbacks.lcp = cb;
+  }),
+  onCLS: vi.fn((cb: (m: Metric) => void) => {
+    capturedCallbacks.cls = cb;
+  }),
+  onINP: vi.fn((cb: (m: Metric) => void) => {
+    capturedCallbacks.inp = cb;
+  }),
 }));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -65,7 +71,7 @@ describe("initVitals", () => {
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     // Simulate production mode by default — tests that check console output will override
-    vi.stubEnv('DEV', false);
+    vi.stubEnv("DEV", false);
 
     // Reset module so initVitals is fresh for each test
     vi.resetModules();
@@ -113,7 +119,9 @@ describe("initVitals", () => {
     initVitals("https://api.witylogix.com");
 
     capturedCallbacks.lcp!(makeMetric("LCP", 1200));
-    const payload = JSON.parse(await (sendBeaconMock.mock.calls[0][1] as Blob).text());
+    const payload = JSON.parse(
+      await (sendBeaconMock.mock.calls[0][1] as Blob).text(),
+    );
     expect(payload.rating).toBe("good");
   });
 
@@ -122,7 +130,9 @@ describe("initVitals", () => {
     initVitals("https://api.witylogix.com");
 
     capturedCallbacks.lcp!(makeMetric("LCP", 3000));
-    const payload = JSON.parse(await (sendBeaconMock.mock.calls[0][1] as Blob).text());
+    const payload = JSON.parse(
+      await (sendBeaconMock.mock.calls[0][1] as Blob).text(),
+    );
     expect(payload.rating).toBe("needs-improvement");
   });
 
@@ -131,7 +141,9 @@ describe("initVitals", () => {
     initVitals("https://api.witylogix.com");
 
     capturedCallbacks.lcp!(makeMetric("LCP", 6000));
-    const payload = JSON.parse(await (sendBeaconMock.mock.calls[0][1] as Blob).text());
+    const payload = JSON.parse(
+      await (sendBeaconMock.mock.calls[0][1] as Blob).text(),
+    );
     expect(payload.rating).toBe("poor");
   });
 
@@ -140,7 +152,9 @@ describe("initVitals", () => {
     initVitals("https://api.witylogix.com");
 
     capturedCallbacks.cls!(makeMetric("CLS", 0.05));
-    const payload = JSON.parse(await (sendBeaconMock.mock.calls[0][1] as Blob).text());
+    const payload = JSON.parse(
+      await (sendBeaconMock.mock.calls[0][1] as Blob).text(),
+    );
     expect(payload.rating).toBe("good");
   });
 
@@ -149,12 +163,14 @@ describe("initVitals", () => {
     initVitals("https://api.witylogix.com");
 
     capturedCallbacks.inp!(makeMetric("INP", 250));
-    const payload = JSON.parse(await (sendBeaconMock.mock.calls[0][1] as Blob).text());
+    const payload = JSON.parse(
+      await (sendBeaconMock.mock.calls[0][1] as Blob).text(),
+    );
     expect(payload.rating).toBe("needs-improvement");
   });
 
   it("does not call sendBeacon when apiBaseUrl is null", async () => {
-    vi.stubEnv('DEV', true);
+    vi.stubEnv("DEV", true);
     vi.resetModules();
     const { initVitals } = await import("../vitals.client");
     initVitals(null);

@@ -6,43 +6,63 @@
 
 // ─── ENUMS & CONSTANTS ──────────────────────────────────────────────────────
 
-export type FieldServiceProvider = 'servicetitan' | 'jobber' | 'housecall-pro' | 'fieldedge';
+export type FieldServiceProvider =
+  | "servicetitan"
+  | "jobber"
+  | "housecall-pro"
+  | "fieldedge";
 
 export type JobStatus =
-  | 'draft'
-  | 'scheduled'
-  | 'in_progress'
-  | 'paused'
-  | 'completed'
-  | 'cancelled'
-  | 'invoiced'
-  | 'on_hold';
+  | "draft"
+  | "scheduled"
+  | "in_progress"
+  | "paused"
+  | "completed"
+  | "cancelled"
+  | "invoiced"
+  | "on_hold";
 
 export type WorkOrderStatus =
-  | 'open'
-  | 'assigned'
-  | 'in_progress'
-  | 'completed'
-  | 'closed'
-  | 'cancelled';
+  | "open"
+  | "assigned"
+  | "in_progress"
+  | "completed"
+  | "closed"
+  | "cancelled";
 
-export type TechnicianStatus = 'available' | 'busy' | 'on_break' | 'offline' | 'unavailable';
+export type TechnicianStatus =
+  | "available"
+  | "busy"
+  | "on_break"
+  | "offline"
+  | "unavailable";
 
-export type EstimateStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+export type EstimateStatus =
+  | "draft"
+  | "sent"
+  | "accepted"
+  | "rejected"
+  | "expired";
 
 export type InvoiceStatus =
-  | 'draft'
-  | 'sent'
-  | 'viewed'
-  | 'overdue'
-  | 'paid'
-  | 'partially_paid'
-  | 'cancelled'
-  | 'refunded';
+  | "draft"
+  | "sent"
+  | "viewed"
+  | "overdue"
+  | "paid"
+  | "partially_paid"
+  | "cancelled"
+  | "refunded";
 
-export type PriorityLevel = 'low' | 'medium' | 'high' | 'urgent';
+export type PriorityLevel = "low" | "medium" | "high" | "urgent";
 
-export type DispatchStatus = 'unassigned' | 'assigned' | 'accepted' | 'en_route' | 'completed' | 'cancelled';
+export type DispatchStatus =
+  | "unassigned"
+  | "assigned"
+  | "accepted"
+  | "en_route"
+  | "completed"
+  | "cancelled";
 
 // ─── CORE FIELD SERVICE ENTITIES ────────────────────────────────────────────
 
@@ -151,7 +171,7 @@ export interface TechnicianCertification {
 export interface VehicleAssignment {
   vehicleId: string;
   assignedAt: Date;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export interface Availability {
@@ -179,12 +199,12 @@ export interface ServiceTerritory {
   boundary?: GeoPolygon;
   managers?: string[]; // technician IDs
   assignedTechnicians?: string[];
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   metadata?: Record<string, unknown>;
 }
 
 export interface GeoPolygon {
-  type: 'Polygon';
+  type: "Polygon";
   coordinates: Array<Array<[number, number]>>; // GeoJSON format
 }
 
@@ -200,7 +220,7 @@ export interface Equipment {
   manufacturer?: string;
   model?: string;
   serialNumber?: string;
-  status: 'active' | 'inactive' | 'maintenance' | 'retired';
+  status: "active" | "inactive" | "maintenance" | "retired";
   location?: ServiceLocation;
   owner?: string; // technician or company ID
   purchaseDate?: Date;
@@ -248,7 +268,7 @@ export interface Estimate {
   taxRate?: number;
   taxAmount?: number;
   discount?: {
-    type: 'percentage' | 'fixed';
+    type: "percentage" | "fixed";
     value: number;
   };
   total: number;
@@ -322,14 +342,20 @@ export interface InvoiceLineItem {
 export interface PaymentRecord {
   id: string;
   amount: number;
-  paymentMethod: 'cash' | 'check' | 'card' | 'bank_transfer' | 'online' | 'other';
+  paymentMethod:
+    | "cash"
+    | "check"
+    | "card"
+    | "bank_transfer"
+    | "online"
+    | "other";
   paidAt: Date;
   reference?: string;
 }
 
 export interface DueReminder {
   sentAt: Date;
-  type: 'email' | 'sms' | 'in_app';
+  type: "email" | "sms" | "in_app";
 }
 
 /**
@@ -346,8 +372,8 @@ export interface CustomerRecord {
   mobile?: string;
   fax?: string;
   website?: string;
-  type: 'residential' | 'commercial' | 'both';
-  status: 'active' | 'inactive' | 'blocked';
+  type: "residential" | "commercial" | "both";
+  status: "active" | "inactive" | "blocked";
   primaryAddress: ServiceLocation;
   billingAddress?: ServiceLocation;
   shippingAddress?: ServiceLocation;
@@ -371,14 +397,14 @@ export interface Membership {
   memberId: string;
   customerId: string;
   customerName?: string;
-  planType: 'maintenance' | 'protection' | 'support' | 'premium' | 'custom';
+  planType: "maintenance" | "protection" | "support" | "premium" | "custom";
   planName: string;
   description?: string;
   startDate: Date;
   endDate?: Date;
   renewalDate?: Date;
-  status: 'active' | 'expired' | 'cancelled' | 'suspended';
-  billingFrequency: 'monthly' | 'quarterly' | 'annual';
+  status: "active" | "expired" | "cancelled" | "suspended";
+  billingFrequency: "monthly" | "quarterly" | "annual";
   price: number;
   currency?: string;
   includedServices?: string[];
@@ -398,14 +424,14 @@ export interface Schedule {
   technician?: string; // technician ID
   dateStart: Date;
   dateEnd: Date;
-  type: 'available' | 'unavailable' | 'training' | 'vacation' | 'sick_leave';
+  type: "available" | "unavailable" | "training" | "vacation" | "sick_leave";
   recurring?: RecurringPattern;
   notes?: string;
   metadata?: Record<string, unknown>;
 }
 
 export interface RecurringPattern {
-  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
   interval: number;
   daysOfWeek?: number[]; // 0-6
   endDate?: Date;
@@ -457,7 +483,7 @@ export interface FieldServiceConnection {
   tenantId: string;
   provider: FieldServiceProvider;
   connectionName?: string;
-  status: 'active' | 'inactive' | 'error' | 'expired' | 'pending_auth';
+  status: "active" | "inactive" | "error" | "expired" | "pending_auth";
   credentials: FieldServiceCredentials;
   config: FieldServiceConnectionConfig;
   lastSyncAt?: Date;
@@ -538,7 +564,14 @@ export interface FieldServiceFieldMapping {
   entity: string;
   witylogixField: string;
   providerField: string;
-  fieldType: 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'currency' | 'enum';
+  fieldType:
+    | "string"
+    | "number"
+    | "boolean"
+    | "date"
+    | "datetime"
+    | "currency"
+    | "enum";
   readOnly?: boolean;
   required?: boolean;
   metadata?: Record<string, unknown>;
@@ -564,7 +597,11 @@ export interface DispatchConstraints {
   territoryRestrictions?: Map<string, string>;
 }
 
-export type OptimizationGoal = 'minimize_travel_time' | 'balance_workload' | 'respect_skills' | 'maximize_completion';
+export type OptimizationGoal =
+  | "minimize_travel_time"
+  | "balance_workload"
+  | "respect_skills"
+  | "maximize_completion";
 
 /**
  * Dispatch optimization result
@@ -596,7 +633,7 @@ export interface FieldServiceBatchResult<T = unknown> {
   results: Array<{
     recordId: string;
     externalId?: string;
-    status: 'success' | 'failed' | 'skipped';
+    status: "success" | "failed" | "skipped";
     data?: T;
     error?: string;
   }>;

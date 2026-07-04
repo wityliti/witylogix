@@ -18,10 +18,10 @@ export type {
   PosOrderStats,
   PosOrderListResponse,
   PosOrderFilters,
-} from './types';
+} from "./types";
 
 // Export classes and functions
-export { PosManager } from './pos-manager';
+export { PosManager } from "./pos-manager";
 export {
   createForm,
   getForm,
@@ -30,4 +30,4 @@ export {
   deleteForm,
   validateSubmission,
   getDefaultForm,
-} from './form-builder';
+} from "./form-builder";

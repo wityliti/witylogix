@@ -92,7 +92,9 @@ class RateLimiter {
    */
   async waitIfNeeded(): Promise<void> {
     const now = Date.now();
-    this.requestTimes = this.requestTimes.filter((t) => t > now - this.windowMs);
+    this.requestTimes = this.requestTimes.filter(
+      (t) => t > now - this.windowMs,
+    );
 
     if (this.requestTimes.length >= this.maxRequests) {
       const oldestTime = this.requestTimes[0];
@@ -189,7 +191,9 @@ export class WooCommerceClient {
     const options: RequestInit = {
       method,
       headers,
-      signal: this.config.timeout ? AbortSignal.timeout(this.config.timeout) : undefined,
+      signal: this.config.timeout
+        ? AbortSignal.timeout(this.config.timeout)
+        : undefined,
     };
 
     if (body && (method === "POST" || method === "PUT")) {
@@ -240,10 +244,7 @@ export class WooCommerceClient {
   /**
    * GET request
    */
-  async get<T>(
-    endpoint: string,
-    params?: WCPaginationOptions,
-  ): Promise<T> {
+  async get<T>(endpoint: string, params?: WCPaginationOptions): Promise<T> {
     const url = this.buildUrl(endpoint, params);
     return this.makeRequest<T>("GET", url);
   }
@@ -251,10 +252,7 @@ export class WooCommerceClient {
   /**
    * POST request
    */
-  async post<T>(
-    endpoint: string,
-    data: Record<string, unknown>,
-  ): Promise<T> {
+  async post<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
     const url = this.buildUrl(endpoint);
     return this.makeRequest<T>("POST", url, data);
   }
@@ -262,10 +260,7 @@ export class WooCommerceClient {
   /**
    * PUT request
    */
-  async put<T>(
-    endpoint: string,
-    data: Record<string, unknown>,
-  ): Promise<T> {
+  async put<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
     const url = this.buildUrl(endpoint);
     return this.makeRequest<T>("PUT", url, data);
   }
@@ -297,7 +292,10 @@ export class WooCommerceClient {
       before?: string;
     },
   ): Promise<WCListResponse<WCOrder>> {
-    const response = await this.get<WCOrder[]>("/orders", params as WCPaginationOptions);
+    const response = await this.get<WCOrder[]>(
+      "/orders",
+      params as WCPaginationOptions,
+    );
     return {
       data: response,
     };
@@ -313,11 +311,11 @@ export class WooCommerceClient {
   /**
    * Update order
    */
-  async updateOrder(
-    orderId: number,
-    data: Partial<WCOrder>,
-  ): Promise<WCOrder> {
-    return this.put<WCOrder>(`/orders/${orderId}`, data as Record<string, unknown>);
+  async updateOrder(orderId: number, data: Partial<WCOrder>): Promise<WCOrder> {
+    return this.put<WCOrder>(
+      `/orders/${orderId}`,
+      data as Record<string, unknown>,
+    );
   }
 
   /**
@@ -348,7 +346,10 @@ export class WooCommerceClient {
       sku?: string;
     },
   ): Promise<WCListResponse<WCProduct>> {
-    const response = await this.get<WCProduct[]>("/products", params as WCPaginationOptions);
+    const response = await this.get<WCProduct[]>(
+      "/products",
+      params as WCPaginationOptions,
+    );
     return {
       data: response,
     };
@@ -442,7 +443,10 @@ export class WooCommerceClient {
       role?: string;
     },
   ): Promise<WCListResponse<WCCustomer>> {
-    const response = await this.get<WCCustomer[]>("/customers", params as WCPaginationOptions);
+    const response = await this.get<WCCustomer[]>(
+      "/customers",
+      params as WCPaginationOptions,
+    );
     return {
       data: response,
     };

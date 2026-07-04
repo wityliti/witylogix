@@ -4,15 +4,21 @@
  * Supports multiple strategies: hashing, redaction, generalization
  */
 
-import { createHash } from 'crypto';
-import { AnonymizationConfig, AnonymizationReportData, ComplianceError, DatabaseRecord, PIIField } from './types';
+import { createHash } from "crypto";
+import {
+  AnonymizationConfig,
+  AnonymizationReportData,
+  ComplianceError,
+  DatabaseRecord,
+  PIIField,
+} from "./types";
 
 /**
  * Data Anonymizer
  * Handles anonymization of personally identifiable information
  */
 export class DataAnonymizer {
-  private readonly DEFAULT_SALT = 'witylogix-anonymization-salt';
+  private readonly DEFAULT_SALT = "witylogix-anonymization-salt";
   private processingStats = {
     total: 0,
     successCount: 0,
@@ -32,17 +38,20 @@ export class DataAnonymizer {
   anonymizeRecord(
     record: DatabaseRecord,
     config: AnonymizationConfig,
-    piiFields: PIIField[]
+    piiFields: PIIField[],
   ): DatabaseRecord {
     const anonymized = { ...record };
 
     for (const field of piiFields) {
-      if (anonymized[field.fieldName] !== undefined && anonymized[field.fieldName] !== null) {
+      if (
+        anonymized[field.fieldName] !== undefined &&
+        anonymized[field.fieldName] !== null
+      ) {
         try {
           anonymized[field.fieldName] = this.applyMaskingStrategy(
             anonymized[field.fieldName],
             field.maskingStrategy,
-            config
+            config,
           );
           this.updateFieldStats(field.fieldName);
           this.updateStrategyStats(field.maskingStrategy);
@@ -60,7 +69,11 @@ export class DataAnonymizer {
    * Apply the appropriate masking strategy to a value
    * @private
    */
-  private applyMaskingStrategy(value: unknown, strategy: string, config: AnonymizationConfig): unknown {
+  private applyMaskingStrategy(
+    value: unknown,
+    strategy: string,
+    config: AnonymizationConfig,
+  ): unknown {
     if (value === null || value === undefined) {
       return value;
     }
@@ -68,14 +81,20 @@ export class DataAnonymizer {
     const stringValue = String(value);
 
     switch (strategy) {
-      case 'hash':
+      case "hash":
         return this.hashPII(stringValue, config.salt || this.DEFAULT_SALT);
-      case 'pseudonymize':
-        return this.pseudonymizePII(stringValue, config.salt || this.DEFAULT_SALT);
-      case 'redact':
+      case "pseudonymize":
+        return this.pseudonymizePII(
+          stringValue,
+          config.salt || this.DEFAULT_SALT,
+        );
+      case "redact":
         return this.redactField(stringValue, config.visibleCharacters || 0);
-      case 'generalize':
-        return this.generalizeValue(stringValue, config.generalizationLevel || 'city');
+      case "generalize":
+        return this.generalizeValue(
+          stringValue,
+          config.generalizationLevel || "city",
+        );
       default:
         return value;
     }
@@ -90,9 +109,9 @@ export class DataAnonymizer {
    * @returns SHA-256 hash with salt
    */
   hashPII(value: string, salt: string): string {
-    if (!value) return '';
+    if (!value) return "";
     const salted = `${salt}:${value}`;
-    return createHash('sha256').update(salted).digest('hex');
+    return createHash("sha256").update(salted).digest("hex");
   }
 
   /**
@@ -104,7 +123,7 @@ export class DataAnonymizer {
    * @returns Deterministic hash with prefix
    */
   pseudonymizePII(value: string, salt: string): string {
-    if (!value) return 'PSEUDO_NULL';
+    if (!value) return "PSEUDO_NULL";
     const hash = this.hashPII(value, salt);
     return `PSEUDO_${hash.substring(0, 16)}`;
   }
@@ -118,12 +137,12 @@ export class DataAnonymizer {
    * @returns Partially redacted value
    */
   redactField(value: string, visibleChars: number): string {
-    if (!value || value.length === 0) return '';
-    if (visibleChars <= 0) return '*'.repeat(value.length);
+    if (!value || value.length === 0) return "";
+    if (visibleChars <= 0) return "*".repeat(value.length);
     if (visibleChars >= value.length) return value;
 
     const redactedLength = value.length - visibleChars;
-    return '*'.repeat(redactedLength) + value.substring(redactedLength);
+    return "*".repeat(redactedLength) + value.substring(redactedLength);
   }
 
   /**
@@ -134,22 +153,25 @@ export class DataAnonymizer {
    * @param level - Generalization level (city, region, country)
    * @returns Generalized location
    */
-  generalizeLocation(address: string, level: 'city' | 'region' | 'country' = 'city'): string {
-    if (!address) return '';
+  generalizeLocation(
+    address: string,
+    level: "city" | "region" | "country" = "city",
+  ): string {
+    if (!address) return "";
 
-    const parts = address.split(',').map(p => p.trim());
+    const parts = address.split(",").map((p) => p.trim());
 
     switch (level) {
-      case 'country':
+      case "country":
         // Return only country (typically last part)
-        return parts[parts.length - 1] || '';
-      case 'region':
+        return parts[parts.length - 1] || "";
+      case "region":
         // Return state/region and country
-        return parts.slice(-2).join(', ') || '';
-      case 'city':
+        return parts.slice(-2).join(", ") || "";
+      case "city":
       default:
         // Return city and region
-        return parts.slice(-3, -1).join(', ') || '';
+        return parts.slice(-3, -1).join(", ") || "";
     }
   }
 
@@ -157,9 +179,12 @@ export class DataAnonymizer {
    * Generalize a value based on type inference
    * @private
    */
-  private generalizeValue(value: string, level: 'city' | 'region' | 'country'): string {
+  private generalizeValue(
+    value: string,
+    level: "city" | "region" | "country",
+  ): string {
     // Check if it looks like an address
-    if (value.includes(',') || value.includes('St') || value.includes('Ave')) {
+    if (value.includes(",") || value.includes("St") || value.includes("Ave")) {
       return this.generalizeLocation(value, level);
     }
     // For other values, apply simple redaction
@@ -178,7 +203,7 @@ export class DataAnonymizer {
   anonymizeInBatch(
     records: DatabaseRecord[],
     config: AnonymizationConfig,
-    piiFields: PIIField[]
+    piiFields: PIIField[],
   ): DatabaseRecord[] {
     this.processingStats.total = records.length;
     this.processingStats.successCount = 0;
@@ -186,12 +211,12 @@ export class DataAnonymizer {
     this.processingStats.fieldStats.clear();
     this.processingStats.strategyStats.clear();
 
-    const anonymized = records.map(record => {
+    const anonymized = records.map((record) => {
       try {
         return this.anonymizeRecord(record, config, piiFields);
       } catch (error) {
         this.processingStats.errorCount++;
-        console.error('Batch anonymization error:', error);
+        console.error("Batch anonymization error:", error);
         return record;
       }
     });
@@ -211,13 +236,17 @@ export class DataAnonymizer {
       fieldStats[field] = count;
     }
 
-    for (const [strategy, count] of this.processingStats.strategyStats.entries()) {
+    for (const [
+      strategy,
+      count,
+    ] of this.processingStats.strategyStats.entries()) {
       strategyStats[strategy] = count;
     }
 
-    const successRate = this.processingStats.total > 0
-      ? (this.processingStats.successCount / this.processingStats.total) * 100
-      : 0;
+    const successRate =
+      this.processingStats.total > 0
+        ? (this.processingStats.successCount / this.processingStats.total) * 100
+        : 0;
 
     return {
       timestamp: new Date(),
@@ -264,16 +293,24 @@ export class DataAnonymizer {
    * @param config - Configuration to validate
    * @returns Validation result with any errors
    */
-  validateConfig(config: AnonymizationConfig): { valid: boolean; errors: string[] } {
+  validateConfig(config: AnonymizationConfig): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
-    if (!config.strategy) errors.push('Missing anonymization strategy');
-    if (!['hash', 'pseudonymize', 'redact', 'generalize'].includes(config.strategy)) {
+    if (!config.strategy) errors.push("Missing anonymization strategy");
+    if (
+      !["hash", "pseudonymize", "redact", "generalize"].includes(
+        config.strategy,
+      )
+    ) {
       errors.push(`Invalid strategy: ${config.strategy}`);
     }
-    if (config.retentionDays < 0) errors.push('retentionDays must be non-negative');
+    if (config.retentionDays < 0)
+      errors.push("retentionDays must be non-negative");
     if (config.visibleCharacters && config.visibleCharacters < 0) {
-      errors.push('visibleCharacters must be non-negative');
+      errors.push("visibleCharacters must be non-negative");
     }
 
     return {

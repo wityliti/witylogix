@@ -93,7 +93,10 @@ export interface UseCollaborationReturn {
   messages: Message[];
   isLoadingMessages: boolean;
   loadOlderMessages: () => Promise<void>;
-  sendMessage: (content: string, attachments?: Message["attachments"]) => Promise<void>;
+  sendMessage: (
+    content: string,
+    attachments?: Message["attachments"],
+  ) => Promise<void>;
   editMessage: (messageId: string, content: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   pinMessage: (messageId: string) => Promise<void>;
@@ -123,7 +126,9 @@ export interface UseCollaborationReturn {
 const TYPING_INDICATOR_TIMEOUT = 3000;
 const MESSAGE_BATCH_SIZE = 50;
 
-export function useCollaboration(config: UseCollaborationConfig): UseCollaborationReturn {
+export function useCollaboration(
+  config: UseCollaborationConfig,
+): UseCollaborationReturn {
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -166,19 +171,20 @@ export function useCollaboration(config: UseCollaborationConfig): UseCollaborati
       setChannels(data);
     });
 
-    socket.on("messages:batch", (data: { messages: Message[]; offset: number }) => {
-      setMessages((prev) => [...data.messages, ...prev]);
-      setIsLoadingMessages(false);
-    });
+    socket.on(
+      "messages:batch",
+      (data: { messages: Message[]; offset: number }) => {
+        setMessages((prev) => [...data.messages, ...prev]);
+        setIsLoadingMessages(false);
+      },
+    );
 
     socket.on("message:new", (data: Message) => {
       setMessages((prev) => [...prev, data]);
     });
 
     socket.on("message:updated", (data: Message) => {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === data.id ? data : m))
-      );
+      setMessages((prev) => prev.map((m) => (m.id === data.id ? data : m)));
     });
 
     socket.on("message:deleted", (messageId: string) => {
@@ -202,15 +208,18 @@ export function useCollaboration(config: UseCollaborationConfig): UseCollaborati
     };
   }, [config.autoConnect, config.token, config.url]);
 
-  const selectChannel = useCallback((channelId: string) => {
-    const channel = channels.find((c) => c.id === channelId);
-    if (channel) {
-      setCurrentChannel(channel);
-      setMessages([]);
-      setMessageOffset(0);
-      socketRef.current?.emit("channel:select", { channelId });
-    }
-  }, [channels]);
+  const selectChannel = useCallback(
+    (channelId: string) => {
+      const channel = channels.find((c) => c.id === channelId);
+      if (channel) {
+        setCurrentChannel(channel);
+        setMessages([]);
+        setMessageOffset(0);
+        socketRef.current?.emit("channel:select", { channelId });
+      }
+    },
+    [channels],
+  );
 
   const createChannel = useCallback(
     async (name: string, category: Channel["category"]) => {
@@ -221,28 +230,25 @@ export function useCollaboration(config: UseCollaborationConfig): UseCollaborati
           (response: any) => {
             if (response.error) reject(new Error(response.error));
             else resolve();
-          }
+          },
         );
       });
     },
-    []
+    [],
   );
 
-  const archiveChannel = useCallback(
-    async (channelId: string) => {
-      return new Promise<void>((resolve, reject) => {
-        socketRef.current?.emit(
-          "channel:archive",
-          { channelId },
-          (response: any) => {
-            if (response.error) reject(new Error(response.error));
-            else resolve();
-          }
-        );
-      });
-    },
-    []
-  );
+  const archiveChannel = useCallback(async (channelId: string) => {
+    return new Promise<void>((resolve, reject) => {
+      socketRef.current?.emit(
+        "channel:archive",
+        { channelId },
+        (response: any) => {
+          if (response.error) reject(new Error(response.error));
+          else resolve();
+        },
+      );
+    });
+  }, []);
 
   const loadOlderMessages = useCallback(async () => {
     if (!currentChannel || isLoadingMessages) return;
@@ -272,11 +278,11 @@ export function useCollaboration(config: UseCollaborationConfig): UseCollaborati
           (response: any) => {
             if (response.error) reject(new Error(response.error));
             else resolve();
-          }
+          },
         );
       });
     },
-    [currentChannel, config.userId]
+    [currentChannel, config.userId],
   );
 
   const editMessage = useCallback(
@@ -288,44 +294,34 @@ export function useCollaboration(config: UseCollaborationConfig): UseCollaborati
           (response: any) => {
             if (response.error) reject(new Error(response.error));
             else resolve();
-          }
+          },
         );
       });
     },
-    []
+    [],
   );
 
-  const deleteMessage = useCallback(
-    async (messageId: string) => {
-      return new Promise<void>((resolve, reject) => {
-        socketRef.current?.emit(
-          "message:delete",
-          { messageId },
-          (response: any) => {
-            if (response.error) reject(new Error(response.error));
-            else resolve();
-          }
-        );
-      });
-    },
-    []
-  );
+  const deleteMessage = useCallback(async (messageId: string) => {
+    return new Promise<void>((resolve, reject) => {
+      socketRef.current?.emit(
+        "message:delete",
+        { messageId },
+        (response: any) => {
+          if (response.error) reject(new Error(response.error));
+          else resolve();
+        },
+      );
+    });
+  }, []);
 
-  const pinMessage = useCallback(
-    async (messageId: string) => {
-      return new Promise<void>((resolve, reject) => {
-        socketRef.current?.emit(
-          "message:pin",
-          { messageId },
-          (response: any) => {
-            if (response.error) reject(new Error(response.error));
-            else resolve();
-          }
-        );
+  const pinMessage = useCallback(async (messageId: string) => {
+    return new Promise<void>((resolve, reject) => {
+      socketRef.current?.emit("message:pin", { messageId }, (response: any) => {
+        if (response.error) reject(new Error(response.error));
+        else resolve();
       });
-    },
-    []
-  );
+    });
+  }, []);
 
   const reactToMessage = useCallback(
     async (messageId: string, emoji: string) => {
@@ -336,11 +332,11 @@ export function useCollaboration(config: UseCollaborationConfig): UseCollaborati
           (response: any) => {
             if (response.error) reject(new Error(response.error));
             else resolve();
-          }
+          },
         );
       });
     },
-    [config.userId]
+    [config.userId],
   );
 
   const broadcastTyping = useCallback(() => {
@@ -367,21 +363,14 @@ export function useCollaboration(config: UseCollaborationConfig): UseCollaborati
     socketRef.current?.emit("dm:select", { userId });
   }, []);
 
-  const searchMentions = useCallback(
-    async (query: string): Promise<User[]> => {
-      return new Promise<User[]>((resolve, reject) => {
-        socketRef.current?.emit(
-          "mentions:search",
-          { query },
-          (response: any) => {
-            if (response.error) reject(new Error(response.error));
-            else resolve(response.users || []);
-          }
-        );
+  const searchMentions = useCallback(async (query: string): Promise<User[]> => {
+    return new Promise<User[]>((resolve, reject) => {
+      socketRef.current?.emit("mentions:search", { query }, (response: any) => {
+        if (response.error) reject(new Error(response.error));
+        else resolve(response.users || []);
       });
-    },
-    []
-  );
+    });
+  }, []);
 
   const openThread = useCallback((messageId: string) => {
     setOpenThreadId(messageId);

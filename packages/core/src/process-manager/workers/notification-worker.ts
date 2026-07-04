@@ -137,7 +137,9 @@ export class NotificationWorker extends BaseWorker {
     const recipient = payload.recipient as string;
 
     if (!notificationId || !channel || !recipient) {
-      throw new Error("Missing required fields: notificationId, channel, recipient");
+      throw new Error(
+        "Missing required fields: notificationId, channel, recipient",
+      );
     }
 
     // Fetch notification
@@ -150,7 +152,11 @@ export class NotificationWorker extends BaseWorker {
     }
 
     // Send based on channel
-    const sent = await this.dispatchNotification(notification, channel, recipient);
+    const sent = await this.dispatchNotification(
+      notification,
+      channel,
+      recipient,
+    );
 
     if (!sent) {
       throw new Error(`Failed to dispatch notification via ${channel}`);
@@ -192,7 +198,9 @@ export class NotificationWorker extends BaseWorker {
     }>;
 
     if (!batchId || !templateId || !Array.isArray(recipients)) {
-      throw new Error("Missing required fields: batchId, templateId, recipients");
+      throw new Error(
+        "Missing required fields: batchId, templateId, recipients",
+      );
     }
 
     // Limit batch size
@@ -454,10 +462,7 @@ export class NotificationWorker extends BaseWorker {
       );
 
       const startTime = Date.now();
-      while (
-        this.activeJobs.size > 0 &&
-        Date.now() - startTime < 5000
-      ) {
+      while (this.activeJobs.size > 0 && Date.now() - startTime < 5000) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 

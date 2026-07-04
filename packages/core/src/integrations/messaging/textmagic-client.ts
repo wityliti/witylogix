@@ -78,7 +78,7 @@ export class TextMagicClient extends MessagingAdapter {
       await this.makeRequest("GET", "/user");
     } catch (error) {
       throw new Error(
-        `TextMagic validation failed: ${error instanceof Error ? error.message : String(error)}`
+        `TextMagic validation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -92,11 +92,19 @@ export class TextMagicClient extends MessagingAdapter {
         phones: message.to,
         text: message.body,
         ...(message.from && { from: message.from }),
-        ...(message.scheduleFor && { sendingDateTime: Math.floor(message.scheduleFor.getTime() / 1000) }),
-        ...(message.metadata?.clientRef ? { reference: message.metadata.clientRef } : {}),
+        ...(message.scheduleFor && {
+          sendingDateTime: Math.floor(message.scheduleFor.getTime() / 1000),
+        }),
+        ...(message.metadata?.clientRef
+          ? { reference: message.metadata.clientRef }
+          : {}),
       };
 
-      const response = (await this.makeRequest("POST", "/messages", payload)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "POST",
+        "/messages",
+        payload,
+      )) as Record<string, unknown>;
 
       if (response.id) {
         this.trackDelivery(String(response.id), "sent");
@@ -119,7 +127,11 @@ export class TextMagicClient extends MessagingAdapter {
   /**
    * Send bulk SMS messages.
    */
-  async sendBulkSMS(recipients: string[], text: string, from?: string): Promise<SendResult> {
+  async sendBulkSMS(
+    recipients: string[],
+    text: string,
+    from?: string,
+  ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const payload = {
         phones: recipients.join(","),
@@ -127,7 +139,11 @@ export class TextMagicClient extends MessagingAdapter {
         ...(from && { from }),
       };
 
-      const response = (await this.makeRequest("POST", "/messages", payload)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "POST",
+        "/messages",
+        payload,
+      )) as Record<string, unknown>;
 
       if (response.id) {
         const batchId = String(response.id);
@@ -153,7 +169,11 @@ export class TextMagicClient extends MessagingAdapter {
   /**
    * Send SMS using a template.
    */
-  async sendFromTemplate(recipients: string[], templateId: number, variables?: Record<string, string>): Promise<SendResult> {
+  async sendFromTemplate(
+    recipients: string[],
+    templateId: number,
+    variables?: Record<string, string>,
+  ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const payload = {
         phones: recipients.join(","),
@@ -161,7 +181,11 @@ export class TextMagicClient extends MessagingAdapter {
         ...(variables && { variables }),
       };
 
-      const response = (await this.makeRequest("POST", "/messages", payload)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "POST",
+        "/messages",
+        payload,
+      )) as Record<string, unknown>;
 
       if (response.id) {
         return {
@@ -205,7 +229,11 @@ export class TextMagicClient extends MessagingAdapter {
   /**
    * Create a contact.
    */
-  async createContact(name: string, phone: string, customFields?: Record<string, string>): Promise<MessagingContact> {
+  async createContact(
+    name: string,
+    phone: string,
+    customFields?: Record<string, string>,
+  ): Promise<MessagingContact> {
     return this.executeWithProtections(async () => {
       const payload = {
         firstName: name,
@@ -213,7 +241,11 @@ export class TextMagicClient extends MessagingAdapter {
         ...customFields,
       };
 
-      const response = (await this.makeRequest("POST", "/contacts", payload)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "POST",
+        "/contacts",
+        payload,
+      )) as Record<string, unknown>;
 
       return {
         id: String(response.id),
@@ -229,7 +261,10 @@ export class TextMagicClient extends MessagingAdapter {
   /**
    * Update a contact.
    */
-  async updateContact(contactId: string, updates: Partial<MessagingContact>): Promise<MessagingContact> {
+  async updateContact(
+    contactId: string,
+    updates: Partial<MessagingContact>,
+  ): Promise<MessagingContact> {
     return this.executeWithProtections(async () => {
       const payload = {
         firstName: updates.name,
@@ -255,7 +290,10 @@ export class TextMagicClient extends MessagingAdapter {
    */
   async getContact(contactId: string): Promise<MessagingContact> {
     return this.executeWithProtections(async () => {
-      const response = (await this.makeRequest("GET", `/contacts/${contactId}`)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "GET",
+        `/contacts/${contactId}`,
+      )) as Record<string, unknown>;
 
       return {
         id: String(response.id),
@@ -270,12 +308,15 @@ export class TextMagicClient extends MessagingAdapter {
   /**
    * List all contacts.
    */
-  async listContacts(limit: number = 100, offset: number = 0): Promise<MessagingContact[]> {
+  async listContacts(
+    limit: number = 100,
+    offset: number = 0,
+  ): Promise<MessagingContact[]> {
     return this.executeWithProtections(async () => {
-      const response = (await this.makeRequest("GET", `/contacts?limit=${limit}&offset=${offset}`)) as Record<
-        string,
-        unknown
-      >;
+      const response = (await this.makeRequest(
+        "GET",
+        `/contacts?limit=${limit}&offset=${offset}`,
+      )) as Record<string, unknown>;
 
       const contacts = (response.data as Array<Record<string, unknown>>) || [];
       return contacts.map((c) => ({
@@ -298,7 +339,11 @@ export class TextMagicClient extends MessagingAdapter {
         description,
       };
 
-      const response = (await this.makeRequest("POST", "/lists", payload)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "POST",
+        "/lists",
+        payload,
+      )) as Record<string, unknown>;
 
       return {
         id: Number(response.id),
@@ -330,7 +375,10 @@ export class TextMagicClient extends MessagingAdapter {
    */
   async getList(listId: number): Promise<TextMagicList> {
     return this.executeWithProtections(async () => {
-      const response = (await this.makeRequest("GET", `/lists/${listId}`)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "GET",
+        `/lists/${listId}`,
+      )) as Record<string, unknown>;
 
       return {
         id: Number(response.id),
@@ -353,7 +401,11 @@ export class TextMagicClient extends MessagingAdapter {
         body: content,
       };
 
-      const response = (await this.makeRequest("POST", "/templates", payload)) as Record<string, unknown>;
+      const response = (await this.makeRequest(
+        "POST",
+        "/templates",
+        payload,
+      )) as Record<string, unknown>;
       return Number(response.id);
     });
   }
@@ -361,16 +413,24 @@ export class TextMagicClient extends MessagingAdapter {
   /**
    * Get TextMagic template by numeric ID.
    */
-  async getTextMagicTemplate(templateId: number): Promise<Record<string, unknown>> {
+  async getTextMagicTemplate(
+    templateId: number,
+  ): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
-      return this.makeRequest("GET", `/templates/${templateId}`) as Promise<Record<string, unknown>>;
+      return this.makeRequest("GET", `/templates/${templateId}`) as Promise<
+        Record<string, unknown>
+      >;
     });
   }
 
   /**
    * Update template.
    */
-  async updateTemplate(templateId: number, name?: string, content?: string): Promise<void> {
+  async updateTemplate(
+    templateId: number,
+    name?: string,
+    content?: string,
+  ): Promise<void> {
     return this.executeWithProtections(async () => {
       const payload: Record<string, unknown> = {};
       if (name) payload.name = name;
@@ -408,23 +468,29 @@ export class TextMagicClient extends MessagingAdapter {
    */
   async getMessageStats(messageId: string): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
-      return this.makeRequest("GET", `/messages/${messageId}`) as Promise<Record<string, unknown>>;
+      return this.makeRequest("GET", `/messages/${messageId}`) as Promise<
+        Record<string, unknown>
+      >;
     });
   }
 
   /**
    * Get delivery statistics for a date range.
    */
-  async getDeliveryStats(startDate: Date, endDate: Date): Promise<Record<string, unknown>> {
+  async getDeliveryStats(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
       const params = new URLSearchParams({
         from: Math.floor(startDate.getTime() / 1000).toString(),
         to: Math.floor(endDate.getTime() / 1000).toString(),
       });
 
-      return this.makeRequest("GET", `/statistics?${params.toString()}`) as Promise<
-        Record<string, unknown>
-      >;
+      return this.makeRequest(
+        "GET",
+        `/statistics?${params.toString()}`,
+      ) as Promise<Record<string, unknown>>;
     });
   }
 
@@ -436,7 +502,9 @@ export class TextMagicClient extends MessagingAdapter {
     this.trackDelivery(receipt.messageId, receipt.status);
 
     if (payload.eventType === "delivery") {
-      console.log(`Message ${receipt.messageId} delivered to ${receipt.recipient}`);
+      console.log(
+        `Message ${receipt.messageId} delivered to ${receipt.recipient}`,
+      );
     } else if (payload.eventType === "bounce") {
       console.log(`Message ${receipt.messageId} bounced: ${receipt.error}`);
     }
@@ -448,7 +516,7 @@ export class TextMagicClient extends MessagingAdapter {
   private async makeRequest(
     method: string,
     path: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const url = new URL(path, this.baseUrl);
 
@@ -470,7 +538,9 @@ export class TextMagicClient extends MessagingAdapter {
     const response = await fetch(url.toString(), options);
 
     if (!response.ok) {
-      throw new Error(`TextMagic API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `TextMagic API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const contentType = response.headers.get("content-type");

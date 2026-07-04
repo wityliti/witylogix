@@ -61,7 +61,7 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.accessToken).toBeDefined();
@@ -84,7 +84,7 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(assets), { status: 200 })
+        new Response(JSON.stringify(assets), { status: 200 }),
       );
 
       expect(assets.assets).toHaveLength(1);
@@ -101,7 +101,7 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(location), { status: 200 })
+        new Response(JSON.stringify(location), { status: 200 }),
       );
 
       expect(location.speed).toBeGreaterThan(0);
@@ -122,7 +122,7 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(history), { status: 200 })
+        new Response(JSON.stringify(history), { status: 200 }),
       );
 
       expect(history.locations).toHaveLength(1);
@@ -144,7 +144,7 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(yardAssets), { status: 200 })
+        new Response(JSON.stringify(yardAssets), { status: 200 }),
       );
 
       expect(yardAssets.assetsInYard).toHaveLength(1);
@@ -161,7 +161,7 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(exitEvent), { status: 200 })
+        new Response(JSON.stringify(exitEvent), { status: 200 }),
       );
 
       expect(exitEvent.severity).toBe("high");
@@ -180,7 +180,7 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(utilization), { status: 200 })
+        new Response(JSON.stringify(utilization), { status: 200 }),
       );
 
       expect(utilization.utilizationPercent).toBeGreaterThan(0);
@@ -200,11 +200,11 @@ describe("Powerfleet Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(underutilized), { status: 200 })
+        new Response(JSON.stringify(underutilized), { status: 200 }),
       );
 
       expect(underutilized.assets[0].utilizationPercent).toBeLessThan(
-        underutilized.threshold
+        underutilized.threshold,
       );
     });
   });
@@ -231,7 +231,7 @@ describe("Azuga Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionId).toBeDefined();
@@ -250,7 +250,7 @@ describe("Azuga Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(gpsData), { status: 200 })
+        new Response(JSON.stringify(gpsData), { status: 200 }),
       );
 
       expect(gpsData.speed).toBeGreaterThanOrEqual(0);
@@ -267,7 +267,7 @@ describe("Azuga Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(route), { status: 200 })
+        new Response(JSON.stringify(route), { status: 200 }),
       );
 
       expect(route.distance).toBeGreaterThan(0);
@@ -285,7 +285,7 @@ describe("Azuga Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(driverScore), { status: 200 })
+        new Response(JSON.stringify(driverScore), { status: 200 }),
       );
 
       expect(driverScore.score).toBeGreaterThan(75);
@@ -301,7 +301,7 @@ describe("Azuga Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reward), { status: 200 })
+        new Response(JSON.stringify(reward), { status: 200 }),
       );
 
       expect(reward.pointsAwarded).toBeGreaterThan(0);
@@ -317,7 +317,7 @@ describe("Azuga Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(redemption), { status: 200 })
+        new Response(JSON.stringify(redemption), { status: 200 }),
       );
 
       expect(redemption.pointsRedeemed).toBeGreaterThan(0);
@@ -338,7 +338,7 @@ describe("Azuga Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fuelData), { status: 200 })
+        new Response(JSON.stringify(fuelData), { status: 200 }),
       );
 
       expect(fuelData.lastTransaction.gallons).toBeGreaterThan(0);
@@ -368,7 +368,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^omnitracs_oauth_/);
@@ -387,7 +387,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(dispatch), { status: 201 })
+        new Response(JSON.stringify(dispatch), { status: 201 }),
       );
 
       expect(dispatch.status).toBe("assigned");
@@ -401,7 +401,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.status).toBe("in_transit");
@@ -416,7 +416,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completion), { status: 200 })
+        new Response(JSON.stringify(completion), { status: 200 }),
       );
 
       expect(completion.status).toBe("completed");
@@ -434,7 +434,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(footage), { status: 200 })
+        new Response(JSON.stringify(footage), { status: 200 }),
       );
 
       expect(footage.duration).toBeGreaterThan(0);
@@ -452,7 +452,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(incident), { status: 200 })
+        new Response(JSON.stringify(incident), { status: 200 }),
       );
 
       expect(incident.eventType).toBe("harsh_braking");
@@ -468,7 +468,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(download), { status: 200 })
+        new Response(JSON.stringify(download), { status: 200 }),
       );
 
       expect(download.videoUrl).toContain("mp4");
@@ -487,7 +487,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(hosRecord), { status: 200 })
+        new Response(JSON.stringify(hosRecord), { status: 200 }),
       );
 
       const totalMinutes = 600 + 480 + 240 + 480;
@@ -506,7 +506,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(violation), { status: 200 })
+        new Response(JSON.stringify(violation), { status: 200 }),
       );
 
       expect(violation.exceedance).toBeGreaterThan(0);
@@ -526,7 +526,7 @@ describe("Omnitracs Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(report), { status: 200 })
+        new Response(JSON.stringify(report), { status: 200 }),
       );
 
       expect(report.fleetCompliance).toBeGreaterThan(90);
@@ -556,7 +556,7 @@ describe("Platform Science Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^platformscience_oauth_/);
@@ -578,7 +578,7 @@ describe("Platform Science Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(apps), { status: 200 })
+        new Response(JSON.stringify(apps), { status: 200 }),
       );
 
       expect(apps.apps).toHaveLength(1);
@@ -592,7 +592,7 @@ describe("Platform Science Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(config), { status: 200 })
+        new Response(JSON.stringify(config), { status: 200 }),
       );
 
       expect(config.settings.autoSync).toBe(true);
@@ -615,7 +615,7 @@ describe("Platform Science Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(eldData), { status: 200 })
+        new Response(JSON.stringify(eldData), { status: 200 }),
       );
 
       expect(eldData.records).toHaveLength(1);
@@ -630,7 +630,7 @@ describe("Platform Science Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(certification), { status: 200 })
+        new Response(JSON.stringify(certification), { status: 200 }),
       );
 
       expect(certification.certificationStatus).toBe("certified");
@@ -647,7 +647,7 @@ describe("Platform Science Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(workflow), { status: 200 })
+        new Response(JSON.stringify(workflow), { status: 200 }),
       );
 
       expect(workflow.status).toBe("executed");
@@ -676,7 +676,7 @@ describe("ClearPathGPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.apiKey).toBeDefined();
@@ -698,7 +698,7 @@ describe("ClearPathGPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(devices), { status: 200 })
+        new Response(JSON.stringify(devices), { status: 200 }),
       );
 
       expect(devices.devices).toHaveLength(1);
@@ -713,7 +713,7 @@ describe("ClearPathGPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(status), { status: 200 })
+        new Response(JSON.stringify(status), { status: 200 }),
       );
 
       expect(status.status).toBe("online");
@@ -735,7 +735,7 @@ describe("ClearPathGPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(geofence), { status: 201 })
+        new Response(JSON.stringify(geofence), { status: 201 }),
       );
 
       expect(geofence.vertices).toHaveLength(4);
@@ -751,7 +751,7 @@ describe("ClearPathGPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(alert), { status: 200 })
+        new Response(JSON.stringify(alert), { status: 200 }),
       );
 
       expect(alert.event).toBe("exit");
@@ -769,7 +769,7 @@ describe("ClearPathGPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(diagnostics), { status: 200 })
+        new Response(JSON.stringify(diagnostics), { status: 200 }),
       );
 
       expect(diagnostics.codes).toHaveLength(1);
@@ -785,7 +785,7 @@ describe("ClearPathGPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(alert), { status: 200 })
+        new Response(JSON.stringify(alert), { status: 200 }),
       );
 
       expect(alert.severity).toBe("high");
@@ -814,7 +814,7 @@ describe("One Step GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionId).toBeDefined();
@@ -836,7 +836,7 @@ describe("One Step GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(positions), { status: 200 })
+        new Response(JSON.stringify(positions), { status: 200 }),
       );
 
       expect(positions.positions).toHaveLength(1);
@@ -850,7 +850,7 @@ describe("One Step GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(history), { status: 200 })
+        new Response(JSON.stringify(history), { status: 200 }),
       );
 
       expect(history.trackPoints).toBeGreaterThan(0);
@@ -869,7 +869,7 @@ describe("One Step GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(alert), { status: 201 })
+        new Response(JSON.stringify(alert), { status: 201 }),
       );
 
       expect(alert.enabled).toBe(true);
@@ -886,7 +886,7 @@ describe("One Step GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(violation), { status: 200 })
+        new Response(JSON.stringify(violation), { status: 200 }),
       );
 
       expect(violation.speed).toBeGreaterThan(violation.limit);
@@ -905,7 +905,7 @@ describe("One Step GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(scorecard), { status: 200 })
+        new Response(JSON.stringify(scorecard), { status: 200 }),
       );
 
       expect(scorecard.score).toBeGreaterThan(75);
@@ -921,10 +921,12 @@ describe("One Step GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(improvement), { status: 200 })
+        new Response(JSON.stringify(improvement), { status: 200 }),
       );
 
-      expect(improvement.currentScore).toBeGreaterThan(improvement.previousScore);
+      expect(improvement.currentScore).toBeGreaterThan(
+        improvement.previousScore,
+      );
     });
   });
 });
@@ -950,7 +952,7 @@ describe("Titan GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.apiToken).toBeDefined();
@@ -969,7 +971,7 @@ describe("Titan GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(vehicleStatus), { status: 200 })
+        new Response(JSON.stringify(vehicleStatus), { status: 200 }),
       );
 
       expect(vehicleStatus.status).toBe("in_use");
@@ -988,7 +990,7 @@ describe("Titan GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(route), { status: 200 })
+        new Response(JSON.stringify(route), { status: 200 }),
       );
 
       expect(route.waypoints).toHaveLength(2);
@@ -1010,7 +1012,7 @@ describe("Titan GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(videos), { status: 200 })
+        new Response(JSON.stringify(videos), { status: 200 }),
       );
 
       expect(videos.videos).toHaveLength(1);
@@ -1025,7 +1027,7 @@ describe("Titan GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(footage), { status: 200 })
+        new Response(JSON.stringify(footage), { status: 200 }),
       );
 
       expect(footage.url).toContain("mp4");
@@ -1046,7 +1048,7 @@ describe("Titan GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(assetTracking), { status: 200 })
+        new Response(JSON.stringify(assetTracking), { status: 200 }),
       );
 
       expect(assetTracking.assets).toHaveLength(1);
@@ -1063,7 +1065,7 @@ describe("Titan GPS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(alert), { status: 200 })
+        new Response(JSON.stringify(alert), { status: 200 }),
       );
 
       expect(alert.alertType).toBe("asset_removed");

@@ -3,9 +3,15 @@
  * Defines all type definitions for Point-of-Sale integration module
  */
 
-export type PosProvider = 'SHOPIFY_POS' | 'SQUARE' | 'CUSTOM';
-export type PosDeliveryType = 'LOCAL_DELIVERY' | 'IN_STORE_PICKUP' | 'CURBSIDE';
-export type PosOrderStatus = 'PENDING' | 'CONFIRMED' | 'READY' | 'PICKED_UP' | 'DELIVERED' | 'CANCELLED';
+export type PosProvider = "SHOPIFY_POS" | "SQUARE" | "CUSTOM";
+export type PosDeliveryType = "LOCAL_DELIVERY" | "IN_STORE_PICKUP" | "CURBSIDE";
+export type PosOrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "READY"
+  | "PICKED_UP"
+  | "DELIVERED"
+  | "CANCELLED";
 
 /**
  * Configuration input for creating/updating POS configs
@@ -66,7 +72,15 @@ export interface PosAddress {
  */
 export interface CustomFormField {
   name: string;
-  type: 'text' | 'number' | 'email' | 'phone' | 'select' | 'checkbox' | 'textarea' | 'date';
+  type:
+    | "text"
+    | "number"
+    | "email"
+    | "phone"
+    | "select"
+    | "checkbox"
+    | "textarea"
+    | "date";
   label: string;
   required: boolean;
   placeholder?: string;

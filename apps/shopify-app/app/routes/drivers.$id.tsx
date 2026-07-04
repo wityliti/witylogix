@@ -16,7 +16,10 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type SingleResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   Page,
@@ -255,7 +258,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 // ─── Component ─────────────────────────────────────────────
 
 export default function DriverDetailPage() {
-  const { driver, todayRoute, recentDeliveries, timeline } = useLoaderData<DriverPageData>();
+  const { driver, todayRoute, recentDeliveries, timeline } =
+    useLoaderData<DriverPageData>();
 
   return (
     <Page
@@ -413,10 +417,18 @@ export default function DriverDetailPage() {
                     <Card key={stop.id}>
                       <BlockStack gap="100">
                         <InlineStack align="space-between">
-                          <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                          <Text
+                            as="span"
+                            variant="bodySm"
+                            fontWeight="semibold"
+                            tone="subdued"
+                          >
                             Stop {idx + 1}
                           </Text>
-                          <Badge tone={STOP_STATUS_BADGE_TONE[stop.status]} size="small">
+                          <Badge
+                            tone={STOP_STATUS_BADGE_TONE[stop.status]}
+                            size="small"
+                          >
                             {stop.status}
                           </Badge>
                         </InlineStack>

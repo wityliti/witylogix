@@ -13,7 +13,7 @@
  * ~250 lines, 20+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ============================================================================
 // MOCK TYPES & INTERFACES
@@ -21,7 +21,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 interface Order {
   id: string;
-  status: 'pending' | 'allocated' | 'picking' | 'picked' | 'packed' | 'shipped';
+  status: "pending" | "allocated" | "picking" | "picked" | "packed" | "shipped";
   items: Array<{ skuId: string; quantity: number }>;
   destination: string;
   createdAt: Date;
@@ -29,7 +29,7 @@ interface Order {
 
 interface Wave {
   id: string;
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled';
+  status: "open" | "in_progress" | "completed" | "cancelled";
   orders: string[];
   warehouse: string;
   createdAt: Date;
@@ -39,15 +39,20 @@ interface PickList {
   id: string;
   waveId: string;
   orderId: string;
-  items: Array<{ skuId: string; quantity: number; binLocation: string; pickedQty: number }>;
-  status: 'pending' | 'in_progress' | 'completed';
+  items: Array<{
+    skuId: string;
+    quantity: number;
+    binLocation: string;
+    pickedQty: number;
+  }>;
+  status: "pending" | "in_progress" | "completed";
   assignedTo?: string;
 }
 
 interface PackStation {
   id: string;
   location: string;
-  status: 'idle' | 'active' | 'full';
+  status: "idle" | "active" | "full";
   ordersInProgress: string[];
   packedOrders: string[];
 }
@@ -58,7 +63,7 @@ interface Shipment {
   warehouse: string;
   carrier: string;
   trackingNumber?: string;
-  status: 'planning' | 'ready' | 'shipped' | 'delivered';
+  status: "planning" | "ready" | "shipped" | "delivered";
   estimatedDelivery?: Date;
   shippedAt?: Date;
 }
@@ -66,7 +71,7 @@ interface Shipment {
 interface Return {
   id: string;
   originalOrder: string;
-  status: 'initiated' | 'received' | 'inspected' | 'processed' | 'refunded';
+  status: "initiated" | "received" | "inspected" | "processed" | "refunded";
   items: Array<{ skuId: string; quantity: number; condition: string }>;
   createdAt: Date;
   processedAt?: Date;
@@ -92,10 +97,13 @@ class MockFulfillmentService {
   private returns: Map<string, Return> = new Map();
   private allocations: Map<string, WarehouseAllocation> = new Map();
 
-  async createOrder(items: Array<{ skuId: string; quantity: number }>, destination: string): Promise<Order> {
+  async createOrder(
+    items: Array<{ skuId: string; quantity: number }>,
+    destination: string,
+  ): Promise<Order> {
     const order: Order = {
       id: `ord_${Math.random().toString(36).substr(2, 9)}`,
-      status: 'pending',
+      status: "pending",
       items,
       destination,
       createdAt: new Date(),
@@ -104,7 +112,10 @@ class MockFulfillmentService {
     return order;
   }
 
-  async allocateToWarehouse(orderId: string, warehouse: string): Promise<WarehouseAllocation> {
+  async allocateToWarehouse(
+    orderId: string,
+    warehouse: string,
+  ): Promise<WarehouseAllocation> {
     const order = this.orders.get(orderId);
     if (!order) throw new Error(`Order ${orderId} not found`);
 
@@ -116,14 +127,14 @@ class MockFulfillmentService {
     };
 
     this.allocations.set(`${orderId}_${warehouse}`, allocation);
-    order.status = 'allocated';
+    order.status = "allocated";
     return allocation;
   }
 
   async createWave(warehouse: string, orderIds: string[]): Promise<Wave> {
     const wave: Wave = {
       id: `wave_${Math.random().toString(36).substr(2, 9)}`,
-      status: 'open',
+      status: "open",
       orders: orderIds,
       warehouse,
       createdAt: new Date(),
@@ -135,7 +146,7 @@ class MockFulfillmentService {
     for (const orderId of orderIds) {
       const order = this.orders.get(orderId);
       if (order) {
-        order.status = 'picking';
+        order.status = "picking";
       }
     }
 
@@ -153,23 +164,26 @@ class MockFulfillmentService {
       id: `pick_${Math.random().toString(36).substr(2, 9)}`,
       waveId,
       orderId,
-      items: order.items.map(item => ({
+      items: order.items.map((item) => ({
         ...item,
         binLocation: `BIN_${Math.floor(Math.random() * 100)}`,
         pickedQty: 0,
       })),
-      status: 'pending',
+      status: "pending",
     };
 
     this.pickLists.set(pickList.id, pickList);
     return pickList;
   }
 
-  async assignPickList(pickListId: string, assignee: string): Promise<PickList> {
+  async assignPickList(
+    pickListId: string,
+    assignee: string,
+  ): Promise<PickList> {
     const pickList = this.pickLists.get(pickListId);
     if (!pickList) throw new Error(`Pick list ${pickListId} not found`);
 
-    pickList.status = 'in_progress';
+    pickList.status = "in_progress";
     pickList.assignedTo = assignee;
     return pickList;
   }
@@ -178,15 +192,15 @@ class MockFulfillmentService {
     const pickList = this.pickLists.get(pickListId);
     if (!pickList) throw new Error(`Pick list ${pickListId} not found`);
 
-    pickList.status = 'completed';
-    pickList.items = pickList.items.map(item => ({
+    pickList.status = "completed";
+    pickList.items = pickList.items.map((item) => ({
       ...item,
       pickedQty: item.quantity,
     }));
 
     const order = this.orders.get(pickList.orderId);
     if (order) {
-      order.status = 'picked';
+      order.status = "picked";
     }
 
     return pickList;
@@ -196,7 +210,7 @@ class MockFulfillmentService {
     const station: PackStation = {
       id: `pack_${Math.random().toString(36).substr(2, 9)}`,
       location,
-      status: 'idle',
+      status: "idle",
       ordersInProgress: [],
       packedOrders: [],
     };
@@ -205,53 +219,68 @@ class MockFulfillmentService {
     return station;
   }
 
-  async sendOrderToPack(stationId: string, orderId: string): Promise<PackStation> {
+  async sendOrderToPack(
+    stationId: string,
+    orderId: string,
+  ): Promise<PackStation> {
     const station = this.packStations.get(stationId);
     if (!station) throw new Error(`Pack station ${stationId} not found`);
 
-    station.status = 'active';
+    station.status = "active";
     station.ordersInProgress.push(orderId);
 
     const order = this.orders.get(orderId);
     if (order) {
-      order.status = 'packed';
+      order.status = "packed";
     }
 
     return station;
   }
 
-  async completePackOrder(stationId: string, orderId: string): Promise<PackStation> {
+  async completePackOrder(
+    stationId: string,
+    orderId: string,
+  ): Promise<PackStation> {
     const station = this.packStations.get(stationId);
     if (!station) throw new Error(`Pack station ${stationId} not found`);
 
-    station.ordersInProgress = station.ordersInProgress.filter(o => o !== orderId);
+    station.ordersInProgress = station.ordersInProgress.filter(
+      (o) => o !== orderId,
+    );
     station.packedOrders.push(orderId);
 
     if (station.ordersInProgress.length === 0) {
-      station.status = 'idle';
+      station.status = "idle";
     }
 
     return station;
   }
 
-  async createShipment(warehouse: string, orderIds: string[], carrier: string): Promise<Shipment> {
+  async createShipment(
+    warehouse: string,
+    orderIds: string[],
+    carrier: string,
+  ): Promise<Shipment> {
     const shipment: Shipment = {
       id: `ship_${Math.random().toString(36).substr(2, 9)}`,
       orders: orderIds,
       warehouse,
       carrier,
-      status: 'planning',
+      status: "planning",
     };
 
     this.shipments.set(shipment.id, shipment);
     return shipment;
   }
 
-  async shipShipment(shipmentId: string, trackingNumber?: string): Promise<Shipment> {
+  async shipShipment(
+    shipmentId: string,
+    trackingNumber?: string,
+  ): Promise<Shipment> {
     const shipment = this.shipments.get(shipmentId);
     if (!shipment) throw new Error(`Shipment ${shipmentId} not found`);
 
-    shipment.status = 'shipped';
+    shipment.status = "shipped";
     shipment.trackingNumber = trackingNumber;
     shipment.shippedAt = new Date();
     shipment.estimatedDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
@@ -259,18 +288,21 @@ class MockFulfillmentService {
     for (const orderId of shipment.orders) {
       const order = this.orders.get(orderId);
       if (order) {
-        order.status = 'shipped';
+        order.status = "shipped";
       }
     }
 
     return shipment;
   }
 
-  async initiateReturn(orderId: string, items: Array<{ skuId: string; quantity: number; condition: string }>): Promise<Return> {
+  async initiateReturn(
+    orderId: string,
+    items: Array<{ skuId: string; quantity: number; condition: string }>,
+  ): Promise<Return> {
     const ret: Return = {
       id: `ret_${Math.random().toString(36).substr(2, 9)}`,
       originalOrder: orderId,
-      status: 'initiated',
+      status: "initiated",
       items,
       createdAt: new Date(),
     };
@@ -283,7 +315,7 @@ class MockFulfillmentService {
     const ret = this.returns.get(returnId);
     if (!ret) throw new Error(`Return ${returnId} not found`);
 
-    ret.status = 'processed';
+    ret.status = "processed";
     ret.processedAt = new Date();
     return ret;
   }
@@ -311,7 +343,7 @@ class MockFulfillmentService {
 // TEST SUITE
 // ============================================================================
 
-describe('Fulfillment Workflow', () => {
+describe("Fulfillment Workflow", () => {
   let service: MockFulfillmentService;
 
   beforeEach(() => {
@@ -323,99 +355,120 @@ describe('Fulfillment Workflow', () => {
   });
 
   // Order Management
-  it('should create order', async () => {
+  it("should create order", async () => {
     const order = await service.createOrder(
-      [{ skuId: 'SKU001', quantity: 5 }],
-      'Customer Address',
+      [{ skuId: "SKU001", quantity: 5 }],
+      "Customer Address",
     );
 
     expect(order.id).toBeTruthy();
-    expect(order.status).toBe('pending');
+    expect(order.status).toBe("pending");
     expect(order.items).toHaveLength(1);
   });
 
   // Warehouse Allocation
-  it('should allocate order to warehouse', async () => {
+  it("should allocate order to warehouse", async () => {
     const order = await service.createOrder(
-      [{ skuId: 'SKU002', quantity: 3 }],
-      'Customer Address',
+      [{ skuId: "SKU002", quantity: 3 }],
+      "Customer Address",
     );
 
-    const allocation = await service.allocateToWarehouse(order.id, 'WH_NYC');
+    const allocation = await service.allocateToWarehouse(order.id, "WH_NYC");
 
-    expect(allocation.warehouse).toBe('WH_NYC');
+    expect(allocation.warehouse).toBe("WH_NYC");
     expect(allocation.items).toHaveLength(1);
   });
 
   // Wave Planning
-  it('should create fulfillment wave', async () => {
-    const order1 = await service.createOrder([{ skuId: 'SKU001', quantity: 2 }], 'Address1');
-    const order2 = await service.createOrder([{ skuId: 'SKU002', quantity: 3 }], 'Address2');
+  it("should create fulfillment wave", async () => {
+    const order1 = await service.createOrder(
+      [{ skuId: "SKU001", quantity: 2 }],
+      "Address1",
+    );
+    const order2 = await service.createOrder(
+      [{ skuId: "SKU002", quantity: 3 }],
+      "Address2",
+    );
 
-    const wave = await service.createWave('WH_NYC', [order1.id, order2.id]);
+    const wave = await service.createWave("WH_NYC", [order1.id, order2.id]);
 
     expect(wave.id).toBeTruthy();
     expect(wave.orders).toHaveLength(2);
-    expect(wave.status).toBe('open');
+    expect(wave.status).toBe("open");
   });
 
   // Pick Optimization
-  it('should create pick list for order', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU003', quantity: 4 }], 'Address3');
-    const wave = await service.createWave('WH_NYC', [order.id]);
+  it("should create pick list for order", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU003", quantity: 4 }],
+      "Address3",
+    );
+    const wave = await service.createWave("WH_NYC", [order.id]);
 
     const pickList = await service.createPickList(wave.id, order.id);
 
     expect(pickList.id).toBeTruthy();
-    expect(pickList.status).toBe('pending');
+    expect(pickList.status).toBe("pending");
     expect(pickList.items).toHaveLength(1);
   });
 
-  it('should assign pick list to picker', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU004', quantity: 2 }], 'Address4');
-    const wave = await service.createWave('WH_NYC', [order.id]);
+  it("should assign pick list to picker", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU004", quantity: 2 }],
+      "Address4",
+    );
+    const wave = await service.createWave("WH_NYC", [order.id]);
     const pickList = await service.createPickList(wave.id, order.id);
 
-    const assigned = await service.assignPickList(pickList.id, 'picker_john');
+    const assigned = await service.assignPickList(pickList.id, "picker_john");
 
-    expect(assigned.assignedTo).toBe('picker_john');
-    expect(assigned.status).toBe('in_progress');
+    expect(assigned.assignedTo).toBe("picker_john");
+    expect(assigned.status).toBe("in_progress");
   });
 
-  it('should complete pick list', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU005', quantity: 3 }], 'Address5');
-    const wave = await service.createWave('WH_NYC', [order.id]);
+  it("should complete pick list", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU005", quantity: 3 }],
+      "Address5",
+    );
+    const wave = await service.createWave("WH_NYC", [order.id]);
     const pickList = await service.createPickList(wave.id, order.id);
-    await service.assignPickList(pickList.id, 'picker_john');
+    await service.assignPickList(pickList.id, "picker_john");
 
     const completed = await service.completePickList(pickList.id);
 
-    expect(completed.status).toBe('completed');
+    expect(completed.status).toBe("completed");
     expect(completed.items[0].pickedQty).toBe(3);
   });
 
   // Pack Station
-  it('should initialize pack station', async () => {
-    const station = await service.initializePackStation('Pack Station A');
+  it("should initialize pack station", async () => {
+    const station = await service.initializePackStation("Pack Station A");
 
     expect(station.id).toBeTruthy();
-    expect(station.status).toBe('idle');
-    expect(station.location).toBe('Pack Station A');
+    expect(station.status).toBe("idle");
+    expect(station.location).toBe("Pack Station A");
   });
 
-  it('should send order to pack station', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU006', quantity: 2 }], 'Address6');
-    const station = await service.initializePackStation('Pack Station B');
+  it("should send order to pack station", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU006", quantity: 2 }],
+      "Address6",
+    );
+    const station = await service.initializePackStation("Pack Station B");
 
     const updated = await service.sendOrderToPack(station.id, order.id);
 
-    expect(updated.status).toBe('active');
+    expect(updated.status).toBe("active");
     expect(updated.ordersInProgress).toContain(order.id);
   });
 
-  it('should complete pack order', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU007', quantity: 1 }], 'Address7');
-    const station = await service.initializePackStation('Pack Station C');
+  it("should complete pack order", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU007", quantity: 1 }],
+      "Address7",
+    );
+    const station = await service.initializePackStation("Pack Station C");
     await service.sendOrderToPack(station.id, order.id);
 
     const updated = await service.completePackOrder(station.id, order.id);
@@ -425,110 +478,126 @@ describe('Fulfillment Workflow', () => {
   });
 
   // Shipment Planning
-  it('should create shipment', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU008', quantity: 3 }], 'Address8');
+  it("should create shipment", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU008", quantity: 3 }],
+      "Address8",
+    );
 
-    const shipment = await service.createShipment('WH_NYC', [order.id], 'FedEx');
+    const shipment = await service.createShipment(
+      "WH_NYC",
+      [order.id],
+      "FedEx",
+    );
 
     expect(shipment.id).toBeTruthy();
-    expect(shipment.status).toBe('planning');
-    expect(shipment.carrier).toBe('FedEx');
+    expect(shipment.status).toBe("planning");
+    expect(shipment.carrier).toBe("FedEx");
   });
 
-  it('should ship shipment with tracking', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU009', quantity: 2 }], 'Address9');
-    const shipment = await service.createShipment('WH_NYC', [order.id], 'UPS');
+  it("should ship shipment with tracking", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU009", quantity: 2 }],
+      "Address9",
+    );
+    const shipment = await service.createShipment("WH_NYC", [order.id], "UPS");
 
-    const shipped = await service.shipShipment(shipment.id, 'UPS123456');
+    const shipped = await service.shipShipment(shipment.id, "UPS123456");
 
-    expect(shipped.status).toBe('shipped');
-    expect(shipped.trackingNumber).toBe('UPS123456');
+    expect(shipped.status).toBe("shipped");
+    expect(shipped.trackingNumber).toBe("UPS123456");
     expect(shipped.shippedAt).toBeTruthy();
     expect(shipped.estimatedDelivery).toBeTruthy();
   });
 
   // Multi-warehouse
-  it('should handle multi-warehouse allocation', async () => {
+  it("should handle multi-warehouse allocation", async () => {
     const order = await service.createOrder(
       [
-        { skuId: 'SKU010', quantity: 5 },
-        { skuId: 'SKU011', quantity: 3 },
+        { skuId: "SKU010", quantity: 5 },
+        { skuId: "SKU011", quantity: 3 },
       ],
-      'Address10',
+      "Address10",
     );
 
-    const alloc1 = await service.allocateToWarehouse(order.id, 'WH_NYC');
-    const alloc2 = await service.allocateToWarehouse(order.id, 'WH_LAX');
+    const alloc1 = await service.allocateToWarehouse(order.id, "WH_NYC");
+    const alloc2 = await service.allocateToWarehouse(order.id, "WH_LAX");
 
-    expect(alloc1.warehouse).toBe('WH_NYC');
-    expect(alloc2.warehouse).toBe('WH_LAX');
+    expect(alloc1.warehouse).toBe("WH_NYC");
+    expect(alloc2.warehouse).toBe("WH_LAX");
   });
 
   // Return Processing
-  it('should initiate return', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU012', quantity: 2 }], 'Address12');
+  it("should initiate return", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU012", quantity: 2 }],
+      "Address12",
+    );
 
     const ret = await service.initiateReturn(order.id, [
-      { skuId: 'SKU012', quantity: 2, condition: 'damaged' },
+      { skuId: "SKU012", quantity: 2, condition: "damaged" },
     ]);
 
     expect(ret.id).toBeTruthy();
-    expect(ret.status).toBe('initiated');
+    expect(ret.status).toBe("initiated");
     expect(ret.originalOrder).toBe(order.id);
   });
 
-  it('should process return', async () => {
-    const order = await service.createOrder([{ skuId: 'SKU013', quantity: 1 }], 'Address13');
+  it("should process return", async () => {
+    const order = await service.createOrder(
+      [{ skuId: "SKU013", quantity: 1 }],
+      "Address13",
+    );
     const ret = await service.initiateReturn(order.id, [
-      { skuId: 'SKU013', quantity: 1, condition: 'unused' },
+      { skuId: "SKU013", quantity: 1, condition: "unused" },
     ]);
 
     const processed = await service.processReturn(ret.id);
 
-    expect(processed.status).toBe('processed');
+    expect(processed.status).toBe("processed");
     expect(processed.processedAt).toBeTruthy();
   });
 
   // Full Workflow
-  it('should complete full fulfillment workflow', async () => {
+  it("should complete full fulfillment workflow", async () => {
     // Create order
     const order = await service.createOrder(
-      [{ skuId: 'SKU020', quantity: 3 }],
-      'Final Address',
+      [{ skuId: "SKU020", quantity: 3 }],
+      "Final Address",
     );
-    expect(order.status).toBe('pending');
+    expect(order.status).toBe("pending");
 
     // Allocate to warehouse
-    await service.allocateToWarehouse(order.id, 'WH_NYC');
+    await service.allocateToWarehouse(order.id, "WH_NYC");
     const updatedOrder = await service.getOrder(order.id);
-    expect(updatedOrder.status).toBe('allocated');
+    expect(updatedOrder.status).toBe("allocated");
 
     // Create wave
-    const wave = await service.createWave('WH_NYC', [order.id]);
+    const wave = await service.createWave("WH_NYC", [order.id]);
     const waveCheck = await service.getWave(wave.id);
-    expect(waveCheck.status).toBe('open');
+    expect(waveCheck.status).toBe("open");
 
     // Create pick list
     const pickList = await service.createPickList(wave.id, order.id);
-    expect(pickList.status).toBe('pending');
+    expect(pickList.status).toBe("pending");
 
     // Assign and complete pick
-    await service.assignPickList(pickList.id, 'picker_jane');
+    await service.assignPickList(pickList.id, "picker_jane");
     await service.completePickList(pickList.id);
 
     // Pack
-    const station = await service.initializePackStation('Final Pack');
+    const station = await service.initializePackStation("Final Pack");
     await service.sendOrderToPack(station.id, order.id);
     await service.completePackOrder(station.id, order.id);
 
     // Ship
-    const shipment = await service.createShipment('WH_NYC', [order.id], 'DHL');
-    const shipped = await service.shipShipment(shipment.id, 'DHL999');
+    const shipment = await service.createShipment("WH_NYC", [order.id], "DHL");
+    const shipped = await service.shipShipment(shipment.id, "DHL999");
 
     const finalOrder = await service.getOrder(order.id);
-    expect(finalOrder.status).toBe('shipped');
+    expect(finalOrder.status).toBe("shipped");
 
     const finalShipment = await service.getShipment(shipment.id);
-    expect(finalShipment.status).toBe('shipped');
+    expect(finalShipment.status).toBe("shipped");
   });
 });

@@ -41,7 +41,7 @@ export const sendNotificationStep: WorkflowStep<
 
   async invoke(
     input: SendNotificationInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<SendNotificationOutput>> {
     const logger = context.logger;
     logger?.info("Sending notifications", {
@@ -51,7 +51,7 @@ export const sendNotificationStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
       const notificationLogs: NotificationLog[] = [];
       let successful = 0;
       let failed = 0;
@@ -136,7 +136,7 @@ export const sendNotificationStep: WorkflowStep<
             channelSuccess = await sendEmail(
               recipientData.email,
               input.subject || input.templateKey,
-              input.templateData || {}
+              input.templateData || {},
             );
             logMessage = `Email sent to ${recipientData.email}`;
           } else if (channel === "SMS" && recipientData.phone) {
@@ -144,7 +144,7 @@ export const sendNotificationStep: WorkflowStep<
             channelSuccess = await sendSMS(
               recipientData.phone,
               input.templateKey,
-              input.templateData || {}
+              input.templateData || {},
             );
             logMessage = `SMS sent to ${recipientData.phone}`;
           } else if (channel === "PUSH") {
@@ -153,7 +153,7 @@ export const sendNotificationStep: WorkflowStep<
             channelSuccess = await sendPushNotification(
               input.orderId,
               input.templateKey,
-              input.templateData || {}
+              input.templateData || {},
             );
             logMessage = `Push notification sent for order ${input.orderId}`;
           } else {
@@ -181,9 +181,7 @@ export const sendNotificationStep: WorkflowStep<
               channel,
               status: channelSuccess ? "SENT" : "FAILED",
               recipientEmail:
-                channel === "EMAIL"
-                  ? recipientData.email
-                  : undefined,
+                channel === "EMAIL" ? recipientData.email : undefined,
               recipientPhone:
                 channel === "SMS" ? recipientData.phone : undefined,
               templateKey: input.templateKey,
@@ -202,7 +200,10 @@ export const sendNotificationStep: WorkflowStep<
         } catch (channelError) {
           failed++;
           logger?.error(`${channel} sending failed`, {
-            error: channelError instanceof Error ? channelError.message : String(channelError),
+            error:
+              channelError instanceof Error
+                ? channelError.message
+                : String(channelError),
           });
         }
       }
@@ -241,7 +242,7 @@ export const sendNotificationStep: WorkflowStep<
 async function sendEmail(
   to: string,
   subject: string,
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Promise<boolean> {
   try {
     // In production: call SendGrid, Mailgun, or similar
@@ -260,7 +261,7 @@ async function sendEmail(
 async function sendSMS(
   phone: string,
   templateKey: string,
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Promise<boolean> {
   try {
     // In production: call Twilio or similar
@@ -287,11 +288,14 @@ async function sendSMS(
 async function sendPushNotification(
   orderId: string,
   templateKey: string,
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Promise<boolean> {
   try {
     // In production: call Firebase Cloud Messaging or similar
-    console.log(`[PUSH] OrderId: ${orderId}, TemplateKey: ${templateKey}`, data);
+    console.log(
+      `[PUSH] OrderId: ${orderId}, TemplateKey: ${templateKey}`,
+      data,
+    );
     return true;
   } catch (error) {
     console.error("[PUSH] Failed:", error);

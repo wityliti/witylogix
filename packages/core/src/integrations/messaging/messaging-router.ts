@@ -60,7 +60,8 @@ export class MessagingRouter {
   private routingConfig: Map<string, ChannelRoutingConfig> = new Map();
 
   /** Message deduplication tracking */
-  private sentMessages: Map<string, { timestamp: number; hash: string }> = new Map();
+  private sentMessages: Map<string, { timestamp: number; hash: string }> =
+    new Map();
 
   constructor() {
     // Initialize default routing configurations
@@ -133,7 +134,10 @@ export class MessagingRouter {
     }
 
     // Check for duplicates
-    if (config.deduplicateMessages && this.isDuplicate("sms", message.to, message.body)) {
+    if (
+      config.deduplicateMessages &&
+      this.isDuplicate("sms", message.to, message.body)
+    ) {
       return {
         success: false,
         error: "Duplicate message detected",
@@ -202,8 +206,13 @@ export class MessagingRouter {
     }
 
     // Check for duplicates
-    const recipient = Array.isArray(notification.to) ? notification.to[0] : notification.to;
-    if (config.deduplicateMessages && this.isDuplicate("push", recipient, notification.body)) {
+    const recipient = Array.isArray(notification.to)
+      ? notification.to[0]
+      : notification.to;
+    if (
+      config.deduplicateMessages &&
+      this.isDuplicate("push", recipient, notification.body)
+    ) {
       return {
         success: false,
         error: "Duplicate message detected",
@@ -306,12 +315,14 @@ export class MessagingRouter {
       throw new Error(`${bulk.type} channel not configured`);
     }
 
-    const batchId = bulk.batchId || `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const batchId =
+      bulk.batchId ||
+      `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Select best provider(s) based on cost
     const selectedProviders = this.selectOptimalProviders(
       config.primary,
-      config.costPerMessage || {}
+      config.costPerMessage || {},
     );
 
     const results = new Map<string, SendResult>();
@@ -319,7 +330,9 @@ export class MessagingRouter {
     let failed = 0;
 
     // Distribute recipients across selected providers
-    const recipientsPerProvider = Math.ceil(bulk.recipients.length / selectedProviders.length);
+    const recipientsPerProvider = Math.ceil(
+      bulk.recipients.length / selectedProviders.length,
+    );
 
     for (let i = 0; i < selectedProviders.length; i++) {
       const providerName = selectedProviders[i];
@@ -327,7 +340,10 @@ export class MessagingRouter {
       if (!adapter) continue;
 
       const start = i * recipientsPerProvider;
-      const end = Math.min(start + recipientsPerProvider, bulk.recipients.length);
+      const end = Math.min(
+        start + recipientsPerProvider,
+        bulk.recipients.length,
+      );
       const recipientBatch = bulk.recipients.slice(start, end);
 
       try {
@@ -379,9 +395,12 @@ export class MessagingRouter {
         const adapter = this.providers.get(providerName);
         if (adapter) {
           (limits[channel] as Record<string, unknown>).providers ??= {};
-          ((limits[channel] as Record<string, unknown>).providers as Record<string, unknown>)[
-            providerName
-          ] = adapter.getRateLimitState();
+          (
+            (limits[channel] as Record<string, unknown>).providers as Record<
+              string,
+              unknown
+            >
+          )[providerName] = adapter.getRateLimitState();
         }
       }
     }
@@ -415,7 +434,7 @@ export class MessagingRouter {
    */
   private selectOptimalProviders(
     providers: string[],
-    costPerMessage: Record<string, number>
+    costPerMessage: Record<string, number>,
   ): string[] {
     const costsArray = providers.map((p) => ({
       provider: p,
@@ -428,7 +447,11 @@ export class MessagingRouter {
   /**
    * Check if message is a duplicate.
    */
-  private isDuplicate(channel: string, recipient: string, content: string): boolean {
+  private isDuplicate(
+    channel: string,
+    recipient: string,
+    content: string,
+  ): boolean {
     const key = `${channel}:${recipient}`;
     const hash = this.hashContent(content);
     const existing = this.sentMessages.get(key);
@@ -447,7 +470,11 @@ export class MessagingRouter {
   /**
    * Track a sent message for deduplication.
    */
-  private trackSentMessage(channel: string, recipient: string, content: string): void {
+  private trackSentMessage(
+    channel: string,
+    recipient: string,
+    content: string,
+  ): void {
     const key = `${channel}:${recipient}`;
     const hash = this.hashContent(content);
     this.sentMessages.set(key, { timestamp: Date.now(), hash });

@@ -5,13 +5,13 @@
  * Provides methods for computing hourly, daily, and seasonal patterns.
  */
 
-import type { PrismaClient } from '@repo/db';
-import type { ZoneFeatures } from './feature-store.js';
+import type { PrismaClient } from "@repo/db";
+import type { ZoneFeatures } from "./feature-store.js";
 
 /**
  * Aggregation granularity
  */
-export type Granularity = 'hourly' | 'daily' | 'weekly' | 'monthly';
+export type Granularity = "hourly" | "daily" | "weekly" | "monthly";
 
 /**
  * Historical delivery record (from DB)
@@ -55,7 +55,7 @@ export class DataAggregator {
     zoneId: string,
     startDate: Date,
     endDate: Date,
-    granularity: Granularity = 'daily'
+    granularity: Granularity = "daily",
   ): Promise<AggregationResult> {
     const deliveries = await this.fetchDeliveries(zoneId, startDate, endDate);
 
@@ -66,16 +66,16 @@ export class DataAggregator {
       let key: string;
 
       switch (granularity) {
-        case 'hourly':
+        case "hourly":
           key = `${delivery.dayOfMonth}-${delivery.month}-${delivery.hour}`;
           break;
-        case 'daily':
+        case "daily":
           key = `${delivery.dayOfMonth}-${delivery.month}`;
           break;
-        case 'weekly':
+        case "weekly":
           key = `${Math.floor(delivery.dayOfMonth / 7)}-${delivery.month}`;
           break;
-        case 'monthly':
+        case "monthly":
           key = `${delivery.month}`;
           break;
       }
@@ -99,7 +99,7 @@ export class DataAggregator {
   async computeHourlyDistribution(
     zoneId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Record<number, number>> {
     const deliveries = await this.fetchDeliveries(zoneId, startDate, endDate);
 
@@ -128,7 +128,7 @@ export class DataAggregator {
   async computeDayOfWeekPattern(
     zoneId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Record<number, number>> {
     const deliveries = await this.fetchDeliveries(zoneId, startDate, endDate);
 
@@ -158,12 +158,16 @@ export class DataAggregator {
    */
   async computeSeasonalIndex(
     zoneId: string,
-    lookbackMonths: number = 12
+    lookbackMonths: number = 12,
   ): Promise<Record<number, number>> {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - lookbackMonths);
 
-    const deliveries = await this.fetchDeliveries(zoneId, startDate, new Date());
+    const deliveries = await this.fetchDeliveries(
+      zoneId,
+      startDate,
+      new Date(),
+    );
 
     const monthCounts: Record<number, number> = {};
     for (let m = 0; m < 12; m++) {
@@ -190,7 +194,7 @@ export class DataAggregator {
    */
   async computeGrowthTrend(
     zoneId: string,
-    periods: number = 12
+    periods: number = 12,
   ): Promise<number> {
     const deliveries = await this.fetchDeliveriesWithTrend(zoneId, periods);
 
@@ -236,23 +240,33 @@ export class DataAggregator {
     zoneB: string,
     startDate: Date,
     endDate: Date,
-    granularity: 'daily' | 'weekly' | 'monthly' = 'daily'
+    granularity: "daily" | "weekly" | "monthly" = "daily",
   ): Promise<number> {
-    const dataA = await this.aggregateDeliveries(zoneA, startDate, endDate, granularity);
-    const dataB = await this.aggregateDeliveries(zoneB, startDate, endDate, granularity);
+    const dataA = await this.aggregateDeliveries(
+      zoneA,
+      startDate,
+      endDate,
+      granularity,
+    );
+    const dataB = await this.aggregateDeliveries(
+      zoneB,
+      startDate,
+      endDate,
+      granularity,
+    );
 
     // Align keys
     const keysA = Object.keys(dataA.data);
     const keysB = Object.keys(dataB.data);
-    const commonKeys = keysA.filter(k => keysB.includes(k));
+    const commonKeys = keysA.filter((k) => keysB.includes(k));
 
     if (commonKeys.length < 2) {
       return 0;
     }
 
     // Compute Pearson correlation
-    const valuesA = commonKeys.map(k => dataA.data[k]);
-    const valuesB = commonKeys.map(k => dataB.data[k]);
+    const valuesA = commonKeys.map((k) => dataA.data[k]);
+    const valuesB = commonKeys.map((k) => dataB.data[k]);
 
     const meanA = this.mean(valuesA);
     const meanB = this.mean(valuesB);
@@ -270,8 +284,7 @@ export class DataAggregator {
       varianceB += deviationB * deviationB;
     }
 
-    const correlation =
-      covariance / Math.sqrt(varianceA * varianceB);
+    const correlation = covariance / Math.sqrt(varianceA * varianceB);
 
     return Math.max(-1, Math.min(1, correlation || 0));
   }
@@ -283,12 +296,17 @@ export class DataAggregator {
     zoneIds: string[],
     startDate: Date,
     endDate: Date,
-    granularity: Granularity = 'daily'
+    granularity: Granularity = "daily",
   ): Promise<Map<string, AggregationResult>> {
     const results = new Map<string, AggregationResult>();
 
     for (const zoneId of zoneIds) {
-      const result = await this.aggregateDeliveries(zoneId, startDate, endDate, granularity);
+      const result = await this.aggregateDeliveries(
+        zoneId,
+        startDate,
+        endDate,
+        granularity,
+      );
       results.set(zoneId, result);
     }
 
@@ -301,7 +319,7 @@ export class DataAggregator {
   async computeAverageDeliveryTimePerHour(
     zoneId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Record<number, number>> {
     const deliveries = await this.fetchDeliveries(zoneId, startDate, endDate);
 
@@ -334,7 +352,7 @@ export class DataAggregator {
   async computeVolatilityScore(
     zoneId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<number> {
     const deliveries = await this.fetchDeliveries(zoneId, startDate, endDate);
 
@@ -342,7 +360,7 @@ export class DataAggregator {
       return 0;
     }
 
-    const times = deliveries.map(d => d.deliveryTime);
+    const times = deliveries.map((d) => d.deliveryTime);
     const mean = this.mean(times);
     const stdDev = this.standardDeviation(times, mean);
 
@@ -359,7 +377,7 @@ export class DataAggregator {
   private async fetchDeliveries(
     zoneId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<DeliveryRecord[]> {
     // Simulated fetch - in production would query Shipments table
     // Use deterministic seeded distribution based on zoneId
@@ -446,7 +464,7 @@ export class DataAggregator {
   private hashString(str: string): number {
     let hash = 5381;
     for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash = (hash << 5) + hash + str.charCodeAt(i);
       hash = hash & hash; // Convert to 32bit integer
     }
     return Math.abs(hash);
@@ -457,7 +475,7 @@ export class DataAggregator {
    */
   private async fetchDeliveriesWithTrend(
     zoneId: string,
-    periods: number
+    periods: number,
   ): Promise<Array<{ period: number; count: number }>> {
     // Simulated - in production would query with grouping by time period
     const result: Array<{ period: number; count: number }> = [];
@@ -491,7 +509,9 @@ export class DataAggregator {
     if (values.length < 2) return 0;
 
     const m = mean ?? this.mean(values);
-    const variance = values.reduce((sum, val) => sum + Math.pow(val - m, 2), 0) / values.length;
+    const variance =
+      values.reduce((sum, val) => sum + Math.pow(val - m, 2), 0) /
+      values.length;
 
     return Math.sqrt(variance);
   }

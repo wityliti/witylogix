@@ -19,9 +19,9 @@
  * Uses Zod for response validation and error mapping.
  */
 
-import { createHmac } from 'crypto';
-import { z } from 'zod';
-import type { ConfigService } from '../../config/config-service.js';
+import { createHmac } from "crypto";
+import { z } from "zod";
+import type { ConfigService } from "../../config/config-service.js";
 
 // ─── TYPES ──────────────────────────────────────────────────────────
 
@@ -31,15 +31,15 @@ import type { ConfigService } from '../../config/config-service.js';
 export interface XeroInvoice {
   invoiceID?: string;
   invoiceNumber: string;
-  type: 'ACCREC' | 'ACCPAY';
-  status?: 'DRAFT' | 'SUBMITTED' | 'AUTHORISED' | 'PAID' | 'DELETED';
-  lineAmountTypes: 'Exclusive' | 'Inclusive';
+  type: "ACCREC" | "ACCPAY";
+  status?: "DRAFT" | "SUBMITTED" | "AUTHORISED" | "PAID" | "DELETED";
+  lineAmountTypes: "Exclusive" | "Inclusive";
   contactId?: string;
   contact?: {
     name: string;
     emailAddress?: string;
     addresses?: Array<{
-      addressType: 'STREET' | 'POBOX';
+      addressType: "STREET" | "POBOX";
       city?: string;
       region?: string;
       postalCode?: string;
@@ -79,7 +79,7 @@ export interface XeroContact {
     emailAddress?: string;
   };
   addresses?: Array<{
-    addressType: 'STREET' | 'POBOX';
+    addressType: "STREET" | "POBOX";
     line1?: string;
     line2?: string;
     city?: string;
@@ -88,10 +88,10 @@ export interface XeroContact {
     country?: string;
   }>;
   phones?: Array<{
-    phoneType: 'DEFAULT' | 'PRIMARY' | 'DDI' | 'MOBILE' | 'FAX';
+    phoneType: "DEFAULT" | "PRIMARY" | "DDI" | "MOBILE" | "FAX";
     phoneNumber: string;
   }>;
-  contactStatus?: 'ACTIVE' | 'ARCHIVED' | 'GDPRREQUEST';
+  contactStatus?: "ACTIVE" | "ARCHIVED" | "GDPRREQUEST";
   taxNumber?: string;
   metadata?: Record<string, unknown>;
 }
@@ -104,13 +104,17 @@ export interface XeroPayment {
   amount: number;
   reference?: string;
   currencyCode?: string;
-  status?: 'AUTHORISED' | 'SUBMITTED' | 'DELETED';
+  status?: "AUTHORISED" | "SUBMITTED" | "DELETED";
   metadata?: Record<string, unknown>;
 }
 
 export interface XeroBankTransaction {
   bankTransactionID?: string;
-  type: 'ACCRECPAYMENT' | 'ACCPAYPAYMENT' | 'ARCREDITPAYMENT' | 'APCREDICPAYMENT';
+  type:
+    | "ACCRECPAYMENT"
+    | "ACCPAYPAYMENT"
+    | "ARCREDITPAYMENT"
+    | "APCREDICPAYMENT";
   contact: {
     contactID?: string;
     name?: string;
@@ -126,7 +130,7 @@ export interface XeroBankTransaction {
   date: string;
   total?: number;
   tax?: number;
-  status?: 'DRAFT' | 'SUBMITTED' | 'AUTHORISED' | 'DELETED';
+  status?: "DRAFT" | "SUBMITTED" | "AUTHORISED" | "DELETED";
   metadata?: Record<string, unknown>;
 }
 
@@ -155,7 +159,7 @@ export interface XeroAccount {
   code: string;
   name: string;
   type: string;
-  status: 'ACTIVE' | 'ARCHIVED' | 'DELETED';
+  status: "ACTIVE" | "ARCHIVED" | "DELETED";
   currentBalance: number;
   taxType?: string;
   metadata?: Record<string, unknown>;
@@ -177,7 +181,7 @@ export interface XeroPurchaseOrder {
   }>;
   date: string;
   deliveryDate?: string;
-  status?: 'DRAFT' | 'SUBMITTED' | 'AUTHORISED' | 'DELETED';
+  status?: "DRAFT" | "SUBMITTED" | "AUTHORISED" | "DELETED";
   total?: number;
   tax?: number;
   metadata?: Record<string, unknown>;
@@ -199,7 +203,7 @@ export interface XeroQuote {
   }>;
   date: string;
   expirationDate?: string;
-  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'DELETED';
+  status?: "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "DELETED";
   total?: number;
   tax?: number;
   metadata?: Record<string, unknown>;
@@ -225,41 +229,51 @@ export interface XeroRateLimitInfo {
 const XeroInvoiceSchema = z.object({
   invoiceID: z.string().optional(),
   invoiceNumber: z.string().min(1),
-  type: z.enum(['ACCREC', 'ACCPAY']),
-  status: z.enum(['DRAFT', 'SUBMITTED', 'AUTHORISED', 'PAID', 'DELETED']).optional(),
-  lineAmountTypes: z.enum(['Exclusive', 'Inclusive']),
+  type: z.enum(["ACCREC", "ACCPAY"]),
+  status: z
+    .enum(["DRAFT", "SUBMITTED", "AUTHORISED", "PAID", "DELETED"])
+    .optional(),
+  lineAmountTypes: z.enum(["Exclusive", "Inclusive"]),
   contactId: z.string().optional(),
-  contact: z.object({
-    name: z.string().min(1),
-    emailAddress: z.string().email().optional(),
-    addresses: z.array(
-      z.object({
-        addressType: z.enum(['STREET', 'POBOX']),
-        city: z.string().optional(),
-        region: z.string().optional(),
-        postalCode: z.string().optional(),
-        country: z.string().optional(),
-      })
-    ).optional(),
-  }).optional(),
-  lineItems: z.array(
-    z.object({
-      description: z.string().min(1),
-      quantity: z.number().min(0),
-      unitAmount: z.number().min(0),
-      accountCode: z.string().min(1),
-      taxType: z.string().optional(),
-      taxAmount: z.number().optional(),
-      lineAmount: z.number().optional(),
-      lineItemID: z.string().optional(),
-      tracking: z.array(
-        z.object({
-          trackingCategoryName: z.string(),
-          trackingOptionName: z.string(),
-        })
-      ).optional(),
+  contact: z
+    .object({
+      name: z.string().min(1),
+      emailAddress: z.string().email().optional(),
+      addresses: z
+        .array(
+          z.object({
+            addressType: z.enum(["STREET", "POBOX"]),
+            city: z.string().optional(),
+            region: z.string().optional(),
+            postalCode: z.string().optional(),
+            country: z.string().optional(),
+          }),
+        )
+        .optional(),
     })
-  ).min(1),
+    .optional(),
+  lineItems: z
+    .array(
+      z.object({
+        description: z.string().min(1),
+        quantity: z.number().min(0),
+        unitAmount: z.number().min(0),
+        accountCode: z.string().min(1),
+        taxType: z.string().optional(),
+        taxAmount: z.number().optional(),
+        lineAmount: z.number().optional(),
+        lineItemID: z.string().optional(),
+        tracking: z
+          .array(
+            z.object({
+              trackingCategoryName: z.string(),
+              trackingOptionName: z.string(),
+            }),
+          )
+          .optional(),
+      }),
+    )
+    .min(1),
   date: z.string(),
   dueDate: z.string().optional(),
   total: z.number().optional(),
@@ -273,29 +287,35 @@ const XeroContactSchema = z.object({
   contactID: z.string().optional(),
   name: z.string().min(1),
   emailAddress: z.string().email().optional(),
-  primaryPerson: z.object({
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-    emailAddress: z.string().email().optional(),
-  }).optional(),
-  addresses: z.array(
-    z.object({
-      addressType: z.enum(['STREET', 'POBOX']),
-      line1: z.string().optional(),
-      line2: z.string().optional(),
-      city: z.string().optional(),
-      region: z.string().optional(),
-      postalCode: z.string().optional(),
-      country: z.string().optional(),
+  primaryPerson: z
+    .object({
+      firstName: z.string().optional(),
+      lastName: z.string().optional(),
+      emailAddress: z.string().email().optional(),
     })
-  ).optional(),
-  phones: z.array(
-    z.object({
-      phoneType: z.enum(['DEFAULT', 'PRIMARY', 'DDI', 'MOBILE', 'FAX']),
-      phoneNumber: z.string().min(1),
-    })
-  ).optional(),
-  contactStatus: z.enum(['ACTIVE', 'ARCHIVED', 'GDPRREQUEST']).optional(),
+    .optional(),
+  addresses: z
+    .array(
+      z.object({
+        addressType: z.enum(["STREET", "POBOX"]),
+        line1: z.string().optional(),
+        line2: z.string().optional(),
+        city: z.string().optional(),
+        region: z.string().optional(),
+        postalCode: z.string().optional(),
+        country: z.string().optional(),
+      }),
+    )
+    .optional(),
+  phones: z
+    .array(
+      z.object({
+        phoneType: z.enum(["DEFAULT", "PRIMARY", "DDI", "MOBILE", "FAX"]),
+        phoneNumber: z.string().min(1),
+      }),
+    )
+    .optional(),
+  contactStatus: z.enum(["ACTIVE", "ARCHIVED", "GDPRREQUEST"]).optional(),
   taxNumber: z.string().optional(),
   metadata: z.record(z.unknown()).optional(),
 });
@@ -308,10 +328,10 @@ export class XeroError extends Error {
     public code: string,
     public statusCode: number,
     public retryable: boolean,
-    public context?: Record<string, unknown>
+    public context?: Record<string, unknown>,
   ) {
     super(message);
-    this.name = 'XeroError';
+    this.name = "XeroError";
   }
 }
 
@@ -333,28 +353,28 @@ export class XeroSDKClient {
     maxRetries: number;
   };
 
-  private apiBaseUrl: string = 'https://api.xero.com/api.xro/2.0';
-  private authBaseUrl: string = 'https://login.xero.com/identity/connect';
+  private apiBaseUrl: string = "https://api.xero.com/api.xro/2.0";
+  private authBaseUrl: string = "https://login.xero.com/identity/connect";
   private activeTenantId: string | undefined;
   private rateLimits: Map<string, XeroRateLimitInfo> = new Map();
 
   constructor(
     private configService: ConfigService,
-    config?: Partial<typeof XeroSDKClient.prototype.config>
+    config?: Partial<typeof XeroSDKClient.prototype.config>,
   ) {
     this.config = {
-      clientId: this.configService.get('xero.clientId') as string,
-      clientSecret: this.configService.get('xero.clientSecret') as string,
-      redirectUri: this.configService.get('xero.redirectUri') as string,
+      clientId: this.configService.get("xero.clientId") as string,
+      clientSecret: this.configService.get("xero.clientSecret") as string,
+      redirectUri: this.configService.get("xero.redirectUri") as string,
       scopes: [
-        'openid',
-        'profile',
-        'email',
-        'accounting.transactions',
-        'accounting.settings',
-        'accounting.contacts',
-        'accounting.reports.read',
-        'offline_access',
+        "openid",
+        "profile",
+        "email",
+        "accounting.transactions",
+        "accounting.settings",
+        "accounting.contacts",
+        "accounting.reports.read",
+        "offline_access",
       ],
       timeout: config?.timeout || 30000,
       maxRetries: config?.maxRetries || 3,
@@ -370,11 +390,11 @@ export class XeroSDKClient {
   getAuthorizationUrl(codeChallenge: string, state?: string): string {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
-      response_type: 'code',
-      scope: this.config.scopes.join(' '),
+      response_type: "code",
+      scope: this.config.scopes.join(" "),
       redirect_uri: this.config.redirectUri,
       code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
+      code_challenge_method: "S256",
       state: state || this.generateRandomString(32),
     });
 
@@ -386,7 +406,7 @@ export class XeroSDKClient {
    */
   async exchangeAuthorizationCode(
     code: string,
-    codeVerifier: string
+    codeVerifier: string,
   ): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -394,7 +414,7 @@ export class XeroSDKClient {
     idToken: string;
   }> {
     const body = new URLSearchParams({
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       code,
       redirect_uri: this.config.redirectUri,
       client_id: this.config.clientId,
@@ -403,9 +423,9 @@ export class XeroSDKClient {
     });
 
     try {
-      const response = await this.request('POST', `${this.authBaseUrl}/token`, {
+      const response = await this.request("POST", `${this.authBaseUrl}/token`, {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: body.toString(),
       });
@@ -418,11 +438,11 @@ export class XeroSDKClient {
       };
     } catch (error) {
       throw new XeroError(
-        'Failed to exchange authorization code',
-        'XERO_AUTH_EXCHANGE_FAILED',
+        "Failed to exchange authorization code",
+        "XERO_AUTH_EXCHANGE_FAILED",
         401,
         false,
-        { originalError: String(error) }
+        { originalError: String(error) },
       );
     }
   }
@@ -436,16 +456,16 @@ export class XeroSDKClient {
     expiresIn: number;
   }> {
     const body = new URLSearchParams({
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
       refresh_token: refreshToken,
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
     });
 
     try {
-      const response = await this.request('POST', `${this.authBaseUrl}/token`, {
+      const response = await this.request("POST", `${this.authBaseUrl}/token`, {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: body.toString(),
       });
@@ -457,11 +477,11 @@ export class XeroSDKClient {
       };
     } catch (error) {
       throw new XeroError(
-        'Failed to refresh access token',
-        'XERO_REFRESH_FAILED',
+        "Failed to refresh access token",
+        "XERO_REFRESH_FAILED",
         401,
         true,
-        { originalError: String(error) }
+        { originalError: String(error) },
       );
     }
   }
@@ -475,20 +495,20 @@ export class XeroSDKClient {
         token: accessToken,
       });
 
-      await this.request('POST', `${this.authBaseUrl}/disconnect`, {
+      await this.request("POST", `${this.authBaseUrl}/disconnect`, {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Bearer ${accessToken}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: body.toString(),
       });
     } catch (error) {
       throw new XeroError(
-        'Failed to disconnect',
-        'XERO_DISCONNECT_FAILED',
+        "Failed to disconnect",
+        "XERO_DISCONNECT_FAILED",
         500,
         false,
-        { originalError: String(error) }
+        { originalError: String(error) },
       );
     }
   }
@@ -501,23 +521,23 @@ export class XeroSDKClient {
   async listTenants(accessToken: string): Promise<XeroTenant[]> {
     try {
       const response = await this.request(
-        'GET',
-        'https://api.xero.com/connections',
+        "GET",
+        "https://api.xero.com/connections",
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       return (response as unknown as XeroTenant[]) || [];
     } catch (error) {
       throw new XeroError(
-        'Failed to list tenants',
-        'XERO_LIST_TENANTS_FAILED',
+        "Failed to list tenants",
+        "XERO_LIST_TENANTS_FAILED",
         500,
         true,
-        { originalError: String(error) }
+        { originalError: String(error) },
       );
     }
   }
@@ -543,25 +563,22 @@ export class XeroSDKClient {
    */
   async createInvoice(
     accessToken: string,
-    invoice: XeroInvoice
+    invoice: XeroInvoice,
   ): Promise<XeroInvoice> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const validated = XeroInvoiceSchema.parse(invoice);
 
-    const response = await this.apiRequest(
-      'PUT',
-      '/Invoices',
-      accessToken,
-      { Invoices: [validated] }
-    );
+    const response = await this.apiRequest("PUT", "/Invoices", accessToken, {
+      Invoices: [validated],
+    });
 
     return this.parseInvoiceResponse(response);
   }
@@ -571,21 +588,21 @@ export class XeroSDKClient {
    */
   async getInvoice(
     accessToken: string,
-    invoiceId: string
+    invoiceId: string,
   ): Promise<XeroInvoice> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'GET',
+      "GET",
       `/Invoices/${invoiceId}`,
-      accessToken
+      accessToken,
     );
 
     return this.parseInvoiceResponse(response);
@@ -596,34 +613,31 @@ export class XeroSDKClient {
    */
   async updateInvoice(
     accessToken: string,
-    invoice: XeroInvoice
+    invoice: XeroInvoice,
   ): Promise<XeroInvoice> {
     if (!invoice.invoiceID) {
       throw new XeroError(
-        'Invoice ID is required for updates',
-        'XERO_INVALID_REQUEST',
+        "Invoice ID is required for updates",
+        "XERO_INVALID_REQUEST",
         400,
-        false
+        false,
       );
     }
 
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const validated = XeroInvoiceSchema.parse(invoice);
 
-    const response = await this.apiRequest(
-      'POST',
-      '/Invoices',
-      accessToken,
-      { Invoices: [validated] }
-    );
+    const response = await this.apiRequest("POST", "/Invoices", accessToken, {
+      Invoices: [validated],
+    });
 
     return this.parseInvoiceResponse(response);
   }
@@ -634,14 +648,14 @@ export class XeroSDKClient {
   async sendInvoiceEmail(
     accessToken: string,
     invoiceId: string,
-    email?: string
+    email?: string,
   ): Promise<{ success: boolean }> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
@@ -651,10 +665,10 @@ export class XeroSDKClient {
     };
 
     await this.apiRequest(
-      'POST',
+      "POST",
       `/Invoices/${invoiceId}/Email`,
       accessToken,
-      body
+      body,
     );
 
     return { success: true };
@@ -665,22 +679,22 @@ export class XeroSDKClient {
    */
   async voidInvoice(
     accessToken: string,
-    invoiceId: string
+    invoiceId: string,
   ): Promise<XeroInvoice> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'POST',
+      "POST",
       `/Invoices/${invoiceId}`,
       accessToken,
-      { Status: 'VOIDED' }
+      { Status: "VOIDED" },
     );
 
     return this.parseInvoiceResponse(response);
@@ -693,25 +707,25 @@ export class XeroSDKClient {
     accessToken: string,
     invoiceId: string,
     paymentAmount: number,
-    paymentDate: string
+    paymentDate: string,
   ): Promise<{ success: boolean }> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     await this.apiRequest(
-      'POST',
+      "POST",
       `/Invoices/${invoiceId}/Allocations`,
       accessToken,
       {
         amount: paymentAmount,
         date: paymentDate,
-      }
+      },
     );
 
     return { success: true };
@@ -722,24 +736,21 @@ export class XeroSDKClient {
    */
   async createCreditNote(
     accessToken: string,
-    invoice: XeroInvoice
+    invoice: XeroInvoice,
   ): Promise<XeroInvoice> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    const creditNote = { ...invoice, type: 'ACCRECCRN' };
-    const response = await this.apiRequest(
-      'PUT',
-      '/CreditNotes',
-      accessToken,
-      { CreditNotes: [creditNote] }
-    );
+    const creditNote = { ...invoice, type: "ACCRECCRN" };
+    const response = await this.apiRequest("PUT", "/CreditNotes", accessToken, {
+      CreditNotes: [creditNote],
+    });
 
     return this.parseInvoiceResponse(response);
   }
@@ -751,25 +762,22 @@ export class XeroSDKClient {
    */
   async createContact(
     accessToken: string,
-    contact: XeroContact
+    contact: XeroContact,
   ): Promise<XeroContact> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const validated = XeroContactSchema.parse(contact);
 
-    const response = await this.apiRequest(
-      'PUT',
-      '/Contacts',
-      accessToken,
-      { Contacts: [validated] }
-    );
+    const response = await this.apiRequest("PUT", "/Contacts", accessToken, {
+      Contacts: [validated],
+    });
 
     return this.parseContactResponse(response);
   }
@@ -779,21 +787,21 @@ export class XeroSDKClient {
    */
   async getContact(
     accessToken: string,
-    contactId: string
+    contactId: string,
   ): Promise<XeroContact> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'GET',
+      "GET",
       `/Contacts/${contactId}`,
-      accessToken
+      accessToken,
     );
 
     return this.parseContactResponse(response);
@@ -804,34 +812,31 @@ export class XeroSDKClient {
    */
   async updateContact(
     accessToken: string,
-    contact: XeroContact
+    contact: XeroContact,
   ): Promise<XeroContact> {
     if (!contact.contactID) {
       throw new XeroError(
-        'Contact ID is required for updates',
-        'XERO_INVALID_REQUEST',
+        "Contact ID is required for updates",
+        "XERO_INVALID_REQUEST",
         400,
-        false
+        false,
       );
     }
 
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const validated = XeroContactSchema.parse(contact);
 
-    const response = await this.apiRequest(
-      'POST',
-      '/Contacts',
-      accessToken,
-      { Contacts: [validated] }
-    );
+    const response = await this.apiRequest("POST", "/Contacts", accessToken, {
+      Contacts: [validated],
+    });
 
     return this.parseContactResponse(response);
   }
@@ -841,23 +846,20 @@ export class XeroSDKClient {
    */
   async deleteContact(
     accessToken: string,
-    contactId: string
+    contactId: string,
   ): Promise<{ success: boolean }> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    await this.apiRequest(
-      'POST',
-      `/Contacts/${contactId}`,
-      accessToken,
-      { ContactStatus: 'ARCHIVED' }
-    );
+    await this.apiRequest("POST", `/Contacts/${contactId}`, accessToken, {
+      ContactStatus: "ARCHIVED",
+    });
 
     return { success: true };
   }
@@ -867,19 +869,21 @@ export class XeroSDKClient {
    */
   async queryContacts(
     accessToken: string,
-    filter?: string
+    filter?: string,
   ): Promise<XeroContact[]> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    const url = filter ? `/Contacts?where=${encodeURIComponent(filter)}` : '/Contacts';
-    const response = await this.apiRequest('GET', url, accessToken);
+    const url = filter
+      ? `/Contacts?where=${encodeURIComponent(filter)}`
+      : "/Contacts";
+    const response = await this.apiRequest("GET", url, accessToken);
 
     return (response.Contacts || []) as XeroContact[];
   }
@@ -891,23 +895,20 @@ export class XeroSDKClient {
    */
   async createPayment(
     accessToken: string,
-    payment: XeroPayment
+    payment: XeroPayment,
   ): Promise<XeroPayment> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    const response = await this.apiRequest(
-      'PUT',
-      '/Payments',
-      accessToken,
-      { Payments: [payment] }
-    );
+    const response = await this.apiRequest("PUT", "/Payments", accessToken, {
+      Payments: [payment],
+    });
 
     return this.parsePaymentResponse(response);
   }
@@ -917,21 +918,21 @@ export class XeroSDKClient {
    */
   async getPayment(
     accessToken: string,
-    paymentId: string
+    paymentId: string,
   ): Promise<XeroPayment> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'GET',
+      "GET",
       `/Payments/${paymentId}`,
-      accessToken
+      accessToken,
     );
 
     return this.parsePaymentResponse(response);
@@ -943,22 +944,22 @@ export class XeroSDKClient {
   async allocatePayment(
     accessToken: string,
     invoiceId: string,
-    amount: number
+    amount: number,
   ): Promise<{ success: boolean }> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     await this.apiRequest(
-      'POST',
+      "POST",
       `/Invoices/${invoiceId}/Allocations`,
       accessToken,
-      { amount, date: new Date().toISOString().split('T')[0] }
+      { amount, date: new Date().toISOString().split("T")[0] },
     );
 
     return { success: true };
@@ -969,23 +970,20 @@ export class XeroSDKClient {
    */
   async refundPayment(
     accessToken: string,
-    paymentId: string
+    paymentId: string,
   ): Promise<{ success: boolean }> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    await this.apiRequest(
-      'POST',
-      `/Payments/${paymentId}`,
-      accessToken,
-      { Status: 'DRAFT' }
-    );
+    await this.apiRequest("POST", `/Payments/${paymentId}`, accessToken, {
+      Status: "DRAFT",
+    });
 
     return { success: true };
   }
@@ -997,22 +995,22 @@ export class XeroSDKClient {
    */
   async createBankTransaction(
     accessToken: string,
-    transaction: XeroBankTransaction
+    transaction: XeroBankTransaction,
   ): Promise<XeroBankTransaction> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'PUT',
-      '/BankTransactions',
+      "PUT",
+      "/BankTransactions",
       accessToken,
-      { BankTransactions: [transaction] }
+      { BankTransactions: [transaction] },
     );
 
     return this.parseBankTransactionResponse(response);
@@ -1023,21 +1021,21 @@ export class XeroSDKClient {
    */
   async getBankTransaction(
     accessToken: string,
-    transactionId: string
+    transactionId: string,
   ): Promise<XeroBankTransaction> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'GET',
+      "GET",
       `/BankTransactions/${transactionId}`,
-      accessToken
+      accessToken,
     );
 
     return this.parseBankTransactionResponse(response);
@@ -1048,25 +1046,19 @@ export class XeroSDKClient {
   /**
    * Create item in Xero
    */
-  async createItem(
-    accessToken: string,
-    item: XeroItem
-  ): Promise<XeroItem> {
+  async createItem(accessToken: string, item: XeroItem): Promise<XeroItem> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    const response = await this.apiRequest(
-      'PUT',
-      '/Items',
-      accessToken,
-      { Items: [item] }
-    );
+    const response = await this.apiRequest("PUT", "/Items", accessToken, {
+      Items: [item],
+    });
 
     return this.parseItemResponse(response);
   }
@@ -1074,23 +1066,20 @@ export class XeroSDKClient {
   /**
    * Get item from Xero
    */
-  async getItem(
-    accessToken: string,
-    itemId: string
-  ): Promise<XeroItem> {
+  async getItem(accessToken: string, itemId: string): Promise<XeroItem> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'GET',
+      "GET",
       `/Items/${itemId}`,
-      accessToken
+      accessToken,
     );
 
     return this.parseItemResponse(response);
@@ -1099,34 +1088,28 @@ export class XeroSDKClient {
   /**
    * Update item in Xero
    */
-  async updateItem(
-    accessToken: string,
-    item: XeroItem
-  ): Promise<XeroItem> {
+  async updateItem(accessToken: string, item: XeroItem): Promise<XeroItem> {
     if (!item.itemID) {
       throw new XeroError(
-        'Item ID is required for updates',
-        'XERO_INVALID_REQUEST',
+        "Item ID is required for updates",
+        "XERO_INVALID_REQUEST",
         400,
-        false
+        false,
       );
     }
 
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    const response = await this.apiRequest(
-      'POST',
-      '/Items',
-      accessToken,
-      { Items: [item] }
-    );
+    const response = await this.apiRequest("POST", "/Items", accessToken, {
+      Items: [item],
+    });
 
     return this.parseItemResponse(response);
   }
@@ -1139,18 +1122,14 @@ export class XeroSDKClient {
   async getChartOfAccounts(accessToken: string): Promise<XeroAccount[]> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    const response = await this.apiRequest(
-      'GET',
-      '/Accounts',
-      accessToken
-    );
+    const response = await this.apiRequest("GET", "/Accounts", accessToken);
 
     return (response.Accounts || []) as XeroAccount[];
   }
@@ -1160,21 +1139,21 @@ export class XeroSDKClient {
    */
   async getAccount(
     accessToken: string,
-    accountId: string
+    accountId: string,
   ): Promise<XeroAccount> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'GET',
+      "GET",
       `/Accounts/${accountId}`,
-      accessToken
+      accessToken,
     );
 
     return (response.Account ?? response) as XeroAccount;
@@ -1187,22 +1166,22 @@ export class XeroSDKClient {
    */
   async createPurchaseOrder(
     accessToken: string,
-    po: XeroPurchaseOrder
+    po: XeroPurchaseOrder,
   ): Promise<XeroPurchaseOrder> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'PUT',
-      '/PurchaseOrders',
+      "PUT",
+      "/PurchaseOrders",
       accessToken,
-      { PurchaseOrders: [po] }
+      { PurchaseOrders: [po] },
     );
 
     return this.parsePOResponse(response);
@@ -1213,21 +1192,21 @@ export class XeroSDKClient {
    */
   async getPurchaseOrder(
     accessToken: string,
-    poId: string
+    poId: string,
   ): Promise<XeroPurchaseOrder> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'GET',
+      "GET",
       `/PurchaseOrders/${poId}`,
-      accessToken
+      accessToken,
     );
 
     return this.parsePOResponse(response);
@@ -1238,25 +1217,19 @@ export class XeroSDKClient {
   /**
    * Create quote in Xero
    */
-  async createQuote(
-    accessToken: string,
-    quote: XeroQuote
-  ): Promise<XeroQuote> {
+  async createQuote(accessToken: string, quote: XeroQuote): Promise<XeroQuote> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
-    const response = await this.apiRequest(
-      'PUT',
-      '/Quotes',
-      accessToken,
-      { Quotes: [quote] }
-    );
+    const response = await this.apiRequest("PUT", "/Quotes", accessToken, {
+      Quotes: [quote],
+    });
 
     return this.parseQuoteResponse(response);
   }
@@ -1267,14 +1240,14 @@ export class XeroSDKClient {
   async sendQuote(
     accessToken: string,
     quoteId: string,
-    email?: string
+    email?: string,
   ): Promise<{ success: boolean }> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
@@ -1283,10 +1256,10 @@ export class XeroSDKClient {
     };
 
     await this.apiRequest(
-      'POST',
+      "POST",
       `/Quotes/${quoteId}/Email`,
       accessToken,
-      body
+      body,
     );
 
     return { success: true };
@@ -1295,24 +1268,21 @@ export class XeroSDKClient {
   /**
    * Accept quote in Xero
    */
-  async acceptQuote(
-    accessToken: string,
-    quoteId: string
-  ): Promise<XeroQuote> {
+  async acceptQuote(accessToken: string, quoteId: string): Promise<XeroQuote> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'POST',
+      "POST",
       `/Quotes/${quoteId}`,
       accessToken,
-      { Status: 'ACCEPTED' }
+      { Status: "ACCEPTED" },
     );
 
     return this.parseQuoteResponse(response);
@@ -1321,24 +1291,21 @@ export class XeroSDKClient {
   /**
    * Decline quote in Xero
    */
-  async declineQuote(
-    accessToken: string,
-    quoteId: string
-  ): Promise<XeroQuote> {
+  async declineQuote(accessToken: string, quoteId: string): Promise<XeroQuote> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const response = await this.apiRequest(
-      'POST',
+      "POST",
       `/Quotes/${quoteId}`,
       accessToken,
-      { Status: 'DECLINED' }
+      { Status: "DECLINED" },
     );
 
     return this.parseQuoteResponse(response);
@@ -1351,25 +1318,25 @@ export class XeroSDKClient {
    */
   async getProfitAndLossReport(
     accessToken: string,
-    options?: { period?: string; standardLayout?: boolean }
+    options?: { period?: string; standardLayout?: boolean },
   ): Promise<Record<string, unknown>> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const params = new URLSearchParams();
-    if (options?.period) params.append('period', options.period);
-    if (options?.standardLayout) params.append('standardLayout', 'true');
+    if (options?.period) params.append("period", options.period);
+    if (options?.standardLayout) params.append("standardLayout", "true");
 
     return this.apiRequest(
-      'GET',
+      "GET",
       `/Reports/ProfitAndLoss?${params}`,
-      accessToken
+      accessToken,
     );
   }
 
@@ -1378,24 +1345,24 @@ export class XeroSDKClient {
    */
   async getBalanceSheetReport(
     accessToken: string,
-    options?: { period?: string }
+    options?: { period?: string },
   ): Promise<Record<string, unknown>> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const params = new URLSearchParams();
-    if (options?.period) params.append('period', options.period);
+    if (options?.period) params.append("period", options.period);
 
     return this.apiRequest(
-      'GET',
+      "GET",
       `/Reports/BalanceSheet?${params}`,
-      accessToken
+      accessToken,
     );
   }
 
@@ -1404,24 +1371,25 @@ export class XeroSDKClient {
    */
   async getBankSummaryReport(
     accessToken: string,
-    options?: { bankAccountID?: string }
+    options?: { bankAccountID?: string },
   ): Promise<Record<string, unknown>> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const params = new URLSearchParams();
-    if (options?.bankAccountID) params.append('bankAccountID', options.bankAccountID);
+    if (options?.bankAccountID)
+      params.append("bankAccountID", options.bankAccountID);
 
     return this.apiRequest(
-      'GET',
+      "GET",
       `/Reports/BankSummary?${params}`,
-      accessToken
+      accessToken,
     );
   }
 
@@ -1434,11 +1402,11 @@ export class XeroSDKClient {
   verifyWebhookSignature(
     payload: string,
     signature: string,
-    webhookKey: string
+    webhookKey: string,
   ): boolean {
-    const hash = createHmac('sha256', webhookKey)
+    const hash = createHmac("sha256", webhookKey)
       .update(payload)
-      .digest('base64');
+      .digest("base64");
 
     return hash === signature;
   }
@@ -1453,30 +1421,30 @@ export class XeroSDKClient {
     endpoint: string,
     accessToken: string,
     body?: unknown,
-    modifiedSince?: Date
+    modifiedSince?: Date,
   ): Promise<Record<string, unknown>> {
     if (!this.activeTenantId) {
       throw new XeroError(
-        'Active tenant not set',
-        'XERO_NO_ACTIVE_TENANT',
+        "Active tenant not set",
+        "XERO_NO_ACTIVE_TENANT",
         400,
-        false
+        false,
       );
     }
 
     const url = `${this.apiBaseUrl}${endpoint}`;
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${accessToken}`,
-      'Accept': 'application/json',
-      'Xero-tenant-id': this.activeTenantId,
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+      "Xero-tenant-id": this.activeTenantId,
     };
 
     if (modifiedSince) {
-      headers['If-Modified-Since'] = modifiedSince.toISOString();
+      headers["If-Modified-Since"] = modifiedSince.toISOString();
     }
 
     if (body) {
-      headers['Content-Type'] = 'application/json';
+      headers["Content-Type"] = "application/json";
     }
 
     const response = await this.request(method, url, {
@@ -1485,10 +1453,10 @@ export class XeroSDKClient {
     });
 
     // Update rate limit info from response headers
-    const remaining = response['x-rate-limit-remaining'];
-    const limit = response['x-rate-limit-limit'];
-    const dailyRemaining = response['x-rate-limit-daily-remaining'];
-    const dailyLimit = response['x-rate-limit-daily-limit'];
+    const remaining = response["x-rate-limit-remaining"];
+    const limit = response["x-rate-limit-limit"];
+    const dailyRemaining = response["x-rate-limit-daily-remaining"];
+    const dailyLimit = response["x-rate-limit-daily-limit"];
 
     if (remaining && limit) {
       const resetAt = new Date();
@@ -1497,7 +1465,9 @@ export class XeroSDKClient {
         remaining: parseInt(remaining as string),
         limit: parseInt(limit as string),
         resetAt,
-        dailyRemaining: dailyRemaining ? parseInt(dailyRemaining as string) : undefined,
+        dailyRemaining: dailyRemaining
+          ? parseInt(dailyRemaining as string)
+          : undefined,
         dailyLimit: dailyLimit ? parseInt(dailyLimit as string) : undefined,
       });
     }
@@ -1514,7 +1484,7 @@ export class XeroSDKClient {
     options: {
       headers?: Record<string, string>;
       body?: string;
-    } = {}
+    } = {},
   ): Promise<Record<string, unknown>> {
     let lastError: Error | undefined;
 
@@ -1523,7 +1493,7 @@ export class XeroSDKClient {
         const response = await fetch(url, {
           method,
           headers: {
-            'User-Agent': 'Witylogix/1.0',
+            "User-Agent": "Witylogix/1.0",
             ...options.headers,
           },
           body: options.body,
@@ -1531,8 +1501,10 @@ export class XeroSDKClient {
         });
 
         if (response.status === 429) {
-          const retryAfter = response.headers.get('retry-after');
-          const delay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000;
+          const retryAfter = response.headers.get("retry-after");
+          const delay = retryAfter
+            ? parseInt(retryAfter) * 1000
+            : Math.pow(2, attempt) * 1000;
           await this.sleep(delay);
           continue;
         }
@@ -1546,9 +1518,9 @@ export class XeroSDKClient {
           const errorBody = await response.text();
           throw new XeroError(
             `HTTP ${response.status}: ${errorBody}`,
-            'XERO_HTTP_ERROR',
+            "XERO_HTTP_ERROR",
             response.status,
-            response.status >= 500 || response.status === 429
+            response.status >= 500 || response.status === 429,
           );
         }
 
@@ -1566,20 +1538,21 @@ export class XeroSDKClient {
 
     throw new XeroError(
       `Request failed after ${this.config.maxRetries} retries`,
-      'XERO_REQUEST_FAILED',
+      "XERO_REQUEST_FAILED",
       500,
       true,
-      { originalError: lastError?.message }
+      { originalError: lastError?.message },
     );
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private generateRandomString(length: number): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -1588,13 +1561,17 @@ export class XeroSDKClient {
 
   private parseInvoiceResponse(response: Record<string, unknown>): XeroInvoice {
     const invoices = response.Invoices as XeroInvoice[] | undefined;
-    const invoice = (invoices?.[0] ?? response.Invoice ?? response) as XeroInvoice;
+    const invoice = (invoices?.[0] ??
+      response.Invoice ??
+      response) as XeroInvoice;
     return XeroInvoiceSchema.parse(invoice);
   }
 
   private parseContactResponse(response: Record<string, unknown>): XeroContact {
     const contacts = response.Contacts as XeroContact[] | undefined;
-    const contact = (contacts?.[0] ?? response.Contact ?? response) as XeroContact;
+    const contact = (contacts?.[0] ??
+      response.Contact ??
+      response) as XeroContact;
     return XeroContactSchema.parse(contact);
   }
 
@@ -1603,9 +1580,13 @@ export class XeroSDKClient {
     return (payments?.[0] ?? response.Payment ?? response) as XeroPayment;
   }
 
-  private parseBankTransactionResponse(response: Record<string, unknown>): XeroBankTransaction {
+  private parseBankTransactionResponse(
+    response: Record<string, unknown>,
+  ): XeroBankTransaction {
     const txns = response.BankTransactions as XeroBankTransaction[] | undefined;
-    return (txns?.[0] ?? response.BankTransaction ?? response) as XeroBankTransaction;
+    return (txns?.[0] ??
+      response.BankTransaction ??
+      response) as XeroBankTransaction;
   }
 
   private parseItemResponse(response: Record<string, unknown>): XeroItem {
@@ -1613,9 +1594,13 @@ export class XeroSDKClient {
     return (items?.[0] ?? response.Item ?? response) as XeroItem;
   }
 
-  private parsePOResponse(response: Record<string, unknown>): XeroPurchaseOrder {
+  private parsePOResponse(
+    response: Record<string, unknown>,
+  ): XeroPurchaseOrder {
     const pos = response.PurchaseOrders as XeroPurchaseOrder[] | undefined;
-    return (pos?.[0] ?? response.PurchaseOrder ?? response) as XeroPurchaseOrder;
+    return (pos?.[0] ??
+      response.PurchaseOrder ??
+      response) as XeroPurchaseOrder;
   }
 
   private parseQuoteResponse(response: Record<string, unknown>): XeroQuote {
@@ -1627,6 +1612,8 @@ export class XeroSDKClient {
    * Get current rate limit information
    */
   getRateLimitInfo(): XeroRateLimitInfo | undefined {
-    return this.activeTenantId ? this.rateLimits.get(this.activeTenantId) : undefined;
+    return this.activeTenantId
+      ? this.rateLimits.get(this.activeTenantId)
+      : undefined;
   }
 }

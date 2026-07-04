@@ -5,6 +5,7 @@
 The event-driven notification trigger system automatically sends notifications when shipment lifecycle events occur. It decouples event publishing from notification delivery via an event bus, enabling flexible, configurable notification rules.
 
 **Key Components:**
+
 1. **EventBus**: Simple pub/sub for domain events
 2. **NotificationTriggerEngine**: Evaluates rules and queues notifications
 3. **TriggerRules**: Configurable rules defining when/how to notify
@@ -84,7 +85,7 @@ Create a function to queue notifications (e.g., to Bull/Redis):
 
 ```typescript
 import type { NotificationQueueHandler } from "@witylogix/core/events";
-import { notificationQueue } from "./queue";  // Bull job queue
+import { notificationQueue } from "./queue"; // Bull job queue
 
 const queueHandler: NotificationQueueHandler = async (item) => {
   await notificationQueue.add(
@@ -97,7 +98,7 @@ const queueHandler: NotificationQueueHandler = async (item) => {
       shopId: item.shopId,
     },
     {
-      delay: (item.delay || 0) * 1000,  // Convert seconds to ms
+      delay: (item.delay || 0) * 1000, // Convert seconds to ms
       attempts: 3,
       backoff: {
         type: "exponential",
@@ -267,6 +268,7 @@ export async function createTriggerRule(req: Request, res: Response) {
 ## Template Variables Reference
 
 ### Order Variables
+
 - `order_id`: Order ID
 - `order_number`: Human-readable order number
 - `customer_name`: Customer full name
@@ -278,6 +280,7 @@ export async function createTriggerRule(req: Request, res: Response) {
 - `status_display`: Human-readable status
 
 ### Shipment Variables
+
 - `shipment_id`: Shipment ID
 - `tracking_number`: Carrier tracking number
 - `zone`: Delivery zone
@@ -290,6 +293,7 @@ export async function createTriggerRule(req: Request, res: Response) {
 - `created_at`: Creation timestamp (formatted)
 
 ### Driver Variables
+
 - `driver_id`: Driver ID
 - `driver_name`: Driver full name
 - `driver_phone`: Driver phone number
@@ -301,6 +305,7 @@ export async function createTriggerRule(req: Request, res: Response) {
 - `deliveries_completed`: Completed delivery count
 
 ### Payment Variables
+
 - `payment_id`: Payment ID
 - `amount`: Payment amount (formatted)
 - `currency_symbol`: Currency symbol ($, €, £, etc.)
@@ -313,10 +318,12 @@ export async function createTriggerRule(req: Request, res: Response) {
 ## Supported Events
 
 ### Order Lifecycle
+
 - `ORDER_CREATED` - New order placed
 - `ORDER_CONFIRMED` - Order confirmed by customer
 
 ### Shipment Lifecycle
+
 - `SHIPMENT_CREATED` - Shipment created
 - `SHIPMENT_LABEL_CREATED` - Shipping label generated
 - `SHIPMENT_PICKED_UP` - Shipment picked up by carrier
@@ -327,20 +334,24 @@ export async function createTriggerRule(req: Request, res: Response) {
 - `SHIPMENT_RETURNED` - Shipment returned
 
 ### Driver Events
+
 - `DRIVER_ASSIGNED` - Driver assigned to shipment
 - `DRIVER_NEAR_DELIVERY` - Driver within 500m geofence
 
 ### Delivery Events
+
 - `DELIVERY_ATTEMPTED` - Delivery attempt made
 - `DELIVERY_PROOF_SUBMITTED` - Proof of delivery uploaded
 
 ### Payment Events
+
 - `PAYMENT_RECEIVED` - Payment successfully received
 - `PAYMENT_FAILED` - Payment processing failed
 
 ## Condition Operators
 
 ### Supported Operators
+
 - `eq` - Equals
 - `neq` - Not equals
 - `gt` - Greater than (numeric)
@@ -410,17 +421,19 @@ if (result.errors.length > 0) {
 ## Best Practices
 
 ### 1. Always Include shopId in Event Payload
+
 The trigger engine requires `shopId` to load rules:
 
 ```typescript
 await eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, {
-  shopId: "required",  // Always include
+  shopId: "required", // Always include
   shipmentId: "...",
   // ... other fields
 });
 ```
 
 ### 2. Use Proper Recipient Resolution
+
 Include the necessary fields for recipient resolution:
 
 ```typescript
@@ -439,6 +452,7 @@ Include the necessary fields for recipient resolution:
 ```
 
 ### 3. Test Conditions Carefully
+
 Use dot notation for nested fields:
 
 ```typescript
@@ -450,20 +464,28 @@ Use dot notation for nested fields:
 ```
 
 ### 4. Set Appropriate Delays
+
 Use delays for follow-up notifications:
 
 ```typescript
 // Immediate notification
-{ delay: 0 }
+{
+  delay: 0;
+}
 
 // 5-minute delay
-{ delay: 300 }
+{
+  delay: 300;
+}
 
 // 1-hour delay
-{ delay: 3600 }
+{
+  delay: 3600;
+}
 ```
 
 ### 5. Handle Async Operations
+
 EventBus.emit() is async; always await:
 
 ```typescript
@@ -471,7 +493,7 @@ EventBus.emit() is async; always await:
 await eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, payload);
 
 // Wrong
-eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, payload);  // Fire and forget
+eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, payload); // Fire and forget
 ```
 
 ## Performance Considerations
@@ -494,7 +516,11 @@ eventBus.emit(TriggerEvent.SHIPMENT_DELIVERED, payload);  // Fire and forget
 
 ```typescript
 import { describe, it, expect, beforeEach } from "vitest";
-import { EventBus, NotificationTriggerEngine, TriggerEvent } from "@witylogix/core/events";
+import {
+  EventBus,
+  NotificationTriggerEngine,
+  TriggerEvent,
+} from "@witylogix/core/events";
 
 describe("NotificationTriggerEngine", () => {
   let engine: NotificationTriggerEngine;
@@ -569,11 +595,11 @@ describe("NotificationTriggerEngine", () => {
 
 ```typescript
 class EventBus {
-  on(event: TriggerEvent, handler: EventHandler): void
-  off(event: TriggerEvent, handler: EventHandler): void
-  async emit(event: TriggerEvent, payload: EventPayload): Promise<void>
-  getHandlerCount(event: TriggerEvent): number
-  clear(): void
+  on(event: TriggerEvent, handler: EventHandler): void;
+  off(event: TriggerEvent, handler: EventHandler): void;
+  async emit(event: TriggerEvent, payload: EventPayload): Promise<void>;
+  getHandlerCount(event: TriggerEvent): number;
+  clear(): void;
 }
 ```
 
@@ -581,22 +607,40 @@ class EventBus {
 
 ```typescript
 class NotificationTriggerEngine {
-  constructor(eventBus: EventBus, ruleLoader?: RuleLoader, queueHandler?: NotificationQueueHandler)
-  async loadRules(shopId: string, event?: TriggerEvent): Promise<TriggerRule[]>
-  evaluateConditions(rule: TriggerRule, payload: EventPayload): boolean
-  resolveRecipient(rule: TriggerRule, payload: EventPayload): string | null
-  buildTemplateVars(event: TriggerEvent, payload: EventPayload): Record<string, unknown>
-  async processEvent(event: TriggerEvent, payload: EventPayload): Promise<ProcessResult>
+  constructor(
+    eventBus: EventBus,
+    ruleLoader?: RuleLoader,
+    queueHandler?: NotificationQueueHandler,
+  );
+  async loadRules(shopId: string, event?: TriggerEvent): Promise<TriggerRule[]>;
+  evaluateConditions(rule: TriggerRule, payload: EventPayload): boolean;
+  resolveRecipient(rule: TriggerRule, payload: EventPayload): string | null;
+  buildTemplateVars(
+    event: TriggerEvent,
+    payload: EventPayload,
+  ): Record<string, unknown>;
+  async processEvent(
+    event: TriggerEvent,
+    payload: EventPayload,
+  ): Promise<ProcessResult>;
 }
 ```
 
 ### Template Builders
 
 ```typescript
-function buildShipmentVars(shipment: Record<string, unknown>): Record<string, unknown>
-function buildOrderVars(order: Record<string, unknown>): Record<string, unknown>
-function buildDriverVars(driver: Record<string, unknown>): Record<string, unknown>
-function buildPaymentVars(payment: Record<string, unknown>): Record<string, unknown>
+function buildShipmentVars(
+  shipment: Record<string, unknown>,
+): Record<string, unknown>;
+function buildOrderVars(
+  order: Record<string, unknown>,
+): Record<string, unknown>;
+function buildDriverVars(
+  driver: Record<string, unknown>,
+): Record<string, unknown>;
+function buildPaymentVars(
+  payment: Record<string, unknown>,
+): Record<string, unknown>;
 ```
 
 ## Contributing

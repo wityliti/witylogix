@@ -19,7 +19,7 @@ import type {
   AnomalyThresholds,
   Stop,
   RouteDataPoint,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Default anomaly thresholds
@@ -94,12 +94,7 @@ function pointToLineDistance(
     lineStart.lat,
     lineStart.lng,
   );
-  const d2 = haversineDistance(
-    point.lat,
-    point.lng,
-    lineEnd.lat,
-    lineEnd.lng,
-  );
+  const d2 = haversineDistance(point.lat, point.lng, lineEnd.lat, lineEnd.lng);
 
   return Math.min(d1, d2);
 }
@@ -130,13 +125,14 @@ function detectStopDurationAnomalies(
   const anomalies: AnomalyEvent[] = [];
 
   // Need historical data to detect
-  if (!route.driverHistoricalStopDurations || route.driverHistoricalStopDurations.length < 5) {
+  if (
+    !route.driverHistoricalStopDurations ||
+    route.driverHistoricalStopDurations.length < 5
+  ) {
     return anomalies;
   }
 
-  const { mean, stdDev } = calculateStats(
-    route.driverHistoricalStopDurations,
-  );
+  const { mean, stdDev } = calculateStats(route.driverHistoricalStopDurations);
   const threshold = mean + stdDev * thresholds.stopDurationSigma;
 
   for (const stop of route.stops) {
@@ -146,8 +142,8 @@ function detectStopDurationAnomalies(
       const anomaly: AnomalyEvent = {
         id: generateAnomalyId(),
         routeId: route.routeId,
-        type: 'unusual_stop_duration',
-        severity: stop.actualDuration > threshold * 1.5 ? 'warning' : 'info',
+        type: "unusual_stop_duration",
+        severity: stop.actualDuration > threshold * 1.5 ? "warning" : "info",
         timestamp: stop.actualArrivalTime ?? 0,
         stopId: stop.id,
         details: {
@@ -172,7 +168,7 @@ function detectStopDurationAnomalies(
       } else {
         anomalyPatterns.set(patternKey, {
           location: `Stop ${stop.id}`,
-          type: 'unusual_stop_duration',
+          type: "unusual_stop_duration",
           frequency: 1,
           lastOccurrence: Date.now(),
         });
@@ -234,8 +230,8 @@ function detectRouteDeviations(
           const anomaly: AnomalyEvent = {
             id: generateAnomalyId(),
             routeId: route.routeId,
-            type: 'route_deviation',
-            severity: maxDeviation > 2000 ? 'warning' : 'info',
+            type: "route_deviation",
+            severity: maxDeviation > 2000 ? "warning" : "info",
             timestamp: deviationStartTime,
             stopId: stop1.id,
             details: {
@@ -298,18 +294,17 @@ function detectSpeedAnomalies(
         lowSpeedStartTime = point.timestamp;
       }
     } else if (lowSpeedStartTime !== null) {
-      const lowSpeedDuration =
-        (point.timestamp - lowSpeedStartTime) / 60000;
+      const lowSpeedDuration = (point.timestamp - lowSpeedStartTime) / 60000;
       if (lowSpeedDuration >= thresholds.minimumSpeedDuration) {
         const anomaly: AnomalyEvent = {
           id: generateAnomalyId(),
           routeId: route.routeId,
-          type: 'speed_anomaly',
-          severity: 'info',
+          type: "speed_anomaly",
+          severity: "info",
           timestamp: lowSpeedStartTime,
           details: {
             durationMinutes: Math.round(lowSpeedDuration),
-            anomalyType: 'low_speed',
+            anomalyType: "low_speed",
           },
           context: {
             actualValue: Math.round(speed),
@@ -363,16 +358,17 @@ function detectUnexpectedStops(
         stoppedLng !== null
       ) {
         // Check if this is a planned stop
-        const isPlannedStop = route.stops.some((s) =>
-          haversineDistance(stoppedLat!, stoppedLng!, s.lat, s.lng) < 100,
+        const isPlannedStop = route.stops.some(
+          (s) =>
+            haversineDistance(stoppedLat!, stoppedLng!, s.lat, s.lng) < 100,
         );
 
         if (!isPlannedStop) {
           const anomaly: AnomalyEvent = {
             id: generateAnomalyId(),
             routeId: route.routeId,
-            type: 'unexpected_stop',
-            severity: stoppedDuration > 15 ? 'warning' : 'info',
+            type: "unexpected_stop",
+            severity: stoppedDuration > 15 ? "warning" : "info",
             timestamp: stoppedStartTime,
             details: {
               lat: stoppedLat,
@@ -423,8 +419,8 @@ function detectDeliveryGaps(
       const anomaly: AnomalyEvent = {
         id: generateAnomalyId(),
         routeId: route.routeId,
-        type: 'delivery_gap',
-        severity: gapMinutes > 60 ? 'warning' : 'info',
+        type: "delivery_gap",
+        severity: gapMinutes > 60 ? "warning" : "info",
         timestamp: currentStop.actualArrivalTime,
         stopId: currentStop.id,
         details: {
@@ -468,27 +464,20 @@ export function detectAnomalies(
   const allAnomalies: AnomalyEvent[] = [];
 
   // Detect each anomaly type
-  allAnomalies.push(
-    ...detectStopDurationAnomalies(route, finalThresholds),
-  );
-  allAnomalies.push(
-    ...detectRouteDeviations(route, finalThresholds),
-  );
+  allAnomalies.push(...detectStopDurationAnomalies(route, finalThresholds));
+  allAnomalies.push(...detectRouteDeviations(route, finalThresholds));
   allAnomalies.push(
     ...detectSpeedAnomalies(route, finalThresholds, speedLimitKmh),
   );
-  allAnomalies.push(
-    ...detectUnexpectedStops(route, finalThresholds),
-  );
+  allAnomalies.push(...detectUnexpectedStops(route, finalThresholds));
   allAnomalies.push(...detectDeliveryGaps(route, finalThresholds));
 
   // Calculate summary
   const summary = {
     totalCount: allAnomalies.length,
-    criticalCount: allAnomalies.filter((a) => a.severity === 'critical')
-      .length,
-    warningCount: allAnomalies.filter((a) => a.severity === 'warning').length,
-    infoCount: allAnomalies.filter((a) => a.severity === 'info').length,
+    criticalCount: allAnomalies.filter((a) => a.severity === "critical").length,
+    warningCount: allAnomalies.filter((a) => a.severity === "warning").length,
+    infoCount: allAnomalies.filter((a) => a.severity === "info").length,
   };
 
   // Get top patterns

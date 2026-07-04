@@ -12,7 +12,12 @@ import type { CO2TrackerProps } from "@witylogix/core/analytics";
  * Displays carbon impact metrics with savings visualization,
  * target progress, and vehicle breakdown.
  */
-export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerProps) {
+export function CO2Tracker({
+  data,
+  dateRange,
+  isLoading,
+  onExport,
+}: CO2TrackerProps) {
   const savingsPercentage = useMemo(() => {
     if (!data.plannedTotal) return 0;
     return (data.savedTotal / data.plannedTotal) * 100;
@@ -96,7 +101,9 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
             <p className="text-2xl font-bold text-wl-success-400">
               {data.savedTotal.toLocaleString()}
             </p>
-            <p className="text-xs text-wl-success-400 mt-1">{Math.round(savingsPercentage)}% reduction</p>
+            <p className="text-xs text-wl-success-400 mt-1">
+              {Math.round(savingsPercentage)}% reduction
+            </p>
           </div>
 
           {/* Avg Daily */}
@@ -104,7 +111,9 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
             <p className="text-xs text-wl-text-secondary uppercase tracking-wide mb-2">
               Avg Daily Savings
             </p>
-            <p className="text-2xl font-bold text-wl-text-primary">{avgDailySavings}</p>
+            <p className="text-2xl font-bold text-wl-text-primary">
+              {avgDailySavings}
+            </p>
             <p className="text-xs text-wl-text-secondary mt-1">kg CO2/day</p>
           </div>
         </div>
@@ -113,19 +122,27 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-semibold text-wl-text-primary">Target Progress</p>
+              <p className="text-sm font-semibold text-wl-text-primary">
+                Target Progress
+              </p>
               <p className="text-xs text-wl-text-secondary mt-1">
-                {data.savedTotal.toLocaleString()} of {data.targetSavings.toLocaleString()} kg CO2
+                {data.savedTotal.toLocaleString()} of{" "}
+                {data.targetSavings.toLocaleString()} kg CO2
               </p>
             </div>
-            <Badge variant={targetProgress >= 100 ? "success" : "info"} className="ml-2">
+            <Badge
+              variant={targetProgress >= 100 ? "success" : "info"}
+              className="ml-2"
+            >
               {Math.round(targetProgress)}%
             </Badge>
           </div>
           <div className="w-full h-3 bg-wl-bg-secondary rounded-full overflow-hidden border border-wl-neutral-800">
             <div
               className={`h-full transition-all duration-300 ${
-                targetProgress >= 100 ? "bg-wl-success-500" : "bg-wl-primary-500"
+                targetProgress >= 100
+                  ? "bg-wl-success-500"
+                  : "bg-wl-primary-500"
               }`}
               style={{ width: `${Math.min(targetProgress, 100)}%` }}
             />
@@ -134,7 +151,9 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
 
         {/* Vehicle breakdown */}
         <div>
-          <p className="text-sm font-semibold text-wl-text-primary mb-3">Savings by Vehicle Type</p>
+          <p className="text-sm font-semibold text-wl-text-primary mb-3">
+            Savings by Vehicle Type
+          </p>
           <div className="space-y-3">
             {data.vehicleBreakdown.map((vehicle, index) => (
               <div
@@ -142,9 +161,12 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
                 className="p-3 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-wl-text-primary">{vehicle.type}</span>
+                  <span className="text-sm font-medium text-wl-text-primary">
+                    {vehicle.type}
+                  </span>
                   <span className="text-sm font-semibold text-wl-success-400">
-                    {vehicle.savedCO2 > 0 ? "+" : ""}{vehicle.savedCO2.toLocaleString()} kg
+                    {vehicle.savedCO2 > 0 ? "+" : ""}
+                    {vehicle.savedCO2.toLocaleString()} kg
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-xs">
@@ -164,7 +186,9 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
                     <p className="text-wl-text-secondary">Reduction</p>
                     <p className="text-wl-success-400 font-medium">
                       {vehicle.plannedCO2 > 0
-                        ? Math.round((vehicle.savedCO2 / vehicle.plannedCO2) * 100)
+                        ? Math.round(
+                            (vehicle.savedCO2 / vehicle.plannedCO2) * 100,
+                          )
                         : 0}
                       %
                     </p>

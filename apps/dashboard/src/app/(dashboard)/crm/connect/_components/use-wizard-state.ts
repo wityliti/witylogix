@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useCallback, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { api } from '@/lib/api';
-import type { WizardStep, SyncConfig } from './types';
-import { DEFAULT_SYNC_CONFIG, DEFAULT_SYNC_SCHEDULE } from './constants';
+import { useCallback, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { api } from "@/lib/api";
+import type { WizardStep, SyncConfig } from "./types";
+import { DEFAULT_SYNC_CONFIG, DEFAULT_SYNC_SCHEDULE } from "./constants";
 
 export function useWizardState() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export function useWizardState() {
 
   // Wizard state
   const [activeStep, setActiveStep] = useState(
-    parseInt(searchParams.get('step') || '1')
+    parseInt(searchParams.get("step") || "1"),
   );
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
@@ -29,15 +29,12 @@ export function useWizardState() {
   const [activateError, setActivateError] = useState<string | null>(null);
 
   // Handle step change with accessibility checks
-  const handleStepChange = useCallback(
-    (step: number, steps: WizardStep[]) => {
-      const stepDef = steps.find((s) => s.id === step);
-      if (stepDef?.isAccessible) {
-        setActiveStep(step);
-      }
-    },
-    []
-  );
+  const handleStepChange = useCallback((step: number, steps: WizardStep[]) => {
+    const stepDef = steps.find((s) => s.id === step);
+    if (stepDef?.isAccessible) {
+      setActiveStep(step);
+    }
+  }, []);
 
   // Next/Previous navigation
   const handleNext = useCallback(
@@ -48,7 +45,7 @@ export function useWizardState() {
         handleStepChange(newStep, steps);
       }
     },
-    [activeStep, handleStepChange]
+    [activeStep, handleStepChange],
   );
 
   const handlePrevious = useCallback(
@@ -57,7 +54,7 @@ export function useWizardState() {
         handleStepChange(activeStep - 1, steps);
       }
     },
-    [activeStep, handleStepChange]
+    [activeStep, handleStepChange],
   );
 
   // Handle platform selection
@@ -66,21 +63,24 @@ export function useWizardState() {
   }, []);
 
   // Handle sync configuration
-  const handleUpdateSyncConfig = useCallback(
-    (config: Partial<SyncConfig>) => {
-      setSyncConfig((prev) => ({ ...prev, ...config }));
-    },
-    []
-  );
+  const handleUpdateSyncConfig = useCallback((config: Partial<SyncConfig>) => {
+    setSyncConfig((prev) => ({ ...prev, ...config }));
+  }, []);
 
   // Handle test connection — calls real sync-status endpoint to verify OAuth completed
   const handleTestConnection = useCallback(async () => {
     setTestResults(null);
     try {
-      await api.get('/api/v4/crm/sync/status');
-      setTestResults({ success: true, message: 'Connection verified — CRM is accessible.' });
+      await api.get("/api/v4/crm/sync/status");
+      setTestResults({
+        success: true,
+        message: "Connection verified — CRM is accessible.",
+      });
     } catch {
-      setTestResults({ success: false, message: 'CRM not reachable. Complete the OAuth step first.' });
+      setTestResults({
+        success: false,
+        message: "CRM not reachable. Complete the OAuth step first.",
+      });
     }
   }, []);
 
@@ -89,11 +89,14 @@ export function useWizardState() {
     setActivating(true);
     setActivateError(null);
     try {
-      await api.post('/api/v4/crm/sync', { recordType: undefined, incremental: false });
+      await api.post("/api/v4/crm/sync", {
+        recordType: undefined,
+        incremental: false,
+      });
       setCompletedSteps((prev) => new Set([...prev, 5]));
-      router.push('/crm');
+      router.push("/crm");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Activation failed';
+      const msg = err instanceof Error ? err.message : "Activation failed";
       setActivateError(msg);
     } finally {
       setActivating(false);

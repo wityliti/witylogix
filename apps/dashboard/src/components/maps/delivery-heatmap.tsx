@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { type DeliveryHeatmapProps, type HeatmapDataPoint } from './types';
-import { useGoogleMaps } from './google-maps-provider';
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { type DeliveryHeatmapProps, type HeatmapDataPoint } from "./types";
+import { useGoogleMaps } from "./google-maps-provider";
 
 /**
  * Delivery Heatmap Component
@@ -24,15 +24,15 @@ export function DeliveryHeatmap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const heatmapRef = useRef<any | null>(null);
-  const [selectedTimeRange, setSelectedTimeRange] = useState<'today' | 'week' | 'month' | 'custom'>(
-    'today'
-  );
+  const [selectedTimeRange, setSelectedTimeRange] = useState<
+    "today" | "week" | "month" | "custom"
+  >("today");
   const [stats, setStats] = useState({
     totalDeliveries: 0,
     completedDeliveries: 0,
     failedDeliveries: 0,
     averageDeliveryTime: 0,
-    peakDensityArea: '',
+    peakDensityArea: "",
   });
 
   // Initialize map
@@ -45,9 +45,9 @@ export function DeliveryHeatmap({
       zoom: defaultZoom,
       center: defaultCenter,
       styles: [
-        { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-        { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-        { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
       ],
     });
 
@@ -108,11 +108,11 @@ export function DeliveryHeatmap({
   // Calculate weight based on mode
   const calculateWeight = (point: HeatmapDataPoint): number => {
     switch (mode) {
-      case 'count':
+      case "count":
         return Math.min(point.weight || 1, 1);
-      case 'time':
+      case "time":
         return point.value ? Math.min(point.value / 3600, 1) : 0.5; // Normalize to seconds
-      case 'failures':
+      case "failures":
         return point.weight || 0;
       default:
         return point.weight || 1;
@@ -122,12 +122,12 @@ export function DeliveryHeatmap({
   // Create gradient for heatmap
   const createGradient = (): string[] => {
     return [
-      '#0000ff', // Blue
-      '#00ffff', // Cyan
-      '#00ff00', // Green
-      '#ffff00', // Yellow
-      '#ff6600', // Orange
-      '#ff0000', // Red
+      "#0000ff", // Blue
+      "#00ffff", // Cyan
+      "#00ff00", // Green
+      "#ffff00", // Yellow
+      "#ff6600", // Orange
+      "#ff0000", // Red
     ];
   };
 
@@ -145,7 +145,7 @@ export function DeliveryHeatmap({
 
     // Find peak density area
     let peakDensity = 0;
-    let peakArea = '';
+    let peakArea = "";
 
     // Group nearby points to find clusters
     const clusters = createClusters(filteredPoints);
@@ -162,13 +162,13 @@ export function DeliveryHeatmap({
       completedDeliveries: Math.round(total * 0.85),
       failedDeliveries: Math.round(total * 0.05),
       averageDeliveryTime: 45, // minutes
-      peakDensityArea: peakArea || 'Downtown',
+      peakDensityArea: peakArea || "Downtown",
     });
   };
 
   // Create clusters of nearby points
   const createClusters = (
-    points: HeatmapDataPoint[]
+    points: HeatmapDataPoint[],
   ): Array<{ points: HeatmapDataPoint[]; area: string }> => {
     const clusters: Array<{ points: HeatmapDataPoint[]; area: string }> = [];
     const processed = new Set<number>();
@@ -183,15 +183,22 @@ export function DeliveryHeatmap({
       points.forEach((otherPoint, otherIndex) => {
         if (processed.has(otherIndex)) return;
 
-        const distance = calculateDistance(point.latitude, point.longitude, otherPoint.latitude, otherPoint.longitude);
+        const distance = calculateDistance(
+          point.latitude,
+          point.longitude,
+          otherPoint.latitude,
+          otherPoint.longitude,
+        );
         if (distance < 1) {
           cluster.push(otherPoint);
           processed.add(otherIndex);
         }
       });
 
-      const centerLat = cluster.reduce((sum, p) => sum + p.latitude, 0) / cluster.length;
-      const centerLng = cluster.reduce((sum, p) => sum + p.longitude, 0) / cluster.length;
+      const centerLat =
+        cluster.reduce((sum, p) => sum + p.latitude, 0) / cluster.length;
+      const centerLng =
+        cluster.reduce((sum, p) => sum + p.longitude, 0) / cluster.length;
 
       clusters.push({
         points: cluster,
@@ -203,7 +210,12 @@ export function DeliveryHeatmap({
   };
 
   // Haversine distance formula (km)
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number => {
     const R = 6371; // Earth's radius in km
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -218,21 +230,21 @@ export function DeliveryHeatmap({
   };
 
   // Handle time range selection
-  const handleTimeRangeSelect = (range: 'today' | 'week' | 'month') => {
+  const handleTimeRangeSelect = (range: "today" | "week" | "month") => {
     setSelectedTimeRange(range);
 
     const now = new Date();
     let startDate = new Date();
 
     switch (range) {
-      case 'today':
+      case "today":
         startDate.setHours(0, 0, 0, 0);
         break;
-      case 'week':
+      case "week":
         startDate.setDate(now.getDate() - 7);
         startDate.setHours(0, 0, 0, 0);
         break;
-      case 'month':
+      case "month":
         startDate.setDate(now.getDate() - 30);
         startDate.setHours(0, 0, 0, 0);
         break;
@@ -245,30 +257,34 @@ export function DeliveryHeatmap({
   };
 
   return (
-    <div className={cn('w-full h-full flex flex-col bg-wl-bg-surface', className)}>
+    <div
+      className={cn("w-full h-full flex flex-col bg-wl-bg-surface", className)}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-wl-border-default">
         <div>
-          <h3 className="text-lg font-semibold text-wl-text-primary">Delivery Heatmap</h3>
+          <h3 className="text-lg font-semibold text-wl-text-primary">
+            Delivery Heatmap
+          </h3>
           <p className="text-xs text-wl-text-secondary mt-1">
-            {mode === 'count' && 'Delivery frequency by location'}
-            {mode === 'time' && 'Average delivery time by location'}
-            {mode === 'failures' && 'Failed deliveries by location'}
+            {mode === "count" && "Delivery frequency by location"}
+            {mode === "time" && "Average delivery time by location"}
+            {mode === "failures" && "Failed deliveries by location"}
           </p>
         </div>
 
         {/* Time Range Selector */}
         <div className="flex gap-2">
-          {(['today', 'week', 'month'] as const).map((range) => (
+          {(["today", "week", "month"] as const).map((range) => (
             <Button
               key={range}
               size="sm"
-              variant={selectedTimeRange === range ? 'primary' : 'secondary'}
+              variant={selectedTimeRange === range ? "primary" : "secondary"}
               onClick={() => handleTimeRangeSelect(range)}
             >
-              {range === 'today' && 'Today'}
-              {range === 'week' && 'This Week'}
-              {range === 'month' && 'This Month'}
+              {range === "today" && "Today"}
+              {range === "week" && "This Week"}
+              {range === "month" && "This Month"}
             </Button>
           ))}
         </div>
@@ -279,12 +295,14 @@ export function DeliveryHeatmap({
         <div
           ref={mapRef}
           className="w-full h-full"
-          style={{ minHeight: '400px' }}
+          style={{ minHeight: "400px" }}
         />
 
         {/* Legend */}
         <div className="absolute bottom-6 left-6 bg-wl-bg-overlay border border-wl-border-default rounded-lg p-4 shadow-lg max-w-xs">
-          <h4 className="text-xs font-semibold text-wl-text-primary mb-3 uppercase">Legend</h4>
+          <h4 className="text-xs font-semibold text-wl-text-primary mb-3 uppercase">
+            Legend
+          </h4>
 
           {/* Gradient Legend */}
           <div className="mb-4">
@@ -292,7 +310,8 @@ export function DeliveryHeatmap({
             <div
               className="h-4 rounded"
               style={{
-                background: 'linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ff6600, #ff0000)',
+                background:
+                  "linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ff6600, #ff0000)",
               }}
             />
             <div className="flex justify-between text-xs text-wl-text-secondary mt-1">
@@ -304,9 +323,9 @@ export function DeliveryHeatmap({
           {/* Mode Info */}
           <div className="text-xs text-wl-text-secondary">
             <p>
-              <strong>Mode:</strong> {mode === 'count' && 'Delivery Count'}
-              {mode === 'time' && 'Delivery Time'}
-              {mode === 'failures' && 'Failed Deliveries'}
+              <strong>Mode:</strong> {mode === "count" && "Delivery Count"}
+              {mode === "time" && "Delivery Time"}
+              {mode === "failures" && "Failed Deliveries"}
             </p>
           </div>
         </div>
@@ -314,11 +333,15 @@ export function DeliveryHeatmap({
         {/* Stats Overlay */}
         {showStats && (
           <div className="absolute top-6 right-6 bg-wl-bg-overlay border border-wl-border-default rounded-lg p-4 shadow-lg max-w-xs">
-            <h4 className="text-xs font-semibold text-wl-text-primary mb-3 uppercase">Statistics</h4>
+            <h4 className="text-xs font-semibold text-wl-text-primary mb-3 uppercase">
+              Statistics
+            </h4>
             <div className="space-y-2 text-xs text-wl-text-secondary">
               <div className="flex justify-between">
                 <span>Total Deliveries:</span>
-                <span className="font-medium text-wl-text-primary">{stats.totalDeliveries}</span>
+                <span className="font-medium text-wl-text-primary">
+                  {stats.totalDeliveries}
+                </span>
               </div>
               <div className="flex justify-between text-wl-success-400">
                 <span>Completed:</span>
@@ -333,11 +356,15 @@ export function DeliveryHeatmap({
               <div className="border-t border-wl-border-default pt-2 mt-2">
                 <div className="flex justify-between mb-1">
                   <span>Avg. Delivery Time:</span>
-                  <span className="font-medium text-wl-text-primary">{stats.averageDeliveryTime} min</span>
+                  <span className="font-medium text-wl-text-primary">
+                    {stats.averageDeliveryTime} min
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Peak Area:</span>
-                  <span className="font-medium text-wl-text-primary">{stats.peakDensityArea}</span>
+                  <span className="font-medium text-wl-text-primary">
+                    {stats.peakDensityArea}
+                  </span>
                 </div>
               </div>
             </div>

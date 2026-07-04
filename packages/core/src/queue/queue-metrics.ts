@@ -1,5 +1,5 @@
-import { Queue } from 'bullmq';
-import { Redis } from 'ioredis';
+import { Queue } from "bullmq";
+import { Redis } from "ioredis";
 
 export interface QueueMetrics {
   name: string;
@@ -20,7 +20,7 @@ export interface QueueMetrics {
 export class QueueMetrics {
   private redis: Redis;
   private queues: Map<string, Queue> = new Map();
-  private metricsPrefix = 'metrics:queue:';
+  private metricsPrefix = "metrics:queue:";
   private processingTimes: Map<string, number[]> = new Map();
 
   constructor(redis: Redis) {
@@ -38,7 +38,7 @@ export class QueueMetrics {
   async recordJobCompletion(
     queueName: string,
     durationMs: number,
-    success: boolean
+    success: boolean,
   ): Promise<void> {
     const successKey = `${this.metricsPrefix}${queueName}:completed`;
     const failedKey = `${this.metricsPrefix}${queueName}:failed`;
@@ -99,7 +99,7 @@ export class QueueMetrics {
     if (!queue) return 0;
 
     try {
-      const counts = await queue.getJobCounts('active');
+      const counts = await queue.getJobCounts("active");
       const activeCount = counts.active || 0;
 
       // Estimate based on active jobs (simplified)
@@ -159,7 +159,13 @@ export class QueueMetrics {
     }
 
     try {
-      const counts = await queue.getJobCounts('waiting', 'active', 'delayed', 'completed', 'failed');
+      const counts = await queue.getJobCounts(
+        "waiting",
+        "active",
+        "delayed",
+        "completed",
+        "failed",
+      );
       const completedKey = `${this.metricsPrefix}${queueName}:completed`;
       const completedStr = await this.redis.get(completedKey);
       const jobsProcessedTotal = completedStr ? parseInt(completedStr, 10) : 0;
@@ -167,7 +173,8 @@ export class QueueMetrics {
       const times = this.processingTimes.get(queueName) || [];
       const totalDuration = times.reduce((sum, time) => sum + time, 0);
 
-      const queueSize = (counts.waiting || 0) + (counts.active || 0) + (counts.delayed || 0);
+      const queueSize =
+        (counts.waiting || 0) + (counts.active || 0) + (counts.delayed || 0);
 
       return {
         name: queueName,
@@ -178,7 +185,7 @@ export class QueueMetrics {
           average: Math.round(totalDuration / Math.max(times.length, 1) / 1000),
         },
         queueSize,
-        dlqSize: (counts.failed || 0),
+        dlqSize: counts.failed || 0,
         throughputPerMin: await this.getThroughputPerMin(queueName),
         workerUtilization: await this.getWorkerUtilization(queueName),
         completionRate: await this.getCompletionRate(queueName),
@@ -208,61 +215,66 @@ export class QueueMetrics {
    */
   async exportPrometheus(): Promise<string> {
     const allMetrics = await this.getAllQueueMetrics();
-    let prometheusOutput = '';
+    let prometheusOutput = "";
 
     // Jobs processed total
-    prometheusOutput += '# HELP jobs_processed_total Total number of jobs processed\n';
-    prometheusOutput += '# TYPE jobs_processed_total counter\n';
+    prometheusOutput +=
+      "# HELP jobs_processed_total Total number of jobs processed\n";
+    prometheusOutput += "# TYPE jobs_processed_total counter\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `jobs_processed_total{queue="${metrics.name}"} ${metrics.jobsProcessedTotal}\n`;
     }
 
     // Job duration
-    prometheusOutput += '# HELP job_duration_seconds Job processing duration in seconds\n';
-    prometheusOutput += '# TYPE job_duration_seconds gauge\n';
+    prometheusOutput +=
+      "# HELP job_duration_seconds Job processing duration in seconds\n";
+    prometheusOutput += "# TYPE job_duration_seconds gauge\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `job_duration_seconds{queue="${metrics.name}",type="average"} ${metrics.jobsDurationSeconds.average}\n`;
       prometheusOutput += `job_duration_seconds{queue="${metrics.name}",type="total"} ${metrics.jobsDurationSeconds.total}\n`;
     }
 
     // Queue size
-    prometheusOutput += '# HELP queue_size Number of jobs in queue\n';
-    prometheusOutput += '# TYPE queue_size gauge\n';
+    prometheusOutput += "# HELP queue_size Number of jobs in queue\n";
+    prometheusOutput += "# TYPE queue_size gauge\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `queue_size{queue="${metrics.name}"} ${metrics.queueSize}\n`;
     }
 
     // DLQ size
-    prometheusOutput += '# HELP dlq_size Number of jobs in dead letter queue\n';
-    prometheusOutput += '# TYPE dlq_size gauge\n';
+    prometheusOutput += "# HELP dlq_size Number of jobs in dead letter queue\n";
+    prometheusOutput += "# TYPE dlq_size gauge\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `dlq_size{queue="${metrics.name}"} ${metrics.dlqSize}\n`;
     }
 
     // Throughput
-    prometheusOutput += '# HELP queue_throughput_per_minute Queue throughput in jobs per minute\n';
-    prometheusOutput += '# TYPE queue_throughput_per_minute gauge\n';
+    prometheusOutput +=
+      "# HELP queue_throughput_per_minute Queue throughput in jobs per minute\n";
+    prometheusOutput += "# TYPE queue_throughput_per_minute gauge\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `queue_throughput_per_minute{queue="${metrics.name}"} ${metrics.throughputPerMin}\n`;
     }
 
     // Worker utilization
-    prometheusOutput += '# HELP worker_utilization_percent Worker utilization percentage\n';
-    prometheusOutput += '# TYPE worker_utilization_percent gauge\n';
+    prometheusOutput +=
+      "# HELP worker_utilization_percent Worker utilization percentage\n";
+    prometheusOutput += "# TYPE worker_utilization_percent gauge\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `worker_utilization_percent{queue="${metrics.name}"} ${metrics.workerUtilization}\n`;
     }
 
     // Completion rate
-    prometheusOutput += '# HELP job_completion_rate Job completion rate percentage\n';
-    prometheusOutput += '# TYPE job_completion_rate gauge\n';
+    prometheusOutput +=
+      "# HELP job_completion_rate Job completion rate percentage\n";
+    prometheusOutput += "# TYPE job_completion_rate gauge\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `job_completion_rate{queue="${metrics.name}"} ${metrics.completionRate}\n`;
     }
 
     // Error rate
-    prometheusOutput += '# HELP job_error_rate Job error rate percentage\n';
-    prometheusOutput += '# TYPE job_error_rate gauge\n';
+    prometheusOutput += "# HELP job_error_rate Job error rate percentage\n";
+    prometheusOutput += "# TYPE job_error_rate gauge\n";
     for (const metrics of allMetrics) {
       prometheusOutput += `job_error_rate{queue="${metrics.name}"} ${metrics.errorRate}\n`;
     }

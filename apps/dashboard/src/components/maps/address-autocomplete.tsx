@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   useCallback,
@@ -7,11 +7,15 @@ import {
   useState,
   type ChangeEvent,
   type KeyboardEvent,
-} from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { type AddressAutocompleteProps, type PlaceDetails, type PlacePrediction } from './types';
-import { useGoogleMaps } from './google-maps-provider';
+} from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  type AddressAutocompleteProps,
+  type PlaceDetails,
+  type PlacePrediction,
+} from "./types";
+import { useGoogleMaps } from "./google-maps-provider";
 
 /**
  * Address Autocomplete Component
@@ -20,8 +24,8 @@ import { useGoogleMaps } from './google-maps-provider';
 export function AddressAutocomplete({
   onSelect,
   onInputChange,
-  defaultValue = '',
-  placeholder = 'Enter address...',
+  defaultValue = "",
+  placeholder = "Enter address...",
   countryFilter = [],
   types = [],
   disabled = false,
@@ -42,9 +46,14 @@ export function AddressAutocomplete({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const autocompleteServiceRef =
+    useRef<google.maps.places.AutocompleteService | null>(null);
+  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(
+    null,
+  );
 
   // Initialize services
   useEffect(() => {
@@ -52,10 +61,11 @@ export function AddressAutocomplete({
       return;
     }
 
-    autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
+    autocompleteServiceRef.current =
+      new google.maps.places.AutocompleteService();
 
     // Create a temporary map div for PlacesService
-    const tempDiv = document.createElement('div');
+    const tempDiv = document.createElement("div");
     const tempMap = new google.maps.Map(tempDiv);
     placesServiceRef.current = new google.maps.places.PlacesService(tempMap);
   }, [isLoaded, google]);
@@ -71,33 +81,41 @@ export function AddressAutocomplete({
       setIsLoading(true);
 
       try {
-        const restrictions = countryFilter.length > 0 ? { componentRestrictions: { country: countryFilter } } : {};
+        const restrictions =
+          countryFilter.length > 0
+            ? { componentRestrictions: { country: countryFilter } }
+            : {};
         const typeRestrictions = types.length > 0 ? { types } : {};
 
-        const response = await autocompleteServiceRef.current.getPlacePredictions({
-          input,
-          ...restrictions,
-          ...typeRestrictions,
-        });
+        const response =
+          await autocompleteServiceRef.current.getPlacePredictions({
+            input,
+            ...restrictions,
+            ...typeRestrictions,
+          });
 
-        const results: PlacePrediction[] = (response.predictions || []).map((prediction: google.maps.places.AutocompletePrediction) => ({
-          placeId: prediction.place_id,
-          description: prediction.description,
-          mainText: prediction.structured_formatting?.main_text || prediction.description,
-          secondaryText: prediction.structured_formatting?.secondary_text,
-          types: prediction.types || [],
-        }));
+        const results: PlacePrediction[] = (response.predictions || []).map(
+          (prediction: google.maps.places.AutocompletePrediction) => ({
+            placeId: prediction.place_id,
+            description: prediction.description,
+            mainText:
+              prediction.structured_formatting?.main_text ||
+              prediction.description,
+            secondaryText: prediction.structured_formatting?.secondary_text,
+            types: prediction.types || [],
+          }),
+        );
 
         setPredictions(results);
         setSelectedIndex(-1);
       } catch (error) {
-        console.error('Error fetching predictions:', error);
+        console.error("Error fetching predictions:", error);
         setPredictions([]);
       } finally {
         setIsLoading(false);
       }
     },
-    [countryFilter, types]
+    [countryFilter, types],
   );
 
   // Debounced input handler
@@ -124,90 +142,97 @@ export function AddressAutocomplete({
   };
 
   // Handle prediction selection
-  const selectPrediction = useCallback(
-    async (prediction: PlacePrediction) => {
-      if (!placesServiceRef.current) return;
+  const selectPrediction = useCallback(async (prediction: PlacePrediction) => {
+    if (!placesServiceRef.current) return;
 
-      setIsLoading(true);
+    setIsLoading(true);
 
-      try {
-        // Get place details
-        const result = await new Promise<google.maps.places.PlaceResult>((resolve, reject) => {
+    try {
+      // Get place details
+      const result = await new Promise<google.maps.places.PlaceResult>(
+        (resolve, reject) => {
           placesServiceRef.current!.getDetails(
             {
               placeId: prediction.placeId,
               fields: [
-                'place_id',
-                'formatted_address',
-                'geometry',
-                'name',
-                'type',
-                'address_component',
-                'adr_address',
-                'formatted_phone_number',
-                'website',
-                'url',
-                'utc_offset_minutes',
-                'viewport',
+                "place_id",
+                "formatted_address",
+                "geometry",
+                "name",
+                "type",
+                "address_component",
+                "adr_address",
+                "formatted_phone_number",
+                "website",
+                "url",
+                "utc_offset_minutes",
+                "viewport",
               ],
             },
             (place: google.maps.places.PlaceResult | null, status: string) => {
-              if (status === (typeof google !== 'undefined' ? google.maps.places.PlacesServiceStatus.OK : 'OK') && place) {
+              if (
+                status ===
+                  (typeof google !== "undefined"
+                    ? google.maps.places.PlacesServiceStatus.OK
+                    : "OK") &&
+                place
+              ) {
                 resolve(place);
               } else {
                 reject(new Error(`Failed to get place details: ${status}`));
               }
-            }
+            },
           );
-        });
+        },
+      );
 
-        const coordinates = result.geometry?.location;
-        const details: PlaceDetails = {
-          placeId: result.place_id || prediction.placeId,
-          formattedAddress: result.formatted_address || prediction.description,
-          latitude: coordinates?.lat() || 0,
-          longitude: coordinates?.lng() || 0,
-          name: result.name,
-          types: result.types || prediction.types,
-          addressComponents: result.address_components?.map((component) => ({
-            longName: component.long_name,
-            shortName: component.short_name,
-            types: component.types,
-          })),
-          adrAddress: result.adr_address,
-          phone: result.formatted_phone_number,
-          website: result.website,
-          url: result.url,
-          utcOffset: result.utc_offset_minutes,
-          viewport: result.geometry?.viewport ? {
-            northeast: {
-              lat: result.geometry.viewport.getNorthEast().lat(),
-              lng: result.geometry.viewport.getNorthEast().lng(),
-            },
-            southwest: {
-              lat: result.geometry.viewport.getSouthWest().lat(),
-              lng: result.geometry.viewport.getSouthWest().lng(),
-            },
-          } : undefined,
-        };
+      const coordinates = result.geometry?.location;
+      const details: PlaceDetails = {
+        placeId: result.place_id || prediction.placeId,
+        formattedAddress: result.formatted_address || prediction.description,
+        latitude: coordinates?.lat() || 0,
+        longitude: coordinates?.lng() || 0,
+        name: result.name,
+        types: result.types || prediction.types,
+        addressComponents: result.address_components?.map((component) => ({
+          longName: component.long_name,
+          shortName: component.short_name,
+          types: component.types,
+        })),
+        adrAddress: result.adr_address,
+        phone: result.formatted_phone_number,
+        website: result.website,
+        url: result.url,
+        utcOffset: result.utc_offset_minutes,
+        viewport: result.geometry?.viewport
+          ? {
+              northeast: {
+                lat: result.geometry.viewport.getNorthEast().lat(),
+                lng: result.geometry.viewport.getNorthEast().lng(),
+              },
+              southwest: {
+                lat: result.geometry.viewport.getSouthWest().lat(),
+                lng: result.geometry.viewport.getSouthWest().lng(),
+              },
+            }
+          : undefined,
+      };
 
-        setSelectedPlace(details);
-        setSelectedCoordinates({
-          lat: details.latitude,
-          lng: details.longitude,
-        });
-        setInputValue(details.formattedAddress);
-        setPredictions([]);
-        setIsOpen(false);
-        onSelect(details);
-      } catch (error) {
-        console.error('Error selecting prediction:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+      setSelectedPlace(details);
+      setSelectedCoordinates({
+        lat: details.latitude,
+        lng: details.longitude,
+      });
+      setInputValue(details.formattedAddress);
+      setPredictions([]);
+      setIsOpen(false);
+      onSelect(details);
+    } catch (error) {
+      console.error("Error selecting prediction:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Keyboard navigation
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -216,21 +241,25 @@ export function AddressAutocomplete({
     }
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex((prev) => (prev < predictions.length - 1 ? prev + 1 : 0));
+        setSelectedIndex((prev) =>
+          prev < predictions.length - 1 ? prev + 1 : 0,
+        );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : predictions.length - 1));
+        setSelectedIndex((prev) =>
+          prev > 0 ? prev - 1 : predictions.length - 1,
+        );
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < predictions.length) {
           selectPrediction(predictions[selectedIndex]);
         }
         break;
-      case 'Escape':
+      case "Escape":
         e.preventDefault();
         setIsOpen(false);
         setPredictions([]);
@@ -251,23 +280,23 @@ export function AddressAutocomplete({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Clear button handler
   const handleClear = () => {
-    setInputValue('');
+    setInputValue("");
     setSelectedPlace(null);
     setSelectedCoordinates(null);
     setPredictions([]);
     setIsOpen(false);
     inputRef.current?.focus();
-    onInputChange?.('');
+    onInputChange?.("");
   };
 
   return (
-    <div ref={containerRef} className={cn('w-full', className)}>
+    <div ref={containerRef} className={cn("w-full", className)}>
       <div className="relative">
         {/* Input Field */}
         <div className="relative flex items-center">
@@ -277,17 +306,19 @@ export function AddressAutocomplete({
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            onFocus={() => inputValue.length > 0 && predictions.length > 0 && setIsOpen(true)}
+            onFocus={() =>
+              inputValue.length > 0 && predictions.length > 0 && setIsOpen(true)
+            }
             placeholder={placeholder}
             disabled={disabled || !isLoaded}
             className={cn(
-              'w-full px-4 py-2.5 rounded-md',
-              'bg-wl-bg-overlay border border-wl-border-default',
-              'text-wl-text-primary placeholder-wl-text-secondary',
-              'focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent',
-              'transition-all duration-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              inputValue && 'pr-10'
+              "w-full px-4 py-2.5 rounded-md",
+              "bg-wl-bg-overlay border border-wl-border-default",
+              "text-wl-text-primary placeholder-wl-text-secondary",
+              "focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent",
+              "transition-all duration-200",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              inputValue && "pr-10",
             )}
           />
 
@@ -330,11 +361,11 @@ export function AddressAutocomplete({
                 key={prediction.placeId}
                 onClick={() => selectPrediction(prediction)}
                 className={cn(
-                  'w-full px-4 py-3 text-left transition-colors',
-                  'border-b border-wl-border-default last:border-b-0',
+                  "w-full px-4 py-3 text-left transition-colors",
+                  "border-b border-wl-border-default last:border-b-0",
                   index === selectedIndex
-                    ? 'bg-wl-primary-500/10 text-wl-text-primary'
-                    : 'text-wl-text-secondary hover:bg-wl-bg-overlay hover:text-wl-text-primary'
+                    ? "bg-wl-primary-500/10 text-wl-text-primary"
+                    : "text-wl-text-secondary hover:bg-wl-bg-overlay hover:text-wl-text-primary",
                 )}
               >
                 <div className="flex items-start gap-2">
@@ -374,11 +405,16 @@ export function AddressAutocomplete({
         )}
 
         {/* No Results */}
-        {isOpen && inputValue.length > 0 && predictions.length === 0 && !isLoading && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-wl-bg-elevated border border-wl-border-default rounded-md shadow-lg z-50 p-4">
-            <p className="text-center text-sm text-wl-text-secondary">No results found</p>
-          </div>
-        )}
+        {isOpen &&
+          inputValue.length > 0 &&
+          predictions.length === 0 &&
+          !isLoading && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-wl-bg-elevated border border-wl-border-default rounded-md shadow-lg z-50 p-4">
+              <p className="text-center text-sm text-wl-text-secondary">
+                No results found
+              </p>
+            </div>
+          )}
       </div>
 
       {/* Selected Address Display */}
@@ -389,13 +425,10 @@ export function AddressAutocomplete({
           </p>
           <div className="flex items-center justify-between">
             <p className="text-xs text-wl-text-secondary">
-              {selectedPlace.latitude.toFixed(6)}, {selectedPlace.longitude.toFixed(6)}
+              {selectedPlace.latitude.toFixed(6)},{" "}
+              {selectedPlace.longitude.toFixed(6)}
             </p>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleClear}
-            >
+            <Button size="sm" variant="ghost" onClick={handleClear}>
               Change
             </Button>
           </div>

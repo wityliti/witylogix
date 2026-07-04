@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp } from "lucide-react";
 
 interface ComplianceMetric {
   metric: string;
@@ -30,7 +30,9 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
           <Badge
             variant={metric.status === "compliant" ? "success" : "warning"}
             className={cn(
-              metric.status === "compliant" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+              metric.status === "compliant"
+                ? "bg-green-500/20 text-green-400"
+                : "bg-yellow-500/20 text-yellow-400",
             )}
           >
             {metric.status}
@@ -39,17 +41,14 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
 
         <div className="flex items-end gap-4 mb-4">
           <div>
-            <p className="text-3xl font-bold text-white">
-              {metric.value}%
-            </p>
+            <p className="text-3xl font-bold text-white">{metric.value}%</p>
             <p className="text-xs text-wl-text-tertiary mt-1">
               Target: {metric.target}%
             </p>
           </div>
           {difference >= 0 ? (
             <div className="flex items-center gap-1 text-green-400 text-sm font-semibold">
-              <TrendingUp className="w-4 h-4" />
-              +{difference}%
+              <TrendingUp className="w-4 h-4" />+{difference}%
             </div>
           ) : (
             <div className="flex items-center gap-1 text-red-400 text-sm font-semibold">
@@ -61,8 +60,11 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
 
         <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
           <div
-            className={cn("h-full transition-all",
-              metric.status === "compliant" ? "bg-gradient-to-r from-green-500 to-green-400" : "bg-gradient-to-r from-yellow-500 to-yellow-400"
+            className={cn(
+              "h-full transition-all",
+              metric.status === "compliant"
+                ? "bg-gradient-to-r from-green-500 to-green-400"
+                : "bg-gradient-to-r from-yellow-500 to-yellow-400",
             )}
             style={{ width: `${percentage}%` }}
           />

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useMemo, useCallback, useState } from 'react';
-import dynamic from 'next/dynamic';
+import { useMemo, useCallback, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   TrendingUp,
   TrendingDown,
@@ -14,22 +14,28 @@ import {
   Download,
   BarChart3,
   Map,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { useApiQuery } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { useApiQuery } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useZonesGeoJson } from "@/hooks/use-zones-geojson";
 
 const WLMap = dynamic(
-  () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
-  { ssr: false, loading: () => <div className="h-full bg-wl-bg-elevated rounded-xl animate-pulse" /> },
+  () => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full bg-wl-bg-elevated rounded-xl animate-pulse" />
+    ),
+  },
 );
 const DemandZoneLayer = dynamic(
-  () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
+  () =>
+    import("@/components/map/demand-zone-layer").then((m) => m.DemandZoneLayer),
   { ssr: false },
 );
 
@@ -40,14 +46,14 @@ interface DemandData {
     predictedVolume: number;
     actualVolume: number;
     confidence: number;
-    trend: 'up' | 'down' | 'stable';
+    trend: "up" | "down" | "stable";
     anomalies: number;
   }>;
   anomalies: Array<{
     id: string;
-    type: 'spike' | 'drop' | 'trend_shift' | 'seasonal_break';
+    type: "spike" | "drop" | "trend_shift" | "seasonal_break";
     zone: string;
-    severity: 'low' | 'medium' | 'high';
+    severity: "low" | "medium" | "high";
     description: string;
     timestamp: string;
   }>;
@@ -71,12 +77,18 @@ interface DemandData {
  * - Anomaly alerts section
  */
 export default function DemandPage() {
-  const [selectedZone, setSelectedZone] = useState<string>('all');
-  const [dateRange, setDateRange] = useState<'today' | 'week' | 'nextweek' | 'custom'>('week');
-  const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'charts' | 'map'>('charts');
+  const [selectedZone, setSelectedZone] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<
+    "today" | "week" | "nextweek" | "custom"
+  >("week");
+  const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(
+    new Set(),
+  );
+  const [viewMode, setViewMode] = useState<"charts" | "map">("charts");
 
-  const { data, loading, error } = useApiQuery<DemandData>('/api/v4/analytics/demand');
+  const { data, loading, error } = useApiQuery<DemandData>(
+    "/api/v4/analytics/demand",
+  );
   const { data: zonesGeojson } = useZonesGeoJson();
 
   const zones = data?.zones || [];
@@ -84,7 +96,7 @@ export default function DemandPage() {
   const metrics = data?.metrics || null;
 
   const filteredZones = useMemo(() => {
-    if (selectedZone === 'all') return zones;
+    if (selectedZone === "all") return zones;
     return zones.filter((z) => z.id === selectedZone);
   }, [zones, selectedZone]);
 
@@ -110,10 +122,13 @@ export default function DemandPage() {
     const innerHeight = chartHeight - padding.top - padding.bottom;
 
     const maxVolume = Math.max(
-      ...filteredZones.map((z) => Math.max(z.predictedVolume, z.actualVolume)) || 1000
+      ...(filteredZones.map((z) =>
+        Math.max(z.predictedVolume, z.actualVolume),
+      ) || 1000),
     );
 
-    const barWidth = innerWidth / (filteredZones.length * 2 + filteredZones.length - 1);
+    const barWidth =
+      innerWidth / (filteredZones.length * 2 + filteredZones.length - 1);
     const barGap = barWidth;
 
     return (
@@ -181,7 +196,8 @@ export default function DemandPage() {
         {/* Bars and labels */}
         {filteredZones.map((zone, idx) => {
           const xStart = padding.left + idx * (barWidth * 2 + barGap);
-          const predictedHeight = (zone.predictedVolume / maxVolume) * innerHeight;
+          const predictedHeight =
+            (zone.predictedVolume / maxVolume) * innerHeight;
           const actualHeight = (zone.actualVolume / maxVolume) * innerHeight;
           const predictedY = chartHeight - padding.bottom - predictedHeight;
           const actualY = chartHeight - padding.bottom - actualHeight;
@@ -214,7 +230,7 @@ export default function DemandPage() {
                 className="text-xs"
                 fill="var(--wl-text-secondary)"
               >
-                {zone.name.split(' ')[0]}
+                {zone.name.split(" ")[0]}
               </text>
             </g>
           );
@@ -225,10 +241,10 @@ export default function DemandPage() {
 
   const renderHeatmap = () => {
     const getHeatmapColor = (intensity: number): string => {
-      if (intensity > 0.8) return 'var(--wl-danger-500)';
-      if (intensity > 0.6) return 'var(--wl-warning-500)';
-      if (intensity > 0.4) return 'var(--wl-primary-500)';
-      return 'var(--wl-info-500)';
+      if (intensity > 0.8) return "var(--wl-danger-500)";
+      if (intensity > 0.6) return "var(--wl-warning-500)";
+      if (intensity > 0.4) return "var(--wl-primary-500)";
+      return "var(--wl-info-500)";
     };
 
     return (
@@ -244,11 +260,15 @@ export default function DemandPage() {
                 borderColor: `${getHeatmapColor(intensity)}44`,
               }}
             >
-              <p className="text-xs font-medium text-wl-text-secondary">{zone.name}</p>
+              <p className="text-xs font-medium text-wl-text-secondary">
+                {zone.name}
+              </p>
               <p className="text-sm font-semibold text-wl-text-primary mt-1">
                 {Math.round(intensity * 100)}%
               </p>
-              <p className="text-xs text-wl-text-tertiary">{zone.predictedVolume} predicted</p>
+              <p className="text-xs text-wl-text-tertiary">
+                {zone.predictedVolume} predicted
+              </p>
             </div>
           );
         })}
@@ -265,7 +285,11 @@ export default function DemandPage() {
   }
 
   const volumeDeviation = metrics
-    ? Math.round(((metrics.totalActual - metrics.totalPredicted) / metrics.totalPredicted) * 100)
+    ? Math.round(
+        ((metrics.totalActual - metrics.totalPredicted) /
+          metrics.totalPredicted) *
+          100,
+      )
     : 0;
 
   return (
@@ -276,29 +300,31 @@ export default function DemandPage() {
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-white">Demand Forecast</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Real-time demand predictions and analytics</p>
+              <p className="text-sm text-wl-text-secondary mt-1">
+                Real-time demand predictions and analytics
+              </p>
             </div>
             <div className="flex gap-2 items-center">
               {/* Charts / Map toggle */}
               <div className="flex rounded-lg border border-wl-border-default overflow-hidden">
                 <button
-                  onClick={() => setViewMode('charts')}
+                  onClick={() => setViewMode("charts")}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
-                    viewMode === 'charts'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-transparent text-wl-text-secondary hover:text-white'
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                    viewMode === "charts"
+                      ? "bg-blue-600 text-white"
+                      : "bg-transparent text-wl-text-secondary hover:text-white",
                   )}
                 >
                   <BarChart3 className="w-3.5 h-3.5" /> Charts
                 </button>
                 <button
-                  onClick={() => setViewMode('map')}
+                  onClick={() => setViewMode("map")}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
-                    viewMode === 'map'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-transparent text-wl-text-secondary hover:text-white'
+                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                    viewMode === "map"
+                      ? "bg-blue-600 text-white"
+                      : "bg-transparent text-wl-text-secondary hover:text-white",
                   )}
                 >
                   <Map className="w-3.5 h-3.5" /> Map
@@ -319,7 +345,10 @@ export default function DemandPage() {
           <div className="flex flex-wrap gap-4">
             {/* Zone Selector */}
             <div className="flex items-center gap-2">
-              <label htmlFor="zone-select" className="text-sm font-medium text-wl-text-secondary">
+              <label
+                htmlFor="zone-select"
+                className="text-sm font-medium text-wl-text-secondary"
+              >
                 <MapPin className="w-4 h-4 inline mr-2" />
                 Zone
               </label>
@@ -328,11 +357,11 @@ export default function DemandPage() {
                 value={selectedZone}
                 onChange={(e) => setSelectedZone(e.target.value)}
                 className={cn(
-                  'px-3 py-2 rounded-md text-sm font-medium',
-                  'bg-wl-bg-elevated border border-wl-border-default',
-                  'text-white',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500',
-                  'cursor-pointer hover:border-blue-500/50 transition-colors'
+                  "px-3 py-2 rounded-md text-sm font-medium",
+                  "bg-wl-bg-elevated border border-wl-border-default",
+                  "text-white",
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500",
+                  "cursor-pointer hover:border-blue-500/50 transition-colors",
                 )}
               >
                 <option value="all">All Zones</option>
@@ -346,7 +375,10 @@ export default function DemandPage() {
 
             {/* Date Range Selector */}
             <div className="flex items-center gap-2">
-              <label htmlFor="date-range" className="text-sm font-medium text-wl-text-secondary">
+              <label
+                htmlFor="date-range"
+                className="text-sm font-medium text-wl-text-secondary"
+              >
                 <Calendar className="w-4 h-4 inline mr-2" />
                 Period
               </label>
@@ -355,11 +387,11 @@ export default function DemandPage() {
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as any)}
                 className={cn(
-                  'px-3 py-2 rounded-md text-sm font-medium',
-                  'bg-wl-bg-elevated border border-wl-border-default',
-                  'text-white',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500',
-                  'cursor-pointer hover:border-blue-500/50 transition-colors'
+                  "px-3 py-2 rounded-md text-sm font-medium",
+                  "bg-wl-bg-elevated border border-wl-border-default",
+                  "text-white",
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500",
+                  "cursor-pointer hover:border-blue-500/50 transition-colors",
                 )}
               >
                 <option value="today">Today</option>
@@ -373,8 +405,11 @@ export default function DemandPage() {
       </div>
 
       {/* Map View */}
-      {viewMode === 'map' && (
-        <div className="flex-1 relative" style={{ height: 'calc(100vh - 200px)' }}>
+      {viewMode === "map" && (
+        <div
+          className="flex-1 relative"
+          style={{ height: "calc(100vh - 200px)" }}
+        >
           {zonesGeojson ? (
             <WLMap center={[77.12, 28.65]} zoom={10} className="h-full w-full">
               <DemandZoneLayer
@@ -390,7 +425,9 @@ export default function DemandPage() {
             </WLMap>
           ) : (
             <div className="h-full flex items-center justify-center bg-wl-bg-root">
-              <p className="text-wl-text-secondary text-sm">Loading zone map…</p>
+              <p className="text-wl-text-secondary text-sm">
+                Loading zone map…
+              </p>
             </div>
           )}
 
@@ -398,14 +435,17 @@ export default function DemandPage() {
           <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs">
             <p className="font-semibold text-white mb-2">Demand Intensity</p>
             {[
-              { color: 'var(--wl-info-500)', label: 'Low' },
-              { color: 'var(--wl-success-500)', label: 'Moderate' },
-              { color: 'var(--wl-warning-500)', label: 'High' },
-              { color: 'var(--wl-chart-orange)', label: 'Very High' },
-              { color: 'var(--wl-danger-500)', label: 'Critical' },
+              { color: "var(--wl-info-500)", label: "Low" },
+              { color: "var(--wl-success-500)", label: "Moderate" },
+              { color: "var(--wl-warning-500)", label: "High" },
+              { color: "var(--wl-chart-orange)", label: "Very High" },
+              { color: "var(--wl-danger-500)", label: "Critical" },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2 mt-1">
-                <div className="w-3 h-3 rounded-sm" style={{ background: color }} />
+                <div
+                  className="w-3 h-3 rounded-sm"
+                  style={{ background: color }}
+                />
                 <span className="text-wl-neutral-300">{label}</span>
               </div>
             ))}
@@ -413,19 +453,30 @@ export default function DemandPage() {
 
           {/* Zone summary overlay */}
           <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 max-w-xs">
-            <p className="text-xs font-semibold text-white mb-3">Zone Summary</p>
+            <p className="text-xs font-semibold text-white mb-3">
+              Zone Summary
+            </p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {zones.slice(0, 8).map((z) => (
-                <div key={z.id} className="flex items-center justify-between gap-3">
-                  <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
+                <div
+                  key={z.id}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="text-xs text-wl-neutral-300 truncate">
+                    {z.name}
+                  </span>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-xs font-mono text-white">{z.predictedVolume}</span>
-                    {z.trend === 'up' ? (
+                    <span className="text-xs font-mono text-white">
+                      {z.predictedVolume}
+                    </span>
+                    {z.trend === "up" ? (
                       <TrendingUp className="w-3 h-3 text-emerald-400" />
-                    ) : z.trend === 'down' ? (
+                    ) : z.trend === "down" ? (
                       <TrendingDown className="w-3 h-3 text-red-400" />
                     ) : (
-                      <span className="text-wl-text-tertiary text-[10px]">—</span>
+                      <span className="text-wl-text-tertiary text-[10px]">
+                        —
+                      </span>
                     )}
                   </div>
                 </div>
@@ -436,222 +487,275 @@ export default function DemandPage() {
       )}
 
       {/* Main Content — Charts view */}
-      {viewMode === 'charts' && (
-      <div className="flex-1 overflow-auto px-8 py-6">
-        <div className="space-y-6 max-w-7xl">
-          {/* KPI Metric Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Total Predicted</p>
-              <p className="text-3xl font-bold text-white mt-3">
-                {((metrics?.totalPredicted ?? 0) / 1000).toFixed(1)}k
-              </p>
-              <p className="text-xs text-wl-text-tertiary mt-2">Volume units</p>
-            </Card>
+      {viewMode === "charts" && (
+        <div className="flex-1 overflow-auto px-8 py-6">
+          <div className="space-y-6 max-w-7xl">
+            {/* KPI Metric Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
+                <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">
+                  Total Predicted
+                </p>
+                <p className="text-3xl font-bold text-white mt-3">
+                  {((metrics?.totalPredicted ?? 0) / 1000).toFixed(1)}k
+                </p>
+                <p className="text-xs text-wl-text-tertiary mt-2">
+                  Volume units
+                </p>
+              </Card>
 
-            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Current Actual</p>
-              <p className="text-3xl font-bold text-white mt-3">
-                {((metrics?.totalActual ?? 0) / 1000).toFixed(1)}k
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                {volumeDeviation >= 0 ? (
-                  <>
-                    <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-                    <span className="text-xs text-emerald-400">+{volumeDeviation}%</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowDownRight className="w-4 h-4 text-red-500" />
-                    <span className="text-xs text-red-400">{volumeDeviation}%</span>
-                  </>
-                )}
+              <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
+                <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">
+                  Current Actual
+                </p>
+                <p className="text-3xl font-bold text-white mt-3">
+                  {((metrics?.totalActual ?? 0) / 1000).toFixed(1)}k
+                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  {volumeDeviation >= 0 ? (
+                    <>
+                      <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                      <span className="text-xs text-emerald-400">
+                        +{volumeDeviation}%
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowDownRight className="w-4 h-4 text-red-500" />
+                      <span className="text-xs text-red-400">
+                        {volumeDeviation}%
+                      </span>
+                    </>
+                  )}
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
+                <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">
+                  Avg Confidence
+                </p>
+                <p className="text-3xl font-bold text-white mt-3">
+                  {metrics?.avgConfidence}%
+                </p>
+                <p className="text-xs text-wl-text-tertiary mt-2">
+                  Prediction accuracy
+                </p>
+              </Card>
+
+              <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
+                <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">
+                  Anomalies Detected
+                </p>
+                <p className="text-3xl font-bold text-white mt-3">
+                  {metrics?.anomalyCount}
+                </p>
+                <Badge variant="warning" className="mt-2 text-xs">
+                  Active Alerts
+                </Badge>
+              </Card>
+            </div>
+
+            {/* Chart Section */}
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
+              <h2 className="text-lg font-semibold text-white mb-4">
+                Predicted vs Actual Volume
+              </h2>
+              <div className="flex items-end gap-6">
+                <div className="flex-1 overflow-x-auto">
+                  {renderForecastChart()}
+                </div>
+                <div className="flex flex-col gap-3 text-sm min-w-max">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 rounded"
+                      style={{ background: "var(--wl-primary-500)" }}
+                    />
+                    <span className="text-wl-text-secondary">Predicted</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 rounded"
+                      style={{ background: "var(--wl-success-500)" }}
+                    />
+                    <span className="text-wl-text-secondary">Actual</span>
+                  </div>
+                </div>
               </div>
             </Card>
 
-            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Avg Confidence</p>
-              <p className="text-3xl font-bold text-white mt-3">{metrics?.avgConfidence}%</p>
-              <p className="text-xs text-wl-text-tertiary mt-2">Prediction accuracy</p>
+            {/* Heatmap Section */}
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
+              <h2 className="text-lg font-semibold text-white mb-4">
+                Demand Intensity by Zone
+              </h2>
+              {renderHeatmap()}
             </Card>
 
-            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-              <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Anomalies Detected</p>
-              <p className="text-3xl font-bold text-white mt-3">{metrics?.anomalyCount}</p>
-              <Badge variant="warning" className="mt-2 text-xs">
-                Active Alerts
-              </Badge>
+            {/* Zone Performance Table */}
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden">
+              <h2 className="text-lg font-semibold text-white mb-4">
+                Zone Performance
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-wl-border-default">
+                      <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
+                        Zone
+                      </th>
+                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">
+                        Predicted
+                      </th>
+                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">
+                        Actual
+                      </th>
+                      <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">
+                        Confidence
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">
+                        Trend
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">
+                        Anomalies
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredZones.map((zone, idx) => (
+                      <tr
+                        key={zone.id}
+                        className={cn(
+                          "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors",
+                          idx % 2 === 0 ? "bg-wl-bg-sunken" : "bg-transparent",
+                        )}
+                      >
+                        <td className="px-4 py-3 font-medium text-white">
+                          {zone.name}
+                        </td>
+                        <td className="text-right px-4 py-3 text-wl-neutral-300">
+                          {zone.predictedVolume.toLocaleString()}
+                        </td>
+                        <td className="text-right px-4 py-3 text-wl-neutral-300">
+                          {zone.actualVolume.toLocaleString()}
+                        </td>
+                        <td className="text-right px-4 py-3">
+                          <Badge
+                            variant={zone.confidence >= 90 ? "success" : "info"}
+                          >
+                            {zone.confidence}%
+                          </Badge>
+                        </td>
+                        <td className="text-center px-4 py-3">
+                          {zone.trend === "up" ? (
+                            <TrendingUp className="w-4 h-4 text-emerald-500 mx-auto" />
+                          ) : zone.trend === "down" ? (
+                            <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />
+                          ) : (
+                            <div className="w-4 h-4 border-l-2 border-wl-border-strong mx-auto" />
+                          )}
+                        </td>
+                        <td className="text-center px-4 py-3">
+                          {zone.anomalies > 0 ? (
+                            <Badge variant="warning">{zone.anomalies}</Badge>
+                          ) : (
+                            <span className="text-wl-text-tertiary">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            {/* Anomaly Alerts */}
+            <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
+              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                Anomaly Alerts
+              </h2>
+
+              {anomalies.length === 0 ? (
+                <p className="text-wl-text-secondary text-sm">
+                  No anomalies detected
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {anomalies.map((anomaly) => {
+                    const isExpanded = expandedAnomalies.has(anomaly.id);
+                    const timestamp = new Date(anomaly.timestamp);
+
+                    const severityColor =
+                      anomaly.severity === "high"
+                        ? "border-red-500/50 bg-red-500/5"
+                        : anomaly.severity === "medium"
+                          ? "border-amber-500/50 bg-amber-500/5"
+                          : "border-blue-500/50 bg-blue-500/5";
+
+                    const severityBadgeVariant =
+                      anomaly.severity === "high"
+                        ? "danger"
+                        : anomaly.severity === "medium"
+                          ? "warning"
+                          : ("info" as const);
+
+                    return (
+                      <div
+                        key={anomaly.id}
+                        className={cn(
+                          "border rounded-lg p-4 cursor-pointer transition-colors",
+                          severityColor,
+                          "hover:border-opacity-100",
+                        )}
+                        onClick={() => toggleAnomalyExpansion(anomaly.id)}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <Badge variant={severityBadgeVariant}>
+                                {anomaly.severity}
+                              </Badge>
+                              <span className="text-sm font-medium text-white capitalize">
+                                {anomaly.type.replace(/_/g, " ")}
+                              </span>
+                              <span className="text-xs text-wl-text-tertiary">
+                                in {anomaly.zone}
+                              </span>
+                            </div>
+                            <p className="text-sm text-wl-neutral-300">
+                              {anomaly.description}
+                            </p>
+
+                            {isExpanded && (
+                              <div className="mt-3 pt-3 border-t border-wl-border-default text-xs text-wl-text-tertiary">
+                                <p>Detected: {timestamp.toLocaleString()}</p>
+                                <div className="mt-2 flex gap-2">
+                                  <Button variant="ghost" size="sm">
+                                    <Eye className="w-4 h-4" />
+                                    Investigate
+                                  </Button>
+                                  <Button variant="ghost" size="sm">
+                                    Acknowledge
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs text-wl-text-tertiary whitespace-nowrap">
+                            {Math.round(
+                              (Date.now() - timestamp.getTime()) / 60000,
+                            )}
+                            m ago
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </Card>
           </div>
-
-          {/* Chart Section */}
-          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4">Predicted vs Actual Volume</h2>
-            <div className="flex items-end gap-6">
-              <div className="flex-1 overflow-x-auto">{renderForecastChart()}</div>
-              <div className="flex flex-col gap-3 text-sm min-w-max">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-4 h-4 rounded"
-                    style={{ background: 'var(--wl-primary-500)' }}
-                  />
-                  <span className="text-wl-text-secondary">Predicted</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-4 h-4 rounded"
-                    style={{ background: 'var(--wl-success-500)' }}
-                  />
-                  <span className="text-wl-text-secondary">Actual</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Heatmap Section */}
-          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4">Demand Intensity by Zone</h2>
-            {renderHeatmap()}
-          </Card>
-
-          {/* Zone Performance Table */}
-          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden">
-            <h2 className="text-lg font-semibold text-white mb-4">Zone Performance</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-wl-border-default">
-                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Zone</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Predicted</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Actual</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Confidence</th>
-                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Trend</th>
-                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Anomalies</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredZones.map((zone, idx) => (
-                    <tr
-                      key={zone.id}
-                      className={cn(
-                        'border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors',
-                        idx % 2 === 0 ? 'bg-wl-bg-sunken' : 'bg-transparent'
-                      )}
-                    >
-                      <td className="px-4 py-3 font-medium text-white">{zone.name}</td>
-                      <td className="text-right px-4 py-3 text-wl-neutral-300">
-                        {zone.predictedVolume.toLocaleString()}
-                      </td>
-                      <td className="text-right px-4 py-3 text-wl-neutral-300">
-                        {zone.actualVolume.toLocaleString()}
-                      </td>
-                      <td className="text-right px-4 py-3">
-                        <Badge
-                          variant={zone.confidence >= 90 ? 'success' : 'info'}
-                        >
-                          {zone.confidence}%
-                        </Badge>
-                      </td>
-                      <td className="text-center px-4 py-3">
-                        {zone.trend === 'up' ? (
-                          <TrendingUp className="w-4 h-4 text-emerald-500 mx-auto" />
-                        ) : zone.trend === 'down' ? (
-                          <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />
-                        ) : (
-                          <div className="w-4 h-4 border-l-2 border-wl-border-strong mx-auto" />
-                        )}
-                      </td>
-                      <td className="text-center px-4 py-3">
-                        {zone.anomalies > 0 ? (
-                          <Badge variant="warning">{zone.anomalies}</Badge>
-                        ) : (
-                          <span className="text-wl-text-tertiary">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-
-          {/* Anomaly Alerts */}
-          <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-              Anomaly Alerts
-            </h2>
-
-            {anomalies.length === 0 ? (
-              <p className="text-wl-text-secondary text-sm">No anomalies detected</p>
-            ) : (
-              <div className="space-y-3">
-                {anomalies.map((anomaly) => {
-                  const isExpanded = expandedAnomalies.has(anomaly.id);
-                  const timestamp = new Date(anomaly.timestamp);
-
-                  const severityColor =
-                    anomaly.severity === 'high'
-                      ? 'border-red-500/50 bg-red-500/5'
-                      : anomaly.severity === 'medium'
-                        ? 'border-amber-500/50 bg-amber-500/5'
-                        : 'border-blue-500/50 bg-blue-500/5';
-
-                  const severityBadgeVariant =
-                    anomaly.severity === 'high'
-                      ? 'danger'
-                      : anomaly.severity === 'medium'
-                        ? 'warning'
-                        : ('info' as const);
-
-                  return (
-                    <div
-                      key={anomaly.id}
-                      className={cn(
-                        'border rounded-lg p-4 cursor-pointer transition-colors',
-                        severityColor,
-                        'hover:border-opacity-100'
-                      )}
-                      onClick={() => toggleAnomalyExpansion(anomaly.id)}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Badge variant={severityBadgeVariant}>{anomaly.severity}</Badge>
-                            <span className="text-sm font-medium text-white capitalize">
-                              {anomaly.type.replace(/_/g, ' ')}
-                            </span>
-                            <span className="text-xs text-wl-text-tertiary">in {anomaly.zone}</span>
-                          </div>
-                          <p className="text-sm text-wl-neutral-300">{anomaly.description}</p>
-
-                          {isExpanded && (
-                            <div className="mt-3 pt-3 border-t border-wl-border-default text-xs text-wl-text-tertiary">
-                              <p>Detected: {timestamp.toLocaleString()}</p>
-                              <div className="mt-2 flex gap-2">
-                                <Button variant="ghost" size="sm">
-                                  <Eye className="w-4 h-4" />
-                                  Investigate
-                                </Button>
-                                <Button variant="ghost" size="sm">
-                                  Acknowledge
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-xs text-wl-text-tertiary whitespace-nowrap">
-                          {Math.round((Date.now() - timestamp.getTime()) / 60000)}m ago
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
         </div>
-      </div>
       )}
     </div>
   );

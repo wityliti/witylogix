@@ -75,7 +75,10 @@ export default function ForgotPasswordPage() {
         } else if (response.status === 429) {
           throw new Error("Too many requests. Please try again later.");
         } else {
-          throw new Error(errorData.message || `Failed to send reset email: ${response.status}`);
+          throw new Error(
+            errorData.message ||
+              `Failed to send reset email: ${response.status}`,
+          );
         }
       }
 
@@ -83,7 +86,10 @@ export default function ForgotPasswordPage() {
       setIsSubmitted(true);
       setCountdown(60);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again.";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -112,7 +118,8 @@ export default function ForgotPasswordPage() {
       // Reset countdown
       setCountdown(60);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to resend email.";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to resend email.";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -139,7 +146,8 @@ export default function ForgotPasswordPage() {
             <span className="text-wl-text-secondary font-semibold">
               {email}
             </span>
-            . Please check your inbox and follow the link to reset your password.
+            . Please check your inbox and follow the link to reset your
+            password.
           </p>
         </div>
 
@@ -161,18 +169,23 @@ export default function ForgotPasswordPage() {
           disabled={isLoading || countdown > 0}
           className={cn(
             "py-3 px-4 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 transition-all border-wl-border-default",
-            countdown > 0 ? "bg-wl-bg-surface text-wl-text-muted" : "bg-wl-primary-500 text-wl-text-inverse",
-            (isLoading || countdown > 0) && "opacity-60 cursor-not-allowed"
+            countdown > 0
+              ? "bg-wl-bg-surface text-wl-text-muted"
+              : "bg-wl-primary-500 text-wl-text-inverse",
+            (isLoading || countdown > 0) && "opacity-60 cursor-not-allowed",
           )}
           onMouseEnter={(e) => {
             if (!isLoading && countdown === 0) {
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-primary-600)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-primary-600)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 4px 12px rgba(108, 99, 255, 0.25)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading && countdown === 0) {
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "var(--wl-primary-500)";
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
             }
           }}
@@ -209,7 +222,8 @@ export default function ForgotPasswordPage() {
           Reset password
         </h2>
         <p className="text-sm text-wl-text-tertiary">
-          Enter your email address and we&apos;ll send you a link to reset your password
+          Enter your email address and we&apos;ll send you a link to reset your
+          password
         </p>
       </div>
 
@@ -243,26 +257,28 @@ export default function ForgotPasswordPage() {
                 emailError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = emailError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = emailError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = emailError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {emailError && (
-            <span className="text-xs text-wl-danger-400">
-              {emailError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{emailError}</span>
           )}
         </div>
 
@@ -279,7 +295,7 @@ export default function ForgotPasswordPage() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading && "opacity-80 cursor-not-allowed"
+            isLoading && "opacity-80 cursor-not-allowed",
           )}
           style={{
             background: isLoading
@@ -289,14 +305,18 @@ export default function ForgotPasswordPage() {
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 6px 20px rgba(108, 99, 255, 0.35)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(0)";
             }
           }}
         >

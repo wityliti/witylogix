@@ -247,7 +247,10 @@ export default function CollectionsIndex() {
                 />
 
                 {(currentTypeFilter || currentStatusFilter) && (
-                  <Button variant="secondary" onClick={() => setSearchParams("")}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setSearchParams("")}
+                  >
                     Clear Filters
                   </Button>
                 )}
@@ -288,7 +291,10 @@ export default function CollectionsIndex() {
                     ]}
                     itemCount={collections.length}
                     selectable={false}
-                    resourceName={{ singular: "collection", plural: "collections" }}
+                    resourceName={{
+                      singular: "collection",
+                      plural: "collections",
+                    }}
                   >
                     {collections.map((collection, idx) => (
                       <IndexTable.Row
@@ -306,7 +312,9 @@ export default function CollectionsIndex() {
                         </IndexTable.Cell>
                         <IndexTable.Cell>
                           <Badge tone={getTypeTone(collection.type)}>
-                            {collection.type === "manual" ? "Manual" : "Automatic"}
+                            {collection.type === "manual"
+                              ? "Manual"
+                              : "Automatic"}
                           </Badge>
                         </IndexTable.Cell>
                         <IndexTable.Cell>
@@ -322,7 +330,9 @@ export default function CollectionsIndex() {
                         </IndexTable.Cell>
                         <IndexTable.Cell>
                           <Text as="p" variant="bodySm">
-                            {new Date(collection.updatedAt).toLocaleDateString()}
+                            {new Date(
+                              collection.updatedAt,
+                            ).toLocaleDateString()}
                           </Text>
                         </IndexTable.Cell>
                         <IndexTable.Cell>
@@ -461,7 +471,8 @@ export function ErrorBoundary() {
                 Error Loading Collections
               </Text>
               <Text as="p" variant="bodySm">
-                We encountered an error while loading your collections. Please try refreshing the page.
+                We encountered an error while loading your collections. Please
+                try refreshing the page.
               </Text>
             </BlockStack>
           </Card>

@@ -16,7 +16,7 @@ import {
   InventoryMovementData,
   LowStockAlertOptions,
   MovementType,
-} from './types';
+} from "./types";
 
 /**
  * Inventory Manager
@@ -32,7 +32,7 @@ export class InventoryManager {
    */
   checkStock(
     items: InventoryItemData[],
-    itemId: string
+    itemId: string,
   ): InventoryLevel | null {
     const item = items.find((i) => i.id === itemId);
 
@@ -65,7 +65,7 @@ export class InventoryManager {
   hasStock(
     items: InventoryItemData[],
     itemId: string,
-    quantity: number
+    quantity: number,
   ): boolean {
     const level = this.checkStock(items, itemId);
     if (!level) {
@@ -86,7 +86,7 @@ export class InventoryManager {
     item: InventoryItemData,
     quantity: number,
     type: MovementType,
-    reference?: string
+    reference?: string,
   ): { item: InventoryItemData; movement: InventoryMovementData } {
     const previousQuantity = item.quantity;
     const newQuantity = Math.max(0, previousQuantity + quantity);
@@ -123,7 +123,7 @@ export class InventoryManager {
     fromItem: InventoryItemData,
     toItem: InventoryItemData,
     quantity: number,
-    reference?: string
+    reference?: string,
   ): {
     fromItem: InventoryItemData;
     toItem: InventoryItemData;
@@ -133,7 +133,7 @@ export class InventoryManager {
     // Validate transfer
     if (fromItem.quantity < quantity) {
       throw new Error(
-        `Insufficient stock at source location. Available: ${fromItem.quantity}, Requested: ${quantity}`
+        `Insufficient stock at source location. Available: ${fromItem.quantity}, Requested: ${quantity}`,
       );
     }
 
@@ -143,7 +143,7 @@ export class InventoryManager {
     const fromMovement: InventoryMovementData = {
       id: movementId,
       itemId: fromItem.id,
-      type: 'TRANSFER',
+      type: "TRANSFER",
       quantity: -quantity,
       toLocationId: toItem.locationId,
       reference,
@@ -153,7 +153,7 @@ export class InventoryManager {
     const toMovement: InventoryMovementData = {
       id: movementId,
       itemId: toItem.id,
-      type: 'TRANSFER',
+      type: "TRANSFER",
       quantity,
       fromLocationId: fromItem.locationId,
       reference,
@@ -189,7 +189,7 @@ export class InventoryManager {
    */
   getLowStockAlerts(
     items: InventoryItemData[],
-    options: LowStockAlertOptions
+    options: LowStockAlertOptions,
   ): LowStockAlert[] {
     const alerts: LowStockAlert[] = [];
 
@@ -225,14 +225,14 @@ export class InventoryManager {
           reorderQuantity: item.reorderQuantity,
           suggestedOrderQuantity: Math.max(
             0,
-            item.reorderQuantity - item.quantity
+            item.reorderQuantity - item.quantity,
           ),
         });
       }
     }
 
     // Sort by option
-    if (options.sortBy === 'percentageOfReorderPoint') {
+    if (options.sortBy === "percentageOfReorderPoint") {
       alerts.sort((a, b) => {
         const aPercent = (a.currentQuantity / a.reorderPoint) * 100;
         const bPercent = (b.currentQuantity / b.reorderPoint) * 100;
@@ -253,7 +253,7 @@ export class InventoryManager {
   reserveStock(
     item: InventoryItemData,
     quantity: number,
-    orderId: string
+    orderId: string,
   ): StockOperationResult {
     const availableQuantity = item.quantity - item.reservedQuantity;
 
@@ -289,7 +289,7 @@ export class InventoryManager {
   releaseReservation(
     item: InventoryItemData,
     quantity: number,
-    orderId: string
+    orderId: string,
   ): StockOperationResult {
     if (item.reservedQuantity < quantity) {
       return {
@@ -321,7 +321,7 @@ export class InventoryManager {
    */
   getShopInventorySummary(
     items: InventoryItemData[],
-    shopId: string
+    shopId: string,
   ): {
     totalItems: number;
     totalQuantity: number;
@@ -366,7 +366,7 @@ export class InventoryManager {
    */
   calculateReorderCost(
     alerts: LowStockAlert[],
-    costPerUnit?: (productId: string, variantId?: string) => number
+    costPerUnit?: (productId: string, variantId?: string) => number,
   ): number {
     let totalCost = 0;
 
@@ -388,28 +388,28 @@ export class InventoryManager {
    * @returns Array of validation errors
    */
   validateMovement(
-    movement: Omit<StockMovement, 'id' | 'createdAt'>,
-    item: InventoryItemData
+    movement: Omit<StockMovement, "id" | "createdAt">,
+    item: InventoryItemData,
   ): string[] {
     const errors: string[] = [];
 
     if (!movement.itemId) {
-      errors.push('Movement must have itemId');
+      errors.push("Movement must have itemId");
     }
 
     if (!movement.type) {
-      errors.push('Movement must have a type');
+      errors.push("Movement must have a type");
     }
 
     if (!Number.isInteger(movement.quantity)) {
-      errors.push('Quantity must be an integer');
+      errors.push("Quantity must be an integer");
     }
 
     // For negative adjustments, check available quantity
-    if (movement.quantity < 0 && movement.type === 'ADJUST') {
+    if (movement.quantity < 0 && movement.type === "ADJUST") {
       if (item.quantity < Math.abs(movement.quantity)) {
         errors.push(
-          `Cannot remove ${Math.abs(movement.quantity)} units. Available: ${item.quantity}`
+          `Cannot remove ${Math.abs(movement.quantity)} units. Available: ${item.quantity}`,
         );
       }
     }

@@ -1,13 +1,16 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { WLMap } from '@/components/map/wl-map';
-import { VehicleMarkerLayer } from '@/components/map/vehicle-marker-layer';
-import type { VehicleMapMarker, VehicleMapStatus } from '@/components/map/vehicle-marker-layer';
-import { useFitBounds } from '@/components/map/use-fit-bounds';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { useApiQuery } from '@/hooks/use-api';
-import { Wrench } from 'lucide-react';
+import { useMemo, useState } from "react";
+import { WLMap } from "@/components/map/wl-map";
+import { VehicleMarkerLayer } from "@/components/map/vehicle-marker-layer";
+import type {
+  VehicleMapMarker,
+  VehicleMapStatus,
+} from "@/components/map/vehicle-marker-layer";
+import { useFitBounds } from "@/components/map/use-fit-bounds";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { useApiQuery } from "@/hooks/use-api";
+import { Wrench } from "lucide-react";
 
 interface MaintenanceRecord {
   id: string;
@@ -34,26 +37,26 @@ interface FleetLocation {
 }
 
 const MAINTENANCE_STATUS_MAP: Record<string, VehicleMapStatus> = {
-  'in-progress': 'MAINTENANCE',
-  overdue: 'INACTIVE',
-  scheduled: 'IDLE',
-  completed: 'ACTIVE',
+  "in-progress": "MAINTENANCE",
+  overdue: "INACTIVE",
+  scheduled: "IDLE",
+  completed: "ACTIVE",
 };
 
 const STATUS_DOT: Record<VehicleMapStatus, string> = {
-  ACTIVE: 'var(--wl-success-500)',
-  IDLE: 'var(--wl-warning-500)',
-  OFFLINE: 'var(--wl-neutral-500)',
-  MAINTENANCE: 'var(--wl-info-500)',
-  INACTIVE: 'var(--wl-neutral-600)',
+  ACTIVE: "var(--wl-success-500)",
+  IDLE: "var(--wl-warning-500)",
+  OFFLINE: "var(--wl-neutral-500)",
+  MAINTENANCE: "var(--wl-info-500)",
+  INACTIVE: "var(--wl-neutral-600)",
 };
 
 const STATUS_LABEL: Record<VehicleMapStatus, string> = {
-  ACTIVE: 'Completed',
-  IDLE: 'Scheduled',
-  OFFLINE: 'Offline',
-  MAINTENANCE: 'In Progress',
-  INACTIVE: 'Overdue',
+  ACTIVE: "Completed",
+  IDLE: "Scheduled",
+  OFFLINE: "Offline",
+  MAINTENANCE: "In Progress",
+  INACTIVE: "Overdue",
 };
 
 interface MapLayersProps {
@@ -64,7 +67,7 @@ interface MapLayersProps {
 
 function MapLayers({ vehicles, selectedId, onVehicleClick }: MapLayersProps) {
   const map = useWLMap();
-  const coords = vehicles.map(v => ({ lng: v.longitude, lat: v.latitude }));
+  const coords = vehicles.map((v) => ({ lng: v.longitude, lat: v.latitude }));
   useFitBounds(map, coords, 60);
   return (
     <VehicleMarkerLayer
@@ -79,42 +82,50 @@ interface MaintenanceMapViewProps {
   maintenance: MaintenanceRecord[];
 }
 
-export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewProps) {
-  const [selectedVehicle, setSelectedVehicle] = useState<VehicleMapMarker | null>(null);
+export default function MaintenanceMapView({
+  maintenance,
+}: MaintenanceMapViewProps) {
+  const [selectedVehicle, setSelectedVehicle] =
+    useState<VehicleMapMarker | null>(null);
 
-  const { data: locations } = useApiQuery<FleetLocation[]>('/api/v4/fleet/locations');
+  const { data: locations } = useApiQuery<FleetLocation[]>(
+    "/api/v4/fleet/locations",
+  );
 
   const vehicles = useMemo<VehicleMapMarker[]>(() => {
     if (!locations?.length) return [];
 
     return locations.flatMap<VehicleMapMarker>((loc) => {
-      const record = maintenance.find(m => m.vehicleId === loc.id);
+      const record = maintenance.find((m) => m.vehicleId === loc.id);
       if (!record) return [];
 
-      const status: VehicleMapStatus = MAINTENANCE_STATUS_MAP[record.status] ?? 'OFFLINE';
+      const status: VehicleMapStatus =
+        MAINTENANCE_STATUS_MAP[record.status] ?? "OFFLINE";
 
-      return [{
-        id: loc.id,
-        name: loc.name,
-        licensePlate: loc.licensePlate,
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        speed: loc.speed,
-        heading: loc.heading,
-        status,
-        lastUpdate: loc.lastUpdate,
-        fuelLevel: loc.fuelLevel,
-      }];
+      return [
+        {
+          id: loc.id,
+          name: loc.name,
+          licensePlate: loc.licensePlate,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          speed: loc.speed,
+          heading: loc.heading,
+          status,
+          lastUpdate: loc.lastUpdate,
+          fuelLevel: loc.fuelLevel,
+        },
+      ];
     });
   }, [locations, maintenance]);
 
   const statusesPresent = useMemo(
-    () => [...new Set(vehicles.map(v => v.status))],
+    () => [...new Set(vehicles.map((v) => v.status))],
     [vehicles],
   );
 
   const selectedRecord = selectedVehicle
-    ? maintenance.find(m => m.vehicleId === selectedVehicle.id)
+    ? maintenance.find((m) => m.vehicleId === selectedVehicle.id)
     : null;
 
   if (vehicles.length === 0) {
@@ -122,9 +133,12 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
       <div className="w-full h-full bg-wl-bg-root flex flex-col items-center justify-center gap-3 rounded-xl border border-wl-border-default">
         <Wrench className="w-10 h-10 text-wl-text-tertiary" />
         <div className="text-center">
-          <p className="text-sm font-medium text-wl-neutral-300">No vehicles with maintenance data</p>
+          <p className="text-sm font-medium text-wl-neutral-300">
+            No vehicles with maintenance data
+          </p>
           <p className="text-xs text-wl-text-tertiary mt-1 max-w-xs">
-            Vehicles that have live location data and maintenance records will appear here.
+            Vehicles that have live location data and maintenance records will
+            appear here.
           </p>
         </div>
       </div>
@@ -143,15 +157,24 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
 
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg p-3 z-10">
-        <p className="text-[10px] font-semibold text-wl-text-tertiary uppercase mb-2 tracking-wide">Status</p>
+        <p className="text-[10px] font-semibold text-wl-text-tertiary uppercase mb-2 tracking-wide">
+          Status
+        </p>
         <div className="space-y-1.5">
           {statusesPresent.map((status) => {
-            const count = vehicles.filter(v => v.status === status).length;
+            const count = vehicles.filter((v) => v.status === status).length;
             return (
               <div key={status} className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: STATUS_DOT[status] }} />
-                <span className="text-xs text-wl-neutral-300">{STATUS_LABEL[status]}</span>
-                <span className="text-xs font-mono text-wl-text-tertiary ml-auto pl-3">{count}</span>
+                <div
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: STATUS_DOT[status] }}
+                />
+                <span className="text-xs text-wl-neutral-300">
+                  {STATUS_LABEL[status]}
+                </span>
+                <span className="text-xs font-mono text-wl-text-tertiary ml-auto pl-3">
+                  {count}
+                </span>
               </div>
             );
           })}
@@ -161,7 +184,7 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
       {/* Count badge */}
       <div className="absolute top-4 left-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg px-3 py-1.5 z-10">
         <span className="text-xs font-semibold text-wl-neutral-300">
-          {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} on map
+          {vehicles.length} vehicle{vehicles.length !== 1 ? "s" : ""} on map
         </span>
       </div>
 
@@ -169,7 +192,9 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
       {selectedVehicle && selectedRecord && (
         <div className="absolute top-4 right-4 bg-wl-bg-root/95 backdrop-blur-sm border border-wl-border-default rounded-lg p-4 z-10 min-w-52">
           <div className="flex items-start justify-between mb-2">
-            <p className="text-sm font-semibold text-white">{selectedVehicle.name}</p>
+            <p className="text-sm font-semibold text-white">
+              {selectedVehicle.name}
+            </p>
             <button
               onClick={() => setSelectedVehicle(null)}
               className="text-wl-text-tertiary hover:text-wl-neutral-300 transition-colors ml-2 leading-none"
@@ -179,7 +204,9 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
             </button>
           </div>
           {selectedVehicle.licensePlate && (
-            <p className="text-xs text-wl-text-secondary mb-2">{selectedVehicle.licensePlate}</p>
+            <p className="text-xs text-wl-text-secondary mb-2">
+              {selectedVehicle.licensePlate}
+            </p>
           )}
           <div className="space-y-1 text-xs">
             <div className="flex items-center gap-2">
@@ -187,19 +214,24 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
                 className="w-2 h-2 rounded-full inline-block"
                 style={{ backgroundColor: STATUS_DOT[selectedVehicle.status] }}
               />
-              <span className="font-medium" style={{ color: STATUS_DOT[selectedVehicle.status] }}>
+              <span
+                className="font-medium"
+                style={{ color: STATUS_DOT[selectedVehicle.status] }}
+              >
                 {STATUS_LABEL[selectedVehicle.status]}
               </span>
             </div>
             <div className="flex justify-between text-wl-text-secondary">
               <span>Type</span>
               <span className="text-wl-text-primary font-semibold capitalize">
-                {selectedRecord.type.replace(/-/g, ' ')}
+                {selectedRecord.type.replace(/-/g, " ")}
               </span>
             </div>
             <div className="flex justify-between text-wl-text-secondary">
               <span>Vendor</span>
-              <span className="text-wl-text-primary font-semibold">{selectedRecord.vendor}</span>
+              <span className="text-wl-text-primary font-semibold">
+                {selectedRecord.vendor}
+              </span>
             </div>
           </div>
         </div>

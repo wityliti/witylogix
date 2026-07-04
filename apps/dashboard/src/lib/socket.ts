@@ -98,7 +98,10 @@ export interface UseSocketReturn {
 
 // ─── Hook Implementation ────────────────────────────────────
 
-export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseSocketReturn {
+export function useSocket(
+  shopId?: string,
+  options: UseSocketOptions = {},
+): UseSocketReturn {
   const {
     autoConnect = true,
     reconnectionDelay = 1000,
@@ -124,7 +127,8 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
     const getToken = (): string | null => {
       if (typeof window === "undefined") return null;
       return (
-        sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token")
+        sessionStorage.getItem("auth_token") ||
+        localStorage.getItem("auth_token")
       );
     };
 
@@ -214,7 +218,12 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
         socketRef.current = null;
       }
     };
-  }, [autoConnect, reconnectionDelay, reconnectionDelayMax, reconnectionAttempts]);
+  }, [
+    autoConnect,
+    reconnectionDelay,
+    reconnectionDelayMax,
+    reconnectionAttempts,
+  ]);
 
   // ─── Subscribe to Shop ──────────────────────────────────
 
@@ -224,14 +233,18 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
       return;
     }
 
-    socketRef.current.emit(SUBSCRIPTIONS.SUBSCRIBE_SHOP, targetShopId, (ack: boolean) => {
-      if (ack) {
-        console.log("[Socket] Subscribed to shop:", targetShopId);
-      } else {
-        console.error("[Socket] Failed to subscribe to shop:", targetShopId);
-        setError(`Failed to subscribe to shop ${targetShopId}`);
-      }
-    });
+    socketRef.current.emit(
+      SUBSCRIPTIONS.SUBSCRIBE_SHOP,
+      targetShopId,
+      (ack: boolean) => {
+        if (ack) {
+          console.log("[Socket] Subscribed to shop:", targetShopId);
+        } else {
+          console.error("[Socket] Failed to subscribe to shop:", targetShopId);
+          setError(`Failed to subscribe to shop ${targetShopId}`);
+        }
+      },
+    );
   }, []);
 
   // ─── Unsubscribe from Shop ──────────────────────────────
@@ -258,13 +271,20 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
       return;
     }
 
-    socketRef.current.emit(SUBSCRIPTIONS.SUBSCRIBE_SHIPMENT, shipmentId, (ack: boolean) => {
-      if (ack) {
-        console.log("[Socket] Subscribed to shipment:", shipmentId);
-      } else {
-        console.error("[Socket] Failed to subscribe to shipment:", shipmentId);
-      }
-    });
+    socketRef.current.emit(
+      SUBSCRIPTIONS.SUBSCRIBE_SHIPMENT,
+      shipmentId,
+      (ack: boolean) => {
+        if (ack) {
+          console.log("[Socket] Subscribed to shipment:", shipmentId);
+        } else {
+          console.error(
+            "[Socket] Failed to subscribe to shipment:",
+            shipmentId,
+          );
+        }
+      },
+    );
   }, []);
 
   // ─── Subscribe to Driver ────────────────────────────────
@@ -275,19 +295,26 @@ export function useSocket(shopId?: string, options: UseSocketOptions = {}): UseS
       return;
     }
 
-    socketRef.current.emit(SUBSCRIPTIONS.SUBSCRIBE_DRIVER, driverId, (ack: boolean) => {
-      if (ack) {
-        console.log("[Socket] Subscribed to driver:", driverId);
-      } else {
-        console.error("[Socket] Failed to subscribe to driver:", driverId);
-      }
-    });
+    socketRef.current.emit(
+      SUBSCRIPTIONS.SUBSCRIBE_DRIVER,
+      driverId,
+      (ack: boolean) => {
+        if (ack) {
+          console.log("[Socket] Subscribed to driver:", driverId);
+        } else {
+          console.error("[Socket] Failed to subscribe to driver:", driverId);
+        }
+      },
+    );
   }, []);
 
   // ─── Generic Event Listener Registration ────────────────
 
   const on = useCallback(
-    <T extends EventName,>(event: T, callback: (data: any) => void): (() => void) => {
+    <T extends EventName>(
+      event: T,
+      callback: (data: any) => void,
+    ): (() => void) => {
       // Ensure the event set exists
       if (!listenersRef.current.has(event)) {
         listenersRef.current.set(event, new Set());

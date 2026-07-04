@@ -14,13 +14,13 @@
  *   const response = authenticatedRequest('GET', '/api/v4/orders', {}, tokens.accessToken);
  */
 
-import http from 'k6/http';
-import { check } from 'k6';
+import http from "k6/http";
+import { check } from "k6";
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
-const BASE_URL = __ENV.API_BASE_URL || 'http://localhost:3000';
-const API_VERSION = 'v4';
+const BASE_URL = __ENV.API_BASE_URL || "http://localhost:3000";
+const API_VERSION = "v4";
 const API_BASE = `${BASE_URL}/api/${API_VERSION}`;
 
 // ─── Types & Interfaces ─────────────────────────────────────────────────────
@@ -63,13 +63,17 @@ export function login(email, password) {
     password,
   };
 
-  const response = http.post(`${API_BASE}/auth/login`, JSON.stringify(payload), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+  const response = http.post(
+    `${API_BASE}/auth/login`,
+    JSON.stringify(payload),
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      timeout: "10s",
     },
-    timeout: '10s',
-  });
+  );
 
   if (response.status !== 200) {
     console.error(`Login failed for ${email}: ${response.status}`);
@@ -82,10 +86,10 @@ export function login(email, password) {
       accessToken: body.accessToken || body.token,
       refreshToken: body.refreshToken,
       expiresIn: body.expiresIn || 3600,
-      tokenType: body.tokenType || 'Bearer',
+      tokenType: body.tokenType || "Bearer",
     };
   } catch (e) {
-    console.error('Failed to parse login response:', e);
+    console.error("Failed to parse login response:", e);
     return null;
   }
 }
@@ -109,16 +113,20 @@ export function register(email, password, name, shopDomain = null) {
     payload.shopDomain = shopDomain;
   }
 
-  const response = http.post(`${API_BASE}/auth/register`, JSON.stringify(payload), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+  const response = http.post(
+    `${API_BASE}/auth/register`,
+    JSON.stringify(payload),
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      timeout: "10s",
     },
-    timeout: '10s',
-  });
+  );
 
   check(response, {
-    'Register status is 201': (r) => r.status === 201,
+    "Register status is 201": (r) => r.status === 201,
   });
 
   if (response.status !== 201) {
@@ -142,13 +150,17 @@ export function refreshToken(refreshToken) {
     refreshToken,
   };
 
-  const response = http.post(`${API_BASE}/auth/refresh`, JSON.stringify(payload), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+  const response = http.post(
+    `${API_BASE}/auth/refresh`,
+    JSON.stringify(payload),
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      timeout: "10s",
     },
-    timeout: '10s',
-  });
+  );
 
   if (response.status !== 200) {
     console.error(`Token refresh failed: ${response.status}`);
@@ -161,7 +173,7 @@ export function refreshToken(refreshToken) {
       accessToken: body.accessToken || body.token,
       refreshToken: body.refreshToken,
       expiresIn: body.expiresIn || 3600,
-      tokenType: body.tokenType || 'Bearer',
+      tokenType: body.tokenType || "Bearer",
     };
   } catch (e) {
     return null;
@@ -176,16 +188,21 @@ export function refreshToken(refreshToken) {
 export function requestPasswordReset(email) {
   const payload = { email };
 
-  const response = http.post(`${API_BASE}/auth/request-password-reset`, JSON.stringify(payload), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+  const response = http.post(
+    `${API_BASE}/auth/request-password-reset`,
+    JSON.stringify(payload),
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      timeout: "10s",
     },
-    timeout: '10s',
-  });
+  );
 
   return check(response, {
-    'Password reset request accepted': (r) => r.status === 200 || r.status === 202,
+    "Password reset request accepted": (r) =>
+      r.status === 200 || r.status === 202,
   });
 }
 
@@ -195,12 +212,15 @@ export function requestPasswordReset(email) {
  * @returns {boolean} True if token is valid
  */
 export function verifyResetToken(token) {
-  const response = http.get(`${API_BASE}/auth/verify-reset-token?token=${token}`, {
-    headers: {
-      'Accept': 'application/json',
+  const response = http.get(
+    `${API_BASE}/auth/verify-reset-token?token=${token}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+      timeout: "10s",
     },
-    timeout: '10s',
-  });
+  );
 
   return response.status === 200;
 }
@@ -217,13 +237,17 @@ export function resetPassword(token, newPassword) {
     newPassword,
   };
 
-  const response = http.post(`${API_BASE}/auth/reset-password`, JSON.stringify(payload), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+  const response = http.post(
+    `${API_BASE}/auth/reset-password`,
+    JSON.stringify(payload),
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      timeout: "10s",
     },
-    timeout: '10s',
-  });
+  );
 
   return response.status === 200;
 }
@@ -248,19 +272,19 @@ export function authenticatedRequest(
 ) {
   const url = `${API_BASE}${path}`;
   const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    Authorization: `Bearer ${accessToken}`,
     ...additionalHeaders,
   };
 
   const options = {
     headers,
-    timeout: '30s',
+    timeout: "30s",
   };
 
   let response;
-  if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+  if (body && (method === "POST" || method === "PUT" || method === "PATCH")) {
     response = http[method.toLowerCase()](url, JSON.stringify(body), options);
   } else {
     response = http[method.toLowerCase()](url, options);
@@ -277,13 +301,13 @@ export function authenticatedRequest(
  */
 export function batchAuthenticatedRequests(requests, accessToken) {
   const formattedRequests = requests.map((req) => ({
-    method: req.method || 'GET',
+    method: req.method || "GET",
     url: `${API_BASE}${req.path}`,
     body: req.body ? JSON.stringify(req.body) : null,
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
       ...req.headers,
     },
   }));
@@ -333,12 +357,12 @@ export function generateTestUsers(count = 5) {
  */
 export function parseJWT(token) {
   try {
-    const parts = token.split('.');
+    const parts = token.split(".");
     if (parts.length !== 3) {
       return null;
     }
 
-    const decoded = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(decoded);
   } catch (e) {
     return null;

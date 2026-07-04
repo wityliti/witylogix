@@ -5,7 +5,7 @@
  * @packageDocumentation
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 import type {
   SupplyChainConfig,
   WarehouseLocation,
@@ -20,7 +20,7 @@ import type {
   PickTask,
   PackStation,
   ShipConfirmation,
-} from './types';
+} from "./types";
 
 /**
  * Rate limiter implementation
@@ -34,7 +34,10 @@ class RateLimiter {
    * @param maxCalls Maximum calls allowed
    * @param windowMs Time window in milliseconds
    */
-  constructor(private maxCalls: number, private windowMs: number) {}
+  constructor(
+    private maxCalls: number,
+    private windowMs: number,
+  ) {}
 
   /**
    * Check if call is allowed and update state
@@ -42,7 +45,9 @@ class RateLimiter {
    */
   public isAllowed(): boolean {
     const now = Date.now();
-    this.callTimestamps = this.callTimestamps.filter((ts) => now - ts < this.windowMs);
+    this.callTimestamps = this.callTimestamps.filter(
+      (ts) => now - ts < this.windowMs,
+    );
 
     if (this.callTimestamps.length < this.maxCalls) {
       this.callTimestamps.push(now);
@@ -71,7 +76,7 @@ class CircuitBreaker {
   private failureCount = 0;
   private successCount = 0;
   private lastFailureTime: number | null = null;
-  private state: 'closed' | 'open' | 'half_open' = 'closed';
+  private state: "closed" | "open" | "half_open" = "closed";
 
   /**
    * Initialize circuit breaker
@@ -82,7 +87,7 @@ class CircuitBreaker {
   constructor(
     private failureThreshold: number,
     private successThreshold: number,
-    private resetTimeMs: number
+    private resetTimeMs: number,
   ) {}
 
   /**
@@ -90,10 +95,10 @@ class CircuitBreaker {
    * @returns Circuit state (closed, open, half_open)
    */
   public getState(): string {
-    if (this.state === 'open') {
+    if (this.state === "open") {
       const timeSinceFailure = Date.now() - (this.lastFailureTime || 0);
       if (timeSinceFailure > this.resetTimeMs) {
-        this.state = 'half_open';
+        this.state = "half_open";
         this.failureCount = 0;
         this.successCount = 0;
       }
@@ -108,8 +113,11 @@ class CircuitBreaker {
     this.failureCount = 0;
     this.successCount += 1;
 
-    if (this.state === 'half_open' && this.successCount >= this.successThreshold) {
-      this.state = 'closed';
+    if (
+      this.state === "half_open" &&
+      this.successCount >= this.successThreshold
+    ) {
+      this.state = "closed";
       this.successCount = 0;
     }
   }
@@ -123,7 +131,7 @@ class CircuitBreaker {
     this.successCount = 0;
 
     if (this.failureCount >= this.failureThreshold) {
-      this.state = 'open';
+      this.state = "open";
     }
   }
 
@@ -132,7 +140,7 @@ class CircuitBreaker {
    * @returns True if open (should reject calls)
    */
   public isOpen(): boolean {
-    return this.getState() === 'open';
+    return this.getState() === "open";
   }
 }
 
@@ -154,7 +162,7 @@ export class RetryHandler {
     fn: () => Promise<T>,
     maxAttempts: number = 3,
     baseDelayMs: number = 1000,
-    maxDelayMs: number = 30000
+    maxDelayMs: number = 30000,
   ): Promise<T> {
     let lastError: Error | null = null;
 
@@ -170,13 +178,16 @@ export class RetryHandler {
         }
 
         if (attempt < maxAttempts) {
-          const delayMs = Math.min(baseDelayMs * Math.pow(2, attempt - 1), maxDelayMs);
+          const delayMs = Math.min(
+            baseDelayMs * Math.pow(2, attempt - 1),
+            maxDelayMs,
+          );
           await RetryHandler.delay(delayMs);
         }
       }
     }
 
-    throw lastError || new Error('Retry exhausted');
+    throw lastError || new Error("Retry exhausted");
   }
 
   /**
@@ -187,11 +198,19 @@ export class RetryHandler {
   private static isTransient(error: unknown): boolean {
     if (error instanceof Error) {
       // Network errors
-      if (error.message.includes('ECONNREFUSED') || error.message.includes('ETIMEDOUT') || error.message.toLowerCase().includes('network')) {
+      if (
+        error.message.includes("ECONNREFUSED") ||
+        error.message.includes("ETIMEDOUT") ||
+        error.message.toLowerCase().includes("network")
+      ) {
         return true;
       }
       // HTTP 429, 503, 504
-      if (error.message.includes('429') || error.message.includes('503') || error.message.includes('504')) {
+      if (
+        error.message.includes("429") ||
+        error.message.includes("503") ||
+        error.message.includes("504")
+      ) {
         return true;
       }
     }
@@ -266,7 +285,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param warehouse Warehouse data
    * @returns Created warehouse
    */
-  public abstract createWarehouse(warehouse: WarehouseLocation): Promise<WarehouseLocation>;
+  public abstract createWarehouse(
+    warehouse: WarehouseLocation,
+  ): Promise<WarehouseLocation>;
 
   /**
    * Update warehouse configuration
@@ -276,7 +297,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    */
   public abstract updateWarehouse(
     warehouseId: string,
-    updates: Partial<WarehouseLocation>
+    updates: Partial<WarehouseLocation>,
   ): Promise<WarehouseLocation>;
 
   // ============================================================================
@@ -289,7 +310,10 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param sku Stock keeping unit
    * @returns Inventory item details
    */
-  public abstract getInventory(warehouseId: string, sku: string): Promise<InventoryItem>;
+  public abstract getInventory(
+    warehouseId: string,
+    sku: string,
+  ): Promise<InventoryItem>;
 
   /**
    * List all inventory items at warehouse
@@ -303,7 +327,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
       zone?: string;
       status?: string;
       sku?: string;
-    }
+    },
   ): Promise<InventoryItem[]>;
 
   /**
@@ -312,7 +336,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param warehouseId Warehouse identifier
    * @returns Synced inventory array
    */
-  public abstract syncInventoryRealTime(warehouseId: string): Promise<InventoryItem[]>;
+  public abstract syncInventoryRealTime(
+    warehouseId: string,
+  ): Promise<InventoryItem[]>;
 
   /**
    * Batch inventory sync with change tracking
@@ -321,7 +347,10 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param skus Array of SKUs to sync
    * @returns Synced inventory items
    */
-  public abstract syncInventoryBatch(warehouseId: string, skus: string[]): Promise<InventoryItem[]>;
+  public abstract syncInventoryBatch(
+    warehouseId: string,
+    skus: string[],
+  ): Promise<InventoryItem[]>;
 
   /**
    * Adjust inventory for a SKU
@@ -335,7 +364,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
     warehouseId: string,
     sku: string,
     quantity: number,
-    reason: string
+    reason: string,
   ): Promise<InventoryItem>;
 
   /**
@@ -352,7 +381,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
     sku: string,
     fromBin: string,
     toBin: string,
-    quantity: number
+    quantity: number,
   ): Promise<InventoryItem[]>;
 
   // ============================================================================
@@ -364,7 +393,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param shipmentId Shipment identifier
    * @returns Inbound shipment
    */
-  public abstract getInboundShipment(shipmentId: string): Promise<InboundShipment>;
+  public abstract getInboundShipment(
+    shipmentId: string,
+  ): Promise<InboundShipment>;
 
   /**
    * List inbound shipments by status
@@ -374,7 +405,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    */
   public abstract listInboundShipments(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<InboundShipment[]>;
 
   /**
@@ -382,7 +413,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param shipment Inbound shipment data
    * @returns Created shipment
    */
-  public abstract createInboundShipment(shipment: InboundShipment): Promise<InboundShipment>;
+  public abstract createInboundShipment(
+    shipment: InboundShipment,
+  ): Promise<InboundShipment>;
 
   /**
    * Receive inbound shipment at warehouse
@@ -396,7 +429,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
       sku: string;
       quantity: number;
       lotNumber?: string;
-    }>
+    }>,
   ): Promise<InboundShipment>;
 
   /**
@@ -409,7 +442,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
   public abstract confirmQualityCheck(
     shipmentId: string,
     qcPassed: boolean,
-    notes?: string
+    notes?: string,
   ): Promise<ReceiptConfirmation>;
 
   // ============================================================================
@@ -431,7 +464,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    */
   public abstract listOutboundOrders(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<OutboundOrder[]>;
 
   /**
@@ -439,7 +472,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param order Outbound order data
    * @returns Created order
    */
-  public abstract createOutboundOrder(order: OutboundOrder): Promise<OutboundOrder>;
+  public abstract createOutboundOrder(
+    order: OutboundOrder,
+  ): Promise<OutboundOrder>;
 
   /**
    * Update outbound order
@@ -449,7 +484,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    */
   public abstract updateOutboundOrder(
     orderId: string,
-    updates: Partial<OutboundOrder>
+    updates: Partial<OutboundOrder>,
   ): Promise<OutboundOrder>;
 
   /**
@@ -458,7 +493,10 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param reason Cancellation reason
    * @returns Cancelled order
    */
-  public abstract cancelOutboundOrder(orderId: string, reason: string): Promise<OutboundOrder>;
+  public abstract cancelOutboundOrder(
+    orderId: string,
+    reason: string,
+  ): Promise<OutboundOrder>;
 
   // ============================================================================
   // FULFILLMENT & ALLOCATION
@@ -469,7 +507,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param fulfillmentId Fulfillment request identifier
    * @returns Fulfillment request
    */
-  public abstract getFulfillmentRequest(fulfillmentId: string): Promise<FulfillmentRequest>;
+  public abstract getFulfillmentRequest(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest>;
 
   /**
    * Allocate inventory to order (create fulfillment request)
@@ -481,7 +521,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
   public abstract allocateOrder(
     orderId: string,
     warehouseId: string,
-    allocationMethod?: 'fifo' | 'closest' | 'random'
+    allocationMethod?: "fifo" | "closest" | "random",
   ): Promise<FulfillmentRequest>;
 
   /**
@@ -489,7 +529,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param fulfillmentId Fulfillment request identifier
    * @returns Released fulfillment request
    */
-  public abstract releaseFulfillment(fulfillmentId: string): Promise<FulfillmentRequest>;
+  public abstract releaseFulfillment(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest>;
 
   /**
    * Update fulfillment status
@@ -499,7 +541,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    */
   public abstract updateFulfillmentStatus(
     fulfillmentId: string,
-    status: string
+    status: string,
   ): Promise<FulfillmentRequest>;
 
   // ============================================================================
@@ -519,7 +561,10 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param status Wave status filter
    * @returns Array of wave definitions
    */
-  public abstract listWaves(warehouseId: string, status?: string): Promise<WaveDefinition[]>;
+  public abstract listWaves(
+    warehouseId: string,
+    status?: string,
+  ): Promise<WaveDefinition[]>;
 
   /**
    * Create wave from fulfillment requests
@@ -531,7 +576,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
   public abstract createWave(
     warehouseId: string,
     fulfillmentIds: string[],
-    pickMethod?: 'zone' | 'batch' | 'order'
+    pickMethod?: "zone" | "batch" | "order",
   ): Promise<WaveDefinition>;
 
   /**
@@ -576,7 +621,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
   public abstract updatePickTask(
     taskId: string,
     pickedQuantity: number,
-    status: string
+    status: string,
   ): Promise<PickTask>;
 
   /**
@@ -605,7 +650,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
     orderId: string,
     carrier: string,
     trackingNumber: string,
-    weight?: number
+    weight?: number,
   ): Promise<ShipConfirmation>;
 
   // ============================================================================
@@ -620,7 +665,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    */
   public abstract getLocation(
     warehouseId: string,
-    binLocation: string
+    binLocation: string,
   ): Promise<{
     binLocation: string;
     zone: string;
@@ -649,7 +694,7 @@ export abstract class SupplyChainAdapter extends EventEmitter {
       pickMethod?: string;
       packStations?: number;
       capacity?: number;
-    }
+    },
   ): Promise<Record<string, unknown>>;
 
   // ============================================================================
@@ -675,7 +720,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param po Purchase order data
    * @returns Created PO
    */
-  public abstract createPurchaseOrder(po: PurchaseOrder): Promise<PurchaseOrder>;
+  public abstract createPurchaseOrder(
+    po: PurchaseOrder,
+  ): Promise<PurchaseOrder>;
 
   // ============================================================================
   // TRANSFER ORDERS
@@ -700,7 +747,9 @@ export abstract class SupplyChainAdapter extends EventEmitter {
    * @param to Transfer order data
    * @returns Created transfer order
    */
-  public abstract createTransferOrder(to: TransferOrder): Promise<TransferOrder>;
+  public abstract createTransferOrder(
+    to: TransferOrder,
+  ): Promise<TransferOrder>;
 
   // ============================================================================
   // PROTECTED UTILITY METHODS
@@ -721,13 +770,17 @@ export abstract class SupplyChainAdapter extends EventEmitter {
   protected async checkPrerequisites(): Promise<void> {
     if (!this.rateLimiter.isAllowed()) {
       const retryAfter = this.rateLimiter.getRetryAfter();
-      const error = new Error(`Rate limit exceeded. Retry after ${retryAfter}ms`);
+      const error = new Error(
+        `Rate limit exceeded. Retry after ${retryAfter}ms`,
+      );
       (error as any).retryAfter = retryAfter;
       throw error;
     }
 
     if (this.circuitBreaker.isOpen()) {
-      throw new Error('Circuit breaker is open. Service temporarily unavailable');
+      throw new Error(
+        "Circuit breaker is open. Service temporarily unavailable",
+      );
     }
   }
 

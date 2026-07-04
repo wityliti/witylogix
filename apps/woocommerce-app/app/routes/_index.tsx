@@ -10,13 +10,12 @@
  */
 
 import { useState } from "react";
-import {
-  useActionData,
-  useNavigation,
-  Form,
-  redirect,
+import { useActionData, useNavigation, Form, redirect } from "react-router";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
 } from "react-router";
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react-router";
 import {
   verifyWooCommerceCredentials,
   saveWooCommerceConnection,
@@ -46,7 +45,9 @@ export async function action({ request }: ActionFunctionArgs) {
   const shopId = url.searchParams.get("shopId");
 
   if (!shopId) {
-    return { error: "Missing shopId. Please reload from the Witylogix dashboard." };
+    return {
+      error: "Missing shopId. Please reload from the Witylogix dashboard.",
+    };
   }
 
   const formData = await request.formData();
@@ -59,7 +60,11 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const status = await verifyWooCommerceCredentials(storeUrl, consumerKey, consumerSecret);
+    const status = await verifyWooCommerceCredentials(
+      storeUrl,
+      consumerKey,
+      consumerSecret,
+    );
     const result = await saveWooCommerceConnection(
       { shopId, storeUrl, consumerKey, consumerSecret },
       status,
@@ -70,7 +75,8 @@ export async function action({ request }: ActionFunctionArgs) {
     successUrl.searchParams.set("currency", result.currency);
     return redirect(successUrl.toString());
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error. Please try again.";
+    const message =
+      err instanceof Error ? err.message : "Unknown error. Please try again.";
     return { error: message };
   }
 }
@@ -113,9 +119,10 @@ export default function ConnectPage() {
 
       <h1>Connect WooCommerce</h1>
       <p className="subtitle">
-        Enter your WooCommerce REST API credentials to link your store.
-        You can generate keys in{" "}
-        <strong>WP Admin → WooCommerce → Settings → Advanced → REST API</strong>.
+        Enter your WooCommerce REST API credentials to link your store. You can
+        generate keys in{" "}
+        <strong>WP Admin → WooCommerce → Settings → Advanced → REST API</strong>
+        .
       </p>
 
       {actionData?.error && (
@@ -136,7 +143,9 @@ export default function ConnectPage() {
             autoComplete="off"
             spellCheck={false}
           />
-          <div className="hint">The root URL of your WordPress / WooCommerce site.</div>
+          <div className="hint">
+            The root URL of your WordPress / WooCommerce site.
+          </div>
         </div>
 
         <div className="field">

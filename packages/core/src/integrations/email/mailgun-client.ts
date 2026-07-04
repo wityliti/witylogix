@@ -26,7 +26,11 @@ import type {
   DomainVerification,
   EmailTemplate,
 } from "./types.js";
-import { DeliveryStatus, BounceType, EmailEventType as EventType } from "./types.js";
+import {
+  DeliveryStatus,
+  BounceType,
+  EmailEventType as EventType,
+} from "./types.js";
 
 /**
  * Mailgun email adapter implementation.
@@ -62,7 +66,7 @@ export class MailgunClient extends EmailAdapter {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
@@ -91,12 +95,12 @@ export class MailgunClient extends EmailAdapter {
     }
 
     const response = await fetch(url, options);
-    const data = await response.json() as T;
+    const data = (await response.json()) as T;
 
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       throw new Error(
-        `Mailgun API error: ${error.message || response.statusText}`
+        `Mailgun API error: ${error.message || response.statusText}`,
       );
     }
 
@@ -133,7 +137,7 @@ export class MailgunClient extends EmailAdapter {
         const response = await this.request<{ id: string; message: string }>(
           "POST",
           `/${domain}/messages`,
-          formData
+          formData,
         );
 
         return {
@@ -158,23 +162,31 @@ export class MailgunClient extends EmailAdapter {
 
     // Add recipients
     const toArray = Array.isArray(message.to) ? message.to : [message.to];
-    form.to = toArray.map((r) => `${r.name || ""} <${r.email}>`.trim()).join(",");
+    form.to = toArray
+      .map((r) => `${r.name || ""} <${r.email}>`.trim())
+      .join(",");
 
     if (message.cc) {
       const ccArray = Array.isArray(message.cc) ? message.cc : [message.cc];
-      form.cc = ccArray.map((r) => `${r.name || ""} <${r.email}>`.trim()).join(",");
+      form.cc = ccArray
+        .map((r) => `${r.name || ""} <${r.email}>`.trim())
+        .join(",");
     }
 
     if (message.bcc) {
       const bccArray = Array.isArray(message.bcc) ? message.bcc : [message.bcc];
-      form.bcc = bccArray.map((r) => `${r.name || ""} <${r.email}>`.trim()).join(",");
+      form.bcc = bccArray
+        .map((r) => `${r.name || ""} <${r.email}>`.trim())
+        .join(",");
     }
 
     // Add body
     if (message.template) {
       form["template"] = message.template.id;
       if (message.template.variables) {
-        form["h:X-Template-Variables"] = JSON.stringify(message.template.variables);
+        form["h:X-Template-Variables"] = JSON.stringify(
+          message.template.variables,
+        );
       }
     } else {
       if (message.htmlBody) {
@@ -183,7 +195,10 @@ export class MailgunClient extends EmailAdapter {
           : message.htmlBody;
 
         if (message.trackClicks) {
-          form.html = this.injectClickTracking(form.html as string, `${Date.now()}`);
+          form.html = this.injectClickTracking(
+            form.html as string,
+            `${Date.now()}`,
+          );
         }
       }
       if (message.textBody) {
@@ -206,7 +221,8 @@ export class MailgunClient extends EmailAdapter {
     // Unsubscribe support
     if (message.includeUnsubscribe && message.listId) {
       form["o:tracking"] = "yes";
-      form["h:List-Unsubscribe"] = `<mailto:${message.from}?subject=unsubscribe>`;
+      form["h:List-Unsubscribe"] =
+        `<mailto:${message.from}?subject=unsubscribe>`;
     }
 
     return form;
@@ -217,7 +233,9 @@ export class MailgunClient extends EmailAdapter {
    */
   async sendBatch(request: BulkEmailRequest): Promise<SendResult[]> {
     return this.circuitBreaker.execute(async () => {
-      await this.rateLimiter.acquire(Math.ceil(request.recipients.length / 1000));
+      await this.rateLimiter.acquire(
+        Math.ceil(request.recipients.length / 1000),
+      );
 
       const domain = this.config.tenantId as string;
       const results: SendResult[] = [];
@@ -243,7 +261,7 @@ export class MailgunClient extends EmailAdapter {
   private async sendBatchChunk(
     domain: string,
     request: BulkEmailRequest,
-    recipients: EmailRecipient[]
+    recipients: EmailRecipient[],
   ): Promise<SendResult[]> {
     const form: Record<string, unknown> = {
       from: `${request.fromName || ""} <${request.from}>`.trim(),
@@ -257,7 +275,9 @@ export class MailgunClient extends EmailAdapter {
     for (const recipient of recipients) {
       const suppressed = this.isEmailSuppressed(recipient.email);
       if (!suppressed) {
-        recipientList.push(`${recipient.name || ""} <${recipient.email}>`.trim());
+        recipientList.push(
+          `${recipient.name || ""} <${recipient.email}>`.trim(),
+        );
         if (recipient.variables) {
           recipientVariables[recipient.email] = recipient.variables;
         }
@@ -271,7 +291,10 @@ export class MailgunClient extends EmailAdapter {
     if (request.htmlBody) {
       form.html = request.htmlBody;
       if (request.trackClicks) {
-        form.html = this.injectClickTracking(form.html as string, `batch_${Date.now()}`);
+        form.html = this.injectClickTracking(
+          form.html as string,
+          `batch_${Date.now()}`,
+        );
       }
     }
     if (request.textBody) {
@@ -371,7 +394,7 @@ export class MailgunClient extends EmailAdapter {
    * Validate an email address (syntax, MX, mailbox).
    */
   async validateEmail(
-    email: string
+    email: string,
   ): Promise<{ email: string; valid: boolean; reason?: string }> {
     return this.circuitBreaker.execute(async () => {
       const response = await this.request<{
@@ -379,7 +402,11 @@ export class MailgunClient extends EmailAdapter {
         is_valid?: boolean;
         mailbox_verification?: "true" | "false";
         reason?: string;
-      }>("GET", `/v4/address/validate?address=${encodeURIComponent(email)}`, undefined);
+      }>(
+        "GET",
+        `/v4/address/validate?address=${encodeURIComponent(email)}`,
+        undefined,
+      );
 
       const valid = response.result === "valid" || response.is_valid === true;
       return {
@@ -433,11 +460,7 @@ export class MailgunClient extends EmailAdapter {
           event: string;
           timestamp: number;
         }>;
-      }>(
-        "GET",
-        `/${domain}/events?${params.toString()}`,
-        undefined
-      );
+      }>("GET", `/${domain}/events?${params.toString()}`, undefined);
 
       // Count events by type
       let sent = 0;
@@ -585,7 +608,11 @@ export class MailgunClient extends EmailAdapter {
   async deleteTemplate(templateId: string): Promise<void> {
     return this.circuitBreaker.execute(async () => {
       const domain = this.config.tenantId as string;
-      await this.request("DELETE", `/${domain}/templates/${templateId}`, undefined);
+      await this.request(
+        "DELETE",
+        `/${domain}/templates/${templateId}`,
+        undefined,
+      );
     });
   }
 
@@ -605,7 +632,7 @@ export class MailgunClient extends EmailAdapter {
       await this.listDomains();
     } catch (error) {
       throw new Error(
-        `Mailgun validation failed: ${error instanceof Error ? error.message : String(error)}`
+        `Mailgun validation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -621,7 +648,7 @@ export class MailgunClient extends EmailAdapter {
   verifyWebhookSignature(
     timestamp: string,
     token: string,
-    signature: string
+    signature: string,
   ): boolean {
     const crypto = require("crypto");
     const hmac = crypto.createHmac("sha256", this.apiKey);

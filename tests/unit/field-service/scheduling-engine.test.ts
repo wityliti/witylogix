@@ -115,10 +115,26 @@ function createMockSLARule(): SLARule {
     name: "Standard SLA",
     description: "Standard service level agreement",
     windows: [
-      { priority: "EMERGENCY", responseTimeMinutes: 120, completionTimeMinutes: 240 },
-      { priority: "HIGH", responseTimeMinutes: 240, completionTimeMinutes: 480 },
-      { priority: "MEDIUM", responseTimeMinutes: 1440, completionTimeMinutes: 1440 },
-      { priority: "LOW", responseTimeMinutes: 4320, completionTimeMinutes: 4320 },
+      {
+        priority: "EMERGENCY",
+        responseTimeMinutes: 120,
+        completionTimeMinutes: 240,
+      },
+      {
+        priority: "HIGH",
+        responseTimeMinutes: 240,
+        completionTimeMinutes: 480,
+      },
+      {
+        priority: "MEDIUM",
+        responseTimeMinutes: 1440,
+        completionTimeMinutes: 1440,
+      },
+      {
+        priority: "LOW",
+        responseTimeMinutes: 4320,
+        completionTimeMinutes: 4320,
+      },
     ],
     active: true,
     createdAt: new Date(),
@@ -172,7 +188,13 @@ describe("ConstraintSolver", () => {
   describe("canSchedule", () => {
     it("should allow scheduling when all constraints satisfied", () => {
       const startTime = new Date("2026-03-20T14:00:00Z");
-      const result = ConstraintSolver.canSchedule(job, tech, startTime, schedule, slaRule);
+      const result = ConstraintSolver.canSchedule(
+        job,
+        tech,
+        startTime,
+        schedule,
+        slaRule,
+      );
 
       expect(result.feasible).toBe(true);
       expect(result.violations).toHaveLength(0);
@@ -188,19 +210,29 @@ describe("ConstraintSolver", () => {
         tech,
         new Date("2026-03-20T14:00:00Z"),
         schedule,
-        slaRule
+        slaRule,
       );
 
       expect(result.feasible).toBe(false);
-      expect(result.violations.some((v) => v.type === "SKILL_MISMATCH")).toBe(true);
+      expect(result.violations.some((v) => v.type === "SKILL_MISMATCH")).toBe(
+        true,
+      );
     });
 
     it("should detect double-booking", () => {
       const startTime = new Date("2026-03-20T09:15:00Z"); // Overlaps with existing slot
-      const result = ConstraintSolver.canSchedule(job, tech, startTime, schedule, slaRule);
+      const result = ConstraintSolver.canSchedule(
+        job,
+        tech,
+        startTime,
+        schedule,
+        slaRule,
+      );
 
       expect(result.feasible).toBe(false);
-      expect(result.violations.some((v) => v.type === "DOUBLE_BOOKING")).toBe(true);
+      expect(result.violations.some((v) => v.type === "DOUBLE_BOOKING")).toBe(
+        true,
+      );
     });
 
     it("should warn on SLA violation", () => {
@@ -209,10 +241,18 @@ describe("ConstraintSolver", () => {
       });
       const startTime = new Date("2026-03-20T08:00:00Z");
 
-      const result = ConstraintSolver.canSchedule(longJob, tech, startTime, schedule, slaRule);
+      const result = ConstraintSolver.canSchedule(
+        longJob,
+        tech,
+        startTime,
+        schedule,
+        slaRule,
+      );
 
       // Should have warning violation
-      const slaViolation = result.violations.find((v) => v.type === "SLA_VIOLATION");
+      const slaViolation = result.violations.find(
+        (v) => v.type === "SLA_VIOLATION",
+      );
       expect(slaViolation?.severity).toBe("WARNING");
     });
 
@@ -228,28 +268,56 @@ describe("ConstraintSolver", () => {
         },
       });
 
-      const result = ConstraintSolver.canSchedule(remoteJob, tech, new Date("2026-03-20T14:00:00Z"), schedule, slaRule);
+      const result = ConstraintSolver.canSchedule(
+        remoteJob,
+        tech,
+        new Date("2026-03-20T14:00:00Z"),
+        schedule,
+        slaRule,
+      );
 
       expect(result.feasible).toBe(false);
-      expect(result.violations.some((v) => v.type === "ZONE_VIOLATION")).toBe(true);
+      expect(result.violations.some((v) => v.type === "ZONE_VIOLATION")).toBe(
+        true,
+      );
     });
 
     it("should reject when outside working hours", () => {
       const earlyStartTime = new Date("2026-03-20T06:00:00Z");
-      const result = ConstraintSolver.canSchedule(job, tech, earlyStartTime, schedule, slaRule);
+      const result = ConstraintSolver.canSchedule(
+        job,
+        tech,
+        earlyStartTime,
+        schedule,
+        slaRule,
+      );
 
       expect(result.feasible).toBe(false);
-      expect(result.violations.some((v) => v.type === "WORKING_HOURS_VIOLATION")).toBe(true);
+      expect(
+        result.violations.some((v) => v.type === "WORKING_HOURS_VIOLATION"),
+      ).toBe(true);
     });
   });
 
   describe("validateSchedule", () => {
     it("should return no violations for valid schedule", () => {
-      const jobs = [createMockWorkOrder({ id: "wo_1", technicianId: tech.id, scheduledStart: new Date("2026-03-20T14:00:00Z"), scheduledEnd: new Date("2026-03-20T16:00:00Z") })];
+      const jobs = [
+        createMockWorkOrder({
+          id: "wo_1",
+          technicianId: tech.id,
+          scheduledStart: new Date("2026-03-20T14:00:00Z"),
+          scheduledEnd: new Date("2026-03-20T16:00:00Z"),
+        }),
+      ];
       const schedules = new Map([[tech.id, schedule]]);
       const slaRules = new Map([["sla_1", slaRule]]);
 
-      const violations = ConstraintSolver.validateSchedule(jobs, [tech], schedules, slaRules);
+      const violations = ConstraintSolver.validateSchedule(
+        jobs,
+        [tech],
+        schedules,
+        slaRules,
+      );
 
       expect(violations).toHaveLength(0);
     });
@@ -259,9 +327,16 @@ describe("ConstraintSolver", () => {
       const schedules = new Map([[tech.id, schedule]]);
       const slaRules = new Map([["sla_1", slaRule]]);
 
-      const violations = ConstraintSolver.validateSchedule(jobs, [tech], schedules, slaRules);
+      const violations = ConstraintSolver.validateSchedule(
+        jobs,
+        [tech],
+        schedules,
+        slaRules,
+      );
 
-      expect(violations.some((v) => v.type === "INVALID_TECHNICIAN")).toBe(true);
+      expect(violations.some((v) => v.type === "INVALID_TECHNICIAN")).toBe(
+        true,
+      );
     });
   });
 });
@@ -277,14 +352,24 @@ describe("TimeSlotFinder", () => {
 
   describe("findAvailableSlots", () => {
     it("should find available slots between bookings", () => {
-      const slots = TimeSlotFinder.findAvailableSlots(schedule, "tech_1", 60, 5);
+      const slots = TimeSlotFinder.findAvailableSlots(
+        schedule,
+        "tech_1",
+        60,
+        5,
+      );
 
       expect(slots.length).toBeGreaterThan(0);
       expect(slots[0].durationMinutes).toBeGreaterThanOrEqual(60);
     });
 
     it("should respect minimum duration requirement", () => {
-      const slots = TimeSlotFinder.findAvailableSlots(schedule, "tech_1", 120, 5);
+      const slots = TimeSlotFinder.findAvailableSlots(
+        schedule,
+        "tech_1",
+        120,
+        5,
+      );
 
       slots.forEach((slot) => {
         expect(slot.durationMinutes).toBeGreaterThanOrEqual(120);
@@ -293,7 +378,12 @@ describe("TimeSlotFinder", () => {
 
     it("should limit number of returned slots", () => {
       const maxSlots = 3;
-      const slots = TimeSlotFinder.findAvailableSlots(schedule, "tech_1", 60, maxSlots);
+      const slots = TimeSlotFinder.findAvailableSlots(
+        schedule,
+        "tech_1",
+        60,
+        maxSlots,
+      );
 
       expect(slots.length).toBeLessThanOrEqual(maxSlots);
     });
@@ -312,7 +402,12 @@ describe("TimeSlotFinder", () => {
         ],
       };
 
-      const slots = TimeSlotFinder.findAvailableSlots(fullSchedule, "tech_1", 60, 1);
+      const slots = TimeSlotFinder.findAvailableSlots(
+        fullSchedule,
+        "tech_1",
+        60,
+        1,
+      );
 
       expect(slots).toHaveLength(0);
     });
@@ -355,7 +450,9 @@ describe("BatchScheduler", () => {
       createMockWorkOrder({ id: "wo_2", priority: "MEDIUM" }),
       createMockWorkOrder({ id: "wo_3", priority: "LOW" }),
     ];
-    schedules = new Map([["tech_1", createMockSchedule("tech_1", "2026-03-20")]]);
+    schedules = new Map([
+      ["tech_1", createMockSchedule("tech_1", "2026-03-20")],
+    ]);
     slaRules = new Map([["sla_1", createMockSLARule()]]);
   });
 
@@ -381,10 +478,17 @@ describe("BatchScheduler", () => {
       });
       const testJobs = [impossibleJob];
 
-      const result = BatchScheduler.schedule(testJobs, [tech], schedules, slaRules);
+      const result = BatchScheduler.schedule(
+        testJobs,
+        [tech],
+        schedules,
+        slaRules,
+      );
 
       expect(result.failedCount).toBe(1);
-      expect(result.violations.some((v) => v.type === "NO_AVAILABLE_TECHNICIAN")).toBe(true);
+      expect(
+        result.violations.some((v) => v.type === "NO_AVAILABLE_TECHNICIAN"),
+      ).toBe(true);
     });
   });
 });
@@ -444,7 +548,11 @@ describe("RecurringScheduler", () => {
       const from = new Date("2026-01-01");
       const to = new Date("2026-03-31");
 
-      const instances = RecurringScheduler.generateInstances(planWithEnd, from, to);
+      const instances = RecurringScheduler.generateInstances(
+        planWithEnd,
+        from,
+        to,
+      );
 
       expect(instances.length).toBe(2); // Jan, Feb only
     });
@@ -459,7 +567,11 @@ describe("RecurringScheduler", () => {
       const from = new Date("2026-03-01");
       const to = new Date("2026-03-31");
 
-      const instances = RecurringScheduler.generateInstances(weeklyPlan, from, to);
+      const instances = RecurringScheduler.generateInstances(
+        weeklyPlan,
+        from,
+        to,
+      );
 
       expect(instances.length).toBeGreaterThan(0);
     });
@@ -475,7 +587,9 @@ describe("ConflictDetector", () => {
 
   beforeEach(() => {
     tech = createMockTechnician();
-    schedules = new Map([["tech_1", createMockSchedule("tech_1", "2026-03-20")]]);
+    schedules = new Map([
+      ["tech_1", createMockSchedule("tech_1", "2026-03-20")],
+    ]);
   });
 
   describe("detectConflicts", () => {
@@ -495,7 +609,11 @@ describe("ConflictDetector", () => {
         }),
       ];
 
-      const violations = ConflictDetector.detectConflicts(jobs, [tech], schedules);
+      const violations = ConflictDetector.detectConflicts(
+        jobs,
+        [tech],
+        schedules,
+      );
 
       expect(violations.some((v) => v.type === "OVERLAPPING_JOBS")).toBe(true);
     });
@@ -507,18 +625,28 @@ describe("ConflictDetector", () => {
           technicianId: "tech_1",
           scheduledStart: new Date("2026-03-20T09:00:00Z"),
           scheduledEnd: new Date("2026-03-20T10:00:00Z"),
-          address: { ...createMockWorkOrder().address, coordinates: { latitude: 47.6062, longitude: -122.3321 } },
+          address: {
+            ...createMockWorkOrder().address,
+            coordinates: { latitude: 47.6062, longitude: -122.3321 },
+          },
         }),
         createMockWorkOrder({
           id: "wo_2",
           technicianId: "tech_1",
           scheduledStart: new Date("2026-03-20T10:05:00Z"), // Only 5 min travel time
           scheduledEnd: new Date("2026-03-20T11:00:00Z"),
-          address: { ...createMockWorkOrder().address, coordinates: { latitude: 45.5, longitude: -120.5 } }, // Far away
+          address: {
+            ...createMockWorkOrder().address,
+            coordinates: { latitude: 45.5, longitude: -120.5 },
+          }, // Far away
         }),
       ];
 
-      const violations = ConflictDetector.detectConflicts(jobs, [tech], schedules);
+      const violations = ConflictDetector.detectConflicts(
+        jobs,
+        [tech],
+        schedules,
+      );
 
       expect(violations.some((v) => v.type === "IMPOSSIBLE_TRAVEL")).toBe(true);
     });
@@ -536,31 +664,53 @@ describe("RescheduleEngine", () => {
   beforeEach(() => {
     tech = createMockTechnician();
     jobs = [createMockWorkOrder({ id: "wo_1" })];
-    schedules = new Map([["tech_1", createMockSchedule("tech_1", "2026-03-20")]]);
+    schedules = new Map([
+      ["tech_1", createMockSchedule("tech_1", "2026-03-20")],
+    ]);
     slaRules = new Map([["sla_1", createMockSLARule()]]);
   });
 
   describe("findAlternatives", () => {
     it("should find alternative schedules for cancelled job", () => {
-      const result = RescheduleEngine.findAlternatives("wo_1", jobs, [tech], schedules, slaRules);
+      const result = RescheduleEngine.findAlternatives(
+        "wo_1",
+        jobs,
+        [tech],
+        schedules,
+        slaRules,
+      );
 
       expect(result).not.toBeNull();
       expect(result?.alternatives.length).toBeGreaterThan(0);
     });
 
     it("should rank alternatives by score", () => {
-      const result = RescheduleEngine.findAlternatives("wo_1", jobs, [tech], schedules, slaRules);
+      const result = RescheduleEngine.findAlternatives(
+        "wo_1",
+        jobs,
+        [tech],
+        schedules,
+        slaRules,
+      );
 
       if (result && result.alternatives.length > 1) {
         // Check descending score order
         for (let i = 0; i < result.alternatives.length - 1; i++) {
-          expect(result.alternatives[i].score).toBeGreaterThanOrEqual(result.alternatives[i + 1].score);
+          expect(result.alternatives[i].score).toBeGreaterThanOrEqual(
+            result.alternatives[i + 1].score,
+          );
         }
       }
     });
 
     it("should return null for non-existent job", () => {
-      const result = RescheduleEngine.findAlternatives("wo_invalid", jobs, [tech], schedules, slaRules);
+      const result = RescheduleEngine.findAlternatives(
+        "wo_invalid",
+        jobs,
+        [tech],
+        schedules,
+        slaRules,
+      );
 
       expect(result).toBeNull();
     });

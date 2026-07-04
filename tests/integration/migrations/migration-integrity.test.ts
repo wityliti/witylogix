@@ -81,7 +81,7 @@ async function executeSql(sql: string): Promise<string> {
  */
 async function applyMigration(migrationPath: string): Promise<void> {
   const sql = await import("fs").then((fs) =>
-    fs.promises.readFile(migrationPath, "utf-8")
+    fs.promises.readFile(migrationPath, "utf-8"),
   );
   await executeSql(sql);
 }
@@ -92,7 +92,7 @@ async function applyMigration(migrationPath: string): Promise<void> {
 async function tableExists(tableName: string): Promise<boolean> {
   try {
     const result = await executeSql(
-      `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '${tableName}');`
+      `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '${tableName}');`,
     );
     return result.includes("t");
   } catch {
@@ -106,7 +106,7 @@ async function tableExists(tableName: string): Promise<boolean> {
 async function isRlsEnabled(tableName: string): Promise<boolean> {
   try {
     const result = await executeSql(
-      `SELECT rowsecurity FROM pg_class WHERE relname = '${tableName}';`
+      `SELECT rowsecurity FROM pg_class WHERE relname = '${tableName}';`,
     );
     return result.includes("t");
   } catch {
@@ -148,7 +148,7 @@ describe("Migration Integrity Tests", () => {
     it("should create all required tables", async () => {
       const migrationPath = path.join(
         __dirname,
-        "../../../packages/db/prisma/migrations/20260316_auth_system/migration.sql"
+        "../../../packages/db/prisma/migrations/20260316_auth_system/migration.sql",
       );
 
       try {
@@ -175,7 +175,7 @@ describe("Migration Integrity Tests", () => {
     it("should have proper indexes on auth_sessions", async () => {
       try {
         const result = await executeSql(
-          `SELECT indexname FROM pg_indexes WHERE tablename = 'auth_sessions';`
+          `SELECT indexname FROM pg_indexes WHERE tablename = 'auth_sessions';`,
         );
         expect(result).toContain("idx_auth_sessions_user_id");
         expect(result).toContain("idx_auth_sessions_expires_at");
@@ -198,7 +198,7 @@ describe("Migration Integrity Tests", () => {
     it("should create all required tables", async () => {
       const migrationPath = path.join(
         __dirname,
-        "../../../packages/db/prisma/migrations/20260316_onboarding/migration.sql"
+        "../../../packages/db/prisma/migrations/20260316_onboarding/migration.sql",
       );
 
       try {
@@ -225,7 +225,7 @@ describe("Migration Integrity Tests", () => {
       try {
         const result = await executeSql(
           `SELECT constraint_name FROM information_schema.table_constraints
-           WHERE table_name = 'workspaces' AND constraint_type = 'UNIQUE';`
+           WHERE table_name = 'workspaces' AND constraint_type = 'UNIQUE';`,
         );
         expect(result).toContain("unique_workspace_org_slug");
       } catch {
@@ -238,7 +238,7 @@ describe("Migration Integrity Tests", () => {
     it("should create all required tables", async () => {
       const migrationPath = path.join(
         __dirname,
-        "../../../packages/db/prisma/migrations/20260316_tenant_config/migration.sql"
+        "../../../packages/db/prisma/migrations/20260316_tenant_config/migration.sql",
       );
 
       try {
@@ -263,7 +263,7 @@ describe("Migration Integrity Tests", () => {
       try {
         const result = await executeSql(
           `SELECT constraint_name FROM information_schema.table_constraints
-           WHERE table_name = 'tenant_configs' AND constraint_type = 'UNIQUE';`
+           WHERE table_name = 'tenant_configs' AND constraint_type = 'UNIQUE';`,
         );
         expect(result).toContain("idx_tenant_configs_subdomain");
       } catch {
@@ -276,7 +276,7 @@ describe("Migration Integrity Tests", () => {
     it("should create all required tables", async () => {
       const migrationPath = path.join(
         __dirname,
-        "../../../packages/db/prisma/migrations/20260316_webhook_reliability/migration.sql"
+        "../../../packages/db/prisma/migrations/20260316_webhook_reliability/migration.sql",
       );
 
       try {
@@ -298,7 +298,7 @@ describe("Migration Integrity Tests", () => {
     it("should have retry-focused indexes", async () => {
       try {
         const result = await executeSql(
-          `SELECT indexname FROM pg_indexes WHERE tablename = 'webhook_deliveries';`
+          `SELECT indexname FROM pg_indexes WHERE tablename = 'webhook_deliveries';`,
         );
         expect(result).toContain("idx_webhook_deliveries_next_retry_at");
       } catch {
@@ -311,7 +311,7 @@ describe("Migration Integrity Tests", () => {
     it("should allow running auth migration twice", async () => {
       const migrationPath = path.join(
         __dirname,
-        "../../../packages/db/prisma/migrations/20260316_auth_system/migration.sql"
+        "../../../packages/db/prisma/migrations/20260316_auth_system/migration.sql",
       );
 
       // First run should succeed
@@ -362,7 +362,7 @@ describe("Migration Integrity Tests", () => {
       try {
         const indexCount = await executeSql(
           `SELECT COUNT(*) FROM pg_indexes WHERE tablename IN
-           ('auth_sessions', 'api_keys', 'usage_records', 'webhook_deliveries');`
+           ('auth_sessions', 'api_keys', 'usage_records', 'webhook_deliveries');`,
         );
         // Should have multiple indexes per table
         expect(indexCount.length).toBeGreaterThan(0);
@@ -377,7 +377,7 @@ describe("Migration Integrity Tests", () => {
       try {
         const result = await executeSql(
           `SELECT column_name FROM information_schema.columns
-           WHERE table_name = 'auth_sessions' AND column_name IN ('created_at', 'updated_at');`
+           WHERE table_name = 'auth_sessions' AND column_name IN ('created_at', 'updated_at');`,
         );
         expect(result).toContain("created_at");
         expect(result).toContain("updated_at");

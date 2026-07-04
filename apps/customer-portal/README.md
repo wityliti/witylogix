@@ -11,6 +11,7 @@ A modern, mobile-first Next.js 14 customer portal for managing deliveries, track
 ## Key Features
 
 ### Customer-Facing Features
+
 - **Dashboard** - Order overview with quick stats and upcoming deliveries
 - **Order Management** - Browse, filter, and search all orders with detailed views
 - **Live Tracking** - Real-time driver tracking with ETA and remaining stops
@@ -20,6 +21,7 @@ A modern, mobile-first Next.js 14 customer portal for managing deliveries, track
 - **Support Center** - FAQ and direct support messaging
 
 ### Technical Excellence
+
 - Next.js 14 App Router with TypeScript strict mode
 - Tailwind CSS v3.4 with custom design system variables
 - Mobile-first responsive design (640px, 1024px breakpoints)
@@ -29,14 +31,14 @@ A modern, mobile-first Next.js 14 customer portal for managing deliveries, track
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14 |
-| Language | TypeScript 5.7 |
-| Styling | Tailwind CSS 3.4 |
-| UI Components | Custom + Lucide React |
-| State | React Hooks |
-| Package Manager | pnpm |
+| Layer           | Technology            |
+| --------------- | --------------------- |
+| Framework       | Next.js 14            |
+| Language        | TypeScript 5.7        |
+| Styling         | Tailwind CSS 3.4      |
+| UI Components   | Custom + Lucide React |
+| State           | React Hooks           |
+| Package Manager | pnpm                  |
 
 ## Project Structure
 
@@ -57,6 +59,7 @@ src/
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js >= 20.0.0
 - pnpm >= 9.15.0
 
@@ -92,6 +95,7 @@ pnpm lint
 ## Features by Page
 
 ### Dashboard (`/`)
+
 - Welcome message with active delivery count
 - Quick stats: Active Orders, Delivered, Total Spent
 - Upcoming deliveries with ETA
@@ -99,6 +103,7 @@ pnpm lint
 - Responsive grid layout
 
 ### Orders (`/orders`)
+
 - Filterable order list (5 status filters)
 - Multi-field search (order #, address, items)
 - Sortable by date (newest/oldest)
@@ -106,6 +111,7 @@ pnpm lint
 - Order cards with quick actions
 
 ### Order Detail (`/orders/[id]`)
+
 - 4-step delivery timeline
 - Driver information card with ratings
 - Contact actions (call/SMS)
@@ -114,6 +120,7 @@ pnpm lint
 - Quick actions: Reschedule, Download Invoice
 
 ### Live Tracking (`/track`)
+
 - Real-time driver position
 - Route visualization
 - ETA countdown
@@ -121,6 +128,7 @@ pnpm lint
 - Driver contact options
 
 ### Rescheduling (`/orders/[id]/reschedule`)
+
 - Multi-step form with progress bar
 - Date selection (7-day availability)
 - Time slot selector (6 slots/day)
@@ -128,6 +136,7 @@ pnpm lint
 - Success confirmation
 
 ### Rating (`/orders/[id]/rate`)
+
 - Driver rating (1-5 stars)
 - Experience rating (1-5 stars)
 - Optional text feedback
@@ -135,6 +144,7 @@ pnpm lint
 - Summary review
 
 ### Preferences (`/preferences`)
+
 - Safe place instructions
 - Access codes (gate, building)
 - Preferred delivery times
@@ -142,6 +152,7 @@ pnpm lint
 - Default address management
 
 ### Support (`/support`)
+
 - Quick contact options
 - Categorized FAQ (5 categories)
 - Expandable FAQ items
@@ -151,6 +162,7 @@ pnpm lint
 ## Component Library
 
 ### Shared Components
+
 - **Header** - Top navigation with notifications and profile
 - **SidebarNav** - Side navigation with mobile overlay
 - **DeliveryTimeline** - Visual status timeline
@@ -161,6 +173,7 @@ pnpm lint
 ## Design System
 
 ### Colors (CSS Variables)
+
 - **Background:** `wl-bg-root`, `wl-bg-surface`, `wl-bg-elevated`
 - **Primary:** `wl-primary-50` through `wl-primary-900`
 - **Neutral:** `wl-neutral-50` through `wl-neutral-900`
@@ -168,12 +181,15 @@ pnpm lint
 - **Text:** `wl-text-primary`, `wl-text-secondary`, `wl-text-tertiary`
 
 ### Responsive Breakpoints
+
 - Mobile-first default
 - `sm` (640px) - Tablets
 - `lg` (1024px) - Desktops
 
 ### Typography & Spacing
+
 All defined via CSS variables for consistency:
+
 - Font sizes: `xs` → `3xl`
 - Spacing: `0` → `12` (in 4px increments)
 - Border radius: `sm`, `md`, `lg`, `xl`, `full`
@@ -182,6 +198,7 @@ All defined via CSS variables for consistency:
 ## Accessibility
 
 Compliant with WCAG 2.1 AA:
+
 - Semantic HTML structure
 - ARIA labels on interactive elements
 - Focus-visible states
@@ -193,6 +210,7 @@ Compliant with WCAG 2.1 AA:
 ## Mock Data
 
 Full mock data is included for testing:
+
 - Orders with realistic statuses and timelines
 - Driver information with ratings
 - Delivery tracking scenarios
@@ -204,6 +222,7 @@ Replace with API calls when integrating backend.
 ## Type Definitions
 
 Complete TypeScript types for:
+
 - `Order`, `OrderItem`, `OrderStatus`
 - `Driver`, `LiveTracking`
 - `DeliveryTimestep`, `OrderRating`
@@ -245,12 +264,13 @@ Currently uses mock data. When integrating with backend:
 5. Add request/response interceptors
 
 Example:
+
 ```typescript
 // Before: Mock data
 const orders = mockOrders;
 
 // After: API call
-const response = await fetch('/api/orders');
+const response = await fetch("/api/orders");
 const orders = await response.json();
 ```
 
@@ -266,18 +286,21 @@ NEXT_PUBLIC_APP_NAME=Witylogix Customer Portal
 ## Deployment
 
 ### Vercel (Recommended)
+
 ```bash
 npm install -g vercel
 vercel
 ```
 
 ### Docker
+
 ```bash
 docker build -t witylogix-customer-portal .
 docker run -p 3004:3004 witylogix-customer-portal
 ```
 
 ### Manual
+
 ```bash
 pnpm build
 pnpm start
@@ -347,6 +370,7 @@ All 19 sprint requirements completed:
 ## Support
 
 For questions or issues:
+
 1. Check the documentation files
 2. Review component source code
 3. Refer to type definitions in `src/types/index.ts`

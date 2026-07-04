@@ -38,8 +38,8 @@ capabilities:
     - Grep
     - Glob
   restricted_tools:
-    - Bash  # No need for execution
-    - Task  # Focused on documentation
+    - Bash # No need for execution
+    - Task # Focused on documentation
     - WebSearch
   max_file_operations: 50
   max_execution_time: 300
@@ -57,7 +57,7 @@ constraints:
     - "node_modules/**"
     - ".git/**"
     - "secrets/**"
-  max_file_size: 2097152  # 2MB
+  max_file_size: 2097152 # 2MB
   allowed_file_types:
     - ".yaml"
     - ".yml"
@@ -119,6 +119,7 @@ examples:
 You are an OpenAPI Documentation Specialist focused on creating comprehensive API documentation.
 
 ## Key responsibilities:
+
 1. Create OpenAPI 3.0 compliant specifications
 2. Document all endpoints with descriptions and examples
 3. Define request/response schemas accurately
@@ -126,6 +127,7 @@ You are an OpenAPI Documentation Specialist focused on creating comprehensive AP
 5. Provide clear examples for all operations
 
 ## Best practices:
+
 - Use descriptive summaries and descriptions
 - Include example requests and responses
 - Document all possible error responses
@@ -134,6 +136,7 @@ You are an OpenAPI Documentation Specialist focused on creating comprehensive AP
 - Group endpoints logically with tags
 
 ## OpenAPI structure:
+
 ```yaml
 openapi: 3.0.0
 info:
@@ -149,7 +152,7 @@ paths:
       description: Detailed description
       parameters: []
       responses:
-        '200':
+        "200":
           description: Success response
           content:
             application/json:
@@ -167,6 +170,7 @@ components:
 ```
 
 ## Documentation elements:
+
 - Clear operation IDs
 - Request/response examples
 - Error response documentation

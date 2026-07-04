@@ -9,9 +9,11 @@ A production-grade Socket.io real-time layer has been created for Witylogix to e
 ## Files Created
 
 ### 1. Server-side Socket.io Setup
+
 **File:** `/apps/api/src/lib/socket.ts` (500 lines)
 
 Core Socket.io server module with:
+
 - **Initialization:** `setupSocketServer(httpServer, redis, logger)`
 - **Authentication:** JWT middleware on connection
 - **Room Management:** Shop, shipment, and driver specific rooms
@@ -20,6 +22,7 @@ Core Socket.io server module with:
 - **Graceful Shutdown:** `shutdownSocket(logger)`
 
 Features:
+
 - Typed events with full TypeScript support
 - Redis adapter for horizontal scaling
 - Connection health monitoring (ping/pong)
@@ -27,9 +30,11 @@ Features:
 - Comprehensive error handling and logging
 
 ### 2. Event Emission Helpers
+
 **File:** `/apps/api/src/lib/events.ts` (175 lines)
 
 Helper functions for route handlers to emit events safely:
+
 - `emitShipmentCreated(data)` → Broadcast to shop
 - `emitShipmentStatusChanged(data)` → Broadcast to shop & shipment room
 - `emitShipmentAssigned(data)` → Broadcast to shop, shipment & driver
@@ -39,24 +44,29 @@ Helper functions for route handlers to emit events safely:
 - Batch helpers: `emitShipmentsCreated()`, `emitDriverLocationsUpdated()`
 
 ### 3. Shared Realtime Types & Constants
+
 **File:** `/packages/core/src/realtime/index.ts` (202 lines)
 
 Shared across API and dashboard for type safety:
+
 - **Event Constants:** `EVENTS` object with all event names
 - **Type Definitions:** Payload types for all 11 event types
 - **Room Helpers:** `getShopRoom()`, `getShipmentRoom()`, etc.
 - **Subscription Commands:** `SUBSCRIPTIONS` object
 
 Enables both API and dashboard to reference events by constant:
+
 ```typescript
 import { EVENTS } from "@witylogix/core/realtime";
 socket.emit(EVENTS.SHIPMENT_CREATED, data);
 ```
 
 ### 4. Dashboard React Hook
+
 **File:** `/apps/dashboard/src/lib/socket.ts` (360 lines)
 
 Production-grade React hook for real-time updates:
+
 - **`useSocket(shopId)`** hook returns:
   - `isConnected`, `isConnecting`, `error`, `lastEvent`
   - `subscribe()`, `unsubscribe()`, `subscribeToShipment()`, `subscribeToDriver()`
@@ -69,9 +79,11 @@ Production-grade React hook for real-time updates:
   - Event type guards: `isShipmentCreatedEvent()`, etc.
 
 ### 5. Package Export
+
 **File:** `/packages/core/package.json` (updated)
 
 Added realtime export to make it available to both API and dashboard:
+
 ```json
 "./realtime": "./src/realtime/index.ts"
 ```
@@ -123,20 +135,26 @@ Client Connection
 ## Architecture Highlights
 
 ### Tenant Isolation
+
 Each shop gets its own Socket.io room `shop:{shopId}`. Events only broadcast to authenticated clients in that room.
 
 ### Authentication
+
 JWT token verified on connection via Socket.io auth handshake. Users cannot subscribe to shops they don't have access to.
 
 ### Scalability
+
 Redis adapter allows Socket.io to work across multiple API servers:
+
 ```typescript
 const adapter = createAdapter(pubClient, subClient);
 ioServer.adapter(adapter);
 ```
 
 ### Type Safety
+
 Event names are constants, not magic strings:
+
 ```typescript
 // API Server
 emitShipmentCreated({...});
@@ -146,16 +164,20 @@ socket.on(EVENTS.SHIPMENT_CREATED, (data) => {...});
 ```
 
 ### Granular Updates
+
 Clients can subscribe to specific entities:
+
 ```typescript
-socket.subscribe('shipment', shipmentId);  // Only updates for this shipment
-socket.subscribe('driver', driverId);      // Only updates for this driver
+socket.subscribe("shipment", shipmentId); // Only updates for this shipment
+socket.subscribe("driver", driverId); // Only updates for this driver
 ```
 
 ## Integration Points
 
 ### In API Route Handlers
+
 After creating/updating resources, emit events:
+
 ```typescript
 const shipment = await prisma.shipment.create({...});
 emitShipmentCreated({
@@ -167,14 +189,16 @@ emitShipmentCreated({
 ```
 
 ### In Dashboard Components
+
 Subscribe to events with React hook:
+
 ```typescript
 const socket = useSocket(shopId);
 
 useEffect(() => {
   if (!socket.isConnected) return;
   const unsub = socket.on(EVENTS.SHIPMENT_CREATED, (data) => {
-    setShipments(prev => [data, ...prev]);
+    setShipments((prev) => [data, ...prev]);
   });
   return unsub;
 }, [socket.isConnected]);
@@ -183,6 +207,7 @@ useEffect(() => {
 ## Production Readiness
 
 The implementation is production-grade with:
+
 - **Error Handling:** Try/catch blocks, fallback behaviors
 - **Logging:** Comprehensive logging at all levels
 - **Graceful Degradation:** Works if Redis is unavailable
@@ -194,11 +219,13 @@ The implementation is production-grade with:
 ## Dependencies
 
 Already in place:
+
 - `socket.io@^4.8.0` (API)
 - `@socket.io/redis-adapter@^8.3.0` (API)
 - `ioredis@^5.4.0` (API)
 
 Need to add:
+
 - `socket.io-client@^4.8.0` (Dashboard) - Not yet in package.json
 
 ## Documentation Provided
@@ -218,11 +245,13 @@ Need to add:
 ## Next Steps for CTO
 
 ### Immediate (Today)
+
 1. Review socket.ts and events.ts for any Witylogix-specific adjustments
 2. Ensure JWT_SECRET environment variable is set
 3. Verify Redis is accessible from API server
 
 ### Short Term (This Sprint)
+
 1. Update API server in server.ts (Phase 1)
 2. Add socket.io-client dependency (Phase 2)
 3. Emit events from 1-2 critical routes (Phase 3)
@@ -230,12 +259,14 @@ Need to add:
 5. Basic testing (Phase 5)
 
 ### Medium Term (Next Sprint)
+
 1. Expand event emission to all relevant routes
 2. Add real-time updates to all dashboard pages
 3. Set up monitoring and health check endpoints (Phase 6)
 4. Performance testing with 100+ concurrent connections
 
 ### Long Term
+
 1. Add real-time notifications to driver app
 2. Implement real-time driver location tracking
 3. Set up WebSocket gateway for cross-service communication
@@ -254,16 +285,19 @@ Need to add:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Event payload validation
 - Room routing logic
 - Connection state management
 
 ### Integration Tests
+
 - End-to-end: API event → Dashboard listener
 - Multi-shop isolation
 - Authentication failures
 
 ### Load Tests
+
 - 100+ concurrent connections
 - Event throughput (events/sec)
 - Memory usage over time

@@ -82,9 +82,7 @@ class LRUCacheWithDedup<T> {
 
     const now = Date.now();
     const isExpired = now > entry.expiresAt;
-    const isStale =
-      now >
-      entry.expiresAt + this.staleWhileRevalidateMs;
+    const isStale = now > entry.expiresAt + this.staleWhileRevalidateMs;
 
     if (isStale) {
       this.cache.delete(key);
@@ -112,10 +110,7 @@ class LRUCacheWithDedup<T> {
     return this.get(key, true);
   }
 
-  async deduplicateRequest(
-    key: string,
-    fetcher: () => Promise<T>
-  ): Promise<T> {
+  async deduplicateRequest(key: string, fetcher: () => Promise<T>): Promise<T> {
     // Return existing in-flight request if available
     if (this.dedupMap.has(key)) {
       return this.dedupMap.get(key)!;
@@ -138,9 +133,7 @@ class LRUCacheWithDedup<T> {
     return promise;
   }
 
-  coalesceConcurrentRequests(
-    key: string
-  ): Promise<T> | null {
+  coalesceConcurrentRequests(key: string): Promise<T> | null {
     return this.dedupMap.get(key) || null;
   }
 
@@ -166,7 +159,7 @@ class LRUCacheWithDedup<T> {
   generateKey(
     method: string,
     path: string,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
   ): string {
     const hash = (str: string) => {
       let hash = 0;
@@ -178,9 +171,7 @@ class LRUCacheWithDedup<T> {
       return Math.abs(hash).toString(36);
     };
 
-    const combined = `${method}:${path}:${JSON.stringify(
-      params || {}
-    )}`;
+    const combined = `${method}:${path}:${JSON.stringify(params || {})}`;
     return `cache-${hash(combined)}`;
   }
 }
@@ -345,39 +336,21 @@ describe("Gateway V2 - Cache & Deduplication", () => {
     });
 
     it("should generate different keys for different methods", () => {
-      const getKey = cache.generateKey(
-        "GET",
-        "/api/v1/payments"
-      );
-      const postKey = cache.generateKey(
-        "POST",
-        "/api/v1/payments"
-      );
+      const getKey = cache.generateKey("GET", "/api/v1/payments");
+      const postKey = cache.generateKey("POST", "/api/v1/payments");
 
       expect(getKey).not.toBe(postKey);
     });
 
     it("should include query params in key", () => {
-      const key1 = cache.generateKey(
-        "GET",
-        "/api/v1/payments",
-        { id: "123" }
-      );
-      const key2 = cache.generateKey(
-        "GET",
-        "/api/v1/payments",
-        { id: "456" }
-      );
+      const key1 = cache.generateKey("GET", "/api/v1/payments", { id: "123" });
+      const key2 = cache.generateKey("GET", "/api/v1/payments", { id: "456" });
 
       expect(key1).not.toBe(key2);
     });
 
     it("should use factory function for dedup keys", () => {
-      const key = createDeduplicationKey(
-        "POST",
-        "/charge",
-        { amount: 100 }
-      );
+      const key = createDeduplicationKey("POST", "/charge", { amount: 100 });
 
       expect(key).toContain("dedup-");
       expect(typeof key).toBe("string");
@@ -396,10 +369,7 @@ describe("Gateway V2 - Cache & Deduplication", () => {
       const promise1 = cache.deduplicateRequest("key", fetcher);
       const promise2 = cache.deduplicateRequest("key", fetcher);
 
-      const [result1, result2] = await Promise.all([
-        promise1,
-        promise2,
-      ]);
+      const [result1, result2] = await Promise.all([promise1, promise2]);
 
       expect(fetchCount).toBe(1); // Only one actual fetch
       expect(result1).toEqual(result2);
@@ -408,10 +378,7 @@ describe("Gateway V2 - Cache & Deduplication", () => {
     it("should return cached result on subsequent requests", async () => {
       const fetcher = async () => ({ data: "response" });
 
-      const result1 = await cache.deduplicateRequest(
-        "key",
-        fetcher
-      );
+      const result1 = await cache.deduplicateRequest("key", fetcher);
       const result2 = cache.get("key");
 
       expect(result1).toEqual(result2);
@@ -451,7 +418,7 @@ describe("Gateway V2 - Cache & Deduplication", () => {
       };
 
       const promises = Array.from({ length: 10 }, () =>
-        cache.deduplicateRequest("shared-key", fetcher)
+        cache.deduplicateRequest("shared-key", fetcher),
       );
 
       await Promise.all(promises);
@@ -466,8 +433,8 @@ describe("Gateway V2 - Cache & Deduplication", () => {
 
       const results = await Promise.all(
         Array.from({ length: 5 }, () =>
-          cache.deduplicateRequest("key", fetcher)
-        )
+          cache.deduplicateRequest("key", fetcher),
+        ),
       );
 
       const firstValue = results[0].value;

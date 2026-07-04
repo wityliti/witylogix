@@ -3,6 +3,7 @@
 ## 📦 What You Got
 
 13 production-ready React components across 3 categories:
+
 - **5 Dispatch Components** - Real-time route & driver visualization
 - **5 Checkout Components** - Embeddable date/time/method selection
 - **3 Shared UI Components** - Cross-platform status & metrics
@@ -10,6 +11,7 @@
 ## 🎯 Quick Import Examples
 
 ### Dispatch Components
+
 ```typescript
 import {
   RouteTimelineBar,
@@ -21,6 +23,7 @@ import {
 ```
 
 ### Checkout Components
+
 ```typescript
 import {
   CalendarDay,
@@ -32,12 +35,9 @@ import {
 ```
 
 ### Shared UI
+
 ```typescript
-import {
-  StatusTimeline,
-  MetricCard,
-  ColorLegend,
-} from "@/components/ui";
+import { StatusTimeline, MetricCard, ColorLegend } from "@/components/ui";
 ```
 
 ---
@@ -45,6 +45,7 @@ import {
 ## 🚀 Common Use Cases
 
 ### Display a route with stops
+
 ```tsx
 <RouteTimelineBar
   stops={stops}
@@ -55,6 +56,7 @@ import {
 ```
 
 ### Show driver status
+
 ```tsx
 <DriverAvatar
   name="John Doe"
@@ -66,6 +68,7 @@ import {
 ```
 
 ### Filter orders
+
 ```tsx
 <DispatchFilterBar
   onSearchChange={setSearch}
@@ -75,6 +78,7 @@ import {
 ```
 
 ### Calendar date picker
+
 ```tsx
 <CalendarDay
   date={15}
@@ -86,6 +90,7 @@ import {
 ```
 
 ### Time slot selection
+
 ```tsx
 <TimeSlotCard
   timeSlot={slot}
@@ -96,6 +101,7 @@ import {
 ```
 
 ### Delivery method selection
+
 ```tsx
 <DeliveryMethodCard
   method={method}
@@ -105,25 +111,24 @@ import {
 ```
 
 ### Show delivery zone
+
 ```tsx
 <ZoneMapMini
   zoneName="Zone A"
   isInZone={true}
   customerLat={40.7128}
-  customerLng={-74.0060}
+  customerLng={-74.006}
 />
 ```
 
 ### Delivery status timeline
+
 ```tsx
-<StatusTimeline
-  steps={steps}
-  currentStep={2}
-  orientation="vertical"
-/>
+<StatusTimeline steps={steps} currentStep={2} orientation="vertical" />
 ```
 
 ### Metrics display
+
 ```tsx
 <MetricCard
   value={2847}
@@ -134,12 +139,9 @@ import {
 ```
 
 ### Show route visibility
+
 ```tsx
-<ColorLegend
-  routes={routes}
-  onToggleRoute={handleToggle}
-  compact={false}
-/>
+<ColorLegend routes={routes} onToggleRoute={handleToggle} compact={false} />
 ```
 
 ---
@@ -147,6 +149,7 @@ import {
 ## 🎨 Styling
 
 ### Override with Tailwind
+
 ```tsx
 <RouteTimelineBar
   stops={stops}
@@ -156,6 +159,7 @@ import {
 ```
 
 ### Dark Mode (Automatic)
+
 ```tsx
 // Dark mode classes are built-in
 // Just add dark: prefix in CSS
@@ -163,12 +167,9 @@ import {
 ```
 
 ### Custom Colors
+
 ```tsx
-<MetricCard
-  value={100}
-  label="Growth"
-  accentColor="var(--wl-success-500)"
-/>
+<MetricCard value={100} label="Growth" accentColor="var(--wl-success-500)" />
 ```
 
 ---
@@ -220,6 +221,7 @@ Use this when integrating components:
 ## 🧪 Testing
 
 ### Example unit test
+
 ```typescript
 import { render, screen } from '@testing-library/react';
 import { RouteTimelineBar } from '@/components/dispatch';
@@ -242,6 +244,7 @@ describe('RouteTimelineBar', () => {
 ## 🎯 Pro Tips
 
 1. **Use cn() for conditional classes**
+
    ```typescript
    className={cn(
      "base-class",
@@ -251,17 +254,20 @@ describe('RouteTimelineBar', () => {
    ```
 
 2. **Export prop types**
+
    ```typescript
-   import type { RouteTimelineBarProps } from '@/components/dispatch';
+   import type { RouteTimelineBarProps } from "@/components/dispatch";
    ```
 
 3. **Use Tailwind extensions**
+
    ```typescript
    // All components support Tailwind's full utility set
-   className="p-4 md:p-6 lg:p-8"
+   className = "p-4 md:p-6 lg:p-8";
    ```
 
 4. **Dark mode works automatically**
+
    ```typescript
    // No need to manually toggle - Tailwind handles it
    // Just use dark: prefix in classNames
@@ -278,6 +284,7 @@ describe('RouteTimelineBar', () => {
 ## 📚 Full Documentation
 
 See `COMPONENT_LIBRARY.md` for:
+
 - Detailed prop documentation
 - Feature descriptions
 - API reference
@@ -285,6 +292,7 @@ See `COMPONENT_LIBRARY.md` for:
 - Examples
 
 See `SPRINT_4.5_COMPLETION.md` for:
+
 - Implementation details
 - Architecture decisions
 - Performance metrics
@@ -295,11 +303,13 @@ See `SPRINT_4.5_COMPLETION.md` for:
 ## ⚡ Performance Tips
 
 1. **Memoize components receiving many props**
+
    ```typescript
    export const MyComponent = memo(Component);
    ```
 
 2. **Use proper key prop in lists**
+
    ```typescript
    {stops.map(stop => (
      <StopMarker key={stop.id} {...stop} />
@@ -308,7 +318,7 @@ See `SPRINT_4.5_COMPLETION.md` for:
 
 3. **Lazy load heavy components**
    ```typescript
-   const ZoneMapMini = lazy(() => import('./zone-map-mini'));
+   const ZoneMapMini = lazy(() => import("./zone-map-mini"));
    ```
 
 ---
@@ -316,15 +326,19 @@ See `SPRINT_4.5_COMPLETION.md` for:
 ## 🐛 Common Issues
 
 ### Issue: Component not found
+
 **Solution**: Check import path (dashboard vs checkout-widget)
 
 ### Issue: Styles not applied
+
 **Solution**: Ensure Tailwind CSS is configured correctly
 
 ### Issue: Dark mode not working
+
 **Solution**: Add `dark` class to root HTML element
 
 ### Issue: Props TypeScript error
+
 **Solution**: Import type from component `import type { Props }`
 
 ---
@@ -332,6 +346,7 @@ See `SPRINT_4.5_COMPLETION.md` for:
 ## 📞 Support
 
 For issues or questions:
+
 1. Check `COMPONENT_LIBRARY.md` documentation
 2. Review component implementation in src
 3. Check TypeScript types for available props
@@ -342,6 +357,7 @@ For issues or questions:
 ## ✅ Ready to Use
 
 All components are:
+
 - ✅ Production-ready
 - ✅ Fully typed
 - ✅ Accessible

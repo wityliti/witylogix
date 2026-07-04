@@ -1,12 +1,7 @@
 "use client";
 
 import { forwardRef, useState, type HTMLAttributes } from "react";
-import {
-  Printer,
-  RotateCcw,
-  X,
-  AlertCircle,
-} from "lucide-react";
+import { Printer, RotateCcw, X, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,7 +72,7 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [showOverlay, setShowOverlay] = useState(refundBadge || voidBadge);
 
@@ -92,7 +87,10 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
     });
 
     // Calculate discounts if any items have reduced prices
-    const totalRegular = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const totalRegular = items.reduce(
+      (sum, item) => sum + item.unitPrice * item.quantity,
+      0,
+    );
     const discount = Math.max(0, totalRegular - subtotal);
 
     const paymentLabel = paymentMethodLabels[paymentMethod];
@@ -103,7 +101,7 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
         className={cn(
           "relative max-w-sm mx-auto p-6 space-y-4 font-mono text-sm bg-white dark:bg-wl-bg-elevated",
           "border-2 border-dashed border-wl-border-subtle",
-          className
+          className,
         )}
         {...props}
       >
@@ -114,7 +112,7 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
               <div
                 className={cn(
                   "px-4 py-2 rounded-lg font-semibold text-lg text-white transform -rotate-12 shadow-lg",
-                  refundBadge ? "bg-wl-danger-500" : "bg-wl-text-secondary"
+                  refundBadge ? "bg-wl-danger-500" : "bg-wl-text-secondary",
                 )}
               >
                 {refundBadge ? "REFUNDED" : "VOID"}
@@ -147,7 +145,9 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
 
         {/* Header - Store Info */}
         <div className="text-center space-y-1">
-          <h2 className="text-base font-bold text-wl-text-primary">{storeName}</h2>
+          <h2 className="text-base font-bold text-wl-text-primary">
+            {storeName}
+          </h2>
           {storeAddress && (
             <p className="text-xs text-wl-text-secondary">{storeAddress}</p>
           )}
@@ -176,9 +176,13 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
             <div key={item.id} className="space-y-1">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-wl-text-primary font-medium">{item.name}</p>
+                  <p className="text-wl-text-primary font-medium">
+                    {item.name}
+                  </p>
                   {item.sku && (
-                    <p className="text-xs text-wl-text-secondary">SKU: {item.sku}</p>
+                    <p className="text-xs text-wl-text-secondary">
+                      SKU: {item.sku}
+                    </p>
                   )}
                 </div>
                 <p className="text-wl-text-primary ml-2">
@@ -186,7 +190,8 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
                 </p>
               </div>
               <p className="text-xs text-wl-text-secondary">
-                {item.quantity} x ${item.unitPrice.toFixed(2)} @ ${item.totalPrice.toFixed(2)}
+                {item.quantity} x ${item.unitPrice.toFixed(2)} @ $
+                {item.totalPrice.toFixed(2)}
               </p>
             </div>
           ))}
@@ -227,7 +232,9 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
         <div className="text-xs space-y-1">
           <div className="flex justify-between">
             <span className="text-wl-text-secondary">Payment Method:</span>
-            <span className="text-wl-text-primary font-medium">{paymentLabel}</span>
+            <span className="text-wl-text-primary font-medium">
+              {paymentLabel}
+            </span>
           </div>
 
           {paymentMethod === "card" && cardLastFour && (
@@ -299,7 +306,7 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
         </div>
       </Card>
     );
-  }
+  },
 );
 
 POSReceipt.displayName = "POSReceipt";

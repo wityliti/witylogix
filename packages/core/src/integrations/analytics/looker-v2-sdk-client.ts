@@ -31,7 +31,7 @@ import type {
   HealthCheckResult,
   RateLimitInfo,
   PaginatedResponse,
-} from './analytics-sdk-types.js';
+} from "./analytics-sdk-types.js";
 
 // ─── LOOKER SPECIFIC TYPES ──────────────────────────────────────────
 
@@ -162,7 +162,7 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
@@ -178,7 +178,7 @@ class RateLimiter {
   getInfo(): RateLimitInfo {
     const now = Date.now();
     const recentRequests = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
     const remaining = Math.max(0, this.maxRequests - recentRequests.length);
 
@@ -213,13 +213,12 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error: unknown) {
-        lastError =
-          error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         const statusCode =
           lastError instanceof Error &&
-          'statusCode' in lastError &&
-          typeof (lastError as Record<string, unknown>).statusCode === 'number'
+          "statusCode" in lastError &&
+          typeof (lastError as Record<string, unknown>).statusCode === "number"
             ? ((lastError as Record<string, unknown>).statusCode as number)
             : 500;
 
@@ -233,7 +232,7 @@ class RetryHandler {
         const delay = Math.min(
           this.config.maxDelayMs,
           this.config.initialDelayMs *
-            Math.pow(this.config.backoffMultiplier, attempt)
+            Math.pow(this.config.backoffMultiplier, attempt),
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -259,7 +258,7 @@ export class LookerV2SDKClient {
 
   constructor(authConfig: LookerAuthConfig) {
     this.authConfig = authConfig;
-    this.baseUrl = authConfig.instanceUrl.replace(/\/$/, '');
+    this.baseUrl = authConfig.instanceUrl.replace(/\/$/, "");
     this.rateLimiter = new RateLimiter(60, 60000);
     this.retryHandler = new RetryHandler({
       maxAttempts: 3,
@@ -285,12 +284,12 @@ export class LookerV2SDKClient {
       await this.rateLimiter.acquire();
 
       const payload = new URLSearchParams();
-      payload.append('client_id', this.authConfig.clientId);
-      payload.append('client_secret', this.authConfig.clientSecret);
+      payload.append("client_id", this.authConfig.clientId);
+      payload.append("client_secret", this.authConfig.clientSecret);
 
       const response = await fetch(`${this.baseUrl}/api/4.0/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: payload.toString(),
       });
 
@@ -312,14 +311,14 @@ export class LookerV2SDKClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     return this.retryHandler.execute(async () => {
       await this.rateLimiter.acquire();
 
       const token = await this.ensureAuthenticated();
       const headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
         ...(options.headers as Record<string, string>),
       };
@@ -331,14 +330,15 @@ export class LookerV2SDKClient {
 
       if (!response.ok) {
         const error = new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `API request failed: ${response.status} ${response.statusText}`,
         );
-        (error as unknown as Record<string, unknown>).statusCode = response.status;
+        (error as unknown as Record<string, unknown>).statusCode =
+          response.status;
         throw error;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
         return (await response.json()) as T;
       }
 
@@ -357,19 +357,20 @@ export class LookerV2SDKClient {
     offset?: number;
   }): Promise<PaginatedResponse<NormalizedReport>> {
     const params = new URLSearchParams();
-    if (options?.folderId) params.append('folder_id', options.folderId);
-    if (options?.limit) params.append('limit', String(options.limit));
-    if (options?.offset) params.append('offset', String(options.offset));
+    if (options?.folderId) params.append("folder_id", options.folderId);
+    if (options?.limit) params.append("limit", String(options.limit));
+    if (options?.offset) params.append("offset", String(options.offset));
 
     const data = (await this.request<LookerLook[]>(
-      `/looks?${params.toString()}`
+      `/looks?${params.toString()}`,
     )) as LookerLook[];
 
     return {
       items: data.map((l) => this.normalizeLook(l)),
       totalCount: data.length,
       pageSize: options?.limit || 25,
-      pageNumber: Math.floor((options?.offset || 0) / (options?.limit || 25)) + 1,
+      pageNumber:
+        Math.floor((options?.offset || 0) / (options?.limit || 25)) + 1,
       hasMore: data.length === (options?.limit || 25),
     };
   }
@@ -378,7 +379,9 @@ export class LookerV2SDKClient {
    * Get a specific look
    */
   async getLook(lookId: string): Promise<NormalizedReport> {
-    const data = (await this.request<LookerLook>(`/looks/${lookId}`)) as LookerLook;
+    const data = (await this.request<LookerLook>(
+      `/looks/${lookId}`,
+    )) as LookerLook;
 
     return this.normalizeLook(data);
   }
@@ -400,7 +403,7 @@ export class LookerV2SDKClient {
     };
 
     const data = (await this.request<LookerLook>(`/looks`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     })) as LookerLook;
 
@@ -416,10 +419,10 @@ export class LookerV2SDKClient {
       title?: string;
       description?: string;
       public?: boolean;
-    }
+    },
   ): Promise<NormalizedReport> {
     const data = (await this.request<LookerLook>(`/looks/${lookId}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(updates),
     })) as LookerLook;
 
@@ -430,7 +433,7 @@ export class LookerV2SDKClient {
    * Delete a look
    */
   async deleteLook(lookId: string): Promise<void> {
-    await this.request(`/looks/${lookId}`, { method: 'DELETE' });
+    await this.request(`/looks/${lookId}`, { method: "DELETE" });
   }
 
   /**
@@ -438,10 +441,10 @@ export class LookerV2SDKClient {
    */
   async runLook(
     lookId: string,
-    format: 'json' | 'csv' = 'json'
+    format: "json" | "csv" = "json",
   ): Promise<QueryResult> {
     const data = (await this.request<LookerQueryResult>(
-      `/looks/${lookId}/run/${format}`
+      `/looks/${lookId}/run/${format}`,
     )) as LookerQueryResult;
 
     return {
@@ -465,11 +468,11 @@ export class LookerV2SDKClient {
     limit?: number;
   }): Promise<PaginatedResponse<NormalizedDashboard>> {
     const params = new URLSearchParams();
-    if (options?.folderId) params.append('folder_id', options.folderId);
-    if (options?.limit) params.append('limit', String(options.limit));
+    if (options?.folderId) params.append("folder_id", options.folderId);
+    if (options?.limit) params.append("limit", String(options.limit));
 
     const data = (await this.request<LookerDashboard[]>(
-      `/dashboards?${params.toString()}`
+      `/dashboards?${params.toString()}`,
     )) as LookerDashboard[];
 
     return {
@@ -486,7 +489,7 @@ export class LookerV2SDKClient {
    */
   async getDashboard(dashboardId: string): Promise<NormalizedDashboard> {
     const data = (await this.request<LookerDashboard>(
-      `/dashboards/${dashboardId}`
+      `/dashboards/${dashboardId}`,
     )) as LookerDashboard;
 
     return this.normalizeDashboard(data);
@@ -507,7 +510,7 @@ export class LookerV2SDKClient {
     };
 
     const data = (await this.request<LookerDashboard>(`/dashboards`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     })) as LookerDashboard;
 
@@ -520,15 +523,12 @@ export class LookerV2SDKClient {
   async updateDashboardElement(
     dashboardId: string,
     elementId: string,
-    updates: Record<string, unknown>
+    updates: Record<string, unknown>,
   ): Promise<void> {
-    await this.request(
-      `/dashboards/${dashboardId}/elements/${elementId}`,
-      {
-        method: 'PATCH',
-        body: JSON.stringify(updates),
-      }
-    );
+    await this.request(`/dashboards/${dashboardId}/elements/${elementId}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
   }
 
   /**
@@ -539,10 +539,10 @@ export class LookerV2SDKClient {
     options?: {
       filters?: Record<string, string>;
       format?: string;
-    }
+    },
   ): Promise<{ downloadUrl: string }> {
     const params = new URLSearchParams();
-    if (options?.format) params.append('format', options.format);
+    if (options?.format) params.append("format", options.format);
     Object.entries(options?.filters || {}).forEach(([key, value]) => {
       params.append(`dashboard_filters[${key}]`, value);
     });
@@ -560,7 +560,7 @@ export class LookerV2SDKClient {
    */
   async createQuery(query: LookerQuery): Promise<{ id: string }> {
     const data = (await this.request<{ id: string }>(`/queries`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(query),
     })) as { id: string };
 
@@ -572,11 +572,11 @@ export class LookerV2SDKClient {
    */
   async runQueryAsync(
     queryId: string,
-    format: 'json' | 'csv' = 'json'
+    format: "json" | "csv" = "json",
   ): Promise<{ taskId: string }> {
     const data = (await this.request<{ id: string }>(
       `/queries/${queryId}/run/${format}`,
-      { method: 'POST' }
+      { method: "POST" },
     )) as { id: string };
 
     return { taskId: data.id };
@@ -585,11 +585,9 @@ export class LookerV2SDKClient {
   /**
    * Get query task result
    */
-  async getQueryTaskResult(
-    taskId: string
-  ): Promise<QueryResult> {
+  async getQueryTaskResult(taskId: string): Promise<QueryResult> {
     const data = (await this.request<LookerQueryTask>(
-      `/query_tasks/${taskId}`
+      `/query_tasks/${taskId}`,
     )) as LookerQueryTask;
 
     return {
@@ -610,7 +608,7 @@ export class LookerV2SDKClient {
    */
   async getExplore(model: string, exploreName: string): Promise<LookerExplore> {
     const data = (await this.request<LookerExplore>(
-      `/lookml_models/${model}/explores/${exploreName}`
+      `/lookml_models/${model}/explores/${exploreName}`,
     )) as LookerExplore;
 
     return data;
@@ -621,7 +619,7 @@ export class LookerV2SDKClient {
    */
   async getExploreFields(
     model: string,
-    exploreName: string
+    exploreName: string,
   ): Promise<LookerField[]> {
     const explore = await this.getExplore(model, exploreName);
     return explore.fields || [];
@@ -633,7 +631,9 @@ export class LookerV2SDKClient {
    * List spaces
    */
   async listSpaces(): Promise<LookerSpace[]> {
-    const data = (await this.request<LookerSpace[]>(`/spaces`)) as LookerSpace[];
+    const data = (await this.request<LookerSpace[]>(
+      `/spaces`,
+    )) as LookerSpace[];
 
     return data;
   }
@@ -643,7 +643,7 @@ export class LookerV2SDKClient {
    */
   async getSpace(spaceId: string): Promise<LookerSpace> {
     const data = (await this.request<LookerSpace>(
-      `/spaces/${spaceId}`
+      `/spaces/${spaceId}`,
     )) as LookerSpace;
 
     return data;
@@ -657,7 +657,7 @@ export class LookerV2SDKClient {
     parent_id?: string;
   }): Promise<LookerSpace> {
     const data = (await this.request<LookerSpace>(`/spaces`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(config),
     })) as LookerSpace;
 
@@ -674,19 +674,19 @@ export class LookerV2SDKClient {
     options?: {
       filters?: Record<string, string>;
       nonce?: string;
-    }
+    },
   ): Promise<EmbedConfig> {
     // Looker uses signed URLs for embedding
     const params = new URLSearchParams();
-    params.append('embed', 'yes');
-    if (options?.nonce) params.append('nonce', options.nonce);
+    params.append("embed", "yes");
+    if (options?.nonce) params.append("nonce", options.nonce);
 
     Object.entries(options?.filters || {}).forEach(([key, value]) => {
       params.append(key, value);
     });
 
     return {
-      type: 'look',
+      type: "look",
       contentId: lookId,
       url: `${this.baseUrl}/looks/${lookId}?${params.toString()}`,
       parameters: options?.filters,
@@ -701,18 +701,18 @@ export class LookerV2SDKClient {
     options?: {
       filters?: Record<string, string>;
       nonce?: string;
-    }
+    },
   ): Promise<EmbedConfig> {
     const params = new URLSearchParams();
-    params.append('embed', 'yes');
-    if (options?.nonce) params.append('nonce', options.nonce);
+    params.append("embed", "yes");
+    if (options?.nonce) params.append("nonce", options.nonce);
 
     Object.entries(options?.filters || {}).forEach(([key, value]) => {
       params.append(key, value);
     });
 
     return {
-      type: 'dashboard',
+      type: "dashboard",
       contentId: dashboardId,
       url: `${this.baseUrl}/dashboards/${dashboardId}?${params.toString()}`,
       parameters: options?.filters,
@@ -726,21 +726,21 @@ export class LookerV2SDKClient {
    */
   async executeSqlQuery(
     sql: string,
-    resultFormat: 'json' | 'csv' = 'json'
+    resultFormat: "json" | "csv" = "json",
   ): Promise<QueryResult> {
     const payload = { sql };
 
     const data = (await this.request<LookerQueryResult>(
       `/sql_queries?result_format=${resultFormat}`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(payload),
-      }
+      },
     )) as LookerQueryResult;
 
     return {
       id: data.id,
-      queryId: data.slug || '',
+      queryId: data.slug || "",
       executedAt: new Date(data.created_date || new Date().toISOString()),
       totalRows: data.data?.length || 0,
       rows: data.data || [],
@@ -755,9 +755,9 @@ export class LookerV2SDKClient {
    * List themes
    */
   async listThemes(): Promise<Array<{ id: string; name: string }>> {
-    const data = (await this.request<
-      Array<{ id: string; name: string }>
-    >(`/themes`)) as Array<{ id: string; name: string }>;
+    const data = (await this.request<Array<{ id: string; name: string }>>(
+      `/themes`,
+    )) as Array<{ id: string; name: string }>;
 
     return data;
   }
@@ -767,7 +767,7 @@ export class LookerV2SDKClient {
    */
   async getTheme(themeId: string): Promise<Record<string, unknown>> {
     const data = (await this.request<Record<string, unknown>>(
-      `/themes/${themeId}`
+      `/themes/${themeId}`,
     )) as Record<string, unknown>;
 
     return data;
@@ -779,7 +779,7 @@ export class LookerV2SDKClient {
    * Get user attribute by name
    */
   async getUserAttribute(
-    attributeName: string
+    attributeName: string,
   ): Promise<{ name: string; type?: string; values?: string[] }> {
     const data = (await this.request<{
       name: string;
@@ -801,13 +801,13 @@ export class LookerV2SDKClient {
    */
   async listScheduledPlans(): Promise<ScheduleConfig[]> {
     const data = (await this.request<LookerScheduledPlan[]>(
-      `/scheduled_plans`
+      `/scheduled_plans`,
     )) as LookerScheduledPlan[];
 
     return data.map((sp) => ({
       id: sp.id,
       name: sp.name,
-      frequency: 'daily',
+      frequency: "daily",
       enabled: true,
       nextRunAt: sp.next_run_at ? new Date(sp.next_run_at) : undefined,
     }));
@@ -829,18 +829,15 @@ export class LookerV2SDKClient {
       recipients: config.recipients.map((r) => ({ email: r })),
     };
 
-    const data = (await this.request<LookerScheduledPlan>(
-      `/scheduled_plans`,
-      {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }
-    )) as LookerScheduledPlan;
+    const data = (await this.request<LookerScheduledPlan>(`/scheduled_plans`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })) as LookerScheduledPlan;
 
     return {
       id: data.id,
       name: data.name,
-      frequency: 'daily',
+      frequency: "daily",
       enabled: true,
       nextRunAt: data.next_run_at ? new Date(data.next_run_at) : undefined,
     };
@@ -856,11 +853,11 @@ export class LookerV2SDKClient {
     offset?: number;
   }): Promise<Array<any>> {
     const params = new URLSearchParams();
-    if (options?.limit) params.append('limit', String(options.limit));
-    if (options?.offset) params.append('offset', String(options.offset));
+    if (options?.limit) params.append("limit", String(options.limit));
+    if (options?.offset) params.append("offset", String(options.offset));
 
     const data = (await this.request<Array<any>>(
-      `/system_activity?${params.toString()}`
+      `/system_activity?${params.toString()}`,
     )) as Array<any>;
 
     return data;
@@ -881,24 +878,18 @@ export class LookerV2SDKClient {
     };
   }
 
-  private normalizeDashboard(
-    dashboard: LookerDashboard
-  ): NormalizedDashboard {
+  private normalizeDashboard(dashboard: LookerDashboard): NormalizedDashboard {
     return {
       id: dashboard.id,
       name: dashboard.title,
       description: dashboard.description,
-      createdAt: new Date(
-        dashboard.created_date || new Date().toISOString()
-      ),
-      updatedAt: new Date(
-        dashboard.updated_date || new Date().toISOString()
-      ),
+      createdAt: new Date(dashboard.created_date || new Date().toISOString()),
+      updatedAt: new Date(dashboard.updated_date || new Date().toISOString()),
       isPublished: dashboard.public || false,
       items: (dashboard.dashboard_elements || []).map((el) => ({
         id: el.id,
-        title: el.title || 'Element',
-        type: (el.type as any) || 'chart',
+        title: el.title || "Element",
+        type: (el.type as any) || "chart",
         x: 0,
         y: 0,
         width: 12,
@@ -920,17 +911,17 @@ export class LookerV2SDKClient {
       const duration = Date.now() - startTime;
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date(),
         responseTimeMs: duration,
       };
     } catch (error: unknown) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date(),
         responseTimeMs: Date.now() - startTime,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         },
       };
     }

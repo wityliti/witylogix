@@ -78,7 +78,7 @@ export class RequestQueue {
 
   constructor(
     maxQueueSize: number = 10000,
-    tenantQueueLimits: Map<string, number> = new Map()
+    tenantQueueLimits: Map<string, number> = new Map(),
   ) {
     this.maxQueueSize = maxQueueSize;
     this.tenantQueueLimits = tenantQueueLimits;
@@ -91,7 +91,7 @@ export class RequestQueue {
     handler: () => Promise<T>,
     tenantId: string,
     priority: RequestPriority = "normal",
-    timeout: number = this.defaultTimeout
+    timeout: number = this.defaultTimeout,
   ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       // Check queue size limits
@@ -169,7 +169,12 @@ export class RequestQueue {
         // Get next request from highest priority queue
         let request: QueuedRequest<any> | undefined;
 
-        for (const priority of ["critical", "high", "normal", "low"] as RequestPriority[]) {
+        for (const priority of [
+          "critical",
+          "high",
+          "normal",
+          "low",
+        ] as RequestPriority[]) {
           const queue = this.queues.get(priority)!;
           if (queue.length > 0) {
             request = queue.shift();
@@ -256,7 +261,7 @@ export class RequestQueue {
    * Generate unique request ID.
    */
   private generateRequestId(): string {
-    return "req" + "-" + (this.requestIdCounter++) + "-" + Date.now();
+    return "req" + "-" + this.requestIdCounter++ + "-" + Date.now();
   }
 
   /**

@@ -47,7 +47,10 @@ class RateLimiter {
   private tokens: number;
   private lastRefillAt: number = Date.now();
 
-  constructor(private capacity: number, private refillRatePerSecond: number) {
+  constructor(
+    private capacity: number,
+    private refillRatePerSecond: number,
+  ) {
     this.tokens = capacity;
   }
 
@@ -93,7 +96,10 @@ export class PandaDocV2SDKClient {
 
   constructor(config: SDKConfig) {
     if (config.provider !== "pandadoc") {
-      throw new ValidationError("Config must be for PandaDoc provider", "pandadoc");
+      throw new ValidationError(
+        "Config must be for PandaDoc provider",
+        "pandadoc",
+      );
     }
     this.config = config;
     this.accessToken = config.credentials.accessToken;
@@ -121,7 +127,8 @@ export class PandaDocV2SDKClient {
    * Refresh OAuth2 token.
    */
   async refreshToken(): Promise<void> {
-    const { clientId, clientSecret, refreshToken, apiUrl } = this.config.credentials;
+    const { clientId, clientSecret, refreshToken, apiUrl } =
+      this.config.credentials;
 
     if (!refreshToken) {
       throw new AuthenticationError("No refresh token available", "pandadoc");
@@ -146,7 +153,9 @@ export class PandaDocV2SDKClient {
 
     const data = (await response.json()) as Record<string, unknown>;
     this.accessToken = data.access_token as string;
-    this.tokenExpiresAt = new Date(Date.now() + ((data.expires_in as number) || 3600) * 1000);
+    this.tokenExpiresAt = new Date(
+      Date.now() + ((data.expires_in as number) || 3600) * 1000,
+    );
   }
 
   /**
@@ -163,7 +172,7 @@ export class PandaDocV2SDKClient {
   private async request(
     method: string,
     path: string,
-    body?: Record<string, unknown> | string
+    body?: Record<string, unknown> | string,
   ): Promise<Response> {
     await this.ensureValidToken();
     await this.rateLimiter.acquire();
@@ -188,13 +197,24 @@ export class PandaDocV2SDKClient {
         const response = await fetch(url, {
           method,
           headers,
-          body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
+          body: body
+            ? typeof body === "string"
+              ? body
+              : JSON.stringify(body)
+            : undefined,
           signal: AbortSignal.timeout(this.config.requestTimeout || 30000),
         });
 
         if (response.status === 429) {
-          const resetAt = new Date(Date.parse(response.headers.get("Retry-After") || ""));
-          throw new RateLimitError("Rate limit exceeded", "pandadoc", resetAt, 0);
+          const resetAt = new Date(
+            Date.parse(response.headers.get("Retry-After") || ""),
+          );
+          throw new RateLimitError(
+            "Rate limit exceeded",
+            "pandadoc",
+            resetAt,
+            0,
+          );
         }
 
         if (response.ok) {
@@ -214,7 +234,7 @@ export class PandaDocV2SDKClient {
           throw new ESignatureSDKError(
             "Circuit breaker open - too many failures",
             "pandadoc",
-            "CIRCUIT_BREAKER_OPEN"
+            "CIRCUIT_BREAKER_OPEN",
           );
         }
 
@@ -236,13 +256,21 @@ export class PandaDocV2SDKClient {
   /**
    * Create a document from template.
    */
-  async createEnvelope(envelope: NormalizedEnvelope): Promise<EnvelopeOperationResult> {
+  async createEnvelope(
+    envelope: NormalizedEnvelope,
+  ): Promise<EnvelopeOperationResult> {
     const payload = this.normalizeEnvelopeForCreate(envelope);
     const response = await this.request("POST", "/documents", payload);
 
     if (!response.ok) {
       const error = (await response.json()) as Record<string, unknown>;
-      throw new ESignatureSDKError("Failed to create document", "pandadoc", undefined, response.status, error);
+      throw new ESignatureSDKError(
+        "Failed to create document",
+        "pandadoc",
+        undefined,
+        response.status,
+        error,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -259,10 +287,19 @@ export class PandaDocV2SDKClient {
    */
   async sendEnvelope(envelopeId: string): Promise<EnvelopeOperationResult> {
     const payload = { recipients: [], send_completed_email: true };
-    const response = await this.request("PATCH", `/documents/${envelopeId}/send`, payload);
+    const response = await this.request(
+      "PATCH",
+      `/documents/${envelopeId}/send`,
+      payload,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to send document", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to send document",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -281,7 +318,12 @@ export class PandaDocV2SDKClient {
     const response = await this.request("DELETE", `/documents/${envelopeId}`);
 
     if (!response.ok && response.status !== 204) {
-      throw new ESignatureSDKError("Failed to delete document", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to delete document",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
   }
 
@@ -292,7 +334,12 @@ export class PandaDocV2SDKClient {
     const response = await this.request("GET", `/documents/${envelopeId}`);
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get document", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get document",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -306,22 +353,35 @@ export class PandaDocV2SDKClient {
     const response = await this.request("GET", `/documents/${envelopeId}`);
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get document status", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get document status",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
     const recipients = data.recipients as Array<Record<string, unknown>>;
 
-    const signerStatuses = (recipients || []).map((recipient: Record<string, unknown>) => ({
-      email: recipient.email as string,
-      name: recipient.name as string,
-      status: this.normalizeStatus((recipient.status as string) || "sent"),
-      signedAt: recipient.signed_date ? new Date(recipient.signed_date as string) : undefined,
-      declinedAt: undefined,
-    }));
+    const signerStatuses = (recipients || []).map(
+      (recipient: Record<string, unknown>) => ({
+        email: recipient.email as string,
+        name: recipient.name as string,
+        status: this.normalizeStatus((recipient.status as string) || "sent"),
+        signedAt: recipient.signed_date
+          ? new Date(recipient.signed_date as string)
+          : undefined,
+        declinedAt: undefined,
+      }),
+    );
 
-    const completionPercentage = signerStatuses.filter((s) => s.status === "signed").length
-      ? (signerStatuses.filter((s) => s.status === "signed").length / signerStatuses.length) * 100
+    const completionPercentage = signerStatuses.filter(
+      (s) => s.status === "signed",
+    ).length
+      ? (signerStatuses.filter((s) => s.status === "signed").length /
+          signerStatuses.length) *
+        100
       : 0;
 
     return {
@@ -351,16 +411,24 @@ export class PandaDocV2SDKClient {
 
     if (options?.status) params.append("status", options.status);
 
-    const response = await this.request("GET", `/documents?${params.toString()}`);
+    const response = await this.request(
+      "GET",
+      `/documents?${params.toString()}`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to list documents", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to list documents",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const documents = ((data.results as Array<Record<string, unknown>>) || []).map((doc) =>
-      this.normalizeEnvelopeFromProvider(doc)
-    );
+    const documents = (
+      (data.results as Array<Record<string, unknown>>) || []
+    ).map((doc) => this.normalizeEnvelopeFromProvider(doc));
 
     return {
       items: documents,
@@ -375,10 +443,19 @@ export class PandaDocV2SDKClient {
    * Resend document to recipients.
    */
   async resendEnvelope(envelopeId: string): Promise<void> {
-    const response = await this.request("POST", `/documents/${envelopeId}/send_reminders`, {});
+    const response = await this.request(
+      "POST",
+      `/documents/${envelopeId}/send_reminders`,
+      {},
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to resend document", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to resend document",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
   }
 
@@ -387,25 +464,40 @@ export class PandaDocV2SDKClient {
   /**
    * Create document from PDF file upload.
    */
-  async uploadDocumentFromPDF(fileName: string, content: string): Promise<{ documentId: string }> {
+  async uploadDocumentFromPDF(
+    fileName: string,
+    content: string,
+  ): Promise<{ documentId: string }> {
     const buffer = Buffer.from(content, "base64");
     const formData = new FormData();
-    formData.append("file", new Blob([buffer], { type: "application/pdf" }), fileName);
+    formData.append(
+      "file",
+      new Blob([buffer], { type: "application/pdf" }),
+      fileName,
+    );
 
     await this.ensureValidToken();
     await this.rateLimiter.acquire();
 
-    const response = await fetch(`${this.config.credentials.apiUrl}/documents/upload`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        ...this.config.headers,
+    const response = await fetch(
+      `${this.config.credentials.apiUrl}/documents/upload`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          ...this.config.headers,
+        },
+        body: formData,
       },
-      body: formData,
-    });
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to upload PDF", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to upload PDF",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -426,16 +518,24 @@ export class PandaDocV2SDKClient {
       page: String((options?.offset || 0) / (options?.limit || 25) + 1),
     });
 
-    const response = await this.request("GET", `/templates?${params.toString()}`);
+    const response = await this.request(
+      "GET",
+      `/templates?${params.toString()}`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to list templates", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to list templates",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
-    const templates = ((data.results as Array<Record<string, unknown>>) || []).map((tpl) =>
-      this.normalizeTemplateFromProvider(tpl)
-    );
+    const templates = (
+      (data.results as Array<Record<string, unknown>>) || []
+    ).map((tpl) => this.normalizeTemplateFromProvider(tpl));
 
     return {
       items: templates,
@@ -453,7 +553,12 @@ export class PandaDocV2SDKClient {
     const response = await this.request("GET", `/templates/${templateId}`);
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get template", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get template",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -465,7 +570,7 @@ export class PandaDocV2SDKClient {
    */
   async createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<NormalizedEnvelope>
+    envelope: Partial<NormalizedEnvelope>,
   ): Promise<EnvelopeOperationResult> {
     const payload = {
       template_id: templateId,
@@ -481,7 +586,12 @@ export class PandaDocV2SDKClient {
     const response = await this.request("POST", "/documents", payload);
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to create document from template", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to create document from template",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
@@ -498,11 +608,22 @@ export class PandaDocV2SDKClient {
   /**
    * Download document.
    */
-  async downloadDocument(envelopeId: string, documentId?: string): Promise<DocumentDownloadResult> {
-    const response = await this.request("GET", `/documents/${envelopeId}/download`);
+  async downloadDocument(
+    envelopeId: string,
+    documentId?: string,
+  ): Promise<DocumentDownloadResult> {
+    const response = await this.request(
+      "GET",
+      `/documents/${envelopeId}/download`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to download document", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to download document",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const buffer = await response.arrayBuffer();
@@ -522,12 +643,20 @@ export class PandaDocV2SDKClient {
    * Download all documents as archive.
    */
   async downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
-    const response = await this.request("GET", `/documents/${envelopeId}/download_zip`);
+    const response = await this.request(
+      "GET",
+      `/documents/${envelopeId}/download_zip`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to download documents", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to download documents",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const buffer = await response.arrayBuffer();
@@ -548,22 +677,33 @@ export class PandaDocV2SDKClient {
   async getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult> {
-    const response = await this.request("GET", `/documents/${envelopeId}/recipients/sign_url`);
+    const response = await this.request(
+      "GET",
+      `/documents/${envelopeId}/recipients/sign_url`,
+    );
 
     if (!response.ok) {
-      throw new ESignatureSDKError("Failed to get signing URL", "pandadoc", undefined, response.status);
+      throw new ESignatureSDKError(
+        "Failed to get signing URL",
+        "pandadoc",
+        undefined,
+        response.status,
+      );
     }
 
     const data = (await response.json()) as Record<string, unknown>;
     const recipientSignUrls = data.recipients as Array<Record<string, unknown>>;
-    const signingUrl = recipientSignUrls
-      .find((r: Record<string, unknown>) => r.email === signerEmail)
-      ?.sign_url as string;
+    const signingUrl = recipientSignUrls.find(
+      (r: Record<string, unknown>) => r.email === signerEmail,
+    )?.sign_url as string;
 
     if (!signingUrl) {
-      throw new ESignatureSDKError("Signing URL not found for recipient", "pandadoc");
+      throw new ESignatureSDKError(
+        "Signing URL not found for recipient",
+        "pandadoc",
+      );
     }
 
     return {
@@ -578,15 +718,24 @@ export class PandaDocV2SDKClient {
   /**
    * Verify and parse webhook event.
    */
-  async parseWebhookEvent(payload: Record<string, unknown>, headers: Record<string, string>): Promise<WebhookEvent> {
-    const signature = headers["X-Pandadoc-Signature"] || headers["x-pandadoc-signature"];
+  async parseWebhookEvent(
+    payload: Record<string, unknown>,
+    headers: Record<string, string>,
+  ): Promise<WebhookEvent> {
+    const signature =
+      headers["X-Pandadoc-Signature"] || headers["x-pandadoc-signature"];
 
     let isValid = true;
     if (signature && this.config.credentials.webhookSecret) {
-      isValid = this.verifyWebhookSignature(JSON.stringify(payload), signature as string);
+      isValid = this.verifyWebhookSignature(
+        JSON.stringify(payload),
+        signature as string,
+      );
     }
 
-    const eventType = this.normalizeEventType((payload.type as string) || "document_created");
+    const eventType = this.normalizeEventType(
+      (payload.type as string) || "document_created",
+    );
 
     return {
       eventId: uuid(),
@@ -645,7 +794,9 @@ export class PandaDocV2SDKClient {
 
   // ─── Helper Methods ────────────────────────────────────────────────
 
-  private normalizeEnvelopeForCreate(envelope: NormalizedEnvelope): Record<string, unknown> {
+  private normalizeEnvelopeForCreate(
+    envelope: NormalizedEnvelope,
+  ): Record<string, unknown> {
     return {
       template_id: envelope.templateId,
       name: envelope.name,
@@ -664,12 +815,14 @@ export class PandaDocV2SDKClient {
           };
           return acc;
         },
-        {} as Record<string, unknown>
+        {} as Record<string, unknown>,
       ),
     };
   }
 
-  private normalizeEnvelopeFromProvider(data: Record<string, unknown>): NormalizedEnvelope {
+  private normalizeEnvelopeFromProvider(
+    data: Record<string, unknown>,
+  ): NormalizedEnvelope {
     return {
       envelopeId: data.id as string,
       name: data.name as string,
@@ -680,14 +833,18 @@ export class PandaDocV2SDKClient {
       fields: [],
       createdAt: new Date(data.created_date as string),
       sentAt: data.sent_date ? new Date(data.sent_date as string) : undefined,
-      completedAt: data.completed_date ? new Date(data.completed_date as string) : undefined,
+      completedAt: data.completed_date
+        ? new Date(data.completed_date as string)
+        : undefined,
       createdBy: "unknown",
       metadata: data,
       providerData: data,
     };
   }
 
-  private normalizeTemplateFromProvider(data: Record<string, unknown>): NormalizedTemplate {
+  private normalizeTemplateFromProvider(
+    data: Record<string, unknown>,
+  ): NormalizedTemplate {
     return {
       templateId: data.id as string,
       name: data.name as string,

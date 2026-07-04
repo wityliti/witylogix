@@ -39,7 +39,12 @@ describe("ETA Predictor", () => {
       };
 
       const morningRush = new Date("2026-03-16T08:00:00");
-      const prediction = predictor.predictETA(segment, "van", "clear", morningRush);
+      const prediction = predictor.predictETA(
+        segment,
+        "van",
+        "clear",
+        morningRush,
+      );
 
       expect(prediction.estimatedMinutes).toBeGreaterThan(0);
       expect(prediction.factors.timeOfDayFactor).toBeCloseTo(1.4, 1);
@@ -54,7 +59,12 @@ describe("ETA Predictor", () => {
       };
 
       const eveningRush = new Date("2026-03-16T17:00:00");
-      const prediction = predictor.predictETA(segment, "van", "clear", eveningRush);
+      const prediction = predictor.predictETA(
+        segment,
+        "van",
+        "clear",
+        eveningRush,
+      );
 
       expect(prediction.estimatedMinutes).toBeGreaterThan(0);
       expect(prediction.factors.timeOfDayFactor).toBeCloseTo(1.5, 1);
@@ -69,7 +79,12 @@ describe("ETA Predictor", () => {
       };
 
       const nightTime = new Date("2026-03-16T23:00:00");
-      const prediction = predictor.predictETA(segment, "van", "clear", nightTime);
+      const prediction = predictor.predictETA(
+        segment,
+        "van",
+        "clear",
+        nightTime,
+      );
 
       expect(prediction.estimatedMinutes).toBeGreaterThan(0);
       expect(prediction.factors.timeOfDayFactor).toBeCloseTo(0.8, 1);
@@ -154,7 +169,12 @@ describe("ETA Predictor", () => {
 
       const time = new Date("2026-03-16T12:00:00");
       const van = predictor.predictETA(segment, "van", "clear", time);
-      const motorcycle = predictor.predictETA(segment, "motorcycle", "clear", time);
+      const motorcycle = predictor.predictETA(
+        segment,
+        "motorcycle",
+        "clear",
+        time,
+      );
 
       expect(motorcycle.estimatedMinutes).toBeLessThan(van.estimatedMinutes);
     });
@@ -191,7 +211,7 @@ describe("ETA Predictor", () => {
         segment,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       expect(prediction.confidencePercent).toBeGreaterThanOrEqual(65);
@@ -210,7 +230,7 @@ describe("ETA Predictor", () => {
         segment,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       const intervalWidth =
@@ -232,14 +252,14 @@ describe("ETA Predictor", () => {
         segment,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       expect(prediction.confidenceInterval.low).toBeLessThanOrEqual(
-        prediction.estimatedMinutes
+        prediction.estimatedMinutes,
       );
       expect(prediction.confidenceInterval.high).toBeGreaterThanOrEqual(
-        prediction.estimatedMinutes
+        prediction.estimatedMinutes,
       );
     });
   });
@@ -288,7 +308,7 @@ describe("ETA Predictor", () => {
         segment,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       expect(prediction.confidencePercent).toBeGreaterThan(70);
@@ -344,7 +364,7 @@ describe("ETA Predictor", () => {
         progress,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       expect(prediction.estimatedMinutes).toBeGreaterThan(0);
@@ -380,7 +400,7 @@ describe("ETA Predictor", () => {
         progressNoStops,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       const predWithStops = predictor.updateProgressETA(
@@ -388,11 +408,11 @@ describe("ETA Predictor", () => {
         progressWithStops,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       expect(predWithStops.estimatedMinutes).toBeGreaterThan(
-        predNoStops.estimatedMinutes
+        predNoStops.estimatedMinutes,
       );
     });
   });
@@ -426,7 +446,7 @@ describe("ETA Predictor", () => {
         segments,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       expect(trip.totalMinutes).toBeGreaterThan(0);
@@ -454,7 +474,7 @@ describe("ETA Predictor", () => {
         segments,
         "van",
         "clear",
-        new Date("2026-03-16T12:00:00")
+        new Date("2026-03-16T12:00:00"),
       );
 
       let totalFromSegments = 0;

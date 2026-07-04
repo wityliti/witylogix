@@ -92,7 +92,7 @@ export class DATv2SDKClient extends EventEmitter {
 
     const tokenUrl = `${this.baseUrl}/oauth/token`;
     const credentials = Buffer.from(
-      `${this.clientId}:${this.clientSecret}`
+      `${this.clientId}:${this.clientSecret}`,
     ).toString("base64");
 
     try {
@@ -108,7 +108,7 @@ export class DATv2SDKClient extends EventEmitter {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          `Authentication failed: ${response.statusText} - ${JSON.stringify(errorData)}`
+          `Authentication failed: ${response.statusText} - ${JSON.stringify(errorData)}`,
         );
       }
 
@@ -129,7 +129,10 @@ export class DATv2SDKClient extends EventEmitter {
       };
 
       if (this.debug) {
-        console.log("[DAT v2] Authentication successful, token expires at:", new Date(expiresAt));
+        console.log(
+          "[DAT v2] Authentication successful, token expires at:",
+          new Date(expiresAt),
+        );
       }
 
       this.emit("authenticated");
@@ -158,7 +161,7 @@ export class DATv2SDKClient extends EventEmitter {
    */
   private async request<T>(
     endpoint: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<T> {
     const token = await this.getAccessToken();
     const url = new URL(`${this.baseUrl}${endpoint}`);
@@ -228,7 +231,11 @@ export class DATv2SDKClient extends EventEmitter {
       const data = (await response.json()) as T;
 
       // Cache successful GET responses for 1 hour
-      if (options.method !== "POST" && options.method !== "PUT" && options.method !== "DELETE") {
+      if (
+        options.method !== "POST" &&
+        options.method !== "PUT" &&
+        options.method !== "DELETE"
+      ) {
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
         this.cache.set(cacheKey, {
           data,
@@ -336,7 +343,9 @@ export class DATv2SDKClient extends EventEmitter {
   /**
    * Post a load to the load board
    */
-  async postLoad(load: Omit<LoadPosting, "loadId" | "status" | "postedAt" | "updatedAt">): Promise<LoadPosting> {
+  async postLoad(
+    load: Omit<LoadPosting, "loadId" | "status" | "postedAt" | "updatedAt">,
+  ): Promise<LoadPosting> {
     const body = {
       origin: load.origin,
       destination: load.destination,
@@ -366,13 +375,17 @@ export class DATv2SDKClient extends EventEmitter {
    */
   async updateLoad(
     loadId: string,
-    updates: Partial<LoadPosting>
+    updates: Partial<LoadPosting>,
   ): Promise<LoadPosting> {
     const body = {
       ...(updates.rate && { rate: updates.rate }),
       ...(updates.status && { status: updates.status }),
-      ...(updates.pickupDate && { pickup_date: updates.pickupDate.toISOString() }),
-      ...(updates.deliveryDate && { delivery_date: updates.deliveryDate.toISOString() }),
+      ...(updates.pickupDate && {
+        pickup_date: updates.pickupDate.toISOString(),
+      }),
+      ...(updates.deliveryDate && {
+        delivery_date: updates.deliveryDate.toISOString(),
+      }),
     };
 
     return this.request<LoadPosting>(`/loadboard/loads/${loadId}`, {
@@ -427,7 +440,7 @@ export class DATv2SDKClient extends EventEmitter {
    */
   async matchCarriers(
     loadId: string,
-    options?: { limit?: number; minRating?: number }
+    options?: { limit?: number; minRating?: number },
   ): Promise<CarrierMatch[]> {
     const query: Record<string, string | number> = {
       load_id: loadId,
@@ -691,7 +704,11 @@ export class DATv2SDKClient extends EventEmitter {
   /**
    * Get loads by status
    */
-  async getLoadsByStatus(status: LoadStatus, page = 1, pageSize = 50): Promise<{
+  async getLoadsByStatus(
+    status: LoadStatus,
+    page = 1,
+    pageSize = 50,
+  ): Promise<{
     loads: LoadPosting[];
     total: number;
     page: number;

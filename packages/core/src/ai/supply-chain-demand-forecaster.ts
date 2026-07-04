@@ -27,7 +27,7 @@ export interface DemandForecast {
 export interface SupplyRiskScore {
   supplierId: string;
   overallRisk: number; // 0-100
-  riskCategory: 'low' | 'medium' | 'high' | 'critical';
+  riskCategory: "low" | "medium" | "high" | "critical";
   reliability: number; // 0-1
   leadTimeVariability: number; // days
   geopoliticalRisk: number; // 0-1
@@ -94,7 +94,7 @@ export class DemandForecaster {
     historicalMonthly: number[],
     seasonalPattern?: Map<number, number>,
     promotionalLift?: number,
-    externalFactors: string[] = []
+    externalFactors: string[] = [],
   ): DemandForecast {
     const baselineDemand = this.calculateBaseline(historicalMonthly);
     const trend = this.calculateTrend(historicalMonthly);
@@ -102,12 +102,12 @@ export class DemandForecaster {
     const lift = promotionalLift || 0;
 
     const forecastedQuantity = Math.round(
-      baselineDemand * (1 + trend * 0.1) * seasonal * (1 + lift)
+      baselineDemand * (1 + trend * 0.1) * seasonal * (1 + lift),
     );
 
     const { lower, upper } = this.calculateConfidenceInterval(
       forecastedQuantity,
-      historicalMonthly
+      historicalMonthly,
     );
 
     return {
@@ -159,10 +159,13 @@ export class DemandForecaster {
 
   private calculateConfidenceInterval(
     forecast: number,
-    historicalMonthly: number[]
+    historicalMonthly: number[],
   ): { lower: number; upper: number } {
-    const mean = historicalMonthly.reduce((a, b) => a + b) / historicalMonthly.length;
-    const variance = historicalMonthly.reduce((sq, v) => sq + (v - mean) ** 2, 0) / historicalMonthly.length;
+    const mean =
+      historicalMonthly.reduce((a, b) => a + b) / historicalMonthly.length;
+    const variance =
+      historicalMonthly.reduce((sq, v) => sq + (v - mean) ** 2, 0) /
+      historicalMonthly.length;
     const std = Math.sqrt(variance);
 
     return {
@@ -183,7 +186,7 @@ export class SupplyRiskScorer {
     geopoliticalRiskScore: number, // 0-1
     isOnlySingleSource: boolean,
     creditScore: number, // 0-1000
-    yearsInBusiness: number
+    yearsInBusiness: number,
   ): SupplyRiskScore {
     const reliabilityScore = onTimeDeliveryRate;
     const leadTimeVariability = leadTimeStdDev;
@@ -210,31 +213,35 @@ export class SupplyRiskScorer {
     // Financial health (10%)
     overallRisk += (1 - financialHealth) * 10;
 
-    const riskCategory: SupplyRiskScore['riskCategory'] =
-      overallRisk < 20 ? 'low' :
-      overallRisk < 40 ? 'medium' :
-      overallRisk < 70 ? 'high' : 'critical';
+    const riskCategory: SupplyRiskScore["riskCategory"] =
+      overallRisk < 20
+        ? "low"
+        : overallRisk < 40
+          ? "medium"
+          : overallRisk < 70
+            ? "high"
+            : "critical";
 
     const recommendations: string[] = [];
 
     if (reliabilityScore < 0.85) {
-      recommendations.push('Monitor delivery performance closely');
+      recommendations.push("Monitor delivery performance closely");
     }
 
     if (leadTimeVariability > 5) {
-      recommendations.push('Negotiate fixed lead times');
+      recommendations.push("Negotiate fixed lead times");
     }
 
     if (geopoliticalRisk > 0.5) {
-      recommendations.push('Develop alternative supplier relationships');
+      recommendations.push("Develop alternative supplier relationships");
     }
 
     if (isOnlySingleSource) {
-      recommendations.push('CRITICAL: Establish backup supplier immediately');
+      recommendations.push("CRITICAL: Establish backup supplier immediately");
     }
 
     if (financialHealth < 0.6) {
-      recommendations.push('Assess supplier financial stability');
+      recommendations.push("Assess supplier financial stability");
     }
 
     return {
@@ -262,10 +269,15 @@ export class InventoryOptimizer {
     orderingCostPerOrder: number,
     leadTimeDays: number,
     leadTimeStdDevDays: number,
-    targetServiceLevel: number // e.g., 0.95 for 95%
+    targetServiceLevel: number, // e.g., 0.95 for 95%
   ): InventoryOptimization {
     // Economic Order Quantity
-    const eoq = this.calculateEOQ(annualDemandUnits, orderingCostPerOrder, unitCost, holdingCostPercentage);
+    const eoq = this.calculateEOQ(
+      annualDemandUnits,
+      orderingCostPerOrder,
+      unitCost,
+      holdingCostPercentage,
+    );
 
     // Safety Stock
     const dailyDemand = annualDemandUnits / 365;
@@ -276,9 +288,13 @@ export class InventoryOptimizer {
     const reorderPoint = Math.round(leadTimeDays * dailyDemand + safetyStock);
 
     // Costs
-    const annualHoldingCost = (eoq / 2) * unitCost * (holdingCostPercentage / 100);
+    const annualHoldingCost =
+      (eoq / 2) * unitCost * (holdingCostPercentage / 100);
     const annualOrderingCost = (annualDemandUnits / eoq) * orderingCostPerOrder;
-    const totalAnnualCost = annualHoldingCost + annualOrderingCost + safetyStock * unitCost * (holdingCostPercentage / 100);
+    const totalAnnualCost =
+      annualHoldingCost +
+      annualOrderingCost +
+      safetyStock * unitCost * (holdingCostPercentage / 100);
 
     // Stockout risk
     const stockoutRisk = 1 - targetServiceLevel;
@@ -301,7 +317,7 @@ export class InventoryOptimizer {
     annualDemand: number,
     orderingCost: number,
     unitCost: number,
-    holdingCostPercentage: number
+    holdingCostPercentage: number,
   ): number {
     const holdingCostPerUnit = unitCost * (holdingCostPercentage / 100);
     return Math.sqrt((2 * annualDemand * orderingCost) / holdingCostPerUnit);
@@ -310,9 +326,9 @@ export class InventoryOptimizer {
   private serviceLevel2ZScore(serviceLevel: number): number {
     // Z-score lookup for common service levels
     const lookup: Record<number, number> = {
-      0.80: 0.84,
+      0.8: 0.84,
       0.85: 1.04,
-      0.90: 1.28,
+      0.9: 1.28,
       0.95: 1.645,
       0.97: 1.88,
       0.99: 2.33,
@@ -322,7 +338,9 @@ export class InventoryOptimizer {
     const closest = Object.keys(lookup)
       .map(Number)
       .reduce((prev, curr) =>
-        Math.abs(curr - serviceLevel) < Math.abs(prev - serviceLevel) ? curr : prev
+        Math.abs(curr - serviceLevel) < Math.abs(prev - serviceLevel)
+          ? curr
+          : prev,
       );
 
     return lookup[closest] || 1.645;
@@ -342,7 +360,7 @@ export class FulfillmentPlanner {
       location: string;
       costPerUnit: number;
       daysToDeliver: number;
-    }>
+    }>,
   ): FulfillmentPlan {
     // Sort by cost-effectiveness (cost + holding cost of delayed inventory)
     const scoredWarehouses = warehouses
@@ -365,26 +383,38 @@ export class FulfillmentPlanner {
         warehouseId: warehouse.warehouseId,
         quantity,
         shippingCost,
-        estimatedDeliveryDate: new Date(Date.now() + warehouse.daysToDeliver * 24 * 60 * 60 * 1000),
-        carrierOption: warehouse.daysToDeliver <= 2 ? 'Next Day' : 'Standard',
+        estimatedDeliveryDate: new Date(
+          Date.now() + warehouse.daysToDeliver * 24 * 60 * 60 * 1000,
+        ),
+        carrierOption: warehouse.daysToDeliver <= 2 ? "Next Day" : "Standard",
       });
 
       remainingQuantity -= quantity;
     }
 
-    const totalShippingCost = assignments.reduce((sum, a) => sum + a.shippingCost, 0);
-    const estimatedDeliveryDate = assignments.length > 0
-      ? new Date(Math.max(...assignments.map((a) => a.estimatedDeliveryDate.getTime())))
-      : new Date();
+    const totalShippingCost = assignments.reduce(
+      (sum, a) => sum + a.shippingCost,
+      0,
+    );
+    const estimatedDeliveryDate =
+      assignments.length > 0
+        ? new Date(
+            Math.max(
+              ...assignments.map((a) => a.estimatedDeliveryDate.getTime()),
+            ),
+          )
+        : new Date();
 
     const recommendations: string[] = [];
 
     if (remainingQuantity > 0) {
-      recommendations.push(`WARNING: ${remainingQuantity} units not available in network`);
+      recommendations.push(
+        `WARNING: ${remainingQuantity} units not available in network`,
+      );
     }
 
     if (assignments.length > 1) {
-      recommendations.push('Order will be split across multiple warehouses');
+      recommendations.push("Order will be split across multiple warehouses");
     }
 
     return {
@@ -414,11 +444,14 @@ export class NetworkAnalyzer {
       origin: string;
       daysToDeliver: number;
       zipCodePattern: string;
-    }>
+    }>,
   ): NetworkOptimization {
     const scores = warehouses.map((w) => {
       const capacity = w.currentInventory / w.capacity;
-      const avgShipTime = this.estimateAvgShipTime(w.warehouseId, shipmentHistory);
+      const avgShipTime = this.estimateAvgShipTime(
+        w.warehouseId,
+        shipmentHistory,
+      );
 
       return {
         warehouseId: w.warehouseId,
@@ -430,26 +463,33 @@ export class NetworkAnalyzer {
       };
     });
 
-    const avgCoverage = scores.reduce((sum, s) => sum + s.coverage, 0) / scores.length;
-    const avgDeliveryTime = scores.reduce((sum, s) => sum + s.deliveryDaysTo95thPercentile, 0) / scores.length;
+    const avgCoverage =
+      scores.reduce((sum, s) => sum + s.coverage, 0) / scores.length;
+    const avgDeliveryTime =
+      scores.reduce((sum, s) => sum + s.deliveryDaysTo95thPercentile, 0) /
+      scores.length;
 
     const recommendations: string[] = [];
 
     if (avgCoverage < 0.8) {
-      recommendations.push('Add warehouse to improve geographic coverage');
+      recommendations.push("Add warehouse to improve geographic coverage");
     }
 
     if (avgDeliveryTime > 3) {
-      recommendations.push('Network is too dispersed; consider regional consolidation');
+      recommendations.push(
+        "Network is too dispersed; consider regional consolidation",
+      );
     }
 
     const highUtilization = scores.filter((s) => s.capacityUtilization > 0.9);
     if (highUtilization.length > 0) {
-      recommendations.push(`Expand capacity in ${highUtilization[0].warehouseId}`);
+      recommendations.push(
+        `Expand capacity in ${highUtilization[0].warehouseId}`,
+      );
     }
 
     return {
-      metric: 'Network Efficiency Score',
+      metric: "Network Efficiency Score",
       currentScore: Math.round(avgCoverage * 100),
       targetScore: 95,
       gaps: recommendations,
@@ -458,11 +498,15 @@ export class NetworkAnalyzer {
     };
   }
 
-  private estimateAvgShipTime(warehouseId: string, shipmentHistory: Array<any>): number {
+  private estimateAvgShipTime(
+    warehouseId: string,
+    shipmentHistory: Array<any>,
+  ): number {
     const relevant = shipmentHistory.filter((s) => s.origin === warehouseId);
     if (relevant.length === 0) return 5;
 
-    const avg = relevant.reduce((sum, s) => sum + s.daysToDeliver, 0) / relevant.length;
+    const avg =
+      relevant.reduce((sum, s) => sum + s.daysToDeliver, 0) / relevant.length;
     return Math.round(avg);
   }
 }
@@ -488,7 +532,7 @@ export function createSupplyChainOptimizer() {
       historicalDemand: number[],
       suppliers: any[],
       warehouses: any[],
-      currentInventory: number
+      currentInventory: number,
     ): {
       demand: DemandForecast;
       supplierRisks: SupplyRiskScore[];
@@ -505,8 +549,8 @@ export function createSupplyChainOptimizer() {
           s.geoRisk,
           s.isSingleSource,
           s.creditScore,
-          s.yearsActive
-        )
+          s.yearsActive,
+        ),
       );
 
       const inventory = inventoryOptimizer.optimizeInventory(
@@ -517,7 +561,7 @@ export function createSupplyChainOptimizer() {
         100,
         10,
         2,
-        0.95
+        0.95,
       );
 
       const network = networkAnalyzer.analyzeNetwork(warehouses, []);

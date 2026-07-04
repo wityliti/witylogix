@@ -57,9 +57,7 @@ const mockColumns: ColumnDef<TestRow>[] = [
     id: "status",
     header: "Status",
     accessorKey: "status",
-    cell: (value) => (
-      <span className={`badge-${value}`}>{value}</span>
-    ),
+    cell: (value) => <span className={`badge-${value}`}>{value}</span>,
   },
   {
     id: "joinDate",
@@ -72,9 +70,7 @@ const mockColumns: ColumnDef<TestRow>[] = [
 describe("DataTable Component", () => {
   describe("Rendering", () => {
     it("should render table with all columns", () => {
-      render(
-        <DataTable columns={mockColumns} data={mockData} />
-      );
+      render(<DataTable columns={mockColumns} data={mockData} />);
 
       expect(screen.getByText("Name")).toBeInTheDocument();
       expect(screen.getByText("Email")).toBeInTheDocument();
@@ -83,9 +79,7 @@ describe("DataTable Component", () => {
     });
 
     it("should render all data rows", () => {
-      render(
-        <DataTable columns={mockColumns} data={mockData} />
-      );
+      render(<DataTable columns={mockColumns} data={mockData} />);
 
       expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
       expect(screen.getByText("Bob Smith")).toBeInTheDocument();
@@ -99,7 +93,7 @@ describe("DataTable Component", () => {
           columns={mockColumns}
           data={[]}
           emptyMessage={emptyMessage}
-        />
+        />,
       );
 
       expect(screen.getByText(emptyMessage)).toBeInTheDocument();
@@ -107,7 +101,7 @@ describe("DataTable Component", () => {
 
     it("should show loading skeleton when isLoading is true", () => {
       const { container } = render(
-        <DataTable columns={mockColumns} data={mockData} isLoading={true} />
+        <DataTable columns={mockColumns} data={mockData} isLoading={true} />,
       );
 
       expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
@@ -117,7 +111,7 @@ describe("DataTable Component", () => {
   describe("Sorting", () => {
     it("should sort column ascending on click", async () => {
       const { container } = render(
-        <DataTable columns={mockColumns} data={mockData} />
+        <DataTable columns={mockColumns} data={mockData} />,
       );
 
       const nameHeader = screen.getByText("Name");
@@ -131,7 +125,7 @@ describe("DataTable Component", () => {
 
     it("should sort column descending on second click", async () => {
       const { container } = render(
-        <DataTable columns={mockColumns} data={mockData} />
+        <DataTable columns={mockColumns} data={mockData} />,
       );
 
       const nameHeader = screen.getByText("Name");
@@ -146,7 +140,7 @@ describe("DataTable Component", () => {
 
     it("should clear sort on third click", async () => {
       const { container } = render(
-        <DataTable columns={mockColumns} data={mockData} />
+        <DataTable columns={mockColumns} data={mockData} />,
       );
 
       const nameHeader = screen.getByText("Name");
@@ -161,11 +155,7 @@ describe("DataTable Component", () => {
     it("should call onSort callback when sorting", async () => {
       const onSort = vi.fn();
       render(
-        <DataTable
-          columns={mockColumns}
-          data={mockData}
-          onSort={onSort}
-        />
+        <DataTable columns={mockColumns} data={mockData} onSort={onSort} />,
       );
 
       const nameHeader = screen.getByText("Name");
@@ -184,7 +174,7 @@ describe("DataTable Component", () => {
           data={mockData}
           onSelectionChange={onSelectionChange}
           enableRowSelection={true}
-        />
+        />,
       );
 
       const checkboxes = container.querySelectorAll("input[type='checkbox']");
@@ -203,11 +193,11 @@ describe("DataTable Component", () => {
           data={mockData}
           onSelectionChange={onSelectionChange}
           enableRowSelection={true}
-        />
+        />,
       );
 
       const headerCheckbox = container.querySelector(
-        "thead input[type='checkbox']"
+        "thead input[type='checkbox']",
       ) as HTMLInputElement;
 
       await userEvent.click(headerCheckbox);
@@ -222,7 +212,7 @@ describe("DataTable Component", () => {
           data={mockData}
           enableRowSelection={true}
           enableBulkActions={true}
-        />
+        />,
       );
 
       const checkboxes = container.querySelectorAll("input[type='checkbox']");
@@ -242,7 +232,7 @@ describe("DataTable Component", () => {
           onBulkAction={onBulkAction}
           enableRowSelection={true}
           enableBulkActions={true}
-        />
+        />,
       );
 
       const checkboxes = container.querySelectorAll("input[type='checkbox']");
@@ -266,7 +256,7 @@ describe("DataTable Component", () => {
             pageSize: 2,
             currentPage: 1,
           }}
-        />
+        />,
       );
 
       expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
@@ -286,7 +276,7 @@ describe("DataTable Component", () => {
             currentPage: 1,
             onPageSizeChange,
           }}
-        />
+        />,
       );
 
       const pageSizeSelect = screen.getByDisplayValue("10");
@@ -306,7 +296,7 @@ describe("DataTable Component", () => {
             currentPage: 1,
             totalCount: 30,
           }}
-        />
+        />,
       );
 
       const prevButton = screen.getByText("Previous");
@@ -321,7 +311,7 @@ describe("DataTable Component", () => {
           columns={mockColumns}
           data={mockData}
           enableColumnVisibility={true}
-        />
+        />,
       );
 
       // Initially all columns visible
@@ -368,7 +358,7 @@ describe("DataTable Component", () => {
     it("should export selected rows", () => {
       const csv = generateCSV(
         mockData.filter((d) => d.id === "1" || d.id === "2"),
-        mockColumns
+        mockColumns,
       );
 
       expect(csv).toContain("Alice Johnson");
@@ -385,7 +375,7 @@ describe("DataTable Component", () => {
           columns={mockColumns}
           data={mockData}
           onRowClick={onRowClick}
-        />
+        />,
       );
 
       const firstRow = screen.getByText("Alice Johnson");

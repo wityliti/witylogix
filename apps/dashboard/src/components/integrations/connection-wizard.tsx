@@ -3,7 +3,11 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { CredentialForm } from "./credential-form";
-import type { ConnectionWizardProps, ConnectionWizardConfig, IntegrationConnection as IntegrationProvider } from "./types";
+import type {
+  ConnectionWizardProps,
+  ConnectionWizardConfig,
+  IntegrationConnection as IntegrationProvider,
+} from "./types";
 
 /**
  * Connection wizard component
@@ -17,14 +21,20 @@ export function ConnectionWizard({
   className,
 }: ConnectionWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedProvider, setSelectedProvider] = useState<IntegrationProvider | null>(null);
+  const [selectedProvider, setSelectedProvider] =
+    useState<IntegrationProvider | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [config, setConfig] = useState<Partial<ConnectionWizardConfig>>({});
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [selectedEntities, setSelectedEntities] = useState<Set<string>>(new Set());
-  const [syncDirection, setSyncDirection] = useState<"inbound" | "outbound" | "bidirectional">(
-    "bidirectional"
+  const [testResult, setTestResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+  const [selectedEntities, setSelectedEntities] = useState<Set<string>>(
+    new Set(),
   );
+  const [syncDirection, setSyncDirection] = useState<
+    "inbound" | "outbound" | "bidirectional"
+  >("bidirectional");
   const [syncSchedule, setSyncSchedule] = useState(60); // minutes
 
   // Filter providers by search
@@ -32,18 +42,42 @@ export function ConnectionWizard({
     return providers.filter(
       (p) =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.provider.toLowerCase().includes(searchQuery.toLowerCase())
+        p.provider.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [providers, searchQuery]);
 
   // Available sync entities
   const availableEntities = [
-    { id: "orders", label: "Orders", description: "Customer orders and order details" },
-    { id: "products", label: "Products", description: "Product catalog and inventory" },
-    { id: "customers", label: "Customers", description: "Customer profiles and contacts" },
-    { id: "inventory", label: "Inventory", description: "Stock levels and availability" },
-    { id: "payments", label: "Payments", description: "Payment transactions and status" },
-    { id: "shipments", label: "Shipments", description: "Shipping and tracking info" },
+    {
+      id: "orders",
+      label: "Orders",
+      description: "Customer orders and order details",
+    },
+    {
+      id: "products",
+      label: "Products",
+      description: "Product catalog and inventory",
+    },
+    {
+      id: "customers",
+      label: "Customers",
+      description: "Customer profiles and contacts",
+    },
+    {
+      id: "inventory",
+      label: "Inventory",
+      description: "Stock levels and availability",
+    },
+    {
+      id: "payments",
+      label: "Payments",
+      description: "Payment transactions and status",
+    },
+    {
+      id: "shipments",
+      label: "Shipments",
+      description: "Shipping and tracking info",
+    },
   ];
 
   const handleProviderSelect = (provider: IntegrationProvider) => {
@@ -122,7 +156,7 @@ export function ConnectionWizard({
                     "w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm mb-2 transition-all",
                     currentStep >= step
                       ? "bg-wl-primary-500 text-white"
-                      : "bg-wl-surface-hover text-wl-text-secondary"
+                      : "bg-wl-surface-hover text-wl-text-secondary",
                   )}
                 >
                   {step}
@@ -158,7 +192,7 @@ export function ConnectionWizard({
               className={cn(
                 "w-full px-3 py-2 rounded border mb-4",
                 "bg-wl-bg-default text-wl-text-primary",
-                "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none"
+                "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none",
               )}
             />
             <div className="grid grid-cols-2 gap-3">
@@ -170,10 +204,12 @@ export function ConnectionWizard({
                     "p-4 rounded border transition-all text-left",
                     selectedProvider?.id === provider.id
                       ? "border-wl-primary-500 bg-wl-primary-100 dark:bg-wl-primary-900/30"
-                      : "border-wl-border-subtle bg-wl-surface-hover hover:border-wl-primary-500"
+                      : "border-wl-border-subtle bg-wl-surface-hover hover:border-wl-primary-500",
                   )}
                 >
-                  <div className="font-medium text-wl-text-primary">{provider.name}</div>
+                  <div className="font-medium text-wl-text-primary">
+                    {provider.name}
+                  </div>
                   <div className="text-xs text-wl-text-secondary mt-1 capitalize">
                     {provider.category}
                   </div>
@@ -206,7 +242,9 @@ export function ConnectionWizard({
         {/* Step 3: Test Connection */}
         {currentStep === 3 && (
           <div>
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Test Connection</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+              Test Connection
+            </h2>
             <div className="mb-6">
               <div
                 className={cn(
@@ -215,7 +253,7 @@ export function ConnectionWizard({
                     ? "bg-wl-success-100 border-wl-success-300 dark:bg-wl-success-900/30 dark:border-wl-success-800"
                     : testResult?.success === false
                       ? "bg-wl-danger-100 border-wl-danger-300 dark:bg-wl-danger-900/30 dark:border-wl-danger-800"
-                      : "bg-wl-surface-hover border-wl-border-subtle"
+                      : "bg-wl-surface-hover border-wl-border-subtle",
                 )}
               >
                 {!testResult && (
@@ -227,7 +265,7 @@ export function ConnectionWizard({
                       onClick={handleTestConnection}
                       className={cn(
                         "px-4 py-2 rounded font-medium text-sm",
-                        "bg-wl-primary-500 text-white hover:bg-wl-primary-600"
+                        "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
                       )}
                     >
                       Run Test
@@ -240,7 +278,7 @@ export function ConnectionWizard({
                       "flex items-center gap-2",
                       testResult.success
                         ? "text-wl-success-700 dark:text-wl-success-300"
-                        : "text-wl-danger-700 dark:text-wl-danger-300"
+                        : "text-wl-danger-700 dark:text-wl-danger-300",
                     )}
                   >
                     <span className="text-lg">
@@ -271,7 +309,9 @@ export function ConnectionWizard({
         {/* Step 4: Configure Sync */}
         {currentStep === 4 && (
           <div>
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Configure Sync</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+              Configure Sync
+            </h2>
 
             {/* Entities */}
             <div className="mb-6">
@@ -280,7 +320,10 @@ export function ConnectionWizard({
               </h3>
               <div className="space-y-2">
                 {availableEntities.map((entity) => (
-                  <label key={entity.id} className="flex items-start gap-3 p-3 rounded hover:bg-wl-surface-hover cursor-pointer">
+                  <label
+                    key={entity.id}
+                    className="flex items-start gap-3 p-3 rounded hover:bg-wl-surface-hover cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       checked={selectedEntities.has(entity.id)}
@@ -288,8 +331,12 @@ export function ConnectionWizard({
                       className="mt-1 w-4 h-4 rounded border border-wl-border-subtle accent-wl-primary-500"
                     />
                     <div>
-                      <div className="text-sm font-medium text-wl-text-primary">{entity.label}</div>
-                      <div className="text-xs text-wl-text-secondary">{entity.description}</div>
+                      <div className="text-sm font-medium text-wl-text-primary">
+                        {entity.label}
+                      </div>
+                      <div className="text-xs text-wl-text-secondary">
+                        {entity.description}
+                      </div>
                     </div>
                   </label>
                 ))}
@@ -298,14 +345,31 @@ export function ConnectionWizard({
 
             {/* Sync Direction */}
             <div className="mb-6 pb-6 border-b border-wl-border-subtle">
-              <h3 className="text-sm font-semibold text-wl-text-primary mb-3">Sync Direction</h3>
+              <h3 className="text-sm font-semibold text-wl-text-primary mb-3">
+                Sync Direction
+              </h3>
               <div className="space-y-2">
                 {[
-                  { value: "inbound" as const, label: "← Inbound", desc: "From provider to Witylogix" },
-                  { value: "outbound" as const, label: "→ Outbound", desc: "From Witylogix to provider" },
-                  { value: "bidirectional" as const, label: "↔ Bidirectional", desc: "Two-way sync" },
+                  {
+                    value: "inbound" as const,
+                    label: "← Inbound",
+                    desc: "From provider to Witylogix",
+                  },
+                  {
+                    value: "outbound" as const,
+                    label: "→ Outbound",
+                    desc: "From Witylogix to provider",
+                  },
+                  {
+                    value: "bidirectional" as const,
+                    label: "↔ Bidirectional",
+                    desc: "Two-way sync",
+                  },
                 ].map((option) => (
-                  <label key={option.value} className="flex items-center gap-3 p-3 rounded hover:bg-wl-surface-hover cursor-pointer">
+                  <label
+                    key={option.value}
+                    className="flex items-center gap-3 p-3 rounded hover:bg-wl-surface-hover cursor-pointer"
+                  >
                     <input
                       type="radio"
                       name="sync-direction"
@@ -314,8 +378,12 @@ export function ConnectionWizard({
                       className="w-4 h-4 accent-wl-primary-500"
                     />
                     <div>
-                      <div className="text-sm font-medium text-wl-text-primary">{option.label}</div>
-                      <div className="text-xs text-wl-text-secondary">{option.desc}</div>
+                      <div className="text-sm font-medium text-wl-text-primary">
+                        {option.label}
+                      </div>
+                      <div className="text-xs text-wl-text-secondary">
+                        {option.desc}
+                      </div>
                     </div>
                   </label>
                 ))}
@@ -333,7 +401,7 @@ export function ConnectionWizard({
                 className={cn(
                   "w-full px-3 py-2 rounded border",
                   "bg-wl-bg-default text-wl-text-primary",
-                  "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none"
+                  "border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none",
                 )}
               >
                 <option value={15}>Every 15 minutes</option>
@@ -352,7 +420,7 @@ export function ConnectionWizard({
             onClick={onCancel}
             className={cn(
               "px-4 py-2 rounded font-medium text-sm transition-colors",
-              "bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle"
+              "bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle",
             )}
           >
             Cancel
@@ -366,7 +434,7 @@ export function ConnectionWizard({
             className={cn(
               "px-4 py-2 rounded font-medium text-sm transition-colors",
               "bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle",
-              currentStep === 1 && "opacity-50 cursor-not-allowed"
+              currentStep === 1 && "opacity-50 cursor-not-allowed",
             )}
           >
             Back
@@ -383,7 +451,7 @@ export function ConnectionWizard({
               className={cn(
                 "flex-1 px-4 py-2 rounded font-medium text-sm transition-colors",
                 "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
-                !canProceed && "opacity-50 cursor-not-allowed"
+                !canProceed && "opacity-50 cursor-not-allowed",
               )}
             >
               Next
@@ -395,7 +463,7 @@ export function ConnectionWizard({
               className={cn(
                 "flex-1 px-4 py-2 rounded font-medium text-sm transition-colors",
                 "bg-wl-success-500 text-white hover:bg-wl-success-600",
-                !isStep4Valid && "opacity-50 cursor-not-allowed"
+                !isStep4Valid && "opacity-50 cursor-not-allowed",
               )}
             >
               Finish Setup

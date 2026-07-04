@@ -63,7 +63,9 @@ export class StuartClient extends CourierAdapter {
     try {
       await this.getAccessToken();
     } catch (error) {
-      throw new Error(`Failed to validate Stuart credentials: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to validate Stuart credentials: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -79,12 +81,16 @@ export class StuartClient extends CourierAdapter {
 
     const payload = {
       origin: {
-        address: request.pickup.address || `${request.pickup.latitude},${request.pickup.longitude}`,
+        address:
+          request.pickup.address ||
+          `${request.pickup.latitude},${request.pickup.longitude}`,
         latitude: request.pickup.latitude,
         longitude: request.pickup.longitude,
       },
       destination: {
-        address: request.dropoff.address || `${request.dropoff.latitude},${request.dropoff.longitude}`,
+        address:
+          request.dropoff.address ||
+          `${request.dropoff.latitude},${request.dropoff.longitude}`,
         latitude: request.dropoff.latitude,
         longitude: request.dropoff.longitude,
       },
@@ -115,7 +121,9 @@ export class StuartClient extends CourierAdapter {
    * Create a delivery with Stuart.
    * Uses POST /v2/jobs to create a new job.
    */
-  async createDelivery(request: CreateDeliveryRequest): Promise<CourierDelivery> {
+  async createDelivery(
+    request: CreateDeliveryRequest,
+  ): Promise<CourierDelivery> {
     const token = await this.getAccessToken();
 
     const transportType = request.package?.transportType || "car";
@@ -123,7 +131,9 @@ export class StuartClient extends CourierAdapter {
 
     const payload = {
       origin: {
-        address: request.pickup.address || `${request.pickup.latitude},${request.pickup.longitude}`,
+        address:
+          request.pickup.address ||
+          `${request.pickup.latitude},${request.pickup.longitude}`,
         latitude: request.pickup.latitude,
         longitude: request.pickup.longitude,
         contact_name: request.pickup.name,
@@ -131,7 +141,9 @@ export class StuartClient extends CourierAdapter {
         comment: request.pickup.instructions,
       },
       destination: {
-        address: request.dropoff.address || `${request.dropoff.latitude},${request.dropoff.longitude}`,
+        address:
+          request.dropoff.address ||
+          `${request.dropoff.latitude},${request.dropoff.longitude}`,
         latitude: request.dropoff.latitude,
         longitude: request.dropoff.longitude,
         contact_name: request.recipient?.name,
@@ -142,7 +154,9 @@ export class StuartClient extends CourierAdapter {
       transport_type: this.mapTransportType(transportType),
       package_type: packageType,
       reference: request.orderId,
-      scheduled_for: request.scheduledFor ? request.scheduledFor.toISOString() : undefined,
+      scheduled_for: request.scheduledFor
+        ? request.scheduledFor.toISOString()
+        : undefined,
       // Note: Stuart webhooks are configured at dashboard level, not per-job
     };
 
@@ -175,7 +189,9 @@ export class StuartClient extends CourierAdapter {
     const token = await this.getAccessToken();
 
     // INTEGRATION: Actual HTTP call to Stuart API
-    const job = (await this.request("GET", `/v2/jobs/${deliveryId}`, { token })) as StuartJob;
+    const job = (await this.request("GET", `/v2/jobs/${deliveryId}`, {
+      token,
+    })) as StuartJob;
 
     const driverLocation = job.courier?.location
       ? {
@@ -192,7 +208,9 @@ export class StuartClient extends CourierAdapter {
       driverLocation,
       driverName: job.courier?.name,
       driverPhone: job.courier?.phone,
-      estimatedArrivalAt: job.estimated_delivery_time ? new Date(job.estimated_delivery_time) : undefined,
+      estimatedArrivalAt: job.estimated_delivery_time
+        ? new Date(job.estimated_delivery_time)
+        : undefined,
       deliveredAt: job.completed_at ? new Date(job.completed_at) : undefined,
       rawResponse: job as unknown as Record<string, unknown>,
     };
@@ -223,10 +241,14 @@ export class StuartClient extends CourierAdapter {
     const token = await this.getAccessToken();
 
     // INTEGRATION: Actual HTTP call to Stuart API
-    const job = (await this.request("GET", `/v2/jobs/${deliveryId}`, { token })) as StuartJob;
+    const job = (await this.request("GET", `/v2/jobs/${deliveryId}`, {
+      token,
+    })) as StuartJob;
 
     if (!job.courier || !job.courier.location) {
-      throw new Error(`No driver assigned or location unavailable for delivery ${deliveryId}`);
+      throw new Error(
+        `No driver assigned or location unavailable for delivery ${deliveryId}`,
+      );
     }
 
     return {
@@ -252,7 +274,9 @@ export class StuartClient extends CourierAdapter {
    * Note: Stuart webhooks must be configured in the dashboard.
    * This method throws an informative error.
    */
-  async registerWebhook(registration: WebhookRegistration): Promise<WebhookInfo> {
+  async registerWebhook(
+    registration: WebhookRegistration,
+  ): Promise<WebhookInfo> {
     throw new Error(
       "Stuart webhooks must be configured in the dashboard at https://dashboard.stuart.com/webhooks - API registration not supported",
     );
@@ -263,7 +287,9 @@ export class StuartClient extends CourierAdapter {
    * Note: Stuart webhooks are managed via dashboard, not API.
    */
   async deregisterWebhook(webhookId: string): Promise<void> {
-    throw new Error("Stuart webhooks must be deregistered via dashboard at https://dashboard.stuart.com/webhooks");
+    throw new Error(
+      "Stuart webhooks must be deregistered via dashboard at https://dashboard.stuart.com/webhooks",
+    );
   }
 
   /**

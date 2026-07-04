@@ -10,22 +10,22 @@
  * we only have to list new scopes once per resource family.
  */
 
-import type { OAuthScope } from './scopes'
+import type { OAuthScope } from "./scopes";
 
 const EVENT_SCOPE_BY_PREFIX: Record<string, OAuthScope> = {
-  shipment: 'shipments:read',
-  order: 'orders:read',
-  driver: 'drivers:read',
-  route: 'routes:read',
-  customer: 'customers:read',
-}
+  shipment: "shipments:read",
+  order: "orders:read",
+  driver: "drivers:read",
+  route: "routes:read",
+  customer: "customers:read",
+};
 
 /**
  * Return the OAuth scope required to deliver `eventType` to an
  * installation-owned webhook endpoint, or `null` when the event has
  * no scope requirement (e.g. system notifications).
  */
-export function eventRequiresScope (eventType: string): OAuthScope | null {
-  const prefix = eventType.split('.')[0]
-  return EVENT_SCOPE_BY_PREFIX[prefix] ?? null
+export function eventRequiresScope(eventType: string): OAuthScope | null {
+  const prefix = eventType.split(".")[0];
+  return EVENT_SCOPE_BY_PREFIX[prefix] ?? null;
 }

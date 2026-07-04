@@ -9,6 +9,7 @@
 ## Problem Statement
 
 Current fleet management lacks:
+
 - Real-time vehicle position tracking and status visibility
 - Predictive maintenance alerts based on diagnostics
 - Driver behavior analytics (speeding, hard braking, harsh acceleration)
@@ -46,7 +47,10 @@ interface ITelematicsAdapter {
   unsubscribeFromEvents(): void;
 
   // Driver behavior
-  getDriverBehavior(vehicleId: string, dateRange: DateRange): Promise<DriverBehaviorEvent[]>;
+  getDriverBehavior(
+    vehicleId: string,
+    dateRange: DateRange,
+  ): Promise<DriverBehaviorEvent[]>;
 
   // Polling state
   getLastSyncTime(vehicleId: string): Promise<Date | null>;
@@ -55,6 +59,7 @@ interface ITelematicsAdapter {
 ```
 
 **Supported Providers**:
+
 - **Samsara**: Real-time GPS, maintenance alerts, driver safety
 - **Geotab**: Comprehensive diagnostics, fuel economy, harsh event detection
 - **Verizon Connect**: Vehicle tracking, maintenance scheduling, compliance
@@ -63,7 +68,9 @@ interface ITelematicsAdapter {
 ### 2. Polling vs Webhook Strategies
 
 #### Polling Strategy (Default)
+
 Used for all providers to ensure consistency:
+
 - **Interval**: 30-60 seconds for active vehicles
 - **Batch Size**: Up to 100 vehicles per request
 - **Exponential Backoff**: Failed requests retry with 2x backoff (max 5min)
@@ -85,13 +92,16 @@ Vehicle Status Loop:
 ```
 
 #### Webhook Strategy (Supplemental)
+
 Used by Samsara/Geotab for critical alerts:
+
 - **Route**: `POST /api/webhooks/telematics/:provider`
 - **Signature Verification**: HMAC-SHA256 validation
 - **Retry Logic**: Exponential backoff (3 attempts)
 - **Dead Letter Queue**: Failed webhooks stored for manual review
 
 **Events via Webhook**:
+
 - Engine diagnostics (malfunction indicator light)
 - Harsh driving events (speeding, hard brake, harsh accel)
 - Collision detection
@@ -155,7 +165,12 @@ interface VehicleDiagnostics {
 interface DriverBehaviorEvent {
   vehicleId: string;
   driverId?: string;
-  eventType: "SPEEDING" | "HARSH_BRAKE" | "HARSH_ACCEL" | "COLLISION" | "DISTRACTION";
+  eventType:
+    | "SPEEDING"
+    | "HARSH_BRAKE"
+    | "HARSH_ACCEL"
+    | "COLLISION"
+    | "DISTRACTION";
   severity: 1 | 2 | 3 | 4 | 5; // 1=minor, 5=critical
   location: { latitude: number; longitude: number };
   speed: number;
@@ -190,6 +205,7 @@ class RateLimiter {
 ```
 
 **Provider Quotas** (typical):
+
 - **Samsara**: 100 req/sec, 1M daily
 - **Geotab**: 10 req/sec, unlimited daily
 - **Verizon**: 500 req/sec, unlimited daily
@@ -229,6 +245,7 @@ onVehicleStatusChange(vehicle) {
 ```
 
 **Cache Hit Targets**:
+
 - Dashboard position queries: >95% hit rate
 - Fleet overview: >80% hit rate
 - Historical analytics: 50-70% hit rate
@@ -299,6 +316,7 @@ class CredentialRotationService {
 ```
 
 **Rotation Policy**:
+
 - Automatic rotation every 90 days
 - Manual rotation on security incidents
 - Immediate revocation of leaked keys
@@ -624,24 +642,28 @@ enum TelematicsProvider {
 ## Adoption Plan
 
 ### Phase 1: Core Infrastructure (Week 1-2)
+
 - Implement adapter interface and base adapter class
 - Create Prisma schema for fleet/vehicle models
 - Build rate limiter and cache layer
 - Implement polling queue
 
 ### Phase 2: Provider Adapters (Week 3-4)
+
 - Samsara adapter (comprehensive)
 - Geotab adapter (diagnostics-focused)
 - Motive adapter (ETA-focused)
 - Verizon adapter (optional for Q2)
 
 ### Phase 3: API & Dashboard (Week 5-6)
+
 - Fleet service implementation
 - API endpoints for vehicle listing, status, diagnostics
 - Dashboard pages and components
 - Webhook ingestion for critical alerts
 
 ### Phase 4: Advanced Features (Week 7-8)
+
 - Driver behavior analytics
 - Maintenance scheduling algorithms
 - Fleet health scoring
@@ -649,14 +671,14 @@ enum TelematicsProvider {
 
 ## Trade-offs & Decisions
 
-| Aspect | Choice | Rationale |
-|--------|--------|-----------|
-| **Polling** | Default strategy | Consistency across providers; simplifies error handling |
-| **Caching** | Redis multi-tier | 95%+ cache hit for dashboards; cost-effective |
-| **Normalization** | Custom types | Provider-agnostic; future-proof for new providers |
-| **Rate Limiting** | Token bucket | Fair-share; handles burst traffic gracefully |
-| **Credential Storage** | Encrypted at-rest | PCI compliance; key rotation enabled |
-| **Schema Design** | Denormalized metrics | Fast dashboard queries; trade-off with write complexity |
+| Aspect                 | Choice               | Rationale                                               |
+| ---------------------- | -------------------- | ------------------------------------------------------- |
+| **Polling**            | Default strategy     | Consistency across providers; simplifies error handling |
+| **Caching**            | Redis multi-tier     | 95%+ cache hit for dashboards; cost-effective           |
+| **Normalization**      | Custom types         | Provider-agnostic; future-proof for new providers       |
+| **Rate Limiting**      | Token bucket         | Fair-share; handles burst traffic gracefully            |
+| **Credential Storage** | Encrypted at-rest    | PCI compliance; key rotation enabled                    |
+| **Schema Design**      | Denormalized metrics | Fast dashboard queries; trade-off with write complexity |
 
 ## Monitoring & Observability
 
@@ -672,6 +694,7 @@ enum TelematicsProvider {
 ```
 
 **Alerts**:
+
 - Provider API unavailable >5min
 - Polling queue backlog >1000 jobs
 - Cache error rate >1%

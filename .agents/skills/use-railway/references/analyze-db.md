@@ -10,14 +10,14 @@ You are a database performance expert. The script collects raw data - your job i
 
 The user's request is the source of truth. Use this decision table:
 
-| What the user provided | Action |
-|------------------------|--------|
-| Railway URL | Extract IDs directly from the URL — do NOT run `railway status --json` |
-| Service name + environment name | Proceed — intent is clear. Resolve IDs via API. |
-| Service name only (no environment) | Find the service by name via API. If multiple matches exist across projects, ask: "Which project do you mean?" Otherwise confirm: "Do you mean `<service>` in `<project>` / `<env>`?" — only proceed on confirmation |
-| Raw UUID(s) | Resolve to human-readable names via API, then confirm before running |
+| What the user provided                                  | Action                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Railway URL                                             | Extract IDs directly from the URL — do NOT run `railway status --json`                                                                                                                                                                                  |
+| Service name + environment name                         | Proceed — intent is clear. Resolve IDs via API.                                                                                                                                                                                                         |
+| Service name only (no environment)                      | Find the service by name via API. If multiple matches exist across projects, ask: "Which project do you mean?" Otherwise confirm: "Do you mean `<service>` in `<project>` / `<env>`?" — only proceed on confirmation                                    |
+| Raw UUID(s)                                             | Resolve to human-readable names via API, then confirm before running                                                                                                                                                                                    |
 | Vague request ("analyze my database", "check postgres") | Run `railway status --json` to see what's linked. If it's a database service, confirm: "Do you mean `<service>` in `<project>` / `<env>`?". If it's not a database service or nothing is linked, ask: "Which service and environment should I analyze?" |
-| No context at all | List workspaces (`railway whoami --json`), then projects (`railway project list --json`), then environments and services for the chosen project, narrowing down until you have a specific service and environment |
+| No context at all                                       | List workspaces (`railway whoami --json`), then projects (`railway project list --json`), then environments and services for the chosen project, narrowing down until you have a specific service and environment                                       |
 
 `railway status --json` is a hint to form a specific question, not a trigger to act without confirmation.
 
@@ -42,17 +42,18 @@ scripts/railway-api.sh \
 ```
 
 From the response, get:
+
 - **Service name**: `data.service.name`
 - **Database image**: `data.environment.config.services.<SERVICE_ID>.source.image`
 
 Then match the image to the database type:
 
-| Image pattern | Database Type |
-|--------------|---------------|
-| `postgres*`, `ghcr.io/railway/postgres*` | PostgreSQL |
-| `mysql*`, `ghcr.io/railway/mysql*` | MySQL |
-| `redis*`, `ghcr.io/railway/redis*`, `railwayapp/redis*` | Redis |
-| `mongo*`, `ghcr.io/railway/mongo*` | MongoDB |
+| Image pattern                                           | Database Type |
+| ------------------------------------------------------- | ------------- |
+| `postgres*`, `ghcr.io/railway/postgres*`                | PostgreSQL    |
+| `mysql*`, `ghcr.io/railway/mysql*`                      | MySQL         |
+| `redis*`, `ghcr.io/railway/redis*`, `railwayapp/redis*` | Redis         |
+| `mongo*`, `ghcr.io/railway/mongo*`                      | MongoDB       |
 
 **If `environmentId` is empty in the URL** (e.g., `?environmentId=` or no query param at all), skip the `environment.config` query — it requires a valid ID. Instead, list the project's environments:
 
@@ -66,14 +67,15 @@ Use the `production` environment by default. If multiple non-PR environments exi
 
 ## Database Type Detection and Script Selection
 
-| Database Type | Script |
-|---------------|--------|
-| PostgreSQL | `scripts/analyze-postgres.py` |
-| MySQL | `scripts/analyze-mysql.py` |
-| Redis | `scripts/analyze-redis.py` |
-| MongoDB | `scripts/analyze-mongo.py` |
+| Database Type | Script                        |
+| ------------- | ----------------------------- |
+| PostgreSQL    | `scripts/analyze-postgres.py` |
+| MySQL         | `scripts/analyze-mysql.py`    |
+| Redis         | `scripts/analyze-redis.py`    |
+| MongoDB       | `scripts/analyze-mongo.py`    |
 
 **All scripts share the same CLI interface** (use the script name from the table above):
+
 ```bash
 python3 scripts/analyze-<script>.py \
   --service <name> \
@@ -84,6 +86,7 @@ python3 scripts/analyze-<script>.py \
 ```
 
 Common options across all scripts:
+
 - `--json` — JSON output for programmatic processing
 - `--quiet` — Suppress progress messages
 - `--skip-logs` — Skip log collection
@@ -96,13 +99,13 @@ Common options across all scripts:
 
 ### Decision Table
 
-| database_query | metrics_api | logs_api | Report Type |
-|---------------|-------------|----------|-------------|
-| success | success | success | Full analysis — use all sections |
-| success | error | success | Full analysis — note missing infrastructure metrics |
-| **error** | success | success | **Partial report** — only infrastructure metrics + log analysis. NO performance conclusions. |
-| **error** | error | success | **Logs-only report** — state what logs show, note everything else failed. NO diagnosis. |
-| **error** | **error** | **error** | **Collection failure** — report the errors, do not analyze. |
+| database_query | metrics_api | logs_api  | Report Type                                                                                  |
+| -------------- | ----------- | --------- | -------------------------------------------------------------------------------------------- |
+| success        | success     | success   | Full analysis — use all sections                                                             |
+| success        | error       | success   | Full analysis — note missing infrastructure metrics                                          |
+| **error**      | success     | success   | **Partial report** — only infrastructure metrics + log analysis. NO performance conclusions. |
+| **error**      | error       | success   | **Logs-only report** — state what logs show, note everything else failed. NO diagnosis.      |
+| **error**      | **error**   | **error** | **Collection failure** — report the errors, do not analyze.                                  |
 
 ### When database_query failed — SSH key errors
 
@@ -149,6 +152,7 @@ Then ask if they'd like to proceed with a partial analysis (metrics + logs only)
 This means SSH could not reach the database or the query failed. You have NO connection stats, NO cache hit ratios, NO vacuum health, NO query performance data. All those fields will be null/empty.
 
 **You MUST:**
+
 1. State clearly: "Database introspection failed — SSH could not connect to the service"
 2. Show the `collection_status` errors
 3. Show only the data that DID succeed (metrics, logs)
@@ -156,6 +160,7 @@ This means SSH could not reach the database or the query failed. You have NO con
 5. Do NOT diagnose performance issues from logs alone
 
 **Partial report template:**
+
 ```
 Service: <name>
 Status: Data collection partially failed
@@ -179,6 +184,7 @@ Status: Data collection partially failed
 **Always present information in this order:**
 
 ### 1. Context Header
+
 ```
 Service: <name> (<project> <environment>)
 Status: <deployment health>, <RAM>, <disk used>
@@ -189,6 +195,7 @@ Status: <deployment health>, <RAM>, <disk used>
 Before any analysis, show the raw metrics in tables so the user sees their actual state. The DB-specific reference defines exactly which tables to show for each database type — present the relevant health sections first, then connections, then query performance.
 
 **Logs & Active Issues:**
+
 - Parse the `recent_logs` array (1000 lines of raw logs) - don't just check if empty
 - Summarize: "Analyzed 1000 log lines: 3 errors (connection timeouts), 0 critical issues"
 - Show specific concerning log entries if found
@@ -211,6 +218,7 @@ What metrics should change after fixes.
 ---
 
 **Why this order matters:**
+
 - Users can verify the data matches their understanding
 - They see the full picture before being told what to do
 - Actions have context - they know WHY each fix is recommended
@@ -225,6 +233,7 @@ What metrics should change after fixes.
 3. **Investigate outliers** - Dig into any field that seems unusually high or low
 
 Common errors to avoid (all database types):
+
 - **Not parsing `recent_logs`** - always analyze the raw log lines, don't just report "no errors"
 - **Diagnosing performance issues from logs when all metrics are null** — logs show what happened, not how the database is performing
 - **Treating startup/restart log entries as evidence of failure** — databases restart for many normal reasons (deploys, config changes, scaling)
@@ -246,6 +255,7 @@ python3 scripts/analyze-postgres.py --service <name> --json \
 All three IDs come from the URL (see "Context: URL First" above). The service name comes from the API query.
 
 **Options:**
+
 - `--metrics-hours <N>` — Hours of metrics history to fetch (default: 24, max: 168). Use `--metrics-hours 168` for 7-day trends, `--metrics-hours 1` for recent snapshot.
 
 **SSH retry:** The script automatically retries SSH connectivity up to 3 times with increasing timeouts (30s, 60s, 90s). Each individual SSH command (database query, slowlog, bigkeys, etc.) also retries up to 3 times on failure — covering transient errors like `exec request failed on channel 0`. Progress is logged to stderr.
@@ -284,12 +294,12 @@ python3 scripts/analyze-postgres.py --service <name> \
 
 After running the script and checking collection status, load the reference for the specific database type:
 
-| Database | Reference | What It Covers |
-|----------|-----------|----------------|
-| PostgreSQL | [analyze-db-postgres.md](analyze-db-postgres.md) | What psql collects, log analysis checklist, tuning formulas, vacuum priority, pg_stat_statements, applying fixes |
-| MySQL | [analyze-db-mysql.md](analyze-db-mysql.md) | All 12 metric sections (overview, query throughput, InnoDB, efficiency, buffer pool, I/O, network, locks, cache, top queries, tables, active queries), patterns, tuning |
-| Redis | [analyze-db-redis.md](analyze-db-redis.md) | INFO ALL metrics, memory fragmentation, cache thrashing, persistence, command stats |
-| MongoDB | [analyze-db-mongo.md](analyze-db-mongo.md) | serverStatus, WiredTiger cache, query efficiency, connection saturation, oplog |
+| Database   | Reference                                        | What It Covers                                                                                                                                                          |
+| ---------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PostgreSQL | [analyze-db-postgres.md](analyze-db-postgres.md) | What psql collects, log analysis checklist, tuning formulas, vacuum priority, pg_stat_statements, applying fixes                                                        |
+| MySQL      | [analyze-db-mysql.md](analyze-db-mysql.md)       | All 12 metric sections (overview, query throughput, InnoDB, efficiency, buffer pool, I/O, network, locks, cache, top queries, tables, active queries), patterns, tuning |
+| Redis      | [analyze-db-redis.md](analyze-db-redis.md)       | INFO ALL metrics, memory fragmentation, cache thrashing, persistence, command stats                                                                                     |
+| MongoDB    | [analyze-db-mongo.md](analyze-db-mongo.md)       | serverStatus, WiredTiger cache, query efficiency, connection saturation, oplog                                                                                          |
 
 **Always load the DB-specific reference** — it contains the metric sections, thresholds, and tuning knowledge needed for proper analysis.
 
@@ -312,14 +322,16 @@ The script fetches **7 days** (168 hours) of time-series data from Railway's met
 ```
 
 Each window independently computes:
+
 - **Summary stats**: current, min, max, avg for each metric
 - **Trend analysis**: compares first-quarter avg to last-quarter avg — reports direction (increasing/decreasing/stable) and % change
-- **Spike detection**: flags values > avg + 2*stddev with timestamps of peaks
+- **Spike detection**: flags values > avg + 2\*stddev with timestamps of peaks
 - **Downsampled series**: ~48 data points per window
 
 Available metrics: CPU, memory (with limits), disk, network RX/TX.
 
 **Comparing windows reveals whether a trend is new or sustained:**
+
 - "Memory increasing in 24h but stable over 7d" → temporary spike, likely a batch job
 - "Memory increasing in both 24h AND 7d" → sustained growth, may need investigation
 - "CPU spike in 24h, no spikes in 7d" → new issue
@@ -332,6 +344,7 @@ Use `--metrics-hours N` to change the long window (default: 168, max: 168). The 
 Railway services auto-scale CPU, RAM, and disk based on actual usage. Users do NOT pick or control resource sizes. The `cpu_limit` and `memory_limit` values from metrics are the **autoscale ceiling** (typically 32 vCPU / 32 GB), not user-provisioned allocations. Users are billed for actual usage, not the ceiling.
 
 **Rules for ALL database types:**
+
 - **Never say "right-size the instance"** or suggest reducing CPU/RAM — it's not a user action.
 - **Never flag low utilization % against the limit as waste** — a service showing 0.01 vCPU / 70 MB actual usage against a 32 vCPU / 32 GB ceiling is normal, not over-provisioned.
 - **Disk does NOT auto-scale** — Railway volumes have a fixed capacity. Paid users (Hobby and Pro) can expand them live without downtime, but it requires a manual resize. Flag high disk utilization as actionable. Users are billed for actual disk utilization, not the full volume size.

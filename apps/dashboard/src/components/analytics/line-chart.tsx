@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  ReactNode,
-  useCallback,
-} from "react";
+import { useEffect, useRef, useState, ReactNode, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { ChartTooltip } from "./chart-tooltip";
 
@@ -89,8 +83,9 @@ export function LineChart({
 
     if (!smooth) {
       return (
-        points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ") +
-        (isClosed ? " Z" : "")
+        points
+          .map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`)
+          .join(" ") + (isClosed ? " Z" : "")
       );
     }
 
@@ -127,7 +122,9 @@ export function LineChart({
       }
 
       // Find nearest x-axis point
-      const pointIndex = Math.round((relativeX / chartWidth) * (data.length - 1));
+      const pointIndex = Math.round(
+        (relativeX / chartWidth) * (data.length - 1),
+      );
       if (pointIndex < 0 || pointIndex >= data.length) {
         setTooltipVisible(false);
         return;
@@ -147,7 +144,7 @@ export function LineChart({
       setTooltipPos({ x: e.clientX, y: e.clientY });
       setTooltipVisible(true);
     },
-    [data, series, chartWidth, padding.left]
+    [data, series, chartWidth, padding.left],
   );
 
   const handleMouseLeave = () => {
@@ -288,7 +285,10 @@ export function LineChart({
               {/* Area under line */}
               {showArea && (
                 <path
-                  d={generatePath([...path.points, [chartWidth, chartHeight]], true)}
+                  d={generatePath(
+                    [...path.points, [chartWidth, chartHeight]],
+                    true,
+                  )}
                   fill={path.color}
                   fillOpacity={0.1}
                   style={{
@@ -338,9 +338,15 @@ export function LineChart({
         {tooltipVisible && (
           <g>
             <line
-              x1={tooltipPos.x - (svgRef.current?.getBoundingClientRect().left || 0)}
+              x1={
+                tooltipPos.x -
+                (svgRef.current?.getBoundingClientRect().left || 0)
+              }
               y1={padding.top}
-              x2={tooltipPos.x - (svgRef.current?.getBoundingClientRect().left || 0)}
+              x2={
+                tooltipPos.x -
+                (svgRef.current?.getBoundingClientRect().left || 0)
+              }
               y2={height - padding.bottom}
               stroke="var(--wl-border-focus)"
               strokeWidth={1}
@@ -359,9 +365,7 @@ export function LineChart({
         data={tooltipData}
         renderContent={(data) => (
           <div className="space-y-1">
-            <p className="font-semibold text-wl-text-primary">
-              {data?.label}
-            </p>
+            <p className="font-semibold text-wl-text-primary">{data?.label}</p>
             {data?.series?.map((item: any) => (
               <div key={item.name} className="flex items-center gap-2">
                 <span

@@ -26,8 +26,8 @@ export {
   type POSPaymentMethod,
   type KitchenOrderStatus,
   type ShiftStatus,
-} from './types';
+} from "./types";
 
-export { POSAdapter } from './pos-adapter';
-export { ToastPOSClient } from './toast-pos-client';
-export { SquareRestaurantsClient } from './square-restaurants-client';
+export { POSAdapter } from "./pos-adapter";
+export { ToastPOSClient } from "./toast-pos-client";
+export { SquareRestaurantsClient } from "./square-restaurants-client";

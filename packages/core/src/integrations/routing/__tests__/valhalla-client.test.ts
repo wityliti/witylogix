@@ -5,22 +5,22 @@
  * covering routing, optimization, matrix, isochrone, and map matching operations.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ValhallaClient } from '../valhalla-client.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { ValhallaClient } from "../valhalla-client.js";
 import type {
   RouteRequest,
   OptimizationRequest,
   MatrixRequest,
   IsochroneRequest,
   MapMatchingRequest,
-} from '../types.js';
+} from "../types.js";
 
-describe('ValhallaClient', () => {
+describe("ValhallaClient", () => {
   let client: ValhallaClient;
 
   beforeEach(() => {
     client = new ValhallaClient({
-      baseUrl: 'https://valhalla.test.local',
+      baseUrl: "https://valhalla.test.local",
       rateLimit: 10,
       timeout: 5000,
     });
@@ -33,8 +33,8 @@ describe('ValhallaClient', () => {
     vi.clearAllMocks();
   });
 
-  describe('Routing Operations', () => {
-    it('should compute a basic route', async () => {
+  describe("Routing Operations", () => {
+    it("should compute a basic route", async () => {
       const mockResponse = {
         trip: {
           legs: [
@@ -43,12 +43,12 @@ describe('ValhallaClient', () => {
                 {
                   begin_shape_index: 0,
                   end_shape_index: 10,
-                  instruction: 'Head north',
+                  instruction: "Head north",
                   type: 0,
                   time: 60,
                   length: 1000,
                   cost: 100,
-                  street_names: ['Main Street'],
+                  street_names: ["Main Street"],
                 },
               ],
               summary: {
@@ -56,7 +56,7 @@ describe('ValhallaClient', () => {
                 time: 60,
                 cost: 100,
               },
-              shape: 'encoded_polyline',
+              shape: "encoded_polyline",
             },
           ],
           summary: {
@@ -64,7 +64,7 @@ describe('ValhallaClient', () => {
             time: 60,
             cost: 100,
           },
-          shape: 'encoded_polyline',
+          shape: "encoded_polyline",
           status: 0,
         },
       };
@@ -77,7 +77,7 @@ describe('ValhallaClient', () => {
       const request: RouteRequest = {
         origin: [40.7128, -74.006],
         destination: [40.758, -73.9855],
-        costing: 'auto',
+        costing: "auto",
       };
 
       const result = await client.route(request);
@@ -86,19 +86,19 @@ describe('ValhallaClient', () => {
       expect(result.distance_m).toBe(1000);
       expect(result.duration_s).toBe(60);
       expect(result.legs).toHaveLength(1);
-      expect(result.polyline).toBe('encoded_polyline');
+      expect(result.polyline).toBe("encoded_polyline");
     });
 
-    it('should support waypoints', async () => {
+    it("should support waypoints", async () => {
       const mockResponse = {
         trip: {
           legs: Array(2).fill({
             maneuvers: [],
             summary: { length: 500, time: 30, cost: 50 },
-            shape: 'encoded',
+            shape: "encoded",
           }),
           summary: { length: 1000, time: 60, cost: 100 },
-          shape: 'encoded_polyline',
+          shape: "encoded_polyline",
           status: 0,
         },
       };
@@ -120,19 +120,19 @@ describe('ValhallaClient', () => {
       expect(result.distance_m).toBe(1000);
     });
 
-    it('should handle alternative routes', async () => {
+    it("should handle alternative routes", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 1000, time: 60, cost: 100 },
-          shape: 'main',
+          shape: "main",
           status: 0,
         },
         alternates: [
           {
             trip: {
               legs: [],
-              shape: 'alt1',
+              shape: "alt1",
             },
           },
         ],
@@ -153,12 +153,12 @@ describe('ValhallaClient', () => {
       expect(result).toBeDefined();
     });
 
-    it('should respect toll avoidance option', async () => {
+    it("should respect toll avoidance option", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 1500, time: 90, cost: 100 },
-          shape: 'no_toll',
+          shape: "no_toll",
           status: 0,
         },
       };
@@ -178,12 +178,12 @@ describe('ValhallaClient', () => {
       expect(result.distance_m).toBe(1500);
     });
 
-    it('should support different costing models', async () => {
+    it("should support different costing models", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 800, time: 300, cost: 100 },
-          shape: 'bike',
+          shape: "bike",
           status: 0,
         },
       };
@@ -196,19 +196,19 @@ describe('ValhallaClient', () => {
       const request: RouteRequest = {
         origin: [40.7128, -74.006],
         destination: [40.758, -73.9855],
-        costing: 'bicycle',
+        costing: "bicycle",
       };
 
       const result = await client.route(request);
       expect(result.duration_s).toBeGreaterThan(60); // Bikes are slower
     });
 
-    it('should cache route requests', async () => {
+    it("should cache route requests", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 1000, time: 60, cost: 100 },
-          shape: 'encoded',
+          shape: "encoded",
           status: 0,
         },
       };
@@ -230,11 +230,11 @@ describe('ValhallaClient', () => {
       expect(global.fetch).toHaveBeenCalledTimes(1); // Only one actual API call
     });
 
-    it('should handle API errors', async () => {
+    it("should handle API errors", async () => {
       (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 400,
-        statusText: 'Bad Request',
+        statusText: "Bad Request",
       });
 
       const request: RouteRequest = {
@@ -242,14 +242,15 @@ describe('ValhallaClient', () => {
         destination: [40.758, -73.9855],
       };
 
-      await expect(client.route(request)).rejects.toThrow('Valhalla API error');
+      await expect(client.route(request)).rejects.toThrow("Valhalla API error");
     });
 
-    it('should handle timeouts', async () => {
-      (global.fetch as any).mockImplementationOnce(() =>
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Network timeout')), 100),
-        ),
+    it("should handle timeouts", async () => {
+      (global.fetch as any).mockImplementationOnce(
+        () =>
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Network timeout")), 100),
+          ),
       );
 
       const request: RouteRequest = {
@@ -261,8 +262,8 @@ describe('ValhallaClient', () => {
     });
   });
 
-  describe('Matrix Operations', () => {
-    it('should compute distance matrix', async () => {
+  describe("Matrix Operations", () => {
+    it("should compute distance matrix", async () => {
       const mockResponse = {
         sources: [
           { lat: 40.7128, lon: -74.006 },
@@ -303,7 +304,7 @@ describe('ValhallaClient', () => {
       expect(result.matrix[0][1].duration_s).toBe(300);
     });
 
-    it('should handle large matrices', async () => {
+    it("should handle large matrices", async () => {
       const size = 10;
       const mockMatrix = Array(size)
         .fill(null)
@@ -342,7 +343,7 @@ describe('ValhallaClient', () => {
       expect(result.matrix[0]).toHaveLength(size);
     });
 
-    it('should cache matrix requests', async () => {
+    it("should cache matrix requests", async () => {
       const mockResponse = {
         sources: [{ lat: 40.7128, lon: -74.006 }],
         targets: [{ lat: 40.758, lon: -73.9855 }],
@@ -366,19 +367,26 @@ describe('ValhallaClient', () => {
     });
   });
 
-  describe('Isochrone Operations', () => {
-    it('should generate isochrone polygons', async () => {
+  describe("Isochrone Operations", () => {
+    it("should generate isochrone polygons", async () => {
       const mockResponse = {
         features: [
           {
-            type: 'Feature',
+            type: "Feature",
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[40.7, -74.0], [40.71, -74.0], [40.71, -73.99], [40.7, -74.0]]],
+              type: "Polygon",
+              coordinates: [
+                [
+                  [40.7, -74.0],
+                  [40.71, -74.0],
+                  [40.71, -73.99],
+                  [40.7, -74.0],
+                ],
+              ],
             },
             properties: {
               contour: 300,
-              color: 'ff0000',
+              color: "ff0000",
             },
           },
         ],
@@ -398,27 +406,41 @@ describe('ValhallaClient', () => {
 
       expect(result.contours).toHaveLength(1);
       expect(result.contours[0].value).toBe(300);
-      expect(result.contours[0].feature.geometry.type).toBe('Polygon');
+      expect(result.contours[0].feature.geometry.type).toBe("Polygon");
     });
 
-    it('should support multiple contours', async () => {
+    it("should support multiple contours", async () => {
       const mockResponse = {
         features: [
           {
-            type: 'Feature',
+            type: "Feature",
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[40.7, -74.0], [40.71, -74.0], [40.71, -73.99], [40.7, -74.0]]],
+              type: "Polygon",
+              coordinates: [
+                [
+                  [40.7, -74.0],
+                  [40.71, -74.0],
+                  [40.71, -73.99],
+                  [40.7, -74.0],
+                ],
+              ],
             },
-            properties: { contour: 300, color: 'ff0000' },
+            properties: { contour: 300, color: "ff0000" },
           },
           {
-            type: 'Feature',
+            type: "Feature",
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[40.68, -74.0], [40.75, -74.0], [40.75, -73.95], [40.68, -74.0]]],
+              type: "Polygon",
+              coordinates: [
+                [
+                  [40.68, -74.0],
+                  [40.75, -74.0],
+                  [40.75, -73.95],
+                  [40.68, -74.0],
+                ],
+              ],
             },
-            properties: { contour: 600, color: '00ff00' },
+            properties: { contour: 600, color: "00ff00" },
           },
         ],
       };
@@ -431,8 +453,8 @@ describe('ValhallaClient', () => {
       const request: IsochroneRequest = {
         center: [40.7128, -74.006],
         contours: [
-          { value: 300, color: 'ff0000' },
-          { value: 600, color: '00ff00' },
+          { value: 300, color: "ff0000" },
+          { value: 600, color: "00ff00" },
         ],
       };
 
@@ -440,16 +462,23 @@ describe('ValhallaClient', () => {
       expect(result.contours).toHaveLength(2);
     });
 
-    it('should cache isochrone requests', async () => {
+    it("should cache isochrone requests", async () => {
       const mockResponse = {
         features: [
           {
-            type: 'Feature',
+            type: "Feature",
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[40.7, -74.0], [40.71, -74.0], [40.71, -73.99], [40.7, -74.0]]],
+              type: "Polygon",
+              coordinates: [
+                [
+                  [40.7, -74.0],
+                  [40.71, -74.0],
+                  [40.71, -73.99],
+                  [40.7, -74.0],
+                ],
+              ],
             },
-            properties: { contour: 300, color: 'ff0000' },
+            properties: { contour: 300, color: "ff0000" },
           },
         ],
       };
@@ -471,18 +500,18 @@ describe('ValhallaClient', () => {
     });
   });
 
-  describe('Map Matching Operations', () => {
-    it('should match GPS trace to road network', async () => {
+  describe("Map Matching Operations", () => {
+    it("should match GPS trace to road network", async () => {
       const mockResponse = {
         trip: {
           legs: [],
-          shape: 'matched_polyline',
+          shape: "matched_polyline",
           status: 0,
           confidence_score: 0.95,
         },
         matched_points: [
-          { edge_index: 0, lat: 40.7128, lon: -74.006, type: 'matched' },
-          { edge_index: 1, lat: 40.715, lon: -74.0055, type: 'matched' },
+          { edge_index: 0, lat: 40.7128, lon: -74.006, type: "matched" },
+          { edge_index: 1, lat: 40.715, lon: -74.0055, type: "matched" },
         ],
       };
 
@@ -501,22 +530,22 @@ describe('ValhallaClient', () => {
 
       const result = await client.mapMatch(request);
 
-      expect(result.shape).toBe('matched_polyline');
+      expect(result.shape).toBe("matched_polyline");
       expect(result.matched_points).toHaveLength(2);
       expect(result.confidence_score).toBe(0.95);
     });
 
-    it('should handle unmatched points', async () => {
+    it("should handle unmatched points", async () => {
       const mockResponse = {
         trip: {
           legs: [],
-          shape: 'matched',
+          shape: "matched",
           status: 0,
           confidence_score: 0.7,
         },
         matched_points: [
-          { edge_index: 0, lat: 40.7128, lon: -74.006, type: 'matched' },
-          { edge_index: 0, lat: 40.715, lon: -74.0055, type: 'unmatched' },
+          { edge_index: 0, lat: 40.7128, lon: -74.006, type: "matched" },
+          { edge_index: 0, lat: 40.715, lon: -74.0055, type: "unmatched" },
         ],
       };
 
@@ -537,8 +566,8 @@ describe('ValhallaClient', () => {
     });
   });
 
-  describe('Optimization Operations', () => {
-    it('should support optimization requests', async () => {
+  describe("Optimization Operations", () => {
+    it("should support optimization requests", async () => {
       const request: OptimizationRequest = {
         vehicles: [
           {
@@ -558,13 +587,13 @@ describe('ValhallaClient', () => {
 
       const result = await client.optimize(request);
 
-      expect(result.code).toBe('OK');
+      expect(result.code).toBe("OK");
       expect(result.routes).toBeDefined();
     });
   });
 
-  describe('Health Checks', () => {
-    it('should report health status', async () => {
+  describe("Health Checks", () => {
+    it("should report health status", async () => {
       const status = await client.health();
 
       expect(status).toBeDefined();
@@ -572,12 +601,12 @@ describe('ValhallaClient', () => {
       expect(status.timestamp).toBeInstanceOf(Date);
     });
 
-    it('should track metrics', async () => {
+    it("should track metrics", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 1000, time: 60, cost: 100 },
-          shape: 'encoded',
+          shape: "encoded",
           status: 0,
         },
       };
@@ -602,13 +631,13 @@ describe('ValhallaClient', () => {
     });
   });
 
-  describe('Rate Limiting', () => {
-    it('should respect rate limits', async () => {
+  describe("Rate Limiting", () => {
+    it("should respect rate limits", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 1000, time: 60, cost: 100 },
-          shape: 'encoded',
+          shape: "encoded",
           status: 0,
         },
       };
@@ -634,9 +663,9 @@ describe('ValhallaClient', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle network errors', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+  describe("Error Handling", () => {
+    it("should handle network errors", async () => {
+      (global.fetch as any).mockRejectedValueOnce(new Error("Network error"));
 
       const request: RouteRequest = {
         origin: [40.7128, -74.006],
@@ -646,11 +675,11 @@ describe('ValhallaClient', () => {
       await expect(client.route(request)).rejects.toThrow();
     });
 
-    it('should handle JSON parsing errors', async () => {
+    it("should handle JSON parsing errors", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => {
-          throw new Error('Invalid JSON');
+          throw new Error("Invalid JSON");
         },
       });
 
@@ -662,7 +691,7 @@ describe('ValhallaClient', () => {
       await expect(client.route(request)).rejects.toThrow();
     });
 
-    it('should handle missing required fields', async () => {
+    it("should handle missing required fields", async () => {
       const request = {
         origin: [40.7128, -74.006],
         // Missing destination
@@ -672,13 +701,13 @@ describe('ValhallaClient', () => {
     });
   });
 
-  describe('Coordinate Formats', () => {
-    it('should handle [lat, lng] array coordinates', async () => {
+  describe("Coordinate Formats", () => {
+    it("should handle [lat, lng] array coordinates", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 1000, time: 60, cost: 100 },
-          shape: 'encoded',
+          shape: "encoded",
           status: 0,
         },
       };
@@ -697,12 +726,12 @@ describe('ValhallaClient', () => {
       expect(result).toBeDefined();
     });
 
-    it('should handle {lat, lng} object coordinates', async () => {
+    it("should handle {lat, lng} object coordinates", async () => {
       const mockResponse = {
         trip: {
           legs: [],
           summary: { length: 1000, time: 60, cost: 100 },
-          shape: 'encoded',
+          shape: "encoded",
           status: 0,
         },
       };

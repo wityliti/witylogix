@@ -36,9 +36,7 @@ export {
 } from "./use-field-array";
 
 // Real-time WebSocket hooks
-export {
-  useRealtime,
-} from "./use-realtime";
+export { useRealtime } from "./use-realtime";
 
 export {
   useMapTracking,
@@ -66,7 +64,6 @@ export {
   type UseIntegrationStatusConfig,
   type UseIntegrationStatusReturn,
 } from "./use-integration-status";
-
 
 // Financial data hooks
 export {

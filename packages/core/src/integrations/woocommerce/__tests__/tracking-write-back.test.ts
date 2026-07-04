@@ -19,7 +19,9 @@ import type { WooCommerceClient } from "../wc-client.js";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function makeClient(overrides: Partial<Record<string, unknown>> = {}): WooCommerceClient {
+function makeClient(
+  overrides: Partial<Record<string, unknown>> = {},
+): WooCommerceClient {
   return {
     post: vi.fn(),
     put: vi.fn(),
@@ -99,9 +101,15 @@ describe("WCTrackingWritebackService.pushTrackingNumber", () => {
   });
 
   it("falls back to meta_data write when plugin returns 404", async () => {
-    const notFoundError = new Error("WooCommerce API Error [404]: rest_no_route");
-    (client.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(notFoundError);
-    (client.put as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ id: 1001 });
+    const notFoundError = new Error(
+      "WooCommerce API Error [404]: rest_no_route",
+    );
+    (client.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      notFoundError,
+    );
+    (client.put as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: 1001,
+    });
 
     await service.pushTrackingNumber(DEFAULT_PARAMS);
 
@@ -152,9 +160,15 @@ describe("WCTrackingWritebackService.pushTrackingNumber", () => {
   });
 
   it("does NOT retry on 404 (plugin-not-installed is not transient)", async () => {
-    const notFoundError = new Error("WooCommerce API Error [404]: rest_no_route");
-    (client.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(notFoundError);
-    (client.put as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ id: 1001 });
+    const notFoundError = new Error(
+      "WooCommerce API Error [404]: rest_no_route",
+    );
+    (client.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      notFoundError,
+    );
+    (client.put as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: 1001,
+    });
 
     await service.pushTrackingNumber(DEFAULT_PARAMS);
 
@@ -178,14 +192,16 @@ describe("WCTrackingWritebackService.pushDeliveredStatus", () => {
   });
 
   it("updates WC order status to completed", async () => {
-    (client.put as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ id: 1001, status: "completed" });
+    (client.put as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: 1001,
+      status: "completed",
+    });
 
     await service.pushDeliveredStatus(1001);
 
-    expect(client.put).toHaveBeenCalledWith(
-      `/orders/1001`,
-      { status: "completed" },
-    );
+    expect(client.put).toHaveBeenCalledWith(`/orders/1001`, {
+      status: "completed",
+    });
     expect(mockEnqueue).not.toHaveBeenCalled();
   });
 

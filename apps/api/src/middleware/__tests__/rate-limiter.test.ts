@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 /**
  * Rate Limiter Tests
@@ -129,19 +129,19 @@ function createRateLimiter(config: RateLimitConfig) {
       ? Math.floor(bucket.refillTime / 1000)
       : Math.floor((Date.now() + config.windowMs) / 1000);
 
-    reply.header('X-RateLimit-Limit', String(config.maxRequests));
-    reply.header('X-RateLimit-Remaining', String(Math.max(0, remaining)));
-    reply.header('X-RateLimit-Reset', String(resetTime));
+    reply.header("X-RateLimit-Limit", String(config.maxRequests));
+    reply.header("X-RateLimit-Remaining", String(Math.max(0, remaining)));
+    reply.header("X-RateLimit-Reset", String(resetTime));
 
     if (remaining < 0) {
       const retryAfter = Math.ceil((bucket!.refillTime - Date.now()) / 1000);
-      reply.header('Retry-After', String(retryAfter));
-      throw new Error('Rate limit exceeded');
+      reply.header("Retry-After", String(retryAfter));
+      throw new Error("Rate limit exceeded");
     }
   };
 }
 
-describe('RateLimiter', () => {
+describe("RateLimiter", () => {
   let store: TokenBucketStore;
   let mockRequest: MockRequest;
   let mockReply: MockReply;
@@ -154,9 +154,9 @@ describe('RateLimiter', () => {
     store = new TokenBucketStore();
     mockRequest = {
       headers: {},
-      ip: '192.168.1.1',
-      url: '/api/test',
-      method: 'GET',
+      ip: "192.168.1.1",
+      url: "/api/test",
+      method: "GET",
     };
     mockReply = {
       header: vi.fn(),
@@ -164,48 +164,48 @@ describe('RateLimiter', () => {
     };
   });
 
-  describe('Token Bucket Consumption', () => {
-    it('should consume a token on each request', () => {
+  describe("Token Bucket Consumption", () => {
+    it("should consume a token on each request", () => {
       const config: RateLimitConfig = {
         windowMs: 60000,
         maxRequests: 10,
-        keyGenerator: () => 'test_key',
+        keyGenerator: () => "test_key",
       };
 
-      let remaining = store.consume('test_key', config);
+      let remaining = store.consume("test_key", config);
       expect(remaining).toBe(9); // 10 - 1 (first consume) = 9 remaining
 
-      remaining = store.consume('test_key', config);
+      remaining = store.consume("test_key", config);
       expect(remaining).toBe(8);
     });
 
-    it('should return -1 when limit exceeded', () => {
+    it("should return -1 when limit exceeded", () => {
       const config: RateLimitConfig = {
         windowMs: 60000,
         maxRequests: 2,
-        keyGenerator: () => 'test_key',
+        keyGenerator: () => "test_key",
       };
 
-      store.consume('test_key', config);
-      store.consume('test_key', config);
-      const remaining = store.consume('test_key', config);
+      store.consume("test_key", config);
+      store.consume("test_key", config);
+      const remaining = store.consume("test_key", config);
       expect(remaining).toBe(-1);
     });
 
-    it('should refill tokens after window expires', async () => {
+    it("should refill tokens after window expires", async () => {
       const config: RateLimitConfig = {
         windowMs: 100,
         maxRequests: 2,
-        keyGenerator: () => 'test_key',
+        keyGenerator: () => "test_key",
       };
 
-      store.consume('test_key', config);
-      store.consume('test_key', config);
-      expect(store.consume('test_key', config)).toBe(-1);
+      store.consume("test_key", config);
+      store.consume("test_key", config);
+      expect(store.consume("test_key", config)).toBe(-1);
 
       await new Promise<void>((resolve) => {
         setTimeout(() => {
-          const remaining = store.consume('test_key', config);
+          const remaining = store.consume("test_key", config);
           expect(remaining).toBeGreaterThanOrEqual(0);
           store.destroy();
           resolve();
@@ -214,12 +214,12 @@ describe('RateLimiter', () => {
     });
   });
 
-  describe('Rate Limiting Enforcement', () => {
-    it('should allow requests within limit', async () => {
+  describe("Rate Limiting Enforcement", () => {
+    it("should allow requests within limit", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 5,
-        keyGenerator: () => 'user_1',
+        keyGenerator: () => "user_1",
       });
 
       for (let i = 0; i < 5; i++) {
@@ -228,26 +228,26 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should block requests exceeding limit', async () => {
+    it("should block requests exceeding limit", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 2,
-        keyGenerator: () => 'user_1',
+        keyGenerator: () => "user_1",
       });
 
       await limiter(mockRequest, mockReply);
       await limiter(mockRequest, mockReply);
 
       await expect(limiter(mockRequest, mockReply)).rejects.toThrow(
-        'Rate limit exceeded'
+        "Rate limit exceeded",
       );
     });
 
-    it('should return 429 on rate limit exceeded', async () => {
+    it("should return 429 on rate limit exceeded", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
-        keyGenerator: () => 'user_1',
+        keyGenerator: () => "user_1",
       });
 
       await limiter(mockRequest, mockReply);
@@ -255,54 +255,51 @@ describe('RateLimiter', () => {
     });
   });
 
-  describe('Response Headers', () => {
-    it('should set X-RateLimit-Limit header', async () => {
+  describe("Response Headers", () => {
+    it("should set X-RateLimit-Limit header", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 100,
-        keyGenerator: () => 'user_1',
+        keyGenerator: () => "user_1",
       });
 
       await limiter(mockRequest, mockReply);
-      expect(mockReply.header).toHaveBeenCalledWith(
-        'X-RateLimit-Limit',
-        '100'
-      );
+      expect(mockReply.header).toHaveBeenCalledWith("X-RateLimit-Limit", "100");
     });
 
-    it('should set X-RateLimit-Remaining header', async () => {
+    it("should set X-RateLimit-Remaining header", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 10,
-        keyGenerator: () => 'user_1',
+        keyGenerator: () => "user_1",
       });
 
       await limiter(mockRequest, mockReply);
       expect(mockReply.header).toHaveBeenCalledWith(
-        'X-RateLimit-Remaining',
-        expect.stringMatching(/^\d+$/)
+        "X-RateLimit-Remaining",
+        expect.stringMatching(/^\d+$/),
       );
     });
 
-    it('should set X-RateLimit-Reset header', async () => {
+    it("should set X-RateLimit-Reset header", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 10,
-        keyGenerator: () => 'user_1',
+        keyGenerator: () => "user_1",
       });
 
       await limiter(mockRequest, mockReply);
       expect(mockReply.header).toHaveBeenCalledWith(
-        'X-RateLimit-Reset',
-        expect.stringMatching(/^\d+$/)
+        "X-RateLimit-Reset",
+        expect.stringMatching(/^\d+$/),
       );
     });
 
-    it('should set Retry-After header when limit exceeded', async () => {
+    it("should set Retry-After header when limit exceeded", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
-        keyGenerator: () => 'user_1',
+        keyGenerator: () => "user_1",
       });
 
       await limiter(mockRequest, mockReply);
@@ -312,14 +309,14 @@ describe('RateLimiter', () => {
         // Expected
       }
       expect(mockReply.header).toHaveBeenCalledWith(
-        'Retry-After',
-        expect.stringMatching(/^\d+$/)
+        "Retry-After",
+        expect.stringMatching(/^\d+$/),
       );
     });
   });
 
-  describe('Different Tiers', () => {
-    it('should enforce public tier rate limiting', async () => {
+  describe("Different Tiers", () => {
+    it("should enforce public tier rate limiting", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 100,
@@ -333,7 +330,7 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should enforce auth tier rate limiting', async () => {
+    it("should enforce auth tier rate limiting", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1000,
@@ -343,7 +340,7 @@ describe('RateLimiter', () => {
         },
       });
 
-      mockRequest.auth = { shopId: 'shop_123' };
+      mockRequest.auth = { shopId: "shop_123" };
       // Should allow 1000 requests per minute for authenticated
       for (let i = 0; i < 100; i++) {
         await limiter(mockRequest, mockReply);
@@ -351,12 +348,12 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should enforce premium tier rate limiting', async () => {
+    it("should enforce premium tier rate limiting", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 10000,
         keyGenerator: (req: MockRequest) => {
-          const apiKey = (req.headers['x-api-key'] as string) || '';
+          const apiKey = (req.headers["x-api-key"] as string) || "";
           if (apiKey) {
             return `premium:${apiKey}`;
           }
@@ -364,7 +361,7 @@ describe('RateLimiter', () => {
         },
       });
 
-      mockRequest.headers['x-api-key'] = 'api_key_xyz';
+      mockRequest.headers["x-api-key"] = "api_key_xyz";
       // Should allow 10000 requests per minute for premium
       for (let i = 0; i < 100; i++) {
         await limiter(mockRequest, mockReply);
@@ -373,12 +370,12 @@ describe('RateLimiter', () => {
     });
   });
 
-  describe('Sliding Window', () => {
-    it('should implement sliding window correctly', async () => {
+  describe("Sliding Window", () => {
+    it("should implement sliding window correctly", async () => {
       const limiter = createRateLimiter({
         windowMs: 100,
         maxRequests: 3,
-        keyGenerator: () => 'sliding_test',
+        keyGenerator: () => "sliding_test",
       });
 
       // Make 3 requests in first 100ms
@@ -400,8 +397,8 @@ describe('RateLimiter', () => {
     });
   });
 
-  describe('Key Generation', () => {
-    it('should generate key by IP address', async () => {
+  describe("Key Generation", () => {
+    it("should generate key by IP address", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 5,
@@ -412,7 +409,7 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should generate key by tenant/shopId', async () => {
+    it("should generate key by tenant/shopId", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1000,
@@ -422,27 +419,27 @@ describe('RateLimiter', () => {
         },
       });
 
-      mockRequest.auth = { shopId: 'shop_abc' };
+      mockRequest.auth = { shopId: "shop_abc" };
       await limiter(mockRequest, mockReply);
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should generate key by API key', async () => {
+    it("should generate key by API key", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 10000,
         keyGenerator: (req: MockRequest) => {
-          const apiKey = (req.headers['x-api-key'] as string) || '';
+          const apiKey = (req.headers["x-api-key"] as string) || "";
           return `api:${apiKey}`;
         },
       });
 
-      mockRequest.headers['x-api-key'] = 'sk_live_123456';
+      mockRequest.headers["x-api-key"] = "sk_live_123456";
       await limiter(mockRequest, mockReply);
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should fallback to IP when no auth available', async () => {
+    it("should fallback to IP when no auth available", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 100,
@@ -458,74 +455,76 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should handle X-Forwarded-For header', async () => {
+    it("should handle X-Forwarded-For header", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 100,
         keyGenerator: (req: MockRequest) => {
-          const forwarded = req.headers['x-forwarded-for'];
-          const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded || req.ip;
+          const forwarded = req.headers["x-forwarded-for"];
+          const ip = Array.isArray(forwarded)
+            ? forwarded[0]
+            : forwarded || req.ip;
           return `ip:${ip}`;
         },
       });
 
-      mockRequest.headers['x-forwarded-for'] = '203.0.113.42';
+      mockRequest.headers["x-forwarded-for"] = "203.0.113.42";
       await limiter(mockRequest, mockReply);
       expect(mockReply.header).toHaveBeenCalled();
     });
   });
 
-  describe('Skip Conditions', () => {
-    it('should skip rate limiting for health checks', async () => {
+  describe("Skip Conditions", () => {
+    it("should skip rate limiting for health checks", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
-        keyGenerator: () => 'test',
-        skip: (req: MockRequest) => req.url.startsWith('/health'),
+        keyGenerator: () => "test",
+        skip: (req: MockRequest) => req.url.startsWith("/health"),
       });
 
-      mockRequest.url = '/health';
+      mockRequest.url = "/health";
       // Should not throw even though limit is 1
       await limiter(mockRequest, mockReply);
       await limiter(mockRequest, mockReply);
       expect(mockReply.header).not.toHaveBeenCalled();
     });
 
-    it('should skip rate limiting for OPTIONS requests', async () => {
+    it("should skip rate limiting for OPTIONS requests", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
-        keyGenerator: () => 'test',
-        skip: (req: MockRequest) => req.method === 'OPTIONS',
+        keyGenerator: () => "test",
+        skip: (req: MockRequest) => req.method === "OPTIONS",
       });
 
-      mockRequest.method = 'OPTIONS';
+      mockRequest.method = "OPTIONS";
       await limiter(mockRequest, mockReply);
       await limiter(mockRequest, mockReply);
       expect(mockReply.header).not.toHaveBeenCalled();
     });
 
-    it('should not skip when skip returns false', async () => {
+    it("should not skip when skip returns false", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
-        keyGenerator: () => 'test',
-        skip: (req: MockRequest) => req.url === '/skip-me',
+        keyGenerator: () => "test",
+        skip: (req: MockRequest) => req.url === "/skip-me",
       });
 
-      mockRequest.url = '/api/endpoint';
+      mockRequest.url = "/api/endpoint";
       await limiter(mockRequest, mockReply);
       await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
     });
   });
 
-  describe('Error Handling', () => {
-    it('should skip on error by default', async () => {
+  describe("Error Handling", () => {
+    it("should skip on error by default", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
         keyGenerator: (req: MockRequest) => {
-          throw new Error('Key generation failed');
+          throw new Error("Key generation failed");
         },
         skipOnError: true,
       });
@@ -534,28 +533,28 @@ describe('RateLimiter', () => {
       await limiter(mockRequest, mockReply);
     });
 
-    it('should throw on error if skipOnError is false', async () => {
+    it("should throw on error if skipOnError is false", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
         keyGenerator: (req: MockRequest) => {
-          throw new Error('Key generation failed');
+          throw new Error("Key generation failed");
         },
         skipOnError: false,
       });
 
       await expect(limiter(mockRequest, mockReply)).rejects.toThrow(
-        'Key generation failed'
+        "Key generation failed",
       );
     });
   });
 
-  describe('Concurrent Requests', () => {
-    it('should handle multiple concurrent requests correctly', async () => {
+  describe("Concurrent Requests", () => {
+    it("should handle multiple concurrent requests correctly", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 5,
-        keyGenerator: () => 'concurrent_test',
+        keyGenerator: () => "concurrent_test",
       });
 
       const promises = [];
@@ -570,7 +569,7 @@ describe('RateLimiter', () => {
       await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
     });
 
-    it('should isolate limits between different keys', async () => {
+    it("should isolate limits between different keys", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 2,
@@ -578,35 +577,35 @@ describe('RateLimiter', () => {
       });
 
       // First user hits limit
-      mockRequest.ip = '192.168.1.1';
+      mockRequest.ip = "192.168.1.1";
       await limiter(mockRequest, mockReply);
       await limiter(mockRequest, mockReply);
       await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
 
       // Second user should not be affected
-      mockRequest.ip = '192.168.1.2';
+      mockRequest.ip = "192.168.1.2";
       await limiter(mockRequest, mockReply);
       await limiter(mockRequest, mockReply);
       await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle zero max requests', async () => {
+  describe("Edge Cases", () => {
+    it("should handle zero max requests", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 0,
-        keyGenerator: () => 'zero_test',
+        keyGenerator: () => "zero_test",
       });
 
       await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
     });
 
-    it('should handle very large max requests', async () => {
+    it("should handle very large max requests", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1000000,
-        keyGenerator: () => 'large_test',
+        keyGenerator: () => "large_test",
       });
 
       for (let i = 0; i < 100; i++) {
@@ -615,11 +614,11 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should handle very short window', async () => {
+    it("should handle very short window", async () => {
       const limiter = createRateLimiter({
         windowMs: 10,
         maxRequests: 1,
-        keyGenerator: () => 'short_window',
+        keyGenerator: () => "short_window",
       });
 
       await limiter(mockRequest, mockReply);
@@ -632,29 +631,29 @@ describe('RateLimiter', () => {
     });
   });
 
-  describe('Remaining Token Calculation', () => {
-    it('should correctly calculate remaining tokens', async () => {
+  describe("Remaining Token Calculation", () => {
+    it("should correctly calculate remaining tokens", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 10,
-        keyGenerator: () => 'remaining_test',
+        keyGenerator: () => "remaining_test",
       });
 
       const headerCalls = (mockReply.header as any).mock.calls;
       await limiter(mockRequest, mockReply);
 
       const remainingCall = headerCalls.find(
-        (call: any[]) => call[0] === 'X-RateLimit-Remaining'
+        (call: any[]) => call[0] === "X-RateLimit-Remaining",
       );
       expect(parseInt(remainingCall[1])).toBeLessThan(10);
       expect(parseInt(remainingCall[1])).toBeGreaterThanOrEqual(0);
     });
 
-    it('should show zero remaining when limit reached', async () => {
+    it("should show zero remaining when limit reached", async () => {
       const limiter = createRateLimiter({
         windowMs: 60000,
         maxRequests: 1,
-        keyGenerator: () => 'zero_remaining_test',
+        keyGenerator: () => "zero_remaining_test",
       });
 
       await limiter(mockRequest, mockReply);
@@ -667,7 +666,7 @@ describe('RateLimiter', () => {
 
       const headerCalls = (mockReply.header as any).mock.calls;
       const remainingCall = headerCalls.find(
-        (call: any[]) => call[0] === 'X-RateLimit-Remaining'
+        (call: any[]) => call[0] === "X-RateLimit-Remaining",
       );
       expect(remainingCall).toBeDefined();
     });

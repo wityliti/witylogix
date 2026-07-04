@@ -24,6 +24,7 @@ curl -X POST https://api.witylogix.com/api/v4/webhooks \
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -43,37 +44,37 @@ curl -X POST https://api.witylogix.com/api/v4/webhooks \
 Every webhook includes an HMAC-SHA256 signature. Verify it to ensure authenticity:
 
 ```typescript
-import crypto from 'crypto';
+import crypto from "crypto";
 
 function verifyWebhookSignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   const expectedSignature = crypto
-    .createHmac('sha256', secret)
+    .createHmac("sha256", secret)
     .update(payload)
-    .digest('hex');
+    .digest("hex");
 
   return crypto.timingSafeEqual(
     Buffer.from(signature),
-    Buffer.from(expectedSignature)
+    Buffer.from(expectedSignature),
   );
 }
 
 // In your Express webhook handler
-app.post('/webhooks/witylogix', (req, res) => {
+app.post("/webhooks/witylogix", (req, res) => {
   const payload = req.rawBody; // Raw body (string)
-  const signature = req.headers['x-witylogix-signature'] as string;
+  const signature = req.headers["x-witylogix-signature"] as string;
   const secret = process.env.WITYLOGIX_WEBHOOK_SECRET;
 
   if (!verifyWebhookSignature(payload, signature, secret)) {
-    return res.status(401).send('Unauthorized');
+    return res.status(401).send("Unauthorized");
   }
 
   const event = JSON.parse(payload);
   // Process event
-  res.status(200).send('OK');
+  res.status(200).send("OK");
 });
 ```
 
@@ -82,18 +83,18 @@ app.post('/webhooks/witylogix', (req, res) => {
 Process incoming webhook events:
 
 ```typescript
-app.post('/webhooks/witylogix', async (req, res) => {
+app.post("/webhooks/witylogix", async (req, res) => {
   const event = req.body;
 
   try {
     switch (event.type) {
-      case 'order.created':
+      case "order.created":
         await handleOrderCreated(event.data);
         break;
-      case 'order.status_changed':
+      case "order.status_changed":
         await handleOrderStatusChanged(event.data);
         break;
-      case 'delivery.completed':
+      case "delivery.completed":
         await handleDeliveryCompleted(event.data);
         break;
       default:
@@ -101,11 +102,11 @@ app.post('/webhooks/witylogix', async (req, res) => {
     }
 
     // Always return 200 OK quickly
-    res.status(200).send('OK');
+    res.status(200).send("OK");
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    console.error("Webhook processing error:", error);
     // Return 5xx to trigger retry
-    res.status(500).send('Error');
+    res.status(500).send("Error");
   }
 });
 ```
@@ -115,6 +116,7 @@ app.post('/webhooks/witylogix', async (req, res) => {
 ### Order Events
 
 #### `order.created`
+
 Triggered when a new order is created.
 
 ```json
@@ -142,6 +144,7 @@ Triggered when a new order is created.
 ```
 
 #### `order.status_changed`
+
 Triggered when order status transitions.
 
 ```json
@@ -160,6 +163,7 @@ Triggered when order status transitions.
 ```
 
 #### `order.assigned`
+
 Triggered when order is assigned to a driver.
 
 ```json
@@ -177,6 +181,7 @@ Triggered when order is assigned to a driver.
 ### Delivery Events
 
 #### `delivery.completed`
+
 Triggered when delivery is successfully completed.
 
 ```json
@@ -188,15 +193,14 @@ Triggered when delivery is successfully completed.
     "completedAt": "2025-03-16T11:45:00Z",
     "proofOfDelivery": {
       "signatureUrl": "https://storage.witylogix.com/signatures/sig_123.png",
-      "photoUrls": [
-        "https://storage.witylogix.com/photos/photo_123.jpg"
-      ]
+      "photoUrls": ["https://storage.witylogix.com/photos/photo_123.jpg"]
     }
   }
 }
 ```
 
 #### `delivery.failed`
+
 Triggered when delivery attempt fails.
 
 ```json
@@ -216,6 +220,7 @@ Triggered when delivery attempt fails.
 ### Driver Events
 
 #### `driver.location_updated`
+
 Triggered when driver location is updated (real-time tracking).
 
 ```json
@@ -234,6 +239,7 @@ Triggered when driver location is updated (real-time tracking).
 ### Route Events
 
 #### `route.optimized`
+
 Triggered when route optimization completes.
 
 ```json
@@ -262,6 +268,7 @@ Triggered when route optimization completes.
 ### Integration Events
 
 #### `integration.error`
+
 Triggered when integration encounters an error.
 
 ```json
@@ -285,11 +292,11 @@ All webhooks follow this format:
 
 ```typescript
 interface WebhookEvent {
-  id: string;           // Unique event ID
-  type: string;         // Event type (e.g., "order.created")
-  createdAt: string;    // ISO 8601 timestamp
+  id: string; // Unique event ID
+  type: string; // Event type (e.g., "order.created")
+  createdAt: string; // ISO 8601 timestamp
   data: Record<string, any>; // Event-specific data
-  attempt: number;      // Delivery attempt (1 for first)
+  attempt: number; // Delivery attempt (1 for first)
 }
 ```
 
@@ -297,23 +304,25 @@ interface WebhookEvent {
 
 Failed deliveries are automatically retried with exponential backoff:
 
-| Attempt | Delay | Total Wait |
-|---------|-------|-----------|
-| 1 | Immediate | - |
-| 2 | 5 minutes | 5m |
-| 3 | 25 minutes | 30m |
-| 4 | 2 hours | 2.5h |
-| 5 | 8 hours | 10.5h |
-| 6 | 24 hours | 34.5h |
+| Attempt | Delay      | Total Wait |
+| ------- | ---------- | ---------- |
+| 1       | Immediate  | -          |
+| 2       | 5 minutes  | 5m         |
+| 3       | 25 minutes | 30m        |
+| 4       | 2 hours    | 2.5h       |
+| 5       | 8 hours    | 10.5h      |
+| 6       | 24 hours   | 34.5h      |
 
 ### Retry Conditions
 
 Webhooks are retried for:
+
 - Network timeouts
 - HTTP 5xx responses
 - Request takes > 30 seconds
 
 Webhooks are NOT retried for:
+
 - HTTP 2xx responses (success)
 - HTTP 4xx responses (client error)
 - Invalid endpoint URL
@@ -334,12 +343,12 @@ Webhook events are delivered at least once. Handle duplicate events by checking 
 ```typescript
 const processedEvents = new Set<string>();
 
-app.post('/webhooks/witylogix', async (req, res) => {
+app.post("/webhooks/witylogix", async (req, res) => {
   const event = req.body;
 
   // Skip if already processed
   if (processedEvents.has(event.id)) {
-    return res.status(200).send('OK');
+    return res.status(200).send("OK");
   }
 
   // Process event
@@ -348,33 +357,33 @@ app.post('/webhooks/witylogix', async (req, res) => {
   // Mark as processed
   processedEvents.add(event.id);
 
-  res.status(200).send('OK');
+  res.status(200).send("OK");
 });
 ```
 
 Or use a database:
 
 ```typescript
-app.post('/webhooks/witylogix', async (req, res) => {
+app.post("/webhooks/witylogix", async (req, res) => {
   const event = req.body;
 
   // Check if already processed
   const existing = await db.webhookEvents.findUnique({
-    where: { id: event.id }
+    where: { id: event.id },
   });
 
   if (existing) {
-    return res.status(200).send('OK');
+    return res.status(200).send("OK");
   }
 
   // Process and record
   try {
     await handleEvent(event);
     await db.webhookEvents.create({ data: event });
-    res.status(200).send('OK');
+    res.status(200).send("OK");
   } catch (error) {
     // Return 5xx to trigger retry (won't create record)
-    res.status(500).send('Error');
+    res.status(500).send("Error");
   }
 });
 ```
@@ -390,6 +399,7 @@ curl https://api.witylogix.com/api/v4/webhooks/dlq \
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -471,22 +481,19 @@ curl https://api.witylogix.com/api/v4/webhooks/{endpointId}/deliveries \
 Always verify webhook signatures:
 
 ```typescript
-import crypto from 'crypto';
+import crypto from "crypto";
 
 function isValidWebhook(
   rawBody: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   const hash = crypto
-    .createHmac('sha256', secret)
+    .createHmac("sha256", secret)
     .update(rawBody)
-    .digest('hex');
+    .digest("hex");
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(hash)
-  );
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hash));
 }
 ```
 
@@ -505,30 +512,30 @@ function isValidWebhook(
 Complete Node.js webhook handler:
 
 ```typescript
-import express from 'express';
-import crypto from 'crypto';
+import express from "express";
+import crypto from "crypto";
 
 const app = express();
 
 // Middleware to capture raw body
-app.use(express.raw({ type: 'application/json' }));
+app.use(express.raw({ type: "application/json" }));
 
 // Store for processed event IDs
 const processedIds = new Set<string>();
 
-app.post('/webhooks/witylogix', async (req, res) => {
-  const signature = req.headers['x-witylogix-signature'] as string;
+app.post("/webhooks/witylogix", async (req, res) => {
+  const signature = req.headers["x-witylogix-signature"] as string;
   const rawBody = req.body.toString();
   const secret = process.env.WITYLOGIX_SECRET!;
 
   // 1. Verify signature
   const hash = crypto
-    .createHmac('sha256', secret)
+    .createHmac("sha256", secret)
     .update(rawBody)
-    .digest('hex');
+    .digest("hex");
 
   if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hash))) {
-    return res.status(401).json({ error: 'Invalid signature' });
+    return res.status(401).json({ error: "Invalid signature" });
   }
 
   // 2. Parse event
@@ -536,7 +543,7 @@ app.post('/webhooks/witylogix', async (req, res) => {
 
   // 3. Prevent duplicate processing
   if (processedIds.has(event.id)) {
-    return res.status(200).json({ status: 'ok' });
+    return res.status(200).json({ status: "ok" });
   }
 
   try {
@@ -544,25 +551,25 @@ app.post('/webhooks/witylogix', async (req, res) => {
     setImmediate(() => handleEvent(event).catch(console.error));
 
     // 5. Return immediately
-    res.status(200).json({ status: 'ok' });
+    res.status(200).json({ status: "ok" });
 
     // 6. Mark as processed
     processedIds.add(event.id);
   } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: 'Internal error' });
+    console.error("Webhook error:", error);
+    res.status(500).json({ error: "Internal error" });
   }
 });
 
 async function handleEvent(event: any) {
   switch (event.type) {
-    case 'order.created':
+    case "order.created":
       await handleOrderCreated(event.data);
       break;
-    case 'order.status_changed':
+    case "order.status_changed":
       await handleOrderStatusChanged(event.data);
       break;
-    case 'delivery.completed':
+    case "delivery.completed":
       await handleDeliveryCompleted(event.data);
       break;
     // ... other event types
@@ -570,20 +577,20 @@ async function handleEvent(event: any) {
 }
 
 async function handleOrderCreated(data: any) {
-  console.log('New order:', data);
+  console.log("New order:", data);
   // Update your database, send notification, etc.
 }
 
 async function handleOrderStatusChanged(data: any) {
-  console.log('Order status updated:', data);
+  console.log("Order status updated:", data);
 }
 
 async function handleDeliveryCompleted(data: any) {
-  console.log('Delivery completed:', data);
+  console.log("Delivery completed:", data);
 }
 
 app.listen(3000, () => {
-  console.log('Webhook server running on :3000');
+  console.log("Webhook server running on :3000");
 });
 ```
 

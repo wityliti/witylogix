@@ -16,14 +16,18 @@ export function DiagnosticAlertsPanel({
   maxHeight = 400,
   className,
 }: DiagnosticAlertsPanelProps) {
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Filter alerts by severity
   const filteredAlerts = useMemo(() => {
-    return alerts.filter((alert) => {
-      if (filterBySeverity === "all") return true;
-      return alert.severity === filterBySeverity;
-    }).filter((alert) => !dismissedAlerts.has(alert.id) && !alert.dismissed);
+    return alerts
+      .filter((alert) => {
+        if (filterBySeverity === "all") return true;
+        return alert.severity === filterBySeverity;
+      })
+      .filter((alert) => !dismissedAlerts.has(alert.id) && !alert.dismissed);
   }, [alerts, filterBySeverity, dismissedAlerts]);
 
   // Count alerts by severity
@@ -80,7 +84,7 @@ export function DiagnosticAlertsPanel({
   };
 
   const getSeverityBadgeVariant = (
-    severity: string
+    severity: string,
   ): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
     switch (severity) {
       case "critical":
@@ -111,7 +115,7 @@ export function DiagnosticAlertsPanel({
     <div
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-default rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -141,10 +145,7 @@ export function DiagnosticAlertsPanel({
       </div>
 
       {/* Alerts list */}
-      <div
-        className="overflow-y-auto flex-1"
-        style={{ maxHeight }}
-      >
+      <div className="overflow-y-auto flex-1" style={{ maxHeight }}>
         {filteredAlerts.length > 0 ? (
           <div className="divide-y divide-wl-border-default">
             {filteredAlerts.map((alert) => (
@@ -154,7 +155,12 @@ export function DiagnosticAlertsPanel({
               >
                 <div className="flex gap-3">
                   {/* Severity icon */}
-                  <div className={cn("flex-shrink-0 mt-0.5", getSeverityColor(alert.severity))}>
+                  <div
+                    className={cn(
+                      "flex-shrink-0 mt-0.5",
+                      getSeverityColor(alert.severity),
+                    )}
+                  >
                     {getSeverityIcon(alert.severity)}
                   </div>
 
@@ -175,7 +181,9 @@ export function DiagnosticAlertsPanel({
 
                     <div className="flex items-center justify-between gap-2 text-xs">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <Badge variant={getSeverityBadgeVariant(alert.severity)}>
+                        <Badge
+                          variant={getSeverityBadgeVariant(alert.severity)}
+                        >
                           {alert.severity}
                         </Badge>
                         <span className="text-wl-text-secondary truncate">
@@ -216,7 +224,9 @@ export function DiagnosticAlertsPanel({
       {/* Footer */}
       {totalCount > 0 && (
         <div className="border-t border-wl-border-default px-4 py-2 bg-wl-bg-elevated text-xs text-wl-text-secondary flex justify-between">
-          <span>{filteredAlerts.length} of {totalCount} alerts visible</span>
+          <span>
+            {filteredAlerts.length} of {totalCount} alerts visible
+          </span>
           {dismissedAlerts.size > 0 && (
             <button
               onClick={() => setDismissedAlerts(new Set())}

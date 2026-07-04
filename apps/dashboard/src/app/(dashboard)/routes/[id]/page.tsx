@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   ArrowLeft,
   MapPin,
@@ -18,23 +18,38 @@ import {
   PauseCircle,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { cn } from '@/lib/utils';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { WLMap } from '@/components/map/wl-map';
-import { RoutePolylineLayer } from '@/components/map/route-polyline-layer';
-import { RouteStopMarkersLayer, type StopMarker } from '@/components/map/route-stop-markers-layer';
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { cn } from "@/lib/utils";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { WLMap } from "@/components/map/wl-map";
+import { RoutePolylineLayer } from "@/components/map/route-polyline-layer";
+import {
+  RouteStopMarkersLayer,
+  type StopMarker,
+} from "@/components/map/route-stop-markers-layer";
 
 // ─── Types ────────────────────────────────────────────────────
 
-type RouteStatus = 'DRAFT' | 'OPTIMIZED' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-type StopStatus = 'PENDING' | 'EN_ROUTE' | 'ARRIVED' | 'COMPLETED' | 'SKIPPED' | 'FAILED';
-type StopType = 'PICKUP' | 'DELIVERY' | 'RETURN' | 'DEPOT';
+type RouteStatus =
+  | "DRAFT"
+  | "OPTIMIZED"
+  | "ASSIGNED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED";
+type StopStatus =
+  | "PENDING"
+  | "EN_ROUTE"
+  | "ARRIVED"
+  | "COMPLETED"
+  | "SKIPPED"
+  | "FAILED";
+type StopType = "PICKUP" | "DELIVERY" | "RETURN" | "DEPOT";
 
 interface EnrichedStop {
   id: string;
@@ -82,22 +97,28 @@ interface RouteDetail {
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-const STATUS_BADGE: Record<RouteStatus, 'default' | 'info' | 'success' | 'warning' | 'danger' | 'primary'> = {
-  DRAFT: 'default',
-  OPTIMIZED: 'info',
-  ASSIGNED: 'primary',
-  IN_PROGRESS: 'warning',
-  COMPLETED: 'success',
-  CANCELLED: 'danger',
+const STATUS_BADGE: Record<
+  RouteStatus,
+  "default" | "info" | "success" | "warning" | "danger" | "primary"
+> = {
+  DRAFT: "default",
+  OPTIMIZED: "info",
+  ASSIGNED: "primary",
+  IN_PROGRESS: "warning",
+  COMPLETED: "success",
+  CANCELLED: "danger",
 };
 
-const STOP_STATUS_BADGE: Record<StopStatus, 'default' | 'info' | 'success' | 'warning' | 'danger'> = {
-  PENDING: 'default',
-  EN_ROUTE: 'info',
-  ARRIVED: 'primary' as 'info',
-  COMPLETED: 'success',
-  SKIPPED: 'warning',
-  FAILED: 'danger',
+const STOP_STATUS_BADGE: Record<
+  StopStatus,
+  "default" | "info" | "success" | "warning" | "danger"
+> = {
+  PENDING: "default",
+  EN_ROUTE: "info",
+  ARRIVED: "primary" as "info",
+  COMPLETED: "success",
+  SKIPPED: "warning",
+  FAILED: "danger",
 };
 
 const STOP_STATUS_ICON: Record<StopStatus, React.ReactNode> = {
@@ -110,8 +131,12 @@ const STOP_STATUS_ICON: Record<StopStatus, React.ReactNode> = {
 };
 
 function formatTime(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  if (!iso) return "—";
+  return new Date(iso).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 function formatDuration(minutes: number): string {
@@ -144,7 +169,10 @@ function RouteDetailSkeleton() {
       </div>
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
+          <div
+            key={i}
+            className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4"
+          >
             <Skeleton className="w-24 h-3 rounded mb-2" />
             <Skeleton className="w-16 h-8 rounded" />
           </div>
@@ -171,26 +199,32 @@ interface StopListItemProps {
   onStatusUpdated: () => void;
 }
 
-function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: StopListItemProps) {
+function StopListItem({
+  stop,
+  isSelected,
+  onSelect,
+  routeId,
+  onStatusUpdated,
+}: StopListItemProps) {
   const [expanded, setExpanded] = useState(false);
   const { execute: updateStop, loading } = useApiMutation<EnrichedStop>(
-    'PATCH',
+    "PATCH",
     `/api/v4/routes/${routeId}/stops/${stop.id}`,
   );
 
   const handleMarkCompleted = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    await updateStop({ status: 'COMPLETED' });
+    await updateStop({ status: "COMPLETED" });
     onStatusUpdated();
   };
 
   return (
     <div
       className={cn(
-        'rounded-lg border transition-all cursor-pointer',
+        "rounded-lg border transition-all cursor-pointer",
         isSelected
-          ? 'border-blue-500 bg-blue-500/5'
-          : 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong',
+          ? "border-blue-500 bg-blue-500/5"
+          : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong",
       )}
       onClick={onSelect}
     >
@@ -198,17 +232,17 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
         {/* Sequence Number */}
         <div
           className={cn(
-            'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0',
-            stop.status === 'COMPLETED'
-              ? 'bg-emerald-500 text-white'
-              : stop.status === 'FAILED'
-                ? 'bg-red-500 text-white'
-                : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-wl-bg-overlay text-wl-neutral-300',
+            "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0",
+            stop.status === "COMPLETED"
+              ? "bg-emerald-500 text-white"
+              : stop.status === "FAILED"
+                ? "bg-red-500 text-white"
+                : stop.status === "EN_ROUTE" || stop.status === "ARRIVED"
+                  ? "bg-blue-500 text-white"
+                  : "bg-wl-bg-overlay text-wl-neutral-300",
           )}
         >
-          {stop.status === 'COMPLETED' ? (
+          {stop.status === "COMPLETED" ? (
             <CheckCircle2 className="w-3.5 h-3.5" />
           ) : (
             stop.sequence + 1
@@ -224,15 +258,22 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
             <div className="flex-shrink-0">{STOP_STATUS_ICON[stop.status]}</div>
           </div>
           {stop.address && (
-            <p className="text-xs text-wl-text-secondary truncate">{stop.address}</p>
+            <p className="text-xs text-wl-text-secondary truncate">
+              {stop.address}
+            </p>
           )}
         </div>
 
         {/* ETA */}
         <div className="text-right flex-shrink-0">
-          <div className="text-xs text-wl-text-secondary">{formatTime(stop.estimatedArrival)}</div>
-          <Badge variant={STOP_STATUS_BADGE[stop.status]} className="text-xs mt-1">
-            {stop.status.replace('_', ' ')}
+          <div className="text-xs text-wl-text-secondary">
+            {formatTime(stop.estimatedArrival)}
+          </div>
+          <Badge
+            variant={STOP_STATUS_BADGE[stop.status]}
+            className="text-xs mt-1"
+          >
+            {stop.status.replace("_", " ")}
           </Badge>
         </div>
 
@@ -244,7 +285,11 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
             setExpanded((v) => !v);
           }}
         >
-          {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {expanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
         </button>
       </div>
 
@@ -254,29 +299,36 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
           <div className="grid grid-cols-2 gap-2 text-xs text-wl-text-secondary mb-2">
             {stop.timeWindowStart && (
               <div>
-                <span className="text-wl-text-tertiary">Window:</span>{' '}
-                {formatTime(stop.timeWindowStart)} – {formatTime(stop.timeWindowEnd)}
+                <span className="text-wl-text-tertiary">Window:</span>{" "}
+                {formatTime(stop.timeWindowStart)} –{" "}
+                {formatTime(stop.timeWindowEnd)}
               </div>
             )}
             {stop.actualArrival && (
               <div>
-                <span className="text-wl-text-tertiary">Arrived:</span>{' '}
+                <span className="text-wl-text-tertiary">Arrived:</span>{" "}
                 {formatTime(stop.actualArrival)}
               </div>
             )}
             {stop.orderNumber && (
               <div>
-                <span className="text-wl-text-tertiary">Order:</span> #{stop.orderNumber}
+                <span className="text-wl-text-tertiary">Order:</span> #
+                {stop.orderNumber}
               </div>
             )}
             <div>
-              <span className="text-wl-text-tertiary">Type:</span> {stop.stopType}
+              <span className="text-wl-text-tertiary">Type:</span>{" "}
+              {stop.stopType}
             </div>
           </div>
           {stop.notes && (
-            <p className="text-xs text-wl-text-secondary italic mb-2">{stop.notes}</p>
+            <p className="text-xs text-wl-text-secondary italic mb-2">
+              {stop.notes}
+            </p>
           )}
-          {stop.status === 'PENDING' || stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED' ? (
+          {stop.status === "PENDING" ||
+          stop.status === "EN_ROUTE" ||
+          stop.status === "ARRIVED" ? (
             <Button
               variant="primary"
               size="sm"
@@ -285,7 +337,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
               disabled={loading}
             >
               <CheckCircle2 className="w-3 h-3" />
-              {loading ? 'Updating...' : 'Mark Completed'}
+              {loading ? "Updating..." : "Mark Completed"}
             </Button>
           ) : null}
         </div>
@@ -301,14 +353,15 @@ export default function RouteDetailPage() {
   const router = useRouter();
   const id = params.id as string;
 
-  const { data: route, loading, error, refetch } = useApiQuery<RouteDetail>(
-    id ? `/api/v4/routes/${id}` : null,
-  );
+  const {
+    data: route,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<RouteDetail>(id ? `/api/v4/routes/${id}` : null);
 
-  const { execute: updateStatus, loading: statusLoading } = useApiMutation<RouteDetail>(
-    'PATCH',
-    `/api/v4/routes/${id}/status`,
-  );
+  const { execute: updateStatus, loading: statusLoading } =
+    useApiMutation<RouteDetail>("PATCH", `/api/v4/routes/${id}/status`);
 
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
 
@@ -336,8 +389,10 @@ export default function RouteDetailPage() {
 
   const mapCenter = useMemo<[number, number]>(() => {
     if (stopMarkers.length > 0) {
-      const avgLng = stopMarkers.reduce((s, m) => s + m.lng, 0) / stopMarkers.length;
-      const avgLat = stopMarkers.reduce((s, m) => s + m.lat, 0) / stopMarkers.length;
+      const avgLng =
+        stopMarkers.reduce((s, m) => s + m.lng, 0) / stopMarkers.length;
+      const avgLat =
+        stopMarkers.reduce((s, m) => s + m.lat, 0) / stopMarkers.length;
       return [avgLng, avgLat];
     }
     return DEFAULT_CENTER;
@@ -359,17 +414,20 @@ export default function RouteDetailPage() {
       </div>
     );
 
-  const completedStops = route.stops.filter((s) => s.status === 'COMPLETED').length;
+  const completedStops = route.stops.filter(
+    (s) => s.status === "COMPLETED",
+  ).length;
   const totalStops = route.stops.length;
-  const progressPct = totalStops > 0 ? Math.round((completedStops / totalStops) * 100) : 0;
+  const progressPct =
+    totalStops > 0 ? Math.round((completedStops / totalStops) * 100) : 0;
 
   const handleStartRoute = async () => {
-    await updateStatus({ status: 'IN_PROGRESS' });
+    await updateStatus({ status: "IN_PROGRESS" });
     await refetch();
   };
 
   const handleCompleteRoute = async () => {
-    await updateStatus({ status: 'COMPLETED' });
+    await updateStatus({ status: "COMPLETED" });
     await refetch();
   };
 
@@ -378,7 +436,7 @@ export default function RouteDetailPage() {
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <button
-          onClick={() => router.push('/routes')}
+          onClick={() => router.push("/routes")}
           className="text-wl-text-secondary hover:text-white transition-colors p-1.5 rounded-md hover:bg-wl-bg-surface"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -386,7 +444,9 @@ export default function RouteDetailPage() {
         <h1 className="text-2xl font-bold text-white">
           {route.name ?? `Route ${new Date(route.date).toLocaleDateString()}`}
         </h1>
-        <Badge variant={STATUS_BADGE[route.status]}>{route.status.replace('_', ' ')}</Badge>
+        <Badge variant={STATUS_BADGE[route.status]}>
+          {route.status.replace("_", " ")}
+        </Badge>
 
         {/* Action buttons */}
         <div className="ml-auto flex gap-2">
@@ -402,7 +462,7 @@ export default function RouteDetailPage() {
               Edit
             </Button>
           </Link>
-          {route.status === 'ASSIGNED' || route.status === 'OPTIMIZED' ? (
+          {route.status === "ASSIGNED" || route.status === "OPTIMIZED" ? (
             <Button
               variant="primary"
               size="sm"
@@ -412,7 +472,7 @@ export default function RouteDetailPage() {
               <Play className="w-4 h-4" />
               Start Route
             </Button>
-          ) : route.status === 'IN_PROGRESS' ? (
+          ) : route.status === "IN_PROGRESS" ? (
             <Button
               variant="primary"
               size="sm"
@@ -429,7 +489,9 @@ export default function RouteDetailPage() {
       {/* ── KPI Row ─────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Stops</div>
+          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">
+            Stops
+          </div>
           <div className="text-2xl font-bold text-blue-500">
             {completedStops}/{totalStops}
           </div>
@@ -443,22 +505,34 @@ export default function RouteDetailPage() {
         </div>
 
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Distance</div>
+          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">
+            Distance
+          </div>
           <div className="text-2xl font-bold text-emerald-400">
-            {route.totalDistance ? `${Number(route.totalDistance).toFixed(1)} km` : '—'}
+            {route.totalDistance
+              ? `${Number(route.totalDistance).toFixed(1)} km`
+              : "—"}
           </div>
         </div>
 
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Duration</div>
+          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">
+            Duration
+          </div>
           <div className="text-2xl font-bold text-amber-400">
-            {route.totalDuration ? formatDuration(Math.round(route.totalDuration / 60)) : '—'}
+            {route.totalDuration
+              ? formatDuration(Math.round(route.totalDuration / 60))
+              : "—"}
           </div>
         </div>
 
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
-          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Progress</div>
-          <div className="text-2xl font-bold text-purple-400">{progressPct}%</div>
+          <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">
+            Progress
+          </div>
+          <div className="text-2xl font-bold text-purple-400">
+            {progressPct}%
+          </div>
         </div>
       </div>
 
@@ -506,11 +580,15 @@ export default function RouteDetailPage() {
               <div className="space-y-1 text-wl-text-secondary">
                 <div className="flex justify-between gap-6">
                   <span>Completed</span>
-                  <span className="text-emerald-400 font-medium">{completedStops}</span>
+                  <span className="text-emerald-400 font-medium">
+                    {completedStops}
+                  </span>
                 </div>
                 <div className="flex justify-between gap-6">
                   <span>Remaining</span>
-                  <span className="text-white font-medium">{totalStops - completedStops}</span>
+                  <span className="text-white font-medium">
+                    {totalStops - completedStops}
+                  </span>
                 </div>
                 {route.totalDistance && (
                   <div className="flex justify-between gap-6">
@@ -526,10 +604,14 @@ export default function RouteDetailPage() {
 
           {/* Stop sequence list */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
-            <div className="text-sm font-semibold text-white mb-3">Stop Sequence</div>
+            <div className="text-sm font-semibold text-white mb-3">
+              Stop Sequence
+            </div>
             <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
               {route.stops.length === 0 ? (
-                <div className="text-sm text-wl-text-tertiary text-center py-4">No stops on this route.</div>
+                <div className="text-sm text-wl-text-tertiary text-center py-4">
+                  No stops on this route.
+                </div>
               ) : (
                 route.stops.map((stop) => (
                   <StopListItem
@@ -537,7 +619,9 @@ export default function RouteDetailPage() {
                     stop={stop}
                     isSelected={selectedStopId === stop.id}
                     onSelect={() =>
-                      setSelectedStopId(selectedStopId === stop.id ? null : stop.id)
+                      setSelectedStopId(
+                        selectedStopId === stop.id ? null : stop.id,
+                      )
                     }
                     routeId={id}
                     onStatusUpdated={refetch}
@@ -558,7 +642,9 @@ export default function RouteDetailPage() {
             </div>
             {route.driver ? (
               <div className="space-y-2 text-sm">
-                <div className="text-white font-medium">{route.driver.name}</div>
+                <div className="text-white font-medium">
+                  {route.driver.name}
+                </div>
                 <div className="text-wl-text-secondary text-xs space-y-1">
                   <div className="flex justify-between">
                     <span>Phone</span>
@@ -568,24 +654,33 @@ export default function RouteDetailPage() {
                     <span>Vehicle</span>
                     <span className="text-white">
                       {route.driver.vehicleType}
-                      {route.driver.vehiclePlate ? ` · ${route.driver.vehiclePlate}` : ''}
+                      {route.driver.vehiclePlate
+                        ? ` · ${route.driver.vehiclePlate}`
+                        : ""}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Status</span>
                     <Badge
-                      variant={route.driver.status === 'ON_ROUTE' ? 'success' : 'default'}
+                      variant={
+                        route.driver.status === "ON_ROUTE"
+                          ? "success"
+                          : "default"
+                      }
                       className="text-xs"
                     >
-                      {route.driver.status.replace('_', ' ')}
+                      {route.driver.status.replace("_", " ")}
                     </Badge>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="text-sm text-wl-text-tertiary">
-                No driver assigned.{' '}
-                <Link href={`/routes/${id}/assign`} className="text-blue-400 hover:underline">
+                No driver assigned.{" "}
+                <Link
+                  href={`/routes/${id}/assign`}
+                  className="text-blue-400 hover:underline"
+                >
                   Assign one
                 </Link>
               </div>
@@ -602,13 +697,13 @@ export default function RouteDetailPage() {
               {route.stops.map((stop, idx) => {
                 const isLast = idx === route.stops.length - 1;
                 const dotColor =
-                  stop.status === 'COMPLETED'
-                    ? 'bg-emerald-500'
-                    : stop.status === 'FAILED'
-                      ? 'bg-red-500'
-                      : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
-                        ? 'bg-blue-500'
-                        : 'bg-wl-bg-elevated';
+                  stop.status === "COMPLETED"
+                    ? "bg-emerald-500"
+                    : stop.status === "FAILED"
+                      ? "bg-red-500"
+                      : stop.status === "EN_ROUTE" || stop.status === "ARRIVED"
+                        ? "bg-blue-500"
+                        : "bg-wl-bg-elevated";
 
                 return (
                   <div key={stop.id} className="relative pb-4">
@@ -619,35 +714,44 @@ export default function RouteDetailPage() {
                     {/* Dot */}
                     <div
                       className={cn(
-                        'absolute left-[-17px] top-1 w-4 h-4 rounded-full border-2 border-wl-bg-root flex items-center justify-center',
+                        "absolute left-[-17px] top-1 w-4 h-4 rounded-full border-2 border-wl-bg-root flex items-center justify-center",
                         dotColor,
                       )}
                     />
 
                     <div
                       className={cn(
-                        'cursor-pointer',
-                        selectedStopId === stop.id ? 'opacity-100' : 'opacity-80 hover:opacity-100',
+                        "cursor-pointer",
+                        selectedStopId === stop.id
+                          ? "opacity-100"
+                          : "opacity-80 hover:opacity-100",
                       )}
                       onClick={() =>
-                        setSelectedStopId(selectedStopId === stop.id ? null : stop.id)
+                        setSelectedStopId(
+                          selectedStopId === stop.id ? null : stop.id,
+                        )
                       }
                     >
                       <div className="text-xs text-wl-text-tertiary mb-0.5">
                         {formatTime(stop.estimatedArrival)}
                       </div>
                       <div className="text-sm font-medium text-white">
-                        {stop.customerName ?? stop.address ?? `Stop ${stop.sequence + 1}`}
+                        {stop.customerName ??
+                          stop.address ??
+                          `Stop ${stop.sequence + 1}`}
                       </div>
                       {stop.address && stop.customerName && (
                         <div className="text-xs text-wl-text-tertiary mt-0.5 truncate max-w-[260px]">
                           {stop.address}
                         </div>
                       )}
-                      {stop.status !== 'PENDING' && (
+                      {stop.status !== "PENDING" && (
                         <div className="mt-1">
-                          <Badge variant={STOP_STATUS_BADGE[stop.status]} className="text-xs">
-                            {stop.status.replace('_', ' ')}
+                          <Badge
+                            variant={STOP_STATUS_BADGE[stop.status]}
+                            className="text-xs"
+                          >
+                            {stop.status.replace("_", " ")}
                           </Badge>
                         </div>
                       )}
@@ -657,16 +761,20 @@ export default function RouteDetailPage() {
               })}
 
               {route.stops.length === 0 && (
-                <div className="text-sm text-wl-text-tertiary">No stops added yet.</div>
+                <div className="text-sm text-wl-text-tertiary">
+                  No stops added yet.
+                </div>
               )}
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
-            <div className="text-sm font-semibold text-white mb-3">Quick Actions</div>
+            <div className="text-sm font-semibold text-white mb-3">
+              Quick Actions
+            </div>
             <div className="flex flex-col gap-2">
-              {route.status === 'IN_PROGRESS' && (
+              {route.status === "IN_PROGRESS" && (
                 <Button
                   variant="secondary"
                   size="sm"
@@ -679,13 +787,21 @@ export default function RouteDetailPage() {
                 </Button>
               )}
               <Link href={`/routes/${id}/assign`}>
-                <Button variant="secondary" size="sm" className="w-full justify-start">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full justify-start"
+                >
                   <UserCheck className="w-4 h-4" />
                   Reassign Driver
                 </Button>
               </Link>
               <Link href={`/routes/${id}/edit`}>
-                <Button variant="secondary" size="sm" className="w-full justify-start">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full justify-start"
+                >
                   <Edit2 className="w-4 h-4" />
                   Edit Route
                 </Button>

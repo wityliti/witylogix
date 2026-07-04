@@ -24,14 +24,14 @@ import type {
   ERPWebhookPayload,
   ERPWebhookRegistration,
   SyncEntityType,
-} from './types.js';
+} from "./types.js";
 
 // ─── CIRCUIT BREAKER ────────────────────────────────────────────────────────
 
 enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN',
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 interface CircuitBreakerConfig {
@@ -94,7 +94,9 @@ class CircuitBreaker {
   }
 
   private createCircuitOpenError(): Error {
-    const error = new Error('Circuit breaker is OPEN - service temporarily unavailable');
+    const error = new Error(
+      "Circuit breaker is OPEN - service temporarily unavailable",
+    );
     (error as any).retryable = true;
     return error;
   }
@@ -118,7 +120,9 @@ class RateLimiter {
 
   async acquire(): Promise<void> {
     const now: number = Date.now();
-    this.requestTimestamps = this.requestTimestamps.filter((ts: number) => now - ts < this.windowMs);
+    this.requestTimestamps = this.requestTimestamps.filter(
+      (ts: number) => now - ts < this.windowMs,
+    );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
       const oldestTimestamp: number = this.requestTimestamps[0] as number;
@@ -134,8 +138,13 @@ class RateLimiter {
 
   getInfo(): RateLimitInfo {
     const now: number = Date.now();
-    const recentRequests: number[] = this.requestTimestamps.filter((ts: number) => now - ts < this.windowMs);
-    const remaining: number = Math.max(0, this.maxRequests - recentRequests.length);
+    const recentRequests: number[] = this.requestTimestamps.filter(
+      (ts: number) => now - ts < this.windowMs,
+    );
+    const remaining: number = Math.max(
+      0,
+      this.maxRequests - recentRequests.length,
+    );
     const resetAt: Date = new Date(now + this.windowMs);
 
     return {
@@ -165,7 +174,10 @@ class OAuth2TokenManager {
     const expiresAt = credentials.expiresAt;
 
     if (!credentials.accessToken) {
-      throw this.createError('No access token available', 'MISSING_ACCESS_TOKEN');
+      throw this.createError(
+        "No access token available",
+        "MISSING_ACCESS_TOKEN",
+      );
     }
 
     // Check if token is expired or about to expire
@@ -174,7 +186,10 @@ class OAuth2TokenManager {
       if (credentials.refreshToken) {
         await this.refreshAccessToken();
       } else {
-        throw this.createError('Token expired and no refresh token available', 'TOKEN_EXPIRED');
+        throw this.createError(
+          "Token expired and no refresh token available",
+          "TOKEN_EXPIRED",
+        );
       }
     }
 
@@ -183,7 +198,7 @@ class OAuth2TokenManager {
 
   protected async refreshAccessToken(): Promise<void> {
     // To be implemented by subclasses
-    throw this.createError('Token refresh not implemented', 'NOT_IMPLEMENTED');
+    throw this.createError("Token refresh not implemented", "NOT_IMPLEMENTED");
   }
 
   updateCredentials(credentials: any): void {
@@ -191,7 +206,9 @@ class OAuth2TokenManager {
   }
 
   updateExpiry(expiresInSeconds: number): void {
-    this.connection.credentials.expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
+    this.connection.credentials.expiresAt = new Date(
+      Date.now() + expiresInSeconds * 1000,
+    );
   }
 
   private createError(message: string, code: string): Error {
@@ -214,7 +231,8 @@ export abstract class AbstractERPAdapter {
   protected rateLimiter: RateLimiter;
   protected circuitBreaker: CircuitBreaker;
   protected fieldMappings: Map<string, ERPFieldMapping> = new Map();
-  protected webhookRegistrations: Map<string, ERPWebhookRegistration> = new Map();
+  protected webhookRegistrations: Map<string, ERPWebhookRegistration> =
+    new Map();
 
   constructor(provider: ERPProvider, connection: ERPConnection) {
     this.provider = provider;
@@ -238,9 +256,11 @@ export abstract class AbstractERPAdapter {
    */
   private initializeFieldMappings(): void {
     if (this.connection.config.fieldMappings) {
-      Object.entries(this.connection.config.fieldMappings).forEach(([key, mapping]) => {
-        this.fieldMappings.set(key, mapping);
-      });
+      Object.entries(this.connection.config.fieldMappings).forEach(
+        ([key, mapping]) => {
+          this.fieldMappings.set(key, mapping);
+        },
+      );
     }
   }
 
@@ -255,7 +275,10 @@ export abstract class AbstractERPAdapter {
   /**
    * Get field mapping
    */
-  protected getFieldMapping(entity: SyncEntityType, witylogixField: string): ERPFieldMapping | undefined {
+  protected getFieldMapping(
+    entity: SyncEntityType,
+    witylogixField: string,
+  ): ERPFieldMapping | undefined {
     return this.fieldMappings.get(`${entity}.${witylogixField}`);
   }
 
@@ -266,16 +289,16 @@ export abstract class AbstractERPAdapter {
     entity: SyncEntityType,
     witylogixField: string,
     value: unknown,
-    direction: 'encode' | 'decode',
+    direction: "encode" | "decode",
   ): unknown {
     const mapping = this.getFieldMapping(entity, witylogixField);
     if (!mapping || !mapping.transform) {
       return value;
     }
 
-    if (direction === 'encode' && mapping.transform.encode) {
+    if (direction === "encode" && mapping.transform.encode) {
       return mapping.transform.encode(value);
-    } else if (direction === 'decode' && mapping.transform.decode) {
+    } else if (direction === "decode" && mapping.transform.decode) {
       return mapping.transform.decode(value);
     }
 
@@ -292,8 +315,15 @@ export abstract class AbstractERPAdapter {
     const mapped: any = {};
 
     Object.entries(obj).forEach(([witylogixField, value]) => {
-      const erpField = this.getFieldMapping(entity, witylogixField)?.erpField || witylogixField;
-      const transformedValue = this.transformFieldValue(entity, witylogixField, value, 'encode');
+      const erpField =
+        this.getFieldMapping(entity, witylogixField)?.erpField ||
+        witylogixField;
+      const transformedValue = this.transformFieldValue(
+        entity,
+        witylogixField,
+        value,
+        "encode",
+      );
       mapped[erpField] = transformedValue;
     });
 
@@ -316,7 +346,7 @@ export abstract class AbstractERPAdapter {
           entity,
           mapping.witylogixField,
           erpObj[mapping.erpField],
-          'decode',
+          "decode",
         );
         mapped[mapping.witylogixField] = transformedValue;
       }
@@ -338,9 +368,7 @@ export abstract class AbstractERPAdapter {
   /**
    * Execute operation with circuit breaker and rate limiting
    */
-  protected async executeWithRateLimit<T>(
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  protected async executeWithRateLimit<T>(fn: () => Promise<T>): Promise<T> {
     await this.rateLimiter.acquire();
     return this.circuitBreaker.execute(fn);
   }
@@ -368,7 +396,10 @@ export abstract class AbstractERPAdapter {
     for (const registration of this.webhookRegistrations.values()) {
       if (payload.signature && registration.secret) {
         if (!this.verifyWebhookSignature(payload, registration.secret)) {
-          throw this.createError('Invalid webhook signature', 'INVALID_SIGNATURE');
+          throw this.createError(
+            "Invalid webhook signature",
+            "INVALID_SIGNATURE",
+          );
         }
       }
     }
@@ -380,7 +411,10 @@ export abstract class AbstractERPAdapter {
   /**
    * Verify webhook signature
    */
-  protected verifyWebhookSignature(payload: ERPWebhookPayload, secret: string): boolean {
+  protected verifyWebhookSignature(
+    payload: ERPWebhookPayload,
+    secret: string,
+  ): boolean {
     // Implementation should use HMAC-SHA256
     // This is a placeholder
     return true;
@@ -389,7 +423,9 @@ export abstract class AbstractERPAdapter {
   /**
    * Process webhook event - to be implemented by subclasses
    */
-  protected async processWebhookEvent(payload: ERPWebhookPayload): Promise<void> {
+  protected async processWebhookEvent(
+    payload: ERPWebhookPayload,
+  ): Promise<void> {
     // To be implemented by subclasses
   }
 
@@ -404,7 +440,7 @@ export abstract class AbstractERPAdapter {
     const results: Array<{
       recordId: string;
       externalId?: string;
-      status: 'success' | 'failed' | 'skipped';
+      status: "success" | "failed" | "skipped";
       data?: T;
       error?: string;
     }> = [];
@@ -415,17 +451,17 @@ export abstract class AbstractERPAdapter {
       try {
         const result = await this.createEntity(entity, entityType);
         results.push({
-          recordId: (entity.id as string) || '',
+          recordId: (entity.id as string) || "",
           externalId: (result as { id?: string }).id,
-          status: 'success',
+          status: "success",
           data: result,
         });
         successful += 1;
       } catch (error: unknown) {
         failed += 1;
         results.push({
-          recordId: (entity.id as string) || '',
-          status: 'failed',
+          recordId: (entity.id as string) || "",
+          status: "failed",
           error: error instanceof Error ? error.message : String(error),
         });
       }
@@ -449,7 +485,7 @@ export abstract class AbstractERPAdapter {
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<T>> {
     // To be implemented by subclasses
-    throw this.createError('Method not implemented', 'NOT_IMPLEMENTED');
+    throw this.createError("Method not implemented", "NOT_IMPLEMENTED");
   }
 
   /**
@@ -459,7 +495,7 @@ export abstract class AbstractERPAdapter {
     entity: T,
     entityType: SyncEntityType,
   ): Promise<T> {
-    throw this.createError('Method not implemented', 'NOT_IMPLEMENTED');
+    throw this.createError("Method not implemented", "NOT_IMPLEMENTED");
   }
 
   /**
@@ -470,7 +506,7 @@ export abstract class AbstractERPAdapter {
     entity: Partial<T>,
     entityType: SyncEntityType,
   ): Promise<T> {
-    throw this.createError('Method not implemented', 'NOT_IMPLEMENTED');
+    throw this.createError("Method not implemented", "NOT_IMPLEMENTED");
   }
 
   /**
@@ -480,7 +516,7 @@ export abstract class AbstractERPAdapter {
     id: string,
     entityType: SyncEntityType,
   ): Promise<void> {
-    throw this.createError('Method not implemented', 'NOT_IMPLEMENTED');
+    throw this.createError("Method not implemented", "NOT_IMPLEMENTED");
   }
 
   /**
@@ -490,13 +526,17 @@ export abstract class AbstractERPAdapter {
     id: string,
     entityType: SyncEntityType,
   ): Promise<T> {
-    throw this.createError('Method not implemented', 'NOT_IMPLEMENTED');
+    throw this.createError("Method not implemented", "NOT_IMPLEMENTED");
   }
 
   /**
    * Create ERP operation error
    */
-  protected createError(message: string, code?: string, retryable: boolean = true): ERPOperationError {
+  protected createError(
+    message: string,
+    code?: string,
+    retryable: boolean = true,
+  ): ERPOperationError {
     const error = new Error(message) as ERPOperationError;
     error.provider = this.provider;
     error.code = code;

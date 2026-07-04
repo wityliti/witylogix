@@ -97,7 +97,10 @@ export class BlackoutManager {
   /**
    * Remove a recurring blackout
    */
-  async removeRecurringBlackout(locationId: string, dayOfWeek: number): Promise<void> {
+  async removeRecurringBlackout(
+    locationId: string,
+    dayOfWeek: number,
+  ): Promise<void> {
     await (this.db as any).blackoutDate.deleteMany({
       where: {
         locationId,
@@ -243,7 +246,11 @@ export class BlackoutManager {
     const created: BlackoutDate[] = [];
 
     for (const blackout of blackouts) {
-      const result = await this.addBlackout(locationId, blackout.date, blackout.reason);
+      const result = await this.addBlackout(
+        locationId,
+        blackout.date,
+        blackout.reason,
+      );
       created.push(result);
     }
 

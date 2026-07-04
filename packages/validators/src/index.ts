@@ -28,7 +28,10 @@ const circleShape = z.object({
   center: coordinatesSchema,
   radiusMeters: z.number().positive().max(100_000),
 });
-export const zoneShapeSchema = z.discriminatedUnion("type", [polygonShape, circleShape]);
+export const zoneShapeSchema = z.discriminatedUnion("type", [
+  polygonShape,
+  circleShape,
+]);
 export type ZoneShape = z.infer<typeof zoneShapeSchema>;
 
 // - Orders -
@@ -59,9 +62,16 @@ export const createOrderSchema = z.object({
 
 export const updateOrderStatusSchema = z.object({
   status: z.enum([
-    "PENDING", "ACCEPTED", "ASSIGNED", "PICKED_UP",
-    "OUT_FOR_DELIVERY", "ARRIVED", "DELIVERED",
-    "FAILED", "RETURNED", "CANCELLED",
+    "PENDING",
+    "ACCEPTED",
+    "ASSIGNED",
+    "PICKED_UP",
+    "OUT_FOR_DELIVERY",
+    "ARRIVED",
+    "DELIVERED",
+    "FAILED",
+    "RETURNED",
+    "CANCELLED",
   ]),
   notes: z.string().optional(),
 });
@@ -72,7 +82,9 @@ export const createDriverSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().optional(),
   phone: z.string().min(5).max(20),
-  vehicleType: z.enum(["BICYCLE", "MOTORCYCLE", "CAR", "VAN", "TRUCK"]).default("CAR"),
+  vehicleType: z
+    .enum(["BICYCLE", "MOTORCYCLE", "CAR", "VAN", "TRUCK"])
+    .default("CAR"),
   vehiclePlate: z.string().optional(),
   maxCapacity: z.number().int().positive().default(20),
   maxWeight: z.number().nonnegative().optional(),
@@ -132,12 +144,14 @@ export const carrierRateRequestSchema = z.object({
       city: z.string(),
       address1: z.string().optional(),
     }),
-    items: z.array(z.object({
-      name: z.string(),
-      quantity: z.number().int().positive(),
-      grams: z.number().nonnegative(),
-      price: z.number().nonnegative(),
-    })),
+    items: z.array(
+      z.object({
+        name: z.string(),
+        quantity: z.number().int().positive(),
+        grams: z.number().nonnegative(),
+        price: z.number().nonnegative(),
+      }),
+    ),
     currency: z.string().length(3),
   }),
 });
@@ -152,10 +166,12 @@ export const optimizeRouteSchema = z.object({
   }),
   orderIds: z.array(z.string().uuid()).min(1).max(500),
   vehicleIds: z.array(z.string().uuid()).min(1),
-  options: z.object({
-    timeLimit: z.number().int().positive().max(120).default(30),
-    returnToDepot: z.boolean().default(true),
-  }).optional(),
+  options: z
+    .object({
+      timeLimit: z.number().int().positive().max(120).default(30),
+      returnToDepot: z.boolean().default(true),
+    })
+    .optional(),
 });
 
 // ---- Shipments ----
@@ -163,7 +179,15 @@ export const optimizeRouteSchema = z.object({
 export const createShipmentSchema = z.object({
   orderId: z.string().uuid(),
   locationId: z.string().uuid().optional(),
-  deliveryMethod: z.enum(["LOCAL_DELIVERY", "STORE_PICKUP", "STANDARD_SHIPPING", "EXPRESS_SHIPPING", "SAME_DAY"]).default("LOCAL_DELIVERY"),
+  deliveryMethod: z
+    .enum([
+      "LOCAL_DELIVERY",
+      "STORE_PICKUP",
+      "STANDARD_SHIPPING",
+      "EXPRESS_SHIPPING",
+      "SAME_DAY",
+    ])
+    .default("LOCAL_DELIVERY"),
   recipientName: z.string().optional(),
   recipientPhone: z.string().optional(),
   recipientEmail: z.string().email().optional(),
@@ -178,12 +202,14 @@ export const createShipmentSchema = z.object({
   deliveryDate: z.string().datetime().optional(),
   timeSlotId: z.string().uuid().optional(),
   weight: z.number().nonnegative().optional(),
-  dimensions: z.object({
-    length: z.number().positive(),
-    width: z.number().positive(),
-    height: z.number().positive(),
-    unit: z.enum(["cm", "in"]).default("cm"),
-  }).optional(),
+  dimensions: z
+    .object({
+      length: z.number().positive(),
+      width: z.number().positive(),
+      height: z.number().positive(),
+      unit: z.enum(["cm", "in"]).default("cm"),
+    })
+    .optional(),
   itemCount: z.number().int().positive().default(1),
   lineItems: z.array(z.record(z.unknown())).default([]),
   shippingCost: z.number().nonnegative().optional(),
@@ -194,9 +220,17 @@ export const createShipmentSchema = z.object({
 
 export const updateShipmentStatusSchema = z.object({
   status: z.enum([
-    "PENDING", "PROCESSING", "READY_FOR_PICKUP", "PICKED_UP",
-    "IN_TRANSIT", "OUT_FOR_DELIVERY", "ARRIVED", "DELIVERED",
-    "FAILED", "RETURNED", "CANCELLED",
+    "PENDING",
+    "PROCESSING",
+    "READY_FOR_PICKUP",
+    "PICKED_UP",
+    "IN_TRANSIT",
+    "OUT_FOR_DELIVERY",
+    "ARRIVED",
+    "DELIVERED",
+    "FAILED",
+    "RETURNED",
+    "CANCELLED",
   ]),
   notes: z.string().optional(),
   failureReason: z.string().optional(),
@@ -206,7 +240,9 @@ export const updateShipmentStatusSchema = z.object({
 
 export const createLocationSchema = z.object({
   name: z.string().min(1).max(200),
-  type: z.enum(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"]).default("WAREHOUSE"),
+  type: z
+    .enum(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"])
+    .default("WAREHOUSE"),
   addressLine1: z.string().min(1),
   addressLine2: z.string().optional(),
   city: z.string().min(1),
@@ -218,10 +254,14 @@ export const createLocationSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email().optional(),
   isDefault: z.boolean().default(false),
-  operatingHours: z.record(z.object({
-    open: z.string(),
-    close: z.string(),
-  })).optional(),
+  operatingHours: z
+    .record(
+      z.object({
+        open: z.string(),
+        close: z.string(),
+      }),
+    )
+    .optional(),
   prepTimeMinutes: z.number().int().nonnegative().default(0),
 });
 
@@ -234,10 +274,27 @@ export type CreateLocation = z.infer<typeof createLocationSchema>;
 export const createShippingProfileSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().optional(),
-  deliveryMethod: z.enum(["LOCAL_DELIVERY", "STORE_PICKUP", "STANDARD_SHIPPING", "EXPRESS_SHIPPING", "SAME_DAY"]).default("LOCAL_DELIVERY"),
+  deliveryMethod: z
+    .enum([
+      "LOCAL_DELIVERY",
+      "STORE_PICKUP",
+      "STANDARD_SHIPPING",
+      "EXPRESS_SHIPPING",
+      "SAME_DAY",
+    ])
+    .default("LOCAL_DELIVERY"),
   isDefault: z.boolean().default(false),
   processingTimeHours: z.number().int().nonnegative().default(0),
-  rateType: z.enum(["FLAT", "WEIGHT_BASED", "DISTANCE_BASED", "ZONE_BASED", "TIERED", "CALCULATED"]).default("FLAT"),
+  rateType: z
+    .enum([
+      "FLAT",
+      "WEIGHT_BASED",
+      "DISTANCE_BASED",
+      "ZONE_BASED",
+      "TIERED",
+      "CALCULATED",
+    ])
+    .default("FLAT"),
   flatRate: z.number().nonnegative().optional(),
   freeShippingAbove: z.number().nonnegative().optional(),
   minOrderAmount: z.number().nonnegative().optional(),
@@ -249,8 +306,10 @@ export const createShippingProfileSchema = z.object({
 export const createCalendarRuleSchema = z.object({
   shippingProfileId: z.string().uuid().optional(),
   name: z.string().min(1).max(200),
-  type: z.enum(["OPERATING_DAYS", "BLACKOUT", "SPECIAL_HOURS", "CAPACITY_OVERRIDE"]).default("OPERATING_DAYS"),
-  daysOfWeek: z.array(z.number().int().min(0).max(6)).default([1,2,3,4,5]),
+  type: z
+    .enum(["OPERATING_DAYS", "BLACKOUT", "SPECIAL_HOURS", "CAPACITY_OVERRIDE"])
+    .default("OPERATING_DAYS"),
+  daysOfWeek: z.array(z.number().int().min(0).max(6)).default([1, 2, 3, 4, 5]),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   cutoffMinutes: z.number().int().nonnegative().default(120),
@@ -269,22 +328,40 @@ export type CreateCalendarRule = z.infer<typeof createCalendarRuleSchema>;
 
 export const createNotificationTemplateSchema = z.object({
   name: z.string().min(1).max(200),
-  slug: z.string().min(1).max(100).regex(/^[a-z0-9_-]+$/, "Slug must be lowercase alphanumeric with hyphens/underscores"),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(
+      /^[a-z0-9_-]+$/,
+      "Slug must be lowercase alphanumeric with hyphens/underscores",
+    ),
   channel: z.enum(["EMAIL", "SMS", "WHATSAPP", "PUSH", "WEBHOOK"]),
   eventType: z.string().min(1).max(100),
   subject: z.string().max(500).optional(),
   bodyTemplate: z.string().min(1),
-  variables: z.array(z.object({
-    name: z.string(),
-    description: z.string().optional(),
-    required: z.boolean().default(true),
-  })).default([]),
+  variables: z
+    .array(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        required: z.boolean().default(true),
+      }),
+    )
+    .default([]),
   metadata: z.record(z.unknown()).default({}),
 });
 
-export const updateNotificationTemplateSchema = createNotificationTemplateSchema.partial().extend({
-  slug: z.string().min(1).max(100).regex(/^[a-z0-9_-]+$/).optional(),
-});
+export const updateNotificationTemplateSchema = createNotificationTemplateSchema
+  .partial()
+  .extend({
+    slug: z
+      .string()
+      .min(1)
+      .max(100)
+      .regex(/^[a-z0-9_-]+$/)
+      .optional(),
+  });
 
 export const previewNotificationTemplateSchema = z.object({
   bodyTemplate: z.string().min(1),
@@ -293,14 +370,26 @@ export const previewNotificationTemplateSchema = z.object({
 });
 
 export const duplicateNotificationTemplateSchema = z.object({
-  newSlug: z.string().min(1).max(100).regex(/^[a-z0-9_-]+$/),
+  newSlug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9_-]+$/),
   newName: z.string().min(1).max(200).optional(),
 });
 
-export type CreateNotificationTemplate = z.infer<typeof createNotificationTemplateSchema>;
-export type UpdateNotificationTemplate = z.infer<typeof updateNotificationTemplateSchema>;
-export type PreviewNotificationTemplate = z.infer<typeof previewNotificationTemplateSchema>;
-export type DuplicateNotificationTemplate = z.infer<typeof duplicateNotificationTemplateSchema>;
+export type CreateNotificationTemplate = z.infer<
+  typeof createNotificationTemplateSchema
+>;
+export type UpdateNotificationTemplate = z.infer<
+  typeof updateNotificationTemplateSchema
+>;
+export type PreviewNotificationTemplate = z.infer<
+  typeof previewNotificationTemplateSchema
+>;
+export type DuplicateNotificationTemplate = z.infer<
+  typeof duplicateNotificationTemplateSchema
+>;
 
 // - Activity Logs -
 export const createActivityLogSchema = z.object({
@@ -332,14 +421,28 @@ export type ActivityLogFilter = z.infer<typeof activityLogFilterSchema>;
 export const createPaymentSchema = z.object({
   shipmentId: z.string().uuid().optional(),
   paymentType: z.enum(["DELIVERY", "COD", "SUBSCRIPTION", "ADDON", "REFUND"]),
-  paymentMethod: z.enum(["STRIPE", "PAYPAL", "CASH", "BANK_TRANSFER", "SHOPIFY_PAYMENTS", "OTHER"]),
+  paymentMethod: z.enum([
+    "STRIPE",
+    "PAYPAL",
+    "CASH",
+    "BANK_TRANSFER",
+    "SHOPIFY_PAYMENTS",
+    "OTHER",
+  ]),
   amount: z.number().positive().multipleOf(0.01),
   currency: z.string().length(3).default("USD"),
   externalRef: z.string().max(200).optional(),
   metadata: z.record(z.unknown()).default({}),
 });
 export const updatePaymentStatusSchema = z.object({
-  status: z.enum(["PENDING", "PROCESSING", "COMPLETED", "FAILED", "REFUNDED", "CANCELLED"]),
+  status: z.enum([
+    "PENDING",
+    "PROCESSING",
+    "COMPLETED",
+    "FAILED",
+    "REFUNDED",
+    "CANCELLED",
+  ]),
   externalRef: z.string().max(200).optional(),
 });
 export const paymentFilterSchema = z.object({
@@ -434,12 +537,8 @@ export const deliveryEventInputSchema = z.object({
 });
 
 export const batchDeliveryEventsSchema = z.object({
-  events: z
-    .array(deliveryEventInputSchema)
-    .min(1)
-    .max(100),
+  events: z.array(deliveryEventInputSchema).min(1).max(100),
 });
 
 export type DeliveryEventInput = z.infer<typeof deliveryEventInputSchema>;
 export type BatchDeliveryEvents = z.infer<typeof batchDeliveryEventsSchema>;
-

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from "react";
 import {
   ShieldCheck,
   Search,
@@ -19,14 +19,14 @@ import {
   FileText,
   RefreshCw,
   Calendar,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useApiQuery } from '@/hooks/use-api';
-import { ErrorState } from '@/components/ui/error-state';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useApiQuery } from "@/hooks/use-api";
+import { ErrorState } from "@/components/ui/error-state";
 
 // ── Types ────────────────────────────────────────────────────────
 
-type AuditAction = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'EXPORT';
+type AuditAction = "CREATE" | "READ" | "UPDATE" | "DELETE" | "EXPORT";
 
 interface AuditEntry {
   id: string;
@@ -52,28 +52,50 @@ interface AuditResponse {
   };
 }
 
-
 // ── Helpers ──────────────────────────────────────────────────────
 
-const ACTION_META: Record<AuditAction, { label: string; color: string; icon: typeof Plus }> = {
-  CREATE: { label: 'Create', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20', icon: Plus },
-  READ:   { label: 'Read',   color: 'text-blue-400 bg-blue-400/10 border-blue-400/20',          icon: Eye },
-  UPDATE: { label: 'Update', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20',        icon: Edit3 },
-  DELETE: { label: 'Delete', color: 'text-red-400 bg-red-400/10 border-red-400/20',              icon: Trash2 },
-  EXPORT: { label: 'Export', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20',     icon: Download },
+const ACTION_META: Record<
+  AuditAction,
+  { label: string; color: string; icon: typeof Plus }
+> = {
+  CREATE: {
+    label: "Create",
+    color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
+    icon: Plus,
+  },
+  READ: {
+    label: "Read",
+    color: "text-blue-400 bg-blue-400/10 border-blue-400/20",
+    icon: Eye,
+  },
+  UPDATE: {
+    label: "Update",
+    color: "text-amber-400 bg-amber-400/10 border-amber-400/20",
+    icon: Edit3,
+  },
+  DELETE: {
+    label: "Delete",
+    color: "text-red-400 bg-red-400/10 border-red-400/20",
+    icon: Trash2,
+  },
+  EXPORT: {
+    label: "Export",
+    color: "text-purple-400 bg-purple-400/10 border-purple-400/20",
+    icon: Download,
+  },
 };
 
 const RESOURCE_ICONS: Record<string, typeof User> = {
-  order:    Package,
-  route:    Route,
-  driver:   User,
-  user:     User,
+  order: Package,
+  route: Route,
+  driver: User,
+  user: User,
   settings: Settings,
-  billing:  FileText,
-  zone:     Route,
-  webhook:  RefreshCw,
-  report:   FileText,
-  audit:    ShieldCheck,
+  billing: FileText,
+  zone: Route,
+  webhook: RefreshCw,
+  report: FileText,
+  audit: ShieldCheck,
 };
 
 function resourceIcon(type: string) {
@@ -82,7 +104,7 @@ function resourceIcon(type: string) {
 
 function formatTs(ts: string) {
   const d = new Date(ts);
-  return d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' });
+  return d.toLocaleString("en-GB", { dateStyle: "short", timeStyle: "medium" });
 }
 
 function ChangePill({ changes }: { changes: Record<string, unknown> | null }) {
@@ -94,42 +116,73 @@ function ChangePill({ changes }: { changes: Record<string, unknown> | null }) {
       {keys.slice(0, 3).map((k) => {
         const val = changes[k] as [unknown, unknown] | undefined;
         return (
-          <span key={k} className="text-[10px] font-mono bg-white/[0.04] border border-white/[0.06] rounded px-1.5 py-0.5 text-white/40">
-            {k}: {Array.isArray(val) ? `${String(val[0])} → ${String(val[1])}` : String(val)}
+          <span
+            key={k}
+            className="text-[10px] font-mono bg-white/[0.04] border border-white/[0.06] rounded px-1.5 py-0.5 text-white/40"
+          >
+            {k}:{" "}
+            {Array.isArray(val)
+              ? `${String(val[0])} → ${String(val[1])}`
+              : String(val)}
           </span>
         );
       })}
-      {keys.length > 3 && <span className="text-[10px] text-white/20">+{keys.length - 3} more</span>}
+      {keys.length > 3 && (
+        <span className="text-[10px] text-white/20">
+          +{keys.length - 3} more
+        </span>
+      )}
     </div>
   );
 }
 
 // ── Page ─────────────────────────────────────────────────────────
 
-const RESOURCE_TYPES = ['order', 'driver', 'route', 'user', 'settings', 'billing', 'zone', 'webhook', 'report'];
+const RESOURCE_TYPES = [
+  "order",
+  "driver",
+  "route",
+  "user",
+  "settings",
+  "billing",
+  "zone",
+  "webhook",
+  "report",
+];
 const PAGE_SIZE = 25;
 
 export default function AuditTrailPage() {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [actionFilter, setActionFilter] = useState<AuditAction | ''>('');
-  const [resourceFilter, setResourceFilter] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [search, setSearch] = useState("");
+  const [actionFilter, setActionFilter] = useState<AuditAction | "">("");
+  const [resourceFilter, setResourceFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const qs = useMemo(() => {
-    const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
-    if (actionFilter) params.set('action', actionFilter);
-    if (resourceFilter) params.set('resource', resourceFilter);
-    if (dateFrom) params.set('startDate', new Date(dateFrom).toISOString());
-    if (dateTo) params.set('endDate', new Date(dateTo + 'T23:59:59').toISOString());
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(PAGE_SIZE),
+    });
+    if (actionFilter) params.set("action", actionFilter);
+    if (resourceFilter) params.set("resource", resourceFilter);
+    if (dateFrom) params.set("startDate", new Date(dateFrom).toISOString());
+    if (dateTo)
+      params.set("endDate", new Date(dateTo + "T23:59:59").toISOString());
     return params.toString();
   }, [page, actionFilter, resourceFilter, dateFrom, dateTo]);
 
-  const { data, loading, error, refetch } = useApiQuery<AuditResponse>(`/api/v4/audit?${qs}`);
+  const { data, loading, error, refetch } = useApiQuery<AuditResponse>(
+    `/api/v4/audit?${qs}`,
+  );
 
   const entries: AuditEntry[] = data?.data ?? [];
-  const pagination = data?.pagination ?? { page: 1, limit: PAGE_SIZE, total: 0, pages: 0 };
+  const pagination = data?.pagination ?? {
+    page: 1,
+    limit: PAGE_SIZE,
+    total: 0,
+    pages: 0,
+  };
 
   const filtered = useMemo(() => {
     if (!search.trim()) return entries;
@@ -138,31 +191,34 @@ export default function AuditTrailPage() {
       (e) =>
         e.resource_type.toLowerCase().includes(q) ||
         e.resource_id.toLowerCase().includes(q) ||
-        (e.user_id ?? '').toLowerCase().includes(q) ||
+        (e.user_id ?? "").toLowerCase().includes(q) ||
         e.action.toLowerCase().includes(q),
     );
   }, [entries, search]);
 
   const exportUrl = useMemo(() => {
     const params = new URLSearchParams();
-    if (actionFilter) params.set('action', actionFilter);
-    if (resourceFilter) params.set('resource', resourceFilter);
-    if (dateFrom) params.set('startDate', new Date(dateFrom).toISOString());
-    if (dateTo) params.set('endDate', new Date(dateTo + 'T23:59:59').toISOString());
+    if (actionFilter) params.set("action", actionFilter);
+    if (resourceFilter) params.set("resource", resourceFilter);
+    if (dateFrom) params.set("startDate", new Date(dateFrom).toISOString());
+    if (dateTo)
+      params.set("endDate", new Date(dateTo + "T23:59:59").toISOString());
     return `/api/v4/audit/export?${params.toString()}`;
   }, [actionFilter, resourceFilter, dateFrom, dateTo]);
 
   const resetFilters = useCallback(() => {
-    setActionFilter('');
-    setResourceFilter('');
-    setDateFrom('');
-    setDateTo('');
-    setSearch('');
+    setActionFilter("");
+    setResourceFilter("");
+    setDateFrom("");
+    setDateTo("");
+    setSearch("");
     setPage(1);
   }, []);
 
   const actionCounts = useMemo(() => {
-    const counts: Partial<Record<AuditAction | 'total', number>> = { total: entries.length };
+    const counts: Partial<Record<AuditAction | "total", number>> = {
+      total: entries.length,
+    };
     for (const e of entries) counts[e.action] = (counts[e.action] ?? 0) + 1;
     return counts;
   }, [entries]);
@@ -179,8 +235,12 @@ export default function AuditTrailPage() {
               <ShieldCheck className="w-5 h-5 text-rose-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white/90 tracking-tight">Audit Trail</h1>
-              <p className="text-sm text-white/35 mt-0.5">Compliance log of all admin and system actions</p>
+              <h1 className="text-2xl font-bold text-white/90 tracking-tight">
+                Audit Trail
+              </h1>
+              <p className="text-sm text-white/35 mt-0.5">
+                Compliance log of all admin and system actions
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -205,16 +265,26 @@ export default function AuditTrailPage() {
       <div className="px-6 lg:px-8 pb-8 space-y-4">
         {/* Action summary chips */}
         <div className="flex items-center gap-2 flex-wrap">
-          {(Object.entries(ACTION_META) as [AuditAction, typeof ACTION_META[AuditAction]][]).map(([action, meta]) => {
+          {(
+            Object.entries(ACTION_META) as [
+              AuditAction,
+              (typeof ACTION_META)[AuditAction],
+            ][]
+          ).map(([action, meta]) => {
             const count = actionCounts[action] ?? 0;
             const IconC = meta.icon;
             return (
               <button
                 key={action}
-                onClick={() => { setActionFilter(actionFilter === action ? '' : action); setPage(1); }}
+                onClick={() => {
+                  setActionFilter(actionFilter === action ? "" : action);
+                  setPage(1);
+                }}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all',
-                  actionFilter === action ? meta.color : 'bg-white/[0.03] border-white/[0.06] text-white/30 hover:text-white/50',
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all",
+                  actionFilter === action
+                    ? meta.color
+                    : "bg-white/[0.03] border-white/[0.06] text-white/30 hover:text-white/50",
                 )}
               >
                 <IconC className="w-3 h-3" />
@@ -224,7 +294,10 @@ export default function AuditTrailPage() {
             );
           })}
           {(actionFilter || resourceFilter || dateFrom || dateTo || search) && (
-            <button onClick={resetFilters} className="text-xs text-white/25 hover:text-white/50 px-2 py-1.5 transition-colors">
+            <button
+              onClick={resetFilters}
+              className="text-xs text-white/25 hover:text-white/50 px-2 py-1.5 transition-colors"
+            >
               Clear filters
             </button>
           )}
@@ -247,11 +320,18 @@ export default function AuditTrailPage() {
           {/* Resource type */}
           <select
             value={resourceFilter}
-            onChange={(e) => { setResourceFilter(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setResourceFilter(e.target.value);
+              setPage(1);
+            }}
             className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
           >
             <option value="">All resources</option>
-            {RESOURCE_TYPES.map((r) => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+            {RESOURCE_TYPES.map((r) => (
+              <option key={r} value={r}>
+                {r.charAt(0).toUpperCase() + r.slice(1)}
+              </option>
+            ))}
           </select>
 
           {/* Date range */}
@@ -260,14 +340,20 @@ export default function AuditTrailPage() {
             <input
               type="date"
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPage(1);
+              }}
               className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
             />
             <span className="text-white/20 text-xs">to</span>
             <input
               type="date"
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPage(1);
+              }}
               className="bg-wl-bg-surface border border-white/[0.06] rounded-lg px-2.5 py-2 text-sm text-white/50 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
@@ -287,18 +373,24 @@ export default function AuditTrailPage() {
           {loading ? (
             <div className="space-y-px p-4">
               {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="h-12 bg-white/[0.02] rounded animate-pulse" />
+                <div
+                  key={i}
+                  className="h-12 bg-white/[0.02] rounded animate-pulse"
+                />
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
               <ShieldCheck className="w-10 h-10 text-white/10 mx-auto mb-3" />
-              <p className="text-sm text-white/25">No audit entries match your filters</p>
+              <p className="text-sm text-white/25">
+                No audit entries match your filters
+              </p>
             </div>
           ) : (
             <div>
               {filtered.map((entry) => {
-                const actionMeta = ACTION_META[entry.action] ?? ACTION_META.READ;
+                const actionMeta =
+                  ACTION_META[entry.action] ?? ACTION_META.READ;
                 const ActionIcon = actionMeta.icon;
                 const ResIcon = resourceIcon(entry.resource_type);
                 return (
@@ -308,7 +400,12 @@ export default function AuditTrailPage() {
                   >
                     {/* Action badge */}
                     <div>
-                      <span className={cn('inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded border', actionMeta.color)}>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded border",
+                          actionMeta.color,
+                        )}
+                      >
                         <ActionIcon className="w-3 h-3" />
                         {actionMeta.label}
                       </span>
@@ -318,25 +415,33 @@ export default function AuditTrailPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <ResIcon className="w-3.5 h-3.5 text-white/25 shrink-0" />
-                        <span className="text-sm text-white/70 capitalize font-medium">{entry.resource_type}</span>
-                        <span className="text-[11px] font-mono text-white/30 truncate">{entry.resource_id}</span>
+                        <span className="text-sm text-white/70 capitalize font-medium">
+                          {entry.resource_type}
+                        </span>
+                        <span className="text-[11px] font-mono text-white/30 truncate">
+                          {entry.resource_id}
+                        </span>
                       </div>
                       <ChangePill changes={entry.changes} />
-                      {entry.metadata && Object.keys(entry.metadata).length > 0 && (
-                        <div className="mt-1 text-[10px] text-white/20 font-mono truncate">
-                          {Object.entries(entry.metadata).slice(0, 2).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')}
-                        </div>
-                      )}
+                      {entry.metadata &&
+                        Object.keys(entry.metadata).length > 0 && (
+                          <div className="mt-1 text-[10px] text-white/20 font-mono truncate">
+                            {Object.entries(entry.metadata)
+                              .slice(0, 2)
+                              .map(([k, v]) => `${k}: ${String(v)}`)
+                              .join(" · ")}
+                          </div>
+                        )}
                     </div>
 
                     {/* User */}
                     <div className="text-[11px] font-mono text-white/30 truncate">
-                      {entry.user_id ? entry.user_id.slice(-8) : 'system'}
+                      {entry.user_id ? entry.user_id.slice(-8) : "system"}
                     </div>
 
                     {/* IP */}
                     <div className="text-[11px] font-mono text-white/25">
-                      {entry.ip_address ?? '—'}
+                      {entry.ip_address ?? "—"}
                     </div>
 
                     {/* Timestamp */}
@@ -353,7 +458,8 @@ export default function AuditTrailPage() {
         {/* Pagination */}
         <div className="flex items-center justify-between text-sm text-white/30">
           <span className="text-[12px]">
-            {pagination.total.toLocaleString()} entries · page {pagination.page} of {pagination.pages}
+            {pagination.total.toLocaleString()} entries · page {pagination.page}{" "}
+            of {pagination.pages}
           </span>
           <div className="flex items-center gap-1">
             <button
@@ -363,13 +469,18 @@ export default function AuditTrailPage() {
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            {Array.from({ length: Math.min(pagination.pages, 7) }, (_, i) => i + 1).map((p) => (
+            {Array.from(
+              { length: Math.min(pagination.pages, 7) },
+              (_, i) => i + 1,
+            ).map((p) => (
               <button
                 key={p}
                 onClick={() => setPage(p)}
                 className={cn(
-                  'w-7 h-7 text-xs font-mono rounded transition-colors',
-                  p === pagination.page ? 'bg-white/10 text-white/70' : 'hover:bg-white/[0.05] text-white/30',
+                  "w-7 h-7 text-xs font-mono rounded transition-colors",
+                  p === pagination.page
+                    ? "bg-white/10 text-white/70"
+                    : "hover:bg-white/[0.05] text-white/30",
                 )}
               >
                 {p}

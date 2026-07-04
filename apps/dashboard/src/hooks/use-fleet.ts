@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import { useApiList, useApiQuery, ApiFilters, UseApiListResult, UseApiQueryResult } from './use-api';
+import {
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiListResult,
+  UseApiQueryResult,
+} from "./use-api";
 
 export interface Vehicle {
   id: string;
@@ -101,38 +107,55 @@ export interface FleetFilters extends ApiFilters {
 }
 
 export function useVehicles(filters?: FleetFilters): UseApiListResult<Vehicle> {
-  return useApiList<Vehicle>('/api/v4/fleet/vehicles', filters);
+  return useApiList<Vehicle>("/api/v4/fleet/vehicles", filters);
 }
 
-export function useVehicleDetail(id: string | null): UseApiQueryResult<Vehicle> {
+export function useVehicleDetail(
+  id: string | null,
+): UseApiQueryResult<Vehicle> {
   return useApiQuery<Vehicle>(id ? `/api/v4/fleet/${id}` : null);
 }
 
-export function useMaintenanceEvents(filters?: ApiFilters): UseApiListResult<MaintenanceEvent> {
-  return useApiList<MaintenanceEvent>('/api/v4/fleet/maintenance', filters);
+export function useMaintenanceEvents(
+  filters?: ApiFilters,
+): UseApiListResult<MaintenanceEvent> {
+  return useApiList<MaintenanceEvent>("/api/v4/fleet/maintenance", filters);
 }
 
-export function useFuelTransactions(filters?: ApiFilters): UseApiListResult<FuelTransaction> {
-  return useApiList<FuelTransaction>('/api/v4/fleet/fuel-transactions', filters);
+export function useFuelTransactions(
+  filters?: ApiFilters,
+): UseApiListResult<FuelTransaction> {
+  return useApiList<FuelTransaction>(
+    "/api/v4/fleet/fuel-transactions",
+    filters,
+  );
 }
 
 export function useFuelCards(filters?: ApiFilters): UseApiListResult<FuelCard> {
-  return useApiList<FuelCard>('/api/v4/fleet/fuel-cards', filters);
+  return useApiList<FuelCard>("/api/v4/fleet/fuel-cards", filters);
 }
 
 export function useFleetOverview(): UseApiQueryResult<FleetOverviewData> {
-  return useApiQuery<FleetOverviewData>('/api/v4/fleet/overview');
+  return useApiQuery<FleetOverviewData>("/api/v4/fleet/overview");
 }
 
 export function useFleetHealth(): UseApiQueryResult<FleetHealthMetrics> {
-  return useApiQuery<FleetHealthMetrics>('/api/v4/fleet/health');
+  return useApiQuery<FleetHealthMetrics>("/api/v4/fleet/health");
 }
 
-export function useActivityFeed(filters?: ApiFilters): UseApiListResult<ActivityFeed> {
-  return useApiList<ActivityFeed>('/api/v4/fleet/activity', filters);
+export function useActivityFeed(
+  filters?: ApiFilters,
+): UseApiListResult<ActivityFeed> {
+  return useApiList<ActivityFeed>("/api/v4/fleet/activity", filters);
 }
 
 export const VEHICLE_TYPES = ["sedan", "truck", "van", "suv", "semi"];
 export const VEHICLE_STATUSES = ["active", "maintenance", "retired", "idle"];
 export const FUEL_TYPES = ["gasoline", "diesel", "electric", "hybrid"];
-export const MAINTENANCE_TYPES = ["oil-change", "tire-rotation", "inspection", "repair", "alignment"];
+export const MAINTENANCE_TYPES = [
+  "oil-change",
+  "tire-rotation",
+  "inspection",
+  "repair",
+  "alignment",
+];

@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Clock, AlertCircle, CheckCircle2, Sparkles, TrendingUp, TrendingDown } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+import {
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 
 interface ETACountdownProps {
   eta: Date | null;
@@ -46,7 +53,12 @@ export function ETACountdown({
       const diffMs = eta.getTime() - now.getTime();
 
       if (diffMs <= 0) {
-        setETAState({ minutesRemaining: 0, secondsRemaining: 0, isDelayed: false, isEarly: false });
+        setETAState({
+          minutesRemaining: 0,
+          secondsRemaining: 0,
+          isDelayed: false,
+          isEarly: false,
+        });
         return;
       }
 
@@ -56,7 +68,12 @@ export function ETACountdown({
       const isDelayed = minutes > 15;
       const isEarly = minutes < 3 && minutes > 0;
 
-      setETAState({ minutesRemaining: minutes, secondsRemaining: seconds, isDelayed, isEarly });
+      setETAState({
+        minutesRemaining: minutes,
+        secondsRemaining: seconds,
+        isDelayed,
+        isEarly,
+      });
     }, 1000);
 
     return () => clearInterval(interval);
@@ -72,14 +89,24 @@ export function ETACountdown({
 
   const { minutesRemaining, secondsRemaining, isDelayed, isEarly } = etaState;
 
-  const statusIcon = isDelayed
-    ? <AlertCircle size={14} className="text-wl-warning-500" />
-    : isEarly
-    ? <CheckCircle2 size={14} className="text-wl-success-500" />
-    : <Clock size={14} className="text-wl-text-tertiary" />;
+  const statusIcon = isDelayed ? (
+    <AlertCircle size={14} className="text-wl-warning-500" />
+  ) : isEarly ? (
+    <CheckCircle2 size={14} className="text-wl-success-500" />
+  ) : (
+    <Clock size={14} className="text-wl-text-tertiary" />
+  );
 
-  const statusText = isDelayed ? 'Delayed' : isEarly ? 'Arriving soon' : 'On time';
-  const statusColor = isDelayed ? 'text-wl-warning-500' : isEarly ? 'text-wl-success-500' : 'text-wl-text-secondary';
+  const statusText = isDelayed
+    ? "Delayed"
+    : isEarly
+      ? "Arriving soon"
+      : "On time";
+  const statusColor = isDelayed
+    ? "text-wl-warning-500"
+    : isEarly
+      ? "text-wl-success-500"
+      : "text-wl-text-secondary";
 
   // Confidence interval: ± Math.round((1 - confidence) * 5) minutes, min 1
   const confidenceIntervalMin =
@@ -113,7 +140,10 @@ export function ETACountdown({
           <span className="value">{minutesRemaining}</span>
           <span className="text-lg text-wl-text-tertiary font-medium">min</span>
           {confidenceIntervalMin !== null && (
-            <span className="text-xs text-wl-text-tertiary font-normal" data-testid="confidence-interval">
+            <span
+              className="text-xs text-wl-text-tertiary font-normal"
+              data-testid="confidence-interval"
+            >
               ± {confidenceIntervalMin}m
             </span>
           )}
@@ -127,17 +157,20 @@ export function ETACountdown({
       {significantDelta !== null && (
         <div
           className={cn(
-            'flex items-center gap-1.5 text-xs font-medium rounded px-2 py-1',
+            "flex items-center gap-1.5 text-xs font-medium rounded px-2 py-1",
             significantDelta > 0
-              ? 'text-wl-warning-600 bg-wl-warning-500/10'
-              : 'text-wl-success-600 bg-wl-success-500/10',
+              ? "text-wl-warning-600 bg-wl-warning-500/10"
+              : "text-wl-success-600 bg-wl-success-500/10",
           )}
           data-testid="eta-delta-badge"
         >
-          {significantDelta > 0
-            ? <TrendingUp size={12} />
-            : <TrendingDown size={12} />}
-          ETA updated {significantDelta > 0 ? '+' : ''}{significantDelta}m
+          {significantDelta > 0 ? (
+            <TrendingUp size={12} />
+          ) : (
+            <TrendingDown size={12} />
+          )}
+          ETA updated {significantDelta > 0 ? "+" : ""}
+          {significantDelta}m
         </div>
       )}
 
@@ -145,7 +178,9 @@ export function ETACountdown({
       <div>
         <div className="flex justify-between text-xs mb-1.5">
           <span className="text-wl-text-tertiary">Route progress</span>
-          <span className="text-wl-text-primary font-medium mono">{routeProgress}%</span>
+          <span className="text-wl-text-primary font-medium mono">
+            {routeProgress}%
+          </span>
         </div>
         <div className="w-full h-1.5 rounded-full bg-wl-bg-elevated overflow-hidden">
           <div
@@ -158,7 +193,9 @@ export function ETACountdown({
       {/* Status */}
       <div className="flex items-center gap-1.5">
         {statusIcon}
-        <span className={cn('text-xs font-medium', statusColor)}>{statusText}</span>
+        <span className={cn("text-xs font-medium", statusColor)}>
+          {statusText}
+        </span>
       </div>
 
       {lastUpdated && (
@@ -172,7 +209,7 @@ export function ETACountdown({
 
 function formatTimeAgo(date: Date): string {
   const diffSeconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diffSeconds < 60) return 'just now';
+  if (diffSeconds < 60) return "just now";
   if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
   return `${Math.floor(diffSeconds / 3600)}h ago`;
 }

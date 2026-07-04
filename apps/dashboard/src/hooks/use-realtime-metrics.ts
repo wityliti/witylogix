@@ -56,7 +56,7 @@ export function useRealtimeMetrics(
     token?: string;
     url?: string;
     onMetricsUpdate?: (metrics: RealtimeMetrics) => void;
-  }
+  },
 ): RealtimeMetrics {
   const [metrics, setMetrics] = useState<RealtimeMetrics>({
     ordersToday: 0,
@@ -67,7 +67,9 @@ export function useRealtimeMetrics(
     isLoading: true,
   });
 
-  const roomId = shopId ? (`shop:${shopId}` as const) : (`org:${shopId}` as const);
+  const roomId = shopId
+    ? (`shop:${shopId}` as const)
+    : (`org:${shopId}` as const);
 
   /**
    * Handle metrics updated event.
@@ -98,14 +100,14 @@ export function useRealtimeMetrics(
         return updated;
       });
     },
-    [config]
+    [config],
   );
 
   // Use realtime hook
   const realtime = useRealtime({
     channels: [roomId],
     onMessage: (msg) => {
-      if (msg.event === 'metrics.updated') {
+      if (msg.event === "metrics.updated") {
         handleMetricsMessage(msg.data as MetricsUpdatedEvent);
       }
     },
@@ -139,7 +141,7 @@ export function useRealtimeMetrics(
 export function useAnimatedMetric(
   current: number,
   previous?: number,
-  duration: number = 500
+  duration: number = 500,
 ): number {
   const [displayValue, setDisplayValue] = useState(current);
 
@@ -178,7 +180,7 @@ export function useAnimatedMetric(
  */
 export function useFormattedSLA(
   current: number,
-  previous?: number
+  previous?: number,
 ): {
   formatted: string;
   changed: boolean;
@@ -186,8 +188,7 @@ export function useFormattedSLA(
 } {
   const formatted = `${Math.round(current)}%`;
   const changed = previous !== undefined && previous !== current;
-  const improved =
-    changed && previous !== undefined && current > previous;
+  const improved = changed && previous !== undefined && current > previous;
 
   return { formatted, changed, improved };
 }

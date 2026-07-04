@@ -10,7 +10,11 @@
  */
 
 import type { GeoPoint } from "./distance.js";
-import { computeETAs, haversineDistance, estimateTravelTime } from "./distance.js";
+import {
+  computeETAs,
+  haversineDistance,
+  estimateTravelTime,
+} from "./distance.js";
 
 // ── Type Definitions ─────────────────────────────────
 
@@ -98,7 +102,10 @@ export interface ValidationReport {
  * @param stops - The stops to assign to the vehicle
  * @returns true if all stops fit within capacity, false otherwise
  */
-export function checkCapacity(vehicle: Vehicle, stops: OptimizationStop[]): boolean {
+export function checkCapacity(
+  vehicle: Vehicle,
+  stops: OptimizationStop[],
+): boolean {
   let totalWeight = 0;
   let totalVolume = 0;
 
@@ -107,7 +114,10 @@ export function checkCapacity(vehicle: Vehicle, stops: OptimizationStop[]): bool
     totalVolume += stop.volume ?? 0;
   }
 
-  return totalWeight <= vehicle.capacity.weight && totalVolume <= vehicle.capacity.volume;
+  return (
+    totalWeight <= vehicle.capacity.weight &&
+    totalVolume <= vehicle.capacity.volume
+  );
 }
 
 /**
@@ -136,7 +146,12 @@ export function checkTimeWindows(
   const fullRoute = [depot, ...route.stops.map((s) => s.location)];
   const serviceDurations = [0, ...route.stops.map((s) => s.serviceDuration)];
 
-  const etas = computeETAs(fullRoute, route.departureTime, serviceDurations, speedKmh);
+  const etas = computeETAs(
+    fullRoute,
+    route.departureTime,
+    serviceDurations,
+    speedKmh,
+  );
 
   // Check each stop's time window (skip depot at index 0)
   for (let i = 0; i < route.stops.length; i++) {
@@ -174,7 +189,10 @@ export function checkTimeWindows(
  * @param stop - The stop that requires certain skills
  * @returns true if vehicle has all required skills, false otherwise
  */
-export function checkSkillMatch(vehicle: Vehicle, stop: OptimizationStop): boolean {
+export function checkSkillMatch(
+  vehicle: Vehicle,
+  stop: OptimizationStop,
+): boolean {
   // If the stop has no skill requirements, it's compatible
   if (!stop.skills || stop.skills.length === 0) {
     return true;
@@ -191,9 +209,14 @@ export function checkSkillMatch(vehicle: Vehicle, stop: OptimizationStop): boole
  * @param route - The route solution
  * @returns true if route fits within shift, false otherwise
  */
-export function checkShiftLimits(vehicle: Vehicle, route: RouteSolution): boolean {
+export function checkShiftLimits(
+  vehicle: Vehicle,
+  route: RouteSolution,
+): boolean {
   // Check if departure is before shift end and arrival is before shift end
-  const routeEndTime = new Date(route.departureTime.getTime() + route.totalDuration * 60 * 1000);
+  const routeEndTime = new Date(
+    route.departureTime.getTime() + route.totalDuration * 60 * 1000,
+  );
   return (
     route.departureTime >= vehicle.shiftStart &&
     routeEndTime <= vehicle.shiftEnd
@@ -315,13 +338,20 @@ export function validateRoute(
   }
 
   // Check time windows
-  const timeWindowViolations = checkTimeWindows(route, depot, distanceMatrix || [[]], 60);
+  const timeWindowViolations = checkTimeWindows(
+    route,
+    depot,
+    distanceMatrix || [[]],
+    60,
+  );
   violations.timeWindow.push(...timeWindowViolations);
 
   // Check skill match
   for (const stop of route.stops) {
     if (!checkSkillMatch(vehicle, stop)) {
-      const missingSkills = (stop.skills || []).filter((s) => !vehicle.skills.includes(s));
+      const missingSkills = (stop.skills || []).filter(
+        (s) => !vehicle.skills.includes(s),
+      );
       violations.skillMatch.push(
         `Stop ${stop.id} requires skills [${missingSkills.join(", ")}] not available on vehicle ${vehicle.id}`,
       );

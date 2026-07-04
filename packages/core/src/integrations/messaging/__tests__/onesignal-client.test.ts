@@ -54,7 +54,9 @@ describe("OneSignalClient", () => {
         provider: "onesignal",
         restApiKey: "key",
       };
-      expect(() => new OneSignalClient(invalidConfig)).toThrow("OneSignal appId is required");
+      expect(() => new OneSignalClient(invalidConfig)).toThrow(
+        "OneSignal appId is required",
+      );
     });
 
     it("should throw error if restApiKey is missing", () => {
@@ -62,7 +64,9 @@ describe("OneSignalClient", () => {
         provider: "onesignal",
         appId: "app-id",
       };
-      expect(() => new OneSignalClient(invalidConfig)).toThrow("OneSignal restApiKey is required");
+      expect(() => new OneSignalClient(invalidConfig)).toThrow(
+        "OneSignal restApiKey is required",
+      );
     });
 
     it("should initialize with valid config", () => {
@@ -294,16 +298,22 @@ describe("OneSignalClient", () => {
 
   describe("Templates", () => {
     it("should send notification from template", async () => {
-      const result = await client.sendFromTemplate("template-id-123", ["user-1", "user-2"], {
-        name: "John",
-        discount: "20%",
-      });
+      const result = await client.sendFromTemplate(
+        "template-id-123",
+        ["user-1", "user-2"],
+        {
+          name: "John",
+          discount: "20%",
+        },
+      );
 
       expect(result.timestamp).toBeInstanceOf(Date);
     });
 
     it("should send template without substitutions", async () => {
-      const result = await client.sendFromTemplate("template-id-123", ["user-1"]);
+      const result = await client.sendFromTemplate("template-id-123", [
+        "user-1",
+      ]);
 
       expect(result.timestamp).toBeInstanceOf(Date);
     });
@@ -316,7 +326,7 @@ describe("OneSignalClient", () => {
         "Check out our new feature!",
         "Discover what's new",
         "segment-123",
-        "opens"
+        "opens",
       );
 
       expect(result.timestamp).toBeInstanceOf(Date);
@@ -328,7 +338,7 @@ describe("OneSignalClient", () => {
         "Learn more",
         "Discover more",
         "segment-123",
-        "clicks"
+        "clicks",
       );
 
       expect(result.timestamp).toBeInstanceOf(Date);
@@ -339,7 +349,7 @@ describe("OneSignalClient", () => {
         "Draft Test",
         "Draft variant A",
         "Draft variant B",
-        "segment-123"
+        "segment-123",
       );
 
       expect(result.timestamp).toBeInstanceOf(Date);
@@ -408,7 +418,7 @@ describe("OneSignalClient", () => {
         client.addDeviceTags("user-123", {
           segment: "premium",
           region: "us-west",
-        })
+        }),
       ).resolves.not.toThrow();
     });
 
@@ -431,7 +441,9 @@ describe("OneSignalClient", () => {
     });
 
     it("should cancel a scheduled notification", async () => {
-      await expect(client.cancelNotification("notif-123")).resolves.not.toThrow();
+      await expect(
+        client.cancelNotification("notif-123"),
+      ).resolves.not.toThrow();
     });
   });
 

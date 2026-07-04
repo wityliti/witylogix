@@ -54,7 +54,9 @@ export class ApiVersionManager {
    */
   private validateConfig(): void {
     if (!this.versions.has(this.defaultVersion)) {
-      throw new Error(`Default version ${this.defaultVersion} not found in versions`);
+      throw new Error(
+        `Default version ${this.defaultVersion} not found in versions`,
+      );
     }
 
     if (!this.versions.has(this.minSupportedVersion)) {
@@ -65,16 +67,16 @@ export class ApiVersionManager {
   /**
    * Detect API version from request (tries multiple strategies).
    */
-  detectVersion(
-    request: {
-      url?: string;
-      path?: string;
-      headers?: Record<string, string>;
-      query?: Record<string, string | string[]>;
-    }
-  ): string {
+  detectVersion(request: {
+    url?: string;
+    path?: string;
+    headers?: Record<string, string>;
+    query?: Record<string, string | string[]>;
+  }): string {
     // Strategy 1: URL path (/v1/... or /v2/...)
-    const pathVersion = this.detectPathVersion(request.path || request.url || "");
+    const pathVersion = this.detectPathVersion(
+      request.path || request.url || "",
+    );
     if (pathVersion) {
       return pathVersion;
     }
@@ -94,7 +96,9 @@ export class ApiVersionManager {
     // Strategy 4: ?apiVersion query param
     const queryVersion = request.query?.["apiVersion"];
     if (queryVersion) {
-      const versionStr = Array.isArray(queryVersion) ? queryVersion[0] : queryVersion;
+      const versionStr = Array.isArray(queryVersion)
+        ? queryVersion[0]
+        : queryVersion;
       return this.normalizeVersion(versionStr);
     }
 
@@ -207,7 +211,8 @@ export class ApiVersionManager {
       }
 
       if (deprecation.replacedBy) {
-        headers["Link"] = `</v${deprecation.replacedBy}>; rel="successor-version"`;
+        headers["Link"] =
+          `</v${deprecation.replacedBy}>; rel="successor-version"`;
       }
 
       // Warning header (RFC 7234)
@@ -237,7 +242,11 @@ export class ApiVersionManager {
   /**
    * Register new version at runtime.
    */
-  registerVersion(version: string, info: VersionInfo, transformer?: (data: any) => any): void {
+  registerVersion(
+    version: string,
+    info: VersionInfo,
+    transformer?: (data: any) => any,
+  ): void {
     this.versions.set(version, info);
     if (transformer) {
       this.transformers.set(version, transformer);
@@ -247,7 +256,11 @@ export class ApiVersionManager {
   /**
    * Deprecate version with sunset date.
    */
-  deprecateVersion(version: string, sunsetDate: Date, replacedBy?: string): void {
+  deprecateVersion(
+    version: string,
+    sunsetDate: Date,
+    replacedBy?: string,
+  ): void {
     const info = this.versions.get(version);
     if (!info) {
       throw new Error(`Version ${version} not found`);

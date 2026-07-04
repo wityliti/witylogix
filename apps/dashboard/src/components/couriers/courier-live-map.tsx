@@ -4,7 +4,10 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import type { DriverPosition, LocationInfo } from "@witylogix/core/integrations/couriers";
+import type {
+  DriverPosition,
+  LocationInfo,
+} from "@witylogix/core/integrations/couriers";
 
 interface Courier {
   id: string;
@@ -68,12 +71,12 @@ export function CourierLiveMap({
         centerLat: center.lat,
         centerLon: center.lon,
         zoom,
-        pixelsPerDegree: Math.pow(2, zoom) * 256 / 360,
+        pixelsPerDegree: (Math.pow(2, zoom) * 256) / 360,
       };
     }
 
     const canvas = canvasRef.current;
-    const pixelsPerDegree = Math.pow(2, zoom) * 256 / 360;
+    const pixelsPerDegree = (Math.pow(2, zoom) * 256) / 360;
 
     return {
       width: canvas.width,
@@ -89,11 +92,13 @@ export function CourierLiveMap({
   const latLonToCanvas = useCallback(
     (lat: number, lon: number): MapPoint => {
       const coords = getMapCoordinates();
-      const x = coords.width / 2 + (lon - coords.centerLon) * coords.pixelsPerDegree;
-      const y = coords.height / 2 - (lat - coords.centerLat) * coords.pixelsPerDegree;
+      const x =
+        coords.width / 2 + (lon - coords.centerLon) * coords.pixelsPerDegree;
+      const y =
+        coords.height / 2 - (lat - coords.centerLat) * coords.pixelsPerDegree;
       return { x, y };
     },
-    [getMapCoordinates]
+    [getMapCoordinates],
   );
 
   // Draw the map
@@ -119,12 +124,19 @@ export function CourierLiveMap({
     ctx.strokeStyle = "rgb(55, 65, 81)";
     ctx.lineWidth = 0.5;
     const gridSize = 0.1; // degrees
-    const startLon = coords.centerLon - coords.width / 2 / coords.pixelsPerDegree;
+    const startLon =
+      coords.centerLon - coords.width / 2 / coords.pixelsPerDegree;
     const endLon = coords.centerLon + coords.width / 2 / coords.pixelsPerDegree;
-    const startLat = coords.centerLat - coords.height / 2 / coords.pixelsPerDegree;
-    const endLat = coords.centerLat + coords.height / 2 / coords.pixelsPerDegree;
+    const startLat =
+      coords.centerLat - coords.height / 2 / coords.pixelsPerDegree;
+    const endLat =
+      coords.centerLat + coords.height / 2 / coords.pixelsPerDegree;
 
-    for (let lon = Math.floor(startLon * 10) / 10; lon <= endLon; lon += gridSize) {
+    for (
+      let lon = Math.floor(startLon * 10) / 10;
+      lon <= endLon;
+      lon += gridSize
+    ) {
       const point = latLonToCanvas(coords.centerLat, lon);
       ctx.beginPath();
       ctx.moveTo(point.x, 0);
@@ -132,7 +144,11 @@ export function CourierLiveMap({
       ctx.stroke();
     }
 
-    for (let lat = Math.floor(startLat * 10) / 10; lat <= endLat; lat += gridSize) {
+    for (
+      let lat = Math.floor(startLat * 10) / 10;
+      lat <= endLat;
+      lat += gridSize
+    ) {
       const point = latLonToCanvas(lat, coords.centerLon);
       ctx.beginPath();
       ctx.moveTo(0, point.y);
@@ -143,8 +159,14 @@ export function CourierLiveMap({
     // Draw delivery points
     deliveries.forEach((delivery) => {
       // Pickup point
-      const pickupPoint = latLonToCanvas(delivery.pickup.latitude, delivery.pickup.longitude);
-      ctx.fillStyle = delivery.status === "pending" ? "rgb(59, 130, 246)" : "rgb(107, 114, 128)";
+      const pickupPoint = latLonToCanvas(
+        delivery.pickup.latitude,
+        delivery.pickup.longitude,
+      );
+      ctx.fillStyle =
+        delivery.status === "pending"
+          ? "rgb(59, 130, 246)"
+          : "rgb(107, 114, 128)";
       ctx.beginPath();
       ctx.arc(pickupPoint.x, pickupPoint.y, 6, 0, Math.PI * 2);
       ctx.fill();
@@ -153,8 +175,14 @@ export function CourierLiveMap({
       ctx.stroke();
 
       // Dropoff point
-      const dropoffPoint = latLonToCanvas(delivery.dropoff.latitude, delivery.dropoff.longitude);
-      ctx.fillStyle = delivery.status === "delivered" ? "rgb(107, 114, 128)" : "rgb(34, 197, 94)";
+      const dropoffPoint = latLonToCanvas(
+        delivery.dropoff.latitude,
+        delivery.dropoff.longitude,
+      );
+      ctx.fillStyle =
+        delivery.status === "delivered"
+          ? "rgb(107, 114, 128)"
+          : "rgb(34, 197, 94)";
       ctx.beginPath();
       ctx.arc(dropoffPoint.x, dropoffPoint.y, 6, 0, Math.PI * 2);
       ctx.fill();
@@ -164,7 +192,10 @@ export function CourierLiveMap({
 
       // Draw route line if in transit or delivered
       if (delivery.status === "in_transit" || delivery.status === "delivered") {
-        ctx.strokeStyle = delivery.status === "in_transit" ? "rgba(245, 158, 11, 0.5)" : "rgba(107, 114, 128, 0.3)";
+        ctx.strokeStyle =
+          delivery.status === "in_transit"
+            ? "rgba(245, 158, 11, 0.5)"
+            : "rgba(107, 114, 128, 0.3)";
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
         ctx.beginPath();
@@ -177,12 +208,17 @@ export function CourierLiveMap({
 
     // Draw couriers
     couriers.forEach((courier) => {
-      const point = latLonToCanvas(courier.location.latitude, courier.location.longitude);
+      const point = latLonToCanvas(
+        courier.location.latitude,
+        courier.location.longitude,
+      );
 
       // Courier circle
       const baseRadius = 10;
       const isHovered = hoveredCourierId === courier.id;
-      const isSelected = deliveries.find((d) => d.courierId === courier.id)?.id === selectedDeliveryId;
+      const isSelected =
+        deliveries.find((d) => d.courierId === courier.id)?.id ===
+        selectedDeliveryId;
       const radius = isHovered || isSelected ? baseRadius + 2 : baseRadius;
 
       // Color based on status
@@ -238,9 +274,15 @@ export function CourierLiveMap({
         const angle2 = angle - Math.PI / 6;
         ctx.beginPath();
         ctx.moveTo(arrowX, arrowY);
-        ctx.lineTo(arrowX - headlen * Math.cos(angle1), arrowY - headlen * Math.sin(angle1));
+        ctx.lineTo(
+          arrowX - headlen * Math.cos(angle1),
+          arrowY - headlen * Math.sin(angle1),
+        );
         ctx.moveTo(arrowX, arrowY);
-        ctx.lineTo(arrowX - headlen * Math.cos(angle2), arrowY - headlen * Math.sin(angle2));
+        ctx.lineTo(
+          arrowX - headlen * Math.cos(angle2),
+          arrowY - headlen * Math.sin(angle2),
+        );
         ctx.stroke();
       }
     });
@@ -250,7 +292,15 @@ export function CourierLiveMap({
     ctx.font = "11px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     ctx.textAlign = "left";
     ctx.fillText(`Zoom: ${zoom}`, 10, rect.height - 10);
-  }, [couriers, deliveries, zoom, center, latLonToCanvas, hoveredCourierId, selectedDeliveryId]);
+  }, [
+    couriers,
+    deliveries,
+    zoom,
+    center,
+    latLonToCanvas,
+    hoveredCourierId,
+    selectedDeliveryId,
+  ]);
 
   // Handle canvas mouse move for tooltip
   const handleCanvasMouseMove = useCallback(
@@ -265,7 +315,10 @@ export function CourierLiveMap({
       // Check if hovering over a courier
       let foundCourier: Courier | null = null;
       for (const courier of couriers) {
-        const point = latLonToCanvas(courier.location.latitude, courier.location.longitude);
+        const point = latLonToCanvas(
+          courier.location.latitude,
+          courier.location.longitude,
+        );
         const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
         if (distance < 15) {
           foundCourier = courier;
@@ -275,13 +328,14 @@ export function CourierLiveMap({
 
       setHoveredCourierId(foundCourier?.id || null);
     },
-    [couriers, latLonToCanvas]
+    [couriers, latLonToCanvas],
   );
 
   // Handle zoom
   const handleZoom = useCallback((direction: "in" | "out") => {
     setZoom((prev) => {
-      const newZoom = direction === "in" ? Math.min(prev + 1, 18) : Math.max(prev - 1, 8);
+      const newZoom =
+        direction === "in" ? Math.min(prev + 1, 18) : Math.max(prev - 1, 8);
       return newZoom;
     });
   }, []);
@@ -302,7 +356,10 @@ export function CourierLiveMap({
   const hoveredCourier = couriers.find((c) => c.id === hoveredCourierId);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-wl-bg-surface rounded-lg overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative w-full h-full bg-wl-bg-surface rounded-lg overflow-hidden"
+    >
       <canvas
         ref={canvasRef}
         onMouseMove={handleCanvasMouseMove}
@@ -352,8 +409,12 @@ export function CourierLiveMap({
           }}
         >
           <div className="space-y-1">
-            <p className="font-semibold text-wl-text-primary text-sm">{hoveredCourier.name}</p>
-            <p className="text-xs text-wl-text-secondary capitalize">{hoveredCourier.partner}</p>
+            <p className="font-semibold text-wl-text-primary text-sm">
+              {hoveredCourier.name}
+            </p>
+            <p className="text-xs text-wl-text-secondary capitalize">
+              {hoveredCourier.partner}
+            </p>
             <div className="flex items-center gap-2 text-xs">
               <span
                 className={cn(
@@ -361,19 +422,30 @@ export function CourierLiveMap({
                   hoveredCourier.status === "idle" && "bg-wl-neutral-500",
                   hoveredCourier.status === "en-route" && "bg-blue-500",
                   hoveredCourier.status === "delivering" && "bg-amber-500",
-                  hoveredCourier.status === "returning" && "bg-purple-500"
+                  hoveredCourier.status === "returning" && "bg-purple-500",
                 )}
               />
-              <span className="capitalize text-wl-text-secondary">{hoveredCourier.status.replace("-", " ")}</span>
+              <span className="capitalize text-wl-text-secondary">
+                {hoveredCourier.status.replace("-", " ")}
+              </span>
             </div>
             {hoveredCourier.currentDeliveryId && (
               <p className="text-xs text-wl-text-secondary">
-                Current: {deliveries.find((d) => d.id === hoveredCourier.currentDeliveryId)?.orderId}
+                Current:{" "}
+                {
+                  deliveries.find(
+                    (d) => d.id === hoveredCourier.currentDeliveryId,
+                  )?.orderId
+                }
               </p>
             )}
             <div className="pt-1 border-t border-wl-border-subtle flex items-center gap-1">
-              <span className="text-xs font-medium text-wl-text-secondary">Rating:</span>
-              <span className="text-xs text-wl-warning-400">★ {hoveredCourier.rating.toFixed(1)}</span>
+              <span className="text-xs font-medium text-wl-text-secondary">
+                Rating:
+              </span>
+              <span className="text-xs text-wl-warning-400">
+                ★ {hoveredCourier.rating.toFixed(1)}
+              </span>
             </div>
           </div>
         </div>

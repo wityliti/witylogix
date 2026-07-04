@@ -172,7 +172,7 @@ export class ComponentHealthModel {
 
     const mileageUsage = Math.min(
       mileageSinceService / recommendedServiceInterval,
-      1.0
+      1.0,
     );
     const ageUsage = Math.min(ageDays / expectedLifespanDays, 1.0);
     const anomalyCount = anomalies.length;
@@ -200,7 +200,7 @@ export class ComponentHealthModel {
    */
   updateComponentHealth(
     vehicleId: string,
-    component: ComponentHealth
+    component: ComponentHealth,
   ): ComponentHealth {
     const key = `${vehicleId}-${component.componentId}`;
     const history = this.healthHistory.get(key) || [];
@@ -237,15 +237,14 @@ export class FailureProbabilityCalculator {
     component: ComponentHealth,
     climate: "hot" | "cold" | "moderate",
     terrain: "highway" | "city" | "mixed",
-    load: number
+    load: number,
   ): FailurePrediction {
     const componentType = component.type;
     const baseRate = BASE_FAILURE_RATES[componentType] || 0.02;
 
     // Mileage factor: increases failure risk as service overdue
     const mileageOverdueRatio =
-      component.mileageSinceService /
-      component.recommendedServiceInterval;
+      component.mileageSinceService / component.recommendedServiceInterval;
     const mileageFactor = Math.min(1 + mileageOverdueRatio * 0.5, 2.5);
 
     // Age factor: increases with component age relative to lifespan
@@ -256,22 +255,31 @@ export class FailureProbabilityCalculator {
     const anomalyFactor = 1 + component.anomalies.length * 0.15;
 
     // Operating condition factors
-    const climateFactor = climate === "hot" ? 1.3 : climate === "cold" ? 1.15 : 1.0;
-    const terrainFactor = terrain === "city" ? 1.2 : terrain === "highway" ? 0.9 : 1.0;
+    const climateFactor =
+      climate === "hot" ? 1.3 : climate === "cold" ? 1.15 : 1.0;
+    const terrainFactor =
+      terrain === "city" ? 1.2 : terrain === "highway" ? 0.9 : 1.0;
     const loadFactor = Math.min(1 + load * 0.3, 2.0);
 
     const combinedFactor =
-      mileageFactor * ageFactor * anomalyFactor * climateFactor * terrainFactor * loadFactor;
+      mileageFactor *
+      ageFactor *
+      anomalyFactor *
+      climateFactor *
+      terrainFactor *
+      loadFactor;
     const failureProbability = Math.min(baseRate * combinedFactor, 0.95);
 
     // Estimate days/miles until failure
     const daysUntilFailure = Math.max(
       1,
-      Math.round(component.expectedLifespanDays * (1 - failureProbability))
+      Math.round(component.expectedLifespanDays * (1 - failureProbability)),
     );
     const milesUntilFailure = Math.max(
       1,
-      Math.round(component.recommendedServiceInterval * (1 - failureProbability))
+      Math.round(
+        component.recommendedServiceInterval * (1 - failureProbability),
+      ),
     );
 
     return {
@@ -297,11 +305,11 @@ export class FailureProbabilityCalculator {
   calculateWithHistoricalPatterns(
     makeModelYear: string,
     componentType: ComponentType,
-    mileage: number
+    mileage: number,
   ): number {
     const patterns = this.historicalFailurePatterns.get(makeModelYear) || [];
     const relevantPatterns = patterns.filter(
-      (p) => Math.abs(p.failureRate - BASE_FAILURE_RATES[componentType]) < 0.02
+      (p) => Math.abs(p.failureRate - BASE_FAILURE_RATES[componentType]) < 0.02,
     );
 
     if (relevantPatterns.length === 0) {
@@ -323,7 +331,10 @@ export class RemainingUsefulLife {
   /**
    * Estimate RUL in days and miles
    */
-  estimateRUL(component: ComponentHealth, monthlyMileage: number): {
+  estimateRUL(
+    component: ComponentHealth,
+    monthlyMileage: number,
+  ): {
     daysRemaining: number;
     milesRemaining: number;
     degradationRate: number;
@@ -336,15 +347,15 @@ export class RemainingUsefulLife {
     const daysRemaining = Math.max(
       0,
       Math.round(
-        component.expectedLifespanDays * (1 - overallDegradation) * 0.8
-      )
+        component.expectedLifespanDays * (1 - overallDegradation) * 0.8,
+      ),
     );
 
     const milesRemaining = Math.max(
       0,
       Math.round(
-        component.recommendedServiceInterval * (1 - overallDegradation) * 0.8
-      )
+        component.recommendedServiceInterval * (1 - overallDegradation) * 0.8,
+      ),
     );
 
     const degradationRate = (overallDegradation / component.ageDays) * 365 || 0;
@@ -357,7 +368,7 @@ export class RemainingUsefulLife {
    */
   calculateServiceDueDate(
     component: ComponentHealth,
-    monthlyMileage: number
+    monthlyMileage: number,
   ): Date {
     const rul = this.estimateRUL(component, monthlyMileage);
     const daysUntilOverdue = rul.daysRemaining * 0.9; // Schedule at 90% of RUL
@@ -377,7 +388,7 @@ export class MaintenancePrioritizer {
    */
   calculatePriority(
     prediction: FailurePrediction,
-    estimatedCost: number
+    estimatedCost: number,
   ): number {
     const failureRisk = prediction.failureProbability;
     const costImpact = Math.min(estimatedCost / 5000, 1.0);
@@ -390,9 +401,7 @@ export class MaintenancePrioritizer {
   /**
    * Rank vehicles by maintenance urgency
    */
-  rankVehiclesByUrgency(
-    reports: VehicleHealthReport[]
-  ): Array<{
+  rankVehiclesByUrgency(reports: VehicleHealthReport[]): Array<{
     vehicleId: string;
     vehicleNumber: string;
     urgencyScore: number;
@@ -405,13 +414,13 @@ export class MaintenancePrioritizer {
           type: pred.componentType,
           priority: this.calculatePriority(
             pred,
-            COMPONENT_REPLACEMENT_COSTS[pred.componentType]
+            COMPONENT_REPLACEMENT_COSTS[pred.componentType],
           ),
           cost: COMPONENT_REPLACEMENT_COSTS[pred.componentType],
         }));
 
         const topComponent = componentScores.reduce((prev, current) =>
-          prev.priority > current.priority ? prev : current
+          prev.priority > current.priority ? prev : current,
         );
 
         return {
@@ -434,7 +443,7 @@ export class CostProjector {
    */
   projectCosts(
     predictions: FailurePrediction[],
-    timeframeWeeks: 4 | 8 | 12
+    timeframeWeeks: 4 | 8 | 12,
   ): CostProjection {
     const costByType: Map<ComponentType, number> = new Map();
     let totalCost = 0;
@@ -442,7 +451,7 @@ export class CostProjector {
     predictions.forEach((pred) => {
       const weeksSinceStart = Math.max(
         0,
-        timeframeWeeks - pred.daysUntilFailure / 7
+        timeframeWeeks - pred.daysUntilFailure / 7,
       );
       if (weeksSinceStart > 0 && weeksSinceStart <= timeframeWeeks) {
         const cost = COMPONENT_REPLACEMENT_COSTS[pred.componentType];
@@ -487,7 +496,7 @@ export class AlertGenerator {
   generateAlerts(
     vehicleId: string,
     vehicleNumber: string,
-    predictions: FailurePrediction[]
+    predictions: FailurePrediction[],
   ): MaintenanceAlert[] {
     const alerts: MaintenanceAlert[] = [];
 
@@ -539,7 +548,7 @@ export class AlertGenerator {
     const cost = alert.estimatedCost.toFixed(0);
     const daysUntilDeadline = Math.ceil(
       (alert.schedulingDeadline.getTime() - new Date().getTime()) /
-        (1000 * 60 * 60 * 24)
+        (1000 * 60 * 60 * 24),
     );
 
     return (

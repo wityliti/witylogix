@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/layout/header';
-import type { WizardStep } from './types';
+import { useCallback } from "react";
+import { cn } from "@/lib/utils";
+import { Header } from "@/components/layout/header";
+import type { WizardStep } from "./types";
 
 /* ═══════════════════════════════════════════════════════════
    Wizard Compound Components for CRM Connection Setup
@@ -35,13 +35,13 @@ interface WizardContentProps {
 // Compound Wizard Components
 export function Wizard({ children, activeStep, onStepChange }: WizardProps) {
   return (
-    <div className={cn('flex h-screen bg-wl-bg-root')}>
+    <div className={cn("flex h-screen bg-wl-bg-root")}>
       {/* Sidebar Navigation */}
       <div
         className={cn(
-          'w-64 border-r border-wl-border-default',
-          'bg-wl-bg-surface overflow-y-auto',
-          'flex flex-col'
+          "w-64 border-r border-wl-border-default",
+          "bg-wl-bg-surface overflow-y-auto",
+          "flex flex-col",
         )}
       >
         {children}
@@ -53,21 +53,21 @@ export function Wizard({ children, activeStep, onStepChange }: WizardProps) {
 export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, step: number) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         onStepClick(step);
       }
     },
-    [onStepClick]
+    [onStepClick],
   );
 
   return (
-    <nav className={cn('p-6 space-y-2 flex-1')}>
+    <nav className={cn("p-6 space-y-2 flex-1")}>
       <h3
         className={cn(
-          'text-xs font-bold',
-          'text-wl-text-secondary uppercase',
-          'tracking-wider mb-4 px-3'
+          "text-xs font-bold",
+          "text-wl-text-secondary uppercase",
+          "tracking-wider mb-4 px-3",
         )}
       >
         Setup Steps
@@ -80,27 +80,27 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
             onKeyDown={(e) => handleKeyDown(e, step.id)}
             disabled={!step.isAccessible}
             className={cn(
-              'w-full text-left px-3 py-3 rounded-md',
-              'transition-all duration-base ease-default',
-              'relative group',
+              "w-full text-left px-3 py-3 rounded-md",
+              "transition-all duration-base ease-default",
+              "relative group",
               step.isActive
-                ? 'bg-blue-500/20 border border-blue-500'
-                : 'hover:bg-wl-bg-elevated',
-              !step.isAccessible && 'opacity-50 cursor-not-allowed'
+                ? "bg-blue-500/20 border border-blue-500"
+                : "hover:bg-wl-bg-elevated",
+              !step.isAccessible && "opacity-50 cursor-not-allowed",
             )}
           >
-            <div className={cn('flex items-center gap-3')}>
+            <div className={cn("flex items-center gap-3")}>
               {/* Step Number or Checkmark */}
               <div
                 className={cn(
-                  'w-6 h-6 rounded-full',
-                  'flex items-center justify-center',
-                  'text-xs font-bold',
+                  "w-6 h-6 rounded-full",
+                  "flex items-center justify-center",
+                  "text-xs font-bold",
                   step.isComplete
-                    ? 'bg-emerald-500 text-white'
+                    ? "bg-emerald-500 text-white"
                     : step.isActive
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-wl-bg-surface border border-wl-border-default text-wl-text-secondary'
+                      ? "bg-blue-500 text-white"
+                      : "bg-wl-bg-surface border border-wl-border-default text-wl-text-secondary",
                 )}
               >
                 {step.isComplete ? (
@@ -120,12 +120,14 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
                   index + 1
                 )}
               </div>
-              <div className={cn('flex-1 min-w-0')}>
+              <div className={cn("flex-1 min-w-0")}>
                 <p
                   className={cn(
-                    'text-sm font-semibold',
-                    'truncate',
-                    step.isActive ? 'text-wl-text-primary' : 'text-wl-text-secondary'
+                    "text-sm font-semibold",
+                    "truncate",
+                    step.isActive
+                      ? "text-wl-text-primary"
+                      : "text-wl-text-secondary",
                   )}
                 >
                   {step.title}
@@ -138,9 +140,9 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
           {index < steps.length - 1 && (
             <div
               className={cn(
-                'ml-7 h-2 w-0.5',
-                'bg-wl-bg-elevated',
-                step.isComplete && 'bg-emerald-500'
+                "ml-7 h-2 w-0.5",
+                "bg-wl-bg-elevated",
+                step.isComplete && "bg-emerald-500",
               )}
             />
           )}
@@ -152,7 +154,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
 
 export function WizardContent({ children }: WizardContentProps) {
   return (
-    <div className={cn('flex-1 flex flex-col', 'overflow-hidden')}>
+    <div className={cn("flex-1 flex flex-col", "overflow-hidden")}>
       {children}
     </div>
   );
@@ -160,13 +162,13 @@ export function WizardContent({ children }: WizardContentProps) {
 
 export function WizardStep({ stepId, title, children }: WizardStepProps) {
   return (
-    <div className={cn('flex-1 flex flex-col', 'overflow-y-auto')}>
+    <div className={cn("flex-1 flex flex-col", "overflow-y-auto")}>
       <Header title={title} />
       <div
         className={cn(
-          'flex-1 overflow-y-auto',
-          'px-6 py-5',
-          'max-w-4xl mx-auto w-full'
+          "flex-1 overflow-y-auto",
+          "px-6 py-5",
+          "max-w-4xl mx-auto w-full",
         )}
       >
         {children}

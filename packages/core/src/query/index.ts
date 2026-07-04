@@ -25,10 +25,7 @@ export { IndexAdvisor } from "./index-advisor.js";
 export type { IndexRecommendation } from "./index-advisor.js";
 
 export { SlowQueryLogger } from "./slow-query-logger.js";
-export type {
-  QueryFingerprint,
-  SlowQueryReport,
-} from "./slow-query-logger.js";
+export type { QueryFingerprint, SlowQueryReport } from "./slow-query-logger.js";
 
 export { QueryCache } from "./query-cache.js";
 export type { CacheStats } from "./query-cache.js";

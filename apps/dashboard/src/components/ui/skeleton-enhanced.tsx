@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { cn } from '../../lib/utils';
+import { cn } from "../../lib/utils";
 
 /**
  * Base skeleton component with shimmer animation
@@ -13,11 +13,11 @@ export function Skeleton({
   return (
     <div
       className={cn(
-        'animate-pulse bg-wl-bg-surface rounded relative overflow-hidden',
-        'before:absolute before:inset-0',
-        'before:bg-gradient-to-r before:from-transparent before:via-wl-bg-elevated before:to-transparent',
-        'before:animate-shimmer',
-        className
+        "animate-pulse bg-wl-bg-surface rounded relative overflow-hidden",
+        "before:absolute before:inset-0",
+        "before:bg-gradient-to-r before:from-transparent before:via-wl-bg-elevated before:to-transparent",
+        "before:animate-shimmer",
+        className,
       )}
       {...props}
     />
@@ -40,13 +40,13 @@ export function SkeletonText({
   className?: string;
 }) {
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}
           className={cn(
-            'h-4 rounded',
-            widths?.[i] || (i === lines - 1 ? 'w-3/4' : 'w-full')
+            "h-4 rounded",
+            widths?.[i] || (i === lines - 1 ? "w-3/4" : "w-full"),
           )}
         />
       ))}
@@ -58,16 +58,12 @@ export function SkeletonText({
  * Skeleton card component with header and content
  * @param className - Additional CSS classes
  */
-export function SkeletonCard({
-  className,
-}: {
-  className?: string;
-}) {
+export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 space-y-4',
-        className
+        "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 space-y-4",
+        className,
       )}
     >
       <div className="space-y-2">
@@ -101,18 +97,15 @@ export function SkeletonTable({
   return (
     <div
       className={cn(
-        'border border-wl-border-subtle rounded-lg overflow-hidden',
-        className
+        "border border-wl-border-subtle rounded-lg overflow-hidden",
+        className,
       )}
     >
       {/* Header */}
       <div className="bg-wl-bg-surface border-b border-wl-border-subtle p-4">
         <div className="flex gap-4">
           {Array.from({ length: columns }).map((_, i) => (
-            <Skeleton
-              key={`header-${i}`}
-              className="h-4 flex-1 rounded"
-            />
+            <Skeleton key={`header-${i}`} className="h-4 flex-1 rounded" />
           ))}
         </div>
       </div>
@@ -120,10 +113,7 @@ export function SkeletonTable({
       {/* Rows */}
       <div className="divide-y divide-wl-border-subtle">
         {Array.from({ length: rows }).map((_, rowIdx) => (
-          <div
-            key={`row-${rowIdx}`}
-            className="p-4 flex gap-4"
-          >
+          <div key={`row-${rowIdx}`} className="p-4 flex gap-4">
             {Array.from({ length: columns }).map((_, colIdx) => (
               <Skeleton
                 key={`cell-${rowIdx}-${colIdx}`}
@@ -143,44 +133,32 @@ export function SkeletonTable({
  * @param className - Additional CSS classes
  */
 export function SkeletonAvatar({
-  size = 'md',
+  size = "md",
   className,
 }: {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }) {
   const sizeClass = {
-    sm: 'w-6 h-6',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12',
-    xl: 'w-16 h-16',
+    sm: "w-6 h-6",
+    md: "w-8 h-8",
+    lg: "w-12 h-12",
+    xl: "w-16 h-16",
   }[size];
 
-  return (
-    <Skeleton
-      className={cn(
-        'rounded-full',
-        sizeClass,
-        className
-      )}
-    />
-  );
+  return <Skeleton className={cn("rounded-full", sizeClass, className)} />;
 }
 
 /**
  * Skeleton chart component for dashboard metrics
  * @param className - Additional CSS classes
  */
-export function SkeletonChart({
-  className,
-}: {
-  className?: string;
-}) {
+export function SkeletonChart({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 space-y-4',
-        className
+        "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 space-y-4",
+        className,
       )}
     >
       <div className="space-y-2">
@@ -212,15 +190,12 @@ export function SkeletonRow({
   className?: string;
 }) {
   return (
-    <div className={cn('flex gap-4 items-center', className)}>
+    <div className={cn("flex gap-4 items-center", className)}>
       <SkeletonAvatar size="md" />
       {Array.from({ length: columns - 1 }).map((_, i) => (
         <Skeleton
           key={i}
-          className={cn(
-            'h-4 rounded',
-            i === columns - 2 ? 'w-1/4' : 'flex-1'
-          )}
+          className={cn("h-4 rounded", i === columns - 2 ? "w-1/4" : "flex-1")}
         />
       ))}
     </div>

@@ -7,7 +7,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { FieldMapper } from "../../../packages/core/src/sync/field-mapper.js";
 import type { SyncConfig } from "../../../packages/core/src/sync/sync-types.js";
-import { PlatformType, SyncDirection, ConflictStrategy } from "../../../packages/core/src/sync/sync-types.js";
+import {
+  PlatformType,
+  SyncDirection,
+  ConflictStrategy,
+} from "../../../packages/core/src/sync/sync-types.js";
 
 describe("FieldMapper", () => {
   let mapper: FieldMapper;
@@ -145,7 +149,11 @@ describe("FieldMapper", () => {
       },
     };
 
-    const order = nestedMapper.mapToUnified(platformData, "order_1", "shop_123");
+    const order = nestedMapper.mapToUnified(
+      platformData,
+      "order_1",
+      "shop_123",
+    );
     expect(order.customerFirstName).toBe("John");
   });
 
@@ -241,7 +249,7 @@ describe("FieldMapper", () => {
     };
 
     const order = mapper.mapToUnified(platformData, "order_1", "shop_123");
-    expect(order.totalAmount).toBe(100.00);
+    expect(order.totalAmount).toBe(100.0);
   });
 
   it("should handle phone number normalization", () => {
@@ -302,7 +310,11 @@ describe("FieldMapper", () => {
       shipping_address_line1: "  123 main street  ",
     };
 
-    const order = addressMapper.mapToUnified(platformData, "order_1", "shop_123");
+    const order = addressMapper.mapToUnified(
+      platformData,
+      "order_1",
+      "shop_123",
+    );
     expect(order.shippingAddress?.line1).toBe("123 MAIN STREET");
   });
 
@@ -320,13 +332,14 @@ describe("FieldMapper", () => {
 
     const roundMapper = new FieldMapper(mappingConfig);
     mapper.registerTransformer("number_round_2", (value: unknown) => {
-      const num = typeof value === "string" ? parseFloat(value) : (value as number);
+      const num =
+        typeof value === "string" ? parseFloat(value) : (value as number);
       return isNaN(num) ? 0 : Math.round(num * 100) / 100;
     });
 
     const platformData = { total: 99.9999 };
     const order = roundMapper.mapToUnified(platformData, "order_1", "ext_1");
-    expect(order.totalAmount).toBe(100.00);
+    expect(order.totalAmount).toBe(100.0);
   });
 
   it("should handle JSON stringification", () => {
@@ -362,7 +375,8 @@ describe("FieldMapper", () => {
       {
         sourceField: "value",
         targetField: "totalAmount",
-        transformer: "(value) => typeof value === 'number' ? value * 1.1 : value",
+        transformer:
+          "(value) => typeof value === 'number' ? value * 1.1 : value",
         required: true,
         dataType: "number",
       },
@@ -379,7 +393,11 @@ describe("FieldMapper", () => {
       value: 100,
     };
 
-    const order = customTransformMapper.mapToUnified(platformData, "order_1", "shop_123");
+    const order = customTransformMapper.mapToUnified(
+      platformData,
+      "order_1",
+      "shop_123",
+    );
     expect(order.totalAmount).toBe(110);
   });
 });

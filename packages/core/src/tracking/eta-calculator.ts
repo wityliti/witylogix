@@ -140,10 +140,8 @@ const WEATHER_MULTIPLIERS: Record<string, number> = {
 export class ETACalculator {
   private config: Required<ETAConfig>;
   private deliveryHistory: DeliveryRecord[] = [];
-  private areaStats: Map<
-    string,
-    { avgSpeed: number; count: number }
-  > = new Map();
+  private areaStats: Map<string, { avgSpeed: number; count: number }> =
+    new Map();
 
   constructor(config: ETAConfig = {}) {
     this.config = {
@@ -172,7 +170,8 @@ export class ETACalculator {
     const distanceM = this.haversineDistance(current, destination);
     const distanceKm = distanceM / 1000;
 
-    const effectiveSpeed = speedKmh > 0 ? speedKmh : this.config.defaultSpeedKmh;
+    const effectiveSpeed =
+      speedKmh > 0 ? speedKmh : this.config.defaultSpeedKmh;
     const estimatedMinutes = (distanceKm / effectiveSpeed) * 60;
 
     return {
@@ -209,7 +208,8 @@ export class ETACalculator {
     const hour = now.getHours();
     const multiplier = TRAFFIC_MULTIPLIERS[hour] ?? 1.0;
 
-    const effectiveSpeed = speedKmh > 0 ? speedKmh : this.config.defaultSpeedKmh;
+    const effectiveSpeed =
+      speedKmh > 0 ? speedKmh : this.config.defaultSpeedKmh;
     const baseMinutes = (distanceKm / effectiveSpeed) * 60;
     const adjustedMinutes = baseMinutes * multiplier;
 
@@ -263,9 +263,8 @@ export class ETACalculator {
     }
 
     // Adjust based on historical average speed for this area
-    const historyMultiplier = speedKmh > 0
-      ? areaStats.avgSpeed / speedKmh
-      : 1.0;
+    const historyMultiplier =
+      speedKmh > 0 ? areaStats.avgSpeed / speedKmh : 1.0;
     const adjustedMinutes = basicEta.estimatedMinutes * historyMultiplier;
 
     return {
@@ -307,7 +306,8 @@ export class ETACalculator {
       };
     }
 
-    const effectiveSpeed = speedKmh > 0 ? speedKmh : this.config.defaultSpeedKmh;
+    const effectiveSpeed =
+      speedKmh > 0 ? speedKmh : this.config.defaultSpeedKmh;
     let totalMinutes = 0;
     let totalDistance = 0;
 
@@ -329,12 +329,13 @@ export class ETACalculator {
 
     // Account for potential congestion with multiple stops
     const stopCongestionMultiplier = 1.0 + stopCount * 0.1; // Each stop adds 10% uncertainty
-    const adjustedMinutes = totalMinutes * Math.min(stopCongestionMultiplier, 1.5);
+    const adjustedMinutes =
+      totalMinutes * Math.min(stopCongestionMultiplier, 1.5);
 
     return {
       estimatedArrival: new Date(Date.now() + adjustedMinutes * 60 * 1000),
       estimatedMinutes: Math.round(adjustedMinutes),
-      confidence: stopCount > 3 ? "medium" : "medium-high" as "medium",
+      confidence: stopCount > 3 ? "medium" : ("medium-high" as "medium"),
       distanceRemaining: Math.round(totalDistance * 1000),
       factors: [
         `Distance: ${totalDistance.toFixed(2)} km`,

@@ -183,9 +183,10 @@ export class GPSTrackingService {
       }
     }
 
-    const averageSpeed = speedHistory.length > 0
-      ? speedHistory.reduce((a, b) => a + b, 0) / speedHistory.length
-      : (update.speed ?? 0);
+    const averageSpeed =
+      speedHistory.length > 0
+        ? speedHistory.reduce((a, b) => a + b, 0) / speedHistory.length
+        : (update.speed ?? 0);
 
     const location: DriverLocation = {
       driverId: update.driverId,
@@ -298,7 +299,7 @@ export class GPSTrackingService {
       distanceRemaining: Math.round(distanceM),
       factors: [
         `Speed: ${speedKmh.toFixed(1)} km/h`,
-        `Distance: ${(distanceKm).toFixed(2)} km`,
+        `Distance: ${distanceKm.toFixed(2)} km`,
       ],
     };
   }

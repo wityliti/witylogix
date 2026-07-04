@@ -71,7 +71,8 @@ export class DispatchService {
       // Enrich with colors
       return this.enrichRoutesWithColors([]);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch active routes: ${errorMessage}`);
     }
   }
@@ -81,7 +82,9 @@ export class DispatchService {
    * @param options Filter and pagination options
    * @returns Paginated routes
    */
-  async getPaginatedRoutes(options: RouteFilterOptions): Promise<PaginatedRoutes> {
+  async getPaginatedRoutes(
+    options: RouteFilterOptions,
+  ): Promise<PaginatedRoutes> {
     try {
       const {
         shopId = this.shopId,
@@ -105,7 +108,8 @@ export class DispatchService {
         offset,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch paginated routes: ${errorMessage}`);
     }
   }
@@ -132,7 +136,8 @@ export class DispatchService {
       // return this.enrichRouteWithColor(route);
       return null;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch route: ${errorMessage}`);
     }
   }
@@ -150,7 +155,8 @@ export class DispatchService {
       // });
       return null;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch stop: ${errorMessage}`);
     }
   }
@@ -172,7 +178,8 @@ export class DispatchService {
       // });
       return [];
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch active drivers: ${errorMessage}`);
     }
   }
@@ -182,7 +189,9 @@ export class DispatchService {
    * @param request Reassignment request
    * @returns Result of reassignment
    */
-  async reassignStop(request: ReassignStopRequest): Promise<ReassignStopResult> {
+  async reassignStop(
+    request: ReassignStopRequest,
+  ): Promise<ReassignStopResult> {
     try {
       const { stopId, fromRouteId, toRouteId, newPosition } = request;
 
@@ -192,7 +201,9 @@ export class DispatchService {
       }
 
       if (fromRouteId === toRouteId && newPosition === undefined) {
-        throw new Error("Cannot reassign stop to same route without changing position");
+        throw new Error(
+          "Cannot reassign stop to same route without changing position",
+        );
       }
 
       // TODO: Implement actual reassignment logic
@@ -209,7 +220,8 @@ export class DispatchService {
         error: "Not implemented",
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         success: false,
         fromRoute: {} as Route,
@@ -237,7 +249,8 @@ export class DispatchService {
       // });
       return null;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to skip stop: ${errorMessage}`);
     }
   }
@@ -247,7 +260,9 @@ export class DispatchService {
    * @param request Optimization request
    * @returns Optimization result
    */
-  async optimizeRoutes(request: OptimizeRoutesRequest): Promise<OptimizeRoutesResult> {
+  async optimizeRoutes(
+    request: OptimizeRoutesRequest,
+  ): Promise<OptimizeRoutesResult> {
     try {
       const { unscheduledOrderIds, availableDriverIds, shopId, date } = request;
 
@@ -281,7 +296,8 @@ export class DispatchService {
         },
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to optimize routes: ${errorMessage}`);
     }
   }
@@ -314,7 +330,9 @@ export class DispatchService {
         totalStops += route.stops.length;
       }
 
-      const activeDrivers = new Set(routes.map((r) => r.driverId).filter(Boolean)).size;
+      const activeDrivers = new Set(
+        routes.map((r) => r.driverId).filter(Boolean),
+      ).size;
       const estimatedHours = Math.round(totalDuration / 60);
 
       return {
@@ -322,13 +340,18 @@ export class DispatchService {
         totalStops,
         totalDistance: Math.round(totalDistance * 100) / 100,
         estimatedHours,
-        onRouteOrders: routes.filter((r) => r.status === "in_progress").reduce((sum, r) => sum + r.stops.length, 0),
-        completedOrders: routes.filter((r) => r.status === "completed").reduce((sum, r) => sum + r.stops.length, 0),
+        onRouteOrders: routes
+          .filter((r) => r.status === "in_progress")
+          .reduce((sum, r) => sum + r.stops.length, 0),
+        completedOrders: routes
+          .filter((r) => r.status === "completed")
+          .reduce((sum, r) => sum + r.stops.length, 0),
         failedOrders: 0, // TODO: Calculate from stops with failed status
         averageETA: totalStops > 0 ? Math.round(totalDuration / totalStops) : 0,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to calculate dispatch stats: ${errorMessage}`);
     }
   }
@@ -352,7 +375,8 @@ export class DispatchService {
       // return orders.map((o) => o.id);
       return [];
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch unscheduled orders: ${errorMessage}`);
     }
   }
@@ -366,7 +390,8 @@ export class DispatchService {
       // TODO: Replace with actual database call
       return [];
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch scheduled orders: ${errorMessage}`);
     }
   }

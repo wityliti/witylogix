@@ -17,8 +17,12 @@ import type {
   CRMPaginationParams,
   CRMFieldMapping,
   ICRMAdapter,
-} from './types.js';
-import { CRMAdapterBase, FieldMappingEngine, PaginationHandler } from './crm-adapter.js';
+} from "./types.js";
+import {
+  CRMAdapterBase,
+  FieldMappingEngine,
+  PaginationHandler,
+} from "./crm-adapter.js";
 
 // ─── SALESFORCE OAUTH TYPES ────────────────────────────────────────
 
@@ -26,7 +30,7 @@ export interface SalesforceConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
-  environment?: 'sandbox' | 'production';
+  environment?: "sandbox" | "production";
 }
 
 interface SFAuthResponse {
@@ -105,9 +109,9 @@ interface SFActivity {
 
 interface SFBulkJob {
   id: string;
-  state: 'Open' | 'InProgress' | 'Completed' | 'Failed' | 'Aborted';
+  state: "Open" | "InProgress" | "Completed" | "Failed" | "Aborted";
   object: string;
-  operation: 'insert' | 'update' | 'delete' | 'query';
+  operation: "insert" | "update" | "delete" | "query";
   createdDate: string;
   systemModstamp: string;
 }
@@ -117,7 +121,7 @@ interface SFBulkJob {
 export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   private config: SalesforceConfig;
   private authBaseUrl: string;
-  private apiVersion: string = 'v59.0';
+  private apiVersion: string = "v59.0";
 
   constructor(
     connection: CRMConnection,
@@ -126,7 +130,7 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   ) {
     super(connection, fieldMappings);
     this.config = {
-      environment: 'production',
+      environment: "production",
       ...config,
     };
     this.authBaseUrl = this.getAuthBaseUrl();
@@ -139,8 +143,8 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const params: URLSearchParams = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      response_type: 'code',
-      scope: 'api refresh_token offline_access',
+      response_type: "code",
+      scope: "api refresh_token offline_access",
       state: state || this.generateRandomString(32),
     });
 
@@ -154,15 +158,15 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const tokenUrl: string = `${this.authBaseUrl}/services/oauth2/token`;
 
     const response: SFAuthResponse = await this.makeRequest<SFAuthResponse>(
-      'POST',
+      "POST",
       tokenUrl,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-          grant_type: 'authorization_code',
+          grant_type: "authorization_code",
           code: authCode,
           client_id: this.config.clientId,
           client_secret: this.config.clientSecret,
@@ -174,12 +178,12 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const expiresAt: Date = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + response.expires_in);
 
-    const orgId: string = response.id.split('/')[0] as string;
+    const orgId: string = response.id.split("/")[0] as string;
 
     return {
       id: `sf_conn_${Date.now()}`,
-      tenantId: '', // Set by caller
-      provider: 'salesforce',
+      tenantId: "", // Set by caller
+      provider: "salesforce",
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
       expiresAt,
@@ -196,21 +200,21 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
    */
   async refreshToken(): Promise<string> {
     if (!this.connection.refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     const tokenUrl: string = `${this.authBaseUrl}/services/oauth2/token`;
 
     const response: SFAuthResponse = await this.makeRequest<SFAuthResponse>(
-      'POST',
+      "POST",
       tokenUrl,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-          grant_type: 'refresh_token',
+          grant_type: "refresh_token",
           refresh_token: this.connection.refreshToken,
           client_id: this.config.clientId,
           client_secret: this.config.clientSecret,
@@ -236,7 +240,8 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const limit: number = PaginationHandler.generateLimit(pagination);
     const offset: string = PaginationHandler.generateSFDCOffset(pagination);
 
-    let soql: string = 'SELECT Id, FirstName, LastName, Email, Phone, MobilePhone, AccountId, Title, MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry, SystemModstamp FROM Contact';
+    let soql: string =
+      "SELECT Id, FirstName, LastName, Email, Phone, MobilePhone, AccountId, Title, MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry, SystemModstamp FROM Contact";
 
     const whereClauses: string[] = [];
 
@@ -247,18 +252,22 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
       whereClauses.push(`Phone = '${this.escapeSOQL(filters.phone)}'`);
     }
     if (filters?.name) {
-      whereClauses.push(`(FirstName LIKE '%${this.escapeSOQL(filters.name)}%' OR LastName LIKE '%${this.escapeSOQL(filters.name)}%')`);
+      whereClauses.push(
+        `(FirstName LIKE '%${this.escapeSOQL(filters.name)}%' OR LastName LIKE '%${this.escapeSOQL(filters.name)}%')`,
+      );
     }
     if (filters?.company) {
-      whereClauses.push(`AccountId IN (SELECT Id FROM Account WHERE Name LIKE '%${this.escapeSOQL(filters.company)}%')`);
+      whereClauses.push(
+        `AccountId IN (SELECT Id FROM Account WHERE Name LIKE '%${this.escapeSOQL(filters.company)}%')`,
+      );
     }
     if (filters?.modifiedAfter) {
-      const dateStr: string = filters.modifiedAfter.toISOString().split('T')[0];
+      const dateStr: string = filters.modifiedAfter.toISOString().split("T")[0];
       whereClauses.push(`SystemModstamp >= ${dateStr}T00:00:00Z`);
     }
 
     if (whereClauses.length > 0) {
-      soql += ` WHERE ${whereClauses.join(' AND ')}`;
+      soql += ` WHERE ${whereClauses.join(" AND ")}`;
     }
 
     soql += ` ORDER BY SystemModstamp DESC LIMIT ${limit}${offset}`;
@@ -273,15 +282,19 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SFQueryResponse = await this.makeRequest<SFQueryResponse>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
     return {
-      data: response.records.map((sf: SFContact) => this.normalizeSFContact(sf)),
+      data: response.records.map((sf: SFContact) =>
+        this.normalizeSFContact(sf),
+      ),
       total: response.totalSize,
       hasMore: !response.done,
-      cursor: response.nextRecordsUrl ? Buffer.from(response.nextRecordsUrl).toString('base64') : undefined,
+      cursor: response.nextRecordsUrl
+        ? Buffer.from(response.nextRecordsUrl).toString("base64")
+        : undefined,
     };
   }
 
@@ -292,7 +305,7 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Contact/${id}`;
 
     const response: SFContact = await this.makeRequest<SFContact>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
@@ -302,7 +315,9 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Create new contact
    */
-  async createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact> {
+  async createContact(
+    contact: Omit<CRMContact, "id" | "lastModifiedAt">,
+  ): Promise<CRMContact> {
     const sfContact: Record<string, unknown> = {
       FirstName: contact.firstName,
       LastName: contact.lastName,
@@ -318,7 +333,8 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     };
 
     // Apply field mappings
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('contact', contact);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("contact", contact);
     Object.assign(sfContact, mappedData);
 
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Contact/`;
@@ -330,7 +346,7 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: CreateResponse = await this.makeRequest<CreateResponse>(
-      'POST',
+      "POST",
       apiUrl,
       {
         body: JSON.stringify(sfContact),
@@ -338,7 +354,9 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     );
 
     if (!response.success) {
-      throw new Error(`Failed to create contact: ${JSON.stringify(response.errors)}`);
+      throw new Error(
+        `Failed to create contact: ${JSON.stringify(response.errors)}`,
+      );
     }
 
     return {
@@ -351,7 +369,10 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Update contact
    */
-  async updateContact(id: string, updates: Partial<CRMContact>): Promise<CRMContact> {
+  async updateContact(
+    id: string,
+    updates: Partial<CRMContact>,
+  ): Promise<CRMContact> {
     const sfUpdates: Record<string, unknown> = {};
 
     if (updates.firstName) sfUpdates.FirstName = updates.firstName;
@@ -368,12 +389,13 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
       sfUpdates.MailingCountry = updates.address.country;
     }
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('contact', updates);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("contact", updates);
     Object.assign(sfUpdates, mappedData);
 
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Contact/${id}`;
 
-    await this.makeRequest<void>('PATCH', apiUrl, {
+    await this.makeRequest<void>("PATCH", apiUrl, {
       body: JSON.stringify(sfUpdates),
     });
 
@@ -390,7 +412,8 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const limit: number = PaginationHandler.generateLimit(pagination);
     const offset: string = PaginationHandler.generateSFDCOffset(pagination);
 
-    let soql: string = 'SELECT Id, Name, Industry, Website, Phone, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, NumberOfEmployees, AnnualRevenue, Description, SystemModstamp FROM Account';
+    let soql: string =
+      "SELECT Id, Name, Industry, Website, Phone, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, NumberOfEmployees, AnnualRevenue, Description, SystemModstamp FROM Account";
 
     const whereClauses: string[] = [];
 
@@ -401,12 +424,12 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
       whereClauses.push(`Industry = '${this.escapeSOQL(filters.industry)}'`);
     }
     if (filters?.modifiedAfter) {
-      const dateStr: string = filters.modifiedAfter.toISOString().split('T')[0];
+      const dateStr: string = filters.modifiedAfter.toISOString().split("T")[0];
       whereClauses.push(`SystemModstamp >= ${dateStr}T00:00:00Z`);
     }
 
     if (whereClauses.length > 0) {
-      soql += ` WHERE ${whereClauses.join(' AND ')}`;
+      soql += ` WHERE ${whereClauses.join(" AND ")}`;
     }
 
     soql += ` ORDER BY SystemModstamp DESC LIMIT ${limit}${offset}`;
@@ -421,15 +444,19 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SFQueryResponse = await this.makeRequest<SFQueryResponse>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
     return {
-      data: response.records.map((sf: SFAccount) => this.normalizeSFAccount(sf)),
+      data: response.records.map((sf: SFAccount) =>
+        this.normalizeSFAccount(sf),
+      ),
       total: response.totalSize,
       hasMore: !response.done,
-      cursor: response.nextRecordsUrl ? Buffer.from(response.nextRecordsUrl).toString('base64') : undefined,
+      cursor: response.nextRecordsUrl
+        ? Buffer.from(response.nextRecordsUrl).toString("base64")
+        : undefined,
     };
   }
 
@@ -440,7 +467,7 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Account/${id}`;
 
     const response: SFAccount = await this.makeRequest<SFAccount>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
@@ -450,7 +477,9 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Create account
    */
-  async createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount> {
+  async createAccount(
+    account: Omit<CRMAccount, "id" | "lastModifiedAt">,
+  ): Promise<CRMAccount> {
     const sfAccount: Record<string, unknown> = {
       Name: account.name,
       Industry: account.industry,
@@ -466,7 +495,8 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
       Description: account.description,
     };
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('account', account);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("account", account);
     Object.assign(sfAccount, mappedData);
 
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Account/`;
@@ -478,7 +508,7 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: CreateResponse = await this.makeRequest<CreateResponse>(
-      'POST',
+      "POST",
       apiUrl,
       {
         body: JSON.stringify(sfAccount),
@@ -486,7 +516,9 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     );
 
     if (!response.success) {
-      throw new Error(`Failed to create account: ${JSON.stringify(response.errors)}`);
+      throw new Error(
+        `Failed to create account: ${JSON.stringify(response.errors)}`,
+      );
     }
 
     return {
@@ -499,7 +531,10 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Update account
    */
-  async updateAccount(id: string, updates: Partial<CRMAccount>): Promise<CRMAccount> {
+  async updateAccount(
+    id: string,
+    updates: Partial<CRMAccount>,
+  ): Promise<CRMAccount> {
     const sfUpdates: Record<string, unknown> = {};
 
     if (updates.name) sfUpdates.Name = updates.name;
@@ -517,12 +552,13 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     if (updates.annualRevenue) sfUpdates.AnnualRevenue = updates.annualRevenue;
     if (updates.description) sfUpdates.Description = updates.description;
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('account', updates);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("account", updates);
     Object.assign(sfUpdates, mappedData);
 
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Account/${id}`;
 
-    await this.makeRequest<void>('PATCH', apiUrl, {
+    await this.makeRequest<void>("PATCH", apiUrl, {
       body: JSON.stringify(sfUpdates),
     });
 
@@ -539,7 +575,8 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const limit: number = PaginationHandler.generateLimit(pagination);
     const offset: string = PaginationHandler.generateSFDCOffset(pagination);
 
-    let soql: string = 'SELECT Id, Name, AccountId, ContactId, StageName, Probability, Amount, CurrencyIsoCode, CloseDate, Description, SystemModstamp FROM Opportunity';
+    let soql: string =
+      "SELECT Id, Name, AccountId, ContactId, StageName, Probability, Amount, CurrencyIsoCode, CloseDate, Description, SystemModstamp FROM Opportunity";
 
     const whereClauses: string[] = [];
 
@@ -550,12 +587,12 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
       whereClauses.push(`StageName = '${this.escapeSOQL(filters.stage)}'`);
     }
     if (filters?.modifiedAfter) {
-      const dateStr: string = filters.modifiedAfter.toISOString().split('T')[0];
+      const dateStr: string = filters.modifiedAfter.toISOString().split("T")[0];
       whereClauses.push(`SystemModstamp >= ${dateStr}T00:00:00Z`);
     }
 
     if (whereClauses.length > 0) {
-      soql += ` WHERE ${whereClauses.join(' AND ')}`;
+      soql += ` WHERE ${whereClauses.join(" AND ")}`;
     }
 
     soql += ` ORDER BY SystemModstamp DESC LIMIT ${limit}${offset}`;
@@ -570,15 +607,19 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SFQueryResponse = await this.makeRequest<SFQueryResponse>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
     return {
-      data: response.records.map((sf: SFOpportunity) => this.normalizeSFOpportunity(sf)),
+      data: response.records.map((sf: SFOpportunity) =>
+        this.normalizeSFOpportunity(sf),
+      ),
       total: response.totalSize,
       hasMore: !response.done,
-      cursor: response.nextRecordsUrl ? Buffer.from(response.nextRecordsUrl).toString('base64') : undefined,
+      cursor: response.nextRecordsUrl
+        ? Buffer.from(response.nextRecordsUrl).toString("base64")
+        : undefined,
     };
   }
 
@@ -589,7 +630,7 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Opportunity/${id}`;
 
     const response: SFOpportunity = await this.makeRequest<SFOpportunity>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
@@ -599,23 +640,29 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Update opportunity (deal)
    */
-  async updateDeal(id: string, updates: Partial<CRMOpportunity>): Promise<CRMOpportunity> {
+  async updateDeal(
+    id: string,
+    updates: Partial<CRMOpportunity>,
+  ): Promise<CRMOpportunity> {
     const sfUpdates: Record<string, unknown> = {};
 
     if (updates.name) sfUpdates.Name = updates.name;
     if (updates.stage) sfUpdates.StageName = updates.stage;
-    if (updates.probability !== undefined) sfUpdates.Probability = updates.probability;
+    if (updates.probability !== undefined)
+      sfUpdates.Probability = updates.probability;
     if (updates.amount) sfUpdates.Amount = updates.amount;
     if (updates.currency) sfUpdates.CurrencyIsoCode = updates.currency;
-    if (updates.closeDate) sfUpdates.CloseDate = updates.closeDate.toISOString().split('T')[0];
+    if (updates.closeDate)
+      sfUpdates.CloseDate = updates.closeDate.toISOString().split("T")[0];
     if (updates.description) sfUpdates.Description = updates.description;
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('opportunity', updates);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("opportunity", updates);
     Object.assign(sfUpdates, mappedData);
 
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Opportunity/${id}`;
 
-    await this.makeRequest<void>('PATCH', apiUrl, {
+    await this.makeRequest<void>("PATCH", apiUrl, {
       body: JSON.stringify(sfUpdates),
     });
 
@@ -644,12 +691,14 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SFQueryResponse = await this.makeRequest<SFQueryResponse>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
     return {
-      data: response.records.map((sf: SFActivity) => this.normalizeSFActivity(sf, recordId)),
+      data: response.records.map((sf: SFActivity) =>
+        this.normalizeSFActivity(sf, recordId),
+      ),
       total: response.totalSize,
       hasMore: !response.done,
     };
@@ -658,14 +707,22 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Create activity
    */
-  async createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity> {
+  async createActivity(
+    activity: Omit<CRMActivity, "id" | "lastModifiedAt">,
+  ): Promise<CRMActivity> {
     const sfActivity: Record<string, unknown> = {
       Subject: activity.subject,
       Description: activity.description,
-      Type: activity.type === 'note' ? 'Note' : 'Task',
-      ActivityDate: activity.dueDate ? activity.dueDate.toISOString().split('T')[0] : undefined,
-      WhoId: activity.recordType === 'contact' ? activity.recordId : undefined,
-      WhatId: activity.recordType === 'opportunity' || activity.recordType === 'account' ? activity.recordId : undefined,
+      Type: activity.type === "note" ? "Note" : "Task",
+      ActivityDate: activity.dueDate
+        ? activity.dueDate.toISOString().split("T")[0]
+        : undefined,
+      WhoId: activity.recordType === "contact" ? activity.recordId : undefined,
+      WhatId:
+        activity.recordType === "opportunity" ||
+        activity.recordType === "account"
+          ? activity.recordId
+          : undefined,
     };
 
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/sobjects/Task/`;
@@ -677,7 +734,7 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: CreateResponse = await this.makeRequest<CreateResponse>(
-      'POST',
+      "POST",
       apiUrl,
       {
         body: JSON.stringify(sfActivity),
@@ -685,7 +742,9 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     );
 
     if (!response.success) {
-      throw new Error(`Failed to create activity: ${JSON.stringify(response.errors)}`);
+      throw new Error(
+        `Failed to create activity: ${JSON.stringify(response.errors)}`,
+      );
     }
 
     return {
@@ -706,22 +765,22 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
         const created: CRMActivity = await this.createActivity(activity);
         results.push({
           id: created.id,
-          recordType: 'activity',
+          recordType: "activity",
           recordId: activity.id,
           externalId: created.id,
           provider: this.connection.provider,
-          status: 'synced',
-          message: 'Activity created successfully',
+          status: "synced",
+          message: "Activity created successfully",
           timestamp: new Date(),
         });
       } catch (error: unknown) {
         results.push({
           id: activity.id,
-          recordType: 'activity',
+          recordType: "activity",
           recordId: activity.id,
           provider: this.connection.provider,
-          status: 'failed',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          status: "failed",
+          message: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date(),
         });
       }
@@ -744,11 +803,14 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
     const apiUrl: string = `${this.connection.instanceUrl}/services/data/${this.apiVersion}/search?q=${encodeURIComponent(soslQuery)}`;
 
     interface SearchResponse {
-      searchRecords: Array<{ attributes: Record<string, string>; [key: string]: unknown }>;
+      searchRecords: Array<{
+        attributes: Record<string, string>;
+        [key: string]: unknown;
+      }>;
     }
 
     const response: SearchResponse = await this.makeRequest<SearchResponse>(
-      'GET',
+      "GET",
       apiUrl,
     );
 
@@ -762,14 +824,14 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   // ─── PRIVATE HELPERS ────────────────────────────────────────────
 
   private getAuthBaseUrl(): string {
-    return this.config.environment === 'sandbox'
-      ? 'https://test.salesforce.com'
-      : 'https://login.salesforce.com';
+    return this.config.environment === "sandbox"
+      ? "https://test.salesforce.com"
+      : "https://login.salesforce.com";
   }
 
   private escapeSOQL(value: string): string {
     return value
-      .replace(/\\/g, '\\\\')
+      .replace(/\\/g, "\\\\")
       .replace(/'/g, "\\'")
       .replace(/"/g, '\\"');
   }
@@ -777,8 +839,8 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   private normalizeSFContact(sf: SFContact): CRMContact {
     return {
       id: sf.Id,
-      firstName: sf.FirstName || '',
-      lastName: sf.LastName || '',
+      firstName: sf.FirstName || "",
+      lastName: sf.LastName || "",
       email: sf.Email,
       phone: sf.Phone,
       mobile: sf.MobilePhone,
@@ -791,9 +853,29 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
         zip: sf.MailingPostalCode as string | undefined,
         country: sf.MailingCountry as string | undefined,
       },
-      lastModifiedAt: sf.SystemModstamp ? new Date(sf.SystemModstamp as string) : new Date(),
+      lastModifiedAt: sf.SystemModstamp
+        ? new Date(sf.SystemModstamp as string)
+        : new Date(),
       customFields: Object.fromEntries(
-        Object.entries(sf).filter(([key]) => !['Id', 'FirstName', 'LastName', 'Email', 'Phone', 'MobilePhone', 'AccountId', 'Title', 'MailingStreet', 'MailingCity', 'MailingState', 'MailingPostalCode', 'MailingCountry', 'SystemModstamp'].includes(key)),
+        Object.entries(sf).filter(
+          ([key]) =>
+            ![
+              "Id",
+              "FirstName",
+              "LastName",
+              "Email",
+              "Phone",
+              "MobilePhone",
+              "AccountId",
+              "Title",
+              "MailingStreet",
+              "MailingCity",
+              "MailingState",
+              "MailingPostalCode",
+              "MailingCountry",
+              "SystemModstamp",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -815,9 +897,29 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
       employees: sf.NumberOfEmployees as number | undefined,
       annualRevenue: sf.AnnualRevenue as number | undefined,
       description: sf.Description,
-      lastModifiedAt: sf.SystemModstamp ? new Date(sf.SystemModstamp as string) : new Date(),
+      lastModifiedAt: sf.SystemModstamp
+        ? new Date(sf.SystemModstamp as string)
+        : new Date(),
       customFields: Object.fromEntries(
-        Object.entries(sf).filter(([key]) => !['Id', 'Name', 'Industry', 'Website', 'Phone', 'BillingStreet', 'BillingCity', 'BillingState', 'BillingPostalCode', 'BillingCountry', 'NumberOfEmployees', 'AnnualRevenue', 'Description', 'SystemModstamp'].includes(key)),
+        Object.entries(sf).filter(
+          ([key]) =>
+            ![
+              "Id",
+              "Name",
+              "Industry",
+              "Website",
+              "Phone",
+              "BillingStreet",
+              "BillingCity",
+              "BillingState",
+              "BillingPostalCode",
+              "BillingCountry",
+              "NumberOfEmployees",
+              "AnnualRevenue",
+              "Description",
+              "SystemModstamp",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -834,9 +936,26 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
       currency: sf.CurrencyIsoCode,
       closeDate: sf.CloseDate ? new Date(sf.CloseDate as string) : undefined,
       description: sf.Description,
-      lastModifiedAt: sf.SystemModstamp ? new Date(sf.SystemModstamp as string) : new Date(),
+      lastModifiedAt: sf.SystemModstamp
+        ? new Date(sf.SystemModstamp as string)
+        : new Date(),
       customFields: Object.fromEntries(
-        Object.entries(sf).filter(([key]) => !['Id', 'Name', 'AccountId', 'ContactId', 'StageName', 'Probability', 'Amount', 'CurrencyIsoCode', 'CloseDate', 'Description', 'SystemModstamp'].includes(key)),
+        Object.entries(sf).filter(
+          ([key]) =>
+            ![
+              "Id",
+              "Name",
+              "AccountId",
+              "ContactId",
+              "StageName",
+              "Probability",
+              "Amount",
+              "CurrencyIsoCode",
+              "CloseDate",
+              "Description",
+              "SystemModstamp",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -844,19 +963,34 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   private normalizeSFActivity(sf: SFActivity, recordId: string): CRMActivity {
     return {
       id: sf.Id,
-      type: (sf.Type?.toLowerCase() as 'call' | 'email' | 'meeting' | 'task' | 'note') || 'task',
+      type:
+        (sf.Type?.toLowerCase() as
+          | "call"
+          | "email"
+          | "meeting"
+          | "task"
+          | "note") || "task",
       subject: sf.Subject,
       description: sf.Description,
-      recordType: sf.WhoId === recordId ? 'contact' : 'account',
+      recordType: sf.WhoId === recordId ? "contact" : "account",
       recordId,
       owner: (sf.Owner as { Name: string } | undefined)?.Name,
-      dueDate: sf.ActivityDate ? new Date(sf.ActivityDate as string) : undefined,
-      completedAt: sf.CompletedDateTime ? new Date(sf.CompletedDateTime as string) : undefined,
-      lastModifiedAt: sf.SystemModstamp ? new Date(sf.SystemModstamp as string) : new Date(),
+      dueDate: sf.ActivityDate
+        ? new Date(sf.ActivityDate as string)
+        : undefined,
+      completedAt: sf.CompletedDateTime
+        ? new Date(sf.CompletedDateTime as string)
+        : undefined,
+      lastModifiedAt: sf.SystemModstamp
+        ? new Date(sf.SystemModstamp as string)
+        : new Date(),
     };
   }
 
   private generateRandomString(length: number): string {
-    return Array.from({ length }, () => Math.random().toString(36)[2] || '0').join('');
+    return Array.from(
+      { length },
+      () => Math.random().toString(36)[2] || "0",
+    ).join("");
   }
 }

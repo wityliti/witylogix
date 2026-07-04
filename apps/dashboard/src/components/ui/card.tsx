@@ -1,6 +1,13 @@
 "use client";
 
-import { forwardRef, type HTMLAttributes, type ReactNode, useEffect, useRef, type CSSProperties } from "react";
+import {
+  forwardRef,
+  type HTMLAttributes,
+  type ReactNode,
+  useEffect,
+  useRef,
+  type CSSProperties,
+} from "react";
 import { cn } from "@/lib/utils";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -18,17 +25,19 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           "bg-wl-bg-elevated border border-white/[0.08] rounded-xl p-5",
           "shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]",
           "transition-all duration-base ease-default",
-          hover && "hover:border-white/[0.14] hover:bg-wl-bg-overlay cursor-pointer",
-          glow && "shadow-[0_0_20px_rgba(245,166,35,0.12),0_1px_0_0_rgba(255,255,255,0.07)_inset]",
+          hover &&
+            "hover:border-white/[0.14] hover:bg-wl-bg-overlay cursor-pointer",
+          glow &&
+            "shadow-[0_0_20px_rgba(245,166,35,0.12),0_1px_0_0_rgba(255,255,255,0.07)_inset]",
           props.onClick && "cursor-pointer",
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     );
-  }
+  },
 );
 Card.displayName = "Card";
 
@@ -71,10 +80,14 @@ export function MetricCard({
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const currentValue = Math.floor(startValue + (target - startValue) * progress);
+      const currentValue = Math.floor(
+        startValue + (target - startValue) * progress,
+      );
 
       if (counterRef.current) {
-        counterRef.current.textContent = format ? format(currentValue) : currentValue.toString();
+        counterRef.current.textContent = format
+          ? format(currentValue)
+          : currentValue.toString();
       }
 
       if (progress < 1) {
@@ -92,7 +105,7 @@ export function MetricCard({
       className={cn(
         "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
         "relative overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Accent top line */}
@@ -133,7 +146,7 @@ export function MetricCard({
             <span
               className={cn(
                 "text-sm font-semibold font-mono flex items-center gap-1",
-                isTrendPositive ? "text-wl-success-500" : "text-wl-danger-500"
+                isTrendPositive ? "text-wl-success-500" : "text-wl-danger-500",
               )}
             >
               {isTrendPositive ? "↑" : "↓"}
@@ -153,7 +166,9 @@ export interface StatCardProps {
   value: string | number;
   change?: { value: number; label: string } | string;
   /** Alias for change using direction/value format, or simple direction string */
-  trend?: { direction: 'up' | 'down' | 'neutral' | string; value: number } | string;
+  trend?:
+    | { direction: "up" | "down" | "neutral" | string; value: number }
+    | string;
   unit?: string;
   isLoading?: boolean;
   icon?: ReactNode;
@@ -176,7 +191,10 @@ export function StatCard({
   className,
   index = 0,
 }: StatCardProps) {
-  const changeObj = typeof change === 'object' && change !== null && !Array.isArray(change) ? change as { value: number; label: string } : null;
+  const changeObj =
+    typeof change === "object" && change !== null && !Array.isArray(change)
+      ? (change as { value: number; label: string })
+      : null;
   const isPositive = changeObj && changeObj.value >= 0;
 
   return (
@@ -184,7 +202,7 @@ export function StatCard({
       className={cn(
         "wl-animate-in bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
         "relative overflow-hidden",
-        className
+        className,
       )}
       style={{
         animationDelay: `${index * 80}ms`,
@@ -222,7 +240,7 @@ export function StatCard({
           <span
             className={cn(
               "text-xs font-semibold font-mono",
-              isPositive ? "text-wl-success-400" : "text-wl-danger-400"
+              isPositive ? "text-wl-success-400" : "text-wl-danger-400",
             )}
           >
             {isPositive ? "+" : ""}
@@ -233,7 +251,7 @@ export function StatCard({
           </span>
         </div>
       )}
-      {typeof change === 'string' && (
+      {typeof change === "string" && (
         <div className="flex items-center gap-1 mt-2">
           <span className="text-xs text-wl-text-tertiary">{change}</span>
         </div>
@@ -250,15 +268,12 @@ const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(
-        "flex items-center justify-between mb-4",
-        className
-      )}
+      className={cn("flex items-center justify-between mb-4", className)}
       {...props}
     >
       {children}
     </div>
-  )
+  ),
 );
 CardHeader.displayName = "CardHeader";
 
@@ -272,13 +287,13 @@ const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
       ref={ref}
       className={cn(
         "text-sm font-semibold text-wl-text-secondary tracking-wider uppercase m-0",
-        className
+        className,
       )}
       {...props}
     >
       {children}
     </h3>
-  )
+  ),
 );
 CardTitle.displayName = "CardTitle";
 
@@ -288,14 +303,10 @@ interface CardContentProps extends HTMLAttributes<HTMLDivElement> {
 
 const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
   ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={className}
-      {...props}
-    >
+    <div ref={ref} className={className} {...props}>
       {children}
     </div>
-  )
+  ),
 );
 CardContent.displayName = "CardContent";
 
@@ -309,13 +320,13 @@ const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
       ref={ref}
       className={cn(
         "text-sm text-wl-text-secondary leading-relaxed mt-1",
-        className
+        className,
       )}
       {...props}
     >
       {children}
     </p>
-  )
+  ),
 );
 CardDescription.displayName = "CardDescription";
 
@@ -329,13 +340,13 @@ const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
       ref={ref}
       className={cn(
         "flex items-center justify-end gap-2 mt-4 pt-4 border-t border-wl-border-subtle",
-        className
+        className,
       )}
       {...props}
     >
       {children}
     </div>
-  )
+  ),
 );
 CardFooter.displayName = "CardFooter";
 

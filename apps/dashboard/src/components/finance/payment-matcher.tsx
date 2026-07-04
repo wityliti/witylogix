@@ -55,7 +55,7 @@ function formatDate(dateString: string): string {
 }
 
 function getConfidenceColor(
-  confidence: number
+  confidence: number,
 ): "success" | "warning" | "info" | "danger" {
   if (confidence >= 95) return "success";
   if (confidence >= 80) return "info";
@@ -80,7 +80,7 @@ const TransactionCard = memo(
     matched: Map<string, { invoiceId: string; amount: number }>;
   }) => {
     const transactionSuggestions = suggestions.filter(
-      (s) => s.transactionId === transaction.id
+      (s) => s.transactionId === transaction.id,
     );
     const isMatched = matched.has(transaction.id);
     const matchedData = matched.get(transaction.id);
@@ -102,7 +102,7 @@ const TransactionCard = memo(
               "px-2 py-1 rounded text-sm font-semibold flex-shrink-0",
               transaction.type === "credit"
                 ? "text-wl-success-400 bg-wl-success-bg"
-                : "text-wl-text-secondary bg-wl-bg-overlay"
+                : "text-wl-text-secondary bg-wl-bg-overlay",
             )}
           >
             {formatCurrency(transaction.amount)}
@@ -133,7 +133,9 @@ const TransactionCard = memo(
           <div className="space-y-2">
             {transactionSuggestions.length > 0 ? (
               transactionSuggestions.map((suggestion) => {
-                const invoice = invoices.find((i) => i.id === suggestion.invoiceId);
+                const invoice = invoices.find(
+                  (i) => i.id === suggestion.invoiceId,
+                );
                 if (!invoice) return null;
 
                 return (
@@ -161,7 +163,7 @@ const TransactionCard = memo(
                         onClick={() =>
                           onMatch(
                             suggestion.invoiceId,
-                            suggestion.matchedAmount
+                            suggestion.matchedAmount,
                           )
                         }
                         className="text-xs px-2 py-1 bg-wl-primary-500/20 text-wl-primary-400 hover:bg-wl-primary-500/30 rounded transition-colors"
@@ -181,7 +183,7 @@ const TransactionCard = memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 TransactionCard.displayName = "TransactionCard";
@@ -197,7 +199,7 @@ const InvoiceCard = memo(
     matched: Map<string, { invoiceId: string; amount: number }>;
   }) => {
     const matchedTransaction = Array.from(matched.entries()).find(
-      ([_, data]) => data.invoiceId === invoice.id
+      ([_, data]) => data.invoiceId === invoice.id,
     );
 
     return (
@@ -269,7 +271,7 @@ const InvoiceCard = memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 InvoiceCard.displayName = "InvoiceCard";
@@ -287,10 +289,12 @@ export const PaymentMatcher = memo(function PaymentMatcher({
 
   const handleMatch = useCallback(
     (transactionId: string, invoiceId: string, amount: number) => {
-      setMatched((prev) => new Map(prev).set(transactionId, { invoiceId, amount }));
+      setMatched((prev) =>
+        new Map(prev).set(transactionId, { invoiceId, amount }),
+      );
       onMatch?.(transactionId, invoiceId, amount);
     },
-    [onMatch]
+    [onMatch],
   );
 
   const handleUnmatch = useCallback(
@@ -302,18 +306,21 @@ export const PaymentMatcher = memo(function PaymentMatcher({
       });
       onUnmatch?.(transactionId, invoiceId);
     },
-    [onUnmatch]
+    [onUnmatch],
   );
 
   const matchingSummary = useMemo(() => {
     const totalMatched = Array.from(matched.values()).reduce(
       (sum, match) => sum + match.amount,
-      0
+      0,
     );
     const totalUnmatched = transactions
       .filter((t) => !matched.has(t.id))
       .reduce((sum, t) => sum + (t.type === "credit" ? t.amount : 0), 0);
-    const totalOutstanding = invoices.reduce((sum, i) => sum + i.outstandingAmount, 0);
+    const totalOutstanding = invoices.reduce(
+      (sum, i) => sum + i.outstandingAmount,
+      0,
+    );
 
     return {
       totalMatched,

@@ -12,11 +12,11 @@ const Label = forwardRef<HTMLLabelElement, LabelProps>(
       className={cn(
         "text-sm font-medium text-wl-text-secondary leading-none",
         "peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  ),
 );
 Label.displayName = "Label";
 

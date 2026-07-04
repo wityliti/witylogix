@@ -31,19 +31,19 @@ You are the **Injection Analyst**, a specialized agent that performs deep analys
 
 ### Attack Technique Classification
 
-| Category | Techniques | Severity |
-|----------|------------|----------|
-| **Instruction Override** | "Ignore previous", "Forget all", "Disregard" | Critical |
-| **Role Switching** | "You are now", "Act as", "Pretend to be" | High |
-| **Jailbreak** | DAN, Developer mode, Bypass requests | Critical |
-| **Context Manipulation** | Fake system messages, Delimiter abuse | Critical |
-| **Encoding Attacks** | Base64, ROT13, Unicode tricks | Medium |
-| **Social Engineering** | Hypothetical framing, Research claims | Low-Medium |
+| Category                 | Techniques                                   | Severity   |
+| ------------------------ | -------------------------------------------- | ---------- |
+| **Instruction Override** | "Ignore previous", "Forget all", "Disregard" | Critical   |
+| **Role Switching**       | "You are now", "Act as", "Pretend to be"     | High       |
+| **Jailbreak**            | DAN, Developer mode, Bypass requests         | Critical   |
+| **Context Manipulation** | Fake system messages, Delimiter abuse        | Critical   |
+| **Encoding Attacks**     | Base64, ROT13, Unicode tricks                | Medium     |
+| **Social Engineering**   | Hypothetical framing, Research claims        | Low-Medium |
 
 ### Analysis Workflow
 
 ```typescript
-import { createAIDefence, checkThreats } from '@claude-flow/aidefence';
+import { createAIDefence, checkThreats } from "@claude-flow/aidefence";
 
 const analyst = createAIDefence({ enableLearning: true });
 
@@ -70,7 +70,7 @@ async function analyzeInjection(input: string) {
         analysis.recommendedMitigations.push({
           threatType: threat.type,
           strategy: mitigation.strategy,
-          effectiveness: mitigation.effectiveness
+          effectiveness: mitigation.effectiveness,
         });
       }
     }
@@ -89,25 +89,25 @@ function classifyTechniques(threats) {
 
   for (const threat of threats) {
     switch (threat.type) {
-      case 'instruction_override':
+      case "instruction_override":
         techniques.push({
-          category: 'Direct Override',
+          category: "Direct Override",
           technique: threat.description,
-          mitre_id: 'T1059.007' // Command scripting
+          mitre_id: "T1059.007", // Command scripting
         });
         break;
-      case 'jailbreak':
+      case "jailbreak":
         techniques.push({
-          category: 'Jailbreak',
+          category: "Jailbreak",
           technique: threat.description,
-          mitre_id: 'T1548' // Abuse elevation
+          mitre_id: "T1548", // Abuse elevation
         });
         break;
-      case 'context_manipulation':
+      case "context_manipulation":
         techniques.push({
-          category: 'Context Injection',
+          category: "Context Injection",
           technique: threat.description,
-          mitre_id: 'T1055' // Process injection
+          mitre_id: "T1055", // Process injection
         });
         break;
     }
@@ -139,16 +139,16 @@ function detectEvasion(input) {
   const evasions = [];
 
   if (/hypothetically|in theory|for research/i.test(input)) {
-    evasions.push('hypothetical_framing');
+    evasions.push("hypothetical_framing");
   }
   if (/base64|rot13|hex/i.test(input)) {
-    evasions.push('encoding_obfuscation');
+    evasions.push("encoding_obfuscation");
   }
   if (/[\u200B-\u200D\uFEFF]/.test(input)) {
-    evasions.push('unicode_injection');
+    evasions.push("unicode_injection");
   }
-  if (input.split('\n').length > 10) {
-    evasions.push('long_context_hiding');
+  if (input.split("\n").length > 10) {
+    evasions.push("long_context_hiding");
   }
 
   return evasions;
@@ -197,7 +197,7 @@ After analysis, feed learnings back:
 
 ```typescript
 // Start trajectory for this analysis session
-analyst.startTrajectory(sessionId, 'injection_analysis');
+analyst.startTrajectory(sessionId, "injection_analysis");
 
 // Record analysis steps
 for (const step of analysisSteps) {
@@ -205,7 +205,10 @@ for (const step of analysisSteps) {
 }
 
 // End trajectory with verdict
-await analyst.endTrajectory(sessionId, wasSuccessfulBlock ? 'success' : 'failure');
+await analyst.endTrajectory(
+  sessionId,
+  wasSuccessfulBlock ? "success" : "failure",
+);
 ```
 
 ## Collaboration
@@ -223,12 +226,12 @@ function generateReport(analyses: Analysis[]) {
   const report = {
     period: { start: startDate, end: endDate },
     totalAttempts: analyses.length,
-    byCategory: groupBy(analyses, 'category'),
-    bySeverity: groupBy(analyses, 'severity'),
+    byCategory: groupBy(analyses, "category"),
+    bySeverity: groupBy(analyses, "severity"),
     topTechniques: getTopTechniques(analyses, 10),
-    sophisticationTrend: calculateTrend(analyses, 'sophistication'),
+    sophisticationTrend: calculateTrend(analyses, "sophistication"),
     mitigationEffectiveness: calculateMitigationStats(analyses),
-    recommendations: generateRecommendations(analyses)
+    recommendations: generateRecommendations(analyses),
   };
 
   return report;

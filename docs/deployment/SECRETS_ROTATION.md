@@ -21,6 +21,7 @@ JWT secrets are used to sign and verify access tokens. The rotation procedure al
 ### Procedure
 
 1. **Generate new secret**
+
    ```bash
    # Generate a strong random secret (min 32 characters)
    openssl rand -base64 32
@@ -33,6 +34,7 @@ JWT secrets are used to sign and verify access tokens. The rotation procedure al
    - Keep the old secret available (e.g., in `JWT_SECRET_OLD`)
 
 3. **Deploy with dual-key support**
+
    ```typescript
    // In your JWT verification middleware
    function verifyToken(token: string): DecodedToken {
@@ -50,7 +52,7 @@ JWT secrets are used to sign and verify access tokens. The rotation procedure al
 
    // New tokens are signed with new secret
    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-     expiresIn: process.env.JWT_ACCESS_EXPIRY
+     expiresIn: process.env.JWT_ACCESS_EXPIRY,
    });
    ```
 
@@ -78,6 +80,7 @@ Database password rotation requires coordination with your database provider.
 ### PostgreSQL Rotation
 
 1. **Create new user with temporary password**
+
    ```sql
    -- Connect as superuser
    CREATE USER witylogix_new WITH PASSWORD 'new-temporary-password';
@@ -181,6 +184,7 @@ Webhook secrets are used to verify webhook signatures.
 ### Procedure
 
 1. **Generate new secret**
+
    ```bash
    openssl rand -base64 32
    ```
@@ -190,6 +194,7 @@ Webhook secrets are used to verify webhook signatures.
    - Add new secret while keeping old one active
 
 3. **Update application**
+
    ```typescript
    // Verify webhook with multiple secrets
    function verifyWebhookSignature(body: string, signature: string): boolean {
@@ -218,6 +223,7 @@ SSL certificates should be renewed before expiry (typically 30 days before).
 ### Using Let's Encrypt with Auto-Renewal
 
 1. **Set up auto-renewal**
+
    ```bash
    # On Linux with certbot
    sudo apt-get install certbot python3-certbot-nginx
@@ -228,6 +234,7 @@ SSL certificates should be renewed before expiry (typically 30 days before).
    ```
 
 2. **Configure auto-renewal**
+
    ```bash
    # Test renewal process
    sudo certbot renew --dry-run
@@ -243,6 +250,7 @@ SSL certificates should be renewed before expiry (typically 30 days before).
    - Ensure it covers all required domains
 
 2. **Test new certificate**
+
    ```bash
    # Verify certificate validity
    openssl x509 -in certificate.crt -text -noout
@@ -281,17 +289,17 @@ Set up alerts to catch rotation issues:
 ```typescript
 // Alert on token verification failures
 if (jwtVerificationFailures > threshold) {
-  sendAlert('JWT verification failure rate elevated');
+  sendAlert("JWT verification failure rate elevated");
 }
 
 // Alert on database connection failures
 if (dbConnectionErrors > threshold) {
-  sendAlert('Database connection errors elevated');
+  sendAlert("Database connection errors elevated");
 }
 
 // Alert on external API failures
 if (stripeApiErrors > threshold) {
-  sendAlert('Stripe API errors elevated');
+  sendAlert("Stripe API errors elevated");
 }
 ```
 
@@ -305,17 +313,17 @@ interface SecretRotationAudit {
   secretType: string; // JWT_SECRET, DATABASE_PASSWORD, etc.
   environment: string; // development, staging, production
   performedBy: string; // User ID or service
-  status: 'success' | 'partial' | 'failed';
+  status: "success" | "partial" | "failed";
   duration: number; // Milliseconds
   details: Record<string, unknown>;
 }
 
 // Store in audit log
 await auditLog.record({
-  secretType: 'JWT_SECRET',
-  environment: 'production',
-  performedBy: 'devops@example.com',
-  status: 'success',
+  secretType: "JWT_SECRET",
+  environment: "production",
+  performedBy: "devops@example.com",
+  status: "success",
   duration: 5000,
 });
 ```

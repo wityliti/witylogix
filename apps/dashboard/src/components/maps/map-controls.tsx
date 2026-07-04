@@ -35,16 +35,20 @@ export function MapControls({
   onCenterSelected,
 }: MapControlsProps) {
   return (
-    <div className={cn(
-      "flex flex-col gap-2",
-      "bg-wl-bg-elevated border border-wl-border-default",
-      "rounded-lg p-2 shadow-lg"
-    )}>
+    <div
+      className={cn(
+        "flex flex-col gap-2",
+        "bg-wl-bg-elevated border border-wl-border-default",
+        "rounded-lg p-2 shadow-lg",
+      )}
+    >
       {/* Layer Controls */}
-      <div className={cn(
-        "flex flex-col gap-1 pb-2 border-b border-wl-border-default",
-        "space-y-1"
-      )}>
+      <div
+        className={cn(
+          "flex flex-col gap-1 pb-2 border-b border-wl-border-default",
+          "space-y-1",
+        )}
+      >
         <p className="text-xs text-wl-text-secondary font-semibold px-2 py-1">
           LAYER
         </p>
@@ -56,7 +60,7 @@ export function MapControls({
             "transition-all duration-200",
             currentLayer === "street"
               ? "bg-wl-primary-500/20 text-wl-primary-400"
-              : "text-wl-text-secondary hover:bg-wl-bg-overlay"
+              : "text-wl-text-secondary hover:bg-wl-bg-overlay",
           )}
         >
           <Map className="w-4 h-4" />
@@ -70,7 +74,7 @@ export function MapControls({
             "transition-all duration-200",
             currentLayer === "satellite"
               ? "bg-wl-primary-500/20 text-wl-primary-400"
-              : "text-wl-text-secondary hover:bg-wl-bg-overlay"
+              : "text-wl-text-secondary hover:bg-wl-bg-overlay",
           )}
         >
           <Radio className="w-4 h-4" />
@@ -84,7 +88,7 @@ export function MapControls({
             "transition-all duration-200",
             currentLayer === "terrain"
               ? "bg-wl-primary-500/20 text-wl-primary-400"
-              : "text-wl-text-secondary hover:bg-wl-bg-overlay"
+              : "text-wl-text-secondary hover:bg-wl-bg-overlay",
           )}
         >
           <Mountain className="w-4 h-4" />
@@ -93,9 +97,11 @@ export function MapControls({
       </div>
 
       {/* Zoom Controls */}
-      <div className={cn(
-        "flex flex-col gap-1 pb-2 border-b border-wl-border-default"
-      )}>
+      <div
+        className={cn(
+          "flex flex-col gap-1 pb-2 border-b border-wl-border-default",
+        )}
+      >
         <Button
           variant="ghost"
           size="sm"
@@ -119,9 +125,11 @@ export function MapControls({
       </div>
 
       {/* Navigation Controls */}
-      <div className={cn(
-        "flex flex-col gap-1 pb-2 border-b border-wl-border-default"
-      )}>
+      <div
+        className={cn(
+          "flex flex-col gap-1 pb-2 border-b border-wl-border-default",
+        )}
+      >
         <Button
           variant="ghost"
           size="sm"

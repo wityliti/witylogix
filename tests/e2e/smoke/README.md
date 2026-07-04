@@ -5,6 +5,7 @@ Comprehensive Playwright smoke tests covering critical user paths and system hea
 ## Overview
 
 This smoke test suite validates critical end-to-end functionality across the Witylogix delivery platform, including:
+
 - User authentication and authorization flows
 - Complete onboarding workflow
 - Core delivery lifecycle (zone → driver → order → delivery)
@@ -89,6 +90,7 @@ This smoke test suite validates critical end-to-end functionality across the Wit
 ### Fixtures
 
 **fixtures/test-data.ts** (~89 lines)
+
 - Centralized test data including:
   - New account credentials
   - Delivery zone configuration
@@ -104,6 +106,7 @@ This smoke test suite validates critical end-to-end functionality across the Wit
 ### Configuration
 
 **playwright.smoke.config.ts** (~54 lines)
+
 - Smoke test-specific configuration:
   - Single worker for sequential execution
   - HTML, JSON, and JUnit reporting
@@ -115,6 +118,7 @@ This smoke test suite validates critical end-to-end functionality across the Wit
 ## Running the Tests
 
 ### Run All Smoke Tests
+
 ```bash
 npm run test:smoke
 # or
@@ -122,6 +126,7 @@ npx playwright test --config=tests/e2e/smoke/playwright.smoke.config.ts
 ```
 
 ### Run Specific Test File
+
 ```bash
 npx playwright test tests/e2e/smoke/critical-path.spec.ts
 npx playwright test tests/e2e/smoke/auth-flows.spec.ts
@@ -130,16 +135,19 @@ npx playwright test tests/e2e/smoke/integration-health.spec.ts
 ```
 
 ### Run Single Test
+
 ```bash
 npx playwright test tests/e2e/smoke/critical-path.spec.ts -g "should complete full delivery lifecycle"
 ```
 
 ### Debug Mode
+
 ```bash
 npx playwright test --config=tests/e2e/smoke/playwright.smoke.config.ts --debug
 ```
 
 ### Headed Mode (see browser)
+
 ```bash
 npx playwright test --config=tests/e2e/smoke/playwright.smoke.config.ts --headed
 ```
@@ -147,6 +155,7 @@ npx playwright test --config=tests/e2e/smoke/playwright.smoke.config.ts --headed
 ## Environment Setup
 
 ### Required Environment Variables
+
 ```env
 # .env.test or .env
 TEST_ADMIN_EMAIL=admin@test.com
@@ -162,6 +171,7 @@ API_URL=http://localhost:3001
 ```
 
 ### Services Required
+
 - Web application running on localhost:3002
 - API running on localhost:3001
 - Database (for onboarding tests)
@@ -170,6 +180,7 @@ API_URL=http://localhost:3001
 ## Test Structure
 
 ### Critical Path Test Stages
+
 1. **Registration** - New account creation
 2. **Email Verification** - Email verification step
 3. **Onboarding** - Complete onboarding flow
@@ -187,6 +198,7 @@ API_URL=http://localhost:3001
 15. **Dashboard State** - Verify stats updated
 
 ### Auth Flow Stages
+
 - Email/password login
 - Invalid credentials handling
 - Registration flow
@@ -199,6 +211,7 @@ API_URL=http://localhost:3001
 - Password requirements validation
 
 ### Onboarding Stages
+
 - Email verification
 - Deployment selection
 - Company information
@@ -212,6 +225,7 @@ API_URL=http://localhost:3001
 - Navigation validation
 
 ### Health Check Stages
+
 - API health endpoints
 - Database connectivity
 - Redis connectivity
@@ -224,27 +238,32 @@ API_URL=http://localhost:3001
 ## Assertions and Validations
 
 ### Page Visibility Assertions
+
 - All key page elements are visible
 - Loading spinners disappear after data load
 - Notifications appear for success/error states
 
 ### Navigation Assertions
+
 - Correct page URLs after navigation
 - Sidebar links are functional
 - Modal forms open and close correctly
 
 ### Data Assertions
+
 - Form fields are populated correctly
 - Selections persist through steps
 - Stats cards contain valid data
 - Status updates reflect actions
 
 ### Performance Assertions
+
 - API responds within 500ms SLA
 - Pages load within acceptable time
 - No console errors on page load
 
 ### Security Assertions
+
 - Auth tokens are properly validated
 - Protected routes redirect to login
 - Session expiry is enforced
@@ -254,12 +273,15 @@ API_URL=http://localhost:3001
 ## Test Data Management
 
 ### Unique Test Data
+
 Each test generates unique identifiers to avoid conflicts:
+
 - `generateTestEmail()` - Creates unique emails with timestamp
 - `generateTrackingId()` - Creates unique order IDs
 - Test passwords are configured in `SMOKE_TEST_DATA`
 
 ### Test Data Cleanup
+
 - Tests use isolated test accounts
 - Data is created fresh for each test run
 - Database cleanup is handled by teardown scripts
@@ -267,12 +289,14 @@ Each test generates unique identifiers to avoid conflicts:
 ## Reporting
 
 ### Report Outputs
+
 - **HTML Report**: `tests/e2e/results/smoke/index.html`
 - **JSON Report**: `tests/e2e/results/smoke/results.json`
 - **JUnit Report**: `tests/e2e/results/smoke/junit.xml`
 - **Console List**: Output to terminal
 
 ### View Reports
+
 ```bash
 # Open HTML report
 npx playwright show-report tests/e2e/results/smoke
@@ -284,12 +308,15 @@ npx playwright show-report tests/e2e/results/smoke
 ## CI/CD Integration
 
 ### GitHub Actions
+
 Tests run automatically on:
+
 - Pull requests
 - Commits to main/develop
 - Schedule (daily at 2 AM UTC)
 
 ### Configuration
+
 - Parallel workers disabled (runs sequentially)
 - Retries enabled (1 retry on CI)
 - Screenshots on failure
@@ -326,21 +353,25 @@ Tests run automatically on:
 ## Troubleshooting
 
 ### Tests Timing Out
+
 - Increase timeout in playwright.config
 - Check if services are running
 - Verify network connectivity
 
 ### Selector Not Found
+
 - Verify page elements with data-testid
 - Check for dynamic content loading
 - Use waitFor with increased timeout
 
 ### Login Failures
+
 - Verify test credentials in .env
 - Check if test users exist
 - Verify database connectivity
 
 ### Flaky Tests
+
 - Add explicit waits for data load
 - Increase element visibility timeout
 - Check for race conditions
@@ -348,16 +379,19 @@ Tests run automatically on:
 ## Architecture Notes
 
 ### Page Object Model (POM)
+
 - All page interactions encapsulated in page objects
 - Reduces brittle selector references
 - Improves test maintainability
 
 ### Fixture Pattern
+
 - Centralized test data in fixtures/test-data.ts
 - Generate unique data to avoid conflicts
 - Easy to update test data across tests
 
 ### Test Isolation
+
 - Each test creates fresh test data
 - No test interdependencies
 - Can run tests in any order

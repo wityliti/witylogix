@@ -61,7 +61,9 @@ export class SAMLProvider implements BaseAuthProvider {
   /**
    * For SAML, return the SP metadata or redirect to IdP login.
    */
-  async authenticate(request: AuthenticationRequest): Promise<AuthResult | AuthorizationUrl> {
+  async authenticate(
+    request: AuthenticationRequest,
+  ): Promise<AuthResult | AuthorizationUrl> {
     // Generate SAML AuthnRequest
     const authnRequest = this.generateAuthnRequest();
 
@@ -83,7 +85,9 @@ export class SAMLProvider implements BaseAuthProvider {
 
     try {
       // Parse and validate the SAML assertion
-      const attributes = await this.validateAndParseAssertion(callbackData.assertion);
+      const attributes = await this.validateAndParseAssertion(
+        callbackData.assertion,
+      );
 
       // Extract user info from SAML attributes
       const roles = this.mapRolesToWitylogix(attributes.roles || []);
@@ -101,7 +105,10 @@ export class SAMLProvider implements BaseAuthProvider {
         },
       };
     } catch (error) {
-      throw new ProviderUnavailableError("saml", `SAML assertion validation failed: ${String(error)}`);
+      throw new ProviderUnavailableError(
+        "saml",
+        `SAML assertion validation failed: ${String(error)}`,
+      );
     }
   }
 
@@ -128,14 +135,20 @@ export class SAMLProvider implements BaseAuthProvider {
    * Refresh session — not applicable for SAML.
    */
   async refreshSession(refreshToken: string): Promise<AuthResult> {
-    throw new ConfigurationError("saml", "SAML does not support token refresh; user must re-authenticate");
+    throw new ConfigurationError(
+      "saml",
+      "SAML does not support token refresh; user must re-authenticate",
+    );
   }
 
   /**
    * Revoke a SAML session (logout).
    * Sends SAML LogoutRequest to IdP.
    */
-  async revokeSession(accessToken: string, refreshToken?: string): Promise<void> {
+  async revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void> {
     try {
       // In production: generate SAML LogoutRequest
       // POST to IdP's SLO endpoint
@@ -165,7 +178,10 @@ export class SAMLProvider implements BaseAuthProvider {
   /**
    * Get authorization URL (SAML login redirect).
    */
-  async getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl> {
+  async getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl> {
     const authnRequest = this.generateAuthnRequest();
 
     const url = `${this.config.entryPoint}?SAMLRequest=${encodeURIComponent(authnRequest)}&RelayState=${encodeURIComponent(

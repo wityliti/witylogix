@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { benchConfigSchema, loadConfig, BenchConfigError } from '../config.js';
+import { describe, it, expect } from "vitest";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { benchConfigSchema, loadConfig, BenchConfigError } from "../config.js";
 
 const MINIMAL_YAML = `
 apiVersion: bench.witylogix.io/v1
@@ -14,7 +14,7 @@ provider:
 `;
 
 function withTempDir<T>(fn: (dir: string) => T): T {
-  const dir = mkdtempSync(join(tmpdir(), 'bench-config-test-'));
+  const dir = mkdtempSync(join(tmpdir(), "bench-config-test-"));
   try {
     return fn(dir);
   } finally {
@@ -22,59 +22,59 @@ function withTempDir<T>(fn: (dir: string) => T): T {
   }
 }
 
-describe('benchConfigSchema', () => {
-  it('accepts the minimal valid config with defaults applied', () => {
+describe("benchConfigSchema", () => {
+  it("accepts the minimal valid config with defaults applied", () => {
     const parsed = benchConfigSchema.parse({
-      apiVersion: 'bench.witylogix.io/v1',
-      kind: 'Installation',
-      metadata: { name: 'demo' },
-      provider: { type: 'docker-compose' },
+      apiVersion: "bench.witylogix.io/v1",
+      kind: "Installation",
+      metadata: { name: "demo" },
+      provider: { type: "docker-compose" },
     });
-    expect(parsed.witylogix.channel).toBe('stable');
+    expect(parsed.witylogix.channel).toBe("stable");
     expect(parsed.witylogix.version).toBeNull();
-    expect(parsed.database.isolation).toBe('rls');
-    expect(parsed.database.version).toBe('16');
-    expect(parsed.redis.version).toBe('7');
-    expect(parsed.secrets.backend).toBe('file');
+    expect(parsed.database.isolation).toBe("rls");
+    expect(parsed.database.version).toBe("16");
+    expect(parsed.redis.version).toBe("7");
+    expect(parsed.secrets.backend).toBe("file");
   });
 
-  it('rejects unknown provider types', () => {
+  it("rejects unknown provider types", () => {
     expect(() =>
       benchConfigSchema.parse({
-        apiVersion: 'bench.witylogix.io/v1',
-        kind: 'Installation',
-        metadata: { name: 'demo' },
-        provider: { type: 'heroku' },
+        apiVersion: "bench.witylogix.io/v1",
+        kind: "Installation",
+        metadata: { name: "demo" },
+        provider: { type: "heroku" },
       }),
     ).toThrow();
   });
 
-  it('rejects wrong apiVersion', () => {
+  it("rejects wrong apiVersion", () => {
     expect(() =>
       benchConfigSchema.parse({
-        apiVersion: 'bench.witylogix.io/v0',
-        kind: 'Installation',
-        metadata: { name: 'demo' },
-        provider: { type: 'docker-compose' },
+        apiVersion: "bench.witylogix.io/v0",
+        kind: "Installation",
+        metadata: { name: "demo" },
+        provider: { type: "docker-compose" },
       }),
     ).toThrow();
   });
 });
 
-describe('loadConfig', () => {
-  it('reads and validates a valid bench.config.yaml', () => {
+describe("loadConfig", () => {
+  it("reads and validates a valid bench.config.yaml", () => {
     withTempDir((dir) => {
-      writeFileSync(join(dir, 'bench.config.yaml'), MINIMAL_YAML);
+      writeFileSync(join(dir, "bench.config.yaml"), MINIMAL_YAML);
       const cfg = loadConfig(dir);
-      expect(cfg.metadata.name).toBe('demo');
-      expect(cfg.provider.type).toBe('docker-compose');
+      expect(cfg.metadata.name).toBe("demo");
+      expect(cfg.provider.type).toBe("docker-compose");
     });
   });
 
-  it('throws BenchConfigError with helpful message on invalid yaml', () => {
+  it("throws BenchConfigError with helpful message on invalid yaml", () => {
     withTempDir((dir) => {
       writeFileSync(
-        join(dir, 'bench.config.yaml'),
+        join(dir, "bench.config.yaml"),
         `
 apiVersion: bench.witylogix.io/v1
 kind: Installation
@@ -88,10 +88,10 @@ provider:
     });
   });
 
-  it('throws when metadata.name is missing', () => {
+  it("throws when metadata.name is missing", () => {
     withTempDir((dir) => {
       writeFileSync(
-        join(dir, 'bench.config.yaml'),
+        join(dir, "bench.config.yaml"),
         `
 apiVersion: bench.witylogix.io/v1
 kind: Installation
@@ -105,38 +105,38 @@ provider:
   });
 });
 
-describe('storage schema', () => {
-  it('defaults to local backend when omitted', () => {
+describe("storage schema", () => {
+  it("defaults to local backend when omitted", () => {
     const parsed = benchConfigSchema.parse({
-      apiVersion: 'bench.witylogix.io/v1',
-      kind: 'Installation',
-      metadata: { name: 'demo' },
-      provider: { type: 'docker-compose' },
+      apiVersion: "bench.witylogix.io/v1",
+      kind: "Installation",
+      metadata: { name: "demo" },
+      provider: { type: "docker-compose" },
     });
-    expect(parsed.storage.backend).toBe('local');
+    expect(parsed.storage.backend).toBe("local");
     expect(parsed.storage.endpoint).toBeNull();
   });
 
-  it('accepts s3 backend with bucket + region', () => {
+  it("accepts s3 backend with bucket + region", () => {
     const parsed = benchConfigSchema.parse({
-      apiVersion: 'bench.witylogix.io/v1',
-      kind: 'Installation',
-      metadata: { name: 'demo' },
-      provider: { type: 'docker-compose' },
-      storage: { backend: 's3', bucket: 'acme-prod', region: 'us-east-1' },
+      apiVersion: "bench.witylogix.io/v1",
+      kind: "Installation",
+      metadata: { name: "demo" },
+      provider: { type: "docker-compose" },
+      storage: { backend: "s3", bucket: "acme-prod", region: "us-east-1" },
     });
-    expect(parsed.storage.backend).toBe('s3');
-    expect(parsed.storage.bucket).toBe('acme-prod');
+    expect(parsed.storage.backend).toBe("s3");
+    expect(parsed.storage.bucket).toBe("acme-prod");
   });
 
-  it('rejects unknown storage backend', () => {
+  it("rejects unknown storage backend", () => {
     expect(() =>
       benchConfigSchema.parse({
-        apiVersion: 'bench.witylogix.io/v1',
-        kind: 'Installation',
-        metadata: { name: 'demo' },
-        provider: { type: 'docker-compose' },
-        storage: { backend: 'dropbox' },
+        apiVersion: "bench.witylogix.io/v1",
+        kind: "Installation",
+        metadata: { name: "demo" },
+        provider: { type: "docker-compose" },
+        storage: { backend: "dropbox" },
       }),
     ).toThrow();
   });

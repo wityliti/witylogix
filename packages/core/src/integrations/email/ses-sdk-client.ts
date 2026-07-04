@@ -17,11 +17,7 @@
  * API Documentation: https://docs.aws.amazon.com/ses/latest/APIReference-V2/
  */
 
-import {
-  createHash,
-  createHmac,
-  timingSafeEqual,
-} from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 // ─── Type Definitions ─────────────────────────────────────────────────────
 
@@ -193,7 +189,13 @@ export interface SesSuppressedDestination {
       | "Permanent"
       | "Transient"
       | "Undefined";
-    complaintFeedbackType?: "abuse" | "auth-failure" | "fraud" | "not-spam" | "other" | "virus";
+    complaintFeedbackType?:
+      | "abuse"
+      | "auth-failure"
+      | "fraud"
+      | "not-spam"
+      | "other"
+      | "virus";
   };
   lastUpdateTime?: number;
 }
@@ -319,7 +321,8 @@ export class SesSDKClient {
     this.secretAccessKey = config.secretAccessKey;
     this.sessionToken = config.sessionToken;
     this.region = config.region;
-    this.baseUrl = config.baseUrl || `https://email.${this.region}.amazonaws.com`;
+    this.baseUrl =
+      config.baseUrl || `https://email.${this.region}.amazonaws.com`;
   }
 
   /**
@@ -372,9 +375,7 @@ export class SesSDKClient {
       .update(datestamp)
       .digest();
 
-    const kRegion = createHmac("sha256", kDate)
-      .update(this.region)
-      .digest();
+    const kRegion = createHmac("sha256", kDate).update(this.region).digest();
 
     const kService = createHmac("sha256", kRegion)
       .update(this.service)
@@ -416,7 +417,8 @@ export class SesSDKClient {
       bodyHash = createHash("sha256").update(bodyStr).digest("hex");
     }
 
-    const amzDate = new Date().toISOString().replace(/[:-]/g, "").split(".")[0] + "Z";
+    const amzDate =
+      new Date().toISOString().replace(/[:-]/g, "").split(".")[0] + "Z";
 
     const headers: Record<string, string> = {
       "Content-Type": "application/x-amz-json-1.1",
@@ -429,7 +431,12 @@ export class SesSDKClient {
       headers["X-Amz-Security-Token"] = this.sessionToken;
     }
 
-    const authorization = this.createAuthorizationHeader(method, path, headers, bodyHash);
+    const authorization = this.createAuthorizationHeader(
+      method,
+      path,
+      headers,
+      bodyHash,
+    );
     headers["Authorization"] = authorization;
 
     const options: RequestInit = {
@@ -475,21 +482,28 @@ export class SesSDKClient {
   /**
    * Send templated email.
    */
-  async sendTemplateEmail(email: SesTemplateEmail): Promise<Record<string, unknown>> {
+  async sendTemplateEmail(
+    email: SesTemplateEmail,
+  ): Promise<Record<string, unknown>> {
     return this.request("POST", "/v2/email/outbound-template-emails", email);
   }
 
   /**
    * Create email template.
    */
-  async createTemplate(template: SesTemplate): Promise<Record<string, unknown>> {
+  async createTemplate(
+    template: SesTemplate,
+  ): Promise<Record<string, unknown>> {
     return this.request("POST", "/v2/email/templates", template);
   }
 
   /**
    * Update email template.
    */
-  async updateTemplate(templateName: string, template: Partial<SesTemplate>): Promise<void> {
+  async updateTemplate(
+    templateName: string,
+    template: Partial<SesTemplate>,
+  ): Promise<void> {
     await this.request("PUT", `/v2/email/templates/${templateName}`, template);
   }
 
@@ -529,7 +543,9 @@ export class SesSDKClient {
   /**
    * Create configuration set.
    */
-  async createConfigSet(configSet: SesConfigSet): Promise<Record<string, unknown>> {
+  async createConfigSet(
+    configSet: SesConfigSet,
+  ): Promise<Record<string, unknown>> {
     return this.request("POST", "/v2/email/configuration-sets", configSet);
   }
 
@@ -537,7 +553,10 @@ export class SesSDKClient {
    * Delete configuration set.
    */
   async deleteConfigSet(configSetName: string): Promise<void> {
-    await this.request("DELETE", `/v2/email/configuration-sets/${configSetName}`);
+    await this.request(
+      "DELETE",
+      `/v2/email/configuration-sets/${configSetName}`,
+    );
   }
 
   /**
@@ -570,7 +589,9 @@ export class SesSDKClient {
   /**
    * Verify email identity.
    */
-  async verifyEmailIdentity(emailAddress: string): Promise<Record<string, unknown>> {
+  async verifyEmailIdentity(
+    emailAddress: string,
+  ): Promise<Record<string, unknown>> {
     return this.request("POST", "/v2/email/identities", {
       emailAddress,
       identityType: "EMAIL_ADDRESS",
@@ -597,14 +618,19 @@ export class SesSDKClient {
   /**
    * Create contact list.
    */
-  async createContactList(contactList: SesContactList): Promise<Record<string, unknown>> {
+  async createContactList(
+    contactList: SesContactList,
+  ): Promise<Record<string, unknown>> {
     return this.request("POST", "/v2/email/contact-lists", contactList);
   }
 
   /**
    * Add contact to list.
    */
-  async addContact(contactListName: string, contact: SesContact): Promise<void> {
+  async addContact(
+    contactListName: string,
+    contact: SesContact,
+  ): Promise<void> {
     await this.request(
       "POST",
       `/v2/email/contact-lists/${contactListName}/contacts`,
@@ -661,7 +687,10 @@ export class SesSDKClient {
    * Delete suppressed destination.
    */
   async deleteSuppressedDestination(emailAddress: string): Promise<void> {
-    await this.request("DELETE", `/v2/email/suppression/addresses/${emailAddress}`);
+    await this.request(
+      "DELETE",
+      `/v2/email/suppression/addresses/${emailAddress}`,
+    );
   }
 
   /**
@@ -711,7 +740,9 @@ export class SesSDKClient {
   /**
    * Parse SNS notification (from SES events).
    */
-  async handleSnsNotification(snsMessage: string): Promise<SesSnseventNotification> {
+  async handleSnsNotification(
+    snsMessage: string,
+  ): Promise<SesSnseventNotification> {
     return JSON.parse(snsMessage) as SesSnseventNotification;
   }
 }

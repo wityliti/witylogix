@@ -1,10 +1,10 @@
-import { LocaleKey, localeMetadata, isRTL } from './config';
-import { cn } from '@/lib/utils';
+import { LocaleKey, localeMetadata, isRTL } from "./config";
+import { cn } from "@/lib/utils";
 
 /**
  * Get text direction for a locale
  */
-export function getDirection(locale: LocaleKey): 'ltr' | 'rtl' {
+export function getDirection(locale: LocaleKey): "ltr" | "rtl" {
   return localeMetadata[locale].direction;
 }
 
@@ -26,15 +26,15 @@ export function rtlSpacing(
     me?: string; // margin-end (right in LTR, left in RTL)
     ps?: string; // padding-start
     pe?: string; // padding-end
-  }
+  },
 ): Record<string, string> {
   const isRtl = isLocaleRTL(locale);
 
   return {
-    ...(config.ms && { [isRtl ? 'marginRight' : 'marginLeft']: config.ms }),
-    ...(config.me && { [isRtl ? 'marginLeft' : 'marginRight']: config.me }),
-    ...(config.ps && { [isRtl ? 'paddingRight' : 'paddingLeft']: config.ps }),
-    ...(config.pe && { [isRtl ? 'paddingLeft' : 'paddingRight']: config.pe }),
+    ...(config.ms && { [isRtl ? "marginRight" : "marginLeft"]: config.ms }),
+    ...(config.me && { [isRtl ? "marginLeft" : "marginRight"]: config.me }),
+    ...(config.ps && { [isRtl ? "paddingRight" : "paddingLeft"]: config.ps }),
+    ...(config.pe && { [isRtl ? "paddingLeft" : "paddingRight"]: config.pe }),
   };
 }
 
@@ -54,7 +54,7 @@ export function rtlClasses(
     me?: string; // margin-end classes
     ps?: string; // padding-start classes
     pe?: string; // padding-end classes
-  }
+  },
 ): string {
   const isRtl = isLocaleRTL(locale);
 
@@ -73,23 +73,20 @@ export function rtlClasses(
  */
 export function rtlAlign(
   locale: LocaleKey,
-  alignment: 'start' | 'end'
-): 'left' | 'right' {
+  alignment: "start" | "end",
+): "left" | "right" {
   const isRtl = isLocaleRTL(locale);
 
-  if (alignment === 'start') {
-    return isRtl ? 'right' : 'left';
+  if (alignment === "start") {
+    return isRtl ? "right" : "left";
   }
-  return isRtl ? 'left' : 'right';
+  return isRtl ? "left" : "right";
 }
 
 /**
  * RTL-aware transform for positioning
  */
-export function rtlTransform(
-  locale: LocaleKey,
-  distance: string
-): string {
+export function rtlTransform(locale: LocaleKey, distance: string): string {
   const isRtl = isLocaleRTL(locale);
   return isRtl ? `translateX(${distance})` : `translateX(-${distance})`;
 }
@@ -106,56 +103,56 @@ export function getLogicalProperties(locale: LocaleKey) {
      * Margin start (left in LTR, right in RTL)
      */
     marginStart: (value: string | number) => ({
-      [isRtl ? 'marginRight' : 'marginLeft']: value,
+      [isRtl ? "marginRight" : "marginLeft"]: value,
     }),
 
     /**
      * Margin end (right in LTR, left in RTL)
      */
     marginEnd: (value: string | number) => ({
-      [isRtl ? 'marginLeft' : 'marginRight']: value,
+      [isRtl ? "marginLeft" : "marginRight"]: value,
     }),
 
     /**
      * Padding start
      */
     paddingStart: (value: string | number) => ({
-      [isRtl ? 'paddingRight' : 'paddingLeft']: value,
+      [isRtl ? "paddingRight" : "paddingLeft"]: value,
     }),
 
     /**
      * Padding end
      */
     paddingEnd: (value: string | number) => ({
-      [isRtl ? 'paddingLeft' : 'paddingRight']: value,
+      [isRtl ? "paddingLeft" : "paddingRight"]: value,
     }),
 
     /**
      * Text alignment start
      */
-    textStart: (value: string = 'auto') => ({
-      textAlign: isRtl ? 'right' : 'left',
+    textStart: (value: string = "auto") => ({
+      textAlign: isRtl ? "right" : "left",
     }),
 
     /**
      * Text alignment end
      */
-    textEnd: (value: string = 'auto') => ({
-      textAlign: isRtl ? 'left' : 'right',
+    textEnd: (value: string = "auto") => ({
+      textAlign: isRtl ? "left" : "right",
     }),
 
     /**
      * Flex alignment for row direction
      */
     flexStartAlign: () => ({
-      justifyContent: isRtl ? 'flex-end' : 'flex-start',
+      justifyContent: isRtl ? "flex-end" : "flex-start",
     }),
 
     /**
      * Flex alignment for column direction
      */
     flexEndAlign: () => ({
-      justifyContent: isRtl ? 'flex-start' : 'flex-end',
+      justifyContent: isRtl ? "flex-start" : "flex-end",
     }),
   };
 }

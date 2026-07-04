@@ -28,7 +28,11 @@ import type {
   DomainVerification,
   EmailTemplate,
 } from "./types.js";
-import { DeliveryStatus, BounceType, EmailEventType as EventType } from "./types.js";
+import {
+  DeliveryStatus,
+  BounceType,
+  EmailEventType as EventType,
+} from "./types.js";
 
 /**
  * SendGrid email adapter implementation.
@@ -61,7 +65,7 @@ export class SendGridClient extends EmailAdapter {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
@@ -89,7 +93,7 @@ export class SendGridClient extends EmailAdapter {
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       throw new Error(
-        `SendGrid API error: ${error.message || error.errors || response.statusText}`
+        `SendGrid API error: ${error.message || error.errors || response.statusText}`,
       );
     }
 
@@ -101,13 +105,11 @@ export class SendGridClient extends EmailAdapter {
    */
   async send(message: EmailMessage): Promise<SendResult> {
     try {
-      const recipients = Array.isArray(message.to)
-        ? message.to
-        : [message.to];
+      const recipients = Array.isArray(message.to) ? message.to : [message.to];
 
       if (recipients.length > this.maxRecipientsPerBatch) {
         throw new Error(
-          `Exceeded maximum ${this.maxRecipientsPerBatch} recipients per request`
+          `Exceeded maximum ${this.maxRecipientsPerBatch} recipients per request`,
         );
       }
 
@@ -140,7 +142,9 @@ export class SendGridClient extends EmailAdapter {
 
       // Add BCC recipients
       if (message.bcc) {
-        const bccList = Array.isArray(message.bcc) ? message.bcc : [message.bcc];
+        const bccList = Array.isArray(message.bcc)
+          ? message.bcc
+          : [message.bcc];
         personalizations[0].bcc = bccList.map((bcc) => ({
           email: bcc.email,
           name: bcc.name,
@@ -200,7 +204,7 @@ export class SendGridClient extends EmailAdapter {
       }
 
       // Add categories/tags from metadata
-      const tags = message.metadata?.['tags'] as string[] | undefined;
+      const tags = message.metadata?.["tags"] as string[] | undefined;
       if (tags && tags.length > 0) {
         payload.categories = tags;
       }
@@ -208,7 +212,7 @@ export class SendGridClient extends EmailAdapter {
       const response = await this.request<{ message_id?: string }>(
         "POST",
         "/mail/send",
-        payload
+        payload,
       );
 
       return {
@@ -232,7 +236,7 @@ export class SendGridClient extends EmailAdapter {
     // Split into chunks of max recipients
     const chunks = this.chunkArray(
       request.recipients,
-      this.maxRecipientsPerBatch
+      this.maxRecipientsPerBatch,
     );
 
     for (const chunk of chunks) {
@@ -252,15 +256,20 @@ export class SendGridClient extends EmailAdapter {
           name: request.fromName,
         },
         personalizations,
-        ...(request.htmlBody && { content: [{ type: 'text/html', value: request.htmlBody }] }),
-        ...(request.textBody && !request.htmlBody && { content: [{ type: 'text/plain', value: request.textBody }] }),
+        ...(request.htmlBody && {
+          content: [{ type: "text/html", value: request.htmlBody }],
+        }),
+        ...(request.textBody &&
+          !request.htmlBody && {
+            content: [{ type: "text/plain", value: request.textBody }],
+          }),
         subject: request.subject,
       };
 
       const response = await this.request<{ message_id?: string }>(
         "POST",
         "/mail/send",
-        payload
+        payload,
       );
 
       results.push({
@@ -347,7 +356,7 @@ export class SendGridClient extends EmailAdapter {
       const response = await this.request<{ id: string; name: string }>(
         "POST",
         "/templates",
-        payload
+        payload,
       );
 
       return {
@@ -366,7 +375,10 @@ export class SendGridClient extends EmailAdapter {
   /**
    * Update template.
    */
-  async updateTemplate(templateId: string, updates: Partial<EmailTemplate>): Promise<EmailTemplate> {
+  async updateTemplate(
+    templateId: string,
+    updates: Partial<EmailTemplate>,
+  ): Promise<EmailTemplate> {
     try {
       const payload = {
         name: updates.name,
@@ -388,7 +400,7 @@ export class SendGridClient extends EmailAdapter {
   async addContact(
     email: string,
     name?: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     try {
       const payload = {
@@ -402,11 +414,7 @@ export class SendGridClient extends EmailAdapter {
         ],
       };
 
-      await this.request<void>(
-        "PUT",
-        "/marketing/contacts",
-        payload
-      );
+      await this.request<void>("PUT", "/marketing/contacts", payload);
     } catch (error) {
       this.logger.error("SendGrid add contact failed", error);
       throw error;
@@ -418,7 +426,7 @@ export class SendGridClient extends EmailAdapter {
    */
   async updateContact(
     email: string,
-    updates: Record<string, unknown>
+    updates: Record<string, unknown>,
   ): Promise<void> {
     try {
       const payload = {
@@ -430,11 +438,7 @@ export class SendGridClient extends EmailAdapter {
         ],
       };
 
-      await this.request<void>(
-        "PUT",
-        "/marketing/contacts",
-        payload
-      );
+      await this.request<void>("PUT", "/marketing/contacts", payload);
     } catch (error) {
       this.logger.error("SendGrid update contact failed", error);
       throw error;
@@ -455,11 +459,7 @@ export class SendGridClient extends EmailAdapter {
         ],
       };
 
-      await this.request<void>(
-        "DELETE",
-        "/marketing/contacts",
-        payload
-      );
+      await this.request<void>("DELETE", "/marketing/contacts", payload);
     } catch (error) {
       this.logger.error("SendGrid delete contact failed", error);
       throw error;
@@ -471,7 +471,7 @@ export class SendGridClient extends EmailAdapter {
    */
   async getSuppressionList(
     type: "bounces" | "blocks" | "spam_reports" | "unsubscribe",
-    limit = 100
+    limit = 100,
   ): Promise<SuppressionEntry[]> {
     try {
       const response = await this.request<{
@@ -483,17 +483,17 @@ export class SendGridClient extends EmailAdapter {
         }>;
       }>("GET", `/suppression/${type}?limit=${limit}`);
 
-      const typeMap: Record<string, SuppressionEntry['type']> = {
-        bounces: 'bounce',
-        blocks: 'bounce',
-        spam_reports: 'complaint',
-        unsubscribe: 'unsubscribe',
+      const typeMap: Record<string, SuppressionEntry["type"]> = {
+        bounces: "bounce",
+        blocks: "bounce",
+        spam_reports: "complaint",
+        unsubscribe: "unsubscribe",
       };
       return (response.results || []).map((r) => ({
         email: r.email,
         reason: r.reason,
         suppressedAt: new Date(r.created * 1000),
-        type: typeMap[type] ?? 'manual',
+        type: typeMap[type] ?? "manual",
       }));
     } catch (error) {
       this.logger.error("SendGrid get suppression list failed", error);
@@ -508,9 +508,9 @@ export class SendGridClient extends EmailAdapter {
    */
   async addToSuppressionList(
     email: string,
-    typeOrEntry: SuppressionEntry | "bounces" | "blocks" | "spam_reports"
+    typeOrEntry: SuppressionEntry | "bounces" | "blocks" | "spam_reports",
   ): Promise<void> {
-    if (typeof typeOrEntry === 'object') {
+    if (typeof typeOrEntry === "object") {
       // Base class behaviour: add to in-memory suppression list
       this.suppressionList.set(email.toLowerCase(), typeOrEntry);
       return;
@@ -520,11 +520,7 @@ export class SendGridClient extends EmailAdapter {
         emails: [email],
       };
 
-      await this.request<void>(
-        "POST",
-        `/suppression/${typeOrEntry}`,
-        payload
-      );
+      await this.request<void>("POST", `/suppression/${typeOrEntry}`, payload);
     } catch (error) {
       this.logger.error("SendGrid add to suppression failed", error);
       throw error;
@@ -536,13 +532,10 @@ export class SendGridClient extends EmailAdapter {
    */
   async removeFromSuppressionList(
     email: string,
-    type: "bounces" | "blocks" | "spam_reports" | "unsubscribe"
+    type: "bounces" | "blocks" | "spam_reports" | "unsubscribe",
   ): Promise<void> {
     try {
-      await this.request<void>(
-        "DELETE",
-        `/suppression/${type}?email=${email}`
-      );
+      await this.request<void>("DELETE", `/suppression/${type}?email=${email}`);
     } catch (error) {
       this.logger.error("SendGrid remove from suppression failed", error);
       throw error;
@@ -556,7 +549,7 @@ export class SendGridClient extends EmailAdapter {
     body: string,
     signature: string,
     timestamp: string,
-    webhookSecret: string
+    webhookSecret: string,
   ): EmailEvent | null {
     try {
       // Verify HMAC signature
@@ -605,7 +598,7 @@ export class SendGridClient extends EmailAdapter {
   async getStatistics(
     startDate?: Date,
     endDate?: Date,
-    aggregatedBy?: "day" | "week" | "month"
+    aggregatedBy?: "day" | "week" | "month",
   ): Promise<EmailStats> {
     try {
       let endpoint = "/stats";
@@ -661,10 +654,14 @@ export class SendGridClient extends EmailAdapter {
         });
       });
 
-      const openRate = totalRequests > 0 ? (totalOpens / totalRequests) * 100 : 0;
-      const clickRate = totalRequests > 0 ? (totalClicks / totalRequests) * 100 : 0;
-      const bounceRate = totalRequests > 0 ? (totalBounces / totalRequests) * 100 : 0;
-      const deliveryRate = totalRequests > 0 ? (totalDelivered / totalRequests) * 100 : 0;
+      const openRate =
+        totalRequests > 0 ? (totalOpens / totalRequests) * 100 : 0;
+      const clickRate =
+        totalRequests > 0 ? (totalClicks / totalRequests) * 100 : 0;
+      const bounceRate =
+        totalRequests > 0 ? (totalBounces / totalRequests) * 100 : 0;
+      const deliveryRate =
+        totalRequests > 0 ? (totalDelivered / totalRequests) * 100 : 0;
 
       const stats: EmailStats = {
         provider: "sendgrid",
@@ -687,8 +684,9 @@ export class SendGridClient extends EmailAdapter {
         complaintRate: 0,
       };
       // Attach legacy aliases for backwards compatibility
-      (stats as unknown as Record<string, unknown>)['requests'] = totalRequests;
-      (stats as unknown as Record<string, unknown>)['deliveryRate'] = deliveryRate;
+      (stats as unknown as Record<string, unknown>)["requests"] = totalRequests;
+      (stats as unknown as Record<string, unknown>)["deliveryRate"] =
+        deliveryRate;
       return stats;
     } catch (error) {
       this.logger.error("SendGrid get statistics failed", error);
@@ -721,7 +719,7 @@ export class SendGridClient extends EmailAdapter {
   async getStatus(messageId: string): Promise<EmailDeliveryStatus> {
     return {
       messageId,
-      recipient: '',
+      recipient: "",
       status: DeliveryStatus.SENT,
       sentAt: new Date(),
       opens: 0,
@@ -752,19 +750,25 @@ export class SendGridClient extends EmailAdapter {
   /**
    * Validate an email address via SendGrid's Email Validation API.
    */
-  async validateEmail(email: string): Promise<{ email: string; valid: boolean; reason?: string }> {
+  async validateEmail(
+    email: string,
+  ): Promise<{ email: string; valid: boolean; reason?: string }> {
     try {
       const response = await this.request<{
-        result?: { verdict: string; score: number; checks?: { domain?: { has_mx_or_a_record?: boolean } } };
+        result?: {
+          verdict: string;
+          score: number;
+          checks?: { domain?: { has_mx_or_a_record?: boolean } };
+        };
       }>("GET", `/validations/email?email=${encodeURIComponent(email)}`);
       const verdict = response.result?.verdict;
       return {
         email,
-        valid: verdict === 'Valid' || verdict === 'Risky',
-        reason: verdict !== 'Valid' ? verdict : undefined,
+        valid: verdict === "Valid" || verdict === "Risky",
+        reason: verdict !== "Valid" ? verdict : undefined,
       };
     } catch {
-      return { email, valid: false, reason: 'Validation request failed' };
+      return { email, valid: false, reason: "Validation request failed" };
     }
   }
 

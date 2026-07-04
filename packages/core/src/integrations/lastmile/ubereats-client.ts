@@ -8,8 +8,8 @@ import type {
   Location,
   Contact,
   LastMileWebhookEvent,
-} from './types';
-import { LastMileAdapter } from './lastmile-adapter';
+} from "./types";
+import { LastMileAdapter } from "./lastmile-adapter";
 
 interface UberDirectDeliveryRequest {
   external_delivery_id: string;
@@ -73,17 +73,17 @@ export class UberEatsClient extends LastMileAdapter {
     oauth_client_secret: string,
     initial_token: string,
     webhook_secret: string,
-    sandbox_mode: boolean = false
+    sandbox_mode: boolean = false,
   ) {
-    super('ubereats', undefined);
+    super("ubereats", undefined);
     this.oauth_client_id = oauth_client_id;
     this.oauth_client_secret = oauth_client_secret;
     this.oauth_token = initial_token;
     this.webhook_secret = webhook_secret;
     this.sandbox_mode = sandbox_mode;
     this.base_url = sandbox_mode
-      ? 'https://sandbox.uber.com'
-      : 'https://api.uber.com';
+      ? "https://sandbox.uber.com"
+      : "https://api.uber.com";
   }
 
   private async refreshTokenIfNeeded(): Promise<void> {
@@ -91,16 +91,18 @@ export class UberEatsClient extends LastMileAdapter {
       return;
     }
 
-    const auth = Buffer.from(`${this.oauth_client_id}:${this.oauth_client_secret}`).toString('base64');
+    const auth = Buffer.from(
+      `${this.oauth_client_id}:${this.oauth_client_secret}`,
+    ).toString("base64");
 
     try {
       const response = await fetch(`${this.base_url}/oauth/v2/token`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: 'grant_type=client_credentials&scope=delivery.read delivery.write',
+        body: "grant_type=client_credentials&scope=delivery.read delivery.write",
       });
 
       if (!response.ok) {
@@ -111,48 +113,60 @@ export class UberEatsClient extends LastMileAdapter {
       this.oauth_token = data.access_token;
       this.token_expires_at = Date.now() + (data.expires_in - 300) * 1000;
     } catch (error) {
-      throw new Error(`Failed to refresh OAuth token: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to refresh OAuth token: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   private getAuthHeaders(): Record<string, string> {
     return {
       Authorization: `Bearer ${this.oauth_token}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
   }
 
-  async createDelivery(delivery: Partial<LastMileDelivery>): Promise<LastMileDelivery> {
+  async createDelivery(
+    delivery: Partial<LastMileDelivery>,
+  ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-delivery-create');
+      await this.checkRateLimit("ubereats-delivery-create");
       await this.refreshTokenIfNeeded();
 
       if (!delivery.pickup_location || !delivery.dropoff_location) {
-        throw new Error('Pickup and dropoff locations are required');
+        throw new Error("Pickup and dropoff locations are required");
       }
 
       if (!delivery.pickup_contact || !delivery.dropoff_contact) {
-        throw new Error('Pickup and dropoff contacts are required');
+        throw new Error("Pickup and dropoff contacts are required");
       }
 
       const request_id = this.generateRequestId();
-      const path = '/v1/deliveries';
+      const path = "/v1/deliveries";
 
       const uber_request: UberDirectDeliveryRequest = {
         external_delivery_id: delivery.order_id || request_id,
-        pickup: this.locationToUberDirect(delivery.pickup_location, delivery.pickup_contact),
-        dropoff: this.locationToUberDirect(delivery.dropoff_location, delivery.dropoff_contact),
-        items: delivery.notes ? [{ title: delivery.notes, quantity: 1, unit_price: 0 }] : [],
+        pickup: this.locationToUberDirect(
+          delivery.pickup_location,
+          delivery.pickup_contact,
+        ),
+        dropoff: this.locationToUberDirect(
+          delivery.dropoff_location,
+          delivery.dropoff_contact,
+        ),
+        items: delivery.notes
+          ? [{ title: delivery.notes, quantity: 1, unit_price: 0 }]
+          : [],
         order_value: 0,
         notes: delivery.special_instructions,
       };
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'POST',
+          method: "POST",
           headers: {
             ...this.getAuthHeaders(),
-            'X-Request-ID': request_id,
+            "X-Request-ID": request_id,
           },
           body: JSON.stringify(uber_request),
         });
@@ -165,7 +179,7 @@ export class UberEatsClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'ubereats',
+          platform: "ubereats",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: delivery.order_id || request_id,
@@ -190,21 +204,23 @@ export class UberEatsClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to create Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to create Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
   async getDelivery(delivery_id: string): Promise<LastMileDelivery | null> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-delivery-get');
+      await this.checkRateLimit("ubereats-delivery-get");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/deliveries/${delivery_id}`;
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'GET',
+          method: "GET",
           headers: this.getAuthHeaders(),
         });
 
@@ -220,7 +236,7 @@ export class UberEatsClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'ubereats',
+          platform: "ubereats",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_delivery_id,
@@ -247,28 +263,31 @@ export class UberEatsClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to get Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to get Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
   async updateDelivery(
     delivery_id: string,
-    updates: Partial<LastMileDelivery>
+    updates: Partial<LastMileDelivery>,
   ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-delivery-update');
+      await this.checkRateLimit("ubereats-delivery-update");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/deliveries/${delivery_id}`;
 
       const update_body: Record<string, any> = {};
       if (updates.notes) update_body.notes = updates.notes;
-      if (updates.special_instructions) update_body.special_instructions = updates.special_instructions;
+      if (updates.special_instructions)
+        update_body.special_instructions = updates.special_instructions;
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'PATCH',
+          method: "PATCH",
           headers: this.getAuthHeaders(),
           body: JSON.stringify(update_body),
         });
@@ -281,7 +300,7 @@ export class UberEatsClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'ubereats',
+          platform: "ubereats",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_delivery_id,
@@ -308,23 +327,28 @@ export class UberEatsClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to update Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to update Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
-  async cancelDelivery(delivery_id: string, reason?: string): Promise<LastMileDelivery> {
+  async cancelDelivery(
+    delivery_id: string,
+    reason?: string,
+  ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-delivery-cancel');
+      await this.checkRateLimit("ubereats-delivery-cancel");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/deliveries/${delivery_id}/cancel`;
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'POST',
+          method: "POST",
           headers: this.getAuthHeaders(),
-          body: JSON.stringify({ reason_code: reason || 'MERCHANT_REQUESTED' }),
+          body: JSON.stringify({ reason_code: reason || "MERCHANT_REQUESTED" }),
         });
 
         if (!response.ok) {
@@ -335,7 +359,7 @@ export class UberEatsClient extends LastMileAdapter {
 
         return {
           id: data.delivery_id,
-          platform: 'ubereats',
+          platform: "ubereats",
           external_id: data.external_delivery_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_delivery_id,
@@ -362,21 +386,25 @@ export class UberEatsClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to cancel Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to cancel Uber Eats delivery: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
-  async listDeliveries(filters?: DeliveryFilterOptions): Promise<LastMileDelivery[]> {
+  async listDeliveries(
+    filters?: DeliveryFilterOptions,
+  ): Promise<LastMileDelivery[]> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-delivery-list');
+      await this.checkRateLimit("ubereats-delivery-list");
       await this.refreshTokenIfNeeded();
 
-      const path = '/v1/deliveries';
+      const path = "/v1/deliveries";
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'GET',
+          method: "GET",
           headers: this.getAuthHeaders(),
         });
 
@@ -384,11 +412,13 @@ export class UberEatsClient extends LastMileAdapter {
           throw new Error(`Uber Eats API error: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { deliveries: UberDirectDeliveryResponse[] };
+        const data = (await response.json()) as {
+          deliveries: UberDirectDeliveryResponse[];
+        };
 
         return data.deliveries.map((delivery) => ({
           id: delivery.delivery_id,
-          platform: 'ubereats',
+          platform: "ubereats",
           external_id: delivery.external_delivery_id,
           status: this.mapStatusToUnified(delivery.status),
           order_id: delivery.external_delivery_id,
@@ -415,7 +445,9 @@ export class UberEatsClient extends LastMileAdapter {
           updated_at: new Date(),
         }));
       } catch (error) {
-        throw new Error(`Failed to list Uber Eats deliveries: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to list Uber Eats deliveries: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
@@ -423,24 +455,24 @@ export class UberEatsClient extends LastMileAdapter {
   async getQuote(
     pickup: Location,
     dropoff: Location,
-    options?: QuoteOptions
+    options?: QuoteOptions,
   ): Promise<LastMileQuote> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-quote');
+      await this.checkRateLimit("ubereats-quote");
       await this.refreshTokenIfNeeded();
 
       const request_id = this.generateRequestId();
-      const path = '/v1/quotes';
+      const path = "/v1/quotes";
 
       const quote_request = {
         external_delivery_id: request_id,
         pickup: {
-          address: pickup.address || '',
+          address: pickup.address || "",
           latitude: pickup.latitude,
           longitude: pickup.longitude,
         },
         dropoff: {
-          address: dropoff.address || '',
+          address: dropoff.address || "",
           latitude: dropoff.latitude,
           longitude: dropoff.longitude,
         },
@@ -448,10 +480,10 @@ export class UberEatsClient extends LastMileAdapter {
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'POST',
+          method: "POST",
           headers: {
             ...this.getAuthHeaders(),
-            'X-Request-ID': request_id,
+            "X-Request-ID": request_id,
           },
           body: JSON.stringify(quote_request),
         });
@@ -468,7 +500,7 @@ export class UberEatsClient extends LastMileAdapter {
 
         return {
           id: data.quote_id,
-          platform: 'ubereats',
+          platform: "ubereats",
 
           pickup_location: pickup,
           dropoff_location: dropoff,
@@ -487,10 +519,12 @@ export class UberEatsClient extends LastMileAdapter {
           tax: Math.round(data.fee * 0.0875),
           total: data.fee + Math.round(data.fee * 0.0875),
 
-          currency: data.currency || 'USD',
+          currency: data.currency || "USD",
 
           estimated_pickup_time: new Date(),
-          estimated_dropoff_time: new Date(Date.now() + data.estimated_duration_seconds * 1000),
+          estimated_dropoff_time: new Date(
+            Date.now() + data.estimated_duration_seconds * 1000,
+          ),
 
           valid_until: new Date(data.expires_at),
           expires_at: new Date(data.expires_at),
@@ -499,14 +533,16 @@ export class UberEatsClient extends LastMileAdapter {
           platform_commission_amount: commission,
         };
       } catch (error) {
-        throw new Error(`Failed to get Uber Eats quote: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to get Uber Eats quote: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
   async getTracking(delivery_id: string): Promise<LastMileTracking> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-tracking');
+      await this.checkRateLimit("ubereats-tracking");
 
       const delivery = await this.getDelivery(delivery_id);
       if (!delivery) {
@@ -517,7 +553,9 @@ export class UberEatsClient extends LastMileAdapter {
     });
   }
 
-  async getTrackingByExternalId(external_id: string): Promise<LastMileTracking> {
+  async getTrackingByExternalId(
+    external_id: string,
+  ): Promise<LastMileTracking> {
     const deliveries = await this.listDeliveries();
     const delivery = deliveries.find((d) => d.external_id === external_id);
 
@@ -530,14 +568,14 @@ export class UberEatsClient extends LastMileAdapter {
 
   async getDriver(driver_id: string): Promise<LastMileDriver | null> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('ubereats-driver-get');
+      await this.checkRateLimit("ubereats-driver-get");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/drivers/${driver_id}`;
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'GET',
+          method: "GET",
           headers: this.getAuthHeaders(),
         });
 
@@ -553,11 +591,11 @@ export class UberEatsClient extends LastMileAdapter {
 
         return {
           id: driver_id,
-          platform: 'ubereats',
+          platform: "ubereats",
           external_id: data.external_id || driver_id,
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          phone: data.phone || '',
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          phone: data.phone || "",
           email: data.email,
 
           current_location: data.location
@@ -568,15 +606,20 @@ export class UberEatsClient extends LastMileAdapter {
             : undefined,
 
           rating: data.rating,
-          status: 'available',
+          status: "available",
         };
       } catch (error) {
-        throw new Error(`Failed to get Uber Eats driver: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to get Uber Eats driver: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
-  async listAvailableDrivers(location: Location, radius_meters: number = 5000): Promise<LastMileDriver[]> {
+  async listAvailableDrivers(
+    location: Location,
+    radius_meters: number = 5000,
+  ): Promise<LastMileDriver[]> {
     // Uber Eats doesn't expose driver list API
     return [];
   }
@@ -590,15 +633,17 @@ export class UberEatsClient extends LastMileAdapter {
 
     return {
       id: data.delivery_id || this.generateRequestId(),
-      platform: 'ubereats',
-      event_type: data.event_type || 'delivery.status_changed',
+      platform: "ubereats",
+      event_type: data.event_type || "delivery.status_changed",
       external_id: data.external_delivery_id,
 
       delivery_id: data.delivery_id,
       order_id: data.external_delivery_id,
 
       status: this.mapStatusToUnified(data.status),
-      previous_status: data.previous_status ? this.mapStatusToUnified(data.previous_status) : undefined,
+      previous_status: data.previous_status
+        ? this.mapStatusToUnified(data.previous_status)
+        : undefined,
 
       timestamp: new Date(data.timestamp || Date.now()),
 
@@ -612,9 +657,12 @@ export class UberEatsClient extends LastMileAdapter {
     };
   }
 
-  private locationToUberDirect(location: Location, contact: Contact): UberDirectLocation {
+  private locationToUberDirect(
+    location: Location,
+    contact: Contact,
+  ): UberDirectLocation {
     return {
-      address: location.address || '',
+      address: location.address || "",
       latitude: location.latitude,
       longitude: location.longitude,
       contact: {
@@ -628,7 +676,7 @@ export class UberEatsClient extends LastMileAdapter {
   private buildTracking(delivery: LastMileDelivery): LastMileTracking {
     return {
       delivery_id: delivery.id,
-      platform: 'ubereats',
+      platform: "ubereats",
 
       current_location: delivery.dropoff_location,
       current_latitude: delivery.dropoff_location.latitude,
@@ -654,8 +702,8 @@ export class UberEatsClient extends LastMileAdapter {
       events: [
         {
           timestamp: delivery.created_at,
-          status: 'created',
-          description: 'Delivery created',
+          status: "created",
+          description: "Delivery created",
         },
       ],
     };

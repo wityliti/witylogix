@@ -75,15 +75,18 @@ npx agentdb@latest stats ./vectors.db
 ## Quick Start with API
 
 ```typescript
-import { createAgentDBAdapter, computeEmbedding } from 'agentic-flow/reasoningbank';
+import {
+  createAgentDBAdapter,
+  computeEmbedding,
+} from "agentic-flow/reasoningbank";
 
 // Initialize with vector search optimizations
 const adapter = await createAgentDBAdapter({
-  dbPath: '.agentdb/vectors.db',
-  enableLearning: false,       // Vector search only
-  enableReasoning: true,       // Enable semantic matching
-  quantizationType: 'binary',  // 32x memory reduction
-  cacheSize: 1000,             // Fast retrieval
+  dbPath: ".agentdb/vectors.db",
+  enableLearning: false, // Vector search only
+  enableReasoning: true, // Enable semantic matching
+  quantizationType: "binary", // 32x memory reduction
+  cacheSize: 1000, // Fast retrieval
 });
 
 // Store document with embedding
@@ -91,13 +94,13 @@ const text = "The quantum computer achieved 100 qubits";
 const embedding = await computeEmbedding(text);
 
 await adapter.insertPattern({
-  id: '',
-  type: 'document',
-  domain: 'technology',
+  id: "",
+  type: "document",
+  domain: "technology",
   pattern_data: JSON.stringify({
     embedding,
     text,
-    metadata: { category: "quantum", date: "2025-01-15" }
+    metadata: { category: "quantum", date: "2025-01-15" },
   }),
   confidence: 1.0,
   usage_count: 0,
@@ -109,60 +112,64 @@ await adapter.insertPattern({
 // Semantic search with MMR (Maximal Marginal Relevance)
 const queryEmbedding = await computeEmbedding("quantum computing advances");
 const results = await adapter.retrieveWithReasoning(queryEmbedding, {
-  domain: 'technology',
+  domain: "technology",
   k: 10,
-  useMMR: true,              // Diverse results
-  synthesizeContext: true,    // Rich context
+  useMMR: true, // Diverse results
+  synthesizeContext: true, // Rich context
 });
 ```
 
 ## Core Features
 
 ### 1. Vector Storage
+
 ```typescript
 // Store with automatic embedding
 await db.storeWithEmbedding({
   content: "Your document text",
-  metadata: { source: "docs", page: 42 }
+  metadata: { source: "docs", page: 42 },
 });
 ```
 
 ### 2. Similarity Search
+
 ```typescript
 // Find similar documents
 const similar = await db.findSimilar("quantum computing", {
   limit: 5,
-  minScore: 0.75
+  minScore: 0.75,
 });
 ```
 
 ### 3. Hybrid Search (Vector + Metadata)
+
 ```typescript
 // Combine vector similarity with metadata filtering
 const results = await db.hybridSearch({
   query: "machine learning models",
   filters: {
     category: "research",
-    date: { $gte: "2024-01-01" }
+    date: { $gte: "2024-01-01" },
   },
-  limit: 20
+  limit: 20,
 });
 ```
 
 ## Advanced Usage
 
 ### RAG (Retrieval Augmented Generation)
+
 ```typescript
 // Build RAG pipeline
 async function ragQuery(question: string) {
   // 1. Get relevant context
-  const context = await db.searchSimilar(
-    await embed(question),
-    { limit: 5, threshold: 0.7 }
-  );
+  const context = await db.searchSimilar(await embed(question), {
+    limit: 5,
+    threshold: 0.7,
+  });
 
   // 2. Generate answer with context
-  const prompt = `Context: ${context.map(c => c.text).join('\n')}
+  const prompt = `Context: ${context.map((c) => c.text).join("\n")}
 Question: ${question}`;
 
   return await llm.generate(prompt);
@@ -170,13 +177,16 @@ Question: ${question}`;
 ```
 
 ### Batch Operations
+
 ```typescript
 // Efficient batch storage
-await db.batchStore(documents.map(doc => ({
-  text: doc.content,
-  embedding: doc.vector,
-  metadata: doc.meta
-})));
+await db.batchStore(
+  documents.map((doc) => ({
+    text: doc.content,
+    embedding: doc.vector,
+    metadata: doc.meta,
+  })),
+);
 ```
 
 ## MCP Server Integration
@@ -212,23 +222,26 @@ npx agentdb@latest benchmark
 AgentDB provides multiple quantization strategies for memory efficiency:
 
 ### Binary Quantization (32x reduction)
+
 ```typescript
 const adapter = await createAgentDBAdapter({
-  quantizationType: 'binary',  // 768-dim → 96 bytes
+  quantizationType: "binary", // 768-dim → 96 bytes
 });
 ```
 
 ### Scalar Quantization (4x reduction)
+
 ```typescript
 const adapter = await createAgentDBAdapter({
-  quantizationType: 'scalar',  // 768-dim → 768 bytes
+  quantizationType: "scalar", // 768-dim → 768 bytes
 });
 ```
 
 ### Product Quantization (8-16x reduction)
+
 ```typescript
 const adapter = await createAgentDBAdapter({
-  quantizationType: 'product',  // 768-dim → 48-96 bytes
+  quantizationType: "product", // 768-dim → 48-96 bytes
 });
 ```
 
@@ -248,16 +261,19 @@ npx agentdb@latest query ./db.sqlite "[...]" -m dot
 ## Advanced Features
 
 ### HNSW Indexing
+
 - **O(log n) search complexity**
 - **Sub-millisecond retrieval** (<100µs)
 - **Automatic index building**
 
 ### Caching
+
 - **1000 pattern in-memory cache**
 - **<1ms pattern retrieval**
 - **Automatic cache invalidation**
 
 ### MMR (Maximal Marginal Relevance)
+
 - **Diverse result sets**
 - **Avoid redundancy**
 - **Balance relevance and diversity**
@@ -274,6 +290,7 @@ npx agentdb@latest query ./db.sqlite "[...]" -m dot
 ## Troubleshooting
 
 ### Issue: Slow search performance
+
 ```bash
 # Check if HNSW indexing is enabled (automatic)
 npx agentdb@latest stats ./vectors.db
@@ -282,12 +299,14 @@ npx agentdb@latest stats ./vectors.db
 ```
 
 ### Issue: High memory usage
+
 ```bash
 # Enable binary quantization (32x reduction)
 # Use in adapter: quantizationType: 'binary'
 ```
 
 ### Issue: Poor relevance
+
 ```bash
 # Adjust similarity threshold
 npx agentdb@latest query ./db.sqlite "[...]" -t 0.8  # Higher threshold
@@ -297,6 +316,7 @@ npx agentdb@latest query ./db.sqlite "[...]" -t 0.8  # Higher threshold
 ```
 
 ### Issue: Wrong dimensions
+
 ```bash
 # Check embedding model dimensions:
 # - OpenAI ada-002: 1536

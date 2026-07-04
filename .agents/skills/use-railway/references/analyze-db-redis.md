@@ -6,6 +6,7 @@ For common analysis patterns (output structure, collection status handling, perf
 ## What the Script Collects
 
 **Via SSH (`INFO ALL`):**
+
 - **Overview:** version, uptime, connected/blocked clients, rejected connections
 - **Memory:** used/RSS/peak memory, fragmentation ratio, maxmemory, eviction policy
 - **Throughput:** ops/sec, total commands processed, total connections
@@ -117,6 +118,7 @@ When introspection fails, you have NO Redis INFO data — all overview, memory, 
 **NEVER suggest running `redis-cli` without pointing to the remote Railway service host.** There is no local Redis instance — all redis-cli commands must target the Railway service. If you cannot connect, the fix is to restore remote access (see `analyze-db.md`), not to run commands locally.
 
 **You MUST:**
+
 1. State clearly: "Redis introspection failed — could not connect to the service"
 2. Show collection status errors
 3. Show ONLY infrastructure metrics and log analysis — do not show empty stat card sections
@@ -125,6 +127,7 @@ When introspection fails, you have NO Redis INFO data — all overview, memory, 
 **Show the infrastructure table** (same as full report).
 
 **Analyze logs thoroughly:**
+
 - AOF rewrite frequency and growth % triggers
 - fsync warnings ("disk is busy?")
 - OOM warnings
@@ -133,6 +136,7 @@ When introspection fails, you have NO Redis INFO data — all overview, memory, 
 - Summarize with counts: "Analyzed 1000 lines: 18 AOF rewrites, 1 fsync warning, 0 errors"
 
 **State what you cannot determine** without SSH:
+
 - Connection health (clients, blocked, rejected)
 - Memory usage and fragmentation
 - Cache hit rate
@@ -145,27 +149,32 @@ When introspection fails, you have NO Redis INFO data — all overview, memory, 
 ## Redis Performance Patterns
 
 **Memory Fragmentation Pattern:**
+
 - `mem_fragmentation_ratio > 1.5` = memory is fragmented, RSS much higher than used
 - Caused by frequent small key deletions creating memory holes
 - Fix: restart Redis, or enable `activedefrag yes` (Redis 4.0+)
 - Ratio < 1.0 means Redis is using swap — critical performance issue
 
 **Cache Thrashing Pattern:**
+
 - Hit rate < 80% + evicted keys > 0 = working set exceeds maxmemory
 - Check maxmemory_policy — `noeviction` will reject writes, `allkeys-lru` will evict
 - If maxmemory is 0 (unlimited), Redis will consume all RAM until OOM killed
 
 **Connection Rejection Pattern:**
+
 - rejected_connections > 0 = maxclients limit hit
 - Check connected_clients vs maxclients default (10,000)
 - Blocked clients = operations waiting on BLPOP/BRPOP/WAIT
 
 **Persistence Risk Pattern:**
+
 - RDB last save failed + no AOF = data loss risk on restart
 - Check disk space if saves are failing
 - Long time since last save = more data at risk
 
 **AOF Rewrite Churn Pattern:**
+
 - Frequent AOF rewrites (every 1-2 hours) with high growth % triggers (100-800%)
 - Indicates high write-to-data-size ratio — small dataset with heavy writes
 - Check Fork CoW size to gauge actual data size vs AOF overhead
@@ -173,23 +182,25 @@ When introspection fails, you have NO Redis INFO data — all overview, memory, 
 - If rewrites are slow or CoW is large, investigate write patterns
 
 **Disk Sawtooth Pattern:**
+
 - Disk usage oscillating in a regular pattern = AOF growing between rewrites, then compacting
 - Normal behavior — the baseline is volume overhead + AOF base file
 - If the amplitude is growing over time, data size is increasing
 
 ## Redis Thresholds
 
-| Metric | Healthy | Warning | Critical |
-|--------|---------|---------|----------|
-| Hit rate | >95% | 80-95% | <80% |
-| Fragmentation ratio | 1.0-1.5 | 1.5-2.0 | >2.0 or <1.0 |
-| Evicted keys | 0 | >0 | Growing rapidly |
-| Blocked clients | 0 | 1-5 | >5 |
-| Connected clients | <80% maxclients | 80-90% | >90% |
+| Metric              | Healthy         | Warning | Critical        |
+| ------------------- | --------------- | ------- | --------------- |
+| Hit rate            | >95%            | 80-95%  | <80%            |
+| Fragmentation ratio | 1.0-1.5         | 1.5-2.0 | >2.0 or <1.0    |
+| Evicted keys        | 0               | >0      | Growing rapidly |
+| Blocked clients     | 0               | 1-5     | >5              |
+| Connected clients   | <80% maxclients | 80-90%  | >90%            |
 
 ## Redis Command Stats Analysis
 
 The top commands by call count reveal the workload pattern:
+
 - **GET/SET dominant** = simple key-value cache
 - **HGET/HSET dominant** = hash-based data model (sessions, objects)
 - **LPUSH/RPOP dominant** = queue pattern
@@ -199,6 +210,7 @@ The top commands by call count reveal the workload pattern:
 ## Redis Autoscale Note
 
 See [analyze-db.md](analyze-db.md) for full autoscale rules. For Redis specifically:
+
 - If `maxmemory` is set, compare it against actual memory usage — not the Railway memory limit.
 - If `maxmemory` is 0 (unlimited), Redis will grow until the OS kills it. This is the default Railway config and works fine with autoscaling — Redis uses what it needs and Railway scales the container.
 - Do NOT recommend setting maxmemory to a fraction of the Railway memory limit — the limit is the autoscale ceiling, not fixed allocation.

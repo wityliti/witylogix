@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Eye, Trash2, Settings } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Eye, Trash2, Settings } from "lucide-react";
 
 export type CardStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING";
 export type AssignmentType = "DRIVER" | "VEHICLE" | "BOTH";
@@ -34,16 +34,16 @@ interface FuelCardItemProps {
 
 const statusVariant = (status: CardStatus) => {
   switch (status) {
-    case 'ACTIVE':
-      return 'success';
-    case 'INACTIVE':
-      return 'default';
-    case 'SUSPENDED':
-      return 'danger';
-    case 'PENDING':
-      return 'warning';
+    case "ACTIVE":
+      return "success";
+    case "INACTIVE":
+      return "default";
+    case "SUSPENDED":
+      return "danger";
+    case "PENDING":
+      return "warning";
     default:
-      return 'default';
+      return "default";
   }
 };
 
@@ -63,7 +63,9 @@ export function FuelCardItem({
             <h3 className="text-sm font-semibold text-white">
               {card.cardNumber}
             </h3>
-            <p className="text-xs text-wl-text-secondary mt-1">{card.provider}</p>
+            <p className="text-xs text-wl-text-secondary mt-1">
+              {card.provider}
+            </p>
           </div>
           <Badge variant={statusVariant(card.status) as any}>
             {card.status}
@@ -87,7 +89,9 @@ export function FuelCardItem({
 
         <div className="mb-4">
           <div className="flex justify-between mb-2">
-            <span className="text-xs text-wl-text-secondary">Monthly Spend</span>
+            <span className="text-xs text-wl-text-secondary">
+              Monthly Spend
+            </span>
             <span className="text-xs text-white font-medium">
               ${card.monthlySpend} / ${card.monthlyLimit}
             </span>
@@ -95,12 +99,12 @@ export function FuelCardItem({
           <div className="w-full bg-wl-bg-root rounded-full h-2">
             <div
               className={cn(
-                'h-2 rounded-full transition-all',
+                "h-2 rounded-full transition-all",
                 spendPercentage > 90
-                  ? 'bg-red-500'
+                  ? "bg-red-500"
                   : spendPercentage > 70
-                  ? 'bg-yellow-500'
-                  : 'bg-emerald-500'
+                    ? "bg-yellow-500"
+                    : "bg-emerald-500",
               )}
               style={{ width: `${Math.min(spendPercentage, 100)}%` }}
             />

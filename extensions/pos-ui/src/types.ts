@@ -10,7 +10,7 @@ export interface POSOrder {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  status: 'pending' | 'confirmed' | 'ready' | 'fulfilled' | 'cancelled';
+  status: "pending" | "confirmed" | "ready" | "fulfilled" | "cancelled";
   createdAt: string;
   items: OrderItem[];
   subtotal: number;
@@ -51,7 +51,7 @@ export interface POSDriver {
   id: string;
   name: string;
   phone: string;
-  status: 'available' | 'busy' | 'offline';
+  status: "available" | "busy" | "offline";
   currentOrders: number;
   zoneId: string;
   vehicle?: string;
@@ -82,7 +82,7 @@ export interface DeliveryAssignment {
   deliverySlot: DeliverySlot;
   estimatedDeliveryTime: string; // Display label
   zoneId: string;
-  status: 'assigned' | 'in_transit' | 'delivered' | 'failed';
+  status: "assigned" | "in_transit" | "delivered" | "failed";
   createdAt: string;
 }
 
@@ -150,7 +150,12 @@ export interface AssignDeliveryResponse {
 /**
  * Status badge variants
  */
-export type StatusBadgeVariant = 'pending' | 'confirmed' | 'ready' | 'fulfilled' | 'cancelled';
+export type StatusBadgeVariant =
+  | "pending"
+  | "confirmed"
+  | "ready"
+  | "fulfilled"
+  | "cancelled";
 
 /**
  * Component state for order lookup

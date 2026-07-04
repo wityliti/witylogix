@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ReactNode } from 'react';
-import { NextIntlClientProvider } from 'next-intl';
+import { ReactNode } from "react";
+import { NextIntlClientProvider } from "next-intl";
 
 interface LocaleProviderProps {
   children: ReactNode;
@@ -20,8 +20,8 @@ export function LocaleProvider({
   children,
   locale,
   messages,
-  timeZone = 'UTC',
-  defaultNS = 'common',
+  timeZone = "UTC",
+  defaultNS = "common",
 }: LocaleProviderProps) {
   return (
     <NextIntlClientProvider

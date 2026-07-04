@@ -94,7 +94,7 @@ export class CspManager {
   constructor(
     environment: CspEnvironment = CspEnvironment.PRODUCTION,
     reportUri?: string,
-    reportOnly: boolean = false
+    reportOnly: boolean = false,
   ) {
     this.environment = environment;
     this.reportUri = reportUri || "/api/security/csp-report";
@@ -167,11 +167,11 @@ export class CspManager {
       case CspEnvironment.STAGING:
         directives["script-src"].push(
           "https://cdn.staging.witylogix.com",
-          "https://cdn.jsdelivr.net"
+          "https://cdn.jsdelivr.net",
         );
         directives["style-src"].push(
           "https://cdn.staging.witylogix.com",
-          "https://fonts.googleapis.com"
+          "https://fonts.googleapis.com",
         );
         directives["connect-src"].push("https://api.staging.witylogix.com");
         break;
@@ -180,7 +180,7 @@ export class CspManager {
         directives["script-src"].push("https://cdn.witylogix.com");
         directives["style-src"].push(
           "https://cdn.witylogix.com",
-          "https://fonts.googleapis.com"
+          "https://fonts.googleapis.com",
         );
         directives["connect-src"].push("https://api.witylogix.com");
         directives["font-src"].push("https://fonts.gstatic.com");
@@ -264,7 +264,9 @@ export class CspManager {
       "violated-directive": String(data["violated-directive"]),
       "effective-directive": String(data["effective-directive"]),
       "original-policy": String(data["original-policy"] || ""),
-      "blocked-uri": data["blocked-uri"] ? String(data["blocked-uri"]) : undefined,
+      "blocked-uri": data["blocked-uri"]
+        ? String(data["blocked-uri"])
+        : undefined,
       "source-file": String(data["source-file"]),
       "line-number": Number(data["line-number"]),
       "column-number": Number(data["column-number"]),

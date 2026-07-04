@@ -80,7 +80,11 @@ function redactSensitiveData(obj: any, depth: number = 0): any {
 
   for (const [key, value] of Object.entries(obj)) {
     // Check if this is a sensitive field
-    if (SENSITIVE_FIELDS.some((field) => key.toLowerCase().includes(field.toLowerCase()))) {
+    if (
+      SENSITIVE_FIELDS.some((field) =>
+        key.toLowerCase().includes(field.toLowerCase()),
+      )
+    ) {
       redacted[key] = "[REDACTED]";
     } else if (typeof value === "object" && value !== null) {
       redacted[key] = redactSensitiveData(value, depth + 1);
@@ -116,7 +120,10 @@ async function onRequestHook(request: FastifyRequest): Promise<void> {
 /**
  * onResponse hook — log request completion
  */
-async function onResponseHook(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+async function onResponseHook(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
   const startTime = request.startTime || Date.now();
   const endTime = Date.now();
   const durationMs = endTime - startTime;

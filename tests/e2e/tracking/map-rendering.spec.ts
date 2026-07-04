@@ -49,7 +49,10 @@ async function countVisibleMarkers(page: Page): Promise<number> {
   return await page.locator(DRIVER_MARKER_SELECTOR).count();
 }
 
-async function getMarkerPosition(page: Page, index: number = 0): Promise<{ x: number; y: number }> {
+async function getMarkerPosition(
+  page: Page,
+  index: number = 0,
+): Promise<{ x: number; y: number }> {
   const marker = page.locator(DRIVER_MARKER_SELECTOR).nth(index);
   const box = await marker.boundingBox();
 
@@ -164,12 +167,16 @@ test.describe("Map Rendering - Driver Markers", () => {
       await marker.click();
 
       // Look for popover
-      const popover = await page.locator("[role='tooltip'], [role='dialog']").first();
+      const popover = await page
+        .locator("[role='tooltip'], [role='dialog']")
+        .first();
       expect(popover).toBeVisible();
     }
   });
 
-  test("should display driver information in marker popover", async ({ page }) => {
+  test("should display driver information in marker popover", async ({
+    page,
+  }) => {
     await page.goto(TRACKING_PAGE_URL);
 
     await waitForMapToLoad(page);
@@ -180,7 +187,9 @@ test.describe("Map Rendering - Driver Markers", () => {
       await marker.click();
 
       // Check for driver info in popover
-      const popover = await page.locator("[role='tooltip'], [role='dialog']").first();
+      const popover = await page
+        .locator("[role='tooltip'], [role='dialog']")
+        .first();
       const text = await popover.textContent();
 
       expect(text).toBeTruthy();
@@ -199,7 +208,9 @@ test.describe("Map Rendering - Driver Markers", () => {
       await marker.click();
 
       // Check popover is visible
-      let popover = await page.locator("[role='tooltip'], [role='dialog']").first();
+      let popover = await page
+        .locator("[role='tooltip'], [role='dialog']")
+        .first();
       expect(popover).toBeVisible();
 
       // Press Escape
@@ -230,7 +241,9 @@ test.describe("Map Rendering - Route Polylines", () => {
     expect(polyline).toBeVisible();
   });
 
-  test("should draw multiple route polylines for multiple routes", async ({ page }) => {
+  test("should draw multiple route polylines for multiple routes", async ({
+    page,
+  }) => {
     await page.goto(TRACKING_PAGE_URL);
 
     await waitForMapToLoad(page);
@@ -261,7 +274,9 @@ test.describe("Map Rendering - Route Polylines", () => {
     expect(afterPath).toBeTruthy();
   });
 
-  test("should use different colors for different route statuses", async ({ page }) => {
+  test("should use different colors for different route statuses", async ({
+    page,
+  }) => {
     await page.goto(TRACKING_PAGE_URL);
 
     await waitForMapToLoad(page);
@@ -301,7 +316,9 @@ test.describe("Map Rendering - Sidebar & Delivery List", () => {
     expect(itemCount).toBeGreaterThan(0);
   });
 
-  test("should highlight delivery item when marker is clicked", async ({ page }) => {
+  test("should highlight delivery item when marker is clicked", async ({
+    page,
+  }) => {
     await page.goto(TRACKING_PAGE_URL);
 
     await waitForMapToLoad(page);
@@ -329,7 +346,9 @@ test.describe("Map Rendering - Sidebar & Delivery List", () => {
     await waitForMapToLoad(page);
 
     const sidebar = await page.locator(DELIVERY_SIDEBAR_SELECTOR);
-    const scrollable = sidebar.locator(".scrollable, [data-scrollable='true']").first();
+    const scrollable = sidebar
+      .locator(".scrollable, [data-scrollable='true']")
+      .first();
 
     if (scrollable) {
       const initialScroll = await scrollable.evaluate(
@@ -465,7 +484,9 @@ test.describe("Map Rendering - Filters & Search", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test.describe("Map Rendering - Layer Toggles", () => {
-  test("should toggle between standard and satellite view", async ({ page }) => {
+  test("should toggle between standard and satellite view", async ({
+    page,
+  }) => {
     await page.goto(TRACKING_PAGE_URL);
 
     await waitForMapToLoad(page);
@@ -525,9 +546,9 @@ test.describe("Map Rendering - Layer Toggles", () => {
     await waitForMapToLoad(page);
 
     // Look for traffic toggle
-    const trafficToggle = await page.locator(
-      "[data-testid='traffic-toggle'], [aria-label='Toggle traffic']",
-    ).first();
+    const trafficToggle = await page
+      .locator("[data-testid='traffic-toggle'], [aria-label='Toggle traffic']")
+      .first();
 
     if (await trafficToggle.isVisible()) {
       const initialState = await trafficToggle.getAttribute("aria-pressed");
@@ -639,7 +660,9 @@ test.describe("Map Rendering - Visual Regression", () => {
     );
   });
 
-  test("should match baseline screenshot for marker popover", async ({ page }) => {
+  test("should match baseline screenshot for marker popover", async ({
+    page,
+  }) => {
     await page.goto(TRACKING_PAGE_URL);
 
     await waitForMapToLoad(page);
@@ -658,7 +681,9 @@ test.describe("Map Rendering - Visual Regression", () => {
     }
   });
 
-  test("should match baseline screenshot for filtered view", async ({ page }) => {
+  test("should match baseline screenshot for filtered view", async ({
+    page,
+  }) => {
     await page.goto(TRACKING_PAGE_URL);
 
     await waitForMapToLoad(page);
@@ -668,9 +693,7 @@ test.describe("Map Rendering - Visual Regression", () => {
 
     await page.waitForTimeout(1000);
 
-    expect(await page.screenshot()).toMatchSnapshot(
-      "map-view-filtered.png",
-    );
+    expect(await page.screenshot()).toMatchSnapshot("map-view-filtered.png");
   });
 });
 

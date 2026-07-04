@@ -4,10 +4,10 @@
 
 ## When it runs
 
-| Event | Image tags produced |
-|---|---|
-| `push` to `main` | `:main-<sha>`, `:latest` |
-| `push` of tag `v1.2.3` | `:1.2.3`, `:1.2`, `:1`, `:latest` |
+| Event                        | Image tags produced                            |
+| ---------------------------- | ---------------------------------------------- |
+| `push` to `main`             | `:main-<sha>`, `:latest`                       |
+| `push` of tag `v1.2.3`       | `:1.2.3`, `:1.2`, `:1`, `:latest`              |
 | `workflow_dispatch` (manual) | `:manual-<sha>` (+ optional `extra_tag` input) |
 
 ## Images produced

@@ -1,12 +1,15 @@
 # Witylogix Customer Tracking Portal
 
 ## Overview
+
 A complete, customer-facing tracking portal for real-time delivery visibility with a modern, light-themed design.
 
 ## Components Created
 
 ### 1. **TrackingSearch.tsx** (398 lines)
+
 Search interface for customers to find their orders.
+
 - **Features:**
   - Tracking number input with search button
   - Alternative search by order number or phone number
@@ -18,7 +21,9 @@ Search interface for customers to find their orders.
   - Clean gradient background with card layout
 
 ### 2. **DeliveryTimeline.tsx** (352 lines)
+
 Visual vertical timeline showing delivery progress.
+
 - **Features:**
   - Vertical timeline with status dots and connecting lines
   - 5 primary statuses: Order Placed → Picked Up → In Transit → Out for Delivery → Delivered
@@ -30,7 +35,9 @@ Visual vertical timeline showing delivery progress.
   - Responsive design optimized for mobile
 
 ### 3. **DeliveryMap.tsx** (354 lines)
+
 Interactive map component showing real-time delivery location.
+
 - **Features:**
   - SVG-based map visualization with gradient background
   - Driver location pin with pulse animation
@@ -42,7 +49,9 @@ Interactive map component showing real-time delivery location.
   - Address information card with delivery instructions
 
 ### 4. **DeliveryPreferences.tsx** (436 lines)
+
 Customizable delivery preferences for customers.
+
 - **Features:**
   - Safe place selection (front door, back door, garage, neighbor, locker)
   - Delivery instructions textarea (200 char limit)
@@ -54,7 +63,9 @@ Customizable delivery preferences for customers.
   - All interactive elements with smooth state transitions
 
 ### 5. **RatingFeedback.tsx** (407 lines)
+
 Post-delivery feedback and rating component.
+
 - **Features:**
   - 5-star rating system with hover effects
   - Quick feedback chips: "On time", "Friendly driver", "Package intact", "Good communication"
@@ -65,7 +76,9 @@ Post-delivery feedback and rating component.
   - Accessibility with proper button states
 
 ### 6. **LiveChat.tsx** (448 lines)
+
 Floating support chat widget for customer assistance.
+
 - **Features:**
   - Floating chat bubble button (bottom-right corner)
   - Expandable chat window (360px wide)
@@ -78,7 +91,9 @@ Floating support chat widget for customer assistance.
   - Mock support responses with simulated delays
 
 ### 7. **App.tsx** (332 lines)
+
 Main tracking portal component orchestrating all features.
+
 - **Features:**
   - Header with store branding, tracking number, and status badge
   - Conditional rendering based on tracking state
@@ -97,6 +112,7 @@ Main tracking portal component orchestrating all features.
 ## Design System
 
 ### Color Palette
+
 - **Primary Blue:** #005bd3 (CTAs, active states, branding)
 - **Success Green:** #10b981 (Completed states, confirmations)
 - **Error Red:** #dc2626 (Failed deliveries, exceptions)
@@ -104,18 +120,21 @@ Main tracking portal component orchestrating all features.
 - **Dark Grays:** #666, #999, #1a1a1a (Text, secondary elements)
 
 ### Typography
+
 - **Headings:** Font weight 700 (bold)
 - **Labels:** Font weight 600 (semibold)
 - **Regular:** Font weight 400-500
 - **Base font size:** 14px for body, scales for headings
 
 ### Spacing
+
 - Consistent 8px grid system
 - Padding: 12px, 16px, 24px, 32px, 48px
 - Margins: 8px, 12px, 16px, 24px, 32px
 - Gap (flex/grid): 6px, 8px, 12px, 24px
 
 ### Components & Patterns
+
 - **Cards:** 12px border-radius, subtle shadows (0 2px 8px rgba(0,0,0,0.04-0.08))
 - **Buttons:** Consistent padding, border-radius 6-8px, smooth transitions
 - **Inputs:** 1px borders, 12px padding, outline: none
@@ -125,8 +144,9 @@ Main tracking portal component orchestrating all features.
 ## Usage
 
 ### Basic Implementation
+
 ```tsx
-import App from './components/App';
+import App from "./components/App";
 
 export default function TrackingApp() {
   return <App />;
@@ -134,11 +154,14 @@ export default function TrackingApp() {
 ```
 
 ### Testing Mock Data
+
 The App includes built-in mock data for testing:
+
 - **WTX123456789** - In Transit order
 - **ORD-2024-001** - Delivered order
 
 ### Styling
+
 All components use **inline React.CSSProperties** styles. No external CSS files are required.
 
 ## Key Features Summary
@@ -151,9 +174,10 @@ All components use **inline React.CSSProperties** styles. No external CSS files 
 ✅ **Support Chat** - Quick access to customer support  
 ✅ **Responsive** - Mobile-first design  
 ✅ **Accessible** - Proper button states and error handling  
-✅ **Modern UI** - Clean, light theme with smooth interactions  
+✅ **Modern UI** - Clean, light theme with smooth interactions
 
 ## File Structure
+
 ```
 /src/components/
 ├── TrackingSearch.tsx      (Search component)
@@ -166,7 +190,9 @@ All components use **inline React.CSSProperties** styles. No external CSS files 
 ```
 
 ## Total Lines of Code: 2,727 lines
+
 ## Components: 7 custom React components
+
 ## Styling: 100% inline styles (no CSS modules required)
 
 Created on: 2026-03-06

@@ -8,7 +8,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MigrationManager, createMigrationManager } from "../config/migration-strategy";
+import {
+  MigrationManager,
+  createMigrationManager,
+} from "../config/migration-strategy";
 
 describe("Migration Strategy", () => {
   let manager: MigrationManager;
@@ -65,7 +68,11 @@ describe("Migration Strategy", () => {
 
   describe("Migration Registration", () => {
     it("should register a migration", () => {
-      manager.registerMigration("001_create_users", "Create users table", "DROP TABLE users;");
+      manager.registerMigration(
+        "001_create_users",
+        "Create users table",
+        "DROP TABLE users;",
+      );
 
       const migration = manager.getMigration("001_create_users");
       expect(migration).toBeDefined();
@@ -75,32 +82,54 @@ describe("Migration Strategy", () => {
 
     it("should store rollback plan", () => {
       const rollbackSql = "DROP TABLE users;";
-      manager.registerMigration("001_create_users", "Create users table", rollbackSql);
+      manager.registerMigration(
+        "001_create_users",
+        "Create users table",
+        rollbackSql,
+      );
 
       const migration = manager.getMigration("001_create_users");
       expect(migration?.rollbackPlan).toBe(rollbackSql);
     });
 
     it("should set initial status to pending", () => {
-      manager.registerMigration("001_create_users", "Create users table", "ROLLBACK SQL");
+      manager.registerMigration(
+        "001_create_users",
+        "Create users table",
+        "ROLLBACK SQL",
+      );
 
       const migration = manager.getMigration("001_create_users");
       expect(migration?.status).toBe("pending");
     });
 
     it("should allow multiple migrations to be registered", () => {
-      manager.registerMigration("001_create_users", "Create users table", "ROLLBACK 1");
-      manager.registerMigration("002_add_email", "Add email column", "ROLLBACK 2");
+      manager.registerMigration(
+        "001_create_users",
+        "Create users table",
+        "ROLLBACK 1",
+      );
+      manager.registerMigration(
+        "002_add_email",
+        "Add email column",
+        "ROLLBACK 2",
+      );
 
       const all = manager.getAllMigrations();
       expect(all).toHaveLength(2);
     });
 
     it("should log registration in audit log", () => {
-      manager.registerMigration("001_create_users", "Create users table", "ROLLBACK SQL");
+      manager.registerMigration(
+        "001_create_users",
+        "Create users table",
+        "ROLLBACK SQL",
+      );
 
       const auditLog = manager.getAuditLog();
-      const registrationEvent = auditLog.find((e) => e.action === "migration_registered");
+      const registrationEvent = auditLog.find(
+        (e) => e.action === "migration_registered",
+      );
 
       expect(registrationEvent).toBeDefined();
       expect(registrationEvent?.migrationId).toBe("001_create_users");
@@ -245,7 +274,7 @@ describe("Migration Strategy", () => {
 
       const auditLog = manager.getAuditLog();
       const healthCheckEvent = auditLog.find((e) =>
-        e.action.includes("migration_checks")
+        e.action.includes("migration_checks"),
       );
 
       expect(healthCheckEvent).toBeDefined();
@@ -257,7 +286,7 @@ describe("Migration Strategy", () => {
       manager.registerMigration(
         "001_add_column",
         "Add new column",
-        "ALTER TABLE users DROP COLUMN new_col;"
+        "ALTER TABLE users DROP COLUMN new_col;",
       );
     });
 
@@ -271,14 +300,14 @@ describe("Migration Strategy", () => {
     it("should throw when rolling back without rollback plan", async () => {
       manager.registerMigration("002_no_rollback", "Test", "");
 
-      await expect(manager.rollbackMigration("002_no_rollback")).rejects.toThrow(
-        "No rollback plan available"
-      );
+      await expect(
+        manager.rollbackMigration("002_no_rollback"),
+      ).rejects.toThrow("No rollback plan available");
     });
 
     it("should throw for non-existent migration rollback", async () => {
       await expect(manager.rollbackMigration("non_existent")).rejects.toThrow(
-        "Migration not found"
+        "Migration not found",
       );
     });
 
@@ -286,7 +315,9 @@ describe("Migration Strategy", () => {
       await manager.rollbackMigration("001_add_column");
 
       const auditLog = manager.getAuditLog();
-      const rollbackEvent = auditLog.find((e) => e.action === "migration_rolled_back");
+      const rollbackEvent = auditLog.find(
+        (e) => e.action === "migration_rolled_back",
+      );
 
       expect(rollbackEvent).toBeDefined();
       expect(rollbackEvent?.migrationId).toBe("001_add_column");
@@ -309,9 +340,13 @@ describe("Migration Strategy", () => {
 
       const auditLog = manager.getAuditLog();
 
-      expect(auditLog.some((e) => e.action === "migration_registered")).toBe(true);
+      expect(auditLog.some((e) => e.action === "migration_registered")).toBe(
+        true,
+      );
       expect(auditLog.some((e) => e.action === "migration_started")).toBe(true);
-      expect(auditLog.some((e) => e.action === "migration_completed")).toBe(true);
+      expect(auditLog.some((e) => e.action === "migration_completed")).toBe(
+        true,
+      );
     });
 
     it("should include timestamps in audit log", () => {

@@ -35,14 +35,20 @@ interface ShippingProfileCardProps {
   onDuplicate?: (id: string) => void;
 }
 
-const DELIVERY_METHOD_CONFIG: Record<string, { label: string; tone?: BadgeProps["tone"] }> = {
+const DELIVERY_METHOD_CONFIG: Record<
+  string,
+  { label: string; tone?: BadgeProps["tone"] }
+> = {
   STANDARD: { label: "Standard", tone: "info" },
   EXPRESS: { label: "Express", tone: "info" },
   OVERNIGHT: { label: "Overnight", tone: "attention" },
   GROUND: { label: "Ground", tone: "success" },
 };
 
-const RATE_TYPE_CONFIG: Record<string, { label: string; tone?: BadgeProps["tone"] }> = {
+const RATE_TYPE_CONFIG: Record<
+  string,
+  { label: string; tone?: BadgeProps["tone"] }
+> = {
   FIXED: { label: "Fixed Rate", tone: "attention" },
   PERCENTAGE: { label: "Percentage", tone: "success" },
   WEIGHT_BASED: { label: "Weight Based" },
@@ -53,7 +59,9 @@ export function ShippingProfileCard({
   onEdit,
   onDuplicate,
 }: ShippingProfileCardProps) {
-  const deliveryMethodConfig = DELIVERY_METHOD_CONFIG[profile.deliveryMethod] ?? {
+  const deliveryMethodConfig = DELIVERY_METHOD_CONFIG[
+    profile.deliveryMethod
+  ] ?? {
     label: profile.deliveryMethod,
   };
 
@@ -108,9 +116,7 @@ export function ShippingProfileCard({
 
         <InlineStack align="end" gap="200">
           {onDuplicate && (
-            <Button onClick={() => onDuplicate(profile.id)}>
-              Duplicate
-            </Button>
+            <Button onClick={() => onDuplicate(profile.id)}>Duplicate</Button>
           )}
           {onEdit && (
             <Button variant="primary" onClick={() => onEdit(profile.id)}>

@@ -6,7 +6,10 @@ import { createHash, randomBytes } from "crypto";
 interface MockRequest extends Partial<FastifyRequest> {
   body?: Record<string, unknown>;
   jwt?: {
-    sign: (payload: Record<string, unknown>, options?: Record<string, unknown>) => string;
+    sign: (
+      payload: Record<string, unknown>,
+      options?: Record<string, unknown>,
+    ) => string;
   };
 }
 
@@ -169,7 +172,9 @@ describe("Auth Routes", () => {
       };
 
       const user = await (mockPrisma as any).user.findUnique({
-        where: { shopId_email: { shopId: shop.id, email: mockRequest.body.email } },
+        where: {
+          shopId_email: { shopId: shop.id, email: mockRequest.body.email },
+        },
       });
 
       expect(user).toBeNull();
@@ -189,7 +194,9 @@ describe("Auth Routes", () => {
       };
 
       const user = await (mockPrisma as any).user.findUnique({
-        where: { shopId_email: { shopId: shop.id, email: mockRequest.body.email } },
+        where: {
+          shopId_email: { shopId: shop.id, email: mockRequest.body.email },
+        },
       });
 
       expect(user?.isActive).toBe(false);
@@ -212,7 +219,7 @@ describe("Auth Routes", () => {
       };
 
       const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        String(mockRequest.body.email)
+        String(mockRequest.body.email),
       );
       expect(isValidEmail).toBe(false);
     });
@@ -311,21 +318,23 @@ describe("Auth Routes", () => {
       };
 
       const refreshToken = randomBytes(40).toString("hex");
-      const refreshHash = createHash("sha256").update(refreshToken).digest("hex");
+      const refreshHash = createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
       const ttl = 30 * 24 * 60 * 60;
 
       await (mockRedis as any).set(
         `refresh:${refreshHash}`,
         JSON.stringify({ userId: user.id }),
         "EX",
-        ttl
+        ttl,
       );
 
       expect(mockRedis.set).toHaveBeenCalledWith(
         expect.stringContaining("refresh:"),
         expect.any(String),
         "EX",
-        ttl
+        ttl,
       );
     });
   });
@@ -381,7 +390,12 @@ describe("Auth Routes", () => {
       };
 
       const driver = await (mockPrisma as any).driver.findUnique({
-        where: { orgId_phone: { orgId: shop.orgId || "", phone: mockRequest.body.phone } },
+        where: {
+          orgId_phone: {
+            orgId: shop.orgId || "",
+            phone: mockRequest.body.phone,
+          },
+        },
       });
 
       expect(driver).toBeNull();
@@ -401,7 +415,12 @@ describe("Auth Routes", () => {
       };
 
       const driver = await (mockPrisma as any).driver.findUnique({
-        where: { orgId_phone: { orgId: shop.orgId || "", phone: mockRequest.body.phone } },
+        where: {
+          orgId_phone: {
+            orgId: shop.orgId || "",
+            phone: mockRequest.body.phone,
+          },
+        },
       });
 
       expect(driver?.isActive).toBe(false);
@@ -443,7 +462,12 @@ describe("Auth Routes", () => {
       };
 
       const ttl = 90 * 24 * 60 * 60;
-      await (mockRedis as any).set(`refresh:hash`, JSON.stringify({}), "EX", ttl);
+      await (mockRedis as any).set(
+        `refresh:hash`,
+        JSON.stringify({}),
+        "EX",
+        ttl,
+      );
 
       expect(mockRedis.set).toHaveBeenCalled();
     });
@@ -469,14 +493,16 @@ describe("Auth Routes", () => {
   describe("POST /refresh (Token refresh)", () => {
     it("should issue new access token with valid refresh token", async () => {
       const refreshToken = randomBytes(40).toString("hex");
-      const refreshHash = createHash("sha256").update(refreshToken).digest("hex");
+      const refreshHash = createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
 
       mockRedis.get.mockResolvedValue(
         JSON.stringify({
           userId: "user-123",
           shopId: "shop-789",
           role: "ADMIN",
-        })
+        }),
       );
       mockRedis.del.mockResolvedValue(1);
       mockRedis.set.mockResolvedValue("OK");
@@ -507,10 +533,12 @@ describe("Auth Routes", () => {
 
     it("should rotate refresh token on refresh", async () => {
       const oldRefreshToken = randomBytes(40).toString("hex");
-      const oldHash = createHash("sha256").update(oldRefreshToken).digest("hex");
+      const oldHash = createHash("sha256")
+        .update(oldRefreshToken)
+        .digest("hex");
 
       mockRedis.get.mockResolvedValue(
-        JSON.stringify({ userId: "user-123", shopId: "shop-789" })
+        JSON.stringify({ userId: "user-123", shopId: "shop-789" }),
       );
       mockRedis.del.mockResolvedValue(1);
       mockRedis.set.mockResolvedValue("OK");
@@ -518,19 +546,23 @@ describe("Auth Routes", () => {
       mockRequest.body = { refreshToken: oldRefreshToken };
 
       await (mockRedis as any).del(`refresh:${oldHash}`);
-      expect(mockRedis.del).toHaveBeenCalledWith(expect.stringContaining("refresh:"));
+      expect(mockRedis.del).toHaveBeenCalledWith(
+        expect.stringContaining("refresh:"),
+      );
     });
 
     it("should use driver JWT expiry for driver tokens", async () => {
       const refreshToken = randomBytes(40).toString("hex");
-      const refreshHash = createHash("sha256").update(refreshToken).digest("hex");
+      const refreshHash = createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
 
       mockRedis.get.mockResolvedValue(
         JSON.stringify({
           driverId: "driver-456",
           shopId: "shop-789",
           role: "DRIVER",
-        })
+        }),
       );
 
       mockRequest.body = { refreshToken };
@@ -544,7 +576,7 @@ describe("Auth Routes", () => {
       const refreshToken = randomBytes(40).toString("hex");
 
       mockRedis.get.mockResolvedValue(
-        JSON.stringify({ userId: "user-123", shopId: "shop-789" })
+        JSON.stringify({ userId: "user-123", shopId: "shop-789" }),
       );
       mockRedis.set.mockResolvedValue("OK");
 
@@ -563,14 +595,18 @@ describe("Auth Routes", () => {
   describe("POST /logout", () => {
     it("should successfully delete refresh token from Redis", async () => {
       const refreshToken = randomBytes(40).toString("hex");
-      const refreshHash = createHash("sha256").update(refreshToken).digest("hex");
+      const refreshHash = createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
 
       mockRedis.del.mockResolvedValue(1);
 
       mockRequest.body = { refreshToken };
 
       await (mockRedis as any).del(`refresh:${refreshHash}`);
-      expect(mockRedis.del).toHaveBeenCalledWith(expect.stringContaining("refresh:"));
+      expect(mockRedis.del).toHaveBeenCalledWith(
+        expect.stringContaining("refresh:"),
+      );
     });
 
     it("should return success message", async () => {
@@ -641,7 +677,7 @@ describe("Auth Routes", () => {
       };
 
       const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        String(mockRequest.body.email)
+        String(mockRequest.body.email),
       );
       expect(isValidEmail).toBe(false);
     });
@@ -675,14 +711,14 @@ describe("Auth Routes", () => {
         `password-reset:${resetHash}`,
         JSON.stringify({ userId: user.id, shopId: shop.id }),
         "EX",
-        ttl
+        ttl,
       );
 
       expect(mockRedis.set).toHaveBeenCalledWith(
         expect.stringContaining("password-reset:"),
         expect.any(String),
         "EX",
-        3600
+        3600,
       );
     });
 
@@ -701,7 +737,9 @@ describe("Auth Routes", () => {
       const resetHash = createHash("sha256").update(resetToken).digest("hex");
       const user = generateTestUser();
 
-      mockRedis.get.mockResolvedValue(JSON.stringify({ userId: user.id, shopId: "shop-789" }));
+      mockRedis.get.mockResolvedValue(
+        JSON.stringify({ userId: user.id, shopId: "shop-789" }),
+      );
       mockRedis.del.mockResolvedValue(1);
       mockPrisma.user.update.mockResolvedValue(user);
 
@@ -710,7 +748,9 @@ describe("Auth Routes", () => {
         password: "newpassword123",
       };
 
-      const stored = await (mockRedis as any).get(`password-reset:${resetHash}`);
+      const stored = await (mockRedis as any).get(
+        `password-reset:${resetHash}`,
+      );
       expect(stored).toBeTruthy();
     });
 
@@ -768,7 +808,9 @@ describe("Auth Routes", () => {
       };
 
       await (mockRedis as any).del(`password-reset:${resetHash}`);
-      expect(mockRedis.del).toHaveBeenCalledWith(expect.stringContaining("password-reset:"));
+      expect(mockRedis.del).toHaveBeenCalledWith(
+        expect.stringContaining("password-reset:"),
+      );
     });
 
     it("should update user password in database", async () => {

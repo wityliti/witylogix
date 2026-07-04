@@ -64,36 +64,68 @@ describe("EnvelopeEngine", () => {
     });
 
     it("should register adapter", () => {
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
       expect(engine).toBeDefined();
     });
   });
 
   describe("provider selection", () => {
     beforeEach(() => {
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
-      engine.registerAdapter("adobe_sign", mockAdapter as ESignatureAdapterInterface);
-      engine.registerAdapter("pandadoc", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
+      engine.registerAdapter(
+        "adobe_sign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
+      engine.registerAdapter(
+        "pandadoc",
+        mockAdapter as ESignatureAdapterInterface,
+      );
     });
 
     it("should select provider based on features strategy", () => {
       const newEngine = new EnvelopeEngine({ selectionStrategy: "features" });
-      newEngine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
-      newEngine.registerAdapter("adobe_sign", mockAdapter as ESignatureAdapterInterface);
+      newEngine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
+      newEngine.registerAdapter(
+        "adobe_sign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
       expect(newEngine).toBeDefined();
     });
 
     it("should select provider based on cost strategy", () => {
       const newEngine = new EnvelopeEngine({ selectionStrategy: "cost" });
-      newEngine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
-      newEngine.registerAdapter("pandadoc", mockAdapter as ESignatureAdapterInterface);
+      newEngine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
+      newEngine.registerAdapter(
+        "pandadoc",
+        mockAdapter as ESignatureAdapterInterface,
+      );
       expect(newEngine).toBeDefined();
     });
 
     it("should select provider based on reliability strategy", () => {
-      const newEngine = new EnvelopeEngine({ selectionStrategy: "reliability" });
-      newEngine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
-      newEngine.registerAdapter("adobe_sign", mockAdapter as ESignatureAdapterInterface);
+      const newEngine = new EnvelopeEngine({
+        selectionStrategy: "reliability",
+      });
+      newEngine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
+      newEngine.registerAdapter(
+        "adobe_sign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
       expect(newEngine).toBeDefined();
     });
 
@@ -101,14 +133,20 @@ describe("EnvelopeEngine", () => {
       const newEngine = new EnvelopeEngine({
         selectionStrategy: "features",
       });
-      newEngine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      newEngine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
       expect(newEngine).toBeDefined();
     });
   });
 
   describe("envelope operations", () => {
     beforeEach(() => {
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
     });
 
     it("should create and send envelope", async () => {
@@ -138,7 +176,9 @@ describe("EnvelopeEngine", () => {
 
       const complianceLog = engine.getComplianceLog();
       expect(complianceLog.length).toBeGreaterThan(0);
-      expect(complianceLog.some((e) => e.type === "envelope_created")).toBe(true);
+      expect(complianceLog.some((e) => e.type === "envelope_created")).toBe(
+        true,
+      );
       expect(complianceLog.some((e) => e.type === "envelope_sent")).toBe(true);
     });
 
@@ -157,7 +197,10 @@ describe("EnvelopeEngine", () => {
     });
 
     it("should download envelope documents", async () => {
-      const result = await engine.downloadEnvelopeDocuments("env-id", "docusign");
+      const result = await engine.downloadEnvelopeDocuments(
+        "env-id",
+        "docusign",
+      );
 
       expect(result.content).toBeDefined();
       expect(result.mimeType).toBeDefined();
@@ -170,13 +213,16 @@ describe("EnvelopeEngine", () => {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
       });
 
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
 
       const result = await engine.getEmbeddedSigningUrl(
         "env-id",
         "signer@example.com",
         "https://return.example.com",
-        "docusign"
+        "docusign",
       );
 
       expect(result.signingUrl).toBe("https://signing.example.com");
@@ -185,20 +231,28 @@ describe("EnvelopeEngine", () => {
 
     it("should void envelope", async () => {
       mockAdapter.voidEnvelope = vi.fn().mockResolvedValue(undefined);
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
 
       await expect(
-        engine.voidEnvelope("env-id", "docusign", "User cancellation")
+        engine.voidEnvelope("env-id", "docusign", "User cancellation"),
       ).resolves.not.toThrow();
 
       const complianceLog = engine.getComplianceLog();
-      expect(complianceLog.some((e) => e.type === "envelope_voided")).toBe(true);
+      expect(complianceLog.some((e) => e.type === "envelope_voided")).toBe(
+        true,
+      );
     });
   });
 
   describe("template operations", () => {
     beforeEach(() => {
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
     });
 
     it("should list templates", async () => {
@@ -220,8 +274,14 @@ describe("EnvelopeEngine", () => {
 
       const successAdapter = mockAdapter;
 
-      engine.registerAdapter("docusign", failingAdapter as ESignatureAdapterInterface);
-      engine.registerAdapter("adobe_sign", successAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        failingAdapter as ESignatureAdapterInterface,
+      );
+      engine.registerAdapter(
+        "adobe_sign",
+        successAdapter as ESignatureAdapterInterface,
+      );
 
       const envelope = createMockEnvelope();
       const result = await engine.createAndSendEnvelope(envelope);
@@ -237,7 +297,10 @@ describe("EnvelopeEngine", () => {
         sendEnvelope: vi.fn().mockRejectedValue(new Error("Provider error")),
       } as Partial<ESignatureAdapterInterface>;
 
-      engine.registerAdapter("docusign", failingAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        failingAdapter as ESignatureAdapterInterface,
+      );
 
       const envelope = createMockEnvelope();
       await expect(engine.createAndSendEnvelope(envelope)).rejects.toThrow();
@@ -246,7 +309,10 @@ describe("EnvelopeEngine", () => {
 
   describe("audit and compliance logging", () => {
     beforeEach(() => {
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
     });
 
     it("should maintain audit trail", async () => {
@@ -300,7 +366,10 @@ describe("EnvelopeEngine", () => {
         enableComplianceLog: false,
       });
 
-      loggingDisabledEngine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      loggingDisabledEngine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
 
       const envelope = createMockEnvelope();
       await loggingDisabledEngine.createAndSendEnvelope(envelope);
@@ -316,7 +385,10 @@ describe("EnvelopeEngine", () => {
         healthy: true,
         message: "Provider is healthy",
       });
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
     });
 
     it("should check provider health", async () => {
@@ -328,8 +400,14 @@ describe("EnvelopeEngine", () => {
     });
 
     it("should check all providers health", async () => {
-      engine.registerAdapter("adobe_sign", mockAdapter as ESignatureAdapterInterface);
-      engine.registerAdapter("pandadoc", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "adobe_sign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
+      engine.registerAdapter(
+        "pandadoc",
+        mockAdapter as ESignatureAdapterInterface,
+      );
 
       const health = await engine.getAllProvidersHealth();
 
@@ -348,7 +426,10 @@ describe("EnvelopeEngine", () => {
 
   describe("operation result", () => {
     beforeEach(() => {
-      engine.registerAdapter("docusign", mockAdapter as ESignatureAdapterInterface);
+      engine.registerAdapter(
+        "docusign",
+        mockAdapter as ESignatureAdapterInterface,
+      );
     });
 
     it("should return complete orchestration result", async () => {

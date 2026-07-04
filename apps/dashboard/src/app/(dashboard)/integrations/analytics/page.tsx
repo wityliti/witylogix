@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { StatCard } from '@/components/ui/stat-card';
-import { useApiList } from '@/hooks/use-api';
-import { ErrorState } from '@/components/ui/error-state';
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/ui/stat-card";
+import { useApiList } from "@/hooks/use-api";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   BarChart3,
   TrendingUp,
@@ -19,14 +19,18 @@ import {
   Play,
   Trash2,
   RefreshCw,
-} from 'lucide-react';
+} from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
    ANALYTICS INTEGRATIONS — Dashboard for analytics providers
    ═══════════════════════════════════════════════════════════ */
 
-type ConnectionStatus = 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'AUTHENTICATING';
-type ReportFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
+type ConnectionStatus =
+  | "CONNECTED"
+  | "DISCONNECTED"
+  | "ERROR"
+  | "AUTHENTICATING";
+type ReportFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "QUARTERLY";
 
 interface AnalyticsConnection {
   id: string;
@@ -47,117 +51,138 @@ interface ScheduledReport {
   frequency: ReportFrequency;
   nextRun: string;
   lastRun: string;
-  status: 'ACTIVE' | 'PAUSED' | 'ERROR';
+  status: "ACTIVE" | "PAUSED" | "ERROR";
   recipients: string[];
-  format: 'PDF' | 'EMAIL' | 'SCHEDULED_EXPORT';
+  format: "PDF" | "EMAIL" | "SCHEDULED_EXPORT";
 }
 
 interface DataSource {
   id: string;
   name: string;
   provider: string;
-  type: 'DATABASE' | 'DATAWAREHOUSE' | 'API' | 'FILE';
+  type: "DATABASE" | "DATAWAREHOUSE" | "API" | "FILE";
   lastRefresh: string;
   refreshSchedule: string;
-  status: 'SYNCED' | 'SYNCING' | 'STALE' | 'FAILED';
+  status: "SYNCED" | "SYNCING" | "STALE" | "FAILED";
 }
 
 const ANALYTICS_PROVIDERS = [
   {
-    slug: 'tableau',
-    name: 'Tableau',
-    icon: '📊',
-    description: 'Visual analytics and business intelligence',
-    color: '#1F1F1F',
+    slug: "tableau",
+    name: "Tableau",
+    icon: "📊",
+    description: "Visual analytics and business intelligence",
+    color: "#1F1F1F",
   },
   {
-    slug: 'powerbi',
-    name: 'Power BI',
-    icon: '📈',
-    description: 'Microsoft business analytics platform',
-    color: '#FFB900',
+    slug: "powerbi",
+    name: "Power BI",
+    icon: "📈",
+    description: "Microsoft business analytics platform",
+    color: "#FFB900",
   },
   {
-    slug: 'looker',
-    name: 'Looker',
-    icon: '🔍',
-    description: 'Modern data exploration platform',
-    color: '#4285F4',
+    slug: "looker",
+    name: "Looker",
+    icon: "🔍",
+    description: "Modern data exploration platform",
+    color: "#4285F4",
   },
   {
-    slug: 'qlik',
-    name: 'Qlik Sense',
-    icon: '⚡',
-    description: 'Associative analytics engine',
-    color: '#A2D500',
+    slug: "qlik",
+    name: "Qlik Sense",
+    icon: "⚡",
+    description: "Associative analytics engine",
+    color: "#A2D500",
   },
   {
-    slug: 'ga',
-    name: 'Google Analytics 4',
-    icon: '📍',
-    description: 'Web and app analytics platform',
-    color: '#E37400',
+    slug: "ga",
+    name: "Google Analytics 4",
+    icon: "📍",
+    description: "Web and app analytics platform",
+    color: "#E37400",
   },
 ];
 
 const connectionStatusVariant = (
-  status: ConnectionStatus
-): 'success' | 'warning' | 'danger' | 'info' | 'default' => {
+  status: ConnectionStatus,
+): "success" | "warning" | "danger" | "info" | "default" => {
   const map: Record<
     ConnectionStatus,
-    'success' | 'warning' | 'danger' | 'info' | 'default'
+    "success" | "warning" | "danger" | "info" | "default"
   > = {
-    CONNECTED: 'success',
-    DISCONNECTED: 'warning',
-    ERROR: 'danger',
-    AUTHENTICATING: 'info',
+    CONNECTED: "success",
+    DISCONNECTED: "warning",
+    ERROR: "danger",
+    AUTHENTICATING: "info",
   };
   return map[status];
 };
 
 const dataSourceStatusVariant = (
-  status: string
-): 'success' | 'warning' | 'danger' | 'info' | 'default' => {
-  const map: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'default'> = {
-    SYNCED: 'success',
-    SYNCING: 'info',
-    STALE: 'warning',
-    FAILED: 'danger',
+  status: string,
+): "success" | "warning" | "danger" | "info" | "default" => {
+  const map: Record<
+    string,
+    "success" | "warning" | "danger" | "info" | "default"
+  > = {
+    SYNCED: "success",
+    SYNCING: "info",
+    STALE: "warning",
+    FAILED: "danger",
   };
-  return map[status] ?? 'default';
+  return map[status] ?? "default";
 };
 
 export default function AnalyticsIntegrationsPage() {
-  const [expandedConnection, setExpandedConnection] = useState<string | null>(null);
+  const [expandedConnection, setExpandedConnection] = useState<string | null>(
+    null,
+  );
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [showReportForm, setShowReportForm] = useState(false);
-  const [view, setView] = useState<'connections' | 'reports' | 'metrics'>('connections');
+  const [view, setView] = useState<"connections" | "reports" | "metrics">(
+    "connections",
+  );
 
   // Fetch data from API
-  const { items: connections, loading: connectionsLoading, error: connectionsError, refetch: refetchConnections } = useApiList<AnalyticsConnection>('/api/v4/integrations/analytics/connections');
-  const { items: reports, loading: reportsLoading } = useApiList<ScheduledReport>('/api/v4/integrations/analytics/reports');
-  const { items: dataSources, loading: dataSourcesLoading } = useApiList<DataSource>('/api/v4/integrations/analytics/datasources');
+  const {
+    items: connections,
+    loading: connectionsLoading,
+    error: connectionsError,
+    refetch: refetchConnections,
+  } = useApiList<AnalyticsConnection>(
+    "/api/v4/integrations/analytics/connections",
+  );
+  const { items: reports, loading: reportsLoading } =
+    useApiList<ScheduledReport>("/api/v4/integrations/analytics/reports");
+  const { items: dataSources, loading: dataSourcesLoading } =
+    useApiList<DataSource>("/api/v4/integrations/analytics/datasources");
 
   const activeConnections = useMemo(
-    () => connections.filter((c) => c.status === 'CONNECTED'),
-    [connections]
+    () => connections.filter((c) => c.status === "CONNECTED"),
+    [connections],
   );
   const errorConnections = useMemo(
-    () => connections.filter((c) => c.status === 'ERROR'),
-    [connections]
+    () => connections.filter((c) => c.status === "ERROR"),
+    [connections],
   );
 
   const totalDashboards = useMemo(
     () => connections.reduce((sum, c) => sum + c.dashboardCount, 0),
-    [connections]
+    [connections],
   );
   const totalEmbeds = useMemo(
     () => connections.reduce((sum, c) => sum + c.embedCount, 0),
-    [connections]
+    [connections],
   );
 
   if (connectionsError) {
-    return <ErrorState message={connectionsError.message} onRetry={refetchConnections} />;
+    return (
+      <ErrorState
+        message={connectionsError.message}
+        onRetry={refetchConnections}
+      />
+    );
   }
 
   return (
@@ -166,22 +191,22 @@ export default function AnalyticsIntegrationsPage() {
         title="Analytics Integrations"
         subtitle="Manage analytics providers, dashboards, and scheduled reports"
         actions={
-          <div className={cn('flex gap-2')}>
+          <div className={cn("flex gap-2")}>
             <Button
               variant="primary"
               onClick={() => setShowReportForm(true)}
               size="sm"
             >
-              <Plus size={14} className={cn('mr-1')} />
+              <Plus size={14} className={cn("mr-1")} />
               New Report
             </Button>
           </div>
         }
       />
 
-      <div className={cn('min-h-screen bg-wl-bg-root p-6')}>
+      <div className={cn("min-h-screen bg-wl-bg-root p-6")}>
         {/* Top Stats */}
-        <div className={cn('grid grid-cols-1 md:grid-cols-4 gap-4 mb-6')}>
+        <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
           <StatCard
             label="Active Connections"
             value={activeConnections.length}
@@ -212,16 +237,20 @@ export default function AnalyticsIntegrationsPage() {
         </div>
 
         {/* View Toggle */}
-        <div className={cn('flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit')}>
-          {(['connections', 'reports', 'metrics'] as const).map((v) => (
+        <div
+          className={cn(
+            "flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit",
+          )}
+        >
+          {(["connections", "reports", "metrics"] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
               className={cn(
-                'px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize',
+                "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
                 view === v
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-transparent text-wl-text-tertiary'
+                  ? "bg-blue-500 text-white"
+                  : "bg-transparent text-wl-text-tertiary",
               )}
             >
               {v}
@@ -230,43 +259,50 @@ export default function AnalyticsIntegrationsPage() {
         </div>
 
         {/* Connections View */}
-        {view === 'connections' && (
-          <div className={cn('space-y-4')}>
+        {view === "connections" && (
+          <div className={cn("space-y-4")}>
             {/* Provider Grid */}
-            <div className={cn('mb-8')}>
-              <h3 className={cn('text-sm font-semibold text-white mb-4')}>
+            <div className={cn("mb-8")}>
+              <h3 className={cn("text-sm font-semibold text-white mb-4")}>
                 Available Providers
               </h3>
-              <div className={cn('grid grid-cols-1 md:grid-cols-5 gap-3')}>
+              <div className={cn("grid grid-cols-1 md:grid-cols-5 gap-3")}>
                 {ANALYTICS_PROVIDERS.map((provider) => {
                   const connection = connections.find(
-                    (c) => c.provider === provider.slug
+                    (c) => c.provider === provider.slug,
                   );
                   return (
                     <div
                       key={provider.slug}
                       className={cn(
-                        'p-4 rounded-lg border cursor-pointer transition-all',
-                        connection?.status === 'CONNECTED'
-                          ? 'border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
-                          : connection?.status === 'ERROR'
-                            ? 'border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
-                            : 'border-wl-border-default hover:border-blue-400'
+                        "p-4 rounded-lg border cursor-pointer transition-all",
+                        connection?.status === "CONNECTED"
+                          ? "border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]"
+                          : connection?.status === "ERROR"
+                            ? "border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]"
+                            : "border-wl-border-default hover:border-blue-400",
                       )}
                       onClick={() => setSelectedProvider(provider.slug)}
                     >
-                      <div className={cn('flex items-center justify-between mb-2')}>
-                        <span className={cn('text-2xl')}>{provider.icon}</span>
+                      <div
+                        className={cn("flex items-center justify-between mb-2")}
+                      >
+                        <span className={cn("text-2xl")}>{provider.icon}</span>
                         {connection && (
-                          <Badge variant={connectionStatusVariant(connection.status)} dot>
-                            {connection.status === 'CONNECTED' ? 'Connected' : connection.status}
+                          <Badge
+                            variant={connectionStatusVariant(connection.status)}
+                            dot
+                          >
+                            {connection.status === "CONNECTED"
+                              ? "Connected"
+                              : connection.status}
                           </Badge>
                         )}
                       </div>
-                      <p className={cn('text-sm font-semibold text-white')}>
+                      <p className={cn("text-sm font-semibold text-white")}>
                         {provider.name}
                       </p>
-                      <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
+                      <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
                         {provider.description}
                       </p>
                     </div>
@@ -276,14 +312,15 @@ export default function AnalyticsIntegrationsPage() {
             </div>
 
             {/* Connection Cards */}
-            <div className={cn('space-y-3')}>
-              <div className={cn('flex items-center justify-between mb-4')}>
-                <h3 className={cn('text-sm font-semibold text-white')}>
+            <div className={cn("space-y-3")}>
+              <div className={cn("flex items-center justify-between mb-4")}>
+                <h3 className={cn("text-sm font-semibold text-white")}>
                   Configured Connections ({connections.length})
                 </h3>
                 {errorConnections.length > 0 && (
                   <Badge variant="danger">
-                    {errorConnections.length} error{errorConnections.length !== 1 ? 's' : ''}
+                    {errorConnections.length} error
+                    {errorConnections.length !== 1 ? "s" : ""}
                   </Badge>
                 )}
               </div>
@@ -296,12 +333,14 @@ export default function AnalyticsIntegrationsPage() {
                 ))
               ) : connections.length === 0 ? (
                 <Card className="p-6 text-center">
-                  <p className="text-wl-text-secondary">No connections configured</p>
+                  <p className="text-wl-text-secondary">
+                    No connections configured
+                  </p>
                 </Card>
               ) : (
                 connections.map((connection, idx) => {
                   const provider = ANALYTICS_PROVIDERS.find(
-                    (p) => p.slug === connection.provider
+                    (p) => p.slug === connection.provider,
                   );
                   const isExpanded = expandedConnection === connection.id;
 
@@ -309,102 +348,155 @@ export default function AnalyticsIntegrationsPage() {
                     <Card
                       key={connection.id}
                       className={cn(
-                        'cursor-pointer transition-all wl-animate-in',
-                        isExpanded && 'ring-1 ring-wl-primary-400'
+                        "cursor-pointer transition-all wl-animate-in",
+                        isExpanded && "ring-1 ring-wl-primary-400",
                       )}
                       style={{ animationDelay: `${idx * 40}ms` }}
                       onClick={() =>
-                        setExpandedConnection(
-                          isExpanded ? null : connection.id
-                        )
+                        setExpandedConnection(isExpanded ? null : connection.id)
                       }
                     >
-                      <div className={cn('p-4')}>
-                        <div className={cn('flex items-start justify-between mb-3')}>
-                          <div className={cn('flex items-center gap-3 flex-1')}>
-                            <span className={cn('text-2xl')}>{provider?.icon}</span>
-                            <div className={cn('flex-1 min-w-0')}>
-                              <p className={cn('text-sm font-semibold text-white')}>
+                      <div className={cn("p-4")}>
+                        <div
+                          className={cn(
+                            "flex items-start justify-between mb-3",
+                          )}
+                        >
+                          <div className={cn("flex items-center gap-3 flex-1")}>
+                            <span className={cn("text-2xl")}>
+                              {provider?.icon}
+                            </span>
+                            <div className={cn("flex-1 min-w-0")}>
+                              <p
+                                className={cn(
+                                  "text-sm font-semibold text-white",
+                                )}
+                              >
                                 {connection.name}
                               </p>
-                              <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
-                                {connection.dashboardCount} dashboards • {connection.embedCount} embeds
+                              <p
+                                className={cn(
+                                  "text-xs text-wl-text-tertiary mt-1",
+                                )}
+                              >
+                                {connection.dashboardCount} dashboards •{" "}
+                                {connection.embedCount} embeds
                               </p>
                             </div>
                           </div>
-                          <div className={cn('flex items-center gap-2 shrink-0')}>
-                            <Badge variant={connectionStatusVariant(connection.status)} dot>
-                              {connection.status === 'CONNECTED'
-                                ? 'Connected'
-                                : connection.status === 'ERROR'
-                                  ? 'Error'
-                                  : 'Disconnected'}
+                          <div
+                            className={cn("flex items-center gap-2 shrink-0")}
+                          >
+                            <Badge
+                              variant={connectionStatusVariant(
+                                connection.status,
+                              )}
+                              dot
+                            >
+                              {connection.status === "CONNECTED"
+                                ? "Connected"
+                                : connection.status === "ERROR"
+                                  ? "Error"
+                                  : "Disconnected"}
                             </Badge>
                           </div>
                         </div>
 
-                        <div className={cn('flex items-center justify-between text-xs text-wl-text-tertiary mb-3')}>
-                          <span>
-                            Last sync: {connection.lastSync}
-                          </span>
-                          <span>
-                            Next: {connection.nextSync}
-                          </span>
+                        <div
+                          className={cn(
+                            "flex items-center justify-between text-xs text-wl-text-tertiary mb-3",
+                          )}
+                        >
+                          <span>Last sync: {connection.lastSync}</span>
+                          <span>Next: {connection.nextSync}</span>
                         </div>
 
-                        {connection.status === 'ERROR' && connection.errorMessage && (
-                          <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-red-400 border-opacity-30')}>
-                            <p className={cn('text-xs text-red-400')}>
-                              {connection.errorMessage}
-                            </p>
-                          </div>
-                        )}
+                        {connection.status === "ERROR" &&
+                          connection.errorMessage && (
+                            <div
+                              className={cn(
+                                "mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-red-400 border-opacity-30",
+                              )}
+                            >
+                              <p className={cn("text-xs text-red-400")}>
+                                {connection.errorMessage}
+                              </p>
+                            </div>
+                          )}
 
                         {isExpanded && (
-                          <div className={cn('border-t border-wl-border-default pt-3 mt-3')}>
-                            <div className={cn('grid grid-cols-3 gap-3 mb-4')}>
+                          <div
+                            className={cn(
+                              "border-t border-wl-border-default pt-3 mt-3",
+                            )}
+                          >
+                            <div className={cn("grid grid-cols-3 gap-3 mb-4")}>
                               <div>
-                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Dashboards</p>
-                                <p className={cn('text-lg font-bold text-white')}>
+                                <p
+                                  className={cn(
+                                    "text-xs text-wl-text-tertiary mb-1",
+                                  )}
+                                >
+                                  Dashboards
+                                </p>
+                                <p
+                                  className={cn("text-lg font-bold text-white")}
+                                >
                                   {connection.dashboardCount}
                                 </p>
                               </div>
                               <div>
-                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Embeds</p>
-                                <p className={cn('text-lg font-bold text-white')}>
+                                <p
+                                  className={cn(
+                                    "text-xs text-wl-text-tertiary mb-1",
+                                  )}
+                                >
+                                  Embeds
+                                </p>
+                                <p
+                                  className={cn("text-lg font-bold text-white")}
+                                >
                                   {connection.embedCount}
                                 </p>
                               </div>
                               <div>
-                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Status</p>
                                 <p
                                   className={cn(
-                                    'text-lg font-bold',
-                                    connection.status === 'CONNECTED'
-                                      ? 'text-emerald-400'
-                                      : 'text-red-400'
+                                    "text-xs text-wl-text-tertiary mb-1",
                                   )}
                                 >
-                                  {connection.status === 'CONNECTED' ? 'Live' : 'Error'}
+                                  Status
+                                </p>
+                                <p
+                                  className={cn(
+                                    "text-lg font-bold",
+                                    connection.status === "CONNECTED"
+                                      ? "text-emerald-400"
+                                      : "text-red-400",
+                                  )}
+                                >
+                                  {connection.status === "CONNECTED"
+                                    ? "Live"
+                                    : "Error"}
                                 </p>
                               </div>
                             </div>
 
-                            <div className={cn('flex gap-2')}>
+                            <div className={cn("flex gap-2")}>
                               <Button
                                 variant={
-                                  connection.status === 'ERROR'
-                                    ? 'primary'
-                                    : 'secondary'
+                                  connection.status === "ERROR"
+                                    ? "primary"
+                                    : "secondary"
                                 }
                                 size="sm"
                               >
-                                {connection.status === 'ERROR'
-                                  ? 'Reconnect'
-                                  : 'Configure'}
+                                {connection.status === "ERROR"
+                                  ? "Reconnect"
+                                  : "Configure"}
                               </Button>
                               <Button variant="ghost" size="sm">
-                                <RefreshCw size={14} className={cn('mr-1')} />
+                                <RefreshCw size={14} className={cn("mr-1")} />
                                 Sync Now
                               </Button>
                               <Button variant="ghost" size="sm">
@@ -423,14 +515,18 @@ export default function AnalyticsIntegrationsPage() {
         )}
 
         {/* Reports View */}
-        {view === 'reports' && (
-          <div className={cn('space-y-3')}>
-            <div className={cn('flex items-center justify-between mb-4')}>
-              <h3 className={cn('text-sm font-semibold text-white')}>
+        {view === "reports" && (
+          <div className={cn("space-y-3")}>
+            <div className={cn("flex items-center justify-between mb-4")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 Scheduled Reports ({reports.length})
               </h3>
-              <Button variant="primary" size="sm" onClick={() => setShowReportForm(true)}>
-                <Plus size={14} className={cn('mr-1')} />
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowReportForm(true)}
+              >
+                <Plus size={14} className={cn("mr-1")} />
                 Create Report
               </Button>
             </div>
@@ -448,34 +544,50 @@ export default function AnalyticsIntegrationsPage() {
             ) : (
               reports.map((report, idx) => {
                 const provider = ANALYTICS_PROVIDERS.find(
-                  (p) => p.slug === report.provider
+                  (p) => p.slug === report.provider,
                 );
                 return (
                   <Card
                     key={report.id}
-                    className={cn('wl-animate-in')}
+                    className={cn("wl-animate-in")}
                     style={{ animationDelay: `${idx * 40}ms` }}
                   >
-                    <div className={cn('p-4')}>
-                      <div className={cn('flex items-start justify-between mb-3')}>
-                        <div className={cn('flex items-center gap-3 flex-1 min-w-0')}>
-                          <span className={cn('text-xl shrink-0')}>{provider?.icon}</span>
-                          <div className={cn('min-w-0')}>
-                            <p className={cn('text-sm font-semibold text-white truncate')}>
+                    <div className={cn("p-4")}>
+                      <div
+                        className={cn("flex items-start justify-between mb-3")}
+                      >
+                        <div
+                          className={cn(
+                            "flex items-center gap-3 flex-1 min-w-0",
+                          )}
+                        >
+                          <span className={cn("text-xl shrink-0")}>
+                            {provider?.icon}
+                          </span>
+                          <div className={cn("min-w-0")}>
+                            <p
+                              className={cn(
+                                "text-sm font-semibold text-white truncate",
+                              )}
+                            >
                               {report.title}
                             </p>
-                            <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
+                            <p
+                              className={cn(
+                                "text-xs text-wl-text-tertiary mt-1",
+                              )}
+                            >
                               {report.frequency} • {report.format}
                             </p>
                           </div>
                         </div>
                         <Badge
                           variant={
-                            report.status === 'ACTIVE'
-                              ? 'success'
-                              : report.status === 'PAUSED'
-                                ? 'warning'
-                                : 'danger'
+                            report.status === "ACTIVE"
+                              ? "success"
+                              : report.status === "PAUSED"
+                                ? "warning"
+                                : "danger"
                           }
                           dot
                         >
@@ -483,33 +595,37 @@ export default function AnalyticsIntegrationsPage() {
                         </Badge>
                       </div>
 
-                      <div className={cn('bg-wl-bg-surface rounded p-3 mb-3')}>
-                        <div className={cn('grid grid-cols-2 gap-3 text-xs')}>
+                      <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
+                        <div className={cn("grid grid-cols-2 gap-3 text-xs")}>
                           <div>
-                            <p className={cn('text-wl-text-tertiary mb-1')}>Next Run</p>
-                            <p className={cn('font-semibold text-white')}>
+                            <p className={cn("text-wl-text-tertiary mb-1")}>
+                              Next Run
+                            </p>
+                            <p className={cn("font-semibold text-white")}>
                               {report.nextRun}
                             </p>
                           </div>
                           <div>
-                            <p className={cn('text-wl-text-tertiary mb-1')}>Last Run</p>
-                            <p className={cn('font-semibold text-white')}>
+                            <p className={cn("text-wl-text-tertiary mb-1")}>
+                              Last Run
+                            </p>
+                            <p className={cn("font-semibold text-white")}>
                               {report.lastRun}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className={cn('mb-3')}>
-                        <p className={cn('text-xs text-wl-text-tertiary mb-2')}>
+                      <div className={cn("mb-3")}>
+                        <p className={cn("text-xs text-wl-text-tertiary mb-2")}>
                           Recipients ({report.recipients.length})
                         </p>
-                        <div className={cn('flex flex-wrap gap-1')}>
+                        <div className={cn("flex flex-wrap gap-1")}>
                           {report.recipients.map((recipient) => (
                             <span
                               key={recipient}
                               className={cn(
-                                'text-xs px-2 py-1 rounded bg-wl-bg-elevated text-wl-text-secondary'
+                                "text-xs px-2 py-1 rounded bg-wl-bg-elevated text-wl-text-secondary",
                               )}
                             >
                               {recipient}
@@ -518,19 +634,21 @@ export default function AnalyticsIntegrationsPage() {
                         </div>
                       </div>
 
-                      <div className={cn('flex gap-2')}>
+                      <div className={cn("flex gap-2")}>
                         <Button
-                          variant={report.status === 'PAUSED' ? 'primary' : 'secondary'}
+                          variant={
+                            report.status === "PAUSED" ? "primary" : "secondary"
+                          }
                           size="sm"
                         >
-                          {report.status === 'PAUSED' ? (
+                          {report.status === "PAUSED" ? (
                             <>
-                              <Play size={14} className={cn('mr-1')} />
+                              <Play size={14} className={cn("mr-1")} />
                               Resume
                             </>
                           ) : (
                             <>
-                              <Pause size={14} className={cn('mr-1')} />
+                              <Pause size={14} className={cn("mr-1")} />
                               Pause
                             </>
                           )}
@@ -539,7 +657,7 @@ export default function AnalyticsIntegrationsPage() {
                           <Settings size={14} />
                         </Button>
                         <Button variant="ghost" size="sm">
-                          <Trash2 size={14} className={cn('text-red-400')} />
+                          <Trash2 size={14} className={cn("text-red-400")} />
                         </Button>
                       </div>
                     </div>
@@ -551,9 +669,9 @@ export default function AnalyticsIntegrationsPage() {
         )}
 
         {/* Metrics View */}
-        {view === 'metrics' && (
-          <div className={cn('space-y-4')}>
-            <h3 className={cn('text-sm font-semibold text-white mb-4')}>
+        {view === "metrics" && (
+          <div className={cn("space-y-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Data Source Sync Status
             </h3>
 
@@ -565,43 +683,66 @@ export default function AnalyticsIntegrationsPage() {
               ))
             ) : dataSources.length === 0 ? (
               <Card className="p-6 text-center">
-                <p className="text-wl-text-secondary">No data sources configured</p>
+                <p className="text-wl-text-secondary">
+                  No data sources configured
+                </p>
               </Card>
             ) : (
-              <div className={cn('space-y-2')}>
+              <div className={cn("space-y-2")}>
                 {dataSources.map((source, idx) => (
-                  <Card key={source.id} className={cn('wl-animate-in')} style={{ animationDelay: `${idx * 30}ms` }}>
-                    <div className={cn('p-3 flex items-center justify-between')}>
-                      <div className={cn('flex items-center gap-3 flex-1 min-w-0')}>
+                  <Card
+                    key={source.id}
+                    className={cn("wl-animate-in")}
+                    style={{ animationDelay: `${idx * 30}ms` }}
+                  >
+                    <div
+                      className={cn("p-3 flex items-center justify-between")}
+                    >
+                      <div
+                        className={cn("flex items-center gap-3 flex-1 min-w-0")}
+                      >
                         <div
                           className={cn(
-                            'w-2 h-2 rounded-full shrink-0',
-                            source.status === 'SYNCED'
-                              ? 'bg-emerald-400'
-                              : source.status === 'SYNCING'
-                                ? 'bg-cyan-400'
-                                : source.status === 'STALE'
-                                  ? 'bg-amber-400'
-                                  : 'bg-red-400'
+                            "w-2 h-2 rounded-full shrink-0",
+                            source.status === "SYNCED"
+                              ? "bg-emerald-400"
+                              : source.status === "SYNCING"
+                                ? "bg-cyan-400"
+                                : source.status === "STALE"
+                                  ? "bg-amber-400"
+                                  : "bg-red-400",
                           )}
                         />
-                        <div className={cn('min-w-0')}>
-                          <p className={cn('text-sm font-semibold text-white')}>
+                        <div className={cn("min-w-0")}>
+                          <p className={cn("text-sm font-semibold text-white")}>
                             {source.name}
                           </p>
-                          <p className={cn('text-xs text-wl-text-tertiary mt-0.5')}>
+                          <p
+                            className={cn(
+                              "text-xs text-wl-text-tertiary mt-0.5",
+                            )}
+                          >
                             {source.type} • Refreshes {source.refreshSchedule}
                           </p>
                         </div>
                       </div>
-                      <div className={cn('flex items-center gap-3 text-right shrink-0')}>
+                      <div
+                        className={cn(
+                          "flex items-center gap-3 text-right shrink-0",
+                        )}
+                      >
                         <div>
-                          <p className={cn('text-xs text-wl-text-tertiary')}>Last Refresh</p>
-                          <p className={cn('text-xs font-semibold text-white')}>
+                          <p className={cn("text-xs text-wl-text-tertiary")}>
+                            Last Refresh
+                          </p>
+                          <p className={cn("text-xs font-semibold text-white")}>
                             {source.lastRefresh}
                           </p>
                         </div>
-                        <Badge variant={dataSourceStatusVariant(source.status)} dot>
+                        <Badge
+                          variant={dataSourceStatusVariant(source.status)}
+                          dot
+                        >
                           {source.status}
                         </Badge>
                       </div>

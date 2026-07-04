@@ -21,7 +21,9 @@ vi.mock("@witylogix/db", () => ({
   },
 }));
 vi.mock("../../lib/queue.js", () => ({
-  getIntegrationQueue: vi.fn().mockReturnValue({ add: vi.fn().mockResolvedValue({}) }),
+  getIntegrationQueue: vi
+    .fn()
+    .mockReturnValue({ add: vi.fn().mockResolvedValue({}) }),
 }));
 
 import collectionsRoutes from "../collections.js";
@@ -169,7 +171,9 @@ describe("Collections Routes", () => {
         updatedAt: new Date(),
       };
 
-      (request.tenantDb.collection.create as any).mockResolvedValue(mockCollection);
+      (request.tenantDb.collection.create as any).mockResolvedValue(
+        mockCollection,
+      );
 
       const handler = handlers["POST"]["/"];
       const result = await handler(request, reply);
@@ -298,7 +302,7 @@ describe("Collections Routes", () => {
       ];
 
       (request.tenantDb.collection.findMany as any).mockResolvedValue(
-        mockCollections
+        mockCollections,
       );
       (request.tenantDb.collection.count as any).mockResolvedValue(2);
 
@@ -327,7 +331,7 @@ describe("Collections Routes", () => {
       expect(request.tenantDb.collection.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ type: "SMART" }),
-        })
+        }),
       );
     });
 
@@ -349,7 +353,7 @@ describe("Collections Routes", () => {
         expect.objectContaining({
           contains: "Summer",
           mode: "insensitive",
-        })
+        }),
       );
     });
 
@@ -368,7 +372,7 @@ describe("Collections Routes", () => {
       expect(request.tenantDb.collection.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { createdAt: "desc" },
-        })
+        }),
       );
     });
 
@@ -387,7 +391,7 @@ describe("Collections Routes", () => {
       expect(request.tenantDb.collection.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { title: "asc" },
-        })
+        }),
       );
     });
 
@@ -407,7 +411,7 @@ describe("Collections Routes", () => {
         expect.objectContaining({
           skip: 100,
           take: 50,
-        })
+        }),
       );
       expect(result.pagination.totalPages).toBe(3);
     });
@@ -439,7 +443,7 @@ describe("Collections Routes", () => {
       };
 
       (request.tenantDb.collection.findUnique as any).mockResolvedValue(
-        mockCollection
+        mockCollection,
       );
 
       const handler = handlers["GET"]["/:id"];
@@ -502,7 +506,7 @@ describe("Collections Routes", () => {
               orderBy: { position: "asc" },
             }),
           },
-        })
+        }),
       );
     });
   });
@@ -658,8 +662,8 @@ describe("Collections Routes", () => {
         },
       };
 
-      (request.tenantDb.$transaction as any).mockImplementation((fn: Function) =>
-        fn(mockTx)
+      (request.tenantDb.$transaction as any).mockImplementation(
+        (fn: Function) => fn(mockTx),
       );
 
       const handler = handlers["DELETE"]["/:id"];
@@ -720,7 +724,12 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"] },
+        body: {
+          productIds: [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+          ],
+        },
       });
       const reply = createMockReply();
 
@@ -755,7 +764,13 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", "00000000-0000-0000-0000-000000000003"] },
+        body: {
+          productIds: [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003",
+          ],
+        },
       });
       const reply = createMockReply();
 
@@ -794,7 +809,12 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000099"] },
+        body: {
+          productIds: [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000099",
+          ],
+        },
       });
       const reply = createMockReply();
 
@@ -849,7 +869,12 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"] },
+        body: {
+          productIds: [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+          ],
+        },
       });
       const reply = createMockReply();
 
@@ -928,7 +953,9 @@ describe("Collections Routes", () => {
       const result = await handler(request, reply);
 
       expect(result.message).toBe("Products reordered successfully");
-      expect(request.tenantDb.collectionProduct.update).toHaveBeenCalledTimes(3);
+      expect(request.tenantDb.collectionProduct.update).toHaveBeenCalledTimes(
+        3,
+      );
     });
 
     it("should handle single product reorder", async () => {
@@ -936,7 +963,9 @@ describe("Collections Routes", () => {
         userRole: "ADMIN",
         params: { id: "col-1" },
         body: {
-          items: [{ productId: "00000000-0000-0000-0000-000000000001", position: 5 }],
+          items: [
+            { productId: "00000000-0000-0000-0000-000000000001", position: 5 },
+          ],
         },
       });
       const reply = createMockReply();
@@ -960,7 +989,9 @@ describe("Collections Routes", () => {
         userRole: "ADMIN",
         params: { id: "invalid-id" },
         body: {
-          items: [{ productId: "00000000-0000-0000-0000-000000000001", position: 1 }],
+          items: [
+            { productId: "00000000-0000-0000-0000-000000000001", position: 1 },
+          ],
         },
       });
       const reply = createMockReply();
@@ -978,7 +1009,9 @@ describe("Collections Routes", () => {
         shopId: "shop-123",
         params: { id: "col-1" },
         body: {
-          items: [{ productId: "00000000-0000-0000-0000-000000000001", position: 1 }],
+          items: [
+            { productId: "00000000-0000-0000-0000-000000000001", position: 1 },
+          ],
         },
       });
       const reply = createMockReply();
@@ -1119,7 +1152,7 @@ describe("Collections Routes", () => {
       const reply = createMockReply();
 
       (request.tenantDb.collection.findUnique as any).mockRejectedValue(
-        new Error("Database connection failed")
+        new Error("Database connection failed"),
       );
 
       const handler = handlers["GET"]["/:id"];
@@ -1133,7 +1166,13 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", "00000000-0000-0000-0000-000000000003"] },
+        body: {
+          productIds: [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003",
+          ],
+        },
       });
       const reply = createMockReply();
 
@@ -1147,7 +1186,7 @@ describe("Collections Routes", () => {
         { id: "00000000-0000-0000-0000-000000000003" },
       ]);
       (request.tenantDb.collectionProduct.findFirst as any).mockResolvedValue(
-        null
+        null,
       );
       (request.tenantDb.collectionProduct.createMany as any).mockResolvedValue({
         count: 3,
@@ -1201,7 +1240,7 @@ describe("Collections Routes", () => {
       expect(request.tenantDb.collection.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: { productCount: 6 },
-        })
+        }),
       );
       expect(result.productCount).toBe(6);
     });
@@ -1210,7 +1249,12 @@ describe("Collections Routes", () => {
   describe("Sorting and filtering", () => {
     it("should support sorting by productCount", async () => {
       const request = createMockRequest({
-        query: { page: 1, limit: 20, sortBy: "productCount", sortOrder: "desc" },
+        query: {
+          page: 1,
+          limit: 20,
+          sortBy: "productCount",
+          sortOrder: "desc",
+        },
       });
       const reply = createMockReply();
 
@@ -1223,7 +1267,7 @@ describe("Collections Routes", () => {
       expect(request.tenantDb.collection.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { productCount: "desc" },
-        })
+        }),
       );
     });
 

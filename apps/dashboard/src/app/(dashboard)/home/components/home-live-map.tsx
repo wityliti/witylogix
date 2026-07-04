@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import Link from 'next/link';
-import { MapPin, Maximize2 } from 'lucide-react';
-import { WLMap } from '@/components/map/wl-map';
-import { OrderLayer } from '@/components/map/order-layer';
-import { DriverLayer } from '@/components/map/driver-layer';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { fitBounds } from '@/components/map/use-fit-bounds';
-import { useEffect } from 'react';
-import { useApiList } from '@/hooks/use-api';
-import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
-import type { DriverMarker, DriverStatus } from '@/components/map/driver-layer';
+import { useMemo } from "react";
+import Link from "next/link";
+import { MapPin, Maximize2 } from "lucide-react";
+import { WLMap } from "@/components/map/wl-map";
+import { OrderLayer } from "@/components/map/order-layer";
+import { DriverLayer } from "@/components/map/driver-layer";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { fitBounds } from "@/components/map/use-fit-bounds";
+import { useEffect } from "react";
+import { useApiList } from "@/hooks/use-api";
+import type { OrderPin, OrderPinStatus } from "@/components/map/order-layer";
+import type { DriverMarker, DriverStatus } from "@/components/map/driver-layer";
 
 // ── API shapes ────────────────────────────────────────────────
 
@@ -40,22 +40,30 @@ interface DispatchDriver {
 
 function toOrderStatus(s: string): OrderPinStatus {
   switch (s) {
-    case 'ASSIGNED': return 'assigned';
-    case 'PICKED_UP':
-    case 'OUT_FOR_DELIVERY':
-    case 'ARRIVED': return 'in_transit';
-    case 'FAILED':
-    case 'RETURNED': return 'delayed';
-    default: return 'pending';
+    case "ASSIGNED":
+      return "assigned";
+    case "PICKED_UP":
+    case "OUT_FOR_DELIVERY":
+    case "ARRIVED":
+      return "in_transit";
+    case "FAILED":
+    case "RETURNED":
+      return "delayed";
+    default:
+      return "pending";
   }
 }
 
 function toDriverStatus(s: string): DriverStatus {
   switch (s) {
-    case 'AVAILABLE': return 'available';
-    case 'ON_ROUTE': return 'busy';
-    case 'ON_BREAK': return 'break';
-    default: return 'offline';
+    case "AVAILABLE":
+      return "available";
+    case "ON_ROUTE":
+      return "busy";
+    case "ON_BREAK":
+      return "break";
+    default:
+      return "offline";
   }
 }
 
@@ -74,7 +82,9 @@ function MapLayers({
     if (!map) return;
     const all: { lat: number; lng: number }[] = [
       ...orderPins.map((p) => ({ lat: p.lat, lng: p.lng })),
-      ...driverMarkers.filter((d) => d.lat && d.lng).map((d) => ({ lat: d.lat!, lng: d.lng! })),
+      ...driverMarkers
+        .filter((d) => d.lat && d.lng)
+        .map((d) => ({ lat: d.lat!, lng: d.lng! })),
     ];
     if (all.length === 0) return;
     fitBounds(map, all, 60);
@@ -92,13 +102,11 @@ function MapLayers({
 
 export function HomeLiveMap() {
   const { items: activeOrders, loading: ordersLoading } = useApiList<ApiOrder>(
-    '/api/v4/orders',
-    { status: 'ASSIGNED,PICKED_UP,OUT_FOR_DELIVERY,ARRIVED', limit: 50 },
+    "/api/v4/orders",
+    { status: "ASSIGNED,PICKED_UP,OUT_FOR_DELIVERY,ARRIVED", limit: 50 },
   );
-  const { items: dispatchDrivers, loading: driversLoading } = useApiList<DispatchDriver>(
-    '/api/v4/dispatch/drivers',
-    { limit: 100 },
-  );
+  const { items: dispatchDrivers, loading: driversLoading } =
+    useApiList<DispatchDriver>("/api/v4/dispatch/drivers", { limit: 100 });
 
   const orderPins = useMemo<OrderPin[]>(
     () =>
@@ -107,8 +115,8 @@ export function HomeLiveMap() {
         .map((o) => ({
           id: o.id,
           orderNumber: o.externalOrderNumber ?? o.id.slice(0, 8),
-          customerName: o.customerName ?? 'Customer',
-          address: [o.addressLine1, o.city].filter(Boolean).join(', ') || '—',
+          customerName: o.customerName ?? "Customer",
+          address: [o.addressLine1, o.city].filter(Boolean).join(", ") || "—",
           status: toOrderStatus(o.status),
           lat: o.deliveryLat!,
           lng: o.deliveryLng!,
@@ -148,7 +156,9 @@ export function HomeLiveMap() {
       <div className="h-[280px] rounded-xl bg-wl-bg-surface border border-wl-border-default flex flex-col items-center justify-center gap-2 text-wl-text-tertiary">
         <MapPin className="w-8 h-8" />
         <p className="text-sm">No active deliveries on the map yet</p>
-        <p className="text-xs text-wl-text-tertiary">Assign drivers to orders to see live positions</p>
+        <p className="text-xs text-wl-text-tertiary">
+          Assign drivers to orders to see live positions
+        </p>
       </div>
     );
   }
@@ -170,7 +180,10 @@ export function HomeLiveMap() {
           <span className="text-wl-text-secondary">In Transit</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: 'var(--wl-chart-purple)' }} />
+          <span
+            className="w-2.5 h-2.5 rounded-full inline-block"
+            style={{ backgroundColor: "var(--wl-chart-purple)" }}
+          />
           <span className="text-wl-text-secondary">Driver</span>
         </div>
       </div>
@@ -179,12 +192,12 @@ export function HomeLiveMap() {
       <div className="absolute top-3 left-3 flex gap-2">
         {orderPins.length > 0 && (
           <span className="bg-wl-bg-surface/90 border border-wl-border-default rounded-md px-2 py-0.5 text-xs text-wl-text-secondary backdrop-blur-sm">
-            {orderPins.length} order{orderPins.length !== 1 ? 's' : ''}
+            {orderPins.length} order{orderPins.length !== 1 ? "s" : ""}
           </span>
         )}
         {driverMarkers.length > 0 && (
           <span className="bg-wl-bg-surface/90 border border-wl-border-default rounded-md px-2 py-0.5 text-xs text-wl-text-secondary backdrop-blur-sm">
-            {driverMarkers.length} driver{driverMarkers.length !== 1 ? 's' : ''}
+            {driverMarkers.length} driver{driverMarkers.length !== 1 ? "s" : ""}
           </span>
         )}
       </div>

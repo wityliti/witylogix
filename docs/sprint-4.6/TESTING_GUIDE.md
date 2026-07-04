@@ -3,17 +3,20 @@
 ## Quick Start
 
 ### Install Dependencies
+
 ```bash
 cd /sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform
 pnpm install
 ```
 
 ### Run All Tests
+
 ```bash
 pnpm test
 ```
 
 ### Run Specific Test Suite
+
 ```bash
 # Integration tests only
 pnpm test tests/integration/
@@ -26,11 +29,13 @@ pnpm test tests/integration/woocommerce/
 ```
 
 ### Watch Mode
+
 ```bash
 pnpm test --watch
 ```
 
 ### Coverage Report
+
 ```bash
 pnpm test --coverage
 ```
@@ -38,6 +43,7 @@ pnpm test --coverage
 ## Test Suite Overview
 
 ### Total Test Cases: 182+
+
 - **Integration Tests**: 117 cases
 - **Unit Tests**: 65+ cases
 - **Estimated Coverage**: 85%+ of critical paths
@@ -47,9 +53,11 @@ pnpm test --coverage
 ### 1. WooCommerce Integration (89 tests)
 
 #### WC Client Tests (46 tests)
+
 **Location**: `tests/integration/woocommerce/wc-client.test.ts`
 
 Tests OAuth 1.0a implementation for secure API communication:
+
 - Signature generation with HMAC-SHA256
 - Nonce uniqueness and timestamp handling
 - All HTTP methods (GET, POST, PUT, DELETE)
@@ -64,6 +72,7 @@ pnpm test tests/integration/woocommerce/wc-client.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - Valid OAuth header generation
 - Rate limiting enforcement (verify delay)
 - Retry on 429/500 status codes
@@ -72,9 +81,11 @@ pnpm test tests/integration/woocommerce/wc-client.test.ts
 - Pagination query building
 
 #### Order Sync Tests (21 tests)
+
 **Location**: `tests/integration/woocommerce/order-sync.test.ts`
 
 Tests bidirectional order synchronization between WooCommerce and Witylogix:
+
 - All 7 WC → WL status mappings
 - All 7 WL → WC status mappings
 - Complete field mapping (20+ order fields)
@@ -90,16 +101,19 @@ pnpm test tests/integration/woocommerce/order-sync.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - Status transitions (pending → processing → completed)
-- Meta field handling (skip system fields prefixed with _)
+- Meta field handling (skip system fields prefixed with \_)
 - Guest customer synchronization
 - Delivery vs billing address mapping
 - Conflict resolution (WL newer vs WC newer)
 
 #### Webhook Consumer Tests (22 tests)
+
 **Location**: `tests/integration/woocommerce/webhook-consumer.test.ts`
 
 Tests webhook signature verification and event processing:
+
 - HMAC-SHA256 signature verification
 - Constant-time comparison (timing attack prevention)
 - Idempotency via delivery ID tracking
@@ -113,6 +127,7 @@ pnpm test tests/integration/woocommerce/webhook-consumer.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - Valid/invalid signature verification
 - Duplicate delivery rejection
 - Topic routing (order.created, product.updated, etc.)
@@ -124,6 +139,7 @@ pnpm test tests/integration/woocommerce/webhook-consumer.test.ts
 **Location**: `tests/integration/analytics/route-performance.test.ts`
 
 Tests delivery analytics and KPI calculations:
+
 - On-time delivery percentage (with 5-min buffer)
 - Planned vs actual route variance
 - Driver performance scorecards (24h, 7d, 30d)
@@ -136,6 +152,7 @@ pnpm test tests/integration/analytics/route-performance.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - On-time definition: within ±5 minutes
 - Only counts delivered status (excludes failed/returned)
 - CO2 factors: motorcycle (0.089), van (0.156), truck-large (0.286)
@@ -148,6 +165,7 @@ pnpm test tests/integration/analytics/route-performance.test.ts
 **Location**: `tests/integration/invoicing/invoice-service.test.ts`
 
 Tests invoicing engine with cost calculations:
+
 - Invoice creation and number generation (unique format: INV-NNNN)
 - Tier-based pricing: economy (1.0x), standard (1.15x), premium (1.35x)
 - Surcharges: fuel, peak hours, weight
@@ -161,6 +179,7 @@ pnpm test tests/integration/invoicing/invoice-service.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - Discount prevents exceeding subtotal
 - Tax only on taxable items
 - Payment partial and full flows
@@ -172,6 +191,7 @@ pnpm test tests/integration/invoicing/invoice-service.test.ts
 **Location**: `tests/integration/notifications/preferences.test.ts`
 
 Tests notification delivery preferences:
+
 - Customer preference CRUD
 - Channel management (email, SMS, push, WhatsApp)
 - Notification type selection (orders, promotions, etc.)
@@ -185,6 +205,7 @@ pnpm test tests/integration/notifications/preferences.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - Enable/disable individual channels
 - Quiet hours enforcement (22:00-08:00 example)
 - Unsubscribe reasons tracking
@@ -198,6 +219,7 @@ pnpm test tests/integration/notifications/preferences.test.ts
 **Location**: `tests/unit/pod/pod-service.test.ts`
 
 Tests proof-of-delivery functionality:
+
 - Photo capture with EXIF extraction
 - Signature SVG → PNG rendering
 - QR code scanning
@@ -210,6 +232,7 @@ pnpm test tests/unit/pod/pod-service.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - EXIF data (coordinates, altitude, camera info)
 - Valid state transitions (pending → picked_up → delivered)
 - Prevent invalid transitions (pending ↛ delivered)
@@ -222,6 +245,7 @@ pnpm test tests/unit/pod/pod-service.test.ts
 **Location**: `tests/unit/slots/slot-engine.test.ts`
 
 Tests delivery slot management:
+
 - Atomic slot reservation (concurrent booking prevention)
 - Capacity limit enforcement
 - Zone rate calculation (5 methods: fixed, distance, zone, dynamic, surge)
@@ -234,6 +258,7 @@ pnpm test tests/unit/slots/slot-engine.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - Prevent overbooking under concurrent load
 - Zone multipliers (north 1.0x, south 1.1x, west 1.15x)
 - Surge pricing by demand (low 1.0x, high 1.5x)
@@ -245,6 +270,7 @@ pnpm test tests/unit/slots/slot-engine.test.ts
 **Location**: `tests/unit/checkout/checkout-widget.test.ts`
 
 Tests 5-step checkout flow:
+
 - Step navigation (forward/back with validation)
 - Address validation with postal code format
 - Date selection with blackout filtering
@@ -257,6 +283,7 @@ pnpm test tests/unit/checkout/checkout-widget.test.ts
 ```
 
 **Key Test Scenarios**:
+
 - Cannot skip steps (step 1 → 2 only if completed)
 - Address validation (street, city, state, postal, country)
 - Blackout: Sundays and holidays
@@ -266,9 +293,11 @@ pnpm test tests/unit/checkout/checkout-widget.test.ts
 ## Test Fixtures
 
 ### WooCommerce Fixtures
+
 **Location**: `tests/integration/fixtures/woocommerce-fixtures.ts`
 
 Factory functions for consistent mock data:
+
 - `createMockWCOrder()` - Full order with 2 line items, taxes, shipping
 - `createMockWCOrders(count)` - Batch create with varied statuses
 - `createMockWCCustomer()` - Customer with billing/shipping
@@ -276,29 +305,36 @@ Factory functions for consistent mock data:
 - Specialized: Guest orders, multi-item, meta fields, cancelled/refunded
 
 **Usage**:
+
 ```typescript
-import { createMockWCOrder, createMockGuestOrderFixture } from '../fixtures/woocommerce-fixtures';
+import {
+  createMockWCOrder,
+  createMockGuestOrderFixture,
+} from "../fixtures/woocommerce-fixtures";
 
 const order = createMockWCOrder();
 const guestOrder = createMockGuestOrderFixture();
 ```
 
 ### Analytics Fixtures
+
 **Location**: `tests/integration/fixtures/analytics-fixtures.ts`
 
 Factory functions for route and delivery data:
+
 - `createMockRouteData()` - Complete route with 3 deliveries
 - `createMockRoutes(count)` - Batch routes with varied zones
 - `createMockDeliveryStop()` - Individual delivery point
 - Specialized: On-time, delayed, high/low performing, SLA tiers, emissions
 
 **Usage**:
+
 ```typescript
 import {
   createMockRouteData,
   createMockOnTimeRoute,
-  createMockHighPerformingRoute
-} from '../fixtures/analytics-fixtures';
+  createMockHighPerformingRoute,
+} from "../fixtures/analytics-fixtures";
 
 const standard = createMockRouteData();
 const excellent = createMockHighPerformingRoute();
@@ -307,6 +343,7 @@ const excellent = createMockHighPerformingRoute();
 ## Running Tests in CI/CD
 
 ### GitHub Actions
+
 ```yaml
 - name: Run Tests
   run: |
@@ -320,6 +357,7 @@ const excellent = createMockHighPerformingRoute();
 ```
 
 ### Local Pre-commit
+
 ```bash
 #!/bin/bash
 pnpm test --coverage
@@ -331,27 +369,30 @@ fi
 
 ## Test Metrics
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| Total Tests | 150+ | 182 |
-| Code Coverage | 80%+ | 85%+ |
-| Integration Tests | 100+ | 117 |
-| Unit Tests | 50+ | 65 |
-| Execution Time | < 30s | ~15s |
+| Metric            | Target | Current |
+| ----------------- | ------ | ------- |
+| Total Tests       | 150+   | 182     |
+| Code Coverage     | 80%+   | 85%+    |
+| Integration Tests | 100+   | 117     |
+| Unit Tests        | 50+    | 65      |
+| Execution Time    | < 30s  | ~15s    |
 
 ## Debugging Tests
 
 ### Run Single Test
+
 ```bash
 pnpm test -- --reporter=verbose wc-client.test.ts
 ```
 
 ### Enable Debug Output
+
 ```bash
 DEBUG=* pnpm test
 ```
 
 ### Verbose Mode
+
 ```bash
 pnpm test --reporter=verbose --reporter=html
 ```
@@ -359,21 +400,25 @@ pnpm test --reporter=verbose --reporter=html
 ## Common Issues
 
 ### OAuth Signature Mismatch
+
 - Verify `consumerSecret` is not URL-encoded in signing key
 - Check that nonce is unique for each request
 - Ensure signature method is HMAC-SHA256
 
 ### Rate Limiting Delays
+
 - Tests use fake timers (`vi.useFakeTimers()`)
 - Don't use real timers in rate limit tests
 - Test with `advanceTimersByTime()` for verification
 
 ### Concurrent Reservation Conflicts
+
 - Use atomic operations for capacity checking
 - Test with multiple simultaneous reservations
 - Verify total booked ≤ capacity always
 
 ### Timezone Issues in Tests
+
 - Use consistent timezone (UTC)
 - Store times as ISO 8601 strings
 - Set fixed dates in fixtures
@@ -413,6 +458,7 @@ pnpm test --reporter=verbose --reporter=html
 ## Support & Troubleshooting
 
 For test failures:
+
 1. Run test in isolation with `--reporter=verbose`
 2. Check fixture data for accuracy
 3. Verify mock implementations match production
@@ -420,6 +466,7 @@ For test failures:
 5. Review error message in test output
 
 Contact the QA team for:
+
 - Test environment setup
 - Adding new test fixtures
 - Debugging flaky tests

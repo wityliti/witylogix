@@ -1,18 +1,16 @@
-'use client';
+"use client";
 
-import { Input } from '@/components/ui';
-import { PreviewSection } from './preview-section';
+import { Input } from "@/components/ui";
+import { PreviewSection } from "./preview-section";
 
 export function InputsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Input Fields
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Input Fields</h2>
         <p className="text-wl-neutral-300 mb-8">
-          Text input component with support for labels, errors, hints, and icons.
-          Available in small, medium, and large sizes.
+          Text input component with support for labels, errors, hints, and
+          icons. Available in small, medium, and large sizes.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-3xl">

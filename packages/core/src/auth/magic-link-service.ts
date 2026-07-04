@@ -5,8 +5,8 @@
  * Generates secure tokens and validates them with time-based expiry.
  */
 
-import { randomBytes } from 'crypto';
-import { EventEmitter } from 'events';
+import { randomBytes } from "crypto";
+import { EventEmitter } from "events";
 
 export interface MagicLinkToken {
   token: string;
@@ -50,7 +50,7 @@ class MagicLinkService extends EventEmitter {
    */
   generateToken(email: string, ipAddress?: string, userAgent?: string): string {
     const tokenBytes = randomBytes(32);
-    const token = tokenBytes.toString('base64url');
+    const token = tokenBytes.toString("base64url");
 
     const magicLinkToken: MagicLinkToken = {
       token,
@@ -63,7 +63,11 @@ class MagicLinkService extends EventEmitter {
     };
 
     this.tokens.set(token, magicLinkToken);
-    this.emit('token-generated', { email, token, expiresAt: magicLinkToken.expiresAt });
+    this.emit("token-generated", {
+      email,
+      token,
+      expiresAt: magicLinkToken.expiresAt,
+    });
 
     return token;
   }
@@ -78,9 +82,9 @@ class MagicLinkService extends EventEmitter {
    */
   generateMagicLink(
     email: string,
-    baseUrl: string = 'http://localhost:3000',
+    baseUrl: string = "http://localhost:3000",
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): {
     success: boolean;
     link?: string;
@@ -93,11 +97,13 @@ class MagicLinkService extends EventEmitter {
     const windowStart = now - this.config.windowMs;
 
     let emailRequests = this.rateLimits.get(email) || [];
-    emailRequests = emailRequests.filter((timestamp) => timestamp > windowStart);
+    emailRequests = emailRequests.filter(
+      (timestamp) => timestamp > windowStart,
+    );
 
     if (emailRequests.length >= this.config.maxRequests) {
       const retryAfter = Math.ceil(
-        (Math.min(...emailRequests) + this.config.windowMs - now) / 1000
+        (Math.min(...emailRequests) + this.config.windowMs - now) / 1000,
       );
       return {
         success: false,
@@ -115,8 +121,8 @@ class MagicLinkService extends EventEmitter {
 
     // Build magic link URL
     const url = new URL(baseUrl);
-    url.pathname = '/magic-link';
-    url.searchParams.set('token', token);
+    url.pathname = "/magic-link";
+    url.searchParams.set("token", token);
 
     return {
       success: true,
@@ -140,14 +146,14 @@ class MagicLinkService extends EventEmitter {
     if (!magicLink) {
       return {
         valid: false,
-        error: 'Invalid magic link. Please request a new one.',
+        error: "Invalid magic link. Please request a new one.",
       };
     }
 
     if (magicLink.used) {
       return {
         valid: false,
-        error: 'This magic link has already been used.',
+        error: "This magic link has already been used.",
       };
     }
 
@@ -155,7 +161,7 @@ class MagicLinkService extends EventEmitter {
       this.tokens.delete(token);
       return {
         valid: false,
-        error: 'This magic link has expired. Please request a new one.',
+        error: "This magic link has expired. Please request a new one.",
       };
     }
 
@@ -187,7 +193,7 @@ class MagicLinkService extends EventEmitter {
     const magicLink = this.tokens.get(token)!;
     magicLink.used = true;
 
-    this.emit('link-consumed', {
+    this.emit("link-consumed", {
       email: magicLink.email,
       token,
       timestamp: Date.now(),
@@ -297,7 +303,9 @@ let instance: MagicLinkService | null = null;
 /**
  * Get or create magic link service instance
  */
-export function getMagicLinkService(config?: Partial<MagicLinkConfig>): MagicLinkService {
+export function getMagicLinkService(
+  config?: Partial<MagicLinkConfig>,
+): MagicLinkService {
   if (!instance) {
     instance = new MagicLinkService(config);
   }

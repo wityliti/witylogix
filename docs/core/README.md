@@ -18,13 +18,13 @@ This system decouples event publishing from notification delivery, enabling flex
 
 ## Files
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `index.ts` | 684 | Event bus, trigger engine, types, and singletons |
-| `template-vars.ts` | 577 | Template variable builders for each entity type |
-| `example.ts` | 466 | Comprehensive usage examples |
-| `INTEGRATION_GUIDE.md` | - | Setup, configuration, and best practices |
-| `README.md` | - | This file |
+| File                   | Lines | Purpose                                          |
+| ---------------------- | ----- | ------------------------------------------------ |
+| `index.ts`             | 684   | Event bus, trigger engine, types, and singletons |
+| `template-vars.ts`     | 577   | Template variable builders for each entity type  |
+| `example.ts`           | 466   | Comprehensive usage examples                     |
+| `INTEGRATION_GUIDE.md` | -     | Setup, configuration, and best practices         |
+| `README.md`            | -     | This file                                        |
 
 **Total: 1,727 lines of production code**
 
@@ -126,10 +126,12 @@ const rule = {
 ## Supported Events
 
 ### Order Lifecycle
+
 - `ORDER_CREATED` - New order placed
 - `ORDER_CONFIRMED` - Order confirmed by customer
 
 ### Shipment Lifecycle
+
 - `SHIPMENT_CREATED` - Shipment created
 - `SHIPMENT_LABEL_CREATED` - Shipping label generated
 - `SHIPMENT_PICKED_UP` - Picked up by carrier
@@ -140,14 +142,17 @@ const rule = {
 - `SHIPMENT_RETURNED` - Returned
 
 ### Driver Events
+
 - `DRIVER_ASSIGNED` - Driver assigned
 - `DRIVER_NEAR_DELIVERY` - 500m geofence trigger
 
 ### Delivery Events
+
 - `DELIVERY_ATTEMPTED` - Delivery attempt made
 - `DELIVERY_PROOF_SUBMITTED` - Proof uploaded
 
 ### Payment Events
+
 - `PAYMENT_RECEIVED` - Payment successful
 - `PAYMENT_FAILED` - Payment failed
 
@@ -156,18 +161,23 @@ const rule = {
 Variables automatically extracted from event payload:
 
 ### Order
+
 `order_id`, `order_number`, `customer_name`, `customer_email`, `item_count`, `total`, `currency_symbol`, `status_display`
 
 ### Shipment
+
 `shipment_id`, `tracking_number`, `zone`, `weight_kg`, `dimensions_cm`, `pickup_address`, `delivery_address`, `status_display`, `created_at`
 
 ### Driver
+
 `driver_id`, `driver_name`, `driver_phone`, `vehicle_number`, `vehicle_type_display`, `rating`, `rating_stars`, `deliveries_completed`
 
 ### Payment
+
 `payment_id`, `amount`, `currency_symbol`, `method_display`, `last_four`, `card_brand`, `status_display`, `receipt_url`
 
 **Example Template:**
+
 ```
 Hi {{customer_name}},
 
@@ -187,19 +197,19 @@ Thank you!
 ```typescript
 class EventBus {
   // Register event handler
-  on(event: TriggerEvent, handler: EventHandler): void
+  on(event: TriggerEvent, handler: EventHandler): void;
 
   // Unregister event handler
-  off(event: TriggerEvent, handler: EventHandler): void
+  off(event: TriggerEvent, handler: EventHandler): void;
 
   // Emit event to all handlers (async)
-  async emit(event: TriggerEvent, payload: EventPayload): Promise<void>
+  async emit(event: TriggerEvent, payload: EventPayload): Promise<void>;
 
   // Get handler count (for testing)
-  getHandlerCount(event: TriggerEvent): number
+  getHandlerCount(event: TriggerEvent): number;
 
   // Clear all handlers (for testing)
-  clear(): void
+  clear(): void;
 }
 ```
 
@@ -211,37 +221,28 @@ class NotificationTriggerEngine {
     eventBus: EventBus,
     ruleLoader?: RuleLoader,
     queueHandler?: NotificationQueueHandler,
-  )
+  );
 
   // Load trigger rules for a shop
-  async loadRules(
-    shopId: string,
-    event?: TriggerEvent,
-  ): Promise<TriggerRule[]>
+  async loadRules(shopId: string, event?: TriggerEvent): Promise<TriggerRule[]>;
 
   // Evaluate if rule conditions match payload
-  evaluateConditions(
-    rule: TriggerRule,
-    payload: EventPayload,
-  ): boolean
+  evaluateConditions(rule: TriggerRule, payload: EventPayload): boolean;
 
   // Resolve recipient (email/phone/id)
-  resolveRecipient(
-    rule: TriggerRule,
-    payload: EventPayload,
-  ): string | null
+  resolveRecipient(rule: TriggerRule, payload: EventPayload): string | null;
 
   // Build template variables from payload
   buildTemplateVars(
     event: TriggerEvent,
     payload: EventPayload,
-  ): Record<string, unknown>
+  ): Record<string, unknown>;
 
   // Process event through trigger engine
   async processEvent(
     event: TriggerEvent,
     payload: EventPayload,
-  ): Promise<ProcessResult>
+  ): Promise<ProcessResult>;
 }
 ```
 
@@ -250,48 +251,48 @@ class NotificationTriggerEngine {
 ```typescript
 function buildShipmentVars(
   shipment: Record<string, unknown>,
-): Record<string, unknown>
+): Record<string, unknown>;
 
 function buildOrderVars(
   order: Record<string, unknown>,
-): Record<string, unknown>
+): Record<string, unknown>;
 
 function buildDriverVars(
   driver: Record<string, unknown>,
-): Record<string, unknown>
+): Record<string, unknown>;
 
 function buildPaymentVars(
   payment: Record<string, unknown>,
-): Record<string, unknown>
+): Record<string, unknown>;
 ```
 
 ## Condition Operators
 
 Supported operators for filtering rules:
 
-| Operator | Type | Example |
-|----------|------|---------|
-| `eq` | Equality | `{ field: "zone", operator: "eq", value: "north" }` |
-| `neq` | Not equals | `{ field: "zone", operator: "neq", value: "south" }` |
-| `gt` | Greater than | `{ field: "total", operator: "gt", value: 100 }` |
-| `lt` | Less than | `{ field: "weight", operator: "lt", value: 5 }` |
+| Operator   | Type            | Example                                                       |
+| ---------- | --------------- | ------------------------------------------------------------- |
+| `eq`       | Equality        | `{ field: "zone", operator: "eq", value: "north" }`           |
+| `neq`      | Not equals      | `{ field: "zone", operator: "neq", value: "south" }`          |
+| `gt`       | Greater than    | `{ field: "total", operator: "gt", value: 100 }`              |
+| `lt`       | Less than       | `{ field: "weight", operator: "lt", value: 5 }`               |
 | `contains` | String contains | `{ field: "address", operator: "contains", value: "PO Box" }` |
-| `in` | In array | `{ field: "zone", operator: "in", value: ["z1", "z2"] }` |
+| `in`       | In array        | `{ field: "zone", operator: "in", value: ["z1", "z2"] }`      |
 
 ## Trigger Rule Structure
 
 ```typescript
 interface TriggerRule {
-  id: string;                          // Unique ID
-  shopId: string;                      // Shop/tenant owner
-  event: TriggerEvent;                 // Event type (required)
-  templateId: string;                  // Notification template
+  id: string; // Unique ID
+  shopId: string; // Shop/tenant owner
+  event: TriggerEvent; // Event type (required)
+  templateId: string; // Notification template
   channel: "EMAIL" | "SMS" | "WHATSAPP" | "PUSH";
   recipientType: "customer" | "driver" | "admin" | "custom";
-  customRecipient?: string;            // For custom recipients
-  conditions?: TriggerCondition[];      // Optional filters
-  delay?: number;                      // Seconds before sending
-  isActive: boolean;                   // Enable/disable
+  customRecipient?: string; // For custom recipients
+  conditions?: TriggerCondition[]; // Optional filters
+  delay?: number; // Seconds before sending
+  isActive: boolean; // Enable/disable
 }
 ```
 
@@ -306,7 +307,7 @@ console.log(`Matched Rules: ${result.matchedRuleCount}`);
 console.log(`Queued Notifications: ${result.queuedCount}`);
 console.log(`Errors: ${result.errors.length}`);
 
-result.errors.forEach(err => {
+result.errors.forEach((err) => {
   console.error(`Rule ${err.ruleId}:`, err.error);
 });
 ```
@@ -322,6 +323,7 @@ result.errors.forEach(err => {
 ## Testing
 
 Run type checking:
+
 ```bash
 cd packages/core
 npx tsc --noEmit src/events/*.ts
@@ -352,6 +354,7 @@ See `example.ts` for comprehensive test cases.
 ## Examples
 
 See `example.ts` for:
+
 - Basic setup with mock implementations
 - Shipment delivered event
 - Delivery failed event with delay
@@ -360,6 +363,7 @@ See `example.ts` for:
 - Complete order-to-delivery flow
 
 Run examples:
+
 ```bash
 # (See example.ts for uncomment line at bottom)
 ```
@@ -367,6 +371,7 @@ Run examples:
 ## Contributing
 
 When adding new events:
+
 1. Add to `TriggerEvent` enum in `index.ts`
 2. Add fields to event payload examples
 3. Add template variable builder if needed
@@ -379,6 +384,7 @@ Licensed as part of the Witylogix platform.
 ## Support
 
 For questions or issues:
+
 1. Check the INTEGRATION_GUIDE.md
 2. Review example.ts
 3. Check type definitions in index.ts

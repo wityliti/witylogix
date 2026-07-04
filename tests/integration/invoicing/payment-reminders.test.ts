@@ -38,7 +38,10 @@ interface AgingBucket {
 
 class PaymentReminderService {
   private reminders = new Map<string, ReminderSchedule>();
-  private sentReminders = new Map<string, Array<{ sentAt: Date; level: string }>>();
+  private sentReminders = new Map<
+    string,
+    Array<{ sentAt: Date; level: string }>
+  >();
 
   // ─ Reminder Scheduling ──────────────────────────────────────────────────
 
@@ -56,19 +59,25 @@ class PaymentReminderService {
         },
         {
           dueDate: invoice.dueDate,
-          reminderDate: new Date(invoice.dueDate.getTime() + 5 * 24 * 60 * 60 * 1000),
+          reminderDate: new Date(
+            invoice.dueDate.getTime() + 5 * 24 * 60 * 60 * 1000,
+          ),
           level: "second",
           status: "scheduled",
         },
         {
           dueDate: invoice.dueDate,
-          reminderDate: new Date(invoice.dueDate.getTime() + 15 * 24 * 60 * 60 * 1000),
+          reminderDate: new Date(
+            invoice.dueDate.getTime() + 15 * 24 * 60 * 60 * 1000,
+          ),
           level: "third",
           status: "scheduled",
         },
         {
           dueDate: invoice.dueDate,
-          reminderDate: new Date(invoice.dueDate.getTime() + 30 * 24 * 60 * 60 * 1000),
+          reminderDate: new Date(
+            invoice.dueDate.getTime() + 30 * 24 * 60 * 60 * 1000,
+          ),
           level: "final",
           status: "scheduled",
         },
@@ -81,7 +90,10 @@ class PaymentReminderService {
 
   // ─ Send Reminders ──────────────────────────────────────────────────────
 
-  sendReminder(invoiceId: string, level: "first" | "second" | "third" | "final"): {
+  sendReminder(
+    invoiceId: string,
+    level: "first" | "second" | "third" | "final",
+  ): {
     sent: boolean;
     reminderLevel: string;
     sentAt: Date;
@@ -112,7 +124,9 @@ class PaymentReminderService {
 
   // ─ Escalation Rules ────────────────────────────────────────────────────
 
-  determineEscalationLevel(daysOverdue: number): "first" | "second" | "third" | "final" {
+  determineEscalationLevel(
+    daysOverdue: number,
+  ): "first" | "second" | "third" | "final" {
     if (daysOverdue <= 0) return "first";
     if (daysOverdue <= 5) return "second";
     if (daysOverdue <= 15) return "third";
@@ -136,11 +150,17 @@ class PaymentReminderService {
 
   // ─ Overdue Detection ────────────────────────────────────────────────────
 
-  isInvoiceOverdue(invoice: fixtures.InvoiceData, asOfDate: Date = new Date()): boolean {
+  isInvoiceOverdue(
+    invoice: fixtures.InvoiceData,
+    asOfDate: Date = new Date(),
+  ): boolean {
     return asOfDate.getTime() > invoice.dueDate.getTime();
   }
 
-  calculateDaysOverdue(invoice: fixtures.InvoiceData, asOfDate: Date = new Date()): number {
+  calculateDaysOverdue(
+    invoice: fixtures.InvoiceData,
+    asOfDate: Date = new Date(),
+  ): number {
     if (!this.isInvoiceOverdue(invoice, asOfDate)) return 0;
 
     const milliseconds = asOfDate.getTime() - invoice.dueDate.getTime();
@@ -149,13 +169,46 @@ class PaymentReminderService {
 
   // ─ Aging Bucket Calculation ────────────────────────────────────────────
 
-  calculateAgingBuckets(invoices: fixtures.InvoiceData[], asOfDate: Date = new Date()): AgingBucket[] {
+  calculateAgingBuckets(
+    invoices: fixtures.InvoiceData[],
+    asOfDate: Date = new Date(),
+  ): AgingBucket[] {
     const buckets: AgingBucket[] = [
-      { name: "Current", minDays: -Infinity, maxDays: 0, invoices: [], totalAmount: 0 },
-      { name: "1-30 Days Overdue", minDays: 1, maxDays: 30, invoices: [], totalAmount: 0 },
-      { name: "31-60 Days Overdue", minDays: 31, maxDays: 60, invoices: [], totalAmount: 0 },
-      { name: "61-90 Days Overdue", minDays: 61, maxDays: 90, invoices: [], totalAmount: 0 },
-      { name: "90+ Days Overdue", minDays: 91, maxDays: Infinity, invoices: [], totalAmount: 0 },
+      {
+        name: "Current",
+        minDays: -Infinity,
+        maxDays: 0,
+        invoices: [],
+        totalAmount: 0,
+      },
+      {
+        name: "1-30 Days Overdue",
+        minDays: 1,
+        maxDays: 30,
+        invoices: [],
+        totalAmount: 0,
+      },
+      {
+        name: "31-60 Days Overdue",
+        minDays: 31,
+        maxDays: 60,
+        invoices: [],
+        totalAmount: 0,
+      },
+      {
+        name: "61-90 Days Overdue",
+        minDays: 61,
+        maxDays: 90,
+        invoices: [],
+        totalAmount: 0,
+      },
+      {
+        name: "90+ Days Overdue",
+        minDays: 91,
+        maxDays: Infinity,
+        invoices: [],
+        totalAmount: 0,
+      },
     ];
 
     for (const invoice of invoices) {
@@ -164,7 +217,10 @@ class PaymentReminderService {
       const daysOverdue = this.calculateDaysOverdue(invoice, asOfDate);
 
       for (const bucket of buckets) {
-        if (daysOverdue >= bucket.minDays && daysOverdue <= (bucket.maxDays || Infinity)) {
+        if (
+          daysOverdue >= bucket.minDays &&
+          daysOverdue <= (bucket.maxDays || Infinity)
+        ) {
           bucket.invoices.push({
             invoiceNumber: invoice.invoiceNumber,
             dueDate: invoice.dueDate,
@@ -182,7 +238,10 @@ class PaymentReminderService {
 
   // ─ Check if Reminder Already Sent ──────────────────────────────────────
 
-  hasReminderBeenSent(invoiceId: string, level: "first" | "second" | "third" | "final"): boolean {
+  hasReminderBeenSent(
+    invoiceId: string,
+    level: "first" | "second" | "third" | "final",
+  ): boolean {
     const sent = this.sentReminders.get(invoiceId) || [];
     return sent.some((r) => r.level === level);
   }
@@ -223,7 +282,7 @@ describe("Payment Reminders Integration Tests", () => {
       const secondReminder = schedule.remindersScheduled[1];
 
       expect(firstReminder.reminderDate.getTime()).toBeLessThan(
-        secondReminder.reminderDate.getTime()
+        secondReminder.reminderDate.getTime(),
       );
     });
 
@@ -231,8 +290,12 @@ describe("Payment Reminders Integration Tests", () => {
       const schedule = service.scheduleReminders(mockInvoice);
       const secondReminder = schedule.remindersScheduled[1];
 
-      const expectedDate = new Date(mockInvoice.dueDate.getTime() + 5 * 24 * 60 * 60 * 1000);
-      expect(secondReminder.reminderDate.getTime()).toEqual(expectedDate.getTime());
+      const expectedDate = new Date(
+        mockInvoice.dueDate.getTime() + 5 * 24 * 60 * 60 * 1000,
+      );
+      expect(secondReminder.reminderDate.getTime()).toEqual(
+        expectedDate.getTime(),
+      );
     });
 
     it("should initialize reminders as scheduled", () => {
@@ -382,7 +445,9 @@ describe("Payment Reminders Integration Tests", () => {
       });
 
       const buckets = service.calculateAgingBuckets([invoice]);
-      const overdue31to60 = buckets.find((b) => b.name === "31-60 Days Overdue");
+      const overdue31to60 = buckets.find(
+        (b) => b.name === "31-60 Days Overdue",
+      );
 
       expect(overdue31to60!.invoices).toHaveLength(1);
     });
@@ -393,7 +458,9 @@ describe("Payment Reminders Integration Tests", () => {
       });
 
       const buckets = service.calculateAgingBuckets([invoice]);
-      const overdue61to90 = buckets.find((b) => b.name === "61-90 Days Overdue");
+      const overdue61to90 = buckets.find(
+        (b) => b.name === "61-90 Days Overdue",
+      );
 
       expect(overdue61to90!.invoices).toHaveLength(1);
     });
@@ -434,7 +501,10 @@ describe("Payment Reminders Integration Tests", () => {
       });
 
       const buckets = service.calculateAgingBuckets([paidInvoice]);
-      const totalInvoices = buckets.reduce((sum, b) => sum + b.invoices.length, 0);
+      const totalInvoices = buckets.reduce(
+        (sum, b) => sum + b.invoices.length,
+        0,
+      );
 
       expect(totalInvoices).toBe(0);
     });
@@ -446,7 +516,10 @@ describe("Payment Reminders Integration Tests", () => {
       });
 
       const buckets = service.calculateAgingBuckets([voidedInvoice]);
-      const totalInvoices = buckets.reduce((sum, b) => sum + b.invoices.length, 0);
+      const totalInvoices = buckets.reduce(
+        (sum, b) => sum + b.invoices.length,
+        0,
+      );
 
       expect(totalInvoices).toBe(0);
     });
@@ -469,7 +542,7 @@ describe("Payment Reminders Integration Tests", () => {
 
     it("should handle invoice with no scheduled reminders", () => {
       expect(() => service.sendReminder(mockInvoice.id, "first")).toThrow(
-        "No reminders scheduled"
+        "No reminders scheduled",
       );
     });
 

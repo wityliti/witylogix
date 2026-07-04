@@ -177,7 +177,7 @@ describe("Authentication Flow Integration Tests", () => {
       };
 
       const hashedPassword = Buffer.from(
-        `${registerRequest.password}:salt`
+        `${registerRequest.password}:salt`,
       ).toString("base64");
 
       const registerResponse: RegisterResponse = {
@@ -455,13 +455,14 @@ describe("Authentication Flow Integration Tests", () => {
         createdAt: new Date().toISOString(),
       });
 
-      const resetTokenRecord: PasswordResetTokenResponse = await mockPrisma.passwordResetToken.create({
-        data: {
-          userId: userId,
-          token: resetToken,
-          expiresAt: tokenExpiry,
-        },
-      });
+      const resetTokenRecord: PasswordResetTokenResponse =
+        await mockPrisma.passwordResetToken.create({
+          data: {
+            userId: userId,
+            token: resetToken,
+            expiresAt: tokenExpiry,
+          },
+        });
 
       expect(resetTokenRecord.userId).toBe(userId);
       expect(resetTokenRecord.token).toBe(resetToken);
@@ -493,7 +494,7 @@ describe("Authentication Flow Integration Tests", () => {
 
       // Update user password
       const newPasswordHash = Buffer.from(
-        `${confirmRequest.newPassword}:salt`
+        `${confirmRequest.newPassword}:salt`,
       ).toString("base64");
 
       mockPrisma.user.update.mockResolvedValue({
@@ -876,7 +877,9 @@ describe("Authentication Flow Integration Tests", () => {
       mockPrisma.authProvider.findUnique.mockResolvedValue(null);
 
       const existingProvider = await mockPrisma.authProvider.findUnique({
-        where: { type_providerUserId: { type: "AUTH0", providerUserId: auth0Id } },
+        where: {
+          type_providerUserId: { type: "AUTH0", providerUserId: auth0Id },
+        },
       });
 
       expect(existingProvider).toBeNull();

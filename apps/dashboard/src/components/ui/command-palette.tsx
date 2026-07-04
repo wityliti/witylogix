@@ -1,6 +1,13 @@
 "use client";
 
-import { forwardRef, useState, useEffect, useRef, type HTMLAttributes, type ReactNode } from "react";
+import {
+  forwardRef,
+  useState,
+  useEffect,
+  useRef,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -29,7 +36,7 @@ const groupOrder: Record<string, number> = {
 const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
   (
     { commands, open: controlledOpen, onOpenChange, className, ...props },
-    ref
+    ref,
   ) => {
     const [isOpen, setIsOpen] = useState(controlledOpen || false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -70,9 +77,10 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
       }
     };
 
-    const filteredCommands = commands.filter((cmd) =>
-      cmd.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cmd.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredCommands = commands.filter(
+      (cmd) =>
+        cmd.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        cmd.description?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     const groupedCommands = filteredCommands.reduce(
@@ -83,11 +91,11 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
         acc[cmd.group].push(cmd);
         return acc;
       },
-      {} as Record<string, Command[]>
+      {} as Record<string, Command[]>,
     );
 
     const sortedGroups = Object.keys(groupedCommands).sort(
-      (a, b) => (groupOrder[a] ?? 999) - (groupOrder[b] ?? 999)
+      (a, b) => (groupOrder[a] ?? 999) - (groupOrder[b] ?? 999),
     );
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -96,15 +104,11 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setHighlightedIndex((prev) =>
-            prev < totalItems - 1 ? prev + 1 : 0
-          );
+          setHighlightedIndex((prev) => (prev < totalItems - 1 ? prev + 1 : 0));
           break;
         case "ArrowUp":
           e.preventDefault();
-          setHighlightedIndex((prev) =>
-            prev > 0 ? prev - 1 : totalItems - 1
-          );
+          setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : totalItems - 1));
           break;
         case "Enter":
           e.preventDefault();
@@ -138,7 +142,7 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
             "fixed top-0 left-0 right-0 z-50",
             "flex items-start justify-center pt-20",
             "pointer-events-none",
-            isOpen && "pointer-events-auto"
+            isOpen && "pointer-events-auto",
           )}
         >
           <div
@@ -150,7 +154,7 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
               "transition-all duration-200 ease-out",
               isOpen
                 ? "opacity-100 scale-100"
-                : "opacity-0 scale-95 pointer-events-none"
+                : "opacity-0 scale-95 pointer-events-none",
             )}
             {...props}
           >
@@ -170,7 +174,7 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
                 className={cn(
                   "flex-1 bg-transparent text-wl-text-primary",
                   "outline-none text-base font-sans",
-                  "placeholder:text-wl-text-tertiary"
+                  "placeholder:text-wl-text-tertiary",
                 )}
               />
               <Button
@@ -203,14 +207,16 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
                               cmd.action();
                               toggleOpen();
                             }}
-                            onMouseEnter={() => setHighlightedIndex(globalIndex)}
+                            onMouseEnter={() =>
+                              setHighlightedIndex(globalIndex)
+                            }
                             className={cn(
                               "w-full px-4 py-3 text-left",
                               "flex items-center justify-between gap-4",
                               "transition-colors duration-fast ease-default",
                               isHighlighted
                                 ? "bg-wl-primary-500/20"
-                                : "hover:bg-wl-bg-overlay"
+                                : "hover:bg-wl-bg-overlay",
                             )}
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -257,7 +263,7 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
         </div>
       </>
     );
-  }
+  },
 );
 
 CommandPalette.displayName = "CommandPalette";

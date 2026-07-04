@@ -69,7 +69,10 @@ export class PandaDocClient extends ESignatureAdapter {
       throw new Error("PandaDoc: apiKey or clientId is required");
     }
 
-    this.baseUrl = (config.apiUrl || "https://api.pandadoc.com").replace(/\/$/, "");
+    this.baseUrl = (config.apiUrl || "https://api.pandadoc.com").replace(
+      /\/$/,
+      "",
+    );
 
     if (config.apiKey) {
       this.apiKey = config.apiKey;
@@ -122,8 +125,14 @@ export class PandaDocClient extends ESignatureAdapter {
    * Refresh OAuth2 token.
    */
   async refreshToken(): Promise<void> {
-    if (!this.config?.clientId || !this.config?.clientSecret || !this.config?.refreshToken) {
-      throw new Error("PandaDoc: OAuth2 requires clientId, clientSecret, and refreshToken");
+    if (
+      !this.config?.clientId ||
+      !this.config?.clientSecret ||
+      !this.config?.refreshToken
+    ) {
+      throw new Error(
+        "PandaDoc: OAuth2 requires clientId, clientSecret, and refreshToken",
+      );
     }
 
     const response = await fetch("https://api.pandadoc.com/oauth2/token", {
@@ -139,7 +148,10 @@ export class PandaDocClient extends ESignatureAdapter {
       }).toString(),
     });
 
-    const data = (await response.json()) as { access_token: string; expires_in: number };
+    const data = (await response.json()) as {
+      access_token: string;
+      expires_in: number;
+    };
     this.setAccessToken(data.access_token, data.expires_in);
   }
 
@@ -182,7 +194,9 @@ export class PandaDocClient extends ESignatureAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to create document: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to create document: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { uuid: string };
@@ -203,16 +217,21 @@ export class PandaDocClient extends ESignatureAdapter {
       const headers = this.getAuthHeaders();
       headers["Content-Type"] = "application/json";
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}/send`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          message: "Please sign this document",
-        }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}/send`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            message: "Please sign this document",
+          }),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to send document: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to send document: ${response.statusText}`,
+        );
       }
 
       return {
@@ -231,13 +250,18 @@ export class PandaDocClient extends ESignatureAdapter {
       const headers = this.getAuthHeaders();
       headers["Content-Type"] = "application/json";
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}`, {
-        method: "DELETE",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}`,
+        {
+          method: "DELETE",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to void document: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to void document: ${response.statusText}`,
+        );
       }
     });
   }
@@ -249,13 +273,18 @@ export class PandaDocClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to get document: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to get document: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -273,20 +302,22 @@ export class PandaDocClient extends ESignatureAdapter {
         id: data.uuid,
         name: data.name || "Document",
         status: statusMap[data.status] || "created",
-        documents: data.documents?.map((doc: any, i: number) => ({
-          id: doc.uuid,
-          name: doc.name,
-          fileName: doc.name,
-          content: "",
-          order: i + 1,
-          mimeType: "application/pdf",
-        })) || [],
-        signers: data.recipients?.map((r: any) => ({
-          email: r.email,
-          name: `${r.first_name || ""} ${r.last_name || ""}`.trim(),
-          order: r.signing_order || 1,
-          requiresSequentialSigning: true,
-        })) || [],
+        documents:
+          data.documents?.map((doc: any, i: number) => ({
+            id: doc.uuid,
+            name: doc.name,
+            fileName: doc.name,
+            content: "",
+            order: i + 1,
+            mimeType: "application/pdf",
+          })) || [],
+        signers:
+          data.recipients?.map((r: any) => ({
+            email: r.email,
+            name: `${r.first_name || ""} ${r.last_name || ""}`.trim(),
+            order: r.signing_order || 1,
+            requiresSequentialSigning: true,
+          })) || [],
         fields: [],
         createdAt: new Date(data.created_at),
         subject: data.name,
@@ -304,13 +335,18 @@ export class PandaDocClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}/details`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}/details`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to get document status: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to get document status: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -331,14 +367,19 @@ export class PandaDocClient extends ESignatureAdapter {
         declinedAt: r.declined_at ? new Date(r.declined_at) : undefined,
       }));
 
-      const completedSigners = signerStatuses.filter((s: { status: EnvelopeStatus }) => s.status === "completed").length;
+      const completedSigners = signerStatuses.filter(
+        (s: { status: EnvelopeStatus }) => s.status === "completed",
+      ).length;
       const totalSigners = signerStatuses.length;
 
       return {
         envelopeId,
         status: statusMap[data.status] || "created",
         signerStatuses,
-        completionPercentage: totalSigners > 0 ? Math.round((completedSigners / totalSigners) * 100) : 0,
+        completionPercentage:
+          totalSigners > 0
+            ? Math.round((completedSigners / totalSigners) * 100)
+            : 0,
         lastUpdated: new Date(),
       };
     });
@@ -374,7 +415,9 @@ export class PandaDocClient extends ESignatureAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to list documents: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to list documents: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -408,21 +451,29 @@ export class PandaDocClient extends ESignatureAdapter {
   /**
    * Resend document.
    */
-  async resendEnvelope(envelopeId: string, signerEmails?: string[]): Promise<void> {
+  async resendEnvelope(
+    envelopeId: string,
+    signerEmails?: string[],
+  ): Promise<void> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
       headers["Content-Type"] = "application/json";
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}/send_reminder`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          recipients: signerEmails || [],
-        }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}/send_reminder`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            recipients: signerEmails || [],
+          }),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to resend document: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to resend document: ${response.statusText}`,
+        );
       }
     });
   }
@@ -450,7 +501,9 @@ export class PandaDocClient extends ESignatureAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to list templates: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to list templates: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -478,13 +531,18 @@ export class PandaDocClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v1/templates/${templateId}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/templates/${templateId}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to get template: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to get template: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -505,19 +563,20 @@ export class PandaDocClient extends ESignatureAdapter {
    */
   async createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<Envelope>
+    envelope: Partial<Envelope>,
   ): Promise<EnvelopeResult> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
       headers["Content-Type"] = "application/json";
 
-      const recipients = envelope.signers?.map((signer) => ({
-        email: signer.email,
-        first_name: signer.name.split(" ")[0],
-        last_name: signer.name.split(" ").slice(1).join(" "),
-        role: "Signer",
-        signing_order: signer.order,
-      })) || [];
+      const recipients =
+        envelope.signers?.map((signer) => ({
+          email: signer.email,
+          first_name: signer.name.split(" ")[0],
+          last_name: signer.name.split(" ").slice(1).join(" "),
+          role: "Signer",
+          signing_order: signer.order,
+        })) || [];
 
       const request = {
         template_uuid: templateId,
@@ -535,7 +594,9 @@ export class PandaDocClient extends ESignatureAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to create document from template: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to create document from template: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { uuid: string };
@@ -551,7 +612,10 @@ export class PandaDocClient extends ESignatureAdapter {
   /**
    * Download document.
    */
-  async downloadDocument(envelopeId: string, documentId: string): Promise<DocumentDownloadResult> {
+  async downloadDocument(
+    envelopeId: string,
+    documentId: string,
+  ): Promise<DocumentDownloadResult> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
@@ -560,11 +624,13 @@ export class PandaDocClient extends ESignatureAdapter {
         {
           method: "GET",
           headers,
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to download document: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to download document: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -585,18 +651,23 @@ export class PandaDocClient extends ESignatureAdapter {
    * Download all documents.
    */
   async downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}/download`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}/download`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to download documents: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to download documents: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -616,23 +687,28 @@ export class PandaDocClient extends ESignatureAdapter {
   async getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
       headers["Content-Type"] = "application/json";
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}/shared_link`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          recipient_email: signerEmail,
-          expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-        }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}/shared_link`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            recipient_email: signerEmail,
+            expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+          }),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to get signing URL: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to get signing URL: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { url: string };
@@ -647,7 +723,10 @@ export class PandaDocClient extends ESignatureAdapter {
   /**
    * Mark document as viewed.
    */
-  async markDocumentViewed(envelopeId: string, signerEmail: string): Promise<void> {
+  async markDocumentViewed(
+    envelopeId: string,
+    signerEmail: string,
+  ): Promise<void> {
     // PandaDoc tracks viewing automatically
   }
 
@@ -658,13 +737,18 @@ export class PandaDocClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v1/documents/${envelopeId}/details`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v1/documents/${envelopeId}/details`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`PandaDoc: Failed to get events: ${response.statusText}`);
+        throw new Error(
+          `PandaDoc: Failed to get events: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -708,9 +792,12 @@ export class PandaDocClient extends ESignatureAdapter {
    */
   async parseWebhookEvent(
     payload: Record<string, unknown>,
-    headers: Record<string, string>
+    headers: Record<string, string>,
   ): Promise<ESignatureWebhookEvent> {
-    const isValid = this.verifyWebhookSignature(JSON.stringify(payload), headers["x-signature"] || "");
+    const isValid = this.verifyWebhookSignature(
+      JSON.stringify(payload),
+      headers["x-signature"] || "",
+    );
 
     const envelopeId = (payload as any).document?.uuid || "";
     const eventType = (payload as any).event_type || "unknown";
@@ -727,7 +814,7 @@ export class PandaDocClient extends ESignatureAdapter {
       id: `${envelopeId}_${Date.now()}`,
       envelopeId,
       type: "status_changed" as const,
-      previousStatus: ("created" as EnvelopeStatus),
+      previousStatus: "created" as EnvelopeStatus,
       newStatus: statusMap[eventType] || ("created" as EnvelopeStatus),
       timestamp: new Date(),
     };
@@ -769,7 +856,9 @@ export class PandaDocClient extends ESignatureAdapter {
       const verified = await this.verifyCredentials();
       return {
         healthy: verified,
-        message: verified ? "PandaDoc connection is healthy" : "Failed to verify credentials",
+        message: verified
+          ? "PandaDoc connection is healthy"
+          : "Failed to verify credentials",
       };
     } catch (error) {
       return {
