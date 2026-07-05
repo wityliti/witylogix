@@ -56,10 +56,17 @@ interface Campaign {
   name: string;
   type: CampaignType;
   status: CampaignStatus;
-  created_at: string;
+  createdAt: string;
+  created_at?: string;
+  startedAt?: string;
   sent_at?: string;
   completed_at?: string;
-  stats: {
+  sentCount: number;
+  deliveredCount: number;
+  openedCount: number;
+  clickedCount: number;
+  failedCount: number;
+  stats?: {
     delivered: number;
     opened: number;
     clicked: number;

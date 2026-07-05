@@ -62,9 +62,6 @@ export default function ActivityPage() {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const uniqueUsers = useMemo(() => {
     const seen = new Set<string>();
     const users: { id: string; name: string }[] = [];
@@ -77,21 +74,12 @@ export default function ActivityPage() {
     return users;
   }, [apiEvents]);
 
-  useEffect(() => {
-    if (apiEvents.length > 0) setEvents(apiEvents);
-  }, [apiEvents]);
-
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
     if (!isLiveMode) return;
     const interval = setInterval(() => { refetch(); }, 30000);
     return () => clearInterval(interval);
   }, [isLiveMode, refetch]);
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const displayedEvents = filteredEvents();
 
   // Debounced search
   const handleSearchChange = (value: string) => {
@@ -167,7 +155,20 @@ export default function ActivityPage() {
     }
   };
 
-  if (loading && events.length === 0) return <LoadingSkeleton />;
+  const filteredEvents = (): ActivityEvent[] => {
+    return apiEvents.filter((event: ActivityEvent) => {
+      if (filters.types.length > 0 && !filters.types.includes(event.type)) return false;
+      if (filters.severities.length > 0 && !filters.severities.includes(event.severity)) return false;
+      if (filters.userId && event.user?.id !== filters.userId) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (!event.title.toLowerCase().includes(q) && !event.description.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  };
+
+  if (loading && apiEvents.length === 0) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const displayedEvents = filteredEvents();

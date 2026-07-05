@@ -45,6 +45,10 @@ interface ReturnItem {
   status: 'pending-approval' | 'approved' | 'restocked';
   submittedDate: string;
   customerName: string;
+  order?: {
+    externalOrderNumber?: string;
+    customerName?: string;
+  };
 }
 
 
@@ -54,9 +58,9 @@ const STATUS_OPTIONS = ['All', 'Received', 'Picked', 'Packed', 'Shipped', 'Deliv
 export default function OrdersPage() {
   const orders = useOrders();
   const fulfillment = useFulfillment();
-  const { items: wavePlans } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
-  const { items: batchPicking } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
-  const { items: returnQueue } = useApiList<RawReturn>('/api/v4/returns');
+  const { items: wavePlans, loading: wavesLoading, error: wavesError } = useApiList<WavePlan>('/api/v4/supply-chain/waves');
+  const { items: batchPicking, loading: batchesLoading, error: batchesError } = useApiList<BatchPickingTask>('/api/v4/supply-chain/batches');
+  const { items: returnQueue, loading: returnsLoading, error: returnsError, refetch: refetchReturns } = useApiList<ReturnItem>('/api/v4/returns');
   const { items: warehouseItems } = useApiList<{ name: string }>('/api/v4/supply-chain/warehouses');
   const [returnsActionLoading, setReturnsActionLoading] = useState<string | null>(null);
 
