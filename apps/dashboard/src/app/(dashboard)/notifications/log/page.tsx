@@ -10,6 +10,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   TableHeader,
@@ -294,7 +295,7 @@ export default function NotificationLogPage() {
                 <Input
                   type="date"
                   value={filterDateFrom}
-                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDateFrom(e.target.value)}
                   className="bg-wl-bg-surface border-wl-border-default text-wl-text-primary"
                 />
               </div>
@@ -303,7 +304,7 @@ export default function NotificationLogPage() {
                 <Input
                   type="date"
                   value={filterDateTo}
-                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterDateTo(e.target.value)}
                   className="bg-wl-bg-surface border-wl-border-default text-wl-text-primary"
                 />
               </div>

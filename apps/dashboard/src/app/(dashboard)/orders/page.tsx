@@ -127,27 +127,6 @@ export default function OrdersPage() {
     return result;
   }, [orders, statusFilter, dateRange]);
 
-    if (statusFilter !== 'all') {
-      result = result.filter(
-        (o) => o.status.toLowerCase() === statusFilter.toLowerCase()
-      );
-    }
-
-    if (dateRange?.from || dateRange?.to) {
-      const fromDate = dateRange?.from ? new Date(dateRange.from) : null;
-      const toDate = dateRange?.to ? new Date(dateRange.to) : null;
-
-      result = result.filter((o) => {
-        const createdDate = new Date(o.createdAt);
-        if (fromDate && createdDate < fromDate) return false;
-        if (toDate && createdDate > toDate) return false;
-        return true;
-      });
-    }
-
-    return result;
-  }, [statusFilter, orders, dateRange]);
-
   // Pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIdx = (currentPage - 1) * itemsPerPage;
@@ -312,13 +291,13 @@ export default function OrdersPage() {
               <input
                 type="date"
                 value={dateRange?.from ?? ''}
-                onChange={(e) => { setDateRange((p) => ({ ...p, from: e.target.value })); setCurrentPage(1); }}
+                onChange={(e) => { setDateRange((p) => ({ from: e.target.value, to: p?.to ?? '' })); setCurrentPage(1); }}
                 className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
               <input
                 type="date"
                 value={dateRange?.to ?? ''}
-                onChange={(e) => { setDateRange((p) => ({ ...p, to: e.target.value })); setCurrentPage(1); }}
+                onChange={(e) => { setDateRange((p) => ({ from: p?.from ?? '', to: e.target.value })); setCurrentPage(1); }}
                 className="px-3 py-2 rounded-lg text-sm bg-zinc-800/50 border border-zinc-700 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
               />
             </div>
@@ -452,30 +431,30 @@ export default function OrdersPage() {
                             onClick={(e) => e.stopPropagation()}
                             className="font-mono font-semibold text-sm text-amber-400 hover:text-amber-300 transition-colors"
                           >
-                            #{order.orderNumber ?? order.id.slice(0, 8)}
+                            #{order.id.slice(0, 8)}
                           </Link>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', avatarColor(order.customerName))}>
-                              {avatarInitials(order.customerName)}
+                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', getAvatarBgColor(order.customerName))}>
+                              {getAvatarInitials(order.customerName)}
                             </div>
                             <span className="text-zinc-100 font-medium text-sm">{order.customerName}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-zinc-300 text-sm" title={`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`}>
-                            {truncate(`${order.deliveryAddress.street}, ${order.city || order.deliveryAddress.city}`, 38)}
+                            {truncateAddress(`${order.deliveryAddress.street}, ${order.deliveryAddress.city}`, 38)}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <Badge variant={statusVariant(order.status)} className="text-xs font-semibold">
+                          <Badge variant={getStatusVariant(order.status)} className="text-xs font-semibold">
                             {order.status.replace(/_/g, ' ')}
                           </Badge>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
-                            {order.itemCount || order.items.length}
+                            {order.items.length}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -515,7 +494,7 @@ export default function OrdersPage() {
               Showing{' '}
               <span className="font-semibold text-wl-text-primary">{startIdx + 1}</span> to{' '}
               <span className="font-semibold text-wl-text-primary">
-                {Math.min(endIdx, filtered.length)}
+                {Math.min(startIdx + itemsPerPage, filtered.length)}
               </span>{' '}
               of <span className="font-semibold text-wl-text-primary">{filtered.length}</span> orders
             </div>

@@ -128,6 +128,8 @@ export default function TrackingPage() {
     [orders],
   );
 
+  const [view, setView] = useState<"list" | "map">("list");
+
   const onlineDriversCount = useMemo(
     () => drivers.filter((d) => d.status !== "OFFLINE").length,
     [drivers],

@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { useApiQuery } from "@/hooks/use-api";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
