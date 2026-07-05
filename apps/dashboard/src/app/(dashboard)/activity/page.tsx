@@ -62,9 +62,6 @@ export default function ActivityPage() {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const uniqueUsers = useMemo(() => {
     const seen = new Set<string>();
     const users: { id: string; name: string }[] = [];
@@ -77,9 +74,20 @@ export default function ActivityPage() {
     return users;
   }, [apiEvents]);
 
-  useEffect(() => {
-    if (apiEvents.length > 0) setEvents(apiEvents);
-  }, [apiEvents]);
+  const displayedEvents = useMemo(() => {
+    return apiEvents.filter((e) => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (!e.title.toLowerCase().includes(q) && !e.description.toLowerCase().includes(q)) return false;
+      }
+      if (filters.types.length > 0 && !filters.types.includes(e.type)) return false;
+      if (filters.severities.length > 0 && !filters.severities.includes(e.severity)) return false;
+      if (filters.startDate && new Date(e.timestamp) < filters.startDate) return false;
+      if (filters.endDate && new Date(e.timestamp) > filters.endDate) return false;
+      if (filters.userId && e.user?.id !== filters.userId) return false;
+      return true;
+    });
+  }, [apiEvents, searchQuery, filters]);
 
   // Live mode: poll the real API every 30 seconds
   useEffect(() => {
@@ -90,8 +98,6 @@ export default function ActivityPage() {
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const displayedEvents = filteredEvents();
 
   // Debounced search
   const handleSearchChange = (value: string) => {
@@ -167,10 +173,6 @@ export default function ActivityPage() {
     }
   };
 
-  if (loading && events.length === 0) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const displayedEvents = filteredEvents();
   const selectedEvent = selectedEventId ? displayedEvents.find((e) => e.id === selectedEventId) : null;
 
   return (

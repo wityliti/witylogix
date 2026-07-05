@@ -31,7 +31,7 @@ const recordTypeVariants: Record<string, 'success' | 'info' | 'warning' | 'dange
 };
 
 export default function RecordsPage() {
-  const { items: apiRecords, loading, error, refetch } = useApiList<HealthRecord>('/api/v4/orders?type=healthcare&view=records');
+  const { items: records, loading, error, refetch } = useApiList<HealthRecord>('/api/v4/orders?type=healthcare&view=records');
   const [recordTypeFilter, setRecordTypeFilter] = useState<string>('ALL');
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
 

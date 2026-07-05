@@ -97,6 +97,7 @@ const getOrderStatusVariant = (
 };
 
 export default function TrackingPage() {
+  const [view, setView] = useState<"list" | "map">("list");
   const {
     items: drivers,
     loading: driversLoading,

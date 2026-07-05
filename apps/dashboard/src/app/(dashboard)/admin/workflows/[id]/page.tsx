@@ -24,6 +24,12 @@ import {
 import { useApiQuery } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 
+const formatDuration = (ms: number): string => {
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`;
+};
+
 interface WorkflowStep {
   id: string;
   number: number;
@@ -276,7 +282,7 @@ export default function WorkflowExecutionDetailPage() {
           <StatCard label="Total Steps" value={steps.length} index={0} />
           <StatCard label="Completed" value={completedSteps} accentColor="var(--wl-success-500)" index={1} />
           <StatCard label="Failed" value={failedSteps} accentColor="var(--wl-danger-500)" index={2} />
-          <StatCard label="Duration" value={formatDuration(execution.durationMs)} index={3} />
+          <StatCard label="Duration" value={formatDuration(execution.durationMs ?? 0)} index={3} />
         </div>
 
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
