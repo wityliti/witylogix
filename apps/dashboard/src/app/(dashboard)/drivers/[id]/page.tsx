@@ -20,7 +20,7 @@ import {
   RefreshCw,
   Truck,
   Phone,
-  Truck,
+  MapPin,
   Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -108,7 +108,7 @@ interface DriverProfile {
   lastLocationAt: string | null;
   heading: number | null;
   createdAt: string;
-  orders?: { id: string }[];
+  orders?: ActiveOrderPin[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -226,7 +226,7 @@ export default function DriverDetailPage() {
   const driverId = params.id as string;
   const [activeTab, setActiveTab] = useState<Tab>('score');
 
-  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreData>(
+  const { data: scoreData, loading: scoreLoading, error: scoreError, refetch } = useApiQuery<DriverScoreResponse>(
     `/api/v4/driver-scoring/${driverId}`,
   );
 
@@ -239,6 +239,7 @@ export default function DriverDetailPage() {
   );
 
   const history = historyData ?? [];
+  const profile = profileData ?? null;
 
   const currentLat = useMemo(
     () => profile?.currentLocation?.latitude ?? null,
@@ -255,10 +256,10 @@ export default function DriverDetailPage() {
         driverName: profile.name,
         driverStatus: profile.status,
         vehicleType: profile.vehicleType,
-        activeDeliveries: profile.orders.length,
+        activeDeliveries: profile.orders?.length ?? 0,
         currentLat,
         currentLng,
-        activeOrders: profile.orders,
+        activeOrders: profile.orders ?? [],
       }
     : null;
 
@@ -294,12 +295,14 @@ export default function DriverDetailPage() {
     );
   }
 
-  const tier = TIER_STYLE[scoreData.tier] ?? TIER_STYLE.bronze;
-  const scoreDelta = scoreData.previousScore != null
-    ? scoreData.compositeScore - scoreData.previousScore
+  const { score, driver, metrics } = scoreData;
+  const tier = TIER_STYLE[score.tier] ?? TIER_STYLE.bronze;
+  const scoreDelta = score.previousScore != null
+    ? score.compositeScore - score.previousScore
     : null;
-  const avgRating = scoreData.metrics.avgCustomerRating ? parseFloat(scoreData.metrics.avgCustomerRating) : null;
-  const podPct = scoreData.metrics.podCompliancePercent ? parseFloat(scoreData.metrics.podCompliancePercent) : null;
+  const avgRating = metrics.customerRatingCount > 0 ? metrics.customerRatingSum / metrics.customerRatingCount : null;
+  const podTotal = metrics.podComplianceCount + metrics.podMissedCount;
+  const podPct = podTotal > 0 ? (metrics.podComplianceCount / podTotal) * 100 : null;
 
   return (
     <div className="min-h-screen">
@@ -321,7 +324,7 @@ export default function DriverDetailPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-2xl font-bold text-white/90 tracking-tight">
-                  {scoreData.driverName}
+                  {driver.name}
                 </h1>
                 <span className={cn('text-xs font-medium px-2 py-1 rounded border capitalize', tier.bg, tier.text, tier.border)}>
                   {tier.label}
@@ -355,10 +358,10 @@ export default function DriverDetailPage() {
                     {profile.vehiclePlate}
                   </span>
                 )}
-                {profile && profile.orders.length > 0 && (
+                {profile && profile.orders && profile.orders.length > 0 && (
                   <span className="inline-flex items-center gap-1 text-xs text-amber-400/70">
                     <Package className="w-3 h-3" />
-                    {profile.orders.length} active order{profile.orders.length !== 1 ? 's' : ''}
+                    {profile.orders?.length ?? 0} active order{(profile.orders?.length ?? 0) !== 1 ? 's' : ''}
                   </span>
                 )}
                 {currentLat != null && (
@@ -407,7 +410,7 @@ export default function DriverDetailPage() {
           <div className="space-y-4">
             {/* Score dial */}
             <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 flex flex-col items-center">
-              <ScoreArc score={scoreData.compositeScore} />
+              <ScoreArc score={score.compositeScore} />
               <p className="text-xs text-white/30 mt-1">Composite Score</p>
               {scoreDelta !== null && (
                 <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
@@ -419,18 +422,7 @@ export default function DriverDetailPage() {
               )}
             </div>
 
-                {/* Trend */}
-                {scoreDelta !== null && (
-                  <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
-                    scoreDelta > 0 ? 'text-emerald-400' : scoreDelta < 0 ? 'text-red-400' : 'text-white/30'
-                  )}>
-                    {scoreDelta > 0 ? <TrendingUp className="w-4 h-4" /> : scoreDelta < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                    {scoreDelta > 0 ? '+' : ''}{scoreDelta.toFixed(1)} vs last period
-                  </div>
-                )}
-              </div>
-
-              {/* Score breakdown */}
+            {/* Score breakdown */}
               <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
                 <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">Score Breakdown</h3>
                 <BreakdownRow label="On-Time Delivery"    value={score.breakdown.onTimeScore}          icon={Clock}       accent="var(--wl-success-400)" />
@@ -446,9 +438,9 @@ export default function DriverDetailPage() {
               {/* KPI row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Avg Delivery Time', value: `${scoreData.metrics.avgDeliveryMinutes} min` },
-                  { label: 'Late Deliveries',   value: scoreData.metrics.lateCount.toString() },
-                  { label: 'Incidents',          value: scoreData.metrics.incidentCount.toString() },
+                  { label: 'Avg Delivery Time', value: `${metrics.avgDeliveryMinutes} min` },
+                  { label: 'Late Deliveries',   value: metrics.lateCount.toString() },
+                  { label: 'Incidents',          value: metrics.incidentCount.toString() },
                   { label: 'Active Orders',      value: profileData?.orders?.length?.toString() ?? '—' },
                   { label: 'Vehicle',            value: profileData?.vehicleType ?? '—' },
                   { label: 'Member Since',       value: profileData?.createdAt
@@ -498,14 +490,14 @@ export default function DriverDetailPage() {
               </div>
 
               {/* Active orders list (if any) */}
-              {profile && profile.orders.length > 0 && (
+              {profile && profile.orders && profile.orders.length > 0 && (
                 <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-white/60 tracking-wide">Active Orders</h3>
-                    <span className="text-[11px] text-white/20 font-mono">{profile.orders.length} total</span>
+                    <span className="text-[11px] text-white/20 font-mono">{profile.orders?.length ?? 0} total</span>
                   </div>
                   <div className="space-y-2">
-                    {profile.orders.map((order) => (
+                    {(profile.orders ?? []).map((order) => (
                       <div key={order.id} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
                         <div className="min-w-0 flex-1">
@@ -558,7 +550,7 @@ export default function DriverDetailPage() {
             )}
 
             {/* Active orders summary below map */}
-            {profile && profile.orders.length > 0 && (
+            {profile && profile.orders && profile.orders.length > 0 && (
               <div className="rounded-xl bg-wl-bg-surface border border-wl-border-default p-4">
                 <p className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-3">
                   Active Deliveries

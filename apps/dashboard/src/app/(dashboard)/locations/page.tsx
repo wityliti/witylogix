@@ -10,18 +10,11 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
-import { LayoutGrid, Map } from "lucide-react";
-import dynamic from "next/dynamic";
 
 const LocationsOverviewMap = dynamic(
   () => import('./components/locations-overview-map').then((m) => m.LocationsOverviewMap),
   { ssr: false },
 );
-const PinLayerDynamic = dynamic(
-  () => import("@/components/map/pin-layer").then((m) => ({ default: m.PinLayer })),
-  { ssr: false }
-);
-import type { Pin } from "@/components/map/pin-layer";
 
 /* ═══════════════════════════════════════════════════════════
    LOCATIONS PAGE — Warehouse & store management with filtering
@@ -82,13 +75,12 @@ const typeLabel = (t: LocationType): string => {
   return map[t];
 };
 
-
 export default function LocationsPage() {
   const { items: locations, loading, error, refetch } = useApiList<Location>('/api/v4/locations');
   const [typeFilter, setTypeFilter] = useState<LocationType | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
   const filtered = useMemo(() => {
     return locations.filter((loc) => {
@@ -128,7 +120,7 @@ export default function LocationsPage() {
         subtitle={`${stats.totalLocations} total · ${stats.activeLocations} active`}
         actions={
           <div className={cn("flex gap-2 items-center")}>
-            <div className={cn("flex rounded-lg border border-[#1e1e2e] overflow-hidden")}>
+            <div className={cn("flex rounded-lg border border-wl-border-default overflow-hidden")}>
               {(["grid", "map"] as const).map((v) => (
                 <button
                   key={v}
@@ -136,7 +128,7 @@ export default function LocationsPage() {
                   aria-pressed={viewMode === v}
                   className={cn(
                     "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
-                    viewMode === v ? "bg-blue-600 text-white" : "bg-[#12121a] text-gray-400 hover:text-white"
+                    viewMode === v ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white"
                   )}
                 >
                   {v}
@@ -161,7 +153,6 @@ export default function LocationsPage() {
 
         {/* Filters Bar */}
         <div className={cn("flex gap-4 mb-5 items-center flex-wrap")}>
-          {/* Search */}
           <div className={cn("flex-1 min-w-72 max-w-sm")}>
             <input
               type="text"
@@ -172,7 +163,6 @@ export default function LocationsPage() {
             />
           </div>
 
-          {/* Type Filter Pills */}
           <div className={cn("flex gap-1 flex-wrap")}>
             {(["ALL", "WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => {
               const count =
@@ -197,223 +187,188 @@ export default function LocationsPage() {
         </div>
 
         {/* MAP VIEW */}
-        {viewMode === "map" && filtered.length > 0 && (
-          <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 400px" : "1fr" }}>
-            <div>
-              {/* Type legend */}
-              <div className={cn("flex gap-4 flex-wrap mb-3")}>
-                {(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => (
-                  <div key={t} className={cn("flex items-center gap-1.5 text-xs text-gray-400")}>
-                    <span className="inline-block w-3 h-3 rounded-full" style={{ background: TYPE_DOT[t] }} />
-                    {typeLabel(t)}
-                  </div>
-                  <Badge variant={typeVariant(selectedLocation.type)} dot>
-                    {typeLabel(selectedLocation.type)}
-                  </Badge>
-                </div>
-                <button
-                  onClick={() => setSelectedLocation(null)}
-                  className={cn("bg-none border-none text-wl-text-secondary cursor-pointer text-lg font-sans")}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <Badge
-                variant={statusVariant(selectedLocation.status)}
-                dot
-                className={cn("mb-4 w-fit")}
-              >
-                {selectedLocation.status}
-              </Badge>
-
-              <div className={cn("flex flex-col gap-4 flex-1")}>
-                {/* Address Info */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>
-                    Address
-                  </div>
-                  <div className={cn("text-sm text-white font-medium")}>
-                    {selectedLocation.addressLine1}
-                  </div>
-                  <div className={cn("text-sm text-wl-neutral-300")}>
-                    {selectedLocation.city}, {selectedLocation.province} {selectedLocation.postalCode}
-                  </div>
-                  <div className={cn("text-xs text-wl-text-secondary mt-1")}>
-                    {selectedLocation.country}
-                  </div>
-                </div>
-
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Contact Info */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>
-                    Contact
-                  </div>
-                  {selectedLocation.phone && (
-                    <div className={cn("text-sm text-wl-neutral-300 mb-1 font-mono")}>
-                      {selectedLocation.phone}
-                    </div>
-                  )}
-                </div>
-              </div>
+        {viewMode === "map" && (
+          filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-96 rounded-xl border border-wl-border-default bg-wl-bg-surface text-wl-text-secondary gap-3">
+              <p className="text-sm">No locations match your filters</p>
             </div>
-            {selectedLocation && (
-              <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
-            )}
-          </div>
+          ) : (
+            <LocationsOverviewMap locations={filtered} />
+          )
         )}
 
         {/* GRID VIEW */}
-        {viewMode === "grid" && filtered.length > 0 && (
-          <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr" }}>
-            <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
-              {filtered.map((location, i) => (
-                <Card
-                  key={location.id}
-                  hover
-                  onClick={() => setSelectedLocation(selectedLocation?.id === location.id ? null : location)}
-                  className={cn("cursor-pointer relative overflow-hidden flex flex-col")}
-                  style={{
-                    animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
-                    opacity: 0,
-                    borderColor: selectedLocation?.id === location.id ? "var(--blue-500)" : undefined,
-                  }}
-                >
-                  {/* Status indicator line */}
-                  <div className={cn("absolute top-0 left-0 right-0 h-0.5",
-                    location.status === "ACTIVE" ? "bg-emerald-500"
-                      : location.status === "MAINTENANCE" ? "bg-amber-500"
-                      : "bg-red-500"
-                  )} />
+        {viewMode === "grid" && (
+          <div
+            className={cn("grid gap-5")}
+            style={{ gridTemplateColumns: selectedLocation ? "1fr 380px" : "1fr" }}
+          >
+            <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 content-start")}>
+              {filtered.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center justify-center h-48 rounded-xl border border-wl-border-default bg-wl-bg-surface text-wl-text-secondary gap-3">
+                  <p className="text-sm">No locations match your filters</p>
+                </div>
+              ) : (
+                filtered.map((location, i) => (
+                  <Card
+                    key={location.id}
+                    hover
+                    onClick={() => setSelectedLocation(selectedLocation?.id === location.id ? null : location)}
+                    className={cn("cursor-pointer relative overflow-hidden flex flex-col gap-3 p-4")}
+                    style={{
+                      animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
+                      opacity: 0,
+                      borderColor: selectedLocation?.id === location.id ? "var(--blue-500)" : undefined,
+                    }}
+                  >
+                    {/* Status indicator strip */}
+                    <div className={cn("absolute top-0 left-0 right-0 h-0.5",
+                      location.status === "ACTIVE" ? "bg-emerald-500"
+                        : location.status === "MAINTENANCE" ? "bg-amber-500"
+                        : "bg-red-500"
+                    )} />
 
-                  <div className={cn("flex justify-between items-start mb-3")}>
-                    <div className={cn("flex-1 min-w-0")}>
-                      <div className={cn("flex gap-2 items-center mb-1")}>
-                        <span className={cn("text-base font-bold text-white")}>{location.name}</span>
-                        {location.isDefault && <span className={cn("text-sm opacity-80 text-blue-400")}>★</span>}
+                    <div className={cn("flex justify-between items-start")}>
+                      <div className={cn("flex-1 min-w-0")}>
+                        <div className={cn("flex gap-2 items-center mb-1.5")}>
+                          <span className={cn("text-base font-bold text-white truncate")}>{location.name}</span>
+                          {location.isDefault && <span className={cn("text-sm text-blue-400")}>★</span>}
+                        </div>
+                        <div className="flex gap-1.5 flex-wrap">
+                          <Badge variant={typeVariant(location.type)} dot>{typeLabel(location.type)}</Badge>
+                          <Badge variant={statusVariant(location.status)} dot>{location.status}</Badge>
+                        </div>
                       </div>
-                      <Badge variant={typeVariant(location.type)} dot>{typeLabel(location.type)}</Badge>
+                    </div>
+
+                    <div className={cn("h-px bg-wl-bg-elevated")} />
+
+                    <div className={cn("text-xs text-wl-text-secondary")}>
+                      <div className={cn("font-medium text-wl-text-primary text-sm mb-0.5")}>{location.addressLine1}</div>
+                      <div>{location.city}, {location.province} {location.postalCode}</div>
+                    </div>
+
+                    <div className={cn("grid grid-cols-3 gap-2 text-center")}>
+                      <div>
+                        <div className={cn("text-lg font-bold font-mono text-blue-400")}>{location.activeShipments}</div>
+                        <div className={cn("text-xs text-wl-text-tertiary")}>Active</div>
+                      </div>
+                      <div>
+                        <div className={cn("text-lg font-bold font-mono text-emerald-500")}>{location.totalProcessed}</div>
+                        <div className={cn("text-xs text-wl-text-tertiary")}>Processed</div>
+                      </div>
+                      <div>
+                        <div className={cn("text-lg font-bold font-mono text-wl-text-secondary")}>{location.avgPrepTime}m</div>
+                        <div className={cn("text-xs text-wl-text-tertiary")}>Prep</div>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+
+            {/* Detail Panel */}
+            {selectedLocation && (
+              <div className={cn("bg-wl-bg-surface border border-wl-border-default rounded-xl p-5 flex flex-col gap-4 h-fit sticky top-4")}>
+                <div className={cn("flex justify-between items-start")}>
+                  <div>
+                    <h3 className={cn("text-base font-bold text-white mb-1")}>{selectedLocation.name}</h3>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Badge variant={typeVariant(selectedLocation.type)} dot>
+                        {typeLabel(selectedLocation.type)}
+                      </Badge>
+                      <Badge variant={statusVariant(selectedLocation.status)} dot>
+                        {selectedLocation.status}
+                      </Badge>
                     </div>
                   </div>
-
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Performance Stats */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
-                    Performance
-                  </div>
-                  <div className={cn("grid grid-cols-2 gap-3")}>
-                    <div>
-                      <div className={cn("text-xs text-wl-text-secondary mb-1")}>Active Shipments</div>
-                      <div className={cn("text-lg font-bold font-mono text-blue-400")}>
-                        {selectedLocation.activeShipments}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className={cn("text-xs text-wl-text-secondary mb-1")}>Total Processed</div>
-                      <div className={cn("text-lg font-bold font-mono text-emerald-500")}>
-                        {selectedLocation.totalProcessed}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className={cn("text-xs text-wl-text-secondary mb-1")}>Avg Prep Time</div>
-                      <div className={cn("text-lg font-bold font-mono text-wl-neutral-300")}>
-                        {selectedLocation.avgPrepTime}m
-                      </div>
-                    </div>
-
-                  </div>
+                  <button
+                    onClick={() => setSelectedLocation(null)}
+                    className={cn("text-wl-text-secondary hover:text-white transition-colors text-lg leading-none")}
+                  >
+                    ✕
+                  </button>
                 </div>
 
                 <div className={cn("h-px bg-wl-bg-elevated")} />
 
-                {/* Operating Hours */}
-                {selectedLocation.operatingHours && (
-                  <div>
-                    <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
-                      Operating Hours
+                <div>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>Address</div>
+                  <div className={cn("text-sm text-white font-medium")}>{selectedLocation.addressLine1}</div>
+                  <div className={cn("text-sm text-wl-text-secondary")}>
+                    {selectedLocation.city}, {selectedLocation.province} {selectedLocation.postalCode}
+                  </div>
+                  <div className={cn("text-xs text-wl-text-tertiary mt-0.5")}>{selectedLocation.country}</div>
+                </div>
+
+                {(selectedLocation.phone || selectedLocation.email) && (
+                  <>
+                    <div className={cn("h-px bg-wl-bg-elevated")} />
+                    <div>
+                      <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>Contact</div>
+                      {selectedLocation.phone && (
+                        <div className={cn("text-sm text-wl-text-primary font-mono mb-1")}>{selectedLocation.phone}</div>
+                      )}
+                      {selectedLocation.email && (
+                        <div className={cn("text-sm text-wl-text-secondary")}>{selectedLocation.email}</div>
+                      )}
                     </div>
-                    <div className={cn("text-xs overflow-x-auto")}>
-                      <table className={cn("w-full border-collapse text-xs")}>
+                  </>
+                )}
+
+                <div className={cn("h-px bg-wl-bg-elevated")} />
+
+                <div>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>Performance</div>
+                  <div className={cn("grid grid-cols-2 gap-3")}>
+                    <div>
+                      <div className={cn("text-xs text-wl-text-secondary mb-0.5")}>Active Shipments</div>
+                      <div className={cn("text-lg font-bold font-mono text-blue-400")}>{selectedLocation.activeShipments}</div>
+                    </div>
+                    <div>
+                      <div className={cn("text-xs text-wl-text-secondary mb-0.5")}>Total Processed</div>
+                      <div className={cn("text-lg font-bold font-mono text-emerald-500")}>{selectedLocation.totalProcessed}</div>
+                    </div>
+                    <div>
+                      <div className={cn("text-xs text-wl-text-secondary mb-0.5")}>Avg Prep Time</div>
+                      <div className={cn("text-lg font-bold font-mono text-wl-text-primary")}>{selectedLocation.avgPrepTime}m</div>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedLocation.operatingHours && (
+                  <>
+                    <div className={cn("h-px bg-wl-bg-elevated")} />
+                    <div>
+                      <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>Operating Hours</div>
+                      <table className={cn("w-full text-xs")}>
                         <tbody>
                           {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
-                            <tr key={day} className={cn("border-b border-wl-border-default")}>
-                              <td
-                                className={cn("p-2 pr-3 text-wl-neutral-300 font-medium whitespace-nowrap")}
-                              >
-                                {day}
+                            <tr key={day} className={cn("border-b border-wl-border-default last:border-0")}>
+                              <td className={cn("py-1.5 pr-3 text-wl-text-secondary font-medium whitespace-nowrap")}>{day}</td>
+                              <td className={cn("py-1.5", hours.open === "closed" ? "text-wl-text-tertiary" : "text-white font-mono")}>
+                                {hours.open === "closed" ? "Closed" : `${hours.open} – ${hours.close}`}
                               </td>
-                              <td
-                                className={cn(
-                                  "p-2",
-                                  hours.open === "closed" ? "text-wl-text-secondary font-sans" : "text-white font-mono"
-                                )}
-                              >
-                                {hours.open === "closed" ? "Closed" : `${hours.open} - ${hours.close}`}
-                              </td>
-
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  </>
                 )}
 
                 <div className={cn("h-px bg-wl-bg-elevated")} />
 
-                {/* Map */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
-                    Location
-                  </div>
-                  <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
-                    <WLMap
-                      center={[selectedLocation.longitude, selectedLocation.latitude]}
-                      zoom={12}
-                    >
-                      <PinLayerDynamic
-                        pins={[{
-                          id: selectedLocation.id,
-                          lng: selectedLocation.longitude,
-                          lat: selectedLocation.latitude,
-                          status: selectedLocation.status === 'ACTIVE' ? 'assigned' : selectedLocation.status === 'MAINTENANCE' ? 'delayed' : 'open',
-                          label: selectedLocation.name,
-                        } satisfies Pin]}
-                      />
-                    </WLMap>
-                  </div>
-                  <div className={cn("text-xs font-mono text-wl-text-tertiary mt-1 text-center")}>
-                    {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div
-                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-default")}
-                >
-                  <Button variant="primary" size="sm">
-                    Edit
-                  </Button>
+                <div className={cn("flex gap-2 flex-wrap")}>
+                  <Button variant="primary" size="sm">Edit</Button>
                   <Button variant="secondary" size="sm">
                     {selectedLocation.status === "ACTIVE" ? "Deactivate" : "Activate"}
                   </Button>
                   {!selectedLocation.isDefault && (
-                    <Button variant="ghost" size="sm">
-                      Set Default
-                    </Button>
+                    <Button variant="ghost" size="sm">Set Default</Button>
                   )}
                 </div>
-              </Card>
-              ))}
-            </div>
-            {selectedLocation && (
-              <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
+              </div>
             )}
           </div>
         )}

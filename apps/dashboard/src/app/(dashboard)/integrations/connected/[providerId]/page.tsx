@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useApiQuery } from "@/hooks/use-api";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

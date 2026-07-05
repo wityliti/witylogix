@@ -100,13 +100,6 @@ export default function DispatchPage() {
       />
     );
 
-  const allTechs = drivers as (DispatchDriver & { status: TechnicianStatus })[];
-
-  const filteredTechs = useMemo(
-    () => (statusFilter === 'all' ? allTechs : allTechs.filter((t) => t.status === statusFilter)),
-    [allTechs, statusFilter]
-  );
-
   const selectedTechData = selectedTech ? allTechs.find((t) => t.id === selectedTech) : null;
 
   return (

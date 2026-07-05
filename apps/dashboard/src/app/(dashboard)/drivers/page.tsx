@@ -160,7 +160,7 @@ export default function DriversPage() {
     { id: 'en_route', label: 'En Route', count: driversData.filter((d) => normalizeStatus(d.status) === 'en_route').length },
     { id: 'delivering', label: 'Delivering', count: driversData.filter((d) => normalizeStatus(d.status) === 'delivering').length },
     { id: 'offline', label: 'Offline', count: driversData.filter((d) => normalizeStatus(d.status) === 'offline').length },
-  ];
+  ], [driversData]);
 
   const filteredDrivers = useMemo(() => {
     if (activeTab === 'all') return driversData;
