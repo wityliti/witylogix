@@ -223,7 +223,7 @@ export default function CampaignDetailPage({
     <div className="min-h-screen bg-wl-bg-root">
       <Header
         title={campaign.name}
-        subtitle={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.createdAt)}`}
+        subtitle={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.createdAt ?? campaign.created_at)}`}
       />
 
       <div className="p-6 max-w-7xl mx-auto">
