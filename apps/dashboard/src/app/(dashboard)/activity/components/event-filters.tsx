@@ -320,7 +320,6 @@ export function EventFilters({
           </div>
           )}
         </div>
-      )}
     </div>
   );
 }

@@ -18,9 +18,10 @@ import {
   Crown,
   Zap,
   RefreshCw,
-  Truck,
-  Trash2,
 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { useApiQuery, useApiList } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 

@@ -90,6 +90,15 @@ const formatDateTime = (isoStr: string): string => {
   });
 }
 
+function formatDuration(ms: number | undefined): string {
+  if (ms == null) return "—";
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  if (h > 0) return `${h}h ${m % 60}m`;
+  if (m > 0) return `${m}m ${s % 60}s`;
+  return `${s}s`;
+}
 
 function JsonViewer({ data }: { data: Record<string, any> }) {
   return (

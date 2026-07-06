@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -19,6 +20,8 @@ import {
   AlertTriangle,
   Eye,
   EyeOff,
+  Loader2,
+  Save,
 } from "lucide-react";
 
 interface User {
@@ -47,11 +50,30 @@ export default function ProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: '', lastName: '', email: '', phone: '', timezone: 'America/New_York', name: '',
+  });
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwError, setPwError] = useState<string | null>(null);
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const profileMutation = { loading: saveLoading };
 
   // Sync edit form when profile loads
   useEffect(() => {
     if (userProfile) {
-      setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+      setEditForm({
+        firstName: userProfile.firstName ?? '',
+        lastName: userProfile.lastName ?? '',
+        email: userProfile.email ?? '',
+        phone: userProfile.phone ?? '',
+        timezone: userProfile.timezone ?? 'America/New_York',
+        name: `${userProfile.firstName ?? ''} ${userProfile.lastName ?? ''}`.trim(),
+      });
     }
   }, [userProfile]);
 
@@ -73,7 +95,14 @@ export default function ProfilePage() {
   }, [editForm, refetch]);
 
   const handleCancelEdit = useCallback(() => {
-    if (userProfile) setEditForm({ name: userProfile.name ?? '', email: userProfile.email ?? '' });
+    if (userProfile) setEditForm({
+      firstName: userProfile.firstName ?? '',
+      lastName: userProfile.lastName ?? '',
+      email: userProfile.email ?? '',
+      phone: userProfile.phone ?? '',
+      timezone: userProfile.timezone ?? 'America/New_York',
+      name: `${userProfile.firstName ?? ''} ${userProfile.lastName ?? ''}`.trim(),
+    });
     setIsEditing(false);
     setSaveError(null);
   }, [userProfile]);
@@ -261,7 +290,7 @@ export default function ProfilePage() {
                 </button>
                 <Button variant="ghost" size="md" onClick={handleCancelEdit}>
                   Cancel
-                </button>
+                </Button>
               </div>
             )}
           </CardContent>

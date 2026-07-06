@@ -11,7 +11,6 @@ import { StatCard } from "@/components/ui/stat-card";
 import { useApiList } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 import { LayoutGrid, Map } from "lucide-react";
-import dynamic from "next/dynamic";
 
 const LocationsOverviewMap = dynamic(
   () => import('./components/locations-overview-map').then((m) => m.LocationsOverviewMap),
@@ -82,13 +81,47 @@ const typeLabel = (t: LocationType): string => {
   return map[t];
 };
 
+function LocationDetailPanel({ location, onClose }: { location: Location; onClose: () => void }) {
+  return (
+    <div className="overflow-y-auto rounded-xl bg-wl-bg-surface border border-wl-border-default p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-wl-text-primary truncate">{location.name}</h3>
+        <button onClick={onClose} className="text-wl-text-tertiary hover:text-wl-text-primary ml-2 shrink-0">✕</button>
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        <Badge variant={typeVariant(location.type)} dot>{typeLabel(location.type)}</Badge>
+        <Badge variant={statusVariant(location.status)} dot>{location.status}</Badge>
+      </div>
+      <div className="text-sm text-wl-text-secondary">
+        {location.addressLine1}<br />
+        {location.city}, {location.province} {location.postalCode}<br />
+        {location.country}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-xs text-wl-text-tertiary mb-1">Active Shipments</p>
+          <p className="text-lg font-bold font-mono text-blue-400">{location.activeShipments}</p>
+        </div>
+        <div>
+          <p className="text-xs text-wl-text-tertiary mb-1">Total Processed</p>
+          <p className="text-lg font-bold font-mono text-emerald-500">{location.totalProcessed}</p>
+        </div>
+        <div>
+          <p className="text-xs text-wl-text-tertiary mb-1">Avg Prep Time</p>
+          <p className="text-lg font-bold font-mono text-wl-text-secondary">{location.avgPrepTime}m</p>
+        </div>
+      </div>
+      {location.phone && <p className="text-xs font-mono text-wl-text-secondary">{location.phone}</p>}
+    </div>
+  );
+}
 
 export default function LocationsPage() {
   const { items: locations, loading, error, refetch } = useApiList<Location>('/api/v4/locations');
   const [typeFilter, setTypeFilter] = useState<LocationType | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
   const filtered = useMemo(() => {
     return locations.filter((loc) => {
@@ -199,66 +232,18 @@ export default function LocationsPage() {
         {/* MAP VIEW */}
         {viewMode === "map" && filtered.length > 0 && (
           <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 400px" : "1fr" }}>
-            <div>
-              {/* Type legend */}
-              <div className={cn("flex gap-4 flex-wrap mb-3")}>
-                {(["WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => (
-                  <div key={t} className={cn("flex items-center gap-1.5 text-xs text-gray-400")}>
-                    <span className="inline-block w-3 h-3 rounded-full" style={{ background: TYPE_DOT[t] }} />
-                    {typeLabel(t)}
-                  </div>
-                  <Badge variant={typeVariant(selectedLocation.type)} dot>
-                    {typeLabel(selectedLocation.type)}
-                  </Badge>
-                </div>
-                <button
-                  onClick={() => setSelectedLocation(null)}
-                  className={cn("bg-none border-none text-wl-text-secondary cursor-pointer text-lg font-sans")}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <Badge
-                variant={statusVariant(selectedLocation.status)}
-                dot
-                className={cn("mb-4 w-fit")}
-              >
-                {selectedLocation.status}
-              </Badge>
-
-              <div className={cn("flex flex-col gap-4 flex-1")}>
-                {/* Address Info */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>
-                    Address
-                  </div>
-                  <div className={cn("text-sm text-white font-medium")}>
-                    {selectedLocation.addressLine1}
-                  </div>
-                  <div className={cn("text-sm text-wl-neutral-300")}>
-                    {selectedLocation.city}, {selectedLocation.province} {selectedLocation.postalCode}
-                  </div>
-                  <div className={cn("text-xs text-wl-text-secondary mt-1")}>
-                    {selectedLocation.country}
-                  </div>
-                </div>
-
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Contact Info */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider")}>
-                    Contact
-                  </div>
-                  {selectedLocation.phone && (
-                    <div className={cn("text-sm text-wl-neutral-300 mb-1 font-mono")}>
-                      {selectedLocation.phone}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <LocationsOverviewMap
+              locations={filtered.map((loc) => ({
+                id: loc.id,
+                name: loc.name,
+                type: loc.type,
+                status: loc.status,
+                latitude: loc.latitude ?? 0,
+                longitude: loc.longitude ?? 0,
+                city: loc.city ?? '',
+                province: loc.province ?? '',
+              }))}
+            />
             {selectedLocation && (
               <LocationDetailPanel location={selectedLocation} onClose={() => setSelectedLocation(null)} />
             )}
@@ -309,89 +294,29 @@ export default function LocationsPage() {
                     <div>
                       <div className={cn("text-xs text-wl-text-secondary mb-1")}>Active Shipments</div>
                       <div className={cn("text-lg font-bold font-mono text-blue-400")}>
-                        {selectedLocation.activeShipments}
+                        {location.activeShipments}
                       </div>
                     </div>
-
                     <div>
                       <div className={cn("text-xs text-wl-text-secondary mb-1")}>Total Processed</div>
                       <div className={cn("text-lg font-bold font-mono text-emerald-500")}>
-                        {selectedLocation.totalProcessed}
+                        {location.totalProcessed}
                       </div>
                     </div>
-
                     <div>
                       <div className={cn("text-xs text-wl-text-secondary mb-1")}>Avg Prep Time</div>
                       <div className={cn("text-lg font-bold font-mono text-wl-neutral-300")}>
-                        {selectedLocation.avgPrepTime}m
+                        {location.avgPrepTime}m
                       </div>
                     </div>
-
                   </div>
                 </div>
 
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Operating Hours */}
-                {selectedLocation.operatingHours && (
-                  <div>
-                    <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
-                      Operating Hours
-                    </div>
-                    <div className={cn("text-xs overflow-x-auto")}>
-                      <table className={cn("w-full border-collapse text-xs")}>
-                        <tbody>
-                          {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
-                            <tr key={day} className={cn("border-b border-wl-border-default")}>
-                              <td
-                                className={cn("p-2 pr-3 text-wl-neutral-300 font-medium whitespace-nowrap")}
-                              >
-                                {day}
-                              </td>
-                              <td
-                                className={cn(
-                                  "p-2",
-                                  hours.open === "closed" ? "text-wl-text-secondary font-sans" : "text-white font-mono"
-                                )}
-                              >
-                                {hours.open === "closed" ? "Closed" : `${hours.open} - ${hours.close}`}
-                              </td>
-
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                {location.latitude && location.longitude && (
+                  <div className={cn("text-xs font-mono text-wl-text-tertiary text-center")}>
+                    {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
                   </div>
                 )}
-
-                <div className={cn("h-px bg-wl-bg-elevated")} />
-
-                {/* Map */}
-                <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary uppercase mb-3 tracking-wider")}>
-                    Location
-                  </div>
-                  <div className={cn("rounded-md overflow-hidden border border-wl-border-default")} style={{ height: 160 }}>
-                    <WLMap
-                      center={[selectedLocation.longitude, selectedLocation.latitude]}
-                      zoom={12}
-                    >
-                      <PinLayerDynamic
-                        pins={[{
-                          id: selectedLocation.id,
-                          lng: selectedLocation.longitude,
-                          lat: selectedLocation.latitude,
-                          status: selectedLocation.status === 'ACTIVE' ? 'assigned' : selectedLocation.status === 'MAINTENANCE' ? 'delayed' : 'open',
-                          label: selectedLocation.name,
-                        } satisfies Pin]}
-                      />
-                    </WLMap>
-                  </div>
-                  <div className={cn("text-xs font-mono text-wl-text-tertiary mt-1 text-center")}>
-                    {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
-                  </div>
-                </div>
 
                 {/* Action Buttons */}
                 <div
@@ -401,9 +326,9 @@ export default function LocationsPage() {
                     Edit
                   </Button>
                   <Button variant="secondary" size="sm">
-                    {selectedLocation.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                    {location.status === "ACTIVE" ? "Deactivate" : "Activate"}
                   </Button>
-                  {!selectedLocation.isDefault && (
+                  {!location.isDefault && (
                     <Button variant="ghost" size="sm">
                       Set Default
                     </Button>
