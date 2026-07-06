@@ -419,17 +419,6 @@ export default function DriverDetailPage() {
               )}
             </div>
 
-                {/* Trend */}
-                {scoreDelta !== null && (
-                  <div className={cn('flex items-center gap-1.5 mt-3 text-sm font-mono font-medium',
-                    scoreDelta > 0 ? 'text-emerald-400' : scoreDelta < 0 ? 'text-red-400' : 'text-white/30'
-                  )}>
-                    {scoreDelta > 0 ? <TrendingUp className="w-4 h-4" /> : scoreDelta < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                    {scoreDelta > 0 ? '+' : ''}{scoreDelta.toFixed(1)} vs last period
-                  </div>
-                )}
-              </div>
-
               {/* Score breakdown */}
               <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5 space-y-4">
                 <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider">Score Breakdown</h3>
